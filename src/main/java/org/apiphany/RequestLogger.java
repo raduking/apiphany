@@ -14,19 +14,36 @@ import org.morphix.lang.Nullables;
 import org.morphix.reflection.Constructors;
 
 /**
- * Utility class for logging requests.
+ * A utility class for logging HTTP requests and responses, including success and error cases. This class provides
+ * methods to log request details, response details, and exceptions in a structured format.
  *
  * @author Radu Sebastian LAZIN
  */
 public class RequestLogger {
 
+	/**
+	 * The string used to redact sensitive information in logs.
+	 */
 	public static final String REDACTED = "REDACTED";
 
+	/**
+	 * The length of the log separator line.
+	 */
 	public static final int LOG_SEPARATOR_LENGTH = 128;
+
+	/**
+	 * The character used to create the log separator line.
+	 */
 	public static final char LOG_SEPARATOR_CHAR = '-';
 
+	/**
+	 * The log separator line, created by repeating {@link #LOG_SEPARATOR_CHAR} for {@link #LOG_SEPARATOR_LENGTH} times.
+	 */
 	public static final String LOG_SEPARATOR = StringUtils.repeat(LOG_SEPARATOR_CHAR, LOG_SEPARATOR_LENGTH);
 
+	/**
+	 * The log message format for successful requests.
+	 */
 	private static final String LOG_MESSAGE_SUCCESS = Strings.EOL
 			+ LOG_SEPARATOR + Strings.EOL
 			+ "CLIENT: {}" + Strings.EOL
@@ -40,6 +57,9 @@ public class RequestLogger {
 			+ "DURATION: {}s" + Strings.EOL
 			+ LOG_SEPARATOR;
 
+	/**
+	 * The log message format for failed requests.
+	 */
 	private static final String LOG_MESSAGE_ERROR = Strings.EOL
 			+ LOG_SEPARATOR + Strings.EOL
 			+ "CLIENT: {}" + Strings.EOL
@@ -53,15 +73,14 @@ public class RequestLogger {
 			+ LOG_SEPARATOR;
 
 	/**
-	 * Logs all information for a request.
+	 * Logs all information for a successful HTTP request.
 	 *
-	 * @param <T> response type
-	 *
-	 * @param loggingFunction logging function used for logging
-	 * @param apiClient the API client
-	 * @param apiRequest request properties
-	 * @param apiResponse response object
-	 * @param duration duration of the request
+	 * @param <T> the type of the response.
+	 * @param loggingFunction the logging function used to output the log message.
+	 * @param apiClient the API client making the request.
+	 * @param apiRequest the request properties.
+	 * @param apiResponse the response object.
+	 * @param duration the duration of the request.
 	 */
 	public static <T> void logSuccess(
 			final LoggingFunction loggingFunction,
@@ -82,13 +101,13 @@ public class RequestLogger {
 	}
 
 	/**
-	 * Logs all information for a request.
+	 * Logs all information for a failed HTTP request.
 	 *
-	 * @param loggingFunction logging function used for logging
-	 * @param apiClient the API client
-	 * @param apiRequest request properties
-	 * @param duration duration of the request
-	 * @param exception exception
+	 * @param loggingFunction the logging function used to output the log message.
+	 * @param apiClient the API client making the request.
+	 * @param apiRequest the request properties.
+	 * @param duration the duration of the request.
+	 * @param exception the exception that caused the request to fail.
 	 */
 	public static void logError(
 			final LoggingFunction loggingFunction,
@@ -108,10 +127,11 @@ public class RequestLogger {
 	}
 
 	/**
-	 * Transforms the HTTP headers to {@link String} and redacts any sensible information like Authorization and such.
+	 * Transforms the HTTP headers into a string representation, redacting sensitive information such as Authorization
+	 * headers.
 	 *
-	 * @param headers headers as a multi value map
-	 * @return the headers as string
+	 * @param headers the headers as a multi-value map.
+	 * @return the headers as a string, with sensitive information redacted.
 	 */
 	public static String toRedactedString(final Map<String, List<String>> headers) {
 		return Maps.safe(headers).entrySet().stream().map(entry -> {
@@ -129,22 +149,26 @@ public class RequestLogger {
 	}
 
 	/**
-	 * Private constructor.
+	 * Private constructor to prevent instantiation.
 	 */
 	private RequestLogger() {
 		throw Constructors.unsupportedOperationException();
 	}
 
 	/**
-	 * Functional interface to transmit the logging function from the caller.
+	 * Functional interface for logging messages with a specific format and arguments.
 	 *
 	 * @author Radu Sebastian LAZIN
 	 */
 	@FunctionalInterface
 	public interface LoggingFunction {
 
+		/**
+		 * Logs a message with the specified format and arguments.
+		 *
+		 * @param format the log message format.
+		 * @param arguments the arguments to include in the log message.
+		 */
 		void level(String format, Object... arguments);
-
 	}
-
 }
