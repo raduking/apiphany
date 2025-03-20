@@ -11,7 +11,14 @@ import io.micrometer.core.instrument.Tags;
  */
 public class BasicCounter implements Counter {
 
+	/**
+	 * The counter ID.
+	 */
 	private Id id;
+
+	/**
+	 * The counter value.
+	 */
 	private double value;
 
 	/**

@@ -39,23 +39,23 @@ class ApiRequestTest {
 				.url(URL)
 				.responseType(String.class);
 
-		String expected = removeTabs(
-			"""
-			{
-			  "httpMethod" : "GET",
-			  "url" : "http://localhost:666/api",
-			  "urlEncoded" : false,
-			  "body" : {
-			    "id" : "666",
-			    "count" : 13
-			  },
-			  "classResponseType" : "java.lang.String",
-			  "headers" : { },
-			  "charset" : "UTF-8",
-			  "stream" : false,
-			  "uri" : "http://localhost:666/api"
-			}
-			"""
+		String expected = "\n" + removeTabs(
+				"""
+				{
+				  "body" : {
+				    "id" : "666",
+				    "count" : 13
+				  },
+				  "headers" : { },
+				  "httpMethod" : "GET",
+				  "url" : "http://localhost:666/api",
+				  "urlEncoded" : false,
+				  "classResponseType" : "java.lang.String",
+				  "charset" : "UTF-8",
+				  "stream" : false,
+				  "uri" : "http://localhost:666/api"
+				}
+				"""
 		);
 
 		String json = adapter.toString();

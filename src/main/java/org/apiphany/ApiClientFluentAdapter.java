@@ -10,10 +10,9 @@ import java.util.Objects;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apiphany.RequestParameters.ParameterFunction;
 import org.apiphany.auth.AuthenticationType;
 import org.apiphany.http.HttpMethod;
-import org.apiphany.http.RequestParameters;
-import org.apiphany.http.RequestParameters.ParameterFunction;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.retry.Retry;
 import org.apiphany.meters.BasicMeters;
@@ -28,17 +27,12 @@ import io.micrometer.core.instrument.Tags;
  *
  * @author Radu Sebastian LAZIN
  */
-public class ApiClientFluentAdapter extends ApiRequest {
+public class ApiClientFluentAdapter extends ApiRequest<Object> {
 
 	/**
 	 * The underlying API client.
 	 */
 	private final ApiClient apiClient;
-
-	/**
-	 * The authentication type.
-	 */
-	private AuthenticationType authenticationType;
 
 	/**
 	 * Constructs the object with the given API client.
@@ -78,11 +72,9 @@ public class ApiClientFluentAdapter extends ApiRequest {
 	 */
 	public <T> ApiResponse<T> retrieve() {
 		if (isUrlEncoded()) {
-			this.params = RequestParameters.encode(this.params, charset);
+			this.params = RequestParameters.encode(this.params, getCharset());
 		}
-		return null != genericResponseType
-				? JavaObjects.cast(retrieve(genericResponseType))
-				: JavaObjects.cast(retrieve(classResponseType));
+		return JavaObjects.cast(apiClient.exchange(this));
 	}
 
 	/**
@@ -94,7 +86,7 @@ public class ApiClientFluentAdapter extends ApiRequest {
 	 * @return an API response object
 	 */
 	public <T> ApiResponse<T> retrieve(final Class<T> responseType) {
-		return apiClient.exchange(responseType(responseType));
+		return responseType(responseType).retrieve();
 	}
 
 	/**
@@ -106,7 +98,7 @@ public class ApiClientFluentAdapter extends ApiRequest {
 	 * @return an API response object
 	 */
 	public <T> ApiResponse<T> retrieve(final GenericClass<T> responseType) {
-		return apiClient.exchange(responseType(responseType));
+		return responseType(responseType).retrieve();
 	}
 
 	/**
@@ -116,8 +108,7 @@ public class ApiClientFluentAdapter extends ApiRequest {
 	 * @return an API response object
 	 */
 	public <T> ApiResponse<T> download() {
-		this.stream = true;
-		return apiClient.exchange(this);
+		return stream().retrieve();
 	}
 
 	/**
@@ -255,9 +246,7 @@ public class ApiClientFluentAdapter extends ApiRequest {
 	 * @return this
 	 */
 	public <T> ApiClientFluentAdapter responseType(final Class<T> responseType) {
-		if (null != genericResponseType) {
-			throw new IllegalArgumentException("Class response type already set");
-		}
+		Nullables.requireNull(genericResponseType, "Class response type already set");
 		this.classResponseType = responseType;
 		return this;
 	}
@@ -270,9 +259,7 @@ public class ApiClientFluentAdapter extends ApiRequest {
 	 * @return this
 	 */
 	public <T> ApiClientFluentAdapter responseType(final GenericClass<T> responseType) {
-		if (null != classResponseType) {
-			throw new IllegalArgumentException("Parameterized response type already set");
-		}
+		Nullables.requireNull(classResponseType, "Generic class response type already set");
 		this.genericResponseType = responseType;
 		return this;
 	}
@@ -343,6 +330,16 @@ public class ApiClientFluentAdapter extends ApiRequest {
 	 */
 	public ApiClientFluentAdapter charset(final Charset charset) {
 		this.charset = charset;
+		return this;
+	}
+
+	/**
+	 * Sets the stream flag to true.
+	 *
+	 * @return this
+	 */
+	public ApiClientFluentAdapter stream() {
+		this.stream = true;
 		return this;
 	}
 
@@ -480,15 +477,6 @@ public class ApiClientFluentAdapter extends ApiRequest {
 	 */
 	public ApiClientFluentAdapter trace() {
 		return httpMethod(HttpMethod.TRACE);
-	}
-
-	/**
-	 * Returns the authentication type.
-	 *
-	 * @return the authentication type
-	 */
-	public AuthenticationType getAuthenticationType() {
-		return authenticationType;
 	}
 
 	/**

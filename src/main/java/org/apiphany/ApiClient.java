@@ -221,29 +221,29 @@ public class ApiClient {
 	 *
 	 * @param <T> response type
 	 *
-	 * @param adapter client fluent adapter
+	 * @param apiRequest API request object
 	 * @return API response object
 	 */
-	public <T> ApiResponse<T> exchange(final ApiClientFluentAdapter adapter) {
-		BasicMeters activeMeters = getActiveMeters(adapter);
-		Retry activeRetry = Nullables.nonNullOrDefault(adapter.getRetry(), this::getRetry);
+	public <T> ApiResponse<T> exchange(final ApiRequest<T> apiRequest) {
+		BasicMeters activeMeters = getActiveMeters(apiRequest);
+		Retry activeRetry = Nullables.nonNullOrDefault(apiRequest.getRetry(), this::getRetry);
 
 		ExceptionsAccumulator accumulator = ExceptionsAccumulator.of();
 		Duration duration = Duration.ZERO;
 		ApiResponse<T> apiResponse;
 		activeMeters.requests().increment();
-		ExchangeClient exchangeClient = getExchangeClient(adapter.getAuthenticationType());
+		ExchangeClient exchangeClient = getExchangeClient(apiRequest.getAuthenticationType());
 		Instant start = Instant.now();
 		try {
 			apiResponse = activeRetry.when(
-					() -> exchangeClient.exchange(adapter), ApiPredicates.nonNullResponse(),
+					() -> exchangeClient.exchange(apiRequest), ApiPredicates.nonNullResponse(),
 					e -> activeMeters.retries().increment(), accumulator);
 			duration = Duration.between(start, Instant.now());
-			RequestLogger.logSuccess(LOGGER::debug, this, adapter, apiResponse, duration);
+			RequestLogger.logSuccess(LOGGER::debug, this, apiRequest, apiResponse, duration);
 		} catch (Exception exception) {
 			duration = Duration.between(start, Instant.now());
 			activeMeters.errors().increment();
-			RequestLogger.logError(LOGGER::debug, this, adapter, duration, exception);
+			RequestLogger.logError(LOGGER::debug, this, apiRequest, duration, exception);
 			LOGGER.error("EXCEPTION: ", exception);
 			apiResponse = ApiResponse.of(exception, "API call: ");
 		} finally {
@@ -258,12 +258,12 @@ public class ApiClient {
 	/**
 	 * Returns the active meters.
 	 *
-	 * @param adapter the fluent adapter
+	 * @param apiRequest the API request object
 	 * @return the active meters
 	 */
-	private BasicMeters getActiveMeters(final ApiClientFluentAdapter adapter) {
+	private <T> BasicMeters getActiveMeters(final ApiRequest<T> apiRequest) {
 		return isMetricsEnabled()
-				? Nullables.nonNullOrDefault(adapter.getMeters(), this::getMeters)
+				? Nullables.nonNullOrDefault(apiRequest.getMeters(), this::getMeters)
 				: BasicMeters.DEFAULT;
 	}
 
@@ -272,12 +272,12 @@ public class ApiClient {
 	 *
 	 * @param <T> response type
 	 *
-	 * @param adapter client fluent adapter
+	 * @param apiRequest API request object
 	 * @return API response object
 	 */
-	public <T> CompletableFuture<ApiResponse<T>> asyncExchange(final ApiClientFluentAdapter adapter) {
-		ExchangeClient exchangeClient = getExchangeClient(adapter.getAuthenticationType());
-		return exchangeClient.asyncExchange(adapter);
+	public <T> CompletableFuture<ApiResponse<T>> asyncExchange(final ApiRequest<T> apiRequest) {
+		ExchangeClient exchangeClient = getExchangeClient(apiRequest.getAuthenticationType());
+		return exchangeClient.asyncExchange(apiRequest);
 	}
 
 	/**

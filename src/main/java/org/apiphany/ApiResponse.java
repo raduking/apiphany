@@ -30,22 +30,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  *
  * @author Radu Sebastian LAZIN
  */
-public class ApiResponse<T> {
-
-	/**
-	 * Response body.
-	 */
-	private final T body;
+public class ApiResponse<T> extends ApiMessage<T> {
 
 	/**
 	 * Response HTTP status.
 	 */
 	private final HttpStatus status;
-
-	/**
-	 * Response HTTP headers.
-	 */
-	private final Map<String, List<String>> headers;
 
 	/**
 	 * Response error message.
@@ -83,27 +73,9 @@ public class ApiResponse<T> {
 	 */
 	private ApiResponse(final Exception e, final String errorMessagePrefix) {
 		// TODO: add Spring HttpStatusCode and HttpStatusCodeException and use e.getStatusCode() and e.getResponseBodyAsString()
-		// instead of e.getMessage()
+		// instead of e.getMessage(), also do not return BAD_REQUEST by default.
 		this(null, HttpStatus.BAD_REQUEST, Collections.emptyMap(),
 				Nullables.nonNullOrDefault(errorMessagePrefix, "") + e.getMessage(), e);
-	}
-
-	/**
-	 * Returns the response body.
-	 *
-	 * @return the response body
-	 */
-	public T getBody() {
-		return body;
-	}
-
-	/**
-	 * Returns true if the response has a body, false otherwise.
-	 *
-	 * @return true if the response has a body, false otherwise
-	 */
-	public boolean hasBody() {
-		return null != getBody();
 	}
 
 	/**
@@ -112,7 +84,7 @@ public class ApiResponse<T> {
 	 * @return the body as an input stream
 	 */
 	public InputStream inputStream() {
-		if (null == body) {
+		if (hasNoBody()) {
 			throw new IllegalStateException("Cannot transform null body to input stream.");
 		}
 		if (body instanceof InputStream inputStream) {
@@ -421,15 +393,6 @@ public class ApiResponse<T> {
 	 */
 	public HttpStatus getStatus() {
 		return status;
-	}
-
-	/**
-	 * Returns the response headers.
-	 *
-	 * @return the response headers
-	 */
-	public Map<String, List<String>> getHeaders() {
-		return headers;
 	}
 
 	/**
