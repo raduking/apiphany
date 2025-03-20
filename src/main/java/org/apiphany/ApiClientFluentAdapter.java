@@ -28,17 +28,12 @@ import io.micrometer.core.instrument.Tags;
  *
  * @author Radu Sebastian LAZIN
  */
-public class ApiClientFluentAdapter extends ApiRequest {
+public class ApiClientFluentAdapter extends ApiRequest<Object> {
 
 	/**
 	 * The underlying API client.
 	 */
 	private final ApiClient apiClient;
-
-	/**
-	 * The authentication type.
-	 */
-	private AuthenticationType authenticationType;
 
 	/**
 	 * Constructs the object with the given API client.
@@ -94,7 +89,7 @@ public class ApiClientFluentAdapter extends ApiRequest {
 	 * @return an API response object
 	 */
 	public <T> ApiResponse<T> retrieve(final Class<T> responseType) {
-		return apiClient.exchange(responseType(responseType));
+		return JavaObjects.cast(apiClient.exchange(responseType(responseType)));
 	}
 
 	/**
@@ -106,7 +101,7 @@ public class ApiClientFluentAdapter extends ApiRequest {
 	 * @return an API response object
 	 */
 	public <T> ApiResponse<T> retrieve(final GenericClass<T> responseType) {
-		return apiClient.exchange(responseType(responseType));
+		return JavaObjects.cast(apiClient.exchange(responseType(responseType)));
 	}
 
 	/**
@@ -117,7 +112,7 @@ public class ApiClientFluentAdapter extends ApiRequest {
 	 */
 	public <T> ApiResponse<T> download() {
 		this.stream = true;
-		return apiClient.exchange(this);
+		return JavaObjects.cast(apiClient.exchange(this));
 	}
 
 	/**
@@ -480,15 +475,6 @@ public class ApiClientFluentAdapter extends ApiRequest {
 	 */
 	public ApiClientFluentAdapter trace() {
 		return httpMethod(HttpMethod.TRACE);
-	}
-
-	/**
-	 * Returns the authentication type.
-	 *
-	 * @return the authentication type
-	 */
-	public AuthenticationType getAuthenticationType() {
-		return authenticationType;
 	}
 
 	/**

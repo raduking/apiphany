@@ -42,6 +42,7 @@ class ApiClientTest {
 	private static final int HTTP_STATUS_OK = 200;
 	private static final int HTTP_STATUS_BAD_REQUEST = 400;
 
+	@SuppressWarnings("unchecked")
 	@Test
 	void shouldCallExchangeClientWithProvidedParameters() {
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
@@ -62,6 +63,7 @@ class ApiClientTest {
 		assertThat(result, equalTo(expected));
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	void shouldReturnEmptyIfCallExchangeClientWithProvidedParametersReturnsNull() {
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
@@ -80,6 +82,7 @@ class ApiClientTest {
 		assertThat(result, equalTo(TestDto.EMPTY));
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	void shouldCallTheCorrectAuthClientWhenMoreArePresent() {
 		ExchangeClient exchangeClient1 = mock(ExchangeClient.class);
@@ -139,6 +142,7 @@ class ApiClientTest {
 		assertThat(adapter.getUrl(), equalTo(BASE_URL + "/" + PATH_TEST));
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	void shouldReturnEmptyIfCallExchangeClientWithProvidedParametersThrowsException() {
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
@@ -208,6 +212,7 @@ class ApiClientTest {
 				equalTo(METRICS_PREFIX + "." + BasicMeters.LATENCY_METRIC));
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	void shouldThrowExceptionIfCallExchangeClientWithProvidedParametersThrowsExceptionAndIsBleedExceptionsIsTrue() {
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
@@ -232,6 +237,7 @@ class ApiClientTest {
 		assertThat(result, notNullValue());
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	void shouldThrowExceptionWhenMoreAuthClientsArePresent() {
 		ExchangeClient exchangeClient1 = mock(ExchangeClient.class);
@@ -263,6 +269,7 @@ class ApiClientTest {
 		assertThat(result, notNullValue());
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	void shouldThrowExceptionWhenCreatingClientWithMoreAuthClientsWithTheSameType() {
 		ExchangeClient exchangeClient1 = mock(ExchangeClient.class);
@@ -319,6 +326,7 @@ class ApiClientTest {
 		assertThat(result, notNullValue());
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	void shouldMakeGetCallWithTheCorrectUri() {
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
