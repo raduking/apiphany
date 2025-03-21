@@ -5,11 +5,11 @@ import org.morphix.lang.Nullables;
 import org.morphix.reflection.Constructors;
 
 /**
- * Utility methods for HTTP requests.
+ * Utility methods for HTTP requests/responses.
  *
  * @author Radu Sebastian LAZIN
  */
-public class HttpRequests {
+public class HttpMessages {
 
 	/**
 	 * Parses the HTTP version string.
@@ -58,7 +58,7 @@ public class HttpRequests {
 	/**
 	 * Hide constructor.
 	 */
-	private HttpRequests() {
+	private HttpMessages() {
 		throw Constructors.unsupportedOperationException();
 	}
 }

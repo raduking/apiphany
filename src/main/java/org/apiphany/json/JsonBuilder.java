@@ -43,22 +43,33 @@ public class JsonBuilder { // NOSONAR singleton implementation
 
 	/**
 	 * Singleton instance holder.
+	 *
+	 * @author Radu Sebastian LAZIN
 	 */
 	private static class InstanceHolder {
 
 		/**
+		 * Flag that shows if Jackson JSON library is present in the class path.
+		 */
+		private static final boolean JACKSON_PRESENT = null != Reflection.getClass(JACKSON_OBJECT_MAPPER_CLASS_NAME);
+
+		/**
 		 * Singleton instance.
 		 */
-		private static final JsonBuilder INSTANCE;
+		private static final JsonBuilder INSTANCE = initializeInstance();
 
-		static {
-			if (isJacksonPresent()) {
+		/**
+		 * Initializes the singleton instance.
+		 *
+		 * @return a JSON builder
+		 */
+		private static JsonBuilder initializeInstance() {
+			if (JACKSON_PRESENT) {
 				Class<? extends JsonBuilder> jacksonJsonBuilderClass = Reflection.getClass(JACKSON_JSON_BUILDER_CLASS_NAME);
-				INSTANCE = Constructors.IgnoreAccess.newInstance(jacksonJsonBuilderClass);
-			} else {
-				LOGGER.warn("{}, JsonBuilder.toJson will use the objects toString method!", ERROR_JSON_LIBRARY_NOT_FOUND);
-				INSTANCE = new JsonBuilder();
+				return Constructors.IgnoreAccess.newInstance(jacksonJsonBuilderClass);
 			}
+			LOGGER.warn("{}, JsonBuilder.toJson will use the objects toString method!", ERROR_JSON_LIBRARY_NOT_FOUND);
+			return new JsonBuilder();
 		}
 	}
 
@@ -261,8 +272,8 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 *
 	 * @return true if Jackson library is present in the class path
 	 */
-	protected static boolean isJacksonPresent() {
-		return null != Reflection.getClass(JACKSON_OBJECT_MAPPER_CLASS_NAME);
+	public static boolean isJacksonPresent() {
+		return InstanceHolder.JACKSON_PRESENT;
 	}
 
 	/**

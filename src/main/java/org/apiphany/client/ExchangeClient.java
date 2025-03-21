@@ -16,22 +16,24 @@ public interface ExchangeClient {
 	/**
 	 * Basic rest template like exchange method.
 	 *
-	 * @param <T> response body type
+	 * @param <T> request body type
+	 * @param <U> response body type
 	 *
 	 * @param request request properties
 	 * @return response
 	 */
-	<T> ApiResponse<T> exchange(final ApiRequest request);
+	<T, U> ApiResponse<U> exchange(final ApiRequest<T> request);
 
 	/**
 	 * Basic rest template like async exchange method.
 	 *
-	 * @param <T> response body type
+	 * @param <T> request/response body type
+	 * @param <U> response body type
 	 *
 	 * @param request request properties
 	 * @return response
 	 */
-	default <T> CompletableFuture<ApiResponse<T>> asyncExchange(final ApiRequest request) {
+	default <T, U> CompletableFuture<ApiResponse<U>> asyncExchange(final ApiRequest<T> request) {
 		throw new UnsupportedOperationException();
 	}
 

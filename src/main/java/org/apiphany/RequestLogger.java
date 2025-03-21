@@ -75,7 +75,8 @@ public class RequestLogger {
 	/**
 	 * Logs all information for a successful HTTP request.
 	 *
-	 * @param <T> the type of the response.
+	 * @param <T> the type of the request/response body.
+	 *
 	 * @param loggingFunction the logging function used to output the log message.
 	 * @param apiClient the API client making the request.
 	 * @param apiRequest the request properties.
@@ -85,7 +86,7 @@ public class RequestLogger {
 	public static <T> void logSuccess(
 			final LoggingFunction loggingFunction,
 			final ApiClient apiClient,
-			final ApiRequest apiRequest,
+			final ApiRequest<T> apiRequest,
 			final ApiResponse<T> apiResponse,
 			final Duration duration) {
 		loggingFunction.level(LOG_MESSAGE_SUCCESS,
@@ -103,16 +104,18 @@ public class RequestLogger {
 	/**
 	 * Logs all information for a failed HTTP request.
 	 *
+	 * @param <T> the type of the request.
+	 *
 	 * @param loggingFunction the logging function used to output the log message.
 	 * @param apiClient the API client making the request.
 	 * @param apiRequest the request properties.
 	 * @param duration the duration of the request.
 	 * @param exception the exception that caused the request to fail.
 	 */
-	public static void logError(
+	public static <T> void logError(
 			final LoggingFunction loggingFunction,
 			final ApiClient apiClient,
-			final ApiRequest apiRequest,
+			final ApiRequest<T> apiRequest,
 			final Duration duration,
 			final Exception exception) {
 		loggingFunction.level(LOG_MESSAGE_ERROR,

@@ -48,9 +48,17 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 	protected static final String LOG_MSG_COULD_NOT_DESERIALIZE_OBJECT = "Could not deserialize object: {}";
 
 	/**
-	 * Singleton instance.
+	 * Singleton instance holder.
+	 *
+	 * @author Radu Sebastian LAZIN
 	 */
-	private static final JacksonJsonBuilder INSTANCE = new JacksonJsonBuilder();
+	private static class InstanceHolder {
+
+		/**
+		 * Singleton instance.
+		 */
+		private static final JacksonJsonBuilder INSTANCE = new JacksonJsonBuilder();
+	}
 
 	/**
 	 * The underlying {@link ObjectMapper}.
@@ -60,7 +68,7 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 	/**
 	 * Hide constructor.
 	 */
-	private JacksonJsonBuilder() {
+	protected JacksonJsonBuilder() {
 		SimpleModule javaTimeModule = newJavaTimeModule(DateTimeFormatter.ISO_DATE_TIME);
 		objectMapper.registerModule(javaTimeModule);
 		indentOutput(isIndentOutput());
@@ -78,7 +86,7 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 	 * {@link #toString(Object)} otherwise.
 	 */
 	public static <T> String toJson(final T obj) {
-		return INSTANCE.toJsonString(obj);
+		return InstanceHolder.INSTANCE.toJsonString(obj);
 	}
 
 	/**
@@ -91,7 +99,7 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 	 * @return an object from the JSON string
 	 */
 	public static <T> T fromJson(final String json, final Class<T> cls) {
-		return INSTANCE.fromJsonString(json, cls);
+		return InstanceHolder.INSTANCE.fromJsonString(json, cls);
 	}
 
 	/**
@@ -104,7 +112,7 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 	 * @return an object from the JSON string
 	 */
 	public static <T> T fromJson(final String json, final GenericClass<T> genericClass) {
-		return INSTANCE.fromJsonString(json, genericClass);
+		return InstanceHolder.INSTANCE.fromJsonString(json, genericClass);
 	}
 
 	/**
@@ -117,7 +125,7 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 	 * @return an object from the JSON string
 	 */
 	public static <T> T fromJson(final String json, final TypeReference<T> typeReference) {
-		return INSTANCE.fromJsonString(json, typeReference);
+		return InstanceHolder.INSTANCE.fromJsonString(json, typeReference);
 	}
 
 	/**
@@ -230,6 +238,7 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 	/**
 	 * Creates a new JavaTimeModule with ISO formatters
 	 *
+	 * @param dateTimeFormatter the date time formatter object
 	 * @return java time module
 	 */
 	public static SimpleModule newJavaTimeModule(final DateTimeFormatter dateTimeFormatter) {
