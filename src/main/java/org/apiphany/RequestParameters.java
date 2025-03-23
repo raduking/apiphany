@@ -1,4 +1,4 @@
-package org.apiphany.http;
+package org.apiphany;
 
 import java.net.URLEncoder;
 import java.nio.charset.Charset;

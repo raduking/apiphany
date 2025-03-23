@@ -1,4 +1,4 @@
-# APIphany
+# Apiphany
 
 Simple fluent style Java API to make API calls.
 

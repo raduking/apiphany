@@ -6,6 +6,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -14,13 +15,17 @@ import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
 import org.apiphany.auth.AuthenticationType;
 import org.apiphany.client.ClientProperties;
+import org.apiphany.client.ContentConverter;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpProperties;
 import org.apiphany.http.HttpStatus;
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.json.jackson.JacksonJsonHttpContentConverter;
+import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Maps;
+import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Nullables;
 import org.morphix.lang.function.ThrowingSupplier;
 
@@ -42,6 +47,11 @@ public class HttpExchangeClient implements ExchangeClient {
 	private final HttpClient httpClient;
 
 	/**
+	 * Content converters.
+	 */
+	private final List<ContentConverter<?>> contentConverters = new LinkedList<>();
+
+	/**
 	 * Default constructor will initialize the client with default client properties. See the {@link ClientProperties} class
 	 * to see the defaults.
 	 */
@@ -57,6 +67,7 @@ public class HttpExchangeClient implements ExchangeClient {
 	public HttpExchangeClient(final ClientProperties clientProperties) {
 		this.clientProperties = clientProperties;
 		this.httpClient = createClient(this::customize);
+		initializeContentConverters();
 	}
 
 	/**
@@ -69,6 +80,17 @@ public class HttpExchangeClient implements ExchangeClient {
 	 */
 	public HttpExchangeClient(final ClientProperties clientProperties, final String prefix, final String clientName) {
 		this(clientProperties.getClientProperties(prefix, clientName));
+	}
+
+	/**
+	 * Initializes the content converters.
+	 */
+	private void initializeContentConverters() {
+		contentConverters.add(new StringHttpContentConverter());
+
+		if (JsonBuilder.isJacksonPresent()) {
+			contentConverters.add(new JacksonJsonHttpContentConverter<>());
+		}
 	}
 
 	/**
@@ -100,7 +122,7 @@ public class HttpExchangeClient implements ExchangeClient {
 	 * @see ExchangeClient#exchange(ApiRequest)
 	 */
 	@Override
-	public <T> ApiResponse<T> exchange(final ApiRequest apiRequest) {
+	public <T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest) {
 		HttpRequest httpRequest = buildRequest(apiRequest);
 		HttpResponse<String> httpResponse = ThrowingSupplier
 				.unchecked(() -> httpClient.send(httpRequest, BodyHandlers.ofString()))
@@ -114,18 +136,19 @@ public class HttpExchangeClient implements ExchangeClient {
 	 * @param apiRequest API request
 	 * @return HTTP request object
 	 */
-	protected HttpRequest buildRequest(final ApiRequest apiRequest) {
+	protected <T> HttpRequest buildRequest(final ApiRequest<T> apiRequest) {
 		HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder()
 				.uri(apiRequest.getUri());
 
 		HttpMethod httpMethpd = apiRequest.getHttpMethod();
+		String stringBody = Strings.safeToString(apiRequest.getBody());
 		switch (httpMethpd) {
 			case GET -> httpRequestBuilder.GET();
-			case PUT -> httpRequestBuilder.PUT(BodyPublishers.ofString(apiRequest.getBody()));
-			case POST -> httpRequestBuilder.POST(BodyPublishers.ofString(apiRequest.getBody()));
+			case PUT -> httpRequestBuilder.PUT(BodyPublishers.ofString(stringBody));
+			case POST -> httpRequestBuilder.POST(BodyPublishers.ofString(stringBody));
 			case DELETE -> httpRequestBuilder.DELETE();
 			case HEAD -> httpRequestBuilder.HEAD();
-			case PATCH -> httpRequestBuilder.method(httpMethpd.value(), BodyPublishers.ofString(apiRequest.getBody()));
+			case PATCH -> httpRequestBuilder.method(httpMethpd.value(), BodyPublishers.ofString(stringBody));
 			case OPTIONS -> httpRequestBuilder.method(httpMethpd.value(), BodyPublishers.noBody());
 			default -> throw new UnsupportedOperationException("HTTP method " + httpMethpd + " is not supported!");
 		}
@@ -135,7 +158,8 @@ public class HttpExchangeClient implements ExchangeClient {
 	}
 
 	/**
-	 * Builds the {@link ApiResponse} based on the {@link HttpResponse} object.
+	 * Builds the {@link ApiResponse} based on the {@link HttpResponse} object. TODO: implement response handling for non
+	 * 2xx responses and other than JSON media type
 	 *
 	 * @param <T> body return type
 	 *
@@ -143,19 +167,39 @@ public class HttpExchangeClient implements ExchangeClient {
 	 * @param httpResponse HTTP response object
 	 * @return API response object
 	 */
-	protected <T> ApiResponse<T> buildResponse(final ApiRequest apiRequest, final HttpResponse<String> httpResponse) {
+	protected <T, U> ApiResponse<U> buildResponse(final ApiRequest<T> apiRequest, final HttpResponse<String> httpResponse) {
 		HttpStatus httpStatus = HttpStatus.from(httpResponse.statusCode());
 		if (httpStatus.isError()) {
 			throw new HttpException(httpStatus, httpResponse.body());
 		}
-		// TODO: implement response handling for non 2xx responses and other than JSON media type
-		T body = apiRequest.hasGenericType()
-				? JsonBuilder.fromJson(httpResponse.body(), apiRequest.getGenericResponseType())
-				: JsonBuilder.fromJson(httpResponse.body(), apiRequest.getClassResponseType());
-
 		Map<String, List<String>> headers = Nullables.apply(httpResponse.headers(), HttpHeaders::map);
-
+		U body = getConvertedBody(apiRequest, httpResponse);
 		return ApiResponse.of(body, httpStatus, headers);
+	}
+
+	/**
+	 * Tries to convert the HTTP response using one of the configured converters. If no converter can convert the response
+	 * then {@code null} is returned.
+	 *
+	 * @param <T> request body type
+	 *
+	 * @param apiRequest API request object
+	 * @param httpResponse HTTP response object
+	 * @return
+	 */
+	private <T, U> U getConvertedBody(final ApiRequest<T> apiRequest, final HttpResponse<String> httpResponse) {
+		for (ContentConverter<?> contentConverter : getContentConverters()) {
+			if (contentConverter.canConvertFrom(apiRequest, httpResponse.headers())) {
+				ContentConverter<U> typeConverter = JavaObjects.cast(contentConverter);
+				return apiRequest.hasGenericType()
+						? typeConverter.from(httpResponse.body(), apiRequest.getGenericResponseType())
+						: typeConverter.from(httpResponse.body(), apiRequest.getClassResponseType());
+			}
+		}
+		throw new UnsupportedOperationException("No content converter found to convert response to: " +
+				(apiRequest.hasGenericType()
+						? apiRequest.getClassResponseType().getCanonicalName()
+						: apiRequest.getGenericResponseType().getType().getTypeName()));
 	}
 
 	/**
@@ -183,6 +227,15 @@ public class HttpExchangeClient implements ExchangeClient {
 	 */
 	public ClientProperties getClientProperties() {
 		return clientProperties;
+	}
+
+	/**
+	 * Returns the content converters.
+	 *
+	 * @return the content converters
+	 */
+	public List<ContentConverter<?>> getContentConverters() { // NOSONAR the converters can have any generic type
+		return contentConverters;
 	}
 
 }

@@ -65,7 +65,7 @@ public class HttpProperties {
 		/**
 		 * The HTTP version as a string (e.g., "HTTP/1.1" or "HTTP/2").
 		 */
-		private String version = HttpRequests.toProtocolString(DEFAULT_HTTP_VERSION);
+		private String version = HttpMessages.toProtocolString(DEFAULT_HTTP_VERSION);
 
 		/**
 		 * Returns a JSON representation of this {@link Request} object.
@@ -94,7 +94,7 @@ public class HttpProperties {
 		 */
 		public Version getHttpVersion() {
 			try {
-				return HttpRequests.parseJavaNetHttpVersion(version);
+				return HttpMessages.parseJavaNetHttpVersion(version);
 			} catch (Exception e) {
 				return DEFAULT_HTTP_VERSION;
 			}

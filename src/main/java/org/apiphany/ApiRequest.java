@@ -3,14 +3,12 @@ package org.apiphany;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apiphany.auth.AuthenticationType;
 import org.apiphany.http.HttpMethod;
-import org.apiphany.http.RequestParameters;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.retry.Retry;
 import org.apiphany.meters.BasicMeters;
@@ -22,9 +20,11 @@ import org.morphix.reflection.GenericClass;
  * response type, and additional configurations like retry logic and metrics tracking. This class also supports URL
  * encoding, streaming, and custom character sets.
  *
+ * @param <T> the request body type
+ *
  * @author Radu Sebastian LAZIN
  */
-public class ApiRequest {
+public class ApiRequest<T> extends ApiMessage<T> {
 
 	/**
 	 * The HTTP method to be used for the request (e.g., GET, POST, PUT, etc.).
@@ -42,11 +42,6 @@ public class ApiRequest {
 	protected boolean urlEncoded;
 
 	/**
-	 * The body of the request, which can be any object.
-	 */
-	protected Object body;
-
-	/**
 	 * The expected response type as a class.
 	 */
 	protected Class<?> classResponseType;
@@ -60,11 +55,6 @@ public class ApiRequest {
 	 * A map of query parameters to be included in the request.
 	 */
 	protected Map<String, String> params;
-
-	/**
-	 * A map of headers to be included in the request. Each header can have multiple values.
-	 */
-	protected Map<String, List<String>> headers = new HashMap<>();
 
 	/**
 	 * The character set to be used for the request. Defaults to UTF-8.
@@ -85,6 +75,11 @@ public class ApiRequest {
 	 * Metrics tracking for the request, such as success/failure counts and latency.
 	 */
 	protected BasicMeters meters;
+
+	/**
+	 * The authentication type.
+	 */
+	protected AuthenticationType authenticationType;
 
 	/**
 	 * Compares this {@link ApiRequest} with another object for equality.
@@ -145,16 +140,6 @@ public class ApiRequest {
 	}
 
 	/**
-	 * Returns the body of the request.
-	 *
-	 * @param <T> the type of the body.
-	 * @return the request body.
-	 */
-	public <T> T getBody() {
-		return JavaObjects.cast(body);
-	}
-
-	/**
 	 * Returns the query parameters for the request.
 	 *
 	 * @return a map of query parameters.
@@ -164,21 +149,13 @@ public class ApiRequest {
 	}
 
 	/**
-	 * Returns the headers for the request.
-	 *
-	 * @return a map of headers.
-	 */
-	public Map<String, List<String>> getHeaders() {
-		return headers;
-	}
-
-	/**
 	 * Returns the generic response type for the request.
 	 *
-	 * @param <T> the type of the response.
+	 * @param <U> the return type
+	 *
 	 * @return the generic response type.
 	 */
-	public <T> GenericClass<T> getGenericResponseType() {
+	public <U> GenericClass<U> getGenericResponseType() {
 		return JavaObjects.cast(genericResponseType);
 	}
 
@@ -194,10 +171,11 @@ public class ApiRequest {
 	/**
 	 * Returns the class response type for the request.
 	 *
-	 * @param <T> the type of the response.
+	 * @param <U> the return type
+	 *
 	 * @return the class response type.
 	 */
-	public <T> Class<T> getClassResponseType() {
+	public <U> Class<U> getClassResponseType() {
 		return JavaObjects.cast(classResponseType);
 	}
 
@@ -245,4 +223,14 @@ public class ApiRequest {
 	public Charset getCharset() {
 		return charset;
 	}
+
+	/**
+	 * Returns the authentication type.
+	 *
+	 * @return the authentication type
+	 */
+	public AuthenticationType getAuthenticationType() {
+		return authenticationType;
+	}
+
 }

@@ -57,12 +57,9 @@
 		<project.info.reports.plugin.version>3.7.0</project.info.reports.plugin.version>
 		<central.publishing.plugin.version>0.6.0</central.publishing.plugin.version>
 		<apiphanyArgLine>
-			-Dtojson.indent-output=true
+			-Djson-builder.to-json.indent-output=true
 			-XX:+EnableDynamicAgentLoading
 			-Xshare:off
-			--add-opens java.base/java.util=ALL-UNNAMED
-			--add-opens java.base/java.lang=ALL-UNNAMED
-			--add-opens java.base/java.lang.invoke=ALL-UNNAMED
 		</apiphanyArgLine>
 	</properties>
 
@@ -72,7 +69,7 @@
 		<dependency>
 			<groupId>io.github.raduking</groupId>
 			<artifactId>morphix-all</artifactId>
-			<version>1.0.2</version>
+			<version>1.0.3</version>
 		</dependency>
 
 		<!-- Logging -->
