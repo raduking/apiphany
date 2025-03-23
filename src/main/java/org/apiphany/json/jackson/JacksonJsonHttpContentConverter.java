@@ -3,12 +3,13 @@ package org.apiphany.json.jackson;
 import org.apiphany.ApiMessage;
 import org.apiphany.client.ContentConverter;
 import org.apiphany.client.http.HttpContentConverter;
+import org.apiphany.header.HeaderValuesChain;
 import org.apiphany.http.ContentType;
 import org.morphix.reflection.GenericClass;
 
 /**
  * A {@link ContentConverter} implementation that converts JSON content to objects of type {@code T}. This converter
- * uses the {@link JacksonJsonBuilder} to deserialize JSON strings into Java objects. It supports content with the
+ * uses the {@link JacksonJsonBuilder} to de-serialize JSON strings into Java objects. It supports content with the
  * {@code application/json} content type.
  *
  * @param <T> the type of the object to which the JSON content will be converted.
@@ -28,8 +29,8 @@ public class JacksonJsonHttpContentConverter<T> implements HttpContentConverter<
 	 * Converts the given object to an instance of the specified class. This method supports conversion from JSON strings.
 	 *
 	 * @param obj the object to convert, which must be a JSON string.
-	 * @param dstClass the target class to which the JSON content will be deserialized.
-	 * @return the deserialized object of type {@code T}.
+	 * @param dstClass the target class to which the JSON content will be de-serialized.
+	 * @return the de-serialized object of type {@code T}.
 	 * @throws UnsupportedOperationException if the input object is not a JSON string.
 	 */
 	@Override
@@ -45,8 +46,8 @@ public class JacksonJsonHttpContentConverter<T> implements HttpContentConverter<
 	 * strings.
 	 *
 	 * @param obj the object to convert, which must be a JSON string.
-	 * @param genericDstClass the target generic class to which the JSON content will be deserialized.
-	 * @return the deserialized object of type {@code T}.
+	 * @param genericDstClass the target generic class to which the JSON content will be de-serialized.
+	 * @return the de-serialized object of type {@code T}.
 	 * @throws UnsupportedOperationException if the input object is not a JSON string.
 	 */
 	@Override
@@ -68,8 +69,8 @@ public class JacksonJsonHttpContentConverter<T> implements HttpContentConverter<
 	 * @return true if the content type is {@code application/json}, false otherwise.
 	 */
 	@Override
-	public <U, V> boolean canConvertFrom(final ApiMessage<U> message, final V headers) {
-		for (String contentType : getContentTypes(headers)) {
+	public <U, V> boolean isConvertible(final ApiMessage<U> message, final V headers, final HeaderValuesChain headerValuesChain) {
+		for (String contentType : getContentTypes(headers, headerValuesChain)) {
 			if (contentType.contains(ContentType.APPLICATION_JSON.getValue())) {
 				return true;
 			}

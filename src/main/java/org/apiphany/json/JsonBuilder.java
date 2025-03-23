@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.apiphany.json.jackson.JacksonJsonBuilder;
 import org.apiphany.lang.Strings;
 import org.morphix.convert.Converter;
 import org.morphix.reflection.Constructors;
@@ -39,7 +40,6 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	protected static final String ERROR_JSON_LIBRARY_NOT_FOUND = "No JSON library found in the class path (like Jackson or Gson)";
 
 	protected static final String JACKSON_OBJECT_MAPPER_CLASS_NAME = "com.fasterxml.jackson.databind.ObjectMapper";
-	protected static final String JACKSON_JSON_BUILDER_CLASS_NAME = "org.apiphany.json.jackson.JacksonJsonBuilder";
 
 	/**
 	 * Singleton instance holder.
@@ -65,8 +65,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 		 */
 		private static JsonBuilder initializeInstance() {
 			if (JACKSON_PRESENT) {
-				Class<? extends JsonBuilder> jacksonJsonBuilderClass = Reflection.getClass(JACKSON_JSON_BUILDER_CLASS_NAME);
-				return Constructors.IgnoreAccess.newInstance(jacksonJsonBuilderClass);
+				return Constructors.IgnoreAccess.newInstance(JacksonJsonBuilder.class);
 			}
 			LOGGER.warn("{}, JsonBuilder.toJson will use the objects toString method!", ERROR_JSON_LIBRARY_NOT_FOUND);
 			return new JsonBuilder();
@@ -93,8 +92,8 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 */
 	protected JsonBuilder() {
 		this.indentOutput = isPropertyTrue(PROPERTY_INDENT_OUTPUT);
+		computeLineSeparator(indentOutput);
 		this.debugString = isPropertyTrue(PROPERTY_DEBUG_STRING);
-		this.lineSeparator = indentOutput ? Strings.EOL : "";
 	}
 
 	/**
@@ -219,6 +218,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 */
 	public void indentOutput(final boolean enable) {
 		this.indentOutput = enable;
+		computeLineSeparator(enable);
 	}
 
 	/**
@@ -246,6 +246,15 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 */
 	public String eol() {
 		return lineSeparator;
+	}
+
+	/**
+	 * Computes the line separator based on indent output setting.
+	 *
+	 * @param indentOutput indent output flag
+	 */
+	private void computeLineSeparator(final boolean indentOutput) {
+		this.lineSeparator = indentOutput ? Strings.EOL : "";
 	}
 
 	/**

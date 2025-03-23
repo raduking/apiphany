@@ -42,7 +42,9 @@ public interface ExchangeClient {
 	 *
 	 * @return the authentication type
 	 */
-	AuthenticationType getType();
+	default AuthenticationType getAuthenticationType() {
+		return AuthenticationType.NO_AUTHENTICATION;
+	}
 
 	/**
 	 * Returns the client name.

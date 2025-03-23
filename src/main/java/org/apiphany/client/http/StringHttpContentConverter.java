@@ -2,6 +2,7 @@ package org.apiphany.client.http;
 
 import org.apiphany.ApiMessage;
 import org.apiphany.client.ContentConverter;
+import org.apiphany.header.HeaderValuesChain;
 import org.apiphany.http.ContentType;
 import org.apiphany.lang.Strings;
 import org.morphix.reflection.GenericClass;
@@ -59,12 +60,13 @@ public class StringHttpContentConverter implements HttpContentConverter<String> 
 	 * @return true if the content type is {@code text/plain}, false otherwise.
 	 */
 	@Override
-	public <U, V> boolean canConvertFrom(final ApiMessage<U> message, final V headers) {
-		for (String contentType : getContentTypes(headers)) {
+	public <U, V> boolean isConvertible(final ApiMessage<U> message, final V headers, final HeaderValuesChain headerValuesChain) {
+		for (String contentType : getContentTypes(headers, headerValuesChain)) {
 			if (contentType.contains(ContentType.TEXT_PLAIN.getValue())) {
 				return true;
 			}
 		}
 		return false;
 	}
+
 }

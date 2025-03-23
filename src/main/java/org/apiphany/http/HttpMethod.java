@@ -2,6 +2,7 @@ package org.apiphany.http;
 
 import java.util.Map;
 
+import org.apiphany.RequestMethod;
 import org.morphix.lang.Enums;
 
 /**
@@ -10,7 +11,7 @@ import org.morphix.lang.Enums;
  *
  * @author Radu Sebastian LAZIN
  */
-public enum HttpMethod {
+public enum HttpMethod implements RequestMethod {
 
 	/**
 	 * The HTTP method {@code GET}.
@@ -92,6 +93,7 @@ public enum HttpMethod {
 	 *
 	 * @return the string value
 	 */
+	@Override
 	public String value() {
 		return value;
 	}

@@ -2,6 +2,7 @@ package org.apiphany.http;
 
 import java.util.Map;
 
+import org.apiphany.Status;
 import org.morphix.lang.Enums;
 
 /**
@@ -15,7 +16,7 @@ import org.morphix.lang.Enums;
  *
  * @author Radu Sebastian LAZIN
  */
-public enum HttpStatus {
+public enum HttpStatus implements Status {
 
 	/**
 	 * {@code 100 Continue}.
@@ -489,9 +490,9 @@ public enum HttpStatus {
 	/**
 	 * Constructs an {@link HttpStatus} with the specified numeric value, type, and message.
 	 *
-	 * @param value the numeric value of the status code.
-	 * @param type the type of the status code.
-	 * @param message the human-readable message associated with the status code.
+	 * @param value the numeric value of the status code
+	 * @param type the type of the status code
+	 * @param message the human-readable message associated with the status code
 	 */
 	HttpStatus(final int value, final Type type, final String message) {
 		this.value = value;
@@ -502,16 +503,26 @@ public enum HttpStatus {
 	/**
 	 * Returns the numeric value of this status code.
 	 *
-	 * @return the numeric value of this status code.
+	 * @return the numeric value of this status code
 	 */
 	public int value() {
 		return this.value;
 	}
 
 	/**
+	 * Alias for {@link #value}.
+	 *
+	 * @return  the numeric value of this status code
+	 */
+	@Override
+	public int getCode() {
+		return 0;
+	}
+
+	/**
 	 * Returns the HTTP status type of this status code.
 	 *
-	 * @return the HTTP status type.
+	 * @return the HTTP status type
 	 */
 	public Type type() {
 		return this.type;
@@ -520,7 +531,7 @@ public enum HttpStatus {
 	/**
 	 * Returns the message associated with this status code.
 	 *
-	 * @return the message associated with this status code.
+	 * @return the message associated with this status code
 	 */
 	public String getMessage() {
 		return this.message;
@@ -529,8 +540,8 @@ public enum HttpStatus {
 	/**
 	 * Checks if this status code is of the specified type.
 	 *
-	 * @param type the type to check against.
-	 * @return true if this status code is of the specified type, false otherwise.
+	 * @param type the type to check against
+	 * @return true if this status code is of the specified type, false otherwise
 	 */
 	public boolean isType(final Type type) {
 		return type == type();
@@ -539,7 +550,7 @@ public enum HttpStatus {
 	/**
 	 * Checks if this status code is in the 1xx informational range.
 	 *
-	 * @return true if this status code is in the 1xx range, false otherwise.
+	 * @return true if this status code is in the 1xx range, false otherwise
 	 */
 	public boolean is1xxInformational() {
 		return isType(Type.INFORMATIONAL);
@@ -548,7 +559,7 @@ public enum HttpStatus {
 	/**
 	 * Checks if this status code is in the 2xx successful range.
 	 *
-	 * @return true if this status code is in the 2xx range, false otherwise.
+	 * @return true if this status code is in the 2xx range, false otherwise
 	 */
 	public boolean is2xxSuccessful() {
 		return isType(Type.SUCCESSFUL);
@@ -557,7 +568,7 @@ public enum HttpStatus {
 	/**
 	 * Checks if this status code is in the 3xx redirection range.
 	 *
-	 * @return true if this status code is in the 3xx range, false otherwise.
+	 * @return true if this status code is in the 3xx range, false otherwise
 	 */
 	public boolean is3xxRedirection() {
 		return isType(Type.REDIRECTION);
@@ -566,7 +577,7 @@ public enum HttpStatus {
 	/**
 	 * Checks if this status code is in the 4xx client error range.
 	 *
-	 * @return true if this status code is in the 4xx range, false otherwise.
+	 * @return true if this status code is in the 4xx range, false otherwise
 	 */
 	public boolean is4xxClientError() {
 		return isType(Type.CLIENT_ERROR);
@@ -575,17 +586,28 @@ public enum HttpStatus {
 	/**
 	 * Checks if this status code is in the 5xx server error range.
 	 *
-	 * @return true if this status code is in the 5xx range, false otherwise.
+	 * @return true if this status code is in the 5xx range, false otherwise
 	 */
 	public boolean is5xxServerError() {
 		return isType(Type.SERVER_ERROR);
 	}
 
 	/**
+	 * Checks if this status code represents an error (2xx).
+	 *
+	 * @return true if this status code represents a success, false otherwise
+	 */
+	@Override
+	public boolean isSuccess() {
+		return is2xxSuccessful();
+	}
+
+	/**
 	 * Checks if this status code represents an error (4xx or 5xx).
 	 *
-	 * @return true if this status code represents an error, false otherwise.
+	 * @return true if this status code represents an error, false otherwise
 	 */
+	@Override
 	public boolean isError() {
 		return is4xxClientError() || is5xxServerError();
 	}
@@ -593,7 +615,7 @@ public enum HttpStatus {
 	/**
 	 * Returns a string representation of this status code.
 	 *
-	 * @return a string representation of this status code.
+	 * @return a string representation of this status code
 	 */
 	@Override
 	public String toString() {
@@ -603,9 +625,9 @@ public enum HttpStatus {
 	/**
 	 * Returns the {@code HttpStatus} enum constant with the specified numeric value.
 	 *
-	 * @param statusCode the numeric value of the enum to be returned.
-	 * @return the enum constant with the specified numeric value.
-	 * @throws IllegalArgumentException if this enum has no constant for the specified numeric value.
+	 * @param statusCode the numeric value of the enum to be returned
+	 * @return the enum constant with the specified numeric value
+	 * @throws IllegalArgumentException if this enum has no constant for the specified numeric value
 	 */
 	public static HttpStatus from(final int statusCode) {
 		return Enums.from(statusCode, NAME_MAP, VALUES);
@@ -667,7 +689,7 @@ public enum HttpStatus {
 		/**
 		 * Returns the integer value of this status type. Ranges from 1 to 5.
 		 *
-		 * @return the integer value of this status type.
+		 * @return the integer value of this status type
 		 */
 		public int value() {
 			return value;
@@ -676,9 +698,9 @@ public enum HttpStatus {
 		/**
 		 * Returns the {@code Type} enum constant for the supplied status code.
 		 *
-		 * @param statusCode the HTTP status code (potentially non-standard).
-		 * @return the {@code Type} enum constant for the supplied status code.
-		 * @throws IllegalArgumentException if this enum has no corresponding constant.
+		 * @param statusCode the HTTP status code (potentially non-standard)
+		 * @return the {@code Type} enum constant for the supplied status code
+		 * @throws IllegalArgumentException if this enum has no corresponding constant
 		 */
 		public static Type from(final int statusCode) {
 			int typeCode = statusCode / 100;

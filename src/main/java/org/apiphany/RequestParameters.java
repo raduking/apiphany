@@ -14,6 +14,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apiphany.lang.collections.Lists;
+import org.morphix.reflection.Constructors;
 
 /**
  * Utility class for building and manipulating request parameters. This class provides methods for creating parameter
@@ -303,5 +304,12 @@ public class RequestParameters {
 			encodedParams.put(name, value);
 		});
 		return encodedParams;
+	}
+
+	/**
+	 * Hide constructor.
+	 */
+	private RequestParameters() {
+		throw Constructors.unsupportedOperationException();
 	}
 }
