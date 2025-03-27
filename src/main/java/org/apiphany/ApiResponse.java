@@ -14,6 +14,7 @@ import java.util.function.Supplier;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apiphany.client.ExchangeClient;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.collections.Lists;
 import org.morphix.lang.JavaObjects;
@@ -45,6 +46,11 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	private final Exception exception;
 
 	/**
+	 * The exchange client that generated this response.
+	 */
+	private final ExchangeClient exchangeClient;
+
+	/**
 	 * Hidden constructor, use {@code ApiResponse.of} factory methods to construct response objects.
 	 *
 	 * @param body response body
@@ -52,14 +58,16 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @param headers response headers
 	 * @param errorMessage response error message
 	 * @param exception response exception
+	 * @param exchangeClient the exchange client that returned this message
 	 */
 	private ApiResponse(final T body, final Status status, final Map<String, List<String>> headers,
-			final String errorMessage, final Exception exception) {
+			final String errorMessage, final Exception exception, ExchangeClient exchangeClient) {
 		this.body = body;
 		this.status = status;
 		this.headers = headers;
 		this.errorMessage = errorMessage;
 		this.exception = exception;
+		this.exchangeClient = exchangeClient;
 	}
 
 	/**
@@ -67,10 +75,11 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 *
 	 * @param exception response exception
 	 * @param errorMessagePrefix response error message prefix
+	 * @param exchangeClient the exchange client that returned this message
 	 */
-	private ApiResponse(final Exception e, final String errorMessagePrefix) {
+	private ApiResponse(final Exception e, final String errorMessagePrefix, ExchangeClient exchangeClient) {
 		this(null, null, Collections.emptyMap(),
-				Nullables.nonNullOrDefault(errorMessagePrefix, "") + e.getMessage(), e);
+				Nullables.nonNullOrDefault(errorMessagePrefix, "") + e.getMessage(), e, exchangeClient);
 	}
 
 	/**
@@ -306,10 +315,11 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @param body response body
 	 * @param status response status
 	 * @param headers headers
+	 * @param exchangeClient the exchange client that returned this message
 	 * @return API response object
 	 */
-	public static <T> ApiResponse<T> of(final T body, final Status status, final Map<String, List<String>> headers) {
-		return new ApiResponse<>(body, status, headers, null, null);
+	public static <T> ApiResponse<T> of(final T body, final Status status, final Map<String, List<String>> headers, ExchangeClient exchangeClient) {
+		return new ApiResponse<>(body, status, headers, null, null, exchangeClient);
 	}
 
 	/**
@@ -321,10 +331,12 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @param body response body
 	 * @param statusCode status code
 	 * @param statusCodeConverter function to convert status code to a {@link Status} object
+	 * @param exchangeClient the exchange client that returned this message
 	 * @return API response object
 	 */
-	public static <T, S extends Status> ApiResponse<T> of(final T body, final int statusCode, final IntFunction<S> statusCodeConverter) {
-		return of(body, statusCodeConverter.apply(statusCode));
+	public static <T, S extends Status> ApiResponse<T> of(final T body, final int statusCode, final IntFunction<S> statusCodeConverter,
+			ExchangeClient exchangeClient) {
+		return of(body, statusCodeConverter.apply(statusCode), exchangeClient);
 	}
 
 	/**
@@ -334,10 +346,11 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 *
 	 * @param body response body
 	 * @param status response status
+	 * @param exchangeClient the exchange client that returned this message
 	 * @return API response object
 	 */
-	public static <T> ApiResponse<T> of(final T body, final Status status) {
-		return new ApiResponse<>(body, status, Collections.emptyMap(), null, null);
+	public static <T> ApiResponse<T> of(final T body, final Status status, ExchangeClient exchangeClient) {
+		return new ApiResponse<>(body, status, Collections.emptyMap(), null, null, exchangeClient);
 	}
 
 	/**
@@ -346,11 +359,12 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @param <T> body type
 	 *
 	 * @param e exception
-	 * @param errorMessagePrefix error message prefix to be appended to the exception message.
+	 * @param errorMessagePrefix error message prefix to be appended to the exception message
+	 * @param exchangeClient the exchange client that returned this message
 	 * @return API response object
 	 */
-	public static <T> ApiResponse<T> of(final Exception e, final String errorMessagePrefix) {
-		return new ApiResponse<>(e, errorMessagePrefix);
+	public static <T> ApiResponse<T> of(final Exception e, final String errorMessagePrefix, ExchangeClient exchangeClient) {
+		return new ApiResponse<>(e, errorMessagePrefix, exchangeClient);
 	}
 
 	/**
@@ -359,10 +373,11 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @param <T> body type
 	 *
 	 * @param e exception
+	 * @param exchangeClient the exchange client that returned this message
 	 * @return API response object
 	 */
-	public static <T> ApiResponse<T> of(final Exception e) {
-		return of(e, (String) null);
+	public static <T> ApiResponse<T> of(final Exception e, ExchangeClient exchangeClient) {
+		return of(e, (String) null, exchangeClient);
 	}
 
 	/**
@@ -385,6 +400,8 @@ public class ApiResponse<T> extends ApiMessage<T> {
 
 	/**
 	 * Returns the status.
+	 *
+	 * @param <S> status type
 	 *
 	 * @return the status
 	 */
@@ -418,6 +435,17 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 */
 	public boolean isSuccessful() {
 		return null != status && status.isSuccess();
+	}
+
+	/**
+	 * @see #getHeadersAsString()
+	 */
+	@Override
+	public String getHeadersAsString() {
+		if (null != exchangeClient) {
+			return exchangeClient.getHeadersAsString(this);
+		}
+		return super.getHeadersAsString();
 	}
 
 	/**

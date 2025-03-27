@@ -56,7 +56,7 @@ class ApiClientTest {
 		doReturn(AuthenticationType.OAUTH2_TOKEN).when(exchangeClient).getAuthenticationType();
 
 		TestDto expected = TestDto.of(ID1, COUNT1);
-		ApiResponse<TestDto> response = ApiResponse.of(expected, HTTP_STATUS_OK, HttpStatus::from);
+		ApiResponse<TestDto> response = ApiResponse.of(expected, HTTP_STATUS_OK, HttpStatus::from, exchangeClient);
 		doReturn(response).when(exchangeClient).exchange(any(ApiRequest.class));
 
 		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
@@ -75,7 +75,7 @@ class ApiClientTest {
 	void shouldReturnEmptyIfCallExchangeClientWithProvidedParametersReturnsNull() {
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2_TOKEN).when(exchangeClient).getAuthenticationType();
-		ApiResponse<TestDto> response = ApiResponse.of(null, HTTP_STATUS_BAD_REQUEST, HttpStatus::from);
+		ApiResponse<TestDto> response = ApiResponse.of(null, HTTP_STATUS_BAD_REQUEST, HttpStatus::from, exchangeClient);
 		doReturn(response).when(exchangeClient).exchange(any(ApiRequest.class));
 
 		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
@@ -95,13 +95,13 @@ class ApiClientTest {
 		ExchangeClient exchangeClient1 = mock(ExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2_TOKEN).when(exchangeClient1).getAuthenticationType();
 		TestDto expected1 = TestDto.of(ID1, COUNT1);
-		ApiResponse<TestDto> response1 = ApiResponse.of(expected1, HTTP_STATUS_OK, HttpStatus::from);
+		ApiResponse<TestDto> response1 = ApiResponse.of(expected1, HTTP_STATUS_OK, HttpStatus::from, exchangeClient1);
 		doReturn(response1).when(exchangeClient1).exchange(any(ApiRequest.class));
 
 		ExchangeClient exchangeClient2 = mock(ExchangeClient.class);
 		doReturn(AuthenticationType.SSL_CERTIFICATE).when(exchangeClient2).getAuthenticationType();
 		TestDto expected2 = TestDto.of(ID2, COUNT2);
-		ApiResponse<TestDto> response2 = ApiResponse.of(expected2, HTTP_STATUS_OK, HttpStatus::from);
+		ApiResponse<TestDto> response2 = ApiResponse.of(expected2, HTTP_STATUS_OK, HttpStatus::from, exchangeClient2);
 		doReturn(response2).when(exchangeClient2).exchange(any(ApiRequest.class));
 
 		ApiClient api = ApiClient.of(BASE_URL, List.of(exchangeClient1, exchangeClient2));
@@ -129,12 +129,13 @@ class ApiClientTest {
 		doReturn(AuthenticationType.OAUTH2_TOKEN).when(exchangeClient).getAuthenticationType();
 
 		TestDto expected = TestDto.of(ID1, COUNT1);
-		ApiResponse<TestDto> response = ApiResponse.of(expected, HttpStatus.OK);
+		ApiResponse<TestDto> response = ApiResponse.of(expected, HttpStatus.OK, exchangeClient);
 
 		ApiClient api = spy(ApiClient.of(BASE_URL, exchangeClient));
 		ApiClientFluentAdapter adapter = ApiClientFluentAdapter.of(api).authenticationType(AuthenticationType.OAUTH2_TOKEN);
 		doReturn(adapter).when(api).client();
 		doReturn(response).when(exchangeClient).exchange(adapter);
+		doReturn(HttpMethod.GET).when(exchangeClient).get();
 
 		TestDto result = api.client()
 				.get()
@@ -323,13 +324,13 @@ class ApiClientTest {
 		ExchangeClient exchangeClient1 = mock(ExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2_TOKEN).when(exchangeClient1).getAuthenticationType();
 		TestDto expected1 = TestDto.of(ID1, COUNT1);
-		ApiResponse<TestDto> response1 = ApiResponse.of(expected1, HttpStatus.OK);
+		ApiResponse<TestDto> response1 = ApiResponse.of(expected1, HttpStatus.OK, exchangeClient1);
 		doReturn(response1).when(exchangeClient1).exchange(any(ApiRequest.class));
 
 		ExchangeClient exchangeClient2 = mock(ExchangeClient.class);
 		doReturn(AuthenticationType.SSL_CERTIFICATE).when(exchangeClient2).getAuthenticationType();
 		TestDto expected2 = TestDto.of(ID2, COUNT2);
-		ApiResponse<TestDto> response2 = ApiResponse.of(expected2, HttpStatus.OK);
+		ApiResponse<TestDto> response2 = ApiResponse.of(expected2, HttpStatus.OK, exchangeClient2);
 		doReturn(response2).when(exchangeClient2).exchange(any(ApiRequest.class));
 
 		ApiClient api = ApiClient.of(BASE_URL, List.of(exchangeClient1, exchangeClient2));
@@ -355,13 +356,13 @@ class ApiClientTest {
 		ExchangeClient exchangeClient1 = mock(ExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2_TOKEN).when(exchangeClient1).getAuthenticationType();
 		TestDto expected1 = TestDto.of(ID1, COUNT1);
-		ApiResponse<TestDto> response1 = ApiResponse.of(expected1, HttpStatus.OK);
+		ApiResponse<TestDto> response1 = ApiResponse.of(expected1, HttpStatus.OK, exchangeClient1);
 		doReturn(response1).when(exchangeClient1).exchange(any(ApiRequest.class));
 
 		ExchangeClient exchangeClient2 = mock(ExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2_TOKEN).when(exchangeClient2).getAuthenticationType();
 		TestDto expected2 = TestDto.of(ID2, COUNT2);
-		ApiResponse<TestDto> response2 = ApiResponse.of(expected2, HttpStatus.OK);
+		ApiResponse<TestDto> response2 = ApiResponse.of(expected2, HttpStatus.OK, exchangeClient2);
 		doReturn(response2).when(exchangeClient2).exchange(any(ApiRequest.class));
 
 		Exception result = null;
@@ -413,7 +414,7 @@ class ApiClientTest {
 		doReturn(AuthenticationType.OAUTH2_TOKEN).when(exchangeClient).getAuthenticationType();
 
 		TestDto expected = TestDto.of(ID1, COUNT1);
-		ApiResponse<TestDto> response = ApiResponse.of(expected, HttpStatus.OK);
+		ApiResponse<TestDto> response = ApiResponse.of(expected, HttpStatus.OK, exchangeClient);
 		doReturn(response).when(exchangeClient).exchange(any(ApiRequest.class));
 
 		DummyApiClient api = spy(new DummyApiClient(BASE_URL, exchangeClient));

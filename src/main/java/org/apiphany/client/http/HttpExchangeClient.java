@@ -163,7 +163,7 @@ public class HttpExchangeClient extends AbstractHttpExchangeClient {
 		}
 		Map<String, List<String>> headers = Nullables.apply(httpResponse.headers(), HttpHeaders::map);
 		U body = convertBody(apiRequest, httpResponse.headers(), httpResponse.body());
-		return ApiResponse.of(body, httpStatus, headers);
+		return ApiResponse.of(body, httpStatus, headers, this);
 	}
 
 	/**

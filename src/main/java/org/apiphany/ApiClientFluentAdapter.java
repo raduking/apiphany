@@ -12,7 +12,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apiphany.RequestParameters.ParameterFunction;
 import org.apiphany.auth.AuthenticationType;
-import org.apiphany.http.HttpMethod;
+import org.apiphany.client.ExchangeClient;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.retry.Retry;
 import org.apiphany.meters.BasicMeters;
@@ -35,6 +35,11 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	private final ApiClient apiClient;
 
 	/**
+	 * The underlying Exchange client.
+	 */
+	private ExchangeClient exchangeClient;
+
+	/**
 	 * Constructs the object with the given API client.
 	 *
 	 * @param apiClient the underlying API client
@@ -54,13 +59,14 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	}
 
 	/**
-	 * Sets the authentication type.
+	 * Sets the authentication type and also internally the corresponding exchange client.
 	 *
 	 * @param authenticationType the authentication type to set
 	 * @return this
 	 */
 	public ApiClientFluentAdapter authenticationType(final AuthenticationType authenticationType) {
 		this.authenticationType = authenticationType;
+		this.exchangeClient = apiClient.getExchangeClient(authenticationType);
 		return this;
 	}
 
@@ -422,7 +428,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @return this
 	 */
 	public ApiClientFluentAdapter get() {
-		return requestMethod(HttpMethod.GET);
+		return requestMethod(exchangeClient.get());
 	}
 
 	/**
@@ -431,7 +437,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @return this
 	 */
 	public ApiClientFluentAdapter put() {
-		return requestMethod(HttpMethod.PUT);
+		return requestMethod(exchangeClient.put());
 	}
 
 	/**
@@ -440,7 +446,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @return this
 	 */
 	public ApiClientFluentAdapter post() {
-		return requestMethod(HttpMethod.POST);
+		return requestMethod(exchangeClient.post());
 	}
 
 	/**
@@ -449,7 +455,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @return this
 	 */
 	public ApiClientFluentAdapter delete() {
-		return requestMethod(HttpMethod.DELETE);
+		return requestMethod(exchangeClient.delete());
 	}
 
 	/**
@@ -458,7 +464,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @return this
 	 */
 	public ApiClientFluentAdapter patch() {
-		return requestMethod(HttpMethod.PATCH);
+		return requestMethod(exchangeClient.patch());
 	}
 
 	/**
@@ -467,7 +473,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @return this
 	 */
 	public ApiClientFluentAdapter head() {
-		return requestMethod(HttpMethod.HEAD);
+		return requestMethod(exchangeClient.head());
 	}
 
 	/**
@@ -476,7 +482,15 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @return this
 	 */
 	public ApiClientFluentAdapter trace() {
-		return requestMethod(HttpMethod.TRACE);
+		return requestMethod(exchangeClient.trace());
+	}
+
+	/**
+	 * @see #getHeadersAsString()
+	 */
+	@Override
+	public String getHeadersAsString() {
+		return exchangeClient.getHeadersAsString(this);
 	}
 
 	/**

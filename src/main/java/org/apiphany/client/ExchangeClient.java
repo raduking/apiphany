@@ -1,10 +1,19 @@
 package org.apiphany.client;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Predicate;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apiphany.ApiMessage;
+import org.apiphany.ApiMethod;
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
+import org.apiphany.RequestMethod;
 import org.apiphany.auth.AuthenticationType;
+import org.apiphany.header.HeaderValues;
+import org.apiphany.lang.collections.Maps;
 
 /**
  * Interface for exchange clients.
@@ -19,10 +28,10 @@ public interface ExchangeClient {
 	 * @param <T> request body type
 	 * @param <U> response body type
 	 *
-	 * @param request request properties
+	 * @param apiRequest request properties
 	 * @return response
 	 */
-	<T, U> ApiResponse<U> exchange(final ApiRequest<T> request);
+	<T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest);
 
 	/**
 	 * Basic rest template like async exchange method.
@@ -30,10 +39,10 @@ public interface ExchangeClient {
 	 * @param <T> request/response body type
 	 * @param <U> response body type
 	 *
-	 * @param request request properties
+	 * @param apiRequest request properties
 	 * @return response
 	 */
-	default <T, U> CompletableFuture<ApiResponse<U>> asyncExchange(final ApiRequest<T> request) {
+	default <T, U> CompletableFuture<ApiResponse<U>> asyncExchange(final ApiRequest<T> apiRequest) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -54,4 +63,101 @@ public interface ExchangeClient {
 	default String getName() {
 		return getClass().getName();
 	}
+
+	/**
+	 * Returns all headers as {@link String}. This method helps log the headers of a message and subsequent implementations
+	 * can override this method to show only the wanted headers.
+	 *
+	 * @param <T> the message body type
+	 *
+	 * @param apiMessage the API message containing the headers
+	 * @return string representation of the message headers
+	 */
+	default <T> String getHeadersAsString(ApiMessage<T> apiMessage) {
+		return Maps.safe(apiMessage.getHeaders()).entrySet().stream().map(entry -> {
+			StringBuilder sb = new StringBuilder();
+			sb.append(entry.getKey()).append(":");
+			List<String> value = entry.getValue();
+			if (getRedactedHeaderPredicate().test(entry.getKey())) {
+				value = Collections.singletonList(HeaderValues.REDACTED);
+			}
+			sb.append("\"");
+			sb.append(StringUtils.join(value, ", "));
+			sb.append("\"");
+			return sb.toString();
+		}).toList().toString();
+	}
+
+	/**
+	 * Returns a predicate for the headers that should be redacted. By default nothing is redacted.
+	 *
+	 * @return a predicate for the headers that should be redacted
+	 */
+	default Predicate<String> getRedactedHeaderPredicate() {
+		return s -> false;
+	}
+
+	/**
+	 * Returns the GET request method.
+	 *
+	 * @return the GET request method
+	 */
+	default RequestMethod get() {
+		return ApiMethod.UNDEFINED;
+	}
+
+	/**
+	 * Returns the PUT request method.
+	 *
+	 * @return the PUT request method
+	 */
+	default RequestMethod put() {
+		return ApiMethod.UNDEFINED;
+	}
+
+	/**
+	 * Returns the POST request method.
+	 *
+	 * @return the POST request method
+	 */
+	default RequestMethod post() {
+		return ApiMethod.UNDEFINED;
+	}
+
+	/**
+	 * Returns the DELETE request method.
+	 *
+	 * @return the DELETE request method
+	 */
+	default RequestMethod delete() {
+		return ApiMethod.UNDEFINED;
+	}
+
+	/**
+	 * Returns the PATCH request method.
+	 *
+	 * @return the PATCH request method
+	 */
+	default RequestMethod patch() {
+		return ApiMethod.UNDEFINED;
+	}
+
+	/**
+	 * Returns the HEAD request method.
+	 *
+	 * @return the HEAD request method
+	 */
+	default RequestMethod head() {
+		return ApiMethod.UNDEFINED;
+	}
+
+	/**
+	 * Returns the TRACE request method.
+	 *
+	 * @return the TRACE request method
+	 */
+	default RequestMethod trace() {
+		return ApiMethod.UNDEFINED;
+	}
+
 }

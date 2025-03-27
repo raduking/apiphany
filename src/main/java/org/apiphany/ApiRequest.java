@@ -115,6 +115,8 @@ public class ApiRequest<T> extends ApiMessage<T> {
 	/**
 	 * Returns the method for the request.
 	 *
+	 * @param <R> request method type
+	 *
 	 * @return the method
 	 */
 	public <R extends RequestMethod> R getMethod() {
