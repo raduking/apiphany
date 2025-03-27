@@ -6,26 +6,23 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
-import org.apiphany.auth.AuthenticationType;
 import org.apiphany.client.ClientProperties;
-import org.apiphany.client.ContentConverter;
 import org.apiphany.client.ExchangeClient;
+import org.apiphany.header.HeaderValuesChain;
+import org.apiphany.header.MapHeaderValues;
 import org.apiphany.http.HttpException;
+import org.apiphany.http.HttpHeaderValues;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpProperties;
 import org.apiphany.http.HttpStatus;
-import org.apiphany.json.JsonBuilder;
-import org.apiphany.json.jackson.JacksonJsonHttpContentConverter;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Maps;
-import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Nullables;
 import org.morphix.lang.function.ThrowingSupplier;
 
@@ -34,12 +31,7 @@ import org.morphix.lang.function.ThrowingSupplier;
  *
  * @author Radu Sebastian LAZIN
  */
-public class HttpExchangeClient implements ExchangeClient {
-
-	/**
-	 * Client properties.
-	 */
-	private final ClientProperties clientProperties;
+public class HttpExchangeClient extends AbstractHttpExchangeClient {
 
 	/**
 	 * Underlying Java net HTTP client.
@@ -47,27 +39,11 @@ public class HttpExchangeClient implements ExchangeClient {
 	private final HttpClient httpClient;
 
 	/**
-	 * Content converters.
-	 */
-	private final List<ContentConverter<?>> contentConverters = new LinkedList<>();
-
-	/**
 	 * Default constructor will initialize the client with default client properties. See the {@link ClientProperties} class
 	 * to see the defaults.
 	 */
 	public HttpExchangeClient() {
 		this(new ClientProperties());
-	}
-
-	/**
-	 * Initialize the client with the given client properties.
-	 *
-	 * @param clientProperties client properties
-	 */
-	public HttpExchangeClient(final ClientProperties clientProperties) {
-		this.clientProperties = clientProperties;
-		this.httpClient = createClient(this::customize);
-		initializeContentConverters();
 	}
 
 	/**
@@ -83,14 +59,14 @@ public class HttpExchangeClient implements ExchangeClient {
 	}
 
 	/**
-	 * Initializes the content converters.
+	 * Initialize the client with the given client properties.
+	 *
+	 * @param clientProperties client properties
 	 */
-	private void initializeContentConverters() {
-		contentConverters.add(new StringHttpContentConverter());
-
-		if (JsonBuilder.isJacksonPresent()) {
-			contentConverters.add(new JacksonJsonHttpContentConverter<>());
-		}
+	public HttpExchangeClient(final ClientProperties clientProperties) {
+		super(clientProperties);
+		this.httpClient = createClient(this::customize);
+		initializeHeaderValuesChain();
 	}
 
 	/**
@@ -111,11 +87,20 @@ public class HttpExchangeClient implements ExchangeClient {
 	 * @param httpClientBuilder HTTP client builder
 	 */
 	private void customize(final HttpClient.Builder httpClientBuilder) {
-		HttpProperties httpProperties = clientProperties.getCustomProperties(HttpProperties.class);
+		HttpProperties httpProperties = getClientProperties().getCustomProperties(HttpProperties.class);
 		HttpClient.Version version = Nullables.notNull(httpProperties)
 				.thenYield(props -> props.getRequest().getHttpVersion())
 				.orElse(() -> HttpProperties.Request.DEFAULT_HTTP_VERSION);
 		httpClientBuilder.version(version);
+	}
+
+	/**
+	 * Initializes the header values chain.
+	 */
+	private void initializeHeaderValuesChain() {
+		HeaderValuesChain headerValuesChain = getHeaderValuesChain();
+		headerValuesChain.add(new HttpHeaderValues());
+		headerValuesChain.add(new MapHeaderValues());
 	}
 
 	/**
@@ -133,6 +118,8 @@ public class HttpExchangeClient implements ExchangeClient {
 	/**
 	 * Builds the {@link HttpRequest} based on the given {@link ApiRequest}.
 	 *
+	 * @param <T> request body type
+	 *
 	 * @param apiRequest API request
 	 * @return HTTP request object
 	 */
@@ -140,7 +127,7 @@ public class HttpExchangeClient implements ExchangeClient {
 		HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder()
 				.uri(apiRequest.getUri());
 
-		HttpMethod httpMethpd = apiRequest.getHttpMethod();
+		HttpMethod httpMethpd = apiRequest.getMethod();
 		String stringBody = Strings.safeToString(apiRequest.getBody());
 		switch (httpMethpd) {
 			case GET -> httpRequestBuilder.GET();
@@ -158,10 +145,12 @@ public class HttpExchangeClient implements ExchangeClient {
 	}
 
 	/**
-	 * Builds the {@link ApiResponse} based on the {@link HttpResponse} object. TODO: implement response handling for non
-	 * 2xx responses and other than JSON media type
+	 * Builds the {@link ApiResponse} based on the {@link HttpResponse} object.
+	 * <p>
+	 * TODO: implement response handling for non 2xx responses and other than JSON media type
 	 *
-	 * @param <T> body return type
+	 * @param <T> request body type
+	 * @param <U> response body type
 	 *
 	 * @param apiRequest API request object
 	 * @param httpResponse HTTP response object
@@ -173,33 +162,8 @@ public class HttpExchangeClient implements ExchangeClient {
 			throw new HttpException(httpStatus, httpResponse.body());
 		}
 		Map<String, List<String>> headers = Nullables.apply(httpResponse.headers(), HttpHeaders::map);
-		U body = getConvertedBody(apiRequest, httpResponse);
+		U body = convertBody(apiRequest, httpResponse.headers(), httpResponse.body());
 		return ApiResponse.of(body, httpStatus, headers);
-	}
-
-	/**
-	 * Tries to convert the HTTP response using one of the configured converters. If no converter can convert the response
-	 * then {@code null} is returned.
-	 *
-	 * @param <T> request body type
-	 *
-	 * @param apiRequest API request object
-	 * @param httpResponse HTTP response object
-	 * @return
-	 */
-	private <T, U> U getConvertedBody(final ApiRequest<T> apiRequest, final HttpResponse<String> httpResponse) {
-		for (ContentConverter<?> contentConverter : getContentConverters()) {
-			if (contentConverter.canConvertFrom(apiRequest, httpResponse.headers())) {
-				ContentConverter<U> typeConverter = JavaObjects.cast(contentConverter);
-				return apiRequest.hasGenericType()
-						? typeConverter.from(httpResponse.body(), apiRequest.getGenericResponseType())
-						: typeConverter.from(httpResponse.body(), apiRequest.getClassResponseType());
-			}
-		}
-		throw new UnsupportedOperationException("No content converter found to convert response to: " +
-				(apiRequest.hasGenericType()
-						? apiRequest.getClassResponseType().getCanonicalName()
-						: apiRequest.getGenericResponseType().getType().getTypeName()));
 	}
 
 	/**
@@ -210,32 +174,6 @@ public class HttpExchangeClient implements ExchangeClient {
 	 */
 	protected void addHeaders(final HttpRequest.Builder httpRequestBuilder, final Map<String, List<String>> headers) {
 		Maps.safe(headers).forEach((k, v) -> v.forEach(h -> httpRequestBuilder.header(k, h)));
-	}
-
-	/**
-	 * @see ExchangeClient#getType()
-	 */
-	@Override
-	public AuthenticationType getType() {
-		return AuthenticationType.NO_AUTHENTICATION;
-	}
-
-	/**
-	 * Returns the client properties for this client.
-	 *
-	 * @return the client properties for this client
-	 */
-	public ClientProperties getClientProperties() {
-		return clientProperties;
-	}
-
-	/**
-	 * Returns the content converters.
-	 *
-	 * @return the content converters
-	 */
-	public List<ContentConverter<?>> getContentConverters() { // NOSONAR the converters can have any generic type
-		return contentConverters;
 	}
 
 }

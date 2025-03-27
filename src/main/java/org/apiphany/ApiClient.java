@@ -77,7 +77,7 @@ public class ApiClient {
 	/**
 	 * Exchange clients map based on authentication type.
 	 */
-	private final Map<AuthenticationType, ExchangeClient> authClientsMap = new ConcurrentHashMap<>();
+	private final Map<AuthenticationType, ExchangeClient> exchangeClientsMap = new ConcurrentHashMap<>();
 
 	/**
 	 * Constructor with exchange clients.
@@ -92,12 +92,12 @@ public class ApiClient {
 		this.baseUrl = baseUrl;
 
 		for (ExchangeClient exchangeClient : exchangeClients) {
-			AuthenticationType type = exchangeClient.getType();
-			if (this.authClientsMap.containsKey(type)) {
+			AuthenticationType authenticationType = exchangeClient.getAuthenticationType();
+			if (this.exchangeClientsMap.containsKey(authenticationType)) {
 				throw new IllegalStateException("Failed to instantiate [" + getClass() +
-						"]: More than one " + ExchangeClient.class + " with type " + type + " found.");
+						"]: More than one " + ExchangeClient.class + " with type " + authenticationType + " found.");
 			}
-			this.authClientsMap.put(type, exchangeClient);
+			this.exchangeClientsMap.put(authenticationType, exchangeClient);
 		}
 
 		initializeTypeObjects(this);
@@ -159,6 +159,7 @@ public class ApiClient {
 		GenericClass<?> typeObject = Fields.IgnoreAccess.get(null, typeObjectField);
 		if (typeObject.getType() instanceof TypeVariable) {
 			Type type = typeObjectField.getGenericType();
+			// we ignore static fields that are not parameterized
 			if (type instanceof ParameterizedType parameterizedType) {
 				Type actualTypeArgument = parameterizedType.getActualTypeArguments()[0];
 				Field typeField = Fields.getDeclaredFieldInHierarchy(GenericClass.class, "type");
@@ -192,12 +193,23 @@ public class ApiClient {
 	/**
 	 * Returns an {@link ApiClientFluentAdapter} for fluent syntax.
 	 *
+	 * @param exchangeClient exchange client
+	 * @return API client adapter
+	 */
+	public ApiClientFluentAdapter client(final ExchangeClient exchangeClient) {
+		return ApiClientFluentAdapter.of(this)
+				.authenticationType(exchangeClient.getAuthenticationType());
+	}
+
+	/**
+	 * Returns an {@link ApiClientFluentAdapter} for fluent syntax.
+	 *
 	 * @param authenticationType authentication type
 	 * @return API client adapter
 	 */
 	public ApiClientFluentAdapter client(final AuthenticationType authenticationType) {
-		return ApiClientFluentAdapter.of(this)
-				.authenticationType(authenticationType);
+		ExchangeClient exchangeClient = getExchangeClient(authenticationType);
+		return client(exchangeClient);
 	}
 
 	/**
@@ -206,14 +218,14 @@ public class ApiClient {
 	 * @return API client adapter
 	 */
 	public ApiClientFluentAdapter client() {
-		Set<AuthenticationType> exchangeClients = authClientsMap.keySet();
-		if (exchangeClients.isEmpty()) {
+		Set<AuthenticationType> authenticationTypes = exchangeClientsMap.keySet();
+		if (authenticationTypes.isEmpty()) {
 			throw new IllegalStateException("No ExchangeClient has been set before calling client()");
 		}
-		if (exchangeClients.size() > 1) {
+		if (authenticationTypes.size() > 1) {
 			throw new IllegalStateException("Client has multiple ExchangeClient objects please call client(AuthenticationType)");
 		}
-		return client(exchangeClients.iterator().next());
+		return client(authenticationTypes.iterator().next());
 	}
 
 	/**
@@ -258,10 +270,12 @@ public class ApiClient {
 	/**
 	 * Returns the active meters.
 	 *
+	 * @param <T> request body type
+	 *
 	 * @param apiRequest the API request object
 	 * @return the active meters
 	 */
-	private <T> BasicMeters getActiveMeters(final ApiRequest<T> apiRequest) {
+	protected <T> BasicMeters getActiveMeters(final ApiRequest<T> apiRequest) {
 		return isMetricsEnabled()
 				? Nullables.nonNullOrDefault(apiRequest.getMeters(), this::getMeters)
 				: BasicMeters.DEFAULT;
@@ -278,16 +292,6 @@ public class ApiClient {
 	public <T> CompletableFuture<ApiResponse<T>> asyncExchange(final ApiRequest<T> apiRequest) {
 		ExchangeClient exchangeClient = getExchangeClient(apiRequest.getAuthenticationType());
 		return exchangeClient.asyncExchange(apiRequest);
-	}
-
-	/**
-	 * Returns the exception message for the unsupported authentication types.
-	 *
-	 * @param authenticationType authentication type
-	 * @return the exception message for the unsupported authentication types
-	 */
-	private static String unsupportedMessage(final AuthenticationType authenticationType) {
-		return "Authentication type " + authenticationType + " is not supported.";
 	}
 
 	/**
@@ -311,12 +315,12 @@ public class ApiClient {
 	/**
 	 * Returns the exchange client by authentication type.
 	 *
-	 * @param authType authentication type
+	 * @param authenticationType authentication type
 	 * @return an exchange client
 	 */
-	protected ExchangeClient getExchangeClient(final AuthenticationType authType) {
-		return Nullables.nonNullOrDefault(authClientsMap.get(authType), () -> {
-			throw new UnsupportedOperationException(unsupportedMessage(authType));
+	protected ExchangeClient getExchangeClient(final AuthenticationType authenticationType) {
+		return Nullables.nonNullOrDefault(exchangeClientsMap.get(authenticationType), () -> {
+			throw new IllegalStateException("No ExchangeClient found for authentication type: " + authenticationType);
 		});
 	}
 

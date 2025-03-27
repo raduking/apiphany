@@ -6,22 +6,19 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apiphany.http.HttpStatus;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.collections.Lists;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Nullables;
 import org.morphix.reflection.Constructors;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Generic API response.
@@ -33,9 +30,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class ApiResponse<T> extends ApiMessage<T> {
 
 	/**
-	 * Response HTTP status.
+	 * Response status.
 	 */
-	private final HttpStatus status;
+	private final Status status;
 
 	/**
 	 * Response error message.
@@ -48,33 +45,31 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	private final Exception exception;
 
 	/**
-	 * Hidden constructor, use {@link ApiResponse#of(Object, int)} like methods to construct response objects.
+	 * Hidden constructor, use {@code ApiResponse.of} factory methods to construct response objects.
 	 *
 	 * @param body response body
-	 * @param statusCode response status code
+	 * @param status response status
 	 * @param headers response headers
 	 * @param errorMessage response error message
 	 * @param exception response exception
 	 */
-	private ApiResponse(final T body, final HttpStatus statusCode, final Map<String, List<String>> headers,
+	private ApiResponse(final T body, final Status status, final Map<String, List<String>> headers,
 			final String errorMessage, final Exception exception) {
 		this.body = body;
-		this.status = Objects.requireNonNull(statusCode);
+		this.status = status;
 		this.headers = headers;
 		this.errorMessage = errorMessage;
 		this.exception = exception;
 	}
 
 	/**
-	 * Hidden constructor, use {@link ApiResponse#of(Object, int)} like methods to construct response objects.
+	 * Hidden constructor, use {@code ApiResponse.of} factory methods to construct response objects.
 	 *
 	 * @param exception response exception
 	 * @param errorMessagePrefix response error message prefix
 	 */
 	private ApiResponse(final Exception e, final String errorMessagePrefix) {
-		// TODO: add Spring HttpStatusCode and HttpStatusCodeException and use e.getStatusCode() and e.getResponseBodyAsString()
-		// instead of e.getMessage(), also do not return BAD_REQUEST by default.
-		this(null, HttpStatus.BAD_REQUEST, Collections.emptyMap(),
+		this(null, null, Collections.emptyMap(),
 				Nullables.nonNullOrDefault(errorMessagePrefix, "") + e.getMessage(), e);
 	}
 
@@ -238,7 +233,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @return response body
 	 */
 	public static <U> U getBodyOrDefault(final ApiResponse<U> response, final Supplier<U> defaultBody) {
-		return response.is2xxSuccessful() ? response.getBody() : defaultBody.get();
+		return response.isSuccessful() ? response.getBody() : defaultBody.get();
 	}
 
 	/**
@@ -254,7 +249,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @return body part / field
 	 */
 	public static <T, U> U getFromBodyOrDefault(final ApiResponse<T> response, final Function<T, U> bodyConverter, final U defaultValue) {
-		return response.is2xxSuccessful() ? bodyConverter.apply(response.getBody()) : defaultValue;
+		return response.isSuccessful() ? bodyConverter.apply(response.getBody()) : defaultValue;
 	}
 
 	/**
@@ -270,7 +265,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @return body part / field
 	 */
 	public static <T, U> U getFromBodyOrDefault(final ApiResponse<T> response, final BiFunction<T, U, U> bodyConverter, final U defaultValue) {
-		return response.is2xxSuccessful() ? bodyConverter.apply(response.getBody(), defaultValue) : defaultValue;
+		return response.isSuccessful() ? bodyConverter.apply(response.getBody(), defaultValue) : defaultValue;
 	}
 
 	/**
@@ -309,11 +304,11 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @param <T> body type
 	 *
 	 * @param body response body
-	 * @param status HTTP status
+	 * @param status response status
 	 * @param headers headers
 	 * @return API response object
 	 */
-	public static <T> ApiResponse<T> of(final T body, final HttpStatus status, final Map<String, List<String>> headers) {
+	public static <T> ApiResponse<T> of(final T body, final Status status, final Map<String, List<String>> headers) {
 		return new ApiResponse<>(body, status, headers, null, null);
 	}
 
@@ -321,13 +316,15 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * Creates a new {@link ApiResponse} object.
 	 *
 	 * @param <T> body type
+	 * @param <S> status type
 	 *
 	 * @param body response body
-	 * @param statusCode HTTP status code
+	 * @param statusCode status code
+	 * @param statusCodeConverter function to convert status code to a {@link Status} object
 	 * @return API response object
 	 */
-	public static <T> ApiResponse<T> of(final T body, final int statusCode) {
-		return of(body, HttpStatus.from(statusCode));
+	public static <T, S extends Status> ApiResponse<T> of(final T body, final int statusCode, final IntFunction<S> statusCodeConverter) {
+		return of(body, statusCodeConverter.apply(statusCode));
 	}
 
 	/**
@@ -336,11 +333,11 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @param <T> body type
 	 *
 	 * @param body response body
-	 * @param httpStatus HTTP status
+	 * @param status response status
 	 * @return API response object
 	 */
-	public static <T> ApiResponse<T> of(final T body, final HttpStatus httpStatus) {
-		return new ApiResponse<>(body, httpStatus, Collections.emptyMap(), null, null);
+	public static <T> ApiResponse<T> of(final T body, final Status status) {
+		return new ApiResponse<>(body, status, Collections.emptyMap(), null, null);
 	}
 
 	/**
@@ -378,21 +375,21 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	}
 
 	/**
-	 * Returns the HTTP status code.
+	 * Returns the status code.
 	 *
-	 * @return the HTTP status code
+	 * @return the status code
 	 */
 	public int getStatusCode() {
-		return getStatus().value();
+		return null != status ? status.getCode() : Status.UNKNOWN;
 	}
 
 	/**
-	 * Returns the HTTP status.
+	 * Returns the status.
 	 *
-	 * @return the HTTP status
+	 * @return the status
 	 */
-	public HttpStatus getStatus() {
-		return status;
+	public <S extends Status> S getStatus() {
+		return JavaObjects.cast(status);
 	}
 
 	/**
@@ -414,14 +411,13 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	}
 
 	/**
-	 * Returns true if the {@link #getStatus()} is 2xx successful, false otherwise. It is a shortcut method which also
-	 * validates against null value for status code.
+	 * Returns true if the {@link #getStatus()} is successful, false otherwise. It is a shortcut method which also validates
+	 * against null value for status code.
 	 *
 	 * @return true if the {@link #getStatus()} is 2xx successful, false otherwise.
 	 */
-	@JsonIgnore
-	public boolean is2xxSuccessful() {
-		return getStatus().is2xxSuccessful();
+	public boolean isSuccessful() {
+		return null != status && status.isSuccess();
 	}
 
 	/**

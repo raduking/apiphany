@@ -114,11 +114,11 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	/**
 	 * Sets the HTTP method.
 	 *
-	 * @param httpMethod the HTTP method to set
+	 * @param requestMethod the method to set
 	 * @return this
 	 */
-	public ApiClientFluentAdapter httpMethod(final HttpMethod httpMethod) {
-		this.httpMethod = httpMethod;
+	public ApiClientFluentAdapter requestMethod(final RequestMethod requestMethod) {
+		this.method = requestMethod;
 		return this;
 	}
 
@@ -422,7 +422,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @return this
 	 */
 	public ApiClientFluentAdapter get() {
-		return httpMethod(HttpMethod.GET);
+		return requestMethod(HttpMethod.GET);
 	}
 
 	/**
@@ -431,7 +431,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @return this
 	 */
 	public ApiClientFluentAdapter put() {
-		return httpMethod(HttpMethod.PUT);
+		return requestMethod(HttpMethod.PUT);
 	}
 
 	/**
@@ -440,7 +440,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @return this
 	 */
 	public ApiClientFluentAdapter post() {
-		return httpMethod(HttpMethod.POST);
+		return requestMethod(HttpMethod.POST);
 	}
 
 	/**
@@ -449,7 +449,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @return this
 	 */
 	public ApiClientFluentAdapter delete() {
-		return httpMethod(HttpMethod.DELETE);
+		return requestMethod(HttpMethod.DELETE);
 	}
 
 	/**
@@ -458,7 +458,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @return this
 	 */
 	public ApiClientFluentAdapter patch() {
-		return httpMethod(HttpMethod.PATCH);
+		return requestMethod(HttpMethod.PATCH);
 	}
 
 	/**
@@ -467,7 +467,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @return this
 	 */
 	public ApiClientFluentAdapter head() {
-		return httpMethod(HttpMethod.HEAD);
+		return requestMethod(HttpMethod.HEAD);
 	}
 
 	/**
@@ -476,7 +476,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @return this
 	 */
 	public ApiClientFluentAdapter trace() {
-		return httpMethod(HttpMethod.TRACE);
+		return requestMethod(HttpMethod.TRACE);
 	}
 
 	/**

@@ -1,9 +1,10 @@
 package org.apiphany.client;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.apiphany.ApiMessage;
+import org.apiphany.ApiRequest;
+import org.apiphany.header.HeaderValuesChain;
 import org.morphix.reflection.GenericClass;
 
 /**
@@ -43,9 +44,10 @@ public interface ContentConverter<T> {
 	 *
 	 * @param message the {@link ApiMessage} containing the content to convert.
 	 * @param headers the headers that may influence the conversion.
+	 * @param headerValuesChain chain of header values that will be used to get a specific header list
 	 * @return true if the converter can perform the conversion, false otherwise.
 	 */
-	<U, V> boolean canConvertFrom(ApiMessage<U> message, V headers);
+	<U, V> boolean isConvertible(ApiMessage<U> message, V headers, HeaderValuesChain headerValuesChain);
 
 	/**
 	 * Retrieves the values of a specific header from the provided headers object.
@@ -54,11 +56,31 @@ public interface ContentConverter<T> {
 	 *
 	 * @param headers the headers object from which to retrieve the values.
 	 * @param header the name of the header whose values are to be retrieved.
+	 * @param headerValuesChain chain of header values that will be used to get a specific header list
 	 * @return a list of values for the specified header. If the header is not found or the headers object is of an
 	 * unsupported type, an empty list is returned.
 	 */
-	default <V> List<String> getHeaderValues(final V headers, final String header) {
-		return Collections.emptyList();
+	default <V> List<String> getHeaderValues(final V headers, final String header, final HeaderValuesChain headerValuesChain) {
+		return headerValuesChain.get(header, headers);
 	}
 
+	/**
+	 * Converts the response body to the desired type using the provided {@link ContentConverter}. This method handles both
+	 * generic and non-generic response types based on the {@link ApiRequest} configuration.
+	 *
+	 * @param <U> the target type to convert the body to
+	 * @param <T> the type of the original request body
+	 *
+	 * @param typeConverter the content converter to use for the conversion
+	 * @param apiRequest the API request containing response type information
+	 * @param body the response body to be converted
+	 * @return the converted body of type {@code U}
+	 * @throws IllegalArgumentException if the conversion fails
+	 * @throws UnsupportedOperationException if the request specifies an unsupported conversion
+	 */
+	static <U, T> U convertBody(final ContentConverter<U> typeConverter, final ApiRequest<T> apiRequest, final Object body) {
+		return apiRequest.hasGenericType()
+				? typeConverter.from(body, apiRequest.getGenericResponseType())
+				: typeConverter.from(body, apiRequest.getClassResponseType());
+	}
 }

@@ -91,7 +91,7 @@ public class RequestLogger {
 			final Duration duration) {
 		loggingFunction.level(LOG_MESSAGE_SUCCESS,
 				apiClient.getClass(),
-				apiRequest.getHttpMethod(),
+				apiRequest.getMethod(),
 				apiRequest.getUrl(),
 				toRedactedString(apiRequest.getHeaders()),
 				apiRequest.getParams(),
@@ -120,7 +120,7 @@ public class RequestLogger {
 			final Exception exception) {
 		loggingFunction.level(LOG_MESSAGE_ERROR,
 				apiClient.getClass(),
-				apiRequest.getHttpMethod(),
+				apiRequest.getMethod(),
 				apiRequest.getUrl(),
 				toRedactedString(apiRequest.getHeaders()),
 				apiRequest.getParams(),
