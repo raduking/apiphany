@@ -135,6 +135,7 @@ class ApiClientTest {
 		ApiClientFluentAdapter adapter = ApiClientFluentAdapter.of(api).authenticationType(AuthenticationType.OAUTH2_TOKEN);
 		doReturn(adapter).when(api).client();
 		doReturn(response).when(exchangeClient).exchange(adapter);
+		doReturn(HttpMethod.GET).when(exchangeClient).get();
 
 		TestDto result = api.client()
 				.get()
