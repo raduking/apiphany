@@ -23,7 +23,6 @@ import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
 import org.apiphany.lang.retry.Retry;
 import org.apiphany.meters.BasicMeters;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.morphix.reflection.Fields;
 import org.morphix.reflection.GenericClass;
@@ -56,7 +55,11 @@ class ApiClientTest {
 		doReturn(AuthenticationType.OAUTH2_TOKEN).when(exchangeClient).getAuthenticationType();
 
 		TestDto expected = TestDto.of(ID1, COUNT1);
-		ApiResponse<TestDto> response = ApiResponse.of(expected, HTTP_STATUS_OK, HttpStatus::from, exchangeClient);
+		ApiResponse<TestDto> response = ApiResponse.create(expected)
+				.status(HTTP_STATUS_OK, HttpStatus::from)
+				.exchangeClient(exchangeClient)
+				.build();
+
 		doReturn(response).when(exchangeClient).exchange(any(ApiRequest.class));
 
 		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
@@ -75,7 +78,10 @@ class ApiClientTest {
 	void shouldReturnEmptyIfCallExchangeClientWithProvidedParametersReturnsNull() {
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2_TOKEN).when(exchangeClient).getAuthenticationType();
-		ApiResponse<TestDto> response = ApiResponse.of(null, HTTP_STATUS_BAD_REQUEST, HttpStatus::from, exchangeClient);
+		ApiResponse<TestDto> response = ApiResponse.<TestDto>builder()
+				.status(HTTP_STATUS_BAD_REQUEST, HttpStatus::from)
+				.exchangeClient(exchangeClient)
+				.build();
 		doReturn(response).when(exchangeClient).exchange(any(ApiRequest.class));
 
 		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
@@ -91,17 +97,23 @@ class ApiClientTest {
 
 	@SuppressWarnings("unchecked")
 	@Test
-	void shouldCallTheCorrectAuthClientWhenMoreArePresent() {
+	void shouldCallTheCorrectExchangeClientWhenMoreArePresent() {
 		ExchangeClient exchangeClient1 = mock(ExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2_TOKEN).when(exchangeClient1).getAuthenticationType();
 		TestDto expected1 = TestDto.of(ID1, COUNT1);
-		ApiResponse<TestDto> response1 = ApiResponse.of(expected1, HTTP_STATUS_OK, HttpStatus::from, exchangeClient1);
+		ApiResponse<TestDto> response1 = ApiResponse.create(expected1)
+				.status(HTTP_STATUS_OK, HttpStatus::from)
+				.exchangeClient(exchangeClient1)
+				.build();
 		doReturn(response1).when(exchangeClient1).exchange(any(ApiRequest.class));
 
 		ExchangeClient exchangeClient2 = mock(ExchangeClient.class);
 		doReturn(AuthenticationType.SSL_CERTIFICATE).when(exchangeClient2).getAuthenticationType();
 		TestDto expected2 = TestDto.of(ID2, COUNT2);
-		ApiResponse<TestDto> response2 = ApiResponse.of(expected2, HTTP_STATUS_OK, HttpStatus::from, exchangeClient2);
+		ApiResponse<TestDto> response2 = ApiResponse.create(expected2)
+				.status(HTTP_STATUS_OK, HttpStatus::from)
+				.exchangeClient(exchangeClient2)
+				.build();
 		doReturn(response2).when(exchangeClient2).exchange(any(ApiRequest.class));
 
 		ApiClient api = ApiClient.of(BASE_URL, List.of(exchangeClient1, exchangeClient2));
@@ -124,12 +136,15 @@ class ApiClientTest {
 	}
 
 	@Test
-	void shouldCallAuthClientWithTheCorrectParameters() {
+	void shouldCallExchangeClientWithTheCorrectParameters() {
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2_TOKEN).when(exchangeClient).getAuthenticationType();
 
 		TestDto expected = TestDto.of(ID1, COUNT1);
-		ApiResponse<TestDto> response = ApiResponse.of(expected, HttpStatus.OK, exchangeClient);
+		ApiResponse<TestDto> response = ApiResponse.create(expected)
+				.status(HttpStatus.OK)
+				.exchangeClient(exchangeClient)
+				.build();
 
 		ApiClient api = spy(ApiClient.of(BASE_URL, exchangeClient));
 		ApiClientFluentAdapter adapter = ApiClientFluentAdapter.of(api).authenticationType(AuthenticationType.OAUTH2_TOKEN);
@@ -167,6 +182,27 @@ class ApiClientTest {
 				.orDefault(TestDto.EMPTY);
 
 		assertThat(result, equalTo(TestDto.EMPTY));
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	void shouldReturnCorrectApiResponseIfCallExchangeClientWithProvidedParametersThrowsException() {
+		ExchangeClient exchangeClient = mock(ExchangeClient.class);
+		doReturn(AuthenticationType.OAUTH2_TOKEN).when(exchangeClient).getAuthenticationType();
+
+		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
+		var e = new RuntimeException(SOME_ERROR_MESSAGE);
+		doThrow(e).when(exchangeClient).exchange(any(ApiRequest.class));
+
+		ApiResponse<TestDto> result = api.client()
+				.get()
+				.path(PATH_TEST)
+				.retrieve(TestDto.class);
+
+		assertThat(result.getBody(), nullValue());
+		assertThat(result.getException(), equalTo(e));
+		assertThat(result.getErrorMessage(), equalTo("API error: " + SOME_ERROR_MESSAGE));
+		assertThat(Fields.IgnoreAccess.get(result, "exchangeClient"), equalTo(exchangeClient));
 	}
 
 	@Test
@@ -320,17 +356,23 @@ class ApiClientTest {
 
 	@SuppressWarnings("unchecked")
 	@Test
-	void shouldThrowExceptionWhenMoreAuthClientsArePresent() {
+	void shouldThrowExceptionWhenMoreExchangeClientsArePresent() {
 		ExchangeClient exchangeClient1 = mock(ExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2_TOKEN).when(exchangeClient1).getAuthenticationType();
 		TestDto expected1 = TestDto.of(ID1, COUNT1);
-		ApiResponse<TestDto> response1 = ApiResponse.of(expected1, HttpStatus.OK, exchangeClient1);
+		ApiResponse<TestDto> response1 = ApiResponse.create(expected1)
+				.status(HttpStatus.OK)
+				.exchangeClient(exchangeClient1)
+				.build();
 		doReturn(response1).when(exchangeClient1).exchange(any(ApiRequest.class));
 
 		ExchangeClient exchangeClient2 = mock(ExchangeClient.class);
 		doReturn(AuthenticationType.SSL_CERTIFICATE).when(exchangeClient2).getAuthenticationType();
 		TestDto expected2 = TestDto.of(ID2, COUNT2);
-		ApiResponse<TestDto> response2 = ApiResponse.of(expected2, HttpStatus.OK, exchangeClient2);
+		ApiResponse<TestDto> response2 = ApiResponse.create(expected2)
+				.status(HttpStatus.OK)
+				.exchangeClient(exchangeClient2)
+				.build();
 		doReturn(response2).when(exchangeClient2).exchange(any(ApiRequest.class));
 
 		ApiClient api = ApiClient.of(BASE_URL, List.of(exchangeClient1, exchangeClient2));
@@ -352,17 +394,23 @@ class ApiClientTest {
 
 	@SuppressWarnings("unchecked")
 	@Test
-	void shouldThrowExceptionWhenCreatingClientWithMoreAuthClientsWithTheSameType() {
+	void shouldThrowExceptionWhenCreatingClientWithMoreExchangeClientsWithTheSameType() {
 		ExchangeClient exchangeClient1 = mock(ExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2_TOKEN).when(exchangeClient1).getAuthenticationType();
 		TestDto expected1 = TestDto.of(ID1, COUNT1);
-		ApiResponse<TestDto> response1 = ApiResponse.of(expected1, HttpStatus.OK, exchangeClient1);
+		ApiResponse<TestDto> response1 = ApiResponse.create(expected1)
+				.status(HttpStatus.OK)
+				.exchangeClient(exchangeClient1)
+				.build();
 		doReturn(response1).when(exchangeClient1).exchange(any(ApiRequest.class));
 
 		ExchangeClient exchangeClient2 = mock(ExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2_TOKEN).when(exchangeClient2).getAuthenticationType();
 		TestDto expected2 = TestDto.of(ID2, COUNT2);
-		ApiResponse<TestDto> response2 = ApiResponse.of(expected2, HttpStatus.OK, exchangeClient2);
+		ApiResponse<TestDto> response2 = ApiResponse.create(expected2)
+				.status(HttpStatus.OK)
+				.exchangeClient(exchangeClient2)
+				.build();
 		doReturn(response2).when(exchangeClient2).exchange(any(ApiRequest.class));
 
 		Exception result = null;
@@ -381,7 +429,7 @@ class ApiClientTest {
 	}
 
 	@Test
-	void shouldThrowExceptionWhenCreatingClientNoAuthClients() {
+	void shouldThrowExceptionWhenCreatingClientNoExchangeClients() {
 		Exception result = null;
 		try {
 			ApiClient.of(BASE_URL, List.of()).client();
@@ -414,7 +462,10 @@ class ApiClientTest {
 		doReturn(AuthenticationType.OAUTH2_TOKEN).when(exchangeClient).getAuthenticationType();
 
 		TestDto expected = TestDto.of(ID1, COUNT1);
-		ApiResponse<TestDto> response = ApiResponse.of(expected, HttpStatus.OK, exchangeClient);
+		ApiResponse<TestDto> response = ApiResponse.create(expected)
+				.status(HttpStatus.OK)
+				.exchangeClient(exchangeClient)
+				.build();
 		doReturn(response).when(exchangeClient).exchange(any(ApiRequest.class));
 
 		DummyApiClient api = spy(new DummyApiClient(BASE_URL, exchangeClient));
@@ -445,7 +496,6 @@ class ApiClientTest {
 		assertThat(type3.toString(), equalTo("java.util.List<java.util.Map<java.lang.String, java.lang.Object>>"));
 	}
 
-	@Disabled
 	@Test
 	void shouldThrowExceptionIfTypeObjectIsInitializedWithANonGenericType() {
 		Supplier<ApiClient> clientInstanceSupplier = () -> new ApiClient(BASE_URL, new DummyExchangeClient()) {

@@ -13,8 +13,10 @@ import org.morphix.lang.JavaObjects;
  * <p>
  * This class is particularly useful for processing HTTP headers stored in map structures, following the Chain of
  * Responsibility pattern established by {@link HeaderValues}.
+ *
+ * @author Radu Sebastian LAZIN
  */
-public class MapHeaderValues extends HeaderValues {
+public class MapHeaderValues extends HeaderValues { // NOSONAR singleton since it has no state
 
 	/**
 	 * Retrieves header values from a Map structure or delegates to the next handler in the chain. If the input headers
@@ -36,5 +38,27 @@ public class MapHeaderValues extends HeaderValues {
 			return HttpMessages.getHeaderValues(header, headersMap);
 		}
 		return getNext().get(header, headers);
+	}
+
+	/**
+	 * Returns the instance (new instances can still be created with {@code new}).
+	 *
+	 * @return the singleton {@link MapHeaderValues} instance
+	 */
+	public static MapHeaderValues getInstance() {
+		return InstanceHolder.INSTANCE;
+	}
+
+	/**
+	 * Instance holder.
+	 *
+	 * @author Radu Sebastian LAZIN
+	 */
+	private static class InstanceHolder {
+
+		/**
+		 * Actual {@link MapHeaderValues} singleton instance
+		 */
+		private static final MapHeaderValues INSTANCE = new MapHeaderValues();
 	}
 }

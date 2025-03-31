@@ -21,6 +21,7 @@ import org.apiphany.client.ExchangeClient;
 import org.apiphany.lang.accumulator.ExceptionsAccumulator;
 import org.apiphany.lang.retry.Retry;
 import org.apiphany.meters.BasicMeters;
+import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Nullables;
 import org.morphix.lang.Unchecked;
 import org.morphix.reflection.Fields;
@@ -163,12 +164,14 @@ public class ApiClient {
 	private static void initializeTypeObject(final Field typeObjectField) {
 		GenericClass<?> typeObject = Fields.IgnoreAccess.get(null, typeObjectField);
 		if (typeObject.getType() instanceof TypeVariable) {
-			Type type = typeObjectField.getGenericType();
-			// we ignore static fields that are not parameterized
-			if (type instanceof ParameterizedType parameterizedType) {
-				Type actualTypeArgument = parameterizedType.getActualTypeArguments()[0];
+			ParameterizedType parameterizedType = JavaObjects.cast(typeObjectField.getGenericType());
+			Type actualTypeArgument = parameterizedType.getActualTypeArguments()[0];
+			if (actualTypeArgument instanceof ParameterizedType) {
 				Field typeField = Fields.getDeclaredFieldInHierarchy(GenericClass.class, "type");
 				Fields.IgnoreAccess.set(typeObject, typeField, actualTypeArgument);
+			} else {
+				throw new IllegalArgumentException("typeObject should only be used for generic types, current type: "
+						+ actualTypeArgument.getTypeName() + " is not a generic type.");
 			}
 		}
 	}
@@ -271,7 +274,7 @@ public class ApiClient {
 			activeMeters.errors().increment();
 			RequestLogger.logError(LOGGER::debug, this, apiRequest, duration, exception);
 			LOGGER.error("EXCEPTION: ", exception);
-			apiResponse = ApiResponse.of(exception, "API error: ", exchangeClient);
+			apiResponse = errorResponse(exception, exchangeClient);
 		} finally {
 			activeMeters.latency().record(duration);
 		}
@@ -279,6 +282,23 @@ public class ApiClient {
 			Unchecked.reThrow(apiResponse.getException());
 		}
 		return apiResponse;
+	}
+
+	/**
+	 * Builds an error response.
+	 *
+	 * @param <T> response body type
+	 *
+	 * @param exception exception that represents the error
+	 * @param exchangeClient the exchange client that made the failed request
+	 * @return API error response object
+	 */
+	protected <T> ApiResponse<T> errorResponse(Exception exception, ExchangeClient exchangeClient) {
+		return ApiResponse.<T>builder()
+				.exception(exception)
+				.errorMessagePrefix("API error: ")
+				.exchangeClient(exchangeClient)
+				.build();
 	}
 
 	/**

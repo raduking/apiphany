@@ -303,15 +303,8 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 		Nullables.whenNotNull(headers).then(hdrs -> {
 			for (Map.Entry<String, Object> header : hdrs.entrySet()) {
 				String headerName = header.getKey();
-				Object headerValue = header.getValue();
-				if (headerValue instanceof List<?> headerList) {
-					if (this.headers.containsKey(headerName)) {
-						List<String> existing = this.headers.computeIfAbsent(headerName, k -> new ArrayList<>());
-						headerList.forEach(hv -> existing.add(Strings.safeToString(hv)));
-					}
-				} else {
-					this.headers.computeIfAbsent(headerName, k -> new ArrayList<>()).add(Strings.safeToString(headerValue));
-				}
+				Object headerValue = Nullables.nonNullOrDefault(header.getValue(), "");
+				header(headerName, headerValue);
 			}
 		});
 		return this;
@@ -324,8 +317,16 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @param headerValue header value
 	 * @return this
 	 */
-	public ApiClientFluentAdapter header(final String headerName, final String headerValue) {
-		return headers(Map.of(headerName, headerValue));
+	public <H> ApiClientFluentAdapter header(final String headerName, final H headerValue) {
+		if (headerValue instanceof List<?> headerList) {
+			if (this.headers.containsKey(headerName)) {
+				List<String> existing = this.headers.computeIfAbsent(headerName, k -> new ArrayList<>());
+				headerList.forEach(hv -> existing.add(Strings.safeToString(hv)));
+			}
+		} else {
+			this.headers.computeIfAbsent(headerName, k -> new ArrayList<>()).add(headerValue.toString());
+		}
+		return this;
 	}
 
 	/**

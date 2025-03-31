@@ -3,6 +3,7 @@ package org.apiphany;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apiphany.lang.collections.Maps;
 
@@ -11,6 +12,8 @@ import org.apiphany.lang.collections.Maps;
  * body to be of any type.
  *
  * @param <T> the type of the message body.
+ *
+ * @author Radu Sebastian LAZIN
  */
 public class ApiMessage<T> {
 
@@ -22,7 +25,25 @@ public class ApiMessage<T> {
 	/**
 	 * A map of headers to be included in the message. Each header can have multiple values.
 	 */
-	protected Map<String, List<String>> headers = new HashMap<>();
+	protected Map<String, List<String>> headers;
+
+	/**
+	 * Constructs an API message object with the given body and headers. The headers must not be {@code null}.
+	 *
+	 * @param body message body
+	 * @param headers message headers
+	 */
+	protected ApiMessage(T body, Map<String, List<String>> headers) {
+		this.body = body;
+		this.headers = Objects.requireNonNull(headers, "headers cannot be null");
+	}
+
+	/**
+	 * Constructs an API message without a body and empty headers.
+	 */
+	protected ApiMessage() {
+		this(null, new HashMap<>());
+	}
 
 	/**
 	 * Returns the body of the message.
