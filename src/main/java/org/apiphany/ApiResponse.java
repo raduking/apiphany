@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -51,35 +52,16 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	private final ExchangeClient exchangeClient;
 
 	/**
-	 * Hidden constructor, use {@code ApiResponse.of} factory methods to construct response objects.
+	 * Constructs a response based on the give builder.
 	 *
-	 * @param body response body
-	 * @param status response status
-	 * @param headers response headers
-	 * @param errorMessage response error message
-	 * @param exception response exception
-	 * @param exchangeClient the exchange client that returned this message
+	 * @param builder response builder
 	 */
-	private ApiResponse(final T body, final Status status, final Map<String, List<String>> headers,
-			final String errorMessage, final Exception exception, ExchangeClient exchangeClient) {
-		this.body = body;
-		this.status = status;
-		this.headers = headers;
-		this.errorMessage = errorMessage;
-		this.exception = exception;
-		this.exchangeClient = exchangeClient;
-	}
-
-	/**
-	 * Hidden constructor, use {@code ApiResponse.of} factory methods to construct response objects.
-	 *
-	 * @param exception response exception
-	 * @param errorMessagePrefix response error message prefix
-	 * @param exchangeClient the exchange client that returned this message
-	 */
-	private ApiResponse(final Exception e, final String errorMessagePrefix, ExchangeClient exchangeClient) {
-		this(null, null, Collections.emptyMap(),
-				Nullables.nonNullOrDefault(errorMessagePrefix, "") + e.getMessage(), e, exchangeClient);
+	private ApiResponse(Builder<T> builder) {
+		super(builder.body, builder.headers);
+		this.status = builder.status;
+		this.errorMessage = Nullables.nonNullOrDefault(builder.errorMessagePrefix, "") + builder.errorMessage;
+		this.exception = builder.exception;
+		this.exchangeClient = builder.exchangeClient;
 	}
 
 	/**
@@ -308,79 +290,6 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	}
 
 	/**
-	 * Creates a new {@link ApiResponse} object.
-	 *
-	 * @param <T> body type
-	 *
-	 * @param body response body
-	 * @param status response status
-	 * @param headers headers
-	 * @param exchangeClient the exchange client that returned this message
-	 * @return API response object
-	 */
-	public static <T> ApiResponse<T> of(final T body, final Status status, final Map<String, List<String>> headers, ExchangeClient exchangeClient) {
-		return new ApiResponse<>(body, status, headers, null, null, exchangeClient);
-	}
-
-	/**
-	 * Creates a new {@link ApiResponse} object.
-	 *
-	 * @param <T> body type
-	 * @param <S> status type
-	 *
-	 * @param body response body
-	 * @param statusCode status code
-	 * @param statusCodeConverter function to convert status code to a {@link Status} object
-	 * @param exchangeClient the exchange client that returned this message
-	 * @return API response object
-	 */
-	public static <T, S extends Status> ApiResponse<T> of(final T body, final int statusCode, final IntFunction<S> statusCodeConverter,
-			ExchangeClient exchangeClient) {
-		return of(body, statusCodeConverter.apply(statusCode), exchangeClient);
-	}
-
-	/**
-	 * Creates a new {@link ApiResponse} object.
-	 *
-	 * @param <T> body type
-	 *
-	 * @param body response body
-	 * @param status response status
-	 * @param exchangeClient the exchange client that returned this message
-	 * @return API response object
-	 */
-	public static <T> ApiResponse<T> of(final T body, final Status status, ExchangeClient exchangeClient) {
-		return new ApiResponse<>(body, status, Collections.emptyMap(), null, null, exchangeClient);
-	}
-
-	/**
-	 * Creates a new {@link ApiResponse} object. This object will have the {@link #getStatus()} return BAD_REQUEST.
-	 *
-	 * @param <T> body type
-	 *
-	 * @param e exception
-	 * @param errorMessagePrefix error message prefix to be appended to the exception message
-	 * @param exchangeClient the exchange client that returned this message
-	 * @return API response object
-	 */
-	public static <T> ApiResponse<T> of(final Exception e, final String errorMessagePrefix, ExchangeClient exchangeClient) {
-		return new ApiResponse<>(e, errorMessagePrefix, exchangeClient);
-	}
-
-	/**
-	 * Creates a new {@link ApiResponse} object. This object will have the {@link #getStatus()} return BAD_REQUEST.
-	 *
-	 * @param <T> body type
-	 *
-	 * @param e exception
-	 * @param exchangeClient the exchange client that returned this message
-	 * @return API response object
-	 */
-	public static <T> ApiResponse<T> of(final Exception e, ExchangeClient exchangeClient) {
-		return of(e, (String) null, exchangeClient);
-	}
-
-	/**
 	 * Returns the error message or <code>"No error message."</code> if none is returned.
 	 *
 	 * @return the error message
@@ -472,4 +381,175 @@ public class ApiResponse<T> extends ApiMessage<T> {
 		return JsonBuilder.toJson(this);
 	}
 
+	/**
+	 * Returns the API response builder.
+	 *
+	 * @param <T> response body type
+	 * @return an API request builder
+	 */
+	public static <T> Builder<T> builder() {
+		return new Builder<>();
+	}
+
+	/**
+	 * Returns the API response builder.
+	 *
+	 * @param <T> response body type
+	 *
+	 * @param body response body
+	 * @return an API request builder
+	 */
+	public static <T> Builder<T> create(T body) {
+		return ApiResponse.<T>builder().body(body);
+	}
+
+	/**
+	 * Builder for API response objects.
+	 *
+	 * @param <T> response type
+	 * @author Radu Sebastian LAZIN
+	 */
+	public static class Builder<T> {
+
+		/**
+		 * The response body content.
+		 */
+		private T body;
+
+		/**
+		 * The response headers, initialized as empty map.
+		 */
+		private Map<String, List<String>> headers = Collections.emptyMap();
+
+		/**
+		 * The response status.
+		 */
+		private Status status;
+
+		/**
+		 * The error message for error responses.
+		 */
+		private String errorMessage;
+
+		/**
+		 * The prefix for error messages.
+		 */
+		private String errorMessagePrefix;
+
+		/**
+		 * The exception associated with the response.
+		 */
+		private Exception exception;
+
+		/**
+		 * The exchange client associated with the response.
+		 */
+		private ExchangeClient exchangeClient;
+
+		/**
+		 * Private constructor to enforce builder pattern usage.
+		 */
+		private Builder() {
+			// empty
+		}
+
+		/**
+		 * Sets the response body.
+		 *
+		 * @param body the response body
+		 * @return this builder instance
+		 */
+		public Builder<T> body(T body) {
+			this.body = body;
+			return this;
+		}
+
+		/**
+		 * Sets the response headers.
+		 *
+		 * @param headers the response headers (cannot be null)
+		 * @return this builder instance
+		 * @throws NullPointerException if headers is null
+		 */
+		public Builder<T> headers(Map<String, List<String>> headers) {
+			this.headers = Objects.requireNonNull(headers, "headers cannot be null");
+			return this;
+		}
+
+		/**
+		 * Sets the response status.
+		 *
+		 * @param status the response status
+		 * @return this builder instance
+		 */
+		public Builder<T> status(Status status) {
+			this.status = status;
+			return this;
+		}
+
+		/**
+		 * Sets the response status using a status code converter.
+		 *
+		 * @param status the status code
+		 * @param statusCodeConverter function to convert status code to Status
+		 * @param <S> the Status type
+		 * @return this builder instance
+		 */
+		public <S extends Status> Builder<T> status(int status, final IntFunction<S> statusCodeConverter) {
+			return status(statusCodeConverter.apply(status));
+		}
+
+		/**
+		 * Sets the error message.
+		 *
+		 * @param errorMessage the error message
+		 * @return this builder instance
+		 */
+		public Builder<T> errorMessage(String errorMessage) {
+			this.errorMessage = errorMessage;
+			return this;
+		}
+
+		/**
+		 * Sets the error message prefix.
+		 *
+		 * @param errorMessagePrefix the error message prefix
+		 * @return this builder instance
+		 */
+		public Builder<T> errorMessagePrefix(String errorMessagePrefix) {
+			this.errorMessagePrefix = errorMessagePrefix;
+			return this;
+		}
+
+		/**
+		 * Sets the exception associated with this response.
+		 *
+		 * @param exception the exception
+		 * @return this builder instance
+		 */
+		public Builder<T> exception(Exception exception) {
+			this.exception = exception;
+			return errorMessage(exception.getMessage());
+		}
+
+		/**
+		 * Sets the exchange client associated with this response.
+		 *
+		 * @param exchangeClient the exchange client
+		 * @return this builder instance
+		 */
+		public Builder<T> exchangeClient(ExchangeClient exchangeClient) {
+			this.exchangeClient = exchangeClient;
+			return this;
+		}
+
+		/**
+		 * Builds the API response using the configured values.
+		 *
+		 * @return the constructed API response
+		 */
+		public ApiResponse<T> build() {
+			return new ApiResponse<>(this);
+		}
+	}
 }

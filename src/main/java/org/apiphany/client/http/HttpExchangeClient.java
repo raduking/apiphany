@@ -14,10 +14,7 @@ import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
-import org.apiphany.header.HeaderValuesChain;
-import org.apiphany.header.MapHeaderValues;
 import org.apiphany.http.HttpException;
-import org.apiphany.http.HttpHeaderValues;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpProperties;
 import org.apiphany.http.HttpStatus;
@@ -66,7 +63,7 @@ public class HttpExchangeClient extends AbstractHttpExchangeClient {
 	public HttpExchangeClient(final ClientProperties clientProperties) {
 		super(clientProperties);
 		this.httpClient = createClient(this::customize);
-		initializeHeaderValuesChain();
+		addDefaultHeaderValues(getHeaderValuesChain());
 	}
 
 	/**
@@ -92,15 +89,6 @@ public class HttpExchangeClient extends AbstractHttpExchangeClient {
 				.thenYield(props -> props.getRequest().getHttpVersion())
 				.orElse(() -> HttpProperties.Request.DEFAULT_HTTP_VERSION);
 		httpClientBuilder.version(version);
-	}
-
-	/**
-	 * Initializes the header values chain.
-	 */
-	private void initializeHeaderValuesChain() {
-		HeaderValuesChain headerValuesChain = getHeaderValuesChain();
-		headerValuesChain.add(new HttpHeaderValues());
-		headerValuesChain.add(new MapHeaderValues());
 	}
 
 	/**
@@ -163,7 +151,12 @@ public class HttpExchangeClient extends AbstractHttpExchangeClient {
 		}
 		Map<String, List<String>> headers = Nullables.apply(httpResponse.headers(), HttpHeaders::map);
 		U body = convertBody(apiRequest, httpResponse.headers(), httpResponse.body());
-		return ApiResponse.of(body, httpStatus, headers, this);
+
+		return ApiResponse.create(body)
+				.status(httpStatus)
+				.headers(headers)
+				.exchangeClient(this)
+				.build();
 	}
 
 	/**

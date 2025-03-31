@@ -12,8 +12,10 @@ import org.apiphany.header.HeaderValues;
  * <p>
  * This class is typically used in HTTP processing pipelines to extract header values from HTTP request/response objects
  * while maintaining the chain of responsibility pattern.
+ *
+ * @author Radu Sebastian LAZIN
  */
-public class HttpHeaderValues extends HeaderValues {
+public class HttpHeaderValues extends HeaderValues { // NOSONAR singleton since it has no state
 
 	/**
 	 * Retrieves header values from an {@link HttpHeaders} object or delegates to the next handler. If the input headers
@@ -34,5 +36,27 @@ public class HttpHeaderValues extends HeaderValues {
 			return HttpMessages.getHeaderValues(header, httpHeaders);
 		}
 		return getNext().get(header, headers);
+	}
+
+	/**
+	 * Returns the instance (new instances can still be created with {@code new}).
+	 *
+	 * @return the singleton {@link HttpHeaderValues} instance
+	 */
+	public static HttpHeaderValues getInstance() {
+		return InstanceHolder.INSTANCE;
+	}
+
+	/**
+	 * Instance holder.
+	 *
+	 * @author Radu Sebastian LAZIN
+	 */
+	private static class InstanceHolder {
+
+		/**
+		 * Actual {@link HttpHeaderValues} singleton instance
+		 */
+		private static final HttpHeaderValues INSTANCE = new HttpHeaderValues();
 	}
 }

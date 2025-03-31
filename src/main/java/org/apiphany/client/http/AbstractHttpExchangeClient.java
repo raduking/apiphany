@@ -11,7 +11,9 @@ import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ContentConverter;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.header.HeaderValuesChain;
+import org.apiphany.header.MapHeaderValues;
 import org.apiphany.http.HttpHeader;
+import org.apiphany.http.HttpHeaderValues;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.json.jackson.JacksonJsonHttpContentConverter;
@@ -60,6 +62,14 @@ public abstract class AbstractHttpExchangeClient implements ExchangeClient {
 		if (JsonBuilder.isJacksonPresent()) {
 			contentConverters.add(new JacksonJsonHttpContentConverter<>());
 		}
+	}
+
+	/**
+	 * Adds default value handlers to the header values chain.
+	 */
+	public static void addDefaultHeaderValues(HeaderValuesChain headerValuesChain) {
+		headerValuesChain.add(HttpHeaderValues.getInstance());
+		headerValuesChain.add(MapHeaderValues.getInstance());
 	}
 
 	/**
