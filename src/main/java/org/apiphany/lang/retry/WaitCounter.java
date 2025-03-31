@@ -56,6 +56,7 @@ public class WaitCounter implements Wait {
 	/**
 	 * Wait object builder.
 	 *
+	 * @param maxCount maximum number of retries
 	 * @param interval interval
 	 * @param intervalTimeUnit interval time unit
 	 * @return wait object
@@ -67,6 +68,7 @@ public class WaitCounter implements Wait {
 	/**
 	 * Wait object builder.
 	 *
+	 * @param maxCount maximum number of retries
 	 * @param interval interval
 	 * @return wait object
 	 */

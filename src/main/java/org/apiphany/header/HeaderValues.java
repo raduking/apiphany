@@ -16,6 +16,11 @@ import java.util.List;
 public class HeaderValues {
 
 	/**
+	 * The string used to redact sensitive information.
+	 */
+	public static final String REDACTED = "REDACTED";
+
+	/**
 	 * The next {@link HeaderValues} in the chain of responsibility. If {@code null}, this represents the end of the chain.
 	 */
 	private HeaderValues next;

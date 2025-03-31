@@ -44,6 +44,11 @@ public class ApiClient {
 	public static final String API = "api";
 
 	/**
+	 * No base URL provided to be used when constructing the API client object.
+	 */
+	public static final String NO_BASE_URL = "";
+
+	/**
 	 * The URL as string as the base path.
 	 */
 	private String baseUrl;
@@ -218,6 +223,15 @@ public class ApiClient {
 	 * @return API client adapter
 	 */
 	public ApiClientFluentAdapter client() {
+		return client(computeAuthenticationType());
+	}
+
+	/**
+	 * Tries to compute the authentication type if none was provided.
+	 *
+	 * @return the authentication type if none was provided
+	 */
+	private AuthenticationType computeAuthenticationType() {
 		Set<AuthenticationType> authenticationTypes = exchangeClientsMap.keySet();
 		if (authenticationTypes.isEmpty()) {
 			throw new IllegalStateException("No ExchangeClient has been set before calling client()");
@@ -225,7 +239,7 @@ public class ApiClient {
 		if (authenticationTypes.size() > 1) {
 			throw new IllegalStateException("Client has multiple ExchangeClient objects please call client(AuthenticationType)");
 		}
-		return client(authenticationTypes.iterator().next());
+		return authenticationTypes.iterator().next();
 	}
 
 	/**
@@ -257,7 +271,7 @@ public class ApiClient {
 			activeMeters.errors().increment();
 			RequestLogger.logError(LOGGER::debug, this, apiRequest, duration, exception);
 			LOGGER.error("EXCEPTION: ", exception);
-			apiResponse = ApiResponse.of(exception, "API call: ");
+			apiResponse = ApiResponse.of(exception, "API error: ", exchangeClient);
 		} finally {
 			activeMeters.latency().record(duration);
 		}

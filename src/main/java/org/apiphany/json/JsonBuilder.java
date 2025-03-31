@@ -34,7 +34,14 @@ public class JsonBuilder { // NOSONAR singleton implementation
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(JsonBuilder.class);
 
+	/**
+	 * Property name for indenting output.
+	 */
 	public static final String PROPERTY_INDENT_OUTPUT = "json-builder.to-json.indent-output";
+
+	/**
+	 * Property name for logging debug string.
+	 */
 	public static final String PROPERTY_DEBUG_STRING = "json-builder.to-json.debug-string";
 
 	protected static final String ERROR_JSON_LIBRARY_NOT_FOUND = "No JSON library found in the class path (like Jackson or Gson)";

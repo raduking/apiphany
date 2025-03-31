@@ -5,7 +5,6 @@ package org.apiphany;
  * <p>
  * Implementations of this interface provide standardized ways to check operation outcomes and retrieve associated
  * status codes. The interface defines common status checking methods and a constant for unknown status codes.
- * </p>
  *
  * @author Radu Sebastian LAZIN
  */
@@ -35,7 +34,6 @@ public interface Status {
 	 * <p>
 	 * The meaning of status codes is implementation-dependent. If the status code is not known or applicable,
 	 * implementations should return {@link #UNKNOWN}.
-	 * </p>
 	 *
 	 * @return the numeric status code, or {@link #UNKNOWN} (-1) if not applicable
 	 */

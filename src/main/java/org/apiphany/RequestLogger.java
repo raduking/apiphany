@@ -1,15 +1,10 @@
 package org.apiphany;
 
 import java.time.Duration;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apiphany.http.HttpHeader;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.Temporals;
-import org.apiphany.lang.collections.Maps;
 import org.morphix.lang.Nullables;
 import org.morphix.reflection.Constructors;
 
@@ -20,11 +15,6 @@ import org.morphix.reflection.Constructors;
  * @author Radu Sebastian LAZIN
  */
 public class RequestLogger {
-
-	/**
-	 * The string used to redact sensitive information in logs.
-	 */
-	public static final String REDACTED = "REDACTED";
 
 	/**
 	 * The length of the log separator line.
@@ -93,10 +83,10 @@ public class RequestLogger {
 				apiClient.getClass(),
 				apiRequest.getMethod(),
 				apiRequest.getUrl(),
-				toRedactedString(apiRequest.getHeaders()),
+				apiRequest.getHeadersAsString(),
 				apiRequest.getParams(),
 				apiRequest.getBody(),
-				Nullables.apply(apiResponse, response -> toRedactedString(response.getHeaders())),
+				Nullables.apply(apiResponse, ApiResponse::getHeadersAsString),
 				Nullables.apply(apiResponse, ApiResponse::getBody),
 				Temporals.toSeconds(duration.toMillis()));
 	}
@@ -122,33 +112,11 @@ public class RequestLogger {
 				apiClient.getClass(),
 				apiRequest.getMethod(),
 				apiRequest.getUrl(),
-				toRedactedString(apiRequest.getHeaders()),
+				apiRequest.getHeadersAsString(),
 				apiRequest.getParams(),
 				apiRequest.getBody(),
 				exception,
 				Temporals.toSeconds(duration.toMillis()));
-	}
-
-	/**
-	 * Transforms the HTTP headers into a string representation, redacting sensitive information such as Authorization
-	 * headers.
-	 *
-	 * @param headers the headers as a multi-value map.
-	 * @return the headers as a string, with sensitive information redacted.
-	 */
-	public static String toRedactedString(final Map<String, List<String>> headers) {
-		return Maps.safe(headers).entrySet().stream().map(entry -> {
-			StringBuilder sb = new StringBuilder();
-			sb.append(entry.getKey()).append(":");
-			List<String> value = entry.getValue();
-			if (HttpHeader.AUTHORIZATION.matches(entry.getKey())) {
-				value = Collections.singletonList(REDACTED);
-			}
-			sb.append("\"");
-			sb.append(StringUtils.join(value, ", "));
-			sb.append("\"");
-			return sb.toString();
-		}).toList().toString();
 	}
 
 	/**

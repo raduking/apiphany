@@ -6,7 +6,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import org.apiphany.RequestMethod;
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.json.jackson.serializers.RequestMethodDeserializer;
+import org.apiphany.json.jackson.serializers.RequestMethodSerializer;
 import org.morphix.lang.JavaObjects;
 import org.morphix.reflection.GenericClass;
 import org.slf4j.Logger;
@@ -69,8 +72,8 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 	 * Hide constructor.
 	 */
 	protected JacksonJsonBuilder() {
-		SimpleModule javaTimeModule = newJavaTimeModule(DateTimeFormatter.ISO_DATE_TIME);
-		objectMapper.registerModule(javaTimeModule);
+		objectMapper.registerModule(newJavaTimeModule(DateTimeFormatter.ISO_DATE_TIME));
+		objectMapper.registerModule(customSerializationModule());
 		indentOutput(isIndentOutput());
 		objectMapper.setSerializationInclusion(Include.NON_NULL);
 		objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
@@ -245,6 +248,17 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 		return new JavaTimeModule()
 				.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(dateTimeFormatter))
 				.addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer(dateTimeFormatter));
+	}
+
+	/**
+	 * Creates a new SimpleModule with custom serializers/deserializers.
+	 *
+	 * @return simple module
+	 */
+	public static SimpleModule customSerializationModule() {
+		return new SimpleModule("apiphany")
+				.addSerializer(RequestMethod.class, new RequestMethodSerializer())
+				.addDeserializer(RequestMethod.class, new RequestMethodDeserializer());
 	}
 
 	/**
