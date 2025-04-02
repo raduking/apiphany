@@ -3,17 +3,16 @@ package org.apiphany;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apiphany.RequestParameters.ParameterFunction;
 import org.apiphany.auth.AuthenticationType;
 import org.apiphany.client.ExchangeClient;
-import org.apiphany.lang.Strings;
+import org.apiphany.header.Headers;
 import org.apiphany.lang.retry.Retry;
 import org.apiphany.meters.BasicMeters;
 import org.morphix.lang.JavaObjects;
@@ -299,15 +298,20 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @param headers headers map
 	 * @return this
 	 */
-	public ApiClientFluentAdapter headers(final Map<String, Object> headers) {
-		Nullables.whenNotNull(headers).then(hdrs -> {
-			for (Map.Entry<String, Object> header : hdrs.entrySet()) {
-				String headerName = header.getKey();
-				Object headerValue = Nullables.nonNullOrDefault(header.getValue(), "");
-				header(headerName, headerValue);
-			}
-		});
+	public <H> ApiClientFluentAdapter headers(final Map<String, H> headers) {
+		Headers.addTo(this.headers, headers);
 		return this;
+	}
+
+	/**
+	 * Sets the headers if the condition is true.
+	 *
+	 * @param condition condition on when to add the supplied headers
+	 * @param headersSupplier headers map supplier
+	 * @return this
+	 */
+	public <H> ApiClientFluentAdapter headers(final boolean condition, final Supplier<Map<String, H>> headersSupplier) {
+		return condition ? headers(headersSupplier.get()) : this;
 	}
 
 	/**
@@ -318,14 +322,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @return this
 	 */
 	public <H> ApiClientFluentAdapter header(final String headerName, final H headerValue) {
-		if (headerValue instanceof List<?> headerList) {
-			if (this.headers.containsKey(headerName)) {
-				List<String> existing = this.headers.computeIfAbsent(headerName, k -> new ArrayList<>());
-				headerList.forEach(hv -> existing.add(Strings.safeToString(hv)));
-			}
-		} else {
-			this.headers.computeIfAbsent(headerName, k -> new ArrayList<>()).add(headerValue.toString());
-		}
+		Headers.addTo(headers, headerName, headerValue);
 		return this;
 	}
 

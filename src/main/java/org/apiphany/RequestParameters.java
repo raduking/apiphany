@@ -269,13 +269,23 @@ public class RequestParameters {
 	 * @return a URL-friendly string representation of the parameters.
 	 */
 	public static String asUrlSuffix(final Map<String, String> params) {
+		return "?" + asString(params);
+	}
+
+	/**
+	 * Transforms the request parameters map into a string usable in request bodies. If the map is empty, an empty string is returned.
+	 *
+	 * @param params the request parameters map.
+	 * @return a string representation of the parameters.
+	 */
+	public static String asString(final Map<String, String> params) {
 		if (MapUtils.isEmpty(params)) {
 			return "";
 		}
 		String[] paramsArray = params.entrySet().stream()
 				.map(e -> String.join("=", e.getKey(), e.getValue()))
 				.toArray(String[]::new);
-		return "?" + String.join("&", paramsArray);
+		return String.join("&", paramsArray);
 	}
 
 	/**

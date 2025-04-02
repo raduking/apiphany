@@ -506,7 +506,7 @@ public enum HttpStatus implements Status {
 	 * @return the numeric value of this status code
 	 */
 	public int value() {
-		return this.value;
+		return value;
 	}
 
 	/**

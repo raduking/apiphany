@@ -165,7 +165,7 @@ public class HttpExchangeClient extends AbstractHttpExchangeClient {
 	 * @param httpRequestBuilder request builder to add the headers to
 	 * @param headers map of headers to add to the request builder
 	 */
-	protected void addHeaders(final HttpRequest.Builder httpRequestBuilder, final Map<String, List<String>> headers) {
+	public static void addHeaders(final HttpRequest.Builder httpRequestBuilder, final Map<String, List<String>> headers) {
 		Maps.safe(headers).forEach((k, v) -> v.forEach(h -> httpRequestBuilder.header(k, h)));
 	}
 

@@ -33,7 +33,7 @@ public class ApiMessage<T> {
 	 * @param body message body
 	 * @param headers message headers
 	 */
-	protected ApiMessage(T body, Map<String, List<String>> headers) {
+	protected ApiMessage(final T body, final Map<String, List<String>> headers) {
 		this.body = body;
 		this.headers = Objects.requireNonNull(headers, "headers cannot be null");
 	}

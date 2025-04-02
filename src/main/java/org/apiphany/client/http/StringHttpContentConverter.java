@@ -62,7 +62,7 @@ public class StringHttpContentConverter implements HttpContentConverter<String> 
 	@Override
 	public <U, V> boolean isConvertible(final ApiMessage<U> message, final V headers, final HeaderValuesChain headerValuesChain) {
 		for (String contentType : getContentTypes(headers, headerValuesChain)) {
-			if (contentType.contains(ContentType.TEXT_PLAIN.getValue())) {
+			if (contentType.contains(ContentType.TEXT_PLAIN.value())) {
 				return true;
 			}
 		}
