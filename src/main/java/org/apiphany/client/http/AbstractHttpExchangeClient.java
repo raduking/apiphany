@@ -67,7 +67,7 @@ public abstract class AbstractHttpExchangeClient implements ExchangeClient {
 	/**
 	 * Adds default value handlers to the header values chain.
 	 */
-	public static void addDefaultHeaderValues(HeaderValuesChain headerValuesChain) {
+	public static void addDefaultHeaderValues(final HeaderValuesChain headerValuesChain) {
 		headerValuesChain.add(HttpHeaderValues.getInstance());
 		headerValuesChain.add(MapHeaderValues.getInstance());
 	}
@@ -114,6 +114,7 @@ public abstract class AbstractHttpExchangeClient implements ExchangeClient {
 	 *
 	 * @return the client properties for this client
 	 */
+	@Override
 	public ClientProperties getClientProperties() {
 		return clientProperties;
 	}

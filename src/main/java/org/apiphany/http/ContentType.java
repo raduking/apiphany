@@ -199,7 +199,7 @@ public enum ContentType {
 	 *
 	 * @return the MIME type value.
 	 */
-	public String getValue() {
+	public String value() {
 		return value;
 	}
 

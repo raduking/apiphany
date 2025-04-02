@@ -34,6 +34,15 @@ public interface ExchangeClient {
 	<T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest);
 
 	/**
+	 * Returns the client properties.
+	 *
+	 * @return the client properties
+	 */
+	default ClientProperties getClientProperties() {
+		throw new UnsupportedOperationException("getClientProperties");
+	}
+
+	/**
 	 * Basic rest template like async exchange method.
 	 *
 	 * @param <T> request/response body type
@@ -47,7 +56,7 @@ public interface ExchangeClient {
 	}
 
 	/**
-	 * Returns the authentication type.
+	 * Returns the authentication type. By default it returns {@link AuthenticationType#NO_AUTHENTICATION}.
 	 *
 	 * @return the authentication type
 	 */
@@ -73,7 +82,7 @@ public interface ExchangeClient {
 	 * @param apiMessage the API message containing the headers
 	 * @return string representation of the message headers
 	 */
-	default <T> String getHeadersAsString(ApiMessage<T> apiMessage) {
+	default <T> String getHeadersAsString(final ApiMessage<T> apiMessage) {
 		return Maps.safe(apiMessage.getHeaders()).entrySet().stream().map(entry -> {
 			StringBuilder sb = new StringBuilder();
 			sb.append(entry.getKey()).append(":");
