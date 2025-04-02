@@ -4,7 +4,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import org.apache.commons.lang3.NotImplementedException;
 import org.apiphany.json.jackson.JacksonJsonBuilder;
 import org.apiphany.lang.Strings;
 import org.morphix.convert.Converter;
@@ -269,8 +268,8 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 *
 	 * @return the exception thrown from unimplemented methods
 	 */
-	protected static NotImplementedException jsonLibraryNotFound() {
-		return new NotImplementedException(ERROR_JSON_LIBRARY_NOT_FOUND);
+	protected static UnsupportedOperationException jsonLibraryNotFound() {
+		return new UnsupportedOperationException(ERROR_JSON_LIBRARY_NOT_FOUND);
 	}
 
 	/**

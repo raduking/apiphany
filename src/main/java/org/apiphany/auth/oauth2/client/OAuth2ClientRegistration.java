@@ -119,7 +119,7 @@ public class OAuth2ClientRegistration {
 		String encodedCredentials = Base64.getEncoder().encodeToString(credentials.getBytes());
 		String authorizationHeaderValue = String.join(" ", getClientAuthenticationMethod().toString(), encodedCredentials);
 		return Map.of(
-				HttpHeader.CONTENT_TYPE.value(), ContentType.APPLICATION_FORM_URLENCODED,
+				HttpHeader.CONTENT_TYPE.value(), ContentType.APPLICATION_FORM_URLENCODED.value(),
 				HttpHeader.AUTHORIZATION.value(), authorizationHeaderValue);
 	}
 
