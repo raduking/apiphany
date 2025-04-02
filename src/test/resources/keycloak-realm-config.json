@@ -1,0 +1,67 @@
+{
+	"realm": "test-realm",
+	"enabled": true,
+	"sslRequired": "none",
+	"users": [
+		{
+			"username": "test-user",
+			"enabled": true,
+			"credentials": [
+				{
+					"type": "password",
+					"value": "test-password"
+				}
+			],
+			"realmRoles": [
+				"user"
+			],
+			"clientRoles": {
+				"apiphany-client": [
+					"read-profile"
+				]
+			}
+		}
+	],
+	"clients": [
+		{
+			"clientId": "apiphany-client",
+			"enabled": true,
+			"publicClient": false,
+			"secret": "apiphany-client-secret",
+			"redirectUris": [
+				"http://localhost:8080/*"
+			],
+			"webOrigins": [
+				"+"
+			],
+			"authorizationServicesEnabled": true,
+			"standardFlowEnabled": true,
+			"directAccessGrantsEnabled": true
+		}
+	],
+	"roles": {
+		"realm": [
+			{
+				"name": "user",
+				"description": "Default role for users"
+			}
+		],
+		"client": {
+			"apiphany-client": [
+				{
+					"name": "read-profile",
+					"description": "Allows reading the user profile"
+				}
+			]
+		}
+	},
+	"scopeMappings": [
+		{
+			"client": "apiphany-client",
+			"roles": [
+				"user",
+				"read-profile"
+			]
+		}
+	]
+}

@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apiphany.ApiMessage;
 import org.apiphany.ApiMethod;
 import org.apiphany.ApiRequest;
@@ -91,7 +90,7 @@ public interface ExchangeClient {
 				value = Collections.singletonList(HeaderValues.REDACTED);
 			}
 			sb.append("\"");
-			sb.append(StringUtils.join(value, ", "));
+			sb.append(String.join(", ", value));
 			sb.append("\"");
 			return sb.toString();
 		}).toList().toString();

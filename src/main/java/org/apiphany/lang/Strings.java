@@ -1,6 +1,13 @@
 package org.apiphany.lang;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 /**
  * {@link String} utility methods.
@@ -37,4 +44,46 @@ public interface Strings {
 		return str.replaceAll(regex, replacement).toLowerCase();
 	}
 
+	/**
+	 * Transforms an input stream to a string. If the input stream cannot be
+	 * converted to string with the given parameters the result will be null.
+	 *
+	 * @param inputStream input stream
+	 * @param encoding character encoding
+	 * @param bufferSize buffer size
+	 * @return string
+	 */
+	public static String toString(final InputStream inputStream, final Charset encoding, final int bufferSize, final Consumer<Exception> onError) {
+		final char[] buffer = new char[bufferSize];
+		final StringBuilder out = new StringBuilder();
+		try (Reader in = new InputStreamReader(inputStream, encoding.name())) {
+			int s = 0;
+			while (s >= 0) {
+				s = in.read(buffer, 0, buffer.length);
+				if (s >= 0) {
+					out.append(buffer, 0, s);
+				}
+			}
+		} catch (IOException e) {
+			onError.accept(e);
+			return null;
+		}
+		return out.toString();
+	}
+
+	/**
+	 * Returns a string from a file or {@code null} if any error occured.
+	 *
+	 * @param path path to the file
+	 * @return the file content as string
+	 */
+	public static String fromFile(final String path, final Consumer<Exception> onError) {
+		String fileContent = null;
+		try (InputStream inputStream = Strings.class.getResourceAsStream(path)) {
+			fileContent = toString(inputStream, StandardCharsets.UTF_8, 100, onError);
+		} catch (IOException e) {
+			onError.accept(e);
+		}
+		return fileContent;
+	}
 }

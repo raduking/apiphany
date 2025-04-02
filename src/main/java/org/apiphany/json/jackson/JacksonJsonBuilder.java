@@ -171,7 +171,7 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 		try {
 			return objectMapper.readValue(json, cls);
 		} catch (JsonProcessingException e) {
-			LOGGER.warn(LOG_MSG_COULD_NOT_DESERIALIZE_OBJECT, toString(json), e);
+			LOGGER.warn(LOG_MSG_COULD_NOT_DESERIALIZE_OBJECT, json, e);
 			return null;
 		}
 	}
@@ -209,7 +209,7 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 		try {
 			return objectMapper.readValue(json, typeReference);
 		} catch (JsonProcessingException e) {
-			LOGGER.warn(LOG_MSG_COULD_NOT_DESERIALIZE_OBJECT, toString(json), e);
+			LOGGER.warn(LOG_MSG_COULD_NOT_DESERIALIZE_OBJECT, json, e);
 			return null;
 		}
 	}
