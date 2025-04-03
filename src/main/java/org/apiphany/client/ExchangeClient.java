@@ -37,7 +37,7 @@ public interface ExchangeClient {
 	 *
 	 * @return the client properties
 	 */
-	default ClientProperties getClientProperties() {
+	default <T extends ClientProperties> T getClientProperties() {
 		throw new UnsupportedOperationException("getClientProperties");
 	}
 

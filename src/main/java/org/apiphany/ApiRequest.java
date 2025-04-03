@@ -6,10 +6,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apiphany.auth.AuthenticationType;
-import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.retry.Retry;
 import org.apiphany.meters.BasicMeters;
 import org.morphix.lang.JavaObjects;
@@ -80,37 +77,6 @@ public class ApiRequest<T> extends ApiMessage<T> {
 	 * The authentication type.
 	 */
 	protected AuthenticationType authenticationType;
-
-	/**
-	 * Compares this {@link ApiRequest} with another object for equality.
-	 *
-	 * @param obj the object to compare with
-	 * @return true if the objects are equal, false otherwise
-	 */
-	@Override
-	public boolean equals(final Object obj) {
-		return EqualsBuilder.reflectionEquals(this, obj);
-	}
-
-	/**
-	 * Generates a hash code for this {@link ApiRequest}.
-	 *
-	 * @return the hash code for this object
-	 */
-	@Override
-	public int hashCode() {
-		return HashCodeBuilder.reflectionHashCode(this);
-	}
-
-	/**
-	 * Returns a JSON representation of this {@link ApiRequest}.
-	 *
-	 * @return a JSON string representing this object
-	 */
-	@Override
-	public String toString() {
-		return JsonBuilder.toJson(this);
-	}
 
 	/**
 	 * Returns the method for the request.

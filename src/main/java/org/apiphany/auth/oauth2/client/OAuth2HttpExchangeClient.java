@@ -7,8 +7,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
 import org.apiphany.auth.AuthenticationToken;
@@ -19,6 +17,8 @@ import org.apiphany.client.http.AbstractHttpExchangeClient;
 import org.apiphany.header.Headers;
 import org.apiphany.http.AuthorizationHeaderValues;
 import org.apiphany.http.HttpHeader;
+import org.apiphany.lang.Strings;
+import org.apiphany.lang.collections.Maps;
 import org.morphix.lang.JavaObjects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -135,12 +135,12 @@ public class OAuth2HttpExchangeClient extends AbstractHttpExchangeClient {
 			LOGGER.warn("[{}] OAuth2 client is disabled!", getClass().getSimpleName());
 			return false;
 		}
-		if (CollectionUtils.isEmpty(clientRegistrations.values())) {
+		if (Maps.isEmpty(clientRegistrations)) {
 			LOGGER.warn("[{}] No OAuth2 client registrations provided in: {}.registration",
 					getClass().getSimpleName(), OAuth2Properties.ROOT);
 			return false;
 		}
-		if (CollectionUtils.isEmpty(providers.values())) {
+		if (Maps.isEmpty(providers)) {
 			LOGGER.warn("[{}] No OAuth2 providers provided in: {}.provider",
 					getClass().getSimpleName(), OAuth2Properties.ROOT);
 			return false;
@@ -158,7 +158,7 @@ public class OAuth2HttpExchangeClient extends AbstractHttpExchangeClient {
 	 * @return client registration name
 	 */
 	public String getClientRegistrationName() {
-		return StringUtils.isNotBlank(clientRegistrationName)
+		return Strings.isNotEmpty(clientRegistrationName)
 				? clientRegistrationName
 				: clientRegistrations.keySet().iterator().next();
 	}
@@ -173,7 +173,7 @@ public class OAuth2HttpExchangeClient extends AbstractHttpExchangeClient {
 		this.clientRegistrationName = clientRegistrationName;
 
 		OAuth2ClientRegistration clientRegistration = clientRegistrations.get(clientRegistrationName);
-		if (StringUtils.isBlank(clientRegistration.getClientSecret())) {
+		if (!clientRegistration.hasClientSecret()) {
 			LOGGER.warn("[{}] No OAuth2 client-secret provided in {}.registration.{}",
 					getClass().getSimpleName(), OAuth2Properties.ROOT, clientRegistrationName);
 			return;

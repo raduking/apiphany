@@ -32,6 +32,26 @@ public interface Strings {
 	}
 
 	/**
+	 * Checks if a CharSequence is empty ("") or null.
+	 *
+	 * @param cs the CharSequence to check, may be null
+	 * @return {@code true} if the CharSequence is empty or null
+	 */
+	public static boolean isEmpty(final CharSequence cs) {
+		return cs == null || cs.length() == 0;
+	}
+
+	/**
+	 * Checks if a CharSequence is not empty ("") or null.
+	 *
+	 * @param cs the CharSequence to check, may be null
+	 * @return {@code true} if the CharSequence is not empty or null
+	 */
+	public static boolean isNotEmpty(final CharSequence cs) {
+		return !isEmpty(cs);
+	}
+
+	/**
 	 * Transforms a string from Lower Camel case to Kebab case. Lower Camel case is the Java convention for naming methods.
 	 * Example: <code>"someCoolName"</code> will be <code>"some-cool-name"</code>.
 	 *
@@ -45,8 +65,8 @@ public interface Strings {
 	}
 
 	/**
-	 * Transforms an input stream to a string. If the input stream cannot be
-	 * converted to string with the given parameters the result will be null.
+	 * Transforms an input stream to a string. If the input stream cannot be converted to string with the given parameters
+	 * the result will be null.
 	 *
 	 * @param inputStream input stream
 	 * @param encoding character encoding

@@ -7,8 +7,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apiphany.RequestParameters.ParameterFunction;
 import org.apiphany.auth.AuthenticationType;
 import org.apiphany.client.ExchangeClient;
@@ -489,22 +487,6 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	@Override
 	public String getHeadersAsString() {
 		return exchangeClient.getHeadersAsString(this);
-	}
-
-	/**
-	 * @see #equals(Object)
-	 */
-	@Override
-	public boolean equals(final Object obj) {
-		return EqualsBuilder.reflectionEquals(this, obj);
-	}
-
-	/**
-	 * @see #hashCode()
-	 */
-	@Override
-	public int hashCode() {
-		return HashCodeBuilder.reflectionHashCode(this);
 	}
 
 }

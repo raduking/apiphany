@@ -115,8 +115,8 @@ public abstract class AbstractHttpExchangeClient implements ExchangeClient {
 	 * @return the client properties for this client
 	 */
 	@Override
-	public ClientProperties getClientProperties() {
-		return clientProperties;
+	public <T extends ClientProperties> T getClientProperties() {
+		return JavaObjects.cast(clientProperties);
 	}
 
 	/**
