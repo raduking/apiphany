@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.collections4.CollectionUtils;
-
 /**
  * Utility methods for lists which are missing from JDK.
  *
@@ -19,6 +17,7 @@ public interface Lists {
 	 * Usable for iterating on lists that can be {@code null} without null checks.
 	 * <p>
 	 * Example:
+	 *
 	 * <pre>
 	 * List&lt;String&gt; list;
 	 * for (String element : safe(list)) {
@@ -68,7 +67,7 @@ public interface Lists {
 	 * @return The first element from the given list, if the list is not null or empty, or null otherwise.
 	 */
 	static <T> T first(final List<T> list) {
-		return CollectionUtils.isNotEmpty(list) ? list.getFirst() : null;
+		return isNotEmpty(list) ? list.getFirst() : null;
 	}
 
 	/**
@@ -99,7 +98,31 @@ public interface Lists {
 	 * @return The last element from the given list, if the list is not null or empty, or null otherwise.
 	 */
 	static <T> T last(final List<T> list) {
-		return CollectionUtils.isNotEmpty(list) ? list.getLast() : null;
+		return isNotEmpty(list) ? list.getLast() : null;
+	}
+
+	/**
+	 * Null-safe check if the specified list is empty.
+	 * <p>
+	 * Null returns true.
+	 *
+	 * @param list the list to check, may be null
+	 * @return true if empty or null
+	 */
+	public static <T> boolean isEmpty(final List<T> list) {
+		return list == null || list.isEmpty();
+	}
+
+	/**
+	 * Null-safe check if the specified list is not empty.
+	 * <p>
+	 * Null returns false.
+	 *
+	 * @param coll the list to check, may be null
+	 * @return true if non-null and non-empty
+	 */
+	public static <T> boolean isNotEmpty(final List<T> coll) {
+		return !isEmpty(coll);
 	}
 
 	/**
@@ -112,10 +135,10 @@ public interface Lists {
 	 * @return merged sorted list
 	 */
 	static <T extends Comparable<? super T>> List<T> merge(final List<T> sortedList1, final List<T> sortedList2) {
-		if (CollectionUtils.isEmpty(sortedList1)) {
+		if (isEmpty(sortedList1)) {
 			return sortedList2;
 		}
-		if (CollectionUtils.isEmpty(sortedList2)) {
+		if (isEmpty(sortedList2)) {
 			return sortedList1;
 		}
 		int resultSize = sortedList1.size() + sortedList2.size();

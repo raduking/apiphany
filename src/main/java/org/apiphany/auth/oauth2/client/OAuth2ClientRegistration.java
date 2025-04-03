@@ -9,6 +9,7 @@ import org.apiphany.auth.oauth2.AuthorizationGrantType;
 import org.apiphany.http.ContentType;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.lang.Strings;
 
 /**
  * A representation of a client registration with an OAuth 2.0 or OpenID Connect 1.0 Provider.
@@ -123,4 +124,7 @@ public class OAuth2ClientRegistration {
 				HttpHeader.AUTHORIZATION.value(), authorizationHeaderValue);
 	}
 
+	public boolean hasClientSecret() {
+		return Strings.isNotEmpty(clientSecret);
+	}
 }
