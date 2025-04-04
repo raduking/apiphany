@@ -17,13 +17,16 @@ public interface Headers {
 	/**
 	 * Adds headers to existing headers.
 	 *
+	 * @param <N> header name type
+	 * @param <H> header value type
+	 *
 	 * @param existingHeaders existing headers
 	 * @param headers headers map
 	 */
-	public static <H> void addTo(final Map<String, List<String>> existingHeaders, final Map<String, H> headers) {
+	public static <N, H> void addTo(final Map<String, List<String>> existingHeaders, final Map<N, H> headers) {
 		Nullables.whenNotNull(headers).then(hdrs -> {
-			for (Map.Entry<String, H> header : hdrs.entrySet()) {
-				String headerName = header.getKey();
+			for (Map.Entry<N, H> header : hdrs.entrySet()) {
+				N headerName = header.getKey();
 				Object headerValue = Nullables.nonNullOrDefault(header.getValue(), "");
 				addTo(existingHeaders, headerName, headerValue);
 			}
@@ -33,18 +36,22 @@ public interface Headers {
 	/**
 	 * Adds a header to existing headers.
 	 *
+	 * @param <N> header name type
+	 * @param <H> header value type
+	 *
 	 * @param existingHeaders existing headers
 	 * @param headerName header name
 	 * @param headerValue header value
 	 */
-	public static <H> void addTo(final Map<String, List<String>> existingHeaders, final String headerName, final H headerValue) {
+	public static <N, H> void addTo(final Map<String, List<String>> existingHeaders, final N headerName, final H headerValue) {
+		String stringHeaderName = Strings.safeToString(headerName);
 		if (headerValue instanceof List<?> headerList) {
 			if (existingHeaders.containsKey(headerName)) {
-				List<String> existing = existingHeaders.computeIfAbsent(headerName, k -> new ArrayList<>());
+				List<String> existing = existingHeaders.computeIfAbsent(stringHeaderName, k -> new ArrayList<>());
 				headerList.forEach(hv -> existing.add(Strings.safeToString(hv)));
 			}
-		} else {
-			existingHeaders.computeIfAbsent(headerName, k -> new ArrayList<>()).add(headerValue.toString());
+		} else if (null != headerValue) {
+			existingHeaders.computeIfAbsent(stringHeaderName, k -> new ArrayList<>()).add(headerValue.toString());
 		}
 	}
 

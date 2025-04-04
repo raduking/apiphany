@@ -66,7 +66,7 @@ class ApiRequestTest {
 				  "classResponseType" : "java.lang.String",
 				  "charset" : "UTF-8",
 				  "stream" : false,
-				  "authenticationType" : "NO_AUTHENTICATION"
+				  "authenticationType" : "NONE"
 				}
 				""",
 		ApiRequest.class);

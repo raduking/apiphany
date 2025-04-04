@@ -11,7 +11,7 @@ public enum AuthenticationType {
 	/**
 	 * No authentication is required.
 	 */
-	NO_AUTHENTICATION,
+	NONE,
 
 	/**
 	 * Session-based authentication, typically using cookies or session IDs.
@@ -31,7 +31,7 @@ public enum AuthenticationType {
 	/**
 	 * OAuth 2.0 token-based authentication.
 	 */
-	OAUTH2_TOKEN,
+	OAUTH2,
 
 	/**
 	 * JSON Web Token (JWT) authentication.

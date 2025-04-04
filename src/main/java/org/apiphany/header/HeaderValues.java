@@ -20,6 +20,17 @@ public class HeaderValues {
 	 */
 	public static final String REDACTED = "REDACTED";
 
+	// TODO: see how move these to a different class/enum
+	/**
+	 * Prefix for building the header with Bearer token.
+	 */
+	public static final String BEARER = "Bearer";
+
+	/**
+	 * Prefix for building the header with Basic token.
+	 */
+	public static final String BASIC = "Basic";
+
 	/**
 	 * The next {@link HeaderValues} in the chain of responsibility. If {@code null}, this represents the end of the chain.
 	 */
@@ -29,11 +40,12 @@ public class HeaderValues {
 	 * Retrieves values for the specified header. The default implementation always returns an empty list. Subclasses should
 	 * override this method to provide specific header resolution logic.
 	 *
+	 * @param <N> header name type
 	 * @param header the name of the header to retrieve (case sensitivity depends on implementation)
 	 * @param headers the context object containing header information (type may vary by implementation)
 	 * @return an empty list by default, implementations should return specific header values
 	 */
-	public List<String> get(final String header, final Object headers) {
+	public <N> List<String> get(final N header, final Object headers) {
 		return Collections.emptyList();
 	}
 

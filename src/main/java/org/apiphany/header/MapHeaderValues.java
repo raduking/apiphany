@@ -21,9 +21,10 @@ public class MapHeaderValues extends HeaderValues { // NOSONAR singleton since i
 	/**
 	 * Retrieves header values from a Map structure or delegates to the next handler in the chain. If the input headers
 	 * object is a {@link Map}, this method extracts values for the specified header using
-	 * {@link HttpMessages#getHeaderValues(String, Map)}. Otherwise, it passes the request to the next {@link HeaderValues}
+	 * {@link HttpMessages#getHeaderValues(Object, Map)}. Otherwise, it passes the request to the next {@link HeaderValues}
 	 * in the chain.
 	 *
+	 * @param <N> header name type
 	 * @param header the name of the header to retrieve (case sensitivity depends on implementation)
 	 * @param headers the headers object, expected to be a {@link Map} of header names to values, or any other type that
 	 *     subsequent handlers in the chain might process
@@ -32,7 +33,7 @@ public class MapHeaderValues extends HeaderValues { // NOSONAR singleton since i
 	 * @throws ClassCastException if headers is a Map but cannot be cast to the expected type
 	 */
 	@Override
-	public List<String> get(final String header, final Object headers) {
+	public <N> List<String> get(final N header, final Object headers) {
 		if (null != headers && Map.class.isAssignableFrom(headers.getClass())) {
 			Map<String, List<String>> headersMap = JavaObjects.cast(headers);
 			return HttpMessages.getHeaderValues(header, headersMap);

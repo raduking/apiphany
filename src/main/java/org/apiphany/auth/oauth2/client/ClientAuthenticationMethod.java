@@ -5,18 +5,43 @@ import java.util.Map;
 import org.morphix.lang.Enums;
 
 /**
- * Client authentication method.
+ * Enumeration of OAuth2 client authentication methods. Defines the various ways a client can authenticate with the
+ * authorization server when requesting an access token.
  *
  * @author Radu Sebastian LAZIN
  */
 public enum ClientAuthenticationMethod {
 
-	BASIC("basic"),
-	CLIENT_SECRET_BASIC("client_secret_basic"),
-	CLIENT_SECRET_POST("client_secret_post"),
-	CLIENT_SECRET_JWT("client_secret_jwt"),
-	PRIVATE_KEY_JWT("private_key_jwt"),
-	NONE("none");
+    /**
+     * Client secret basic authentication (OAuth2 specification).
+     * The client authenticates with its client_id and client_secret
+     * using HTTP Basic authentication scheme.
+     */
+    CLIENT_SECRET_BASIC("client_secret_basic"),
+
+    /**
+     * Client secret post authentication (OAuth2 specification).
+     * The client credentials are included in the request body.
+     */
+    CLIENT_SECRET_POST("client_secret_post"),
+
+    /**
+     * Client secret JWT authentication (RFC 7523).
+     * The client authenticates by signing a JWT with the client secret.
+     */
+    CLIENT_SECRET_JWT("client_secret_jwt"),
+
+    /**
+     * Private key JWT authentication (RFC 7523).
+     * The client authenticates by signing a JWT with its private key.
+     */
+    PRIVATE_KEY_JWT("private_key_jwt"),
+
+    /**
+     * No authentication method.
+     * Used for public clients that don't require authentication.
+     */
+    NONE("none");
 
 	/**
 	 * The name map for easy from string implementation.

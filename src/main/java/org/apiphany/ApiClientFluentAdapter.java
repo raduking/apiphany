@@ -293,10 +293,13 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	/**
 	 * Sets the headers.
 	 *
+	 * @param <N> header name type
+	 * @param <H> header value type
+	 *
 	 * @param headers headers map
 	 * @return this
 	 */
-	public <H> ApiClientFluentAdapter headers(final Map<String, H> headers) {
+	public <N, H> ApiClientFluentAdapter headers(final Map<N, H> headers) {
 		Headers.addTo(this.headers, headers);
 		return this;
 	}
@@ -304,24 +307,60 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	/**
 	 * Sets the headers if the condition is true.
 	 *
+	 * @param <N> header name type
+	 * @param <H> header value type
+	 *
 	 * @param condition condition on when to add the supplied headers
 	 * @param headersSupplier headers map supplier
 	 * @return this
 	 */
-	public <H> ApiClientFluentAdapter headers(final boolean condition, final Supplier<Map<String, H>> headersSupplier) {
+	public <N, H> ApiClientFluentAdapter headersWhen(final boolean condition, final Supplier<Map<N, H>> headersSupplier) {
 		return condition ? headers(headersSupplier.get()) : this;
 	}
 
 	/**
 	 * Adds a header.
 	 *
+	 * @param <N> header name type
+	 * @param <H> header value type
+	 *
 	 * @param headerName header name
 	 * @param headerValue header value
 	 * @return this
 	 */
-	public <H> ApiClientFluentAdapter header(final String headerName, final H headerValue) {
+	public <N, H> ApiClientFluentAdapter header(final N headerName, final H headerValue) {
 		Headers.addTo(headers, headerName, headerValue);
 		return this;
+	}
+
+	/**
+	 * Adds a header when the given condition is true.
+	 *
+	 * @param <N> header name type
+	 * @param <H> header value type
+	 *
+	 * @param condition condition when to add the headers
+	 * @param headerName header name
+	 * @param headerValue header value
+	 * @return this
+	 */
+	public <N, H> ApiClientFluentAdapter headerWhen(final boolean condition, final N headerName, final H headerValue) {
+		return headerWhen(condition, headerName, () -> headerValue);
+	}
+
+	/**
+	 * Adds a header when the given condition is true.
+	 *
+	 * @param <N> header name type
+	 * @param <H> header value type
+	 *
+	 * @param condition condition when to add the headers
+	 * @param headerName header name
+	 * @param headerValueSupplier header value supplier
+	 * @return this
+	 */
+	public <N, H> ApiClientFluentAdapter headerWhen(final boolean condition, final N headerName, final Supplier<H> headerValueSupplier) {
+		return condition ? header(headerName, headerValueSupplier.get()) : this;
 	}
 
 	/**

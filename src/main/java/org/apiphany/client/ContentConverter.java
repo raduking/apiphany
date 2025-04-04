@@ -53,6 +53,7 @@ public interface ContentConverter<T> {
 	 * Retrieves the values of a specific header from the provided headers object.
 	 *
 	 * @param <V> the type of the headers object
+	 * @param <N> header name type
 	 *
 	 * @param headers the headers object from which to retrieve the values.
 	 * @param header the name of the header whose values are to be retrieved.
@@ -60,7 +61,7 @@ public interface ContentConverter<T> {
 	 * @return a list of values for the specified header. If the header is not found or the headers object is of an
 	 * unsupported type, an empty list is returned.
 	 */
-	default <V> List<String> getHeaderValues(final V headers, final String header, final HeaderValuesChain headerValuesChain) {
+	default <V, N> List<String> getHeaderValues(final V headers, final N header, final HeaderValuesChain headerValuesChain) {
 		return headerValuesChain.get(header, headers);
 	}
 
