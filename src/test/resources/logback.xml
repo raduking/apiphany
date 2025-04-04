@@ -12,5 +12,5 @@
     </root>
     
     <!-- Specific logger -->
-    <logger name="org.apiphany" level="INFO"/>
+    <logger name="org.apiphany" level="DEBUG"/>
 </configuration>

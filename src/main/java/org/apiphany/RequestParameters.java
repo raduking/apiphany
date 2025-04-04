@@ -66,13 +66,13 @@ public class RequestParameters {
 		 * Creates a {@link ParameterFunction} for a single key-value pair, where both the key and value are converted to
 		 * strings.
 		 *
-		 * @param <T> the type of the key (must be an enum).
+		 * @param <T> the type of the key.
 		 * @param <U> the type of the value.
 		 * @param name the parameter name.
 		 * @param value the parameter value.
 		 * @return a {@link ParameterFunction} that inserts the key-value pair into the map.
 		 */
-		static <T extends Enum<T>, U> ParameterFunction parameter(final T name, final U value) {
+		static <T, U> ParameterFunction parameter(final T name, final U value) {
 			return parameter(String.valueOf(name), String.valueOf(value));
 		}
 

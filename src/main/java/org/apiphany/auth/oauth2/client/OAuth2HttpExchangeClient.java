@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
 import org.apiphany.auth.AuthenticationToken;
+import org.apiphany.auth.AuthenticationType;
 import org.apiphany.auth.oauth2.OAuth2Properties;
 import org.apiphany.auth.oauth2.OAuth2ProviderDetails;
 import org.apiphany.client.ExchangeClient;
@@ -152,6 +153,14 @@ public class OAuth2HttpExchangeClient extends AbstractHttpExchangeClient {
 	}
 
 	/**
+	 * @see #getAuthenticationType()
+	 */
+	@Override
+	public AuthenticationType getAuthenticationType() {
+		return AuthenticationType.OAUTH2;
+	}
+
+	/**
 	 * Returns the client registration name, if the client registration property is blank a random one is selected from the
 	 * registrations map.
 	 *
@@ -173,6 +182,11 @@ public class OAuth2HttpExchangeClient extends AbstractHttpExchangeClient {
 		this.clientRegistrationName = clientRegistrationName;
 
 		OAuth2ClientRegistration clientRegistration = clientRegistrations.get(clientRegistrationName);
+		if (null == clientRegistration) {
+			LOGGER.warn("[{}] No OAuth2 client provided for client registration in {}.registration.{}",
+					getClass().getSimpleName(), OAuth2Properties.ROOT, clientRegistrationName);
+			return;
+		}
 		if (!clientRegistration.hasClientSecret()) {
 			LOGGER.warn("[{}] No OAuth2 client-secret provided in {}.registration.{}",
 					getClass().getSimpleName(), OAuth2Properties.ROOT, clientRegistrationName);
@@ -267,7 +281,9 @@ public class OAuth2HttpExchangeClient extends AbstractHttpExchangeClient {
 	public <T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest) {
 		if (null != getAuthenticationToken()) {
 			String headerValue = AuthorizationHeaderValues.bearerHeaderValue(authenticationToken.getAccessToken());
-			Headers.addTo(apiRequest.getHeaders(), HttpHeader.AUTHORIZATION.value(), headerValue);
+			Headers.addTo(apiRequest.getHeaders(), HttpHeader.AUTHORIZATION, headerValue);
+		} else {
+			throw new IllegalStateException("Missing authentication token");
 		}
 		return exchangeClient.exchange(apiRequest);
 	}

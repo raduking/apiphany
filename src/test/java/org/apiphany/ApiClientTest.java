@@ -52,7 +52,7 @@ class ApiClientTest {
 	@Test
 	void shouldCallExchangeClientWithProvidedParameters() {
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
-		doReturn(AuthenticationType.OAUTH2_TOKEN).when(exchangeClient).getAuthenticationType();
+		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 
 		TestDto expected = TestDto.of(ID1, COUNT1);
 		ApiResponse<TestDto> response = ApiResponse.create(expected)
@@ -77,7 +77,7 @@ class ApiClientTest {
 	@Test
 	void shouldReturnEmptyIfCallExchangeClientWithProvidedParametersReturnsNull() {
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
-		doReturn(AuthenticationType.OAUTH2_TOKEN).when(exchangeClient).getAuthenticationType();
+		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 		ApiResponse<TestDto> response = ApiResponse.<TestDto>builder()
 				.status(HTTP_STATUS_BAD_REQUEST, HttpStatus::from)
 				.exchangeClient(exchangeClient)
@@ -99,7 +99,7 @@ class ApiClientTest {
 	@Test
 	void shouldCallTheCorrectExchangeClientWhenMoreArePresent() {
 		ExchangeClient exchangeClient1 = mock(ExchangeClient.class);
-		doReturn(AuthenticationType.OAUTH2_TOKEN).when(exchangeClient1).getAuthenticationType();
+		doReturn(AuthenticationType.OAUTH2).when(exchangeClient1).getAuthenticationType();
 		TestDto expected1 = TestDto.of(ID1, COUNT1);
 		ApiResponse<TestDto> response1 = ApiResponse.create(expected1)
 				.status(HTTP_STATUS_OK, HttpStatus::from)
@@ -118,7 +118,7 @@ class ApiClientTest {
 
 		ApiClient api = ApiClient.of(BASE_URL, List.of(exchangeClient1, exchangeClient2));
 
-		TestDto result1 = api.client(AuthenticationType.OAUTH2_TOKEN)
+		TestDto result1 = api.client(AuthenticationType.OAUTH2)
 				.get()
 				.path(PATH_TEST)
 				.retrieve(TestDto.class)
@@ -138,7 +138,7 @@ class ApiClientTest {
 	@Test
 	void shouldCallExchangeClientWithTheCorrectParameters() {
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
-		doReturn(AuthenticationType.OAUTH2_TOKEN).when(exchangeClient).getAuthenticationType();
+		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 
 		TestDto expected = TestDto.of(ID1, COUNT1);
 		ApiResponse<TestDto> response = ApiResponse.create(expected)
@@ -147,7 +147,7 @@ class ApiClientTest {
 				.build();
 
 		ApiClient api = spy(ApiClient.of(BASE_URL, exchangeClient));
-		ApiClientFluentAdapter adapter = ApiClientFluentAdapter.of(api).authenticationType(AuthenticationType.OAUTH2_TOKEN);
+		ApiClientFluentAdapter adapter = ApiClientFluentAdapter.of(api).authenticationType(AuthenticationType.OAUTH2);
 		doReturn(adapter).when(api).client();
 		doReturn(response).when(exchangeClient).exchange(adapter);
 		doReturn(HttpMethod.GET).when(exchangeClient).get();
@@ -169,7 +169,7 @@ class ApiClientTest {
 	@Test
 	void shouldReturnEmptyIfCallExchangeClientWithProvidedParametersThrowsException() {
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
-		doReturn(AuthenticationType.OAUTH2_TOKEN).when(exchangeClient).getAuthenticationType();
+		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 
 		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
 		var e = new RuntimeException(SOME_ERROR_MESSAGE);
@@ -188,7 +188,7 @@ class ApiClientTest {
 	@Test
 	void shouldReturnCorrectApiResponseIfCallExchangeClientWithProvidedParametersThrowsException() {
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
-		doReturn(AuthenticationType.OAUTH2_TOKEN).when(exchangeClient).getAuthenticationType();
+		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 
 		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
 		var e = new RuntimeException(SOME_ERROR_MESSAGE);
@@ -208,7 +208,7 @@ class ApiClientTest {
 	@Test
 	void shouldSetMetricsToThisMethod() {
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
-		doReturn(AuthenticationType.OAUTH2_TOKEN).when(exchangeClient).getAuthenticationType();
+		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 
 		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
 
@@ -229,7 +229,7 @@ class ApiClientTest {
 	@Test
 	void shouldSetMetricsToThisMethodWithTags() {
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
-		doReturn(AuthenticationType.OAUTH2_TOKEN).when(exchangeClient).getAuthenticationType();
+		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 
 		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
 
@@ -250,7 +250,7 @@ class ApiClientTest {
 	@Test
 	void shouldSetMetricsWithoutMethod() {
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
-		doReturn(AuthenticationType.OAUTH2_TOKEN).when(exchangeClient).getAuthenticationType();
+		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 
 		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
 
@@ -271,7 +271,7 @@ class ApiClientTest {
 	@Test
 	void shouldUseDefaultMetricsIfNoMetricsAreSetAndMetricsAreDisabled() {
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
-		doReturn(AuthenticationType.OAUTH2_TOKEN).when(exchangeClient).getAuthenticationType();
+		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 
 		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
 		api.setMetricsEnabled(false);
@@ -292,7 +292,7 @@ class ApiClientTest {
 	@Test
 	void shouldUseDefaultMetricsEvenIfNoMetricsAreSetButMetricsAreDisabled() {
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
-		doReturn(AuthenticationType.OAUTH2_TOKEN).when(exchangeClient).getAuthenticationType();
+		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 
 		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
 		api.setMetricsEnabled(false);
@@ -319,7 +319,7 @@ class ApiClientTest {
 	@Test
 	void shouldSetTheMeters() {
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
-		doReturn(AuthenticationType.OAUTH2_TOKEN).when(exchangeClient).getAuthenticationType();
+		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 		BasicMeters basicMeters = mock(BasicMeters.class);
 		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
 		api.setMeters(basicMeters);
@@ -333,7 +333,7 @@ class ApiClientTest {
 	@Test
 	void shouldThrowExceptionIfCallExchangeClientWithProvidedParametersThrowsExceptionAndIsBleedExceptionsIsTrue() {
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
-		doReturn(AuthenticationType.OAUTH2_TOKEN).when(exchangeClient).getAuthenticationType();
+		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 
 		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
 		var e = new RuntimeException(SOME_ERROR_MESSAGE);
@@ -358,7 +358,7 @@ class ApiClientTest {
 	@Test
 	void shouldThrowExceptionWhenMoreExchangeClientsArePresent() {
 		ExchangeClient exchangeClient1 = mock(ExchangeClient.class);
-		doReturn(AuthenticationType.OAUTH2_TOKEN).when(exchangeClient1).getAuthenticationType();
+		doReturn(AuthenticationType.OAUTH2).when(exchangeClient1).getAuthenticationType();
 		TestDto expected1 = TestDto.of(ID1, COUNT1);
 		ApiResponse<TestDto> response1 = ApiResponse.create(expected1)
 				.status(HttpStatus.OK)
@@ -396,7 +396,7 @@ class ApiClientTest {
 	@Test
 	void shouldThrowExceptionWhenCreatingClientWithMoreExchangeClientsWithTheSameType() {
 		ExchangeClient exchangeClient1 = mock(ExchangeClient.class);
-		doReturn(AuthenticationType.OAUTH2_TOKEN).when(exchangeClient1).getAuthenticationType();
+		doReturn(AuthenticationType.OAUTH2).when(exchangeClient1).getAuthenticationType();
 		TestDto expected1 = TestDto.of(ID1, COUNT1);
 		ApiResponse<TestDto> response1 = ApiResponse.create(expected1)
 				.status(HttpStatus.OK)
@@ -405,7 +405,7 @@ class ApiClientTest {
 		doReturn(response1).when(exchangeClient1).exchange(any(ApiRequest.class));
 
 		ExchangeClient exchangeClient2 = mock(ExchangeClient.class);
-		doReturn(AuthenticationType.OAUTH2_TOKEN).when(exchangeClient2).getAuthenticationType();
+		doReturn(AuthenticationType.OAUTH2).when(exchangeClient2).getAuthenticationType();
 		TestDto expected2 = TestDto.of(ID2, COUNT2);
 		ApiResponse<TestDto> response2 = ApiResponse.create(expected2)
 				.status(HttpStatus.OK)
@@ -422,7 +422,7 @@ class ApiClientTest {
 					+ "[" + ApiClient.class + "]: "
 					+ "More than one "
 					+ "interface " + ExchangeClient.class.getCanonicalName() + " "
-					+ "with type " + AuthenticationType.OAUTH2_TOKEN + " found."));
+					+ "with type " + AuthenticationType.OAUTH2 + " found."));
 		}
 
 		assertThat(result, notNullValue());
@@ -446,10 +446,10 @@ class ApiClientTest {
 		Exception result = null;
 		ApiClient api = ApiClient.of(BASE_URL, List.of());
 		try {
-			api.getExchangeClient(AuthenticationType.OAUTH2_TOKEN);
+			api.getExchangeClient(AuthenticationType.OAUTH2);
 		} catch (IllegalStateException e) {
 			result = e;
-			assertThat(result.getMessage(), equalTo("No ExchangeClient found for authentication type: " + AuthenticationType.OAUTH2_TOKEN));
+			assertThat(result.getMessage(), equalTo("No ExchangeClient found for authentication type: " + AuthenticationType.OAUTH2));
 		}
 
 		assertThat(result, notNullValue());
@@ -459,7 +459,7 @@ class ApiClientTest {
 	@Test
 	void shouldMakeGetCallWithTheCorrectUri() {
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
-		doReturn(AuthenticationType.OAUTH2_TOKEN).when(exchangeClient).getAuthenticationType();
+		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 
 		TestDto expected = TestDto.of(ID1, COUNT1);
 		ApiResponse<TestDto> response = ApiResponse.create(expected)
@@ -469,7 +469,7 @@ class ApiClientTest {
 		doReturn(response).when(exchangeClient).exchange(any(ApiRequest.class));
 
 		DummyApiClient api = spy(new DummyApiClient(BASE_URL, exchangeClient));
-		ApiClientFluentAdapter adapter = ApiClientFluentAdapter.of(api).authenticationType(AuthenticationType.OAUTH2_TOKEN);
+		ApiClientFluentAdapter adapter = ApiClientFluentAdapter.of(api).authenticationType(AuthenticationType.OAUTH2);
 		doReturn(adapter).when(api).client();
 
 		TestDto result = api.getTest(PATH_TEST, PATH_TEST);
@@ -516,7 +516,7 @@ class ApiClientTest {
 	@Test
 	void shouldSetTheRetry() {
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
-		doReturn(AuthenticationType.OAUTH2_TOKEN).when(exchangeClient).getAuthenticationType();
+		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 		Retry retry = mock(Retry.class);
 		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
 		api.setRetry(retry);

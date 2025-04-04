@@ -18,6 +18,7 @@ import java.util.function.Predicate;
 
 import org.apiphany.auth.AuthenticationType;
 import org.apiphany.client.ExchangeClient;
+import org.apiphany.lang.Strings;
 import org.apiphany.lang.accumulator.ExceptionsAccumulator;
 import org.apiphany.lang.retry.Retry;
 import org.apiphany.meters.BasicMeters;
@@ -94,7 +95,7 @@ public class ApiClient {
 	protected ApiClient(
 			final String baseUrl,
 			final List<ExchangeClient> exchangeClients) {
-		LOGGER.debug("Initializing: {}(baseUrl: {})", getClass().getSimpleName(), baseUrl);
+		LOGGER.debug("Initializing: {}(baseUrl: {})", getClass().getSimpleName(), Strings.isEmpty(baseUrl) ? "<no-base-url>" : baseUrl);
 		this.baseUrl = baseUrl;
 
 		for (ExchangeClient exchangeClient : exchangeClients) {
@@ -293,7 +294,7 @@ public class ApiClient {
 	 * @param exchangeClient the exchange client that made the failed request
 	 * @return API error response object
 	 */
-	protected <T> ApiResponse<T> errorResponse(Exception exception, ExchangeClient exchangeClient) {
+	protected <T> ApiResponse<T> errorResponse(final Exception exception, final ExchangeClient exchangeClient) {
 		return ApiResponse.<T>builder()
 				.exception(exception)
 				.errorMessagePrefix("API error: ")
