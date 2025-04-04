@@ -66,6 +66,8 @@ public abstract class AbstractHttpExchangeClient implements ExchangeClient {
 
 	/**
 	 * Adds default value handlers to the header values chain.
+	 *
+	 * @param headerValuesChain the header values chain object
 	 */
 	public static void addDefaultHeaderValues(final HeaderValuesChain headerValuesChain) {
 		headerValuesChain.add(HttpHeaderValues.getInstance());
@@ -106,7 +108,7 @@ public abstract class AbstractHttpExchangeClient implements ExchangeClient {
 			return JavaObjects.cast(stringConverterSupplier.get().from(body, String.class));
 		}
 		throw new UnsupportedOperationException("No content converter found to convert response to: " + apiRequest.getResponseType().getTypeName()
-				+ ", for the response content type: " + getHeaderValuesChain().get(HttpHeader.CONTENT_TYPE.value(), headers));
+				+ ", for the response content type: " + getHeaderValuesChain().get(HttpHeader.CONTENT_TYPE, headers));
 	}
 
 	/**
@@ -115,8 +117,8 @@ public abstract class AbstractHttpExchangeClient implements ExchangeClient {
 	 * @return the client properties for this client
 	 */
 	@Override
-	public ClientProperties getClientProperties() {
-		return clientProperties;
+	public <T extends ClientProperties> T getClientProperties() {
+		return JavaObjects.cast(clientProperties);
 	}
 
 	/**

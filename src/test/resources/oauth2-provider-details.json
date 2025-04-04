@@ -1,0 +1,18 @@
+{
+  "authorizationUri": "https://example.com/oauth2/authorize",
+  "tokenUri": "https://example.com/oauth2/token",
+  "userInfoEndpoint": {
+    "uri": "https://example.com/oauth2/userinfo",
+    "authenticationMethod": "HEADER",
+    "userNameAttributeName": "sub"
+  },
+  "jwkSetUri": "https://example.com/oauth2/jwks",
+  "issuerUri": "https://example.com",
+  "configurationMetadata": {
+    "response_types_supported": ["code", "token", "id_token"],
+    "id_token_signing_alg_values_supported": ["RS256"],
+    "scopes_supported": ["openid", "profile", "email", "address", "phone"],
+    "claims_supported": ["sub", "name", "given_name", "family_name", "email", "email_verified"],
+    "end_session_endpoint": "https://example.com/oauth2/logout"
+  }
+}

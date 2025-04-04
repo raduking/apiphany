@@ -5,8 +5,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Maps;
@@ -547,7 +545,7 @@ public class ClientProperties {
 		 * @return true if GZIP compression is enabled, false otherwise.
 		 */
 		public boolean isGzip() {
-			return BooleanUtils.isTrue(gzip);
+			return Boolean.TRUE.equals(gzip);
 		}
 
 		/**
@@ -580,7 +578,7 @@ public class ClientProperties {
 		/**
 		 * The class name for the custom configuration.
 		 */
-		private String configClass = null;
+		private String configClass;
 
 		/**
 		 * A map of custom configuration properties.
@@ -631,7 +629,7 @@ public class ClientProperties {
 		 * @return an instance of the specified class, or null if the configuration is invalid.
 		 */
 		public <T> T get(final Class<T> expectedConfigClass) {
-			if (StringUtils.isBlank(configClass)) {
+			if (Strings.isEmpty(configClass)) {
 				return null;
 			}
 			if (null == properties) {

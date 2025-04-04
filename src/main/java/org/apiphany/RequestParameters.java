@@ -10,10 +10,8 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apiphany.lang.collections.Lists;
+import org.apiphany.lang.collections.Maps;
 import org.morphix.reflection.Constructors;
 
 /**
@@ -136,7 +134,7 @@ public class RequestParameters {
 		 */
 		static ParameterFunction parameter(final String name, final List<String> elements) {
 			return map -> {
-				if (CollectionUtils.isNotEmpty(elements)) {
+				if (Lists.isNotEmpty(elements)) {
 					map.put(name, String.join(",", elements));
 				}
 			};
@@ -184,7 +182,7 @@ public class RequestParameters {
 		 */
 		static ParameterFunction withCondition(final boolean condition, final ParameterFunction... paramFunctions) {
 			return map -> {
-				if (condition && ArrayUtils.isNotEmpty(paramFunctions)) {
+				if (condition && null != paramFunctions) {
 					for (ParameterFunction paramFunction : paramFunctions) {
 						paramFunction.putInto(map);
 					}
@@ -251,7 +249,7 @@ public class RequestParameters {
 	 * @return a new map containing the inserted parameters.
 	 */
 	public static Map<String, String> of(final ParameterFunction... paramFunctions) {
-		if (ArrayUtils.isEmpty(paramFunctions)) {
+		if (null == paramFunctions || 0 == paramFunctions.length) {
 			return Collections.emptyMap();
 		}
 		var map = new HashMap<String, String>();
@@ -279,7 +277,7 @@ public class RequestParameters {
 	 * @return a string representation of the parameters.
 	 */
 	public static String asString(final Map<String, String> params) {
-		if (MapUtils.isEmpty(params)) {
+		if (Maps.isEmpty(params)) {
 			return "";
 		}
 		String[] paramsArray = params.entrySet().stream()

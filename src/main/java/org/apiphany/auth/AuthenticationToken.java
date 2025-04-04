@@ -39,6 +39,45 @@ public class AuthenticationToken {
 	private String tokenType;
 
 	/**
+	 * The time in seconds until the access token expires.
+	 */
+	@JsonProperty("refresh_expires_in")
+	private long refreshExpiresIn;
+
+	/**
+	 * The "not-before-policy" (nbf) claim indicates the time before which the token MUST NOT be accepted. This is typically
+	 * used to implement token revocation or policy changes, ensuring tokens issued before a certain time are rejected even
+	 * if they haven't expired.
+	 * <p>
+	 * In Keycloak (and some other OAuth2 providers), this field represents the timestamp (in seconds since epoch) when the
+	 * token becomes valid relative to policy changes. A value of 0 typically means no restriction.
+	 *
+	 * @see <a href="https://datatracker.ietf.org/doc/html/rfc7519#section-4.1.5">RFC 7519 (JWT) - nbf Claim</a>
+	 * @see <a href="https://www.keycloak.org/docs/latest/securing_apps/index.html#token-timeouts">Keycloak Token
+	 * Timeouts</a>
+	 */
+	@JsonProperty("not-before-policy")
+	private int notBeforePolicy;
+
+	/**
+	 * The scope of the access token as a space-separated list of case-sensitive strings.
+	 * <p>
+	 * In OAuth 2.0, scopes define the specific permissions/access rights granted by the token. Common examples include
+	 * "profile", "email", "openid" for OpenID Connect, or custom API scopes.
+	 * <p>
+	 * Example values:
+	 * <ul>
+	 * <li>"profile email"</li>
+	 * <li>"read write"</li>
+	 * <li>"openid profile email"</li>
+	 * </ul>
+	 *
+	 * @see <a href="https://datatracker.ietf.org/doc/html/rfc6749#section-3.3">RFC 6749 - OAuth 2.0 Scopes</a>
+	 * @see <a href="https://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims">OpenID Connect Scopes</a>
+	 */
+	private String scope;
+
+	/**
 	 * The exact instant when the token expires.
 	 */
 	private Instant expiration;
@@ -150,5 +189,59 @@ public class AuthenticationToken {
 	 */
 	public void setTokenType(final String tokenType) {
 		this.tokenType = tokenType;
+	}
+
+	/**
+	 * Returns the time in seconds until the refresh token expires.
+	 *
+	 * @return the time in seconds until the refresh token expires.
+	 */
+	public long getRefreshExpiresIn() {
+		return refreshExpiresIn;
+	}
+
+	/**
+	 * Sets the time in seconds until the refresh token expires.
+	 *
+	 * @param refreshExpiresIn the time in seconds until the refresh token expires.
+	 */
+	public void setRefreshExpiresIn(final long refreshExpiresIn) {
+		this.refreshExpiresIn = refreshExpiresIn;
+	}
+
+	/**
+	 * Returns the "not-before-policy" (nbf) claim.
+	 *
+	 * @return the "not-before-policy" (nbf) claim
+	 */
+	public int getNotBeforePolicy() {
+		return notBeforePolicy;
+	}
+
+	/**
+	 * Sets the {@code "not-before-policy"} (nbf) claim.
+	 *
+	 * @param notBeforePolicy the {@code "not-before-policy"} (nbf) claim to set
+	 */
+	public void setNotBeforePolicy(final int notBeforePolicy) {
+		this.notBeforePolicy = notBeforePolicy;
+	}
+
+	/**
+	 * Returns the scope of the access token as a space-separated list of case-sensitive strings.
+	 *
+	 * @return the scope of the access token as a space-separated list of case-sensitive strings
+	 */
+	public String getScope() {
+		return scope;
+	}
+
+	/**
+	 * Sets the scope of the access token as a space-separated list of case-sensitive strings.
+	 *
+	 * @param scope scope of the access token to set
+	 */
+	public void setScope(final String scope) {
+		this.scope = scope;
 	}
 }

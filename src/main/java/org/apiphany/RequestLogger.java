@@ -2,7 +2,6 @@ package org.apiphany;
 
 import java.time.Duration;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.Temporals;
 import org.morphix.lang.Nullables;
@@ -29,7 +28,7 @@ public class RequestLogger {
 	/**
 	 * The log separator line, created by repeating {@link #LOG_SEPARATOR_CHAR} for {@link #LOG_SEPARATOR_LENGTH} times.
 	 */
-	public static final String LOG_SEPARATOR = StringUtils.repeat(LOG_SEPARATOR_CHAR, LOG_SEPARATOR_LENGTH);
+	public static final String LOG_SEPARATOR = String.valueOf(LOG_SEPARATOR_CHAR).repeat(LOG_SEPARATOR_LENGTH);
 
 	/**
 	 * The log message format for successful requests.

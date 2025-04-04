@@ -116,4 +116,15 @@ public enum HttpMethod implements RequestMethod {
 		return Enums.fromString(method, NAME_MAP, values());
 	}
 
+	/**
+	 * Returns true if the given string matches the enum value ignoring the case, false otherwise. The HTTP methods are
+	 * case-insensitive.
+	 *
+	 * @param method method as string to match
+	 * @return true if the given string matches the enum value ignoring the case, false otherwise.
+	 */
+	public boolean matches(final String method) {
+		return value().equalsIgnoreCase(method);
+	}
+
 }

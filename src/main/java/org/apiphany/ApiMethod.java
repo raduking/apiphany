@@ -9,6 +9,8 @@ package org.apiphany;
  * The record implements {@link RequestMethod} by providing both {@code toString()} and {@code value()} methods that
  * return the method name.
  *
+ * @param name the string representation of the method
+ *
  * @author Radu Sebastian LAZIN
  */
 public record ApiMethod(String name) implements RequestMethod {
@@ -27,7 +29,7 @@ public record ApiMethod(String name) implements RequestMethod {
 	 * @param name the name of the API method (may be {@code null})
 	 * @return a new {@code ApiMethod} instance with the given name
 	 */
-	public static ApiMethod of(String name) {
+	public static ApiMethod of(final String name) {
 		return new ApiMethod(name);
 	}
 

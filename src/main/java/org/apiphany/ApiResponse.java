@@ -12,11 +12,8 @@ import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apiphany.client.ExchangeClient;
-import org.apiphany.json.JsonBuilder;
+import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Lists;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Nullables;
@@ -56,7 +53,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 *
 	 * @param builder response builder
 	 */
-	private ApiResponse(Builder<T> builder) {
+	private ApiResponse(final Builder<T> builder) {
 		super(builder.body, builder.headers);
 		this.status = builder.status;
 		this.errorMessage = Nullables.nonNullOrDefault(builder.errorMessagePrefix, "") + builder.errorMessage;
@@ -295,7 +292,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @return the error message
 	 */
 	public String getErrorMessage() {
-		return !StringUtils.isEmpty(errorMessage) ? errorMessage : "No error message.";
+		return !Strings.isEmpty(errorMessage) ? errorMessage : "No error message.";
 	}
 
 	/**
@@ -358,30 +355,6 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	}
 
 	/**
-	 * @see Object#equals(Object)
-	 */
-	@Override
-	public boolean equals(final Object o) {
-		return EqualsBuilder.reflectionEquals(this, o);
-	}
-
-	/**
-	 * @see Object#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-		return HashCodeBuilder.reflectionHashCode(this);
-	}
-
-	/**
-	 * @see Object#toString()
-	 */
-	@Override
-	public String toString() {
-		return JsonBuilder.toJson(this);
-	}
-
-	/**
 	 * Returns the API response builder.
 	 *
 	 * @param <T> response body type
@@ -399,7 +372,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @param body response body
 	 * @return an API request builder
 	 */
-	public static <T> Builder<T> create(T body) {
+	public static <T> Builder<T> create(final T body) {
 		return ApiResponse.<T>builder().body(body);
 	}
 
@@ -459,7 +432,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 		 * @param body the response body
 		 * @return this builder instance
 		 */
-		public Builder<T> body(T body) {
+		public Builder<T> body(final T body) {
 			this.body = body;
 			return this;
 		}
@@ -471,7 +444,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 		 * @return this builder instance
 		 * @throws NullPointerException if headers is null
 		 */
-		public Builder<T> headers(Map<String, List<String>> headers) {
+		public Builder<T> headers(final Map<String, List<String>> headers) {
 			this.headers = Objects.requireNonNull(headers, "headers cannot be null");
 			return this;
 		}
@@ -482,7 +455,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 		 * @param status the response status
 		 * @return this builder instance
 		 */
-		public Builder<T> status(Status status) {
+		public Builder<T> status(final Status status) {
 			this.status = status;
 			return this;
 		}
@@ -495,7 +468,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 		 * @param <S> the Status type
 		 * @return this builder instance
 		 */
-		public <S extends Status> Builder<T> status(int status, final IntFunction<S> statusCodeConverter) {
+		public <S extends Status> Builder<T> status(final int status, final IntFunction<S> statusCodeConverter) {
 			return status(statusCodeConverter.apply(status));
 		}
 
@@ -505,7 +478,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 		 * @param errorMessage the error message
 		 * @return this builder instance
 		 */
-		public Builder<T> errorMessage(String errorMessage) {
+		public Builder<T> errorMessage(final String errorMessage) {
 			this.errorMessage = errorMessage;
 			return this;
 		}
@@ -516,7 +489,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 		 * @param errorMessagePrefix the error message prefix
 		 * @return this builder instance
 		 */
-		public Builder<T> errorMessagePrefix(String errorMessagePrefix) {
+		public Builder<T> errorMessagePrefix(final String errorMessagePrefix) {
 			this.errorMessagePrefix = errorMessagePrefix;
 			return this;
 		}
@@ -527,7 +500,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 		 * @param exception the exception
 		 * @return this builder instance
 		 */
-		public Builder<T> exception(Exception exception) {
+		public Builder<T> exception(final Exception exception) {
 			this.exception = exception;
 			return errorMessage(exception.getMessage());
 		}
@@ -538,7 +511,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 		 * @param exchangeClient the exchange client
 		 * @return this builder instance
 		 */
-		public Builder<T> exchangeClient(ExchangeClient exchangeClient) {
+		public Builder<T> exchangeClient(final ExchangeClient exchangeClient) {
 			this.exchangeClient = exchangeClient;
 			return this;
 		}

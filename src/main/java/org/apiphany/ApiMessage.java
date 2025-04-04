@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.collections.Maps;
 
 /**
@@ -43,6 +44,16 @@ public class ApiMessage<T> {
 	 */
 	protected ApiMessage() {
 		this(null, new HashMap<>());
+	}
+
+	/**
+	 * Returns a JSON representation of this {@link ApiMessage}.
+	 *
+	 * @return a JSON string representing this object
+	 */
+	@Override
+	public String toString() {
+		return JsonBuilder.toJson(this);
 	}
 
 	/**

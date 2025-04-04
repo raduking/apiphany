@@ -48,11 +48,12 @@ public class HeaderValuesChain {
 	 * Retrieves the values for the specified header from the chain of {@link HeaderValues}. The chain is traversed in order
 	 * until the first non-null result is found.
 	 *
+	 * @param <N> header name type
 	 * @param header the name of the header to retrieve
 	 * @param headers the context object containing header information (type may vary by implementation)
 	 * @return a list of values for the specified header, or {@code null} if no values were found
 	 */
-	public List<String> get(final String header, final Object headers) {
+	public <N> List<String> get(final N header, final Object headers) {
 		return Nullables.apply(headerValuesList.getFirst(), hv -> hv.get(header, headers));
 	}
 }

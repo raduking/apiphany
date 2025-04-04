@@ -1,7 +1,7 @@
 package org.apiphany;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
+import java.util.Objects;
+
 import org.apiphany.json.JsonBuilder;
 
 public class TestDto {
@@ -36,13 +36,20 @@ public class TestDto {
 	}
 
 	@Override
-	public boolean equals(final Object obj) {
-		return EqualsBuilder.reflectionEquals(this, obj);
+	public int hashCode() {
+		return Objects.hash(count, id);
 	}
 
 	@Override
-	public int hashCode() {
-		return HashCodeBuilder.reflectionHashCode(this);
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (!(obj instanceof TestDto)) {
+			return false;
+		}
+		TestDto other = (TestDto) obj;
+		return count == other.count && Objects.equals(id, other.id);
 	}
 
 	@Override
