@@ -29,11 +29,12 @@ public class HeaderValues {
 	 * Retrieves values for the specified header. The default implementation always returns an empty list. Subclasses should
 	 * override this method to provide specific header resolution logic.
 	 *
+	 * @param <N> header name type
 	 * @param header the name of the header to retrieve (case sensitivity depends on implementation)
 	 * @param headers the context object containing header information (type may vary by implementation)
 	 * @return an empty list by default, implementations should return specific header values
 	 */
-	public List<String> get(final String header, final Object headers) {
+	public <N> List<String> get(final N header, final Object headers) {
 		return Collections.emptyList();
 	}
 

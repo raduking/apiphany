@@ -267,7 +267,7 @@ public class OAuth2HttpExchangeClient extends AbstractHttpExchangeClient {
 	public <T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest) {
 		if (null != getAuthenticationToken()) {
 			String headerValue = AuthorizationHeaderValues.bearerHeaderValue(authenticationToken.getAccessToken());
-			Headers.addTo(apiRequest.getHeaders(), HttpHeader.AUTHORIZATION.value(), headerValue);
+			Headers.addTo(apiRequest.getHeaders(), HttpHeader.AUTHORIZATION, headerValue);
 		}
 		return exchangeClient.exchange(apiRequest);
 	}

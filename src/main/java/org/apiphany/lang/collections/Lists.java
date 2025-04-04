@@ -106,6 +106,8 @@ public interface Lists {
 	 * <p>
 	 * Null returns true.
 	 *
+	 * @param <T> element type
+	 *
 	 * @param list the list to check, may be null
 	 * @return true if empty or null
 	 */
@@ -117,6 +119,8 @@ public interface Lists {
 	 * Null-safe check if the specified list is not empty.
 	 * <p>
 	 * Null returns false.
+	 *
+	 * @param <T> element type
 	 *
 	 * @param coll the list to check, may be null
 	 * @return true if non-null and non-empty

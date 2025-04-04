@@ -35,6 +35,8 @@ public interface ExchangeClient {
 	/**
 	 * Returns the client properties.
 	 *
+	 * @param <T> client properties type
+	 *
 	 * @return the client properties
 	 */
 	default <T extends ClientProperties> T getClientProperties() {
@@ -83,14 +85,15 @@ public interface ExchangeClient {
 	 */
 	default <T> String getHeadersAsString(final ApiMessage<T> apiMessage) {
 		return Maps.safe(apiMessage.getHeaders()).entrySet().stream().map(entry -> {
+			String headerName = entry.getKey();
+			List<String> headerValues = getRedactedHeaderPredicate().test(headerName)
+					? Collections.singletonList(HeaderValues.REDACTED)
+					: entry.getValue();
+
 			StringBuilder sb = new StringBuilder();
-			sb.append(entry.getKey()).append(":");
-			List<String> value = entry.getValue();
-			if (getRedactedHeaderPredicate().test(entry.getKey())) {
-				value = Collections.singletonList(HeaderValues.REDACTED);
-			}
+			sb.append(headerName).append(":");
 			sb.append("\"");
-			sb.append(String.join(", ", value));
+			sb.append(String.join(", ", headerValues));
 			sb.append("\"");
 			return sb.toString();
 		}).toList().toString();

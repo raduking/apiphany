@@ -2,12 +2,9 @@ package org.apiphany.auth.oauth2.client;
 
 import java.util.Base64;
 import java.util.Collections;
-import java.util.Map;
 import java.util.Set;
 
 import org.apiphany.auth.oauth2.AuthorizationGrantType;
-import org.apiphany.http.ContentType;
-import org.apiphany.http.HttpHeader;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 
@@ -115,13 +112,10 @@ public class OAuth2ClientRegistration {
 		this.clientName = clientName;
 	}
 
-	public Map<String, Object> getTokenRequestHeaders() {
+	public String getAuthorizationHeaderValue() {
 		String credentials = String.join(":", getClientId(), getClientSecret());
 		String encodedCredentials = Base64.getEncoder().encodeToString(credentials.getBytes());
-		String authorizationHeaderValue = String.join(" ", getClientAuthenticationMethod().toString(), encodedCredentials);
-		return Map.of(
-				HttpHeader.CONTENT_TYPE.value(), ContentType.APPLICATION_FORM_URLENCODED.value(),
-				HttpHeader.AUTHORIZATION.value(), authorizationHeaderValue);
+		return String.join(" ", getClientAuthenticationMethod().toString(), encodedCredentials);
 	}
 
 	public boolean hasClientSecret() {
