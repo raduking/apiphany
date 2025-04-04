@@ -71,7 +71,7 @@ public class JacksonJsonHttpContentConverter<T> implements HttpContentConverter<
 	@Override
 	public <U, V> boolean isConvertible(final ApiMessage<U> message, final V headers, final HeaderValuesChain headerValuesChain) {
 		for (String contentType : getContentTypes(headers, headerValuesChain)) {
-			if (contentType.contains(ContentType.APPLICATION_JSON.value())) {
+			if (ContentType.APPLICATION_JSON.in(contentType)) {
 				return true;
 			}
 		}

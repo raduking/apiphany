@@ -1,7 +1,7 @@
 {
   "registrationId": "keycloak-client",
   "clientId": "apiphany-client",
-  "clientSecret": "apiphany-client-secret",
+  "clientSecret": "apiphany-client-secret-more-than-32-characters",
   "clientAuthenticationMethod": "BASIC",
   "authorizationGrantType": "CLIENT_CREDENTIALS",
   "redirectUri": "https://example.com/login/oauth2/code/keycloak",

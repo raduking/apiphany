@@ -4,6 +4,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
+import org.apiphany.lang.Strings;
 import org.morphix.lang.Enums;
 
 /**
@@ -204,6 +205,14 @@ public enum ContentType {
 	}
 
 	/**
+	 * @see #toString()
+	 */
+	@Override
+	public String toString() {
+		return value();
+	}
+
+	/**
 	 * Returns the character set associated with this content type, if applicable.
 	 *
 	 * @return the character set, or null if not specified.
@@ -220,5 +229,15 @@ public enum ContentType {
 	 */
 	public static ContentType fromString(final String contentType) {
 		return Enums.fromString(contentType, NAME_MAP, values());
+	}
+
+	/**
+	 * Returns true if this content type is contained in the given content type, false otherwise.
+	 *
+	 * @param contentType content type
+	 * @return true if this content type is contained in the given content type, false otherwise
+	 */
+	public boolean in(final String contentType) {
+		return Strings.safe(contentType).contains(value);
 	}
 }

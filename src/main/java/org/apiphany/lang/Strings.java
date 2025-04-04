@@ -32,6 +32,16 @@ public interface Strings {
 	}
 
 	/**
+	 * Returns the parameter if it is not null, empty string otherwise.
+	 *
+	 * @param s a string
+	 * @return the parameter if it is not null, empty string otherwise
+	 */
+	public static String safe(final String s) {
+		return null != s ? s : "";
+	}
+
+	/**
 	 * Checks if a CharSequence is empty ("") or null.
 	 *
 	 * @param cs the CharSequence to check, may be null
@@ -71,6 +81,7 @@ public interface Strings {
 	 * @param inputStream input stream
 	 * @param encoding character encoding
 	 * @param bufferSize buffer size
+	 * @param onError on error handler
 	 * @return string
 	 */
 	public static String toString(final InputStream inputStream, final Charset encoding, final int bufferSize, final Consumer<Exception> onError) {
@@ -95,6 +106,7 @@ public interface Strings {
 	 * Returns a string from a file or {@code null} if any error occured.
 	 *
 	 * @param path path to the file
+	 * @param onError on error handler
 	 * @return the file content as string
 	 */
 	public static String fromFile(final String path, final Consumer<Exception> onError) {

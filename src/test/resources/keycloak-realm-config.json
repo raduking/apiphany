@@ -27,7 +27,7 @@
 			"clientId": "apiphany-client",
 			"enabled": true,
 			"publicClient": false,
-			"secret": "apiphany-client-secret",
+			"secret": "apiphany-client-secret-more-than-32-characters",
 			"redirectUris": [
 				"http://localhost:8080/*"
 			],

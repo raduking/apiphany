@@ -5,6 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.apiphany.ApiClient;
 import org.apiphany.auth.AuthenticationToken;
+import org.apiphany.auth.oauth2.AuthenticationMethod;
 import org.apiphany.auth.oauth2.OAuth2ProviderDetails;
 import org.apiphany.client.http.HttpExchangeClient;
 import org.apiphany.json.JsonBuilder;
@@ -36,8 +37,8 @@ class OAuth2ApiClientIT {
 
 	@SuppressWarnings("resource")
 	@Container
-    private static final KeycloakContainer KEYCLOAK_CONTAINER = new KeycloakContainer()
-        .withRealmImportFile("keycloak-realm-config.json");
+	private static final KeycloakContainer KEYCLOAK_CONTAINER = new KeycloakContainer()
+			.withRealmImportFile("keycloak-realm-config.json");
 
 	private OAuth2ClientRegistration clientRegistration;
 	private OAuth2ProviderDetails providerDetails;
@@ -45,22 +46,34 @@ class OAuth2ApiClientIT {
 	@BeforeEach
 	void setUp() {
 		String authServerUrl = KEYCLOAK_CONTAINER.getAuthServerUrl();
-		LOGGER.info("Authentication Server URL: {}",authServerUrl);
+		LOGGER.info("Authentication Server URL: {}", authServerUrl);
 		assertThat(authServerUrl, notNullValue());
 
-		clientRegistration = JsonBuilder.fromJson(Strings.fromFile("/oauth2-client-registration.json", Threads.noConsumer()), OAuth2ClientRegistration.class);
+		clientRegistration =
+				JsonBuilder.fromJson(Strings.fromFile("/oauth2-client-registration.json", Threads.noConsumer()), OAuth2ClientRegistration.class);
 
 		providerDetails = JsonBuilder.fromJson(Strings.fromFile("/oauth2-provider-details.json", Threads.noConsumer()), OAuth2ProviderDetails.class);
-		providerDetails.setTokenUri(authServerUrl + KEYCLOAK_TOKEN_PATH);
 	}
 
 	@Test
 	void shouldReturnAuthenticationToken() {
+		providerDetails.setTokenUri(KEYCLOAK_CONTAINER.getAuthServerUrl() + KEYCLOAK_TOKEN_PATH);
+
 		OAuth2ApiClient oAuth2ApiClient = new OAuth2ApiClient(clientRegistration, providerDetails, new HttpExchangeClient());
 
-		AuthenticationToken token = oAuth2ApiClient.getAuthenticationToken();
+		AuthenticationToken token = oAuth2ApiClient.getAuthenticationToken(AuthenticationMethod.FORM);
 
 		assertThat(token, notNullValue());
 	}
 
+	@Test
+	void shouldReturnAuthorizedAuthenticationToken() {
+		providerDetails.setTokenUri(KEYCLOAK_CONTAINER.getAuthServerUrl() + KEYCLOAK_TOKEN_PATH);
+
+		OAuth2ApiClient oAuth2ApiClient = new OAuth2ApiClient(clientRegistration, providerDetails, new HttpExchangeClient());
+
+		AuthenticationToken token = oAuth2ApiClient.getAuthenticationToken(AuthenticationMethod.HEADER);
+
+		assertThat(token, notNullValue());
+	}
 }
