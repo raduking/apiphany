@@ -15,8 +15,8 @@ import org.apiphany.auth.oauth2.OAuth2Properties;
 import org.apiphany.auth.oauth2.OAuth2ProviderDetails;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.http.AbstractHttpExchangeClient;
+import org.apiphany.header.HeaderValues;
 import org.apiphany.header.Headers;
-import org.apiphany.http.AuthorizationHeaderValues;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Maps;
@@ -280,7 +280,7 @@ public class OAuth2HttpExchangeClient extends AbstractHttpExchangeClient {
 	@Override
 	public <T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest) {
 		if (null != getAuthenticationToken()) {
-			String headerValue = AuthorizationHeaderValues.bearerHeaderValue(authenticationToken.getAccessToken());
+			String headerValue = HeaderValues.value(HeaderValues.BEARER, authenticationToken.getAccessToken());
 			Headers.addTo(apiRequest.getHeaders(), HttpHeader.AUTHORIZATION, headerValue);
 		} else {
 			throw new IllegalStateException("Missing authentication token");

@@ -70,4 +70,15 @@ public class HeaderValues {
 	public void setNext(final HeaderValues next) {
 		this.next = next;
 	}
+
+	/**
+	 * Builds the value for the header for the request by concatenating the two parameters with a whitespace between them.
+	 *
+	 * @param lvalue left value
+	 * @param rvalue right value
+	 * @return the header value
+	 */
+	public static String value(final String lvalue, final String rvalue) {
+		return String.join(" ", lvalue, rvalue);
+	}
 }

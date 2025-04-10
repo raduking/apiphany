@@ -5,6 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.apiphany.auth.AuthenticationToken;
 import org.apiphany.auth.oauth2.OAuth2ProviderDetails;
+import org.apiphany.auth.oauth2.server.NimbusOAuth2Server;
 import org.apiphany.client.http.HttpExchangeClient;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
