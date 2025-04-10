@@ -6,9 +6,9 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-import org.apiphany.auth.AuthenticationType;
 import org.apiphany.lang.retry.Retry;
 import org.apiphany.meters.BasicMeters;
+import org.apiphany.security.AuthenticationType;
 import org.morphix.lang.JavaObjects;
 import org.morphix.reflection.GenericClass;
 

@@ -1,13 +1,14 @@
-package org.apiphany.auth.oauth2.client;
+package org.apiphany.security.oauth2.client;
 
 import java.util.Base64;
 import java.util.Collections;
 import java.util.Set;
 
-import org.apiphany.auth.oauth2.AuthorizationGrantType;
 import org.apiphany.header.HeaderValues;
+import org.apiphany.http.HttpAuthScheme;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
+import org.apiphany.security.oauth2.AuthorizationGrantType;
 
 /**
  * Represents a client registration with an OAuth 2.0 or OpenID Connect 1.0 Provider. Contains all necessary
@@ -253,7 +254,7 @@ public class OAuth2ClientRegistration {
 	 * @return the authorization header value for client secret basic
 	 */
 	public String getClientSecretBasicHeaderValue() {
-		return String.join(" ", HeaderValues.BASIC, getEncodedCredentials());
+		return HeaderValues.value(HttpAuthScheme.BASIC, getEncodedCredentials());
 	}
 
 	/**

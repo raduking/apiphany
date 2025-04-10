@@ -63,7 +63,6 @@ public class HttpExchangeClient extends AbstractHttpExchangeClient {
 	public HttpExchangeClient(final ClientProperties clientProperties) {
 		super(clientProperties);
 		this.httpClient = createClient(this::customize);
-		addDefaultHeaderValues(getHeaderValuesChain());
 	}
 
 	/**

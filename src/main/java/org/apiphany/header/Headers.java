@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apiphany.ApiRequest;
 import org.apiphany.lang.Strings;
 import org.morphix.lang.Nullables;
 
@@ -53,6 +54,21 @@ public interface Headers {
 		} else if (null != headerValue) {
 			existingHeaders.computeIfAbsent(stringHeaderName, k -> new ArrayList<>()).add(headerValue.toString());
 		}
+	}
+
+	/**
+	 * Adds a header to the headers of the given request.
+	 *
+	 * @param <T> request body type
+	 * @param <N> header name type
+	 * @param <H> header value type
+	 *
+	 * @param apiRequest API request object
+	 * @param headerName header name
+	 * @param headerValue header value
+	 */
+	public static <T, N, H> void addTo(final ApiRequest<T> apiRequest, final N headerName, final H headerValue) {
+		addTo(apiRequest.getHeaders(), headerName, headerValue);
 	}
 
 }

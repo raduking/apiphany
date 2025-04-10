@@ -17,12 +17,12 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.function.Supplier;
 
-import org.apiphany.auth.AuthenticationType;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
 import org.apiphany.lang.retry.Retry;
 import org.apiphany.meters.BasicMeters;
+import org.apiphany.security.AuthenticationType;
 import org.junit.jupiter.api.Test;
 import org.morphix.reflection.Fields;
 import org.morphix.reflection.GenericClass;

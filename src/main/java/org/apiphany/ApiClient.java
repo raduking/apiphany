@@ -16,12 +16,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
-import org.apiphany.auth.AuthenticationType;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.accumulator.ExceptionsAccumulator;
 import org.apiphany.lang.retry.Retry;
 import org.apiphany.meters.BasicMeters;
+import org.apiphany.security.AuthenticationType;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Nullables;
 import org.morphix.lang.Unchecked;

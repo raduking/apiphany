@@ -1,4 +1,4 @@
-package org.apiphany.auth.oauth2.client;
+package org.apiphany.security.oauth2.client;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -9,23 +9,24 @@ import java.util.concurrent.TimeUnit;
 
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
-import org.apiphany.auth.AuthenticationToken;
-import org.apiphany.auth.AuthenticationType;
-import org.apiphany.auth.oauth2.OAuth2Properties;
-import org.apiphany.auth.oauth2.OAuth2ProviderDetails;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.http.AbstractHttpExchangeClient;
+import org.apiphany.header.HeaderValues;
 import org.apiphany.header.Headers;
-import org.apiphany.http.AuthorizationHeaderValues;
+import org.apiphany.http.HttpAuthScheme;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Maps;
+import org.apiphany.security.AuthenticationToken;
+import org.apiphany.security.AuthenticationType;
+import org.apiphany.security.oauth2.OAuth2Properties;
+import org.apiphany.security.oauth2.OAuth2ProviderDetails;
 import org.morphix.lang.JavaObjects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * OAuth2 exchange client.
+ * OAuth2 exchange client, this class decorates an existing {@link ExchangeClient} with automatic OAuth2 support.
  *
  * @author Radu Sebastian LAZIN
  */
@@ -280,8 +281,8 @@ public class OAuth2HttpExchangeClient extends AbstractHttpExchangeClient {
 	@Override
 	public <T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest) {
 		if (null != getAuthenticationToken()) {
-			String headerValue = AuthorizationHeaderValues.bearerHeaderValue(authenticationToken.getAccessToken());
-			Headers.addTo(apiRequest.getHeaders(), HttpHeader.AUTHORIZATION, headerValue);
+			String headerValue = HeaderValues.value(HttpAuthScheme.BEARER, authenticationToken.getAccessToken());
+			Headers.addTo(apiRequest, HttpHeader.AUTHORIZATION, headerValue);
 		} else {
 			throw new IllegalStateException("Missing authentication token");
 		}

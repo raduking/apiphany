@@ -1,4 +1,4 @@
-package org.apiphany.auth.oauth2.client;
+package org.apiphany.security.oauth2.client;
 
 import static org.apiphany.RequestParameters.ParameterFunction.parameter;
 
@@ -7,11 +7,11 @@ import java.util.Map;
 
 import org.apiphany.ApiClient;
 import org.apiphany.RequestParameters;
-import org.apiphany.auth.AuthenticationToken;
-import org.apiphany.auth.oauth2.OAuth2ProviderDetails;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.http.ContentType;
 import org.apiphany.http.HttpHeader;
+import org.apiphany.security.AuthenticationToken;
+import org.apiphany.security.oauth2.OAuth2ProviderDetails;
 
 /**
  * Specialized {@link ApiClient} for OAuth2 authentication flows. Handles token acquisition and management for OAuth2

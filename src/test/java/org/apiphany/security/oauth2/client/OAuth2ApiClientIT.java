@@ -1,14 +1,14 @@
-package org.apiphany.auth.oauth2.client;
+package org.apiphany.security.oauth2.client;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.apiphany.ApiClient;
-import org.apiphany.auth.AuthenticationToken;
-import org.apiphany.auth.oauth2.OAuth2ProviderDetails;
 import org.apiphany.client.http.HttpExchangeClient;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
+import org.apiphany.security.AuthenticationToken;
+import org.apiphany.security.oauth2.OAuth2ProviderDetails;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;

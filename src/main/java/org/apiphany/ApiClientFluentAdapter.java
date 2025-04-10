@@ -8,11 +8,11 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 import org.apiphany.RequestParameters.ParameterFunction;
-import org.apiphany.auth.AuthenticationType;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.header.Headers;
 import org.apiphany.lang.retry.Retry;
 import org.apiphany.meters.BasicMeters;
+import org.apiphany.security.AuthenticationType;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Nullables;
 import org.morphix.reflection.GenericClass;

@@ -43,9 +43,10 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 */
 	public static final String PROPERTY_DEBUG_STRING = "json-builder.to-json.debug-string";
 
+	/**
+	 * Error message logged when no JSON library was found in the class path.
+	 */
 	protected static final String ERROR_JSON_LIBRARY_NOT_FOUND = "No JSON library found in the class path (like Jackson or Gson)";
-
-	protected static final String JACKSON_OBJECT_MAPPER_CLASS_NAME = "com.fasterxml.jackson.databind.ObjectMapper";
 
 	/**
 	 * Singleton instance holder.
@@ -53,6 +54,11 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 * @author Radu Sebastian LAZIN
 	 */
 	private static class InstanceHolder {
+
+		/**
+		 * Jackson JSON library ObjectMapper class name.
+		 */
+		private static final String JACKSON_OBJECT_MAPPER_CLASS_NAME = "com.fasterxml.jackson.databind.ObjectMapper";
 
 		/**
 		 * Flag that shows if Jackson JSON library is present in the class path.
