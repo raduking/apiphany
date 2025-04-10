@@ -1,4 +1,4 @@
-package org.apiphany.auth.oauth2;
+package org.apiphany.security.oauth2;
 
 import java.util.Map;
 
@@ -84,4 +84,15 @@ public enum AuthorizationGrantType {
 	public static AuthorizationGrantType fromString(final String method) {
 		return Enums.fromString(method, NAME_MAP, values());
 	}
+
+	/**
+	 * Returns true if the given string matches the enum value, false otherwise.
+	 *
+	 * @param value string to match
+	 * @return true if the given string matches the enum value, false otherwise.
+	 */
+	public boolean matches(final String value) {
+		return value().equals(value);
+	}
+
 }

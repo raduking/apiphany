@@ -516,7 +516,7 @@ public enum HttpStatus implements Status {
 	 */
 	@Override
 	public int getCode() {
-		return 0;
+		return value();
 	}
 
 	/**

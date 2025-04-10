@@ -1,14 +1,17 @@
-package org.apiphany.auth;
+package org.apiphany.security;
 
 import java.time.Instant;
 
 import org.apiphany.json.JsonBuilder;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Represents an authentication token used for accessing secured resources. This class encapsulates the access token,
  * refresh token, token type, and expiration details.
+ * <p>
+ * TODO: create a serializer/deserializer so that it is JSON library agnostic
  *
  * @author Radu Sebastian LAZIN
  */
@@ -169,6 +172,7 @@ public class AuthenticationToken {
 	 *
 	 * @return true if the token has expired, false otherwise.
 	 */
+	@JsonIgnore
 	public boolean isExpired() {
 		return null != expiration && expiration.isBefore(Instant.now());
 	}

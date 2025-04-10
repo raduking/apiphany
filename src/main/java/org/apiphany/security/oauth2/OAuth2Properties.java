@@ -1,8 +1,8 @@
-package org.apiphany.auth.oauth2;
+package org.apiphany.security.oauth2;
 
 import java.util.Map;
 
-import org.apiphany.auth.oauth2.client.OAuth2ClientRegistration;
+import org.apiphany.security.oauth2.client.OAuth2ClientRegistration;
 
 /**
  * Configuration properties for OAuth2 authentication. Contains provider details and client registration information.

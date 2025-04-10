@@ -1,4 +1,4 @@
-package org.apiphany.auth;
+package org.apiphany.security;
 
 /**
  * Represents the type of authentication used in the application. This enum defines various authentication mechanisms

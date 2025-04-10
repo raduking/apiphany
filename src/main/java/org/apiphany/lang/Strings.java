@@ -9,6 +9,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+import org.morphix.lang.thread.Threads;
+
 /**
  * {@link String} utility methods.
  *
@@ -100,6 +102,19 @@ public interface Strings {
 			return null;
 		}
 		return out.toString();
+	}
+
+	/**
+	 * Transforms an input stream to a string. If the input stream cannot be converted to string with the given parameters
+	 * the result will be null.
+	 *
+	 * @param inputStream input stream
+	 * @param encoding character encoding
+	 * @param bufferSize buffer size
+	 * @return string
+	 */
+	public static String toString(final InputStream inputStream, final Charset encoding, final int bufferSize) {
+		return toString(inputStream, encoding, bufferSize, Threads.consumeNothing());
 	}
 
 	/**

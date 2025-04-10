@@ -1,4 +1,4 @@
-package org.apiphany.auth;
+package org.apiphany.security;
 
 import java.io.Serial;
 

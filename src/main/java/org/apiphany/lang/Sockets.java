@@ -5,6 +5,8 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.Random;
 
+import org.morphix.reflection.Constructors;
+
 /**
  * Utility methods for sockets.
  *
@@ -12,7 +14,14 @@ import java.util.Random;
  */
 public final class Sockets {
 
+	/**
+	 * The minimum port number.
+	 */
     public static final int MIN_PORT = 1024;
+
+    /**
+     * The maximum port number.
+     */
     public static final int MAX_PORT = 65535;
 
     /**
@@ -24,7 +33,7 @@ public final class Sockets {
      * Private constructor.
      */
     private Sockets() {
-    	// empty
+    	throw Constructors.unsupportedOperationException();
     }
 
     /**
@@ -34,7 +43,7 @@ public final class Sockets {
      * @return the available port
      */
     public static int findAvailableTcpPort(final int timeout) {
-        return findAvailableTcpPort(MIN_PORT + 1, MAX_PORT, timeout);
+        return findAvailableTcpPort(MIN_PORT, MAX_PORT, timeout);
     }
 
     /**

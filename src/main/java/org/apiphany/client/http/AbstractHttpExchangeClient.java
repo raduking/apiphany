@@ -49,6 +49,7 @@ public abstract class AbstractHttpExchangeClient implements ExchangeClient {
 	protected AbstractHttpExchangeClient(final ClientProperties clientProperties) {
 		this.clientProperties = clientProperties;
 		addDefaultContentConverters(contentConverters);
+		addDefaultHeaderValues(headerValuesChain);
 	}
 
 	/**

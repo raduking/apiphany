@@ -3,6 +3,8 @@ package org.apiphany.header;
 import java.util.Collections;
 import java.util.List;
 
+import org.apiphany.lang.Strings;
+
 /**
  * Represents a node in a chain of responsibility for resolving HTTP header values. Each instance can either handle a
  * header request directly or delegate it to the next {@link HeaderValues} in the chain. By default, this implementation
@@ -19,17 +21,6 @@ public class HeaderValues {
 	 * The string used to redact sensitive information.
 	 */
 	public static final String REDACTED = "REDACTED";
-
-	// TODO: see how move these to a different class/enum
-	/**
-	 * Prefix for building the header with Bearer token.
-	 */
-	public static final String BEARER = "Bearer";
-
-	/**
-	 * Prefix for building the header with Basic token.
-	 */
-	public static final String BASIC = "Basic";
 
 	/**
 	 * The next {@link HeaderValues} in the chain of responsibility. If {@code null}, this represents the end of the chain.
@@ -69,5 +60,19 @@ public class HeaderValues {
 	 */
 	public void setNext(final HeaderValues next) {
 		this.next = next;
+	}
+
+	/**
+	 * Builds the value for the header for the request by concatenating the two parameters with a whitespace between them.
+	 *
+	 * @param <L> left value type
+	 * @param <R> right value type
+	 *
+	 * @param lvalue left value
+	 * @param rvalue right value
+	 * @return the header value
+	 */
+	public static <L, R> String value(final L lvalue, final R rvalue) {
+		return String.join(" ", Strings.safeToString(lvalue), Strings.safeToString(rvalue));
 	}
 }

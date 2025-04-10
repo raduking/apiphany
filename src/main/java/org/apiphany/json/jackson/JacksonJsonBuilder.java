@@ -47,7 +47,14 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(JacksonJsonBuilder.class);
 
+	/**
+	 * Error message logged when an object could not be serialized.
+	 */
 	protected static final String LOG_MSG_COULD_NOT_SERIALIZE_OBJECT = "Could not serialize object: {}";
+
+	/**
+	 * Error message logged when an object could not be de-serialized.
+	 */
 	protected static final String LOG_MSG_COULD_NOT_DESERIALIZE_OBJECT = "Could not deserialize object: {}";
 
 	/**

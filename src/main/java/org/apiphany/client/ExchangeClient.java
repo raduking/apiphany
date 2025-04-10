@@ -10,9 +10,9 @@ import org.apiphany.ApiMethod;
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
 import org.apiphany.RequestMethod;
-import org.apiphany.auth.AuthenticationType;
 import org.apiphany.header.HeaderValues;
 import org.apiphany.lang.collections.Maps;
+import org.apiphany.security.AuthenticationType;
 
 /**
  * Interface for exchange clients.
