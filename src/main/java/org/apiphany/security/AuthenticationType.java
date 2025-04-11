@@ -21,12 +21,12 @@ public enum AuthenticationType {
 	/**
 	 * SSL/TLS client certificate authentication.
 	 */
-	SSL_CERTIFICATE,
+	SSL,
 
 	/**
-	 * Bearer token authentication, commonly used with OAuth 2.0.
+	 * Token authentication.
 	 */
-	BEARER_TOKEN,
+	TOKEN,
 
 	/**
 	 * OAuth 2.0 token-based authentication.
@@ -36,5 +36,5 @@ public enum AuthenticationType {
 	/**
 	 * JSON Web Token (JWT) authentication.
 	 */
-	JWT_TOKEN
+	JWT
 }

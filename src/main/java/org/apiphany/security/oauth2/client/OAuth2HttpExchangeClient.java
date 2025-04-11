@@ -7,14 +7,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.apiphany.ApiRequest;
-import org.apiphany.ApiResponse;
 import org.apiphany.client.ExchangeClient;
-import org.apiphany.client.http.AbstractHttpExchangeClient;
-import org.apiphany.header.HeaderValues;
-import org.apiphany.header.Headers;
+import org.apiphany.client.http.AbstractTokenHttpExchangeClient;
 import org.apiphany.http.HttpAuthScheme;
-import org.apiphany.http.HttpHeader;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Maps;
 import org.apiphany.security.AuthenticationToken;
@@ -30,29 +25,9 @@ import org.slf4j.LoggerFactory;
  *
  * @author Radu Sebastian LAZIN
  */
-public class OAuth2HttpExchangeClient extends AbstractHttpExchangeClient {
+public class OAuth2HttpExchangeClient extends AbstractTokenHttpExchangeClient {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(OAuth2HttpExchangeClient.class);
-
-	/**
-	 * Default value for token expiration (request) - 30 minutes.
-	 */
-	public static final Duration DEFAULT_EXPIRES_IN = Duration.ofMinutes(30);
-
-	/**
-	 * Duration for token refresh on token retrieve error - 500 milliseconds.
-	 */
-	protected static final Duration ERROR_TOKEN_REFRESH_DURATION = Duration.ofMillis(500);
-
-	/**
-	 * Duration for error margin when checking token expiration - 1 second.
-	 */
-	protected static final Duration TOKEN_EXPIRATION_ERROR_MARGIN = Duration.ofMillis(1000);
-
-	/**
-	 * The actual exchange client doing the request.
-	 */
-	private final ExchangeClient exchangeClient;
 
 	/**
 	 * The exchange client doing the token refresh.
@@ -63,11 +38,6 @@ public class OAuth2HttpExchangeClient extends AbstractHttpExchangeClient {
 	 * Underlying API client that retrieves the token.
 	 */
 	private OAuth2ApiClient tokenApiClient;
-
-	/**
-	 * The authentication token.
-	 */
-	private AuthenticationToken authenticationToken;
 
 	/**
 	 * Token retrieval scheduler.
@@ -101,9 +71,8 @@ public class OAuth2HttpExchangeClient extends AbstractHttpExchangeClient {
 	 * @param tokenExchangeClient exchange client doing the token refresh
 	 */
 	public OAuth2HttpExchangeClient(final ExchangeClient exchangeClient, final ExchangeClient tokenExchangeClient) {
-		super(exchangeClient.getClientProperties());
+		super(exchangeClient);
 
-		this.exchangeClient = exchangeClient;
 		this.tokenExchangeClient = tokenExchangeClient;
 		this.tokenRefreshScheduler = Executors.newScheduledThreadPool(0, Thread.ofVirtual().factory());
 
@@ -111,6 +80,7 @@ public class OAuth2HttpExchangeClient extends AbstractHttpExchangeClient {
 		this.clientRegistrations = oAuth2Properties.getRegistration();
 		this.providers = oAuth2Properties.getProvider();
 
+		setAuthenticationScheme(HttpAuthScheme.BEARER);
 		setSchedulerEnabled(initialize());
 		if (isSchedulerEnabled()) {
 			refreshAuthenticationToken();
@@ -199,31 +169,26 @@ public class OAuth2HttpExchangeClient extends AbstractHttpExchangeClient {
 	}
 
 	/**
-	 * Returns the expiration date for the given token.
-	 *
-	 * @return the expiration date
-	 */
-	protected Instant getTokenExpirationDate() {
-		if (null == authenticationToken) {
-			return Instant.now().plus(ERROR_TOKEN_REFRESH_DURATION);
-		}
-		Instant expiration = authenticationToken.getExpiration();
-		if (null == expiration) {
-			return Instant.now().plus(DEFAULT_EXPIRES_IN);
-		}
-		return expiration;
-	}
-
-	/**
 	 * Returns the authentication token. If the current token is expired it tries to retrieve a new one.
 	 *
 	 * @return the authentication token
 	 */
+	@Override
 	public AuthenticationToken getAuthenticationToken() {
 		if (isNewTokenNeeded()) {
 			updateAuthenticationToken();
 		}
-		return authenticationToken;
+		return super.getAuthenticationToken();
+	}
+
+	/**
+	 * Returns true if a new token is needed, false otherwise.
+	 *
+	 * @return true if a new token is needed
+	 */
+	public boolean isNewTokenNeeded() {
+		Instant expiration = getTokenExpiration();
+		return expiration.isBefore(Instant.now().minus(TOKEN_EXPIRATION_ERROR_MARGIN));
 	}
 
 	/**
@@ -235,58 +200,26 @@ public class OAuth2HttpExchangeClient extends AbstractHttpExchangeClient {
 			return;
 		}
 		// schedule new token checking
-		Instant expirationDate = getTokenExpirationDate().minus(TOKEN_EXPIRATION_ERROR_MARGIN);
-		Instant scheduledDate = JavaObjects.max(expirationDate, Instant.now());
-		Duration delay = Duration.between(scheduledDate, Instant.now());
+		Instant expiration = getTokenExpiration().minus(TOKEN_EXPIRATION_ERROR_MARGIN);
+		Instant scheduled = JavaObjects.max(expiration, Instant.now());
+		Duration delay = Duration.between(scheduled, Instant.now());
 		tokenRefreshScheduler.schedule(this::refreshAuthenticationToken, delay.toMillis(), TimeUnit.MILLISECONDS);
-	}
-
-	/**
-	 * Returns true if a new token is needed, false otherwise.
-	 *
-	 * @return true if a new token is needed
-	 */
-	public boolean isNewTokenNeeded() {
-		if (null == authenticationToken) {
-			return true;
-		}
-		Instant expirationDate = authenticationToken.getExpiration();
-		return expirationDate.isBefore(Instant.now().minus(TOKEN_EXPIRATION_ERROR_MARGIN));
 	}
 
 	/**
 	 * Updates the authentication token by retrieving a new one.
 	 */
 	private void updateAuthenticationToken() {
-		try {
-			LOGGER.debug("[{}] Token expired, requesting new token.", getClass().getSimpleName());
-			Instant expiration = Instant.now();
-
-			AuthenticationToken token = tokenApiClient.getAuthenticationToken();
-			if (null == token) {
-				throw new IllegalStateException("Retrieved token was null");
-			}
-			token.setExpiration(expiration.plusSeconds(token.getExpiresIn()));
-			authenticationToken = token;
-
-			LOGGER.debug("[{}] Successfully retrieved new token.", getClass().getSimpleName());
-		} catch (Exception e) {
-			LOGGER.error("[{}] Failed to get authentication token: {}", getClass().getSimpleName(), e.getMessage(), e);
+		LOGGER.debug("[{}] Token expired, requesting new token.", getClass().getSimpleName());
+		Instant expiration = Instant.now();
+		AuthenticationToken token = tokenApiClient.getAuthenticationToken();
+		if (null == token) {
+			LOGGER.error("[{}] Error retrieving token, retrieved token was null", getClass().getSimpleName());
+			return;
 		}
-	}
-
-	/**
-	 * @see #exchange(ApiRequest)
-	 */
-	@Override
-	public <T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest) {
-		if (null != getAuthenticationToken()) {
-			String headerValue = HeaderValues.value(HttpAuthScheme.BEARER, authenticationToken.getAccessToken());
-			Headers.addTo(apiRequest, HttpHeader.AUTHORIZATION, headerValue);
-		} else {
-			throw new IllegalStateException("Missing authentication token");
-		}
-		return exchangeClient.exchange(apiRequest);
+		token.setExpiration(expiration.plusSeconds(token.getExpiresIn()));
+		setAuthenticationToken(token);
+		LOGGER.debug("[{}] Successfully retrieved new token.", getClass().getSimpleName());
 	}
 
 	/**
