@@ -108,7 +108,7 @@ class ApiClientTest {
 		doReturn(response1).when(exchangeClient1).exchange(any(ApiRequest.class));
 
 		ExchangeClient exchangeClient2 = mock(ExchangeClient.class);
-		doReturn(AuthenticationType.SSL_CERTIFICATE).when(exchangeClient2).getAuthenticationType();
+		doReturn(AuthenticationType.SSL).when(exchangeClient2).getAuthenticationType();
 		TestDto expected2 = TestDto.of(ID2, COUNT2);
 		ApiResponse<TestDto> response2 = ApiResponse.create(expected2)
 				.status(HTTP_STATUS_OK, HttpStatus::from)
@@ -126,7 +126,7 @@ class ApiClientTest {
 
 		assertThat(result1, equalTo(expected1));
 
-		TestDto result2 = api.client(AuthenticationType.SSL_CERTIFICATE)
+		TestDto result2 = api.client(AuthenticationType.SSL)
 				.get()
 				.path(PATH_TEST)
 				.retrieve(TestDto.class)
@@ -367,7 +367,7 @@ class ApiClientTest {
 		doReturn(response1).when(exchangeClient1).exchange(any(ApiRequest.class));
 
 		ExchangeClient exchangeClient2 = mock(ExchangeClient.class);
-		doReturn(AuthenticationType.SSL_CERTIFICATE).when(exchangeClient2).getAuthenticationType();
+		doReturn(AuthenticationType.SSL).when(exchangeClient2).getAuthenticationType();
 		TestDto expected2 = TestDto.of(ID2, COUNT2);
 		ApiResponse<TestDto> response2 = ApiResponse.create(expected2)
 				.status(HttpStatus.OK)
