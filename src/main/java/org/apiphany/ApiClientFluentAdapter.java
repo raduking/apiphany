@@ -183,7 +183,11 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @return this
 	 */
 	public ApiClientFluentAdapter path(final String... pathSegments) {
-		return url(apiClient.getBaseUrl(), pathSegments);
+		String baseUrl = apiClient.getBaseUrl();
+		if (ApiClient.NO_BASE_URL.equals(baseUrl)) {
+			baseUrl = url;
+		}
+		return url(baseUrl, pathSegments);
 	}
 
 	/**

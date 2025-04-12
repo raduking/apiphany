@@ -1,8 +1,9 @@
-package org.apiphany.lang;
+package org.apiphany.net;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.time.Duration;
 import java.util.Random;
 
 import org.morphix.reflection.Constructors;
@@ -27,13 +28,23 @@ public final class Sockets {
     /**
      * Used for generating a random port number, no need for SecureRandom.
      */
-    private static final Random RANDOM = new Random(System.currentTimeMillis()); // NOSONAR
+    private static final Random RANDOM = new Random(System.currentTimeMillis()); // NOSONAR see Javadoc
 
     /**
      * Private constructor.
      */
     private Sockets() {
     	throw Constructors.unsupportedOperationException();
+    }
+
+    /**
+     * Finds an available TCP port between {@link #MIN_PORT} and {@link #MAX_PORT}.
+     *
+     * @param timeout the operation timeout
+     * @return the available port
+     */
+    public static int findAvailableTcpPort(final Duration timeout) {
+        return findAvailableTcpPort((int) timeout.toMillis());
     }
 
     /**

@@ -133,4 +133,14 @@ public interface Strings {
 		}
 		return fileContent;
 	}
+
+	/**
+	 * Returns a string from a file or {@code null} if any error occured.
+	 *
+	 * @param path path to the file
+	 * @return the file content as string
+	 */
+	public static String fromFile(final String path) {
+		return fromFile(path, Threads.consumeNothing());
+	}
 }

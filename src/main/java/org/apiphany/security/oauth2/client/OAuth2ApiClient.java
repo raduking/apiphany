@@ -8,6 +8,7 @@ import java.util.Map;
 import org.apiphany.ApiClient;
 import org.apiphany.RequestParameters;
 import org.apiphany.client.ExchangeClient;
+import org.apiphany.client.http.AbstractTokenHttpExchangeClient;
 import org.apiphany.http.ContentType;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.security.AuthenticationToken;
@@ -24,7 +25,7 @@ public class OAuth2ApiClient extends ApiClient {
 	/**
 	 * Default expiration duration for access tokens.
 	 */
-	private Duration expiresIn = OAuth2HttpExchangeClient.DEFAULT_EXPIRES_IN;
+	private Duration expiresIn = AbstractTokenHttpExchangeClient.DEFAULT_EXPIRES_IN;
 
 	/**
 	 * Configuration for the OAuth2 client registration.
@@ -45,7 +46,7 @@ public class OAuth2ApiClient extends ApiClient {
 	 */
 	public OAuth2ApiClient(final OAuth2ClientRegistration clientRegistration, final OAuth2ProviderDetails providerDetails,
 			final ExchangeClient exchangeClient) {
-		super(NO_BASE_URL, exchangeClient);
+		super(exchangeClient);
 		this.clientRegistration = clientRegistration;
 		this.providerDetails = providerDetails;
 	}
@@ -67,9 +68,9 @@ public class OAuth2ApiClient extends ApiClient {
 	 */
 	public AuthenticationToken getAuthenticationToken(final ClientAuthenticationMethod method) {
 		return switch (method) {
-		case CLIENT_SECRET_BASIC -> getTokenWithClientSecretBasic();
-		case CLIENT_SECRET_POST -> getTokenWithClientSecretPost();
-		default -> throw new UnsupportedOperationException("Unsupported client authentication method: " + method);
+			case CLIENT_SECRET_BASIC -> getTokenWithClientSecretBasic();
+			case CLIENT_SECRET_POST -> getTokenWithClientSecretPost();
+			default -> throw new UnsupportedOperationException("Unsupported client authentication method: " + method);
 		};
 	}
 
@@ -81,8 +82,7 @@ public class OAuth2ApiClient extends ApiClient {
 	private AuthenticationToken getTokenWithClientSecretBasic() {
 		Map<String, String> params = RequestParameters.of(
 				parameter(OAuth2Parameter.GRANT_TYPE, clientRegistration.getAuthorizationGrantType()),
-				parameter(OAuth2Parameter.EXPIRES_IN, expiresIn.toSeconds())
-		);
+				parameter(OAuth2Parameter.EXPIRES_IN, expiresIn.toSeconds()));
 		return client()
 				.post()
 				.url(providerDetails.getTokenUri())
@@ -103,8 +103,7 @@ public class OAuth2ApiClient extends ApiClient {
 				parameter(OAuth2Parameter.GRANT_TYPE, clientRegistration.getAuthorizationGrantType()),
 				parameter(OAuth2Parameter.EXPIRES_IN, expiresIn.toSeconds()),
 				parameter(OAuth2Parameter.CLIENT_ID, clientRegistration.getClientId()),
-				parameter(OAuth2Parameter.CLIENT_SECRET, clientRegistration.getClientSecret())
-		);
+				parameter(OAuth2Parameter.CLIENT_SECRET, clientRegistration.getClientSecret()));
 		return client()
 				.post()
 				.url(providerDetails.getTokenUri())
