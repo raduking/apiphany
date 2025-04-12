@@ -143,7 +143,7 @@ public class ProtocolOverridingSSLSocketFactory extends SSLSocketFactory {
 	 *
 	 * @return delegate
 	 */
-	private SSLSocketFactory getSSLSocketFactory() {
+	protected SSLSocketFactory getSSLSocketFactory() {
 		return sslSocketFactory;
 	}
 
@@ -153,7 +153,7 @@ public class ProtocolOverridingSSLSocketFactory extends SSLSocketFactory {
 	 *
 	 * @param socket the socket
 	 */
-	private Socket setEnabledProtocols(final Socket socket) {
+	protected Socket setEnabledProtocols(final Socket socket) {
 		if (socket instanceof SSLSocket sslSocket) {
 			sslSocket.setEnabledProtocols(getEnabledProtocols());
 		}
