@@ -13,7 +13,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
-import org.morphix.lang.thread.Threads;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.junit.jupiter.Container;
@@ -48,16 +47,14 @@ class OAuth2ApiClientIT {
 		LOGGER.info("Authentication Server URL: {}", authServerUrl);
 		assertThat(authServerUrl, notNullValue());
 
-		clientRegistration =
-				JsonBuilder.fromJson(Strings.fromFile("/oauth2-client-registration.json", Threads.noConsumer()), OAuth2ClientRegistration.class);
+		clientRegistration = JsonBuilder.fromJson(Strings.fromFile("/oauth2-client-registration.json"), OAuth2ClientRegistration.class);
 
-		providerDetails = JsonBuilder.fromJson(Strings.fromFile("/oauth2-provider-details.json", Threads.noConsumer()), OAuth2ProviderDetails.class);
+		providerDetails = JsonBuilder.fromJson(Strings.fromFile("/oauth2-provider-details.json"), OAuth2ProviderDetails.class);
+		providerDetails.setTokenUri(KEYCLOAK_CONTAINER.getAuthServerUrl() + KEYCLOAK_TOKEN_PATH);
 	}
 
 	@Test
-	void shouldReturnAuthenticationToken() {
-		providerDetails.setTokenUri(KEYCLOAK_CONTAINER.getAuthServerUrl() + KEYCLOAK_TOKEN_PATH);
-
+	void shouldReturnAuthenticationTokenWithClientSecretPost() {
 		OAuth2ApiClient oAuth2ApiClient = new OAuth2ApiClient(clientRegistration, providerDetails, new HttpExchangeClient());
 
 		AuthenticationToken token = oAuth2ApiClient.getAuthenticationToken(ClientAuthenticationMethod.CLIENT_SECRET_POST);
@@ -66,12 +63,19 @@ class OAuth2ApiClientIT {
 	}
 
 	@Test
-	void shouldReturnAuthorizedAuthenticationToken() {
-		providerDetails.setTokenUri(KEYCLOAK_CONTAINER.getAuthServerUrl() + KEYCLOAK_TOKEN_PATH);
-
+	void shouldReturnAuthenticationTokenWithClientSecretBasic() {
 		OAuth2ApiClient oAuth2ApiClient = new OAuth2ApiClient(clientRegistration, providerDetails, new HttpExchangeClient());
 
 		AuthenticationToken token = oAuth2ApiClient.getAuthenticationToken(ClientAuthenticationMethod.CLIENT_SECRET_BASIC);
+
+		assertThat(token, notNullValue());
+	}
+
+	@Test
+	void shouldReturnAuthenticationTokenWithClientAuthenticationMethodSetInClientRegistration() {
+		OAuth2ApiClient oAuth2ApiClient = new OAuth2ApiClient(clientRegistration, providerDetails, new HttpExchangeClient());
+
+		AuthenticationToken token = oAuth2ApiClient.getAuthenticationToken();
 
 		assertThat(token, notNullValue());
 	}

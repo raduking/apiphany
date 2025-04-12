@@ -1,4 +1,4 @@
-package org.apiphany.security.oauth2.client;
+package org.apiphany.security.oauth2.server;
 
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
@@ -12,10 +12,11 @@ import com.nimbusds.jwt.SignedJWT;
 
 public class JwtTokenValidator {
 
+	private String clientId;
     private final byte[] secretKey;
     private final String expectedIssuer;
 
-    public JwtTokenValidator(final String clientSecret, final String expectedIssuer) {
+    public JwtTokenValidator(final String clientId, final String clientSecret, final String expectedIssuer) {
         if (clientSecret.length() < 32) {
             throw new IllegalArgumentException("Client secret must be at least 32 characters long");
         }
@@ -23,6 +24,7 @@ public class JwtTokenValidator {
             clientSecret.getBytes(StandardCharsets.UTF_8),
             clientSecret.length()
         );
+        this.clientId = clientId;
         this.expectedIssuer = expectedIssuer;
     }
 
@@ -53,7 +55,7 @@ public class JwtTokenValidator {
     private void validateClaims(final JWTClaimsSet claims) throws TokenValidationException {
         // 1. Check expiration
         Date expirationTime = claims.getExpirationTime();
-        if (expirationTime == null) {
+        if (null == expirationTime) {
             throw new TokenValidationException("Missing expiration claim");
         }
         if (expirationTime.before(new Date())) {
@@ -62,17 +64,18 @@ public class JwtTokenValidator {
 
         // 2. Validate issuer
         String issuer = claims.getIssuer();
-        if (issuer == null || !issuer.equals(expectedIssuer)) {
+        if (null == issuer || !issuer.equals(expectedIssuer)) {
             throw new TokenValidationException("Invalid token issuer");
         }
 
         // 3. Check JWT ID (optional but recommended)
-        if (claims.getJWTID() == null) {
+        if (null == claims.getJWTID()) {
             throw new TokenValidationException("Missing JWT ID claim");
         }
 
         // 4. Validate subject exists (since you're setting it in generation)
-        if (claims.getSubject() == null) {
+        String subject = claims.getSubject();
+        if (null == subject || !subject.equals(clientId)) {
             throw new TokenValidationException("Missing subject claim");
         }
     }

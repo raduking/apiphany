@@ -123,6 +123,16 @@ public class ApiClient {
 	}
 
 	/**
+	 * Constructor with only one exchange client and no base url.
+	 *
+	 * @param exchangeClient exchange client
+	 */
+	protected ApiClient(
+			final ExchangeClient exchangeClient) {
+		this(NO_BASE_URL, Collections.singletonList(exchangeClient));
+	}
+
+	/**
 	 * Returns a new {@link ApiClient} object.
 	 *
 	 * @param baseUrl base URL

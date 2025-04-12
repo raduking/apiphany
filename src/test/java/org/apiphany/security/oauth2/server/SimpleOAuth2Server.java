@@ -37,38 +37,30 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
 /**
- * Basic OAuth2 server.
+ * Simple OAuth2 server using Nimbus library.
  *
  * @author Radu Sebastian LAZIN
  */
-public class NimbusOAuth2Server {
+public class SimpleOAuth2Server {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(NimbusOAuth2Server.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(SimpleOAuth2Server.class);
 
-	public static final int DEFAULT_PORT = 8385;
 	public static final Duration DEFAULT_EXPIRES_IN = Duration.ofHours(1);
-
-	private static final String CLIENT_SECRET = "apiphany-client-secret-more-than-32-characters";
-	private static final String CLIENT_ID = "apiphany-client";
 
 	private final String url;
 	private final int port;
 	private final String clientId;
 	private final String clientSecret;
 
-	public NimbusOAuth2Server() {
-		this(DEFAULT_PORT);
-	}
-
-	public NimbusOAuth2Server(final int port) {
+	public SimpleOAuth2Server(final int port, final String clientId, final String clientSecret) {
 		HttpServer server = createHttpServer(port);
 		server.createContext("/token", new TokenHandler(this));
 		server.setExecutor(null);
 
 		this.port = port;
 		this.url = "http://localhost:" + port;
-		this.clientId = CLIENT_ID;
-		this.clientSecret = CLIENT_SECRET;
+		this.clientId = clientId;
+		this.clientSecret = clientSecret;
 
 		server.start();
 		LOGGER.info("OAuth2 server started at {}/token", url);
@@ -76,6 +68,10 @@ public class NimbusOAuth2Server {
 
 	public String getUrl() {
 		return url;
+	}
+
+	public int getPort() {
+		return port;
 	}
 
 	public String getClientId() {
@@ -90,19 +86,24 @@ public class NimbusOAuth2Server {
 		try {
 			return HttpServer.create(new InetSocketAddress(port), 0);
 		} catch (IOException e) {
-			return null;
+			throw new IllegalStateException("Server cannot be created on port: " + port);
 		}
 	}
 
+	/**
+	 * Token handler serving the /token endpoint.
+	 *
+	 * @author Radu Sebastian LAZIN
+	 */
 	static class TokenHandler implements HttpHandler {
 
-		private static final Logger LOGGER = LoggerFactory.getLogger(NimbusOAuth2Server.class);
+		private static final Logger LOGGER = LoggerFactory.getLogger(SimpleOAuth2Server.class);
 
 		private static final int DEFAULT_READ_BUFFER_SIZE = 10000;
 
-		private final NimbusOAuth2Server server;
+		private final SimpleOAuth2Server server;
 
-		protected TokenHandler(final NimbusOAuth2Server server) {
+		protected TokenHandler(final SimpleOAuth2Server server) {
 			this.server = server;
 		}
 
@@ -112,20 +113,19 @@ public class NimbusOAuth2Server {
 				sendResponse(exchange, HttpStatus.METHOD_NOT_ALLOWED);
 				return;
 			}
-
 			Map<String, String> params = RequestParameters.from(getBody(exchange));
 
 			String clientId = params.get(OAuth2Parameter.CLIENT_ID.value());
+			String clientSecret = params.get(OAuth2Parameter.CLIENT_SECRET.value());
 			boolean isAuthorized = AuthorizationGrantType.CLIENT_CREDENTIALS.matches(params.get(OAuth2Parameter.GRANT_TYPE.value()))
 					&& Objects.equals(server.clientId, clientId)
-					&& Objects.equals(server.clientSecret, params.get(OAuth2Parameter.CLIENT_SECRET.value()));
-
+					&& Objects.equals(server.clientSecret, clientSecret);
 			if (!isAuthorized) {
 				sendResponse(exchange, HttpStatus.UNAUTHORIZED, ErrorResponse.of("Invalid client"));
 				return;
 			}
-
-			String accessToken = generateToken(clientId);
+			Duration expiresIn = getExpiresIn(params.get(OAuth2Parameter.EXPIRES_IN.value()));
+			String accessToken = generateToken(clientId, expiresIn);
 			if (null == accessToken) {
 				sendResponse(exchange, HttpStatus.INTERNAL_SERVER_ERROR, ErrorResponse.of("Cannot generate token"));
 				return;
@@ -134,7 +134,7 @@ public class NimbusOAuth2Server {
 			AuthenticationToken token = new AuthenticationToken();
 			token.setAccessToken(accessToken);
 			token.setTokenType(HttpAuthScheme.BEARER.value());
-			token.setExpiresIn(getExpiresIn(params.get(OAuth2Parameter.EXPIRES_IN.value())).toSeconds());
+			token.setExpiresIn(expiresIn.toSeconds());
 
 			sendResponse(exchange, HttpStatus.OK, token.toString());
 		}
@@ -143,7 +143,7 @@ public class NimbusOAuth2Server {
 			try {
 				return Duration.ofSeconds(Long.valueOf(value));
 			} catch (Exception e) {
-				LOGGER.info("Error reading 'expires_in':", e);
+				LOGGER.info("Error reading 'expires_in': " + value + ", defaulting to: " + DEFAULT_EXPIRES_IN, e);
 				return DEFAULT_EXPIRES_IN;
 			}
 		}
@@ -154,12 +154,12 @@ public class NimbusOAuth2Server {
 			}
 		}
 
-		private String generateToken(final String clientId) {
+		private String generateToken(final String clientId, final Duration expiresIn) {
 			try {
 				JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
 						.issuer("http://localhost:" + server.port)
 						.subject(clientId)
-						.expirationTime(new Date(new Date().getTime() + DEFAULT_EXPIRES_IN.toMillis()))
+						.expirationTime(new Date(new Date().getTime() + expiresIn.toMillis()))
 						.jwtID(UUID.randomUUID().toString())
 						.build();
 
@@ -178,16 +178,13 @@ public class NimbusOAuth2Server {
 			}
 		}
 
-		private static void sendResponse(final HttpExchange exchange, final HttpStatus status, final String response) throws IOException {
+		private static <T> void sendResponse(final HttpExchange exchange, final HttpStatus status, final T response) throws IOException {
 			exchange.getResponseHeaders().set(HttpHeader.CONTENT_TYPE.value(), ContentType.APPLICATION_JSON.value());
-			exchange.sendResponseHeaders(status.getCode(), response.length());
+			String responseString = Strings.safeToString(response);
+			exchange.sendResponseHeaders(status.getCode(), responseString.length());
 			OutputStream os = exchange.getResponseBody();
-			os.write(response.getBytes(StandardCharsets.UTF_8));
+			os.write(responseString.getBytes(StandardCharsets.UTF_8));
 			os.close();
-		}
-
-		private static void sendResponse(final HttpExchange exchange, final HttpStatus status, final ErrorResponse errorResponse) throws IOException {
-			sendResponse(exchange, status, errorResponse.toString());
 		}
 
 		private static void sendResponse(final HttpExchange exchange, final HttpStatus status) throws IOException {
@@ -195,6 +192,11 @@ public class NimbusOAuth2Server {
 		}
 	}
 
+	/**
+	 * Error response.
+	 *
+	 * @author Radu Sebastian LAZIN
+	 */
 	static class ErrorResponse {
 
 		private String error;
