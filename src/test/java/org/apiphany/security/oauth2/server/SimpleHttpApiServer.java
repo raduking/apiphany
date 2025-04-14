@@ -29,6 +29,8 @@ public class SimpleHttpApiServer {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SimpleHttpApiServer.class);
 
+	public static final String NAME = "Mumu";
+
 	private final JwtTokenValidator tokenValidator;
 	private final HttpServer httpServer;
 	private final int port;
@@ -69,7 +71,7 @@ public class SimpleHttpApiServer {
 				if (!isAuthorized(exchange)) {
 					return;
 				}
-				sendResponse(exchange, HttpStatus.OK, "Hello from the name API!");
+				sendResponse(exchange, HttpStatus.OK, SimpleHttpApiServer.NAME);
 			} else {
 				exchange.sendResponseHeaders(HttpStatus.METHOD_NOT_ALLOWED.value(), -1);
 			}

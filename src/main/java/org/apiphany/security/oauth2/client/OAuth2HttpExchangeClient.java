@@ -81,6 +81,7 @@ public class OAuth2HttpExchangeClient extends AbstractTokenHttpExchangeClient {
 		this.providers = oAuth2Properties.getProvider();
 
 		setAuthenticationScheme(HttpAuthScheme.BEARER);
+
 		setSchedulerEnabled(initialize());
 		if (isSchedulerEnabled()) {
 			refreshAuthenticationToken();
@@ -100,7 +101,7 @@ public class OAuth2HttpExchangeClient extends AbstractTokenHttpExchangeClient {
 	 * Try to get an authentication token at startup. Returns true if the initialization of the properties was successful,
 	 * false otherwise.
 	 *
-	 * @return true if the initialization was successful
+	 * @return true if the initialization was successful, false otherwise
 	 */
 	private boolean initialize() {
 		if (exchangeClient.getClientProperties().isDisabled()) {
@@ -118,9 +119,43 @@ public class OAuth2HttpExchangeClient extends AbstractTokenHttpExchangeClient {
 			return false;
 		}
 		// TODO: implement for multiple registrations
-		setClientRegistrationName(getClientRegistrationName());
+		String name = getClientRegistrationName();
+		if (!initialize(name)) {
+			return false;
+		}
+		setClientRegistrationName(name);
 
 		return null != tokenApiClient;
+	}
+
+	/**
+	 * Try to initialize OAuth2 properties and the OAuth2 API client based on the given client registration name. Returns
+	 * true if the initialization of the properties was successful, false otherwise.
+	 *
+	 * @param clientRegistrationName client registration name
+	 * @return true if the initialization was successful, false otherwise
+	 */
+	private boolean initialize(final String clientRegistrationName) {
+		OAuth2ClientRegistration clientRegistration = clientRegistrations.get(clientRegistrationName);
+		if (null == clientRegistration) {
+			LOGGER.warn("[{}] No OAuth2 client provided for client registration in {}.registration.{}",
+					getClass().getSimpleName(), OAuth2Properties.ROOT, clientRegistrationName);
+			return false;
+		}
+		if (!clientRegistration.hasClientSecret()) {
+			LOGGER.warn("[{}] No OAuth2 client-secret provided in {}.registration.{}",
+					getClass().getSimpleName(), OAuth2Properties.ROOT, clientRegistrationName);
+			return false;
+		}
+		OAuth2ProviderDetails provider = providers.get(clientRegistration.getProvider());
+		if (null == provider) {
+			LOGGER.warn("[{}] No OAuth2 provider named '{}' for found in in {}.provider",
+					getClass().getSimpleName(), clientRegistration.getProvider(), OAuth2Properties.ROOT);
+			return false;
+		}
+
+		this.tokenApiClient = new OAuth2ApiClient(clientRegistration, provider, tokenExchangeClient);
+		return true;
 	}
 
 	/**
@@ -151,21 +186,6 @@ public class OAuth2HttpExchangeClient extends AbstractTokenHttpExchangeClient {
 	 */
 	public void setClientRegistrationName(final String clientRegistrationName) {
 		this.clientRegistrationName = clientRegistrationName;
-
-		OAuth2ClientRegistration clientRegistration = clientRegistrations.get(clientRegistrationName);
-		if (null == clientRegistration) {
-			LOGGER.warn("[{}] No OAuth2 client provided for client registration in {}.registration.{}",
-					getClass().getSimpleName(), OAuth2Properties.ROOT, clientRegistrationName);
-			return;
-		}
-		if (!clientRegistration.hasClientSecret()) {
-			LOGGER.warn("[{}] No OAuth2 client-secret provided in {}.registration.{}",
-					getClass().getSimpleName(), OAuth2Properties.ROOT, clientRegistrationName);
-			return;
-		}
-		OAuth2ProviderDetails provider = providers.get(clientRegistration.getProvider());
-
-		this.tokenApiClient = new OAuth2ApiClient(clientRegistration, provider, tokenExchangeClient);
 	}
 
 	/**
@@ -182,16 +202,6 @@ public class OAuth2HttpExchangeClient extends AbstractTokenHttpExchangeClient {
 	}
 
 	/**
-	 * Returns true if a new token is needed, false otherwise.
-	 *
-	 * @return true if a new token is needed
-	 */
-	public boolean isNewTokenNeeded() {
-		Instant expiration = getTokenExpiration();
-		return expiration.isBefore(Instant.now().minus(TOKEN_EXPIRATION_ERROR_MARGIN));
-	}
-
-	/**
 	 * Refreshes the authentication token.
 	 */
 	private void refreshAuthenticationToken() {
@@ -202,7 +212,7 @@ public class OAuth2HttpExchangeClient extends AbstractTokenHttpExchangeClient {
 		// schedule new token checking
 		Instant expiration = getTokenExpiration().minus(TOKEN_EXPIRATION_ERROR_MARGIN);
 		Instant scheduled = JavaObjects.max(expiration, Instant.now());
-		Duration delay = Duration.between(scheduled, Instant.now());
+		Duration delay = Duration.between(Instant.now(), scheduled);
 		tokenRefreshScheduler.schedule(this::refreshAuthenticationToken, delay.toMillis(), TimeUnit.MILLISECONDS);
 	}
 
@@ -249,4 +259,21 @@ public class OAuth2HttpExchangeClient extends AbstractTokenHttpExchangeClient {
 		this.schedulerEnabled = schedulerEnabled;
 	}
 
+	/**
+	 * Returns the refresh scheduler.
+	 *
+	 * @return the refresh scheduler
+	 */
+	protected ScheduledExecutorService getTokenRefreshScheduler() {
+		return tokenRefreshScheduler;
+	}
+
+	/**
+	 * Returns the token API client.
+	 *
+	 * @return the token API client
+	 */
+	protected OAuth2ApiClient getTokenApiClient() {
+		return tokenApiClient;
+	}
 }

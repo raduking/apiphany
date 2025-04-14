@@ -2,6 +2,7 @@ package org.apiphany.security.oauth2;
 
 import java.util.Map;
 
+import org.apiphany.json.JsonBuilder;
 import org.apiphany.security.oauth2.client.OAuth2ClientRegistration;
 
 /**
@@ -17,31 +18,23 @@ public class OAuth2Properties {
 	public static final String ROOT = "oauth2";
 
 	/**
-	 * Map of OAuth2 provider configurations keyed by provider name.
-	 */
-	private Map<String, OAuth2ProviderDetails> provider;
-
-	/**
 	 * Map of OAuth2 client registrations keyed by registration ID.
 	 */
 	private Map<String, OAuth2ClientRegistration> registration;
 
 	/**
-	 * Returns the map of OAuth2 provider configurations.
-	 *
-	 * @return map of provider configurations, keyed by provider name
+	 * Map of OAuth2 provider configurations keyed by provider name.
 	 */
-	public Map<String, OAuth2ProviderDetails> getProvider() {
-		return provider;
-	}
+	private Map<String, OAuth2ProviderDetails> provider;
 
 	/**
-	 * Sets the OAuth2 provider configurations.
+	 * Returns the string representation of this object as JSON.
 	 *
-	 * @param provider map of provider configurations, keyed by provider name
+	 * @return the string representation of this object as JSON
 	 */
-	public void setProvider(final Map<String, OAuth2ProviderDetails> provider) {
-		this.provider = provider;
+	@Override
+	public String toString() {
+		return JsonBuilder.toJson(this);
 	}
 
 	/**
@@ -60,5 +53,23 @@ public class OAuth2Properties {
 	 */
 	public void setRegistration(final Map<String, OAuth2ClientRegistration> registration) {
 		this.registration = registration;
+	}
+
+	/**
+	 * Returns the map of OAuth2 provider configurations.
+	 *
+	 * @return map of provider configurations, keyed by provider name
+	 */
+	public Map<String, OAuth2ProviderDetails> getProvider() {
+		return provider;
+	}
+
+	/**
+	 * Sets the OAuth2 provider configurations.
+	 *
+	 * @param provider map of provider configurations, keyed by provider name
+	 */
+	public void setProvider(final Map<String, OAuth2ProviderDetails> provider) {
+		this.provider = provider;
 	}
 }
