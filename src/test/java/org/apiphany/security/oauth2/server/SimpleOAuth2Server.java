@@ -121,7 +121,7 @@ public class SimpleOAuth2Server {
 					&& Objects.equals(server.clientId, clientId)
 					&& Objects.equals(server.clientSecret, clientSecret);
 			if (!isAuthorized) {
-				sendResponse(exchange, HttpStatus.UNAUTHORIZED, ErrorResponse.of("Invalid client"));
+				sendResponse(exchange, HttpStatus.UNAUTHORIZED, ErrorResponse.of("Invalid client: " + clientId));
 				return;
 			}
 			Duration expiresIn = getExpiresIn(params.get(OAuth2Parameter.EXPIRES_IN.value()));

@@ -1,0 +1,60 @@
+{
+	"provider": {
+		"my-provider-name": {
+			"authorization-uri": "https://example.com/oauth2/authorize",
+			"jwk-set-uri": "https://example.com/oauth2/jwks",
+			"user-info-endpoint": {
+				"authentication-method": "HEADER",
+				"uri": "https://example.com/oauth2/userinfo",
+				"user-name-attribute-name": "sub"
+			},
+			"token-uri": "http://localhost:57222/token",
+			"issuer-uri": "https://example.com",
+			"configuration-metadata": {
+				"response_types_supported": [
+					"code",
+					"token",
+					"id_token"
+				],
+				"claims_supported": [
+					"sub",
+					"name",
+					"given_name",
+					"family_name",
+					"email",
+					"email_verified"
+				],
+				"end_session_endpoint": "https://example.com/oauth2/logout",
+				"id_token_signing_alg_values_supported": [
+					"RS256"
+				],
+				"scopes_supported": [
+					"openid",
+					"profile",
+					"email",
+					"address",
+					"phone"
+				]
+			}
+		}
+	},
+	"registration": {
+		"my-simple-app": {
+			"redirect-uri": "https://example.com/login/oauth2/code/keycloak",
+			"encoded-credentials": "YXBpcGhhbnktY2xpZW50OmFwaXBoYW55LWNsaWVudC1zZWNyZXQtbW9yZS10aGFuLTMyLWNoYXJhY3RlcnM=",
+			"authorization-grant-type": "CLIENT_CREDENTIALS",
+			"client-secret": "apiphany-client-secret-more-than-32-characters",
+			"provider": "my-provider-name",
+			"client-authentication-method": "CLIENT_SECRET_BASIC",
+			"registration-id": "keycloak-client",
+			"client-secret-basic-header-value": "Basic YXBpcGhhbnktY2xpZW50OmFwaXBoYW55LWNsaWVudC1zZWNyZXQtbW9yZS10aGFuLTMyLWNoYXJhY3RlcnM=",
+			"scopes": [
+				"openid",
+				"profile",
+				"email"
+			],
+			"client-id": "apiphany-client",
+			"client-name": "Apiphany Client"
+		}
+	}
+}

@@ -82,6 +82,19 @@ public abstract class AbstractTokenHttpExchangeClient extends AbstractHttpExchan
 	}
 
 	/**
+	 * Returns true if a new token is needed, false otherwise.
+	 *
+	 * @return true if a new token is needed, false otherwise
+	 */
+	public boolean isNewTokenNeeded() {
+		if (null == authenticationToken) {
+			return true;
+		}
+		Instant expiration = getTokenExpiration();
+		return expiration.isBefore(Instant.now().minus(TOKEN_EXPIRATION_ERROR_MARGIN));
+	}
+
+	/**
 	 * Returns the default token expiration date.
 	 *
 	 * @return the default token expiration date
