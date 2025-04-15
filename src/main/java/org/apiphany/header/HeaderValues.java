@@ -63,7 +63,7 @@ public class HeaderValues {
 	}
 
 	/**
-	 * Builds the value for the header for the request by concatenating the two parameters with a whitespace between them.
+	 * Builds the value for the header for the request by concatenating the two parameters with whitespace between them.
 	 *
 	 * @param <L> left value type
 	 * @param <R> right value type

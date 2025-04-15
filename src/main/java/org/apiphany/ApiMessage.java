@@ -75,7 +75,7 @@ public class ApiMessage<T> {
 	}
 
 	/**
-	 * Returns all headers as {@link String}. This method helps log the headers of a message and subsequent implementations
+	 * Returns all headers as {@link String}. This method helps log the headers of a message, and subsequent implementations
 	 * can override this method to show only the wanted headers.
 	 *
 	 * @return all headers as string

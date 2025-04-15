@@ -32,7 +32,7 @@ public interface Lists {
 	 * @param list a list
 	 * @return the list given as parameter or an empty list if the parameter is null
 	 */
-	public static <T> List<T> safe(final List<T> list) {
+	static <T> List<T> safe(final List<T> list) {
 		return null == list ? Collections.emptyList() : list;
 	}
 
@@ -111,7 +111,7 @@ public interface Lists {
 	 * @param list the list to check, may be null
 	 * @return true if empty or null
 	 */
-	public static <T> boolean isEmpty(final List<T> list) {
+	static <T> boolean isEmpty(final List<T> list) {
 		return list == null || list.isEmpty();
 	}
 
@@ -125,7 +125,7 @@ public interface Lists {
 	 * @param coll the list to check, may be null
 	 * @return true if non-null and non-empty
 	 */
-	public static <T> boolean isNotEmpty(final List<T> coll) {
+	static <T> boolean isNotEmpty(final List<T> coll) {
 		return !isEmpty(coll);
 	}
 

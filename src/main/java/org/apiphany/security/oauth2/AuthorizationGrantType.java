@@ -51,7 +51,7 @@ public enum AuthorizationGrantType {
 	 *
 	 * @param value the string representation of the grant type
 	 */
-	private AuthorizationGrantType(final String value) {
+	AuthorizationGrantType(final String value) {
 		this.value = value;
 	}
 

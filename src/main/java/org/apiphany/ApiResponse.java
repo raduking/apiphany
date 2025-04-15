@@ -62,7 +62,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	}
 
 	/**
-	 * Returns the body as an input stream. The caller is responsible to close the input stream.
+	 * Returns the body as an input stream. The caller is responsible for closing the input stream.
 	 *
 	 * @return the body as an input stream
 	 */
@@ -390,7 +390,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 		private T body;
 
 		/**
-		 * The response headers, initialized as empty map.
+		 * The response headers, initialized as an empty map.
 		 */
 		private Map<String, List<String>> headers = Collections.emptyMap();
 

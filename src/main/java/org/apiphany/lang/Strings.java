@@ -19,9 +19,9 @@ import org.morphix.lang.thread.Threads;
 public interface Strings {
 
 	/**
-	 * End Of Line, system dependent line separator.
+	 * End Of Line, system-dependent line separator.
 	 */
-	static final String EOL = System.lineSeparator();
+	String EOL = System.lineSeparator();
 
 	/**
 	 * Returns the call of {@link Object#toString()} on the given parameter if the parameter is not null, null otherwise.
@@ -29,7 +29,7 @@ public interface Strings {
 	 * @param o object
 	 * @return the string representation of the object
 	 */
-	public static String safeToString(final Object o) {
+	static String safeToString(final Object o) {
 		return Objects.toString(o, null);
 	}
 
@@ -39,7 +39,7 @@ public interface Strings {
 	 * @param s a string
 	 * @return the parameter if it is not null, empty string otherwise
 	 */
-	public static String safe(final String s) {
+	static String safe(final String s) {
 		return null != s ? s : "";
 	}
 
@@ -49,8 +49,8 @@ public interface Strings {
 	 * @param cs the CharSequence to check, may be null
 	 * @return {@code true} if the CharSequence is empty or null
 	 */
-	public static boolean isEmpty(final CharSequence cs) {
-		return cs == null || cs.length() == 0;
+	static boolean isEmpty(final CharSequence cs) {
+		return cs == null || cs.isEmpty();
 	}
 
 	/**
@@ -59,7 +59,7 @@ public interface Strings {
 	 * @param cs the CharSequence to check, may be null
 	 * @return {@code true} if the CharSequence is not empty or null
 	 */
-	public static boolean isNotEmpty(final CharSequence cs) {
+	static boolean isNotEmpty(final CharSequence cs) {
 		return !isEmpty(cs);
 	}
 
@@ -70,14 +70,14 @@ public interface Strings {
 	 * @param str string to transform
 	 * @return kebab case string
 	 */
-	public static String fromLowerCamelToKebabCase(final String str) {
+	static String fromLowerCamelToKebabCase(final String str) {
 		String regex = "([a-z])([A-Z]+)";
 		String replacement = "$1-$2";
 		return str.replaceAll(regex, replacement).toLowerCase();
 	}
 
 	/**
-	 * Transforms an input stream to a string. If the input stream cannot be converted to string with the given parameters
+	 * Transforms an input stream to a string. If the input stream cannot be converted to string with the given parameters,
 	 * the result will be null.
 	 *
 	 * @param inputStream input stream
@@ -86,10 +86,10 @@ public interface Strings {
 	 * @param onError on error handler
 	 * @return string
 	 */
-	public static String toString(final InputStream inputStream, final Charset encoding, final int bufferSize, final Consumer<Exception> onError) {
+	static String toString(final InputStream inputStream, final Charset encoding, final int bufferSize, final Consumer<Exception> onError) {
 		final char[] buffer = new char[bufferSize];
 		final StringBuilder out = new StringBuilder();
-		try (Reader in = new InputStreamReader(inputStream, encoding.name())) {
+		try (Reader in = new InputStreamReader(inputStream, encoding)) {
 			int s = 0;
 			while (s >= 0) {
 				s = in.read(buffer, 0, buffer.length);
@@ -105,7 +105,7 @@ public interface Strings {
 	}
 
 	/**
-	 * Transforms an input stream to a string. If the input stream cannot be converted to string with the given parameters
+	 * Transforms an input stream to a string. If the input stream cannot be converted to string with the given parameters,
 	 * the result will be null.
 	 *
 	 * @param inputStream input stream
@@ -113,18 +113,18 @@ public interface Strings {
 	 * @param bufferSize buffer size
 	 * @return string
 	 */
-	public static String toString(final InputStream inputStream, final Charset encoding, final int bufferSize) {
+	static String toString(final InputStream inputStream, final Charset encoding, final int bufferSize) {
 		return toString(inputStream, encoding, bufferSize, Threads.consumeNothing());
 	}
 
 	/**
-	 * Returns a string from a file or {@code null} if any error occured.
+	 * Returns a string from a file or {@code null} if any error occurred.
 	 *
 	 * @param path path to the file
 	 * @param onError on error handler
 	 * @return the file content as string
 	 */
-	public static String fromFile(final String path, final Charset encoding, final int bufferSize, final Consumer<Exception> onError) {
+	static String fromFile(final String path, final Charset encoding, final int bufferSize, final Consumer<Exception> onError) {
 		String fileContent = null;
 		try (InputStream inputStream = Strings.class.getResourceAsStream(path)) {
 			fileContent = toString(inputStream, encoding, bufferSize, onError);
@@ -135,24 +135,24 @@ public interface Strings {
 	}
 
 	/**
-	 * Returns a string from a file or {@code null} if any error occured.
+	 * Returns a string from a file or {@code null} if any error occurred.
 	 *
 	 * @param path path to the file
 	 * @return the file content as string
 	 */
-	public static String fromFile(final String path, final Charset encoding, final int bufferSize) {
+	static String fromFile(final String path, final Charset encoding, final int bufferSize) {
 		return fromFile(path, encoding, bufferSize, Threads.consumeNothing());
 	}
 
 	/**
-	 * Returns a string from a file or {@code null} if any error occured. It assumes that the encoding in
+	 * Returns a string from a file or {@code null} if any error occurred. It assumes that the encoding in
 	 * {@link StandardCharsets#UTF_8} and uses a default buffer size of 1000 bytes. Use this method only if the file to be
 	 * read respects these conditions.
 	 *
 	 * @param path path to the file
 	 * @return the file content as string
 	 */
-	public static String fromFile(final String path) {
+	static String fromFile(final String path) {
 		return fromFile(path, StandardCharsets.UTF_8, 1000);
 	}
 }

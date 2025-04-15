@@ -92,7 +92,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	/**
 	 * Debug string flag.
 	 */
-	private boolean debugString;
+	private final boolean debugString;
 
 	/**
 	 * Line separator, depends on {@link #indentOutput}.

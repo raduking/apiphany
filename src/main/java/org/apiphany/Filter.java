@@ -340,7 +340,7 @@ public record Filter(String value) implements RequestParameters.ParameterFunctio
 	 * filter1 and filter2 and ... and filterN
 	 * </pre>
 	 *
-	 * @param embrace flag to encompass in parentheses the and operation
+	 * @param embrace flag to encompass in parentheses the 'and' operation
 	 * @param filters filters to and
 	 * @return composed filter
 	 */
@@ -372,7 +372,7 @@ public record Filter(String value) implements RequestParameters.ParameterFunctio
 	 * filter1 and filter2 and ... and filterN
 	 * </pre>
 	 *
-	 * @param embrace flag to encompass in parentheses the and operation
+	 * @param embrace flag to encompass in parentheses the 'and' operation
 	 * @param filters filters to or
 	 * @return composed filter
 	 */
@@ -477,46 +477,46 @@ public record Filter(String value) implements RequestParameters.ParameterFunctio
 	}
 
 	/**
-	 * Returns a new filter by applying the and operation between this and the given filter.
+	 * Returns a new filter by applying the 'and' operation between this and the given filter.
 	 *
 	 * @param filter filter to and this
-	 * @return a new filter by applying the and operation between this and the given filter
+	 * @return a new filter by applying the 'and' operation between this and the given filter
 	 */
 	public Filter and(final Filter filter) {
 		return and(filter, Operator.AND);
 	}
 
 	/**
-	 * Returns a new filter by applying the and operation between this and the given filter.
+	 * Returns a new filter by applying the 'and' operation between this and the given filter.
 	 *
 	 * @param <O> operator type
 	 *
 	 * @param filter filter to and this
 	 * @param and custom and operator
-	 * @return a new filter by applying the and operation between this and the given filter
+	 * @return a new filter by applying the 'and' operation between this and the given filter
 	 */
 	public <O> Filter and(final Filter filter, final O and) {
 		return operation(filter, and);
 	}
 
 	/**
-	 * Returns a new filter by applying the or operation between this and the given filter.
+	 * Returns a new filter by applying the 'or' operation between this and the given filter.
 	 *
 	 * @param filter filter to or this
-	 * @return a new filter by applying the or operation between this and the given filter
+	 * @return a new filter by applying the 'or' operation between this and the given filter
 	 */
 	public Filter or(final Filter filter) {
 		return or(filter, Operator.OR);
 	}
 
 	/**
-	 * Returns a new filter by applying the or operation between this and the given filter.
+	 * Returns a new filter by applying the 'or' operation between this and the given filter.
 	 *
 	 * @param <O> operator type
 	 *
 	 * @param filter filter to or this
 	 * @param or custom or operator
-	 * @return a new filter by applying the or operation between this and the given filter
+	 * @return a new filter by applying the 'or' operation between this and the given filter
 	 */
 	public <O> Filter or(final Filter filter, final O or) {
 		return operation(filter, or);

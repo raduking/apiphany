@@ -274,7 +274,11 @@ public class RequestParameters {
 	 * @return a URL-friendly string representation of the parameters
 	 */
 	public static String asUrlSuffix(final Map<String, String> params) {
-		return "?" + asString(params);
+		String result = asString(params);
+		if (Strings.isNotEmpty(result)) {
+			result = "?" + result;
+		}
+		return result;
 	}
 
 	/**

@@ -84,7 +84,7 @@ public enum HttpMethod implements RequestMethod {
 	 *
 	 * @param value string value
 	 */
-	private HttpMethod(final String value) {
+	HttpMethod(final String value) {
 		this.value = value;
 	}
 
@@ -110,7 +110,7 @@ public enum HttpMethod implements RequestMethod {
 	 * Returns a {@link HttpMethod} enum from a {@link String}.
 	 *
 	 * @param method HTTP method as string
-	 * @return a HTTP method enum
+	 * @return an HTTP method enum
 	 */
 	public static HttpMethod fromString(final String method) {
 		return Enums.fromString(method, NAME_MAP, values());

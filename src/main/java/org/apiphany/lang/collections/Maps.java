@@ -30,7 +30,7 @@ public interface Maps {
 	 * @param map a provided map
 	 * @return the given map if not null, empty map otherwise
 	 */
-	public static <K, V> Map<K, V> safe(final Map<K, V> map) {
+	static <K, V> Map<K, V> safe(final Map<K, V> map) {
 		return map == null ? emptyMap() : map;
 	}
 
@@ -106,7 +106,7 @@ public interface Maps {
 	 * @param map entry map
 	 * @return a new multi value map
 	 */
-	public static <K, V> Map<K, List<V>> multiValueMap(final Map<K, V> map) {
+	static <K, V> Map<K, List<V>> multiValueMap(final Map<K, V> map) {
 		if (map == null) {
 			return new HashMap<>();
 		}
@@ -119,28 +119,28 @@ public interface Maps {
 		return multiValueMap;
 	}
 
-    /**
-     * Null-safe check if the specified map is empty.
-     * <p>
-     * Null returns true.
-     *
-     * @param map  the map to check, may be null
-     * @return true if empty or null
-     */
-    public static boolean isEmpty(final Map<?,?> map) {
-        return map == null || map.isEmpty();
-    }
+	/**
+	 * Null-safe check if the specified map is empty.
+	 * <p>
+	 * Null returns true.
+	 *
+	 * @param map the map to check, may be null
+	 * @return true if empty or null
+	 */
+	static boolean isEmpty(final Map<?, ?> map) {
+		return map == null || map.isEmpty();
+	}
 
-    /**
-     * Null-safe check if the specified map is not empty.
-     * <p>
-     * Null returns false.
-     *
-     * @param map  the map to check, may be null
-     * @return true if non-null and non-empty
-     */
-    public static boolean isNotEmpty(final Map<?,?> map) {
-        return !isEmpty(map);
-    }
+	/**
+	 * Null-safe check if the specified map is not empty.
+	 * <p>
+	 * Null returns false.
+	 *
+	 * @param map the map to check, may be null
+	 * @return true if non-null and non-empty
+	 */
+	static boolean isNotEmpty(final Map<?, ?> map) {
+		return !isEmpty(map);
+	}
 
 }

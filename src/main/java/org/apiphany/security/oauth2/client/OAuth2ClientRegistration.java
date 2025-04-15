@@ -10,6 +10,8 @@ import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.security.oauth2.AuthorizationGrantType;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * Represents a client registration with an OAuth 2.0 or OpenID Connect 1.0 Provider. Contains all necessary
  * configuration for client authentication and authorization.
@@ -243,6 +245,7 @@ public class OAuth2ClientRegistration {
 	 *
 	 * @return the properly formatted encoded credentials
 	 */
+	@JsonIgnore
 	public String getEncodedCredentials() {
 		String credentials = String.join(":", getClientId(), getClientSecret());
 		return Base64.getEncoder().encodeToString(credentials.getBytes());
@@ -253,6 +256,7 @@ public class OAuth2ClientRegistration {
 	 *
 	 * @return the authorization header value for client secret basic
 	 */
+	@JsonIgnore
 	public String getClientSecretBasicHeaderValue() {
 		return HeaderValues.value(HttpAuthScheme.BASIC, getEncodedCredentials());
 	}

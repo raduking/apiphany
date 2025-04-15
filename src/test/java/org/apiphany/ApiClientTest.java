@@ -1,29 +1,43 @@
 package org.apiphany;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
+import org.apiphany.RequestParameters.ParameterFunction;
 import org.apiphany.client.ExchangeClient;
+import org.apiphany.header.Headers;
+import org.apiphany.http.ContentType;
+import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
 import org.apiphany.lang.retry.Retry;
 import org.apiphany.meters.BasicMeters;
 import org.apiphany.security.AuthenticationType;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.morphix.lang.JavaObjects;
 import org.morphix.reflection.Fields;
 import org.morphix.reflection.GenericClass;
 
@@ -36,8 +50,10 @@ import io.micrometer.core.instrument.Tags;
  */
 class ApiClientTest {
 
+	private static final String APIPHANY = "Apiphany";
 	private static final String BASE_URL = "http://localhost";
 	private static final String PATH_TEST = "test";
+	private static final String PARAM_ID = "id";
 	private static final String ID1 = "someTestId1";
 	private static final String ID2 = "someTestId2";
 	private static final int COUNT1 = 666;
@@ -50,7 +66,7 @@ class ApiClientTest {
 
 	@SuppressWarnings("unchecked")
 	@Test
-	void shouldCallExchangeClientWithProvidedParameters() {
+	void shouldCallExchangeClientOnRetrieve() {
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 
@@ -71,6 +87,112 @@ class ApiClientTest {
 				.orDefault(TestDto.EMPTY);
 
 		assertThat(result, equalTo(expected));
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	void shouldCallExchangeClientWithProvidedParametersOnGet() {
+		ExchangeClient exchangeClient = mock(ExchangeClient.class);
+		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
+
+		TestDto expected = TestDto.of(ID1, COUNT1);
+		ApiResponse<TestDto> response = ApiResponse.create(expected)
+				.status(HTTP_STATUS_OK, HttpStatus::from)
+				.exchangeClient(exchangeClient)
+				.build();
+
+		ArgumentCaptor<?> requestCaptor = ArgumentCaptor.forClass(ApiRequest.class);
+
+		doReturn(response).when(exchangeClient).exchange(any(ApiRequest.class));
+		doReturn(HttpMethod.GET).when(exchangeClient).get();
+
+		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
+
+		TestDto result = api.client()
+				.get()
+				.path(PATH_TEST)
+				.retrieve(TestDto.class)
+				.orDefault(TestDto.EMPTY);
+
+		assertThat(result, equalTo(expected));
+
+		verify(exchangeClient).exchange(JavaObjects.cast(requestCaptor.capture()));
+
+		ApiClientFluentAdapter request = JavaObjects.cast(requestCaptor.getValue());
+
+		assertThat(request.getUrl(), equalTo(BASE_URL + "/" + PATH_TEST));
+		assertThat(request.getUri(), equalTo(URI.create(request.url)));
+		assertThat(request.getMethod(), equalTo(HttpMethod.GET));
+		assertThat(request.getAuthenticationType(), equalTo(AuthenticationType.OAUTH2));
+		assertThat(request.getClassResponseType(), equalTo(TestDto.class));
+		assertThat(request.getGenericResponseType(), nullValue());
+		assertThat(request.getCharset(), equalTo(StandardCharsets.UTF_8));
+		assertThat(request.getParams(), nullValue());
+		assertThat(request.getHeaders(), is(anEmptyMap()));
+		assertThat(request.getBody(), nullValue());
+		assertThat(request.getResponseType(), equalTo(TestDto.class));
+		assertFalse(request.isStream());
+		assertFalse(request.isUrlEncoded());
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	void shouldCallExchangeClientWithProvidedParametersOnGetWithHeadersAndRequestParametersSet() {
+		ExchangeClient exchangeClient = mock(ExchangeClient.class);
+		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
+
+		TestDto expected = TestDto.of(ID1, COUNT1);
+		ApiResponse<TestDto> response = ApiResponse.create(expected)
+				.status(HTTP_STATUS_OK, HttpStatus::from)
+				.exchangeClient(exchangeClient)
+				.build();
+
+		ArgumentCaptor<?> requestCaptor = ArgumentCaptor.forClass(ApiRequest.class);
+
+		Map<String, List<String>> headers = new HashMap<>();
+		Headers.addTo(headers, HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_JSON);
+		Headers.addTo(headers, HttpHeader.CONTENT_TYPE, ContentType.TEXT_PLAIN);
+		Headers.addTo(headers, HttpHeader.USER_AGENT, APIPHANY);
+
+		doReturn(response).when(exchangeClient).exchange(any(ApiRequest.class));
+		doReturn(HttpMethod.GET).when(exchangeClient).get();
+		doReturn(headers.toString()).when(exchangeClient).getHeadersAsString(any(ApiRequest.class));
+
+		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
+
+		Map<String, String> params = RequestParameters.of(
+				ParameterFunction.parameter(PARAM_ID, ID1)
+		);
+
+		TestDto result = api.client()
+				.get()
+				.path(PATH_TEST)
+				.header(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_JSON)
+				.header(HttpHeader.CONTENT_TYPE, ContentType.TEXT_PLAIN)
+				.header(HttpHeader.USER_AGENT, APIPHANY)
+				.params(params)
+				.retrieve(TestDto.class)
+				.orDefault(TestDto.EMPTY);
+
+		assertThat(result, equalTo(expected));
+
+		verify(exchangeClient).exchange(JavaObjects.cast(requestCaptor.capture()));
+
+		ApiClientFluentAdapter request = JavaObjects.cast(requestCaptor.getValue());
+
+		assertThat(request.getUrl(), equalTo(BASE_URL + "/" + PATH_TEST));
+		assertThat(request.getUri(), equalTo(URI.create(request.url + RequestParameters.asUrlSuffix(params))));
+		assertThat(request.getMethod(), equalTo(HttpMethod.GET));
+		assertThat(request.getAuthenticationType(), equalTo(AuthenticationType.OAUTH2));
+		assertThat(request.getClassResponseType(), equalTo(TestDto.class));
+		assertThat(request.getGenericResponseType(), nullValue());
+		assertThat(request.getCharset(), equalTo(StandardCharsets.UTF_8));
+		assertThat(request.getBody(), nullValue());
+		assertThat(request.getHeaders(), equalTo(headers));
+		assertThat(request.getParams(), equalTo(params));
+		assertThat(request.getResponseType(), equalTo(TestDto.class));
+		assertFalse(request.isStream());
+		assertFalse(request.isUrlEncoded());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -343,10 +465,10 @@ class ApiClientTest {
 		Exception result = null;
 		try {
 			api.client()
-				.get()
-				.path(PATH_TEST)
-				.retrieve(TestDto.class)
-				.orDefault(TestDto.EMPTY);
+					.get()
+					.path(PATH_TEST)
+					.retrieve(TestDto.class)
+					.orDefault(TestDto.EMPTY);
 		} catch (Exception ex) {
 			result = ex;
 		}

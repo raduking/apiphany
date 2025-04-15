@@ -56,11 +56,11 @@ public class ApiClient {
 	private String baseUrl;
 
 	/**
-	 * Normally the client handles exceptions gracefully by logging the full exception and retransmitting the exception
+	 * Normally, the client handles exceptions gracefully by logging the full exception and retransmitting the exception
 	 * message to the caller.
 	 * <p>
-	 * Change this to <code><b>true</b></code> if you want the client to re-throw the caught exceptions (one reason for
-	 * example would be to handle the exceptions differently in accordance with the needs of the application).
+	 * Change this to <code><b>true</b></code> if you want the client to re-throw the caught exceptions (one reason, for
+	 * example, would be to handle the exceptions differently in accordance with the needs of the application).
 	 * <p>
 	 * The default value is <code><b>false</b></code>.
 	 */

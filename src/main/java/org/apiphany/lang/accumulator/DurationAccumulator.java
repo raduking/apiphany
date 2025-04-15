@@ -21,7 +21,7 @@ public class DurationAccumulator extends Accumulator<Duration> {
 	/**
 	 * Default percentile value used when no durations are available.
 	 */
-	private static final Double DEFAULT_PERCENTILE = Double.valueOf(0.0);
+	private static final Double DEFAULT_PERCENTILE = 0.0;
 
 	/**
 	 * Statistics object for storing calculated metrics.
