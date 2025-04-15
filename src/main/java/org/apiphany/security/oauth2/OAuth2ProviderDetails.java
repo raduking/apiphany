@@ -183,7 +183,7 @@ public class OAuth2ProviderDetails {
 		private AuthenticationMethod authenticationMethod = AuthenticationMethod.HEADER;
 
 		/**
-		 * The name of the attribute to use as the user's name. Typically "sub", "name", or "preferred_username".
+		 * The name of the attribute to use as the user's name. Typically, "sub", "name", or "preferred_username".
 		 */
 		private String userNameAttributeName;
 

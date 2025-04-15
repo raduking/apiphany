@@ -53,7 +53,7 @@ public class CompositeAccumulator extends Accumulator<Object> {
 	 */
 	@Override
 	public void accumulate(final Runnable runnable) {
-		if (accumulators.isEmpty()) {
+		if (Lists.isEmpty(accumulators)) {
 			return;
 		}
 		Runnable chainRunnable = runnable;
@@ -70,7 +70,7 @@ public class CompositeAccumulator extends Accumulator<Object> {
 	 */
 	@Override
 	public <U> U accumulate(final Supplier<U> supplier, final U defaultReturn) {
-		if (accumulators.isEmpty()) {
+		if (Lists.isEmpty(accumulators)) {
 			return defaultReturn;
 		}
 		Supplier<U> chainSupplier = supplier;

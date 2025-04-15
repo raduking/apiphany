@@ -36,7 +36,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
  * For de-serialization {@link Object} use {@link #fromJson(String, Class)} or {@link #fromJson(String, GenericClass)}
  * or {@link #fromJson(String, TypeReference)}.
  * <p>
- * To indent the JSON output use the {@code json-builder.to-json.indent-output} property set to {@code true}.
+ * To indent the JSON output, use the {@code json-builder.to-json.indent-output} property set to {@code true}.
  * <p>
  * Note: For indentation use: {@link #indentOutput(boolean)} with {@code true} to indent output and {@code false} to
  * have a single line JSON string.
@@ -50,12 +50,12 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 	/**
 	 * Error message logged when an object could not be serialized.
 	 */
-	protected static final String LOG_MSG_COULD_NOT_SERIALIZE_OBJECT = "Could not serialize object: {}";
+	static final String LOG_MSG_COULD_NOT_SERIALIZE_OBJECT = "Could not serialize object: {}";
 
 	/**
 	 * Error message logged when an object could not be de-serialized.
 	 */
-	protected static final String LOG_MSG_COULD_NOT_DESERIALIZE_OBJECT = "Could not deserialize object: {}";
+	static final String LOG_MSG_COULD_NOT_DESERIALIZE_OBJECT = "Could not deserialize object: {}";
 
 	/**
 	 * Singleton instance holder.
@@ -78,7 +78,7 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 	/**
 	 * Hide constructor.
 	 */
-	protected JacksonJsonBuilder() {
+	JacksonJsonBuilder() {
 		objectMapper.registerModule(newJavaTimeModule(DateTimeFormatter.ISO_DATE_TIME));
 		objectMapper.registerModule(customSerializationModule());
 		indentOutput(isIndentOutput());

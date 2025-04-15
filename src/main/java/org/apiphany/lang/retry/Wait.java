@@ -30,9 +30,8 @@ public interface Wait {
 	boolean keepWaiting();
 
 	/**
-	 * Returns a copy of the current object. This is needed for thread safety.
-	 * By default it doesn't create a copy so any class that doesn't implement
-	 * it is not thread safe.
+	 * Returns a copy of the current object. This is needed for thread safety. By default, it doesn't create a copy, so any
+	 * class that doesn't implement it is not thread safe.
 	 *
 	 * @return a copy of the current object
 	 */

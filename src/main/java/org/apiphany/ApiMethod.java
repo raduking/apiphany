@@ -26,7 +26,7 @@ public record ApiMethod(String name) implements RequestMethod {
 	 * This provides a more readable alternative to the record constructor and maintains consistency with common Java
 	 * factory patterns.
 	 *
-	 * @param name the name of the API method (may be {@code null})
+	 * @param name the name of the API method (it may be {@code null})
 	 * @return a new {@code ApiMethod} instance with the given name
 	 */
 	public static ApiMethod of(final String name) {
@@ -41,7 +41,7 @@ public record ApiMethod(String name) implements RequestMethod {
 	 * @return the name of this API method
 	 */
 	@Override
-	public final String toString() {
+	public String toString() {
 		return name();
 	}
 

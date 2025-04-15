@@ -22,7 +22,7 @@ public class HeaderValuesChain {
 	 * The list of {@link HeaderValues} instances in this chain, maintained in insertion order with the most recently added
 	 * instance at the beginning.
 	 */
-	private List<HeaderValues> headerValuesList = new LinkedList<>();
+	private final List<HeaderValues> headerValuesList = new LinkedList<>();
 
 	/**
 	 * Constructs an empty {@code HeaderValuesChain} initialized with one {@link HeaderValues} instance as the default

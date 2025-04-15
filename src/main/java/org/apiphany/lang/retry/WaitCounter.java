@@ -7,9 +7,8 @@ import java.util.concurrent.TimeUnit;
 import org.morphix.lang.thread.Threads;
 
 /**
- * Counter wait implementation. After each iteration the counter
- * waits for the given interval. If the interval is 0 the counter
- * doesn't wait.
+ * Counter wait implementation. After each iteration, the counter waits for the given interval. If the interval is 0,
+ * the counter doesn't wait.
  *
  * @author Radu Sebastian LAZIN
  */
@@ -106,7 +105,7 @@ public class WaitCounter implements Wait {
 	 * Returns true if the wait is over.
 	 *
 	 * @param count current count
-	 * @return true if the wait is over
+	 * @return true, if the wait is over
 	 */
 	public boolean isOver(final int count) {
 		return count >= maxCount;
@@ -127,17 +126,17 @@ public class WaitCounter implements Wait {
 	 */
 	@Override
 	public boolean equals(final Object that) {
-	    if (this == that) {
-	        return true;
-	    }
-	    if (null == that || that.getClass() != getClass()) {
-	    	return false;
-	    }
-	    WaitCounter thatWait = (WaitCounter) that;
-	    return Objects.equals(interval, thatWait.interval)
-	    		&& Objects.equals(intervalTimeUnit, thatWait.intervalTimeUnit)
-	    		&& Objects.equals(maxCount, thatWait.maxCount)
-	    		&& Objects.equals(count, thatWait.count);
+		if (this == that) {
+			return true;
+		}
+		if (null == that || that.getClass() != getClass()) {
+			return false;
+		}
+		WaitCounter thatWait = (WaitCounter) that;
+		return Objects.equals(interval, thatWait.interval)
+				&& Objects.equals(intervalTimeUnit, thatWait.intervalTimeUnit)
+				&& Objects.equals(maxCount, thatWait.maxCount)
+				&& Objects.equals(count, thatWait.count);
 	}
 
 	/**

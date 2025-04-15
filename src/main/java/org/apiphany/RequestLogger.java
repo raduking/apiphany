@@ -36,13 +36,15 @@ public class RequestLogger {
 	private static final String LOG_MESSAGE_SUCCESS = Strings.EOL
 			+ LOG_SEPARATOR + Strings.EOL
 			+ "CLIENT: {}" + Strings.EOL
+			+ "---REQUEST----" + Strings.EOL
 			+ "METHOD: {}" + Strings.EOL
 			+ "URL: {}" + Strings.EOL
 			+ "HEADERS: {}" + Strings.EOL
 			+ "PARAMETERS: {}" + Strings.EOL
-			+ "REQUEST BODY: {}" + Strings.EOL
-			+ "RESPONSE HEADERS: {}" + Strings.EOL
-			+ "RESPONSE BODY: {}" + Strings.EOL
+			+ "BODY: {}" + Strings.EOL
+			+ "---RESPONSE---" + Strings.EOL
+			+ "HEADERS: {}" + Strings.EOL
+			+ "BODY: {}" + Strings.EOL
 			+ "DURATION: {}s" + Strings.EOL
 			+ LOG_SEPARATOR;
 
@@ -52,11 +54,13 @@ public class RequestLogger {
 	private static final String LOG_MESSAGE_ERROR = Strings.EOL
 			+ LOG_SEPARATOR + Strings.EOL
 			+ "CLIENT: {}" + Strings.EOL
+			+ "---REQUEST---" + Strings.EOL
 			+ "METHOD: {}" + Strings.EOL
 			+ "URL: {}" + Strings.EOL
 			+ "HEADERS: {}" + Strings.EOL
 			+ "PARAMETERS: {}" + Strings.EOL
 			+ "REQUEST BODY: {}" + Strings.EOL
+			+ "---RESPONSE---" + Strings.EOL
 			+ "EXCEPTION: {}" + Strings.EOL
 			+ "DURATION: {}s" + Strings.EOL
 			+ LOG_SEPARATOR;

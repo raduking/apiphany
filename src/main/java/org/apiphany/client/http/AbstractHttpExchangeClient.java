@@ -20,7 +20,7 @@ import org.apiphany.json.jackson.JacksonJsonHttpContentConverter;
 import org.morphix.lang.JavaObjects;
 
 /**
- * Abstract HTTP exchange client which holds all the common information needed to build a HTTP exchange client.
+ * Abstract HTTP exchange client which holds all the common information needed to build an HTTP exchange client.
  *
  * @author Radu Sebastian LAZIN
  */

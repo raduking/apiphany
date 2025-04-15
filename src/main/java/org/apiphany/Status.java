@@ -13,7 +13,7 @@ public interface Status {
 	/**
 	 * Constant representing an unknown status code. Value: {@value}
 	 */
-	static final int UNKNOWN = -1;
+	int UNKNOWN = -1;
 
 	/**
 	 * Determines if the status represents a successful operation.

@@ -19,7 +19,7 @@ public class AuthenticationException extends HttpException {
 	private static final long serialVersionUID = 591403103621076702L;
 
 	/**
-	 * Constructor with exception message.
+	 * Constructor with an exception message.
 	 *
 	 * @param message the exception message
 	 */

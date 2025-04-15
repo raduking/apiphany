@@ -15,19 +15,18 @@ public interface Temporals {
 	 * @param duration java duration object
 	 * @return duration as double
 	 */
-	public static Double toDouble(final Duration duration) {
+	static Double toDouble(final Duration duration) {
 		String millis = String.format("%03d", duration.getNano() / 1_000_000);
 		return Double.parseDouble(duration.getSeconds() + "." + millis);
 	}
 
 	/**
-	 * Transforms a duration in milliseconds to a duration in seconds
-	 * as a double type, the decimal part being the seconds.
+	 * Transforms a duration in milliseconds to a duration in seconds as a double type, the decimal part being the seconds.
 	 *
 	 * @param millis duration in milliseconds
 	 * @return duration in seconds
 	 */
-	public static double toSeconds(final long millis) {
+	static double toSeconds(final long millis) {
 		return millis / 1000.0;
 	}
 

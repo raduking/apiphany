@@ -146,7 +146,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	public ApiClientFluentAdapter url(final String url, final String... pathSegments) {
 		StringBuilder sb = new StringBuilder(url);
 		for (String pathSegment : pathSegments) {
-			if (sb.length() > 0 && sb.charAt(sb.length() - 1) != '/') {
+			if (!sb.isEmpty() && sb.charAt(sb.length() - 1) != '/') {
 				sb.append('/');
 			}
 			String segment = isUrlEncoded() ? URLEncoder.encode(pathSegment, charset) : pathSegment;

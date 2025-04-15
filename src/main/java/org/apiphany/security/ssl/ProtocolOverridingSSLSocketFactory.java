@@ -33,7 +33,7 @@ public class ProtocolOverridingSSLSocketFactory extends SSLSocketFactory {
 	private final String[] enabledProtocols;
 
 	/**
-	 * Constructor to set the delegate and the protocols needed to be enabled on socket.
+	 * Constructor to set the delegate and the protocols needed to be enabled on the socket.
 	 *
 	 * @param sslSocketFactory SSLConnectionFactory delegate
 	 * @param enabledProtocols protocols to enable

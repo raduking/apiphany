@@ -34,12 +34,12 @@ public class RequestMethodDeserializer extends JsonDeserializer<RequestMethod> {
 	 * </ol>
 	 *
 	 * @param p the JSON parser containing the input to deserialize
-	 * @param ctxt the deserialization context
+	 * @param ct the deserialization context
 	 * @return the deserialized {@link RequestMethod} instance
 	 * @throws IOException if there is an error reading the JSON content
 	 */
 	@Override
-	public RequestMethod deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+	public RequestMethod deserialize(final JsonParser p, final DeserializationContext ct) throws IOException {
 		JsonNode node = p.getCodec().readTree(p);
 		String nodeText = node.asText();
 		try {

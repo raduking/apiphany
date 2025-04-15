@@ -338,7 +338,7 @@ public class ClientProperties {
 	 *
 	 * @author Radu Sebastian LAZIN
 	 */
-	public class Timeout {
+	public static class Timeout {
 
 		/**
 		 * Constant representing a disabled timeout.

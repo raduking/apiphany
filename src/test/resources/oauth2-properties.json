@@ -41,13 +41,11 @@
 	"registration": {
 		"my-simple-app": {
 			"redirect-uri": "https://example.com/login/oauth2/code/keycloak",
-			"encoded-credentials": "YXBpcGhhbnktY2xpZW50OmFwaXBoYW55LWNsaWVudC1zZWNyZXQtbW9yZS10aGFuLTMyLWNoYXJhY3RlcnM=",
 			"authorization-grant-type": "CLIENT_CREDENTIALS",
 			"client-secret": "apiphany-client-secret-more-than-32-characters",
 			"provider": "my-provider-name",
 			"client-authentication-method": "CLIENT_SECRET_BASIC",
 			"registration-id": "keycloak-client",
-			"client-secret-basic-header-value": "Basic YXBpcGhhbnktY2xpZW50OmFwaXBoYW55LWNsaWVudC1zZWNyZXQtbW9yZS10aGFuLTMyLWNoYXJhY3RlcnM=",
 			"scopes": [
 				"openid",
 				"profile",

@@ -114,17 +114,17 @@ public class HttpExchangeClient extends AbstractHttpExchangeClient {
 		HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder()
 				.uri(apiRequest.getUri());
 
-		HttpMethod httpMethpd = apiRequest.getMethod();
+		HttpMethod httpMethod = apiRequest.getMethod();
 		String stringBody = Strings.safeToString(apiRequest.getBody());
-		switch (httpMethpd) {
+		switch (httpMethod) {
 			case GET -> httpRequestBuilder.GET();
 			case PUT -> httpRequestBuilder.PUT(BodyPublishers.ofString(stringBody));
 			case POST -> httpRequestBuilder.POST(BodyPublishers.ofString(stringBody));
 			case DELETE -> httpRequestBuilder.DELETE();
 			case HEAD -> httpRequestBuilder.HEAD();
-			case PATCH -> httpRequestBuilder.method(httpMethpd.value(), BodyPublishers.ofString(stringBody));
-			case OPTIONS -> httpRequestBuilder.method(httpMethpd.value(), BodyPublishers.noBody());
-			default -> throw new UnsupportedOperationException("HTTP method " + httpMethpd + " is not supported!");
+			case PATCH -> httpRequestBuilder.method(httpMethod.value(), BodyPublishers.ofString(stringBody));
+			case OPTIONS -> httpRequestBuilder.method(httpMethod.value(), BodyPublishers.noBody());
+			default -> throw new UnsupportedOperationException("HTTP method " + httpMethod + " is not supported!");
 		}
 		addHeaders(httpRequestBuilder, apiRequest.getHeaders());
 

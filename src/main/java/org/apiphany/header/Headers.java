@@ -24,7 +24,7 @@ public interface Headers {
 	 * @param existingHeaders existing headers
 	 * @param headers headers map
 	 */
-	public static <N, H> void addTo(final Map<String, List<String>> existingHeaders, final Map<N, H> headers) {
+	static <N, H> void addTo(final Map<String, List<String>> existingHeaders, final Map<N, H> headers) {
 		Nullables.whenNotNull(headers).then(hdrs -> {
 			for (Map.Entry<N, H> header : hdrs.entrySet()) {
 				N headerName = header.getKey();
@@ -44,7 +44,7 @@ public interface Headers {
 	 * @param headerName header name
 	 * @param headerValue header value
 	 */
-	public static <N, H> void addTo(final Map<String, List<String>> existingHeaders, final N headerName, final H headerValue) {
+	static <N, H> void addTo(final Map<String, List<String>> existingHeaders, final N headerName, final H headerValue) {
 		String stringHeaderName = Strings.safeToString(headerName);
 		if (headerValue instanceof List<?> headerList) {
 			if (existingHeaders.containsKey(headerName)) {
@@ -67,7 +67,7 @@ public interface Headers {
 	 * @param headerName header name
 	 * @param headerValue header value
 	 */
-	public static <T, N, H> void addTo(final ApiRequest<T> apiRequest, final N headerName, final H headerValue) {
+	static <T, N, H> void addTo(final ApiRequest<T> apiRequest, final N headerName, final H headerValue) {
 		addTo(apiRequest.getHeaders(), headerName, headerValue);
 	}
 

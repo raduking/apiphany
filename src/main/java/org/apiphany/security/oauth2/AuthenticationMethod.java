@@ -42,7 +42,7 @@ public enum AuthenticationMethod {
 	 *
 	 * @param value the string representation of the authentication method
 	 */
-	private AuthenticationMethod(final String value) {
+	AuthenticationMethod(final String value) {
 		this.value = value;
 	}
 

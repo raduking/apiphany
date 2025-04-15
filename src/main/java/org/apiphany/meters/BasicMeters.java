@@ -292,7 +292,7 @@ public record BasicMeters(Timer latency, Counter requests, Counter retries, Coun
 	}
 
 	/**
-	 * Wraps the runnable code with metrics, recording latency, requests, and errors. Swallows exceptions.
+	 * Wraps the runnable code with metrics, recording latency, requests, and errors. The method swallows exceptions.
 	 *
 	 * @param prefix the metric prefix.
 	 * @param tags the metric tags.
@@ -303,7 +303,8 @@ public record BasicMeters(Timer latency, Counter requests, Counter retries, Coun
 	}
 
 	/**
-	 * Wraps the runnable code with metrics, recording latency, requests, and errors. Swallows exceptions. Uses no tags.
+	 * Wraps the runnable code with metrics, recording latency, requests, and errors. The method swallows exceptions. Uses
+	 * no tags.
 	 *
 	 * @param prefix the metric prefix.
 	 * @param runnable the code to wrap with metrics.
@@ -317,7 +318,7 @@ public record BasicMeters(Timer latency, Counter requests, Counter retries, Coun
 	 * lambda prefixes and converting it to a kebab-case format.<br/>
 	 * Example: <code>a.b.ClassName</code>.
 	 * <p>
-	 * StackTraceElement.methodName contains the method name, which can be sometimes lambda, for example:
+	 * StackTraceElement.methodName contains the method name, which can sometimes be lambda, for example:
 	 * <code>lambda$methodName$1</code>
 	 * <p>
 	 * This method resides here because it is a metrics specific way of computing the method name.
