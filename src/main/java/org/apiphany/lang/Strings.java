@@ -124,11 +124,11 @@ public interface Strings {
 	 * @param onError on error handler
 	 * @return the file content as string
 	 */
-	public static String fromFile(final String path, final Consumer<Exception> onError) {
+	public static String fromFile(final String path, final Charset encoding, final int bufferSize, final Consumer<Exception> onError) {
 		String fileContent = null;
 		try (InputStream inputStream = Strings.class.getResourceAsStream(path)) {
-			fileContent = toString(inputStream, StandardCharsets.UTF_8, 100, onError);
-		} catch (IOException e) {
+			fileContent = toString(inputStream, encoding, bufferSize, onError);
+		} catch (Exception e) {
 			onError.accept(e);
 		}
 		return fileContent;
@@ -140,7 +140,19 @@ public interface Strings {
 	 * @param path path to the file
 	 * @return the file content as string
 	 */
+	public static String fromFile(final String path, final Charset encoding, final int bufferSize) {
+		return fromFile(path, encoding, bufferSize, Threads.consumeNothing());
+	}
+
+	/**
+	 * Returns a string from a file or {@code null} if any error occured. It assumes that the encoding in
+	 * {@link StandardCharsets#UTF_8} and uses a default buffer size of 1000 bytes. Use this method only if the file to be
+	 * read respects these conditions.
+	 *
+	 * @param path path to the file
+	 * @return the file content as string
+	 */
 	public static String fromFile(final String path) {
-		return fromFile(path, Threads.consumeNothing());
+		return fromFile(path, StandardCharsets.UTF_8, 1000);
 	}
 }
