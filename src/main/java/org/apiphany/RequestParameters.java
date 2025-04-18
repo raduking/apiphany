@@ -300,12 +300,24 @@ public class RequestParameters {
 
 	/**
 	 * Transforms the request parameters string into a request parameters {@link Map}. If the string is empty, an empty
-	 * immutable map is returned.
+	 * immutable map is returned. It assumes the body character encoding is {@link StandardCharsets#UTF_8}.
 	 *
 	 * @param body the request parameters string
 	 * @return a {@link Map} representation of the parameters
 	 */
 	public static Map<String, String> from(final String body) {
+		return from(body, Strings.DEFAULT_CHARSET);
+	}
+
+	/**
+	 * Transforms the request parameters string into a request parameters {@link Map}. If the string is empty, an empty
+	 * immutable map is returned.
+	 *
+	 * @param body the request parameters string
+	 * @param encoding the body character encoding
+	 * @return a {@link Map} representation of the parameters
+	 */
+	public static Map<String, String> from(final String body, final Charset encoding) {
 		if (Strings.isEmpty(body)) {
 			return Collections.emptyMap();
 		}
@@ -315,7 +327,7 @@ public class RequestParameters {
 		for (String param : params) {
 			String[] pair = param.split("=");
 			if (pair.length == 2) {
-				String value = URLDecoder.decode(pair[1], StandardCharsets.UTF_8);
+				String value = URLDecoder.decode(pair[1], encoding);
 				paramsMap.put(pair[0], value);
 			}
 		}
@@ -329,7 +341,7 @@ public class RequestParameters {
 	 * @return a new map containing the encoded parameters
 	 */
 	public static Map<String, String> encode(final Map<String, String> requestParameters) {
-		return encode(requestParameters, StandardCharsets.UTF_8);
+		return encode(requestParameters, Strings.DEFAULT_CHARSET);
 	}
 
 	/**
@@ -337,14 +349,14 @@ public class RequestParameters {
 	 * encoded.
 	 *
 	 * @param requestParameters the request parameters to encode
-	 * @param charset the character set to use for encoding
+	 * @param encoding the character set to use for encoding
 	 * @return a new map containing the encoded parameters
 	 */
-	public static Map<String, String> encode(final Map<String, String> requestParameters, final Charset charset) {
+	public static Map<String, String> encode(final Map<String, String> requestParameters, final Charset encoding) {
 		Map<String, String> encodedParams = HashMap.newHashMap(requestParameters.size());
 		requestParameters.forEach((k, v) -> {
-			String name = URLEncoder.encode(k, charset);
-			String value = URLEncoder.encode(v, charset);
+			String name = URLEncoder.encode(k, encoding);
+			String value = URLEncoder.encode(v, encoding);
 			encodedParams.put(name, value);
 		});
 		return encodedParams;

@@ -24,6 +24,16 @@ public interface Strings {
 	String EOL = System.lineSeparator();
 
 	/**
+	 * Default buffer size when building strings from input streams (4096 bytes).
+	 */
+	int DEFAULT_BUFFER_SIZE = 2 << 12;
+
+	/**
+	 * Default character set used when working with strings {@link StandardCharsets#UTF_8}.
+	 */
+	Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
+
+	/**
 	 * Returns the call of {@link Object#toString()} on the given parameter if the parameter is not null, null otherwise.
 	 *
 	 * @param o object
@@ -121,6 +131,8 @@ public interface Strings {
 	 * Returns a string from a file or {@code null} if any error occurred.
 	 *
 	 * @param path path to the file
+	 * @param encoding the file encoding
+	 * @param bufferSize the size of the buffer while reading the file
 	 * @param onError on error handler
 	 * @return the file content as string
 	 */
@@ -138,6 +150,8 @@ public interface Strings {
 	 * Returns a string from a file or {@code null} if any error occurred.
 	 *
 	 * @param path path to the file
+	 * @param encoding the file encoding
+	 * @param bufferSize the size of the buffer while reading the file
 	 * @return the file content as string
 	 */
 	static String fromFile(final String path, final Charset encoding, final int bufferSize) {
@@ -146,13 +160,13 @@ public interface Strings {
 
 	/**
 	 * Returns a string from a file or {@code null} if any error occurred. It assumes that the encoding in
-	 * {@link StandardCharsets#UTF_8} and uses a default buffer size of 1000 bytes. Use this method only if the file to be
+	 * {@link StandardCharsets#UTF_8} and uses a default buffer size of 4096 bytes. Use this method only if the file to be
 	 * read respects these conditions.
 	 *
 	 * @param path path to the file
 	 * @return the file content as string
 	 */
 	static String fromFile(final String path) {
-		return fromFile(path, StandardCharsets.UTF_8, 1000);
+		return fromFile(path, DEFAULT_CHARSET, DEFAULT_BUFFER_SIZE);
 	}
 }

@@ -18,6 +18,8 @@ import org.apiphany.http.HttpMethod;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.json.jackson.JacksonJsonHttpContentConverter;
 import org.morphix.lang.JavaObjects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Abstract HTTP exchange client which holds all the common information needed to build an HTTP exchange client.
@@ -25,6 +27,8 @@ import org.morphix.lang.JavaObjects;
  * @author Radu Sebastian LAZIN
  */
 public abstract class AbstractHttpExchangeClient implements ExchangeClient {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractHttpExchangeClient.class);
 
 	/**
 	 * Client properties.
@@ -47,6 +51,7 @@ public abstract class AbstractHttpExchangeClient implements ExchangeClient {
 	 * @param clientProperties client properties
 	 */
 	protected AbstractHttpExchangeClient(final ClientProperties clientProperties) {
+		LOGGER.debug("Initializing: {}", getClass().getSimpleName());
 		this.clientProperties = clientProperties;
 		addDefaultContentConverters(contentConverters);
 		addDefaultHeaderValues(headerValuesChain);

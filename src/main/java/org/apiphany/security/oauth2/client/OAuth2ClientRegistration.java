@@ -14,7 +14,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Represents a client registration with an OAuth 2.0 or OpenID Connect 1.0 Provider. Contains all necessary
- * configuration for client authentication and authorization.
+ * configurations for client authentication and authorization.
  *
  * @see <a target="_blank" href="https://tools.ietf.org/html/rfc6749#section-2">RFC 6749 Section 2 - Client
  * Registration</a>
@@ -252,13 +252,13 @@ public class OAuth2ClientRegistration {
 	}
 
 	/**
-	 * Returns the {@code Authorization} header value for {@link ClientAuthenticationMethod#CLIENT_SECRET_BASIC}.
+	 * Returns the {@code Authorization} header value with the given {@link HttpAuthScheme} and encoded credentials.
 	 *
+	 * @param authorizationScheme the authorization scheme used to build the header value
 	 * @return the authorization header value for client secret basic
 	 */
-	@JsonIgnore
-	public String getClientSecretBasicHeaderValue() {
-		return HeaderValues.value(HttpAuthScheme.BASIC, getEncodedCredentials());
+	public String getAuthorizationHeaderValue(final HttpAuthScheme authorizationScheme) {
+		return HeaderValues.value(authorizationScheme, getEncodedCredentials());
 	}
 
 	/**

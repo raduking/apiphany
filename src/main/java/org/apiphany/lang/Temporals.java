@@ -3,7 +3,7 @@ package org.apiphany.lang;
 import java.time.Duration;
 
 /**
- * Utility methods for handling date/time.
+ * Utility methods for handling date/time/duration.
  *
  * @author Radu Sebastian LAZIN
  */

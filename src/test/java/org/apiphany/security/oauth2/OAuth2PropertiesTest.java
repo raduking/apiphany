@@ -1,9 +1,12 @@
 package org.apiphany.security.oauth2;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertNull;
 
 import org.apiphany.lang.Strings;
+import org.apiphany.security.oauth2.client.OAuth2ClientRegistration;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -36,14 +39,32 @@ class OAuth2PropertiesTest {
 		final ObjectMapper propertiesObjectMapper = new ObjectMapper()
 				.setPropertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
 
-		OAuth2Properties result = propertiesObjectMapper.readValue(json, OAuth2Properties.class);
+		OAuth2Properties result1 = propertiesObjectMapper.readValue(json, OAuth2Properties.class);
 
-		json = result.toString();
+		json = result1.toString();
 
 		final ObjectMapper objectMapper = new ObjectMapper();
 
-		result = objectMapper.readValue(json, OAuth2Properties.class);
+		OAuth2Properties result2 = objectMapper.readValue(json, OAuth2Properties.class);
 
-		assertThat(result, notNullValue());
+		assertThat(result1.toString(), equalTo(result2.toString()));
+	}
+
+	@Test
+	void shouldReturnNullOnGetProviderWhenProvidersMapIsEmpty() {
+		OAuth2Properties props = new OAuth2Properties();
+
+		OAuth2ProviderDetails result = props.getProviderDetails("test");
+
+		assertNull(result);
+	}
+
+	@Test
+	void shouldReturnNullOnGetRegistrationWhenRegistrationMapIsEmpty() {
+		OAuth2Properties props = new OAuth2Properties();
+
+		OAuth2ClientRegistration result = props.getClientRegistration("test");
+
+		assertNull(result);
 	}
 }

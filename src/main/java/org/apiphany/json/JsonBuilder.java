@@ -162,6 +162,19 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	}
 
 	/**
+	 * Returns a properties map from an object.
+	 *
+	 * @param <T> properties object type
+	 *
+	 * @param properties properties object
+	 * @param onError on error exception consumer
+	 * @return properties map
+	 */
+	public static <T> Map<String, Object> toMap(final T properties, final Consumer<Exception> onError) {
+		return InstanceHolder.INSTANCE.toPropertiesMap(properties, onError);
+	}
+
+	/**
 	 * Sets the indent flag for all JSON methods.
 	 *
 	 * @param enable indent flag
@@ -220,6 +233,19 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 * @return wanted object
 	 */
 	public <T> T fromPropertiesMap(final Map<String, Object> propertiesMap, final Class<T> cls, final Consumer<Exception> onError) {
+		throw jsonLibraryNotFound();
+	}
+
+	/**
+	 * Returns a properties map from an object.
+	 *
+	 * @param <T> properties object type
+	 *
+	 * @param properties properties object
+	 * @param onError on error exception consumer
+	 * @return properties map
+	 */
+	public <T> Map<String, Object> toPropertiesMap(final T properties, final Consumer<Exception> onError) {
 		throw jsonLibraryNotFound();
 	}
 

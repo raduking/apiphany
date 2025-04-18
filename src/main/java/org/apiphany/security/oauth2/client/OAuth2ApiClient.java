@@ -8,15 +8,19 @@ import java.util.Map;
 import org.apiphany.ApiClient;
 import org.apiphany.RequestParameters;
 import org.apiphany.client.ExchangeClient;
-import org.apiphany.client.http.AbstractTokenHttpExchangeClient;
+import org.apiphany.client.http.TokenHttpExchangeClient;
 import org.apiphany.http.ContentType;
+import org.apiphany.http.HttpAuthScheme;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.security.AuthenticationToken;
+import org.apiphany.security.oauth2.AuthorizationGrantType;
 import org.apiphany.security.oauth2.OAuth2ProviderDetails;
 
 /**
  * Specialized {@link ApiClient} for OAuth2 authentication flows. Handles token acquisition and management for OAuth2
  * protected APIs.
+ * <p>
+ * TODO: implement full functionality.
  *
  * @author Radu Sebastian LAZIN
  */
@@ -25,7 +29,7 @@ public class OAuth2ApiClient extends ApiClient {
 	/**
 	 * Default expiration duration for access tokens.
 	 */
-	private Duration expiresIn = AbstractTokenHttpExchangeClient.DEFAULT_EXPIRES_IN;
+	private Duration expiresIn = TokenHttpExchangeClient.DEFAULT_EXPIRES_IN;
 
 	/**
 	 * Configuration for the OAuth2 client registration.
@@ -67,6 +71,10 @@ public class OAuth2ApiClient extends ApiClient {
 	 * @return the authentication token, or null if the request fails
 	 */
 	public AuthenticationToken getAuthenticationToken(final ClientAuthenticationMethod method) {
+		AuthorizationGrantType grantType = clientRegistration.getAuthorizationGrantType();
+		if (AuthorizationGrantType.CLIENT_CREDENTIALS != grantType) {
+			throw new UnsupportedOperationException("Unsupported authorization grant type: " + grantType);
+		}
 		return switch (method) {
 			case CLIENT_SECRET_BASIC -> getTokenWithClientSecretBasic();
 			case CLIENT_SECRET_POST -> getTokenWithClientSecretPost();
@@ -88,7 +96,7 @@ public class OAuth2ApiClient extends ApiClient {
 				.url(providerDetails.getTokenUri())
 				.body(RequestParameters.asString(RequestParameters.encode(params)))
 				.header(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_FORM_URLENCODED)
-				.header(HttpHeader.AUTHORIZATION, clientRegistration.getClientSecretBasicHeaderValue())
+				.header(HttpHeader.AUTHORIZATION, clientRegistration.getAuthorizationHeaderValue(HttpAuthScheme.BASIC))
 				.retrieve(AuthenticationToken.class)
 				.orNull();
 	}
