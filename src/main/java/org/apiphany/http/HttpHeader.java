@@ -457,7 +457,7 @@ public enum HttpHeader {
 	 *
 	 * @param value string value
 	 */
-	private HttpHeader(final String value) {
+	HttpHeader(final String value) {
 		this.value = Objects.requireNonNull(value, "header value cannot be null");
 	}
 

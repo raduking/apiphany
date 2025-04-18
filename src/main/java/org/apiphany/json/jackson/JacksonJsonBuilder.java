@@ -3,6 +3,7 @@ package org.apiphany.json.jackson;
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -222,7 +223,7 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 	}
 
 	/**
-	 * Returns an object from a properties map.
+	 * Returns an object from a properties map. The properties map should use the kebab-case naming strategy.
 	 *
 	 * @param <T> return type
 	 *
@@ -242,6 +243,29 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 		} catch (Exception e) {
 			onError.accept(e);
 			return null;
+		}
+	}
+
+	/**
+	 * Returns a properties map from an object. The properties map uses the kebab-case naming strategy.
+	 *
+	 * @param <T> properties object type
+	 *
+	 * @param properties properties object
+	 * @param onError on error exception consumer
+	 * @return properties map
+	 */
+	@Override
+	public <T> Map<String, Object> toPropertiesMap(final T properties, final Consumer<Exception> onError) {
+		final ObjectMapper propertiesObjectMapper = new ObjectMapper()
+				.setPropertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
+		try {
+			return propertiesObjectMapper.convertValue(properties, new TypeReference<Map<String, Object>>() {
+				// empty
+			});
+		} catch (Exception e) {
+			onError.accept(e);
+			return Collections.emptyMap();
 		}
 	}
 

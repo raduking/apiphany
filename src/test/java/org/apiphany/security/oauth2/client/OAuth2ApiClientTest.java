@@ -14,11 +14,11 @@ import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.net.Sockets;
 import org.apiphany.security.AuthenticationToken;
+import org.apiphany.security.JwtTokenValidator;
+import org.apiphany.security.JwtTokenValidator.TokenValidationException;
 import org.apiphany.security.oauth2.OAuth2ProviderDetails;
-import org.apiphany.security.oauth2.server.JwtTokenValidator;
 import org.apiphany.security.oauth2.server.SimpleHttpApiServer;
 import org.apiphany.security.oauth2.server.SimpleOAuth2Server;
-import org.apiphany.security.oauth2.server.JwtTokenValidator.TokenValidationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

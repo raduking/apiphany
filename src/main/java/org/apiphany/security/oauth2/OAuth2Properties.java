@@ -3,6 +3,7 @@ package org.apiphany.security.oauth2;
 import java.util.Map;
 
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.lang.collections.Maps;
 import org.apiphany.security.oauth2.client.OAuth2ClientRegistration;
 
 /**
@@ -71,5 +72,35 @@ public class OAuth2Properties {
 	 */
 	public void setProvider(final Map<String, OAuth2ProviderDetails> provider) {
 		this.provider = provider;
+	}
+
+	/**
+	 * Returns the client registration for the given name.
+	 *
+	 * @param name client registration name
+	 * @return the client registration for the given name
+	 */
+	public OAuth2ClientRegistration getClientRegistration(final String name) {
+		return Maps.isEmpty(registration) ? null : registration.get(name);
+	}
+
+	/**
+	 * Returns the provider details for the given name.
+	 *
+	 * @param name provider name
+	 * @return the provider details for the given name
+	 */
+	public OAuth2ProviderDetails getProviderDetails(final String name) {
+		return Maps.isEmpty(provider) ? null : provider.get(name);
+	}
+
+	/**
+	 * Returns the provider details for the given client registration.
+	 *
+	 * @param clientRegistration the client registration
+	 * @return the provider details for the given client registration
+	 */
+	public OAuth2ProviderDetails getProviderDetails(final OAuth2ClientRegistration clientRegistration) {
+		return getProviderDetails(clientRegistration.getProvider());
 	}
 }

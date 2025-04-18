@@ -1,4 +1,4 @@
-package org.apiphany.security.oauth2.server;
+package org.apiphany.security;
 
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
@@ -16,6 +16,10 @@ public class JwtTokenValidator {
     private final byte[] secretKey;
     private final String expectedIssuer;
 
+    public JwtTokenValidator(final String clientSecret) {
+    	this(null, clientSecret, null);
+    }
+
     public JwtTokenValidator(final String clientId, final String clientSecret, final String expectedIssuer) {
         if (clientSecret.length() < 32) {
             throw new IllegalArgumentException("Client secret must be at least 32 characters long");
@@ -29,6 +33,10 @@ public class JwtTokenValidator {
     }
 
     public JWTClaimsSet validateToken(final String token) throws TokenValidationException {
+    	return validateToken(token, true);
+    }
+
+    public JWTClaimsSet validateToken(final String token, final boolean claimsValidationEnabled) throws TokenValidationException {
         try {
             // 1. Parse the token structure
             SignedJWT signedJWT = SignedJWT.parse(token);
@@ -41,8 +49,10 @@ public class JwtTokenValidator {
             // 3. Get claims
             JWTClaimsSet claims = signedJWT.getJWTClaimsSet();
 
-            // 4. Validate standard claims
-            validateClaims(claims);
+            // 4. Validate standard claims if enabled
+            if (claimsValidationEnabled) {
+            	validateClaims(claims);
+            }
 
             return claims;
         } catch (ParseException e) {
@@ -73,7 +83,7 @@ public class JwtTokenValidator {
             throw new TokenValidationException("Missing JWT ID claim");
         }
 
-        // 4. Validate subject exists (since you're setting it in generation)
+        // 4. Validate subject exists (since we're setting it in generation)
         String subject = claims.getSubject();
         if (null == subject || !subject.equals(clientId)) {
             throw new TokenValidationException("Missing subject claim");

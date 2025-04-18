@@ -3,9 +3,9 @@ package org.apiphany;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
+import org.apiphany.lang.Strings;
 import org.apiphany.lang.retry.Retry;
 import org.apiphany.meters.BasicMeters;
 import org.apiphany.security.AuthenticationType;
@@ -56,7 +56,7 @@ public class ApiRequest<T> extends ApiMessage<T> {
 	/**
 	 * The character set to be used for the request. Defaults to UTF-8.
 	 */
-	protected Charset charset = StandardCharsets.UTF_8;
+	protected Charset charset = Strings.DEFAULT_CHARSET;
 
 	/**
 	 * Indicates whether the response should be handled as a stream.

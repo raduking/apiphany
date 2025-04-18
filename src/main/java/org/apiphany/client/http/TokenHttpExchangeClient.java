@@ -2,9 +2,11 @@ package org.apiphany.client.http;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.function.Supplier;
 
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
+import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.header.HeaderValues;
 import org.apiphany.header.Headers;
@@ -12,14 +14,17 @@ import org.apiphany.http.HttpAuthScheme;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.security.AuthenticationException;
 import org.apiphany.security.AuthenticationToken;
+import org.apiphany.security.AuthenticationType;
+import org.apiphany.security.BearerTokenProperties;
 import org.morphix.lang.Nullables;
 
 /**
- * Base class for all clients that need to add authorization/authentication headers to the request.
+ * Authorizes all requests with the provided token and authorization scheme in the client properties. Base class for all
+ * clients that need to add authorization/authentication headers to the request.
  *
  * @author Radu Sebastian LAZIN
  */
-public abstract class AbstractTokenHttpExchangeClient extends AbstractHttpExchangeClient {
+public class TokenHttpExchangeClient extends AbstractHttpExchangeClient {
 
 	/**
 	 * Default value for token expiration (request) - 30 minutes.
@@ -47,13 +52,47 @@ public abstract class AbstractTokenHttpExchangeClient extends AbstractHttpExchan
 	private HttpAuthScheme authenticationScheme;
 
 	/**
+	 * Supplies the default token expiration.
+	 */
+	private Supplier<Instant> defaultExpirationSupplier;
+
+	/**
 	 * Initialize the client with the given exchange client delegate.
 	 *
 	 * @param exchangeClient actual exchange client making the request
 	 */
-	protected AbstractTokenHttpExchangeClient(final ExchangeClient exchangeClient) {
+	protected TokenHttpExchangeClient(final ExchangeClient exchangeClient) {
 		super(exchangeClient.getClientProperties());
+
 		this.exchangeClient = exchangeClient;
+		this.defaultExpirationSupplier = Instant::now;
+
+		initialize();
+	}
+
+	/**
+	 * Initializes the client.
+	 */
+	private void initialize() {
+		ClientProperties clientProperties = getClientProperties();
+		if (null == clientProperties) {
+			return;
+		}
+		BearerTokenProperties bearerTokenProperties = clientProperties.getCustomProperties(BearerTokenProperties.class);
+		if (null != bearerTokenProperties) {
+			AuthenticationToken authToken = new AuthenticationToken();
+			authToken.setAccessToken(bearerTokenProperties.getToken());
+			setAuthenticationToken(authToken);
+			setAuthenticationScheme(HttpAuthScheme.BEARER);
+		}
+	}
+
+	/**
+	 * @see #getAuthenticationType()
+	 */
+	@Override
+	public AuthenticationType getAuthenticationType() {
+		return AuthenticationType.TOKEN;
 	}
 
 	/**
@@ -100,7 +139,16 @@ public abstract class AbstractTokenHttpExchangeClient extends AbstractHttpExchan
 	 * @return the default token expiration date
 	 */
 	protected Instant getDefaultTokenExpiration() {
-		return Instant.now();
+		return defaultExpirationSupplier.get();
+	}
+
+	/**
+	 * Sets the default token expiration supplier to supply the value for {@link #getDefaultTokenExpiration()}.
+	 *
+	 * @param defaultExpirationSupplier default token expiration supplier
+	 */
+	protected void setDefaultTokenExpirationSupplier(final Supplier<Instant> defaultExpirationSupplier) {
+		this.defaultExpirationSupplier = defaultExpirationSupplier;
 	}
 
 	/**
@@ -117,7 +165,7 @@ public abstract class AbstractTokenHttpExchangeClient extends AbstractHttpExchan
 	 *
 	 * @param authenticationToken authentication token object
 	 */
-	protected void setAuthenticationToken(final AuthenticationToken authenticationToken) {
+	public void setAuthenticationToken(final AuthenticationToken authenticationToken) {
 		this.authenticationToken = authenticationToken;
 	}
 
@@ -135,7 +183,7 @@ public abstract class AbstractTokenHttpExchangeClient extends AbstractHttpExchan
 	 *
 	 * @param authenticationScheme the authentication scheme to set
 	 */
-	protected void setAuthenticationScheme(final HttpAuthScheme authenticationScheme) {
+	public void setAuthenticationScheme(final HttpAuthScheme authenticationScheme) {
 		this.authenticationScheme = authenticationScheme;
 	}
 }

@@ -12,24 +12,24 @@ import org.apiphany.client.http.HttpExchangeClient;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.net.Sockets;
+import org.apiphany.security.JwtTokenValidator;
 import org.apiphany.security.oauth2.OAuth2Properties;
 import org.apiphany.security.oauth2.OAuth2ProviderDetails;
-import org.apiphany.security.oauth2.server.JwtTokenValidator;
 import org.apiphany.security.oauth2.server.SimpleHttpApiServer;
 import org.apiphany.security.oauth2.server.SimpleOAuth2Server;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
+/**
+ * Test class for {@link OAuth2HttpExchangeClient}.
+ *
+ * @author Radu Sebastian LAZIN
+ */
 class OAuth2HttpExchangeClientTest {
 
 	private static final String CLIENT_SECRET = "apiphany-client-secret-more-than-32-characters";
 	private static final String CLIENT_ID = "apiphany-client";
-	private static final String PROVIDER = "provider";
 	private static final String PROVIDER_NAME = "my-provider-name";
-	private static final String REGISTRATION = "registration";
 	private static final String MY_SIMPLE_APP = "my-simple-app";
 
 	private static final Duration PORT_CHECK_TIMEOUT = Duration.ofMillis(500);
@@ -49,29 +49,23 @@ class OAuth2HttpExchangeClientTest {
 
 	private ClientProperties clientProperties;
 
+	private OAuth2Properties oAuth2Properties;
+
 	@BeforeEach
 	void setUp() {
 		clientRegistration = JsonBuilder.fromJson(Strings.fromFile("/oauth2-client-registration.json"), OAuth2ClientRegistration.class);
 		clientRegistration.setProvider(PROVIDER_NAME);
 		clientRegistration.setClientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST);
+
 		providerDetails = JsonBuilder.fromJson(Strings.fromFile("/oauth2-provider-details.json"), OAuth2ProviderDetails.class);
 		providerDetails.setTokenUri(OAUTH2_SERVER.getUrl() + "/token");
 
-		ObjectMapper mapper = new ObjectMapper();
-		Map<String, Object> clientRegistrationMap = mapper.convertValue(clientRegistration, new TypeReference<Map<String, Object>>() {
-			// empty
-		});
-		Map<String, Object> providerDetailsMap = mapper.convertValue(providerDetails, new TypeReference<Map<String, Object>>() {
-			// empty
-		});
-		var oAuth2Properties = Map.<String, Object>of(
-				REGISTRATION, Map.of(MY_SIMPLE_APP, clientRegistrationMap),
-				PROVIDER, Map.of(PROVIDER_NAME, providerDetailsMap)
-		);
-		var custom = Map.<String, Object>of(OAuth2Properties.ROOT, oAuth2Properties);
+		oAuth2Properties = new OAuth2Properties();
+		oAuth2Properties.setProvider(Map.of(PROVIDER_NAME, providerDetails));
+		oAuth2Properties.setRegistration(Map.of(MY_SIMPLE_APP, clientRegistration));
 
 		clientProperties = new ClientProperties();
-		clientProperties.setCustom(custom);
+		clientProperties.setCustomProperties(oAuth2Properties);
 
 		simpleApiClient = new SimpleApiClient(clientProperties);
 	}

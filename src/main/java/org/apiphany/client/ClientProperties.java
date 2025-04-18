@@ -2,6 +2,7 @@ package org.apiphany.client;
 
 import java.lang.reflect.Constructor;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -21,6 +22,12 @@ import org.morphix.reflection.Reflection;
  * @author Radu Sebastian LAZIN
  */
 public class ClientProperties {
+
+	/**
+	 * The static field name defining a custom property prefix which will be automatically checked if no prefix was provided
+	 * when manipulating custom properties, currently named {@code ROOT}.
+	 */
+	public static final String CUSTOM_PROPERTIES_PREFIX_FIELD_NAME = "ROOT";
 
 	/**
 	 * Indicates whether the client is enabled or disabled. Defaults to true.
@@ -45,12 +52,12 @@ public class ClientProperties {
 	/**
 	 * A map of client-specific properties.
 	 */
-	private Map<String, Object> client;
+	private Map<String, Object> client = new HashMap<>();
 
 	/**
 	 * A map of custom properties for additional configurations.
 	 */
-	private Map<String, Object> custom;
+	private Map<String, Object> custom = new HashMap<>();
 
 	/**
 	 * Returns a JSON representation of this {@link ClientProperties} object.
@@ -221,7 +228,30 @@ public class ClientProperties {
 	}
 
 	/**
-	 * Retrieves custom properties for a given prefix and maps them to the specified class.
+	 * Sets the custom properties for the given prefix.
+	 *
+	 * @param <T> the type of the custom properties.
+	 * @param prefix the prefix for the custom properties.
+	 * @param properties the object containing the custom properties.
+	 */
+	public <T> void setCustomProperties(final String prefix, final T properties) {
+		this.custom.put(prefix, JsonBuilder.toMap(properties, Threads.noConsumer()));
+	}
+
+	/**
+	 * Sets the custom properties mapped to the specified class using a static {@code ROOT} field as the prefix.
+	 *
+	 * @param <T> the type of the custom properties.
+	 * @param properties the object containing the custom properties.
+	 */
+	public <T> void setCustomProperties(final T properties) {
+		String prefix = getCustomPropertiesPrefix(properties.getClass());
+		setCustomProperties(prefix, properties);
+	}
+
+	/**
+	 * Retrieves custom properties for a given prefix and maps them to the specified class. If the custom properties are not
+	 * found {@code null} is returned.
 	 *
 	 * @param <T> the type of the custom properties.
 	 * @param prefix the prefix for the custom properties.
@@ -229,27 +259,40 @@ public class ClientProperties {
 	 * @return the custom properties as an instance of the specified class.
 	 */
 	public <T> T getCustomProperties(final String prefix, final Class<T> cls) {
-		if (null == custom) {
+		Map<String, Object> properties = getPropertiesMap(this::getCustom, prefix);
+		if (Maps.isEmpty(properties)) {
 			return null;
 		}
-		Map<String, Object> properties = getPropertiesMap(this::getCustom, prefix);
 		return JsonBuilder.fromMap(properties, cls, Threads.noConsumer());
 	}
 
 	/**
-	 * Retrieves custom properties mapped to the specified class using a static ROOT field as the prefix.
+	 * Retrieves custom properties mapped to the specified class using a static {@code ROOT} field as the prefix.
 	 *
 	 * @param <T> the type of the custom properties.
 	 * @param cls the class to map the properties to.
 	 * @return the custom properties as an instance of the specified class.
 	 */
 	public <T> T getCustomProperties(final Class<T> cls) {
-		if (null == custom) {
-			return null;
+		String prefix = getCustomPropertiesPrefix(cls);
+		return getCustomProperties(prefix, cls);
+	}
+
+	/**
+	 * Returns the custom properties prefix by searching for the static field name
+	 * {@link #CUSTOM_PROPERTIES_PREFIX_FIELD_NAME}.
+	 *
+	 * @param <T> custom properties type
+	 * @param cls custom properties class
+	 * @return custom properties prefix
+	 */
+	private static <T> String getCustomPropertiesPrefix(final Class<T> cls) {
+		String prefix = Fields.IgnoreAccess.getStatic(cls, CUSTOM_PROPERTIES_PREFIX_FIELD_NAME);
+		if (null == prefix) {
+			throw new IllegalStateException("No static field named:" + CUSTOM_PROPERTIES_PREFIX_FIELD_NAME
+					+ " defined in: " + cls.getCanonicalName());
 		}
-		String prefix = Fields.IgnoreAccess.getStatic(cls, "ROOT");
-		Map<String, Object> properties = getPropertiesMap(this::getCustom, prefix);
-		return JsonBuilder.fromMap(properties, cls, Threads.noConsumer());
+		return prefix;
 	}
 
 	/**

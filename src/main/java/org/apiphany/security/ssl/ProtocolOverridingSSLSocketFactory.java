@@ -152,6 +152,7 @@ public class ProtocolOverridingSSLSocketFactory extends SSLSocketFactory {
 	 * <code>socket</code> is a {@link SSLSocket}
 	 *
 	 * @param socket the socket
+	 * @return the socket
 	 */
 	protected Socket setEnabledProtocols(final Socket socket) {
 		if (socket instanceof SSLSocket sslSocket) {
