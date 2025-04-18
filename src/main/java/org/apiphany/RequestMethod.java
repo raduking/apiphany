@@ -26,7 +26,7 @@ public interface RequestMethod {
 
 	/**
 	 * Returns the normalized value of the method. This may differ from {@link #name()} in cases where case sensitivity or
-	 * aliases are supported (e.g., "get" vs "GET").
+	 * aliases are supported (e.g., "get" vs. "GET").
 	 *
 	 * @return The method's value as used in requests, never {@code null}.
 	 */

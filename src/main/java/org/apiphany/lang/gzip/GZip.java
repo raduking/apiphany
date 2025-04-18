@@ -6,9 +6,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
+
+import org.apiphany.lang.Strings;
 
 /**
  * Utility class for compressing / de-compressing via GZIP.
@@ -16,16 +17,6 @@ import java.util.zip.GZIPOutputStream;
  * @author Radu Sebastian LAZIN
  */
 public class GZip {
-
-	/**
-	 * GZIP encoding.
-	 */
-	public static final String ENCODING = "gzip";
-
-	/**
-	 * Default character set used when working with GZIP.
-	 */
-	public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
 	/**
 	 * GZIP magic number, fixed values in the beginning to identify the GZIP format
@@ -56,7 +47,19 @@ public class GZip {
 	 * @throws IOException on error
 	 */
 	public static byte[] compress(final String text) throws IOException {
-		return compress(text.getBytes(DEFAULT_CHARSET));
+		return compress(text, Strings.DEFAULT_CHARSET);
+	}
+
+	/**
+	 * Compress a {@link String} with GZIP.
+	 *
+	 * @param text text to compress
+	 * @param charset character set of the text
+	 * @return compressed text
+	 * @throws IOException on error
+	 */
+	public static byte[] compress(final String text, final Charset charset) throws IOException {
+		return compress(text.getBytes(charset));
 	}
 
 	/**
@@ -83,7 +86,7 @@ public class GZip {
 	 */
 	public static String decompress(final byte[] body) throws IOException {
 		try (GZIPInputStream gzipInputStream = new GZIPInputStream(new ByteArrayInputStream(body))) {
-			return toString(gzipInputStream, DEFAULT_CHARSET);
+			return Strings.toString(gzipInputStream, Strings.DEFAULT_CHARSET, Strings.DEFAULT_BUFFER_SIZE);
 		}
 	}
 
@@ -96,7 +99,7 @@ public class GZip {
 	 */
 	public static String decompress(final InputStream inputStream) throws IOException {
 		try (GZIPInputStream gzipInputStream = new GZIPInputStream(inputStream)) {
-			return toString(gzipInputStream, DEFAULT_CHARSET);
+			return Strings.toString(gzipInputStream, Strings.DEFAULT_CHARSET, Strings.DEFAULT_BUFFER_SIZE);
 		}
 	}
 
@@ -122,15 +125,4 @@ public class GZip {
 		return pushbackInputStream;
 	}
 
-	/**
-	 * Transforms the given input stream into a string.
-	 *
-	 * @param inputStream input stream
-	 * @param charset character set
-	 * @return a string
-	 * @throws IOException on any stream error
-	 */
-	public static String toString(final InputStream inputStream, final Charset charset) throws IOException {
-		return new String(inputStream.readAllBytes(), charset);
-	}
 }
