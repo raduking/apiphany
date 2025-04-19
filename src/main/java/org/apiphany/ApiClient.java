@@ -72,7 +72,7 @@ public class ApiClient {
 	private Retry retry = Retry.NO_RETRY;
 
 	/**
-	 * Basic meters. By default all metrics are empty.
+	 * Basic meters. By default, all metrics are empty.
 	 */
 	private BasicMeters meters = BasicMeters.DEFAULT;
 
