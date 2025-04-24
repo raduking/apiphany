@@ -4,6 +4,8 @@ package org.apiphany.lang;
  * Holds a value of type <code>T</code>. This class is useful for legacy/native APIs to be used as output parameters in
  * methods.
  *
+ * @param <T> value type
+ *
  * @author Radu Sebastian LAZIN
  */
 public final class Holder<T> {
@@ -63,6 +65,7 @@ public final class Holder<T> {
 	 *
 	 * @param <U> value type
 	 *
+	 * @param value value to hold
 	 * @return holder
 	 */
 	public static <U> Holder<U> of(final U value) {
