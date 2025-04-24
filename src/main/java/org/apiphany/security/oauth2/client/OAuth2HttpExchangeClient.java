@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
  * OAuth2 exchange client, this class decorates an existing {@link ExchangeClient} with automatic OAuth2 support.
  * <p>
  * TODO: make a builder so that there is no need for so many constructors.
+ * TODO: implement refresh token functionality
  *
  * @author Radu Sebastian LAZIN
  */
@@ -119,7 +120,7 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	 *
 	 * @return true if the initialization was successful, false otherwise
 	 */
-	private boolean initialize() {
+	private boolean initialize() { // NOSONAR we don't care about the parent class private method
 		if (exchangeClient.getClientProperties().isDisabled()) {
 			LOGGER.warn("[{}] OAuth2 client is disabled!", getClass().getSimpleName());
 			return false;
