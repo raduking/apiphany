@@ -337,7 +337,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * Returns true if the {@link #getStatus()} is successful, false otherwise. It is a shortcut method which also validates
 	 * against null value for status code.
 	 *
-	 * @return true if the {@link #getStatus()} is 2xx successful, false otherwise.
+	 * @return true if the {@link #getStatus()} is successful, false otherwise.
 	 */
 	public boolean isSuccessful() {
 		return null != status && status.isSuccess();

@@ -17,29 +17,25 @@ import org.morphix.lang.Unchecked;
 public class ExceptionsAccumulator extends Accumulator<Exception> {
 
 	/**
-	 * After all exceptions are accumulated the last exception is thrown in
-	 * the {@link #rest()} method.
-	 * This flag tells the accumulator if it should wrap the exception in an
-	 * {@link AccumulatorException}.
+	 * After all exceptions are accumulated the last exception is thrown in the {@link #rest()} method. This flag tells the
+	 * accumulator if it should wrap the exception in an {@link AccumulatorException}.
 	 */
 	private final boolean wrapException;
 
 	/**
-	 * Flag that tells the accumulator to throw the last caught exception
-	 * when {@link #rest()} method is called.
+	 * Flag that tells the accumulator to throw the last caught exception when {@link #rest()} method is called.
 	 */
 	private final boolean throwException;
 
 	/**
-	 * Specifies the exception types accumulated. If this list is empty all
-	 * exceptions are accumulated, otherwise only the types present in this
-	 * list are accumulated.
+	 * Specifies the exception types accumulated. If this list is empty all exceptions are accumulated, otherwise only the
+	 * types present in this list are accumulated.
 	 * <p>
 	 * Linked list is used because:
 	 * <ul>
-	 *   <li>it is more efficient in terms of memory consumption</li>
-	 *   <li>accessing the first and last has O(1) complexity</li>
-	 *   <li>no random access is needed</li>
+	 * <li>it is more efficient in terms of memory consumption</li>
+	 * <li>accessing the first and last has O(1) complexity</li>
+	 * <li>no random access is needed</li>
 	 * </ul>
 	 */
 	private final List<Class<? super Exception>> exceptionTypes = new LinkedList<>();
@@ -62,9 +58,8 @@ public class ExceptionsAccumulator extends Accumulator<Exception> {
 	}
 
 	/**
-	 * Private constructor with accumulated exception types. If no type is
-	 * specified then all exceptions are accumulated, otherwise only the
-	 * types given are accumulated.
+	 * Private constructor with accumulated exception types. If no type is specified then all exceptions are accumulated,
+	 * otherwise only the types given are accumulated.
 	 *
 	 * @param exceptionTypes exception types to accumulate
 	 */
@@ -73,9 +68,8 @@ public class ExceptionsAccumulator extends Accumulator<Exception> {
 	}
 
 	/**
-	 * Returns a new exceptions accumulator. If no exception type is
-	 * specified then all exceptions are accumulated, otherwise only the
-	 * types given are accumulated.
+	 * Returns a new exceptions accumulator. If no exception type is specified then all exceptions are accumulated,
+	 * otherwise only the types given are accumulated.
 	 *
 	 * @param wrapException flag for exception wrapping
 	 * @param throwException flag to throw the exception on {@link #rest()}
@@ -98,12 +92,11 @@ public class ExceptionsAccumulator extends Accumulator<Exception> {
 	}
 
 	/**
-	 * Returns a new exceptions accumulator with no exception wrapping,
-	 * accumulation of all exceptions and automatic throwing of the last
-	 * exception when {@link #rest()} method is called.
+	 * Returns a new exceptions accumulator with no exception wrapping, accumulation of all exceptions and automatic
+	 * throwing of the last exception when {@link #rest()} method is called.
 	 * <p>
-	 * If no exception type is specified then all exceptions are accumulated,
-	 * otherwise only the types given are accumulated.
+	 * If no exception type is specified then all exceptions are accumulated, otherwise only the types given are
+	 * accumulated.
 	 *
 	 * @param exceptionTypes exceptions to accumulate
 	 * @return a new exceptions accumulator
@@ -113,9 +106,8 @@ public class ExceptionsAccumulator extends Accumulator<Exception> {
 	}
 
 	/**
-	 * Returns a new exceptions accumulator with no exception wrapping,
-	 * accumulation of all exceptions and automatic throwing of the last
-	 * exception when {@link #rest()} method is called.
+	 * Returns a new exceptions accumulator with no exception wrapping, accumulation of all exceptions and automatic
+	 * throwing of the last exception when {@link #rest()} method is called.
 	 *
 	 * @return a new exceptions accumulator
 	 */

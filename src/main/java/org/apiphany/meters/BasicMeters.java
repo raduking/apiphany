@@ -71,6 +71,27 @@ public record BasicMeters(Timer latency, Counter requests, Counter retries, Coun
 	private static final int OF_METHOD_CALLER_DEPTH = 3;
 
 	/**
+	 * Wraps the supplier code with metrics, recording latency, requests, and errors.
+	 *
+	 * @param <T> the return type of the supplier.
+	 * @param supplier the code to wrap with metrics.
+	 * @param onError the function to handle errors and provide a fallback value.
+	 * @return the result of the supplier on success, or the result of the error handler on failure.
+	 */
+	public <T> T wrap(final Supplier<T> supplier, final Function<? super Exception, T> onError) {
+		requests().increment();
+		Instant startTime = Instant.now();
+		try {
+			return supplier.get();
+		} catch (Exception e) {
+			errors().increment();
+			return onError.apply(e);
+		} finally {
+			latency().record(Duration.between(startTime, Instant.now()));
+		}
+	}
+
+	/**
 	 * Constructs a {@link BasicMeters} object with all meters having the given prefix and tags.
 	 *
 	 * @param prefix the prefix for the metrics.
@@ -203,22 +224,13 @@ public record BasicMeters(Timer latency, Counter requests, Counter retries, Coun
 	 * @param onError the function to handle errors and provide a fallback value.
 	 * @return the result of the supplier on success, or the result of the error handler on failure.
 	 */
-	public static <T> T wrap(final String prefix, final Tags tags, final Supplier<T> supplier, final Function<? super Throwable, T> onError) {
-		BasicMeters meters = BasicMeters.of(prefix, tags);
-		meters.requests().increment();
-		Instant startTime = Instant.now();
-		try {
-			return supplier.get();
-		} catch (Exception e) {
-			meters.errors().increment();
-			return onError.apply(e);
-		} finally {
-			meters.latency().record(Duration.between(startTime, Instant.now()));
-		}
+	public static <T> T wrap(final String prefix, final Tags tags, final Supplier<T> supplier, final Function<? super Exception, T> onError) {
+		return BasicMeters.of(prefix, tags)
+				.wrap(supplier, onError);
 	}
 
 	/**
-	 * Wraps the supplier code with metrics, recording latency, requests, and errors. Rethrows any exceptions.
+	 * Wraps the supplier code with metrics, recording latency, requests, and errors. Re-throws any exceptions.
 	 *
 	 * @param <T> the return type of the supplier.
 	 * @param prefix the metric prefix.
