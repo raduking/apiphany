@@ -36,13 +36,13 @@ public class RequestLogger {
 	private static final String LOG_MESSAGE_SUCCESS = Strings.EOL
 			+ LOG_SEPARATOR + Strings.EOL
 			+ "CLIENT: {}" + Strings.EOL
-			+ "---REQUEST----" + Strings.EOL
+			+ "[REQUEST]" + Strings.EOL
 			+ "METHOD: {}" + Strings.EOL
 			+ "URL: {}" + Strings.EOL
 			+ "HEADERS: {}" + Strings.EOL
 			+ "PARAMETERS: {}" + Strings.EOL
 			+ "BODY: {}" + Strings.EOL
-			+ "---RESPONSE---" + Strings.EOL
+			+ "[RESPONSE]" + Strings.EOL
 			+ "HEADERS: {}" + Strings.EOL
 			+ "BODY: {}" + Strings.EOL
 			+ "DURATION: {}s" + Strings.EOL
@@ -54,13 +54,13 @@ public class RequestLogger {
 	private static final String LOG_MESSAGE_ERROR = Strings.EOL
 			+ LOG_SEPARATOR + Strings.EOL
 			+ "CLIENT: {}" + Strings.EOL
-			+ "---REQUEST---" + Strings.EOL
+			+ "[REQUEST]" + Strings.EOL
 			+ "METHOD: {}" + Strings.EOL
 			+ "URL: {}" + Strings.EOL
 			+ "HEADERS: {}" + Strings.EOL
 			+ "PARAMETERS: {}" + Strings.EOL
 			+ "REQUEST BODY: {}" + Strings.EOL
-			+ "---RESPONSE---" + Strings.EOL
+			+ "[RESPONSE]" + Strings.EOL
 			+ "EXCEPTION: {}" + Strings.EOL
 			+ "DURATION: {}s" + Strings.EOL
 			+ LOG_SEPARATOR;
@@ -71,19 +71,19 @@ public class RequestLogger {
 	 * @param <T> the type of the request/response body.
 	 *
 	 * @param loggingFunction the logging function used to output the log message.
-	 * @param apiClient the API client making the request.
-	 * @param apiRequest the request properties.
+	 * @param clientClass the client making the request.
+	 * @param apiRequest the request object.
 	 * @param apiResponse the response object.
 	 * @param duration the duration of the request.
 	 */
 	public static <T> void logSuccess(
 			final LoggingFunction loggingFunction,
-			final ApiClient apiClient,
+			final Class<?> clientClass,
 			final ApiRequest<T> apiRequest,
 			final ApiResponse<T> apiResponse,
 			final Duration duration) {
 		loggingFunction.level(LOG_MESSAGE_SUCCESS,
-				apiClient.getClass(),
+				clientClass,
 				apiRequest.getMethod(),
 				apiRequest.getUrl(),
 				apiRequest.getHeadersAsString(),
@@ -100,19 +100,20 @@ public class RequestLogger {
 	 * @param <T> the type of the request.
 	 *
 	 * @param loggingFunction the logging function used to output the log message.
-	 * @param apiClient the API client making the request.
-	 * @param apiRequest the request properties.
+	 * @param clientClass the client making the request.
+	 * @param apiRequest the request object.
+	 * @param apiResponse the response object.
 	 * @param duration the duration of the request.
-	 * @param exception the exception that caused the request to fail.
 	 */
 	public static <T> void logError(
 			final LoggingFunction loggingFunction,
-			final ApiClient apiClient,
+			final Class<?> clientClass,
 			final ApiRequest<T> apiRequest,
-			final Duration duration,
-			final Exception exception) {
+			final ApiResponse<T> apiResponse,
+			final Duration duration) {
+		Exception exception = apiResponse.getException();
 		loggingFunction.level(LOG_MESSAGE_ERROR,
-				apiClient.getClass(),
+				clientClass,
 				apiRequest.getMethod(),
 				apiRequest.getUrl(),
 				apiRequest.getHeadersAsString(),
@@ -120,6 +121,7 @@ public class RequestLogger {
 				apiRequest.getBody(),
 				exception,
 				Temporals.toSeconds(duration.toMillis()));
+		loggingFunction.level("Error: {}", apiResponse.getErrorMessage(), exception);
 	}
 
 	/**

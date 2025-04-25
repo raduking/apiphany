@@ -67,12 +67,14 @@ public class ApiClient {
 	private boolean bleedExceptions = false;
 
 	/**
-	 * Retry for API calls. By default, no retry is configured.
+	 * Retry for API calls. By default, no retry is configured. This object is present here so that the implementing client
+	 * can set the same retry for all requests if needed.
 	 */
 	private Retry retry = Retry.NO_RETRY;
 
 	/**
-	 * Basic meters. By default, all metrics are empty.
+	 * Basic meters. By default, all metrics are empty. This object is present here so that the implementing client can set
+	 * the same metrics for all requests if needed.
 	 */
 	private BasicMeters meters = BasicMeters.DEFAULT;
 
@@ -266,7 +268,6 @@ public class ApiClient {
 	 */
 	public <T> ApiResponse<T> exchange(final ApiRequest<T> apiRequest) {
 		BasicMeters activeMeters = getActiveMeters(apiRequest);
-		Retry activeRetry = Nullables.nonNullOrDefault(apiRequest.getRetry(), this::getRetry);
 
 		ExceptionsAccumulator accumulator = ExceptionsAccumulator.of();
 		Duration duration = Duration.ZERO;
@@ -275,17 +276,18 @@ public class ApiClient {
 		ExchangeClient exchangeClient = getExchangeClient(apiRequest.getAuthenticationType());
 		Instant start = Instant.now();
 		try {
-			apiResponse = activeRetry.when(
-					() -> exchangeClient.exchange(apiRequest), ApiPredicates.nonNullResponse(),
-					e -> activeMeters.retries().increment(), accumulator);
+			apiResponse = getActiveRetry(apiRequest).when(
+					() -> exchangeClient.exchange(apiRequest),
+					ApiPredicates.nonNullResponse(),
+					e -> activeMeters.retries().increment(),
+					accumulator);
 			duration = Duration.between(start, Instant.now());
-			RequestLogger.logSuccess(LOGGER::debug, this, apiRequest, apiResponse, duration);
+			RequestLogger.logSuccess(LOGGER::debug, getClass(), apiRequest, apiResponse, duration);
 		} catch (Exception exception) {
 			duration = Duration.between(start, Instant.now());
+			apiResponse = getErrorResponse(exception, exchangeClient);
 			activeMeters.errors().increment();
-			RequestLogger.logError(LOGGER::debug, this, apiRequest, duration, exception);
-			LOGGER.error("EXCEPTION: ", exception);
-			apiResponse = errorResponse(exception, exchangeClient);
+			RequestLogger.logError(LOGGER::error, getClass(), apiRequest, apiResponse, duration);
 		} finally {
 			activeMeters.latency().record(duration);
 		}
@@ -304,7 +306,7 @@ public class ApiClient {
 	 * @param exchangeClient the exchange client that made the failed request
 	 * @return API error response object
 	 */
-	protected <T> ApiResponse<T> errorResponse(final Exception exception, final ExchangeClient exchangeClient) {
+	protected <T> ApiResponse<T> getErrorResponse(final Exception exception, final ExchangeClient exchangeClient) {
 		return ApiResponse.<T>builder()
 				.exception(exception)
 				.errorMessagePrefix("API error: ")
@@ -324,6 +326,18 @@ public class ApiClient {
 		return isMetricsEnabled()
 				? Nullables.nonNullOrDefault(apiRequest.getMeters(), this::getMeters)
 				: BasicMeters.DEFAULT;
+	}
+
+	/**
+	 * Returns the active retry.
+	 *
+	 * @param <T> request body type
+	 *
+	 * @param apiRequest the API request object
+	 * @return the active retry
+	 */
+	protected <T> Retry getActiveRetry(final ApiRequest<T> apiRequest) {
+		return Nullables.nonNullOrDefault(apiRequest.getRetry(), this::getRetry);
 	}
 
 	/**

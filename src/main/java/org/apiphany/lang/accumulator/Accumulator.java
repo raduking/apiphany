@@ -63,11 +63,9 @@ public abstract class Accumulator<T> {
 	}
 
 	/**
-	 * This method should be called to signal that the accumulator
-	 * finished accumulating the wanted information.
+	 * This method should be called to signal that the accumulator finished accumulating the wanted information.
 	 * <p>
-	 * Can be implemented in derived classes for any purpose.
-	 * By default, it clears the accumulated information.
+	 * Can be implemented in derived classes for any purpose. By default, it clears the accumulated information.
 	 */
 	public void rest() {
 		clear();
@@ -90,8 +88,7 @@ public abstract class Accumulator<T> {
 	}
 
 	/**
-	 * Returns the first accumulated information, null if no information was
-	 * accumulated.
+	 * Returns the first accumulated information, null if no information was accumulated.
 	 *
 	 * @return the last accumulated information.
 	 */
@@ -100,8 +97,7 @@ public abstract class Accumulator<T> {
 	}
 
 	/**
-	 * Returns the last accumulated information, null if no information was
-	 * accumulated.
+	 * Returns the last accumulated information, null if no information was accumulated.
 	 *
 	 * @return the last accumulated information.
 	 */
@@ -119,8 +115,7 @@ public abstract class Accumulator<T> {
 	}
 
 	/**
-	 * Returns true if the information accumulated is not empty.
-	 * Equivalent to {@link #hasInformation()}.
+	 * Returns true if the information accumulated is not empty. Equivalent to {@link #hasInformation()}.
 	 *
 	 * @return true if the information accumulated is not empty
 	 */
@@ -129,8 +124,7 @@ public abstract class Accumulator<T> {
 	}
 
 	/**
-	 * Returns true if the information accumulated is not empty.
-	 * Equivalent to {@link #isNotEmpty()}.
+	 * Returns true if the information accumulated is not empty. Equivalent to {@link #isNotEmpty()}.
 	 *
 	 * @return true if the information accumulated is not empty
 	 */
@@ -139,8 +133,7 @@ public abstract class Accumulator<T> {
 	}
 
 	/**
-	 * Returns an empty accumulator.
-	 * Equivalent to {@link #emptyAccumulator()}
+	 * Returns an empty accumulator. Equivalent to {@link #emptyAccumulator()}
 	 *
 	 * @param <T> accumulator information type
 	 * @return an empty accumulator
@@ -151,8 +144,7 @@ public abstract class Accumulator<T> {
 	}
 
 	/**
-	 * Returns an empty accumulator.
-	 * Equivalent to {@link #noAccumulator()}.
+	 * Returns an empty accumulator. Equivalent to {@link #noAccumulator()}.
 	 *
 	 * @param <T> accumulator information type
 	 * @return an empty accumulator
