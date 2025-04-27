@@ -13,7 +13,7 @@ import org.morphix.reflection.Constructors;
  *
  * @author Radu Sebastian LAZIN
  */
-public class RequestLogger {
+public class ExchangeLogger {
 
 	/**
 	 * The length of the log separator line.
@@ -121,13 +121,13 @@ public class RequestLogger {
 				apiRequest.getBody(),
 				exception,
 				Temporals.toSeconds(duration.toMillis()));
-		loggingFunction.level("Error: {}", apiResponse.getErrorMessage(), exception);
+		loggingFunction.level("{}", apiResponse.getErrorMessage(), exception);
 	}
 
 	/**
 	 * Private constructor to prevent instantiation.
 	 */
-	private RequestLogger() {
+	private ExchangeLogger() {
 		throw Constructors.unsupportedOperationException();
 	}
 

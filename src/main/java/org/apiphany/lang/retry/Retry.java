@@ -2,6 +2,7 @@ package org.apiphany.lang.retry;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -153,8 +154,28 @@ public class Retry {
 	 */
 	public <T, U> T when(final Supplier<T> resultSupplier, final Predicate<T> exitCondition, final Consumer<U> beforeWait,
 			final Accumulator<U> accumulator) {
+		return when(resultSupplier, (r, a) -> {
+			// empty
+		}, exitCondition, beforeWait, accumulator);
+	}
+
+	/**
+	 * Retries the {@link Supplier#get()} until the predicate is satisfied or the timeout is reached.
+	 *
+	 * @param <T> result type
+	 * @param <U> the accumulated type
+	 *
+	 * @param resultSupplier result supplier
+	 * @param afterResult code to run after the result supplier was called and accumulator accumulated the value
+	 * @param exitCondition end predicate
+	 * @param beforeWait code to run before wait
+	 * @param accumulator information accumulator
+	 * @return result from supplier
+	 */
+	public <T, U> T when(final Supplier<T> resultSupplier, final BiConsumer<T, U> afterResult, final Predicate<T> exitCondition,
+			final Consumer<U> beforeWait, final Accumulator<U> accumulator) {
 		if (this == NO_RETRY) {
-			return whenNoRetry(resultSupplier, accumulator);
+			return whenNoRetry(resultSupplier, afterResult, accumulator);
 		}
 		T result;
 		boolean successful;
@@ -163,10 +184,14 @@ public class Retry {
 		wait.start();
 		do {
 			result = accumulator.accumulate(resultSupplier);
+
+			U lastAccumulated = accumulator.lastInformation();
+			afterResult.accept(result, lastAccumulated);
+
 			successful = exitCondition.test(result);
 
 			if (!successful) {
-				beforeWait.accept(accumulator.lastInformation());
+				beforeWait.accept(lastAccumulated);
 				wait.now();
 			}
 		} while (!successful && wait.keepWaiting());
@@ -185,11 +210,13 @@ public class Retry {
 	 * @param <U> accumulated information type
 	 *
 	 * @param resultSupplier result supplier
+	 * @param afterResult code to run after the result supplier was called and accumulator accumulated the value
 	 * @param accumulator information accumulator
 	 * @return result from supplier
 	 */
-	private static <T, U> T whenNoRetry(final Supplier<T> resultSupplier, final Accumulator<U> accumulator) {
+	private static <T, U> T whenNoRetry(final Supplier<T> resultSupplier, final BiConsumer<T, U> afterResult, final Accumulator<U> accumulator) {
 		T result = accumulator.accumulate(resultSupplier);
+		afterResult.accept(result, accumulator.lastInformation());
 		if (accumulator.isNotEmpty()) {
 			accumulator.rest();
 		}

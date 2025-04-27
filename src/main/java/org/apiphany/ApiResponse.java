@@ -73,7 +73,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 		if (body instanceof InputStream inputStream) {
 			return inputStream;
 		}
-		return new ByteArrayInputStream(body.toString().getBytes());
+		return new ByteArrayInputStream(Strings.safe(body.toString()).getBytes());
 	}
 
 	/**
