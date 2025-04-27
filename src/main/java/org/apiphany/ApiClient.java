@@ -6,7 +6,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +17,7 @@ import java.util.function.Predicate;
 
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.lang.Strings;
-import org.apiphany.lang.accumulator.ExceptionsAccumulator;
+import org.apiphany.lang.accumulator.DurationAccumulator;
 import org.apiphany.lang.retry.Retry;
 import org.apiphany.meters.BasicMeters;
 import org.apiphany.security.AuthenticationType;
@@ -267,34 +266,54 @@ public class ApiClient {
 	 * @return API response object
 	 */
 	public <T> ApiResponse<T> exchange(final ApiRequest<T> apiRequest) {
-		BasicMeters activeMeters = getActiveMeters(apiRequest);
-
-		ExceptionsAccumulator accumulator = ExceptionsAccumulator.of();
-		Duration duration = Duration.ZERO;
-		ApiResponse<T> apiResponse;
-		activeMeters.requests().increment();
 		ExchangeClient exchangeClient = getExchangeClient(apiRequest.getAuthenticationType());
-		Instant start = Instant.now();
-		try {
-			apiResponse = getActiveRetry(apiRequest).when(
-					() -> exchangeClient.exchange(apiRequest),
-					ApiPredicates.nonNullResponse(),
-					e -> activeMeters.retries().increment(),
-					accumulator);
-			duration = Duration.between(start, Instant.now());
-			RequestLogger.logSuccess(LOGGER::debug, getClass(), apiRequest, apiResponse, duration);
-		} catch (Exception exception) {
-			duration = Duration.between(start, Instant.now());
-			apiResponse = getErrorResponse(exception, exchangeClient);
-			activeMeters.errors().increment();
-			RequestLogger.logError(LOGGER::error, getClass(), apiRequest, apiResponse, duration);
-		} finally {
-			activeMeters.latency().record(duration);
-		}
+
+		BasicMeters activeMeters = getActiveMeters(apiRequest);
+		DurationAccumulator durationAccumulator = DurationAccumulator.of();
+
+		ApiResponse<T> apiResponse = getActiveRetry(apiRequest).when(
+				() -> exchange(apiRequest, exchangeClient, activeMeters),
+				(response, duration) -> logExchange(apiRequest, response, duration),
+				ApiResponse::isSuccessful,
+				e -> activeMeters.retries().increment(),
+				durationAccumulator);
+
 		if (isBleedExceptions() && apiResponse.hasException()) {
 			Unchecked.reThrow(apiResponse.getException());
 		}
 		return apiResponse;
+	}
+
+	/**
+	 * API call for resource with meters on the given exchange client.
+	 *
+	 * @param <T> request body type
+	 *
+	 * @param apiRequest API request object
+	 * @param exchangeClient the exchange client doing the request
+	 * @param activeMeters the metrics for the exchange
+	 * @return API response object
+	 */
+	private <T> ApiResponse<T> exchange(final ApiRequest<T> apiRequest, final ExchangeClient exchangeClient, final BasicMeters activeMeters) {
+		return activeMeters.wrap(
+				() -> exchangeClient.exchange(apiRequest),
+				e -> getErrorResponse(e, exchangeClient));
+	}
+
+	/**
+	 * Logs the exchange.
+	 *
+	 * @param <T> body type
+	 * @param apiRequest API request object
+	 * @param apiResponse API response object
+	 * @param duration the duration of the exchange
+	 */
+	private <T> void logExchange(final ApiRequest<T> apiRequest, final ApiResponse<T> apiResponse, final Duration duration) {
+		if (apiResponse.isSuccessful()) {
+			ExchangeLogger.logSuccess(LOGGER::debug, getClass(), apiRequest, apiResponse, duration);
+		} else {
+			ExchangeLogger.logError(LOGGER::error, getClass(), apiRequest, apiResponse, duration);
+		}
 	}
 
 	/**
@@ -309,7 +328,7 @@ public class ApiClient {
 	protected <T> ApiResponse<T> getErrorResponse(final Exception exception, final ExchangeClient exchangeClient) {
 		return ApiResponse.<T>builder()
 				.exception(exception)
-				.errorMessagePrefix("API error: ")
+				.errorMessagePrefix("Exchange error: ")
 				.exchangeClient(exchangeClient)
 				.build();
 	}
