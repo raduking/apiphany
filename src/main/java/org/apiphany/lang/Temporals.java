@@ -21,7 +21,7 @@ public interface Temporals {
 	}
 
 	/**
-	 * Transforms a duration in milliseconds to a duration in seconds as a double type, the decimal part being the seconds.
+	 * Transforms a duration in milliseconds to a duration in seconds as a double type, the whole part being the seconds.
 	 *
 	 * @param millis duration in milliseconds
 	 * @return duration in seconds
@@ -30,4 +30,14 @@ public interface Temporals {
 		return millis / 1000.0;
 	}
 
+	/**
+	 * Transforms a duration to a duration in seconds as a double type, the whole part being the seconds and the decimal
+	 * part being the milliseconds.
+	 *
+	 * @param duration duration in milliseconds
+	 * @return duration in seconds
+	 */
+	static double toSeconds(final Duration duration) {
+		return toSeconds(duration.toMillis());
+	}
 }

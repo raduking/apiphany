@@ -6,7 +6,7 @@ import java.util.Objects;
 import org.morphix.lang.Enums;
 
 /**
- * Represents the Content-Encoding HTTP header values. Used to indicate what content codings have been applied to the
+ * Represents the Content-Encoding HTTP header values. Used to indicate what content encodings have been applied to the
  * payload.
  *
  * @author Radu Sebastian LAZIN

@@ -52,7 +52,7 @@ public class ApiClient {
 	/**
 	 * The URL as string as the base path.
 	 */
-	private String baseUrl;
+	private final String baseUrl;
 
 	/**
 	 * Normally, the client handles exceptions gracefully by logging the full exception and retransmitting the exception
