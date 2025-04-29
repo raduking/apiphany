@@ -8,7 +8,8 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import org.apiphany.lang.accumulator.Accumulator;
-import org.morphix.lang.thread.Threads;
+import org.morphix.lang.function.Consumers;
+import org.morphix.lang.function.Runnables;
 
 /**
  * A basic configurable retry implementation.
@@ -75,7 +76,7 @@ public class Retry {
 	 * @return result from supplier
 	 */
 	public <T> T when(final Supplier<T> resultSupplier, final Predicate<T> exitCondition) {
-		return when(resultSupplier, exitCondition, Threads.doNothing());
+		return when(resultSupplier, exitCondition, Runnables.doNothing());
 	}
 
 	/**
@@ -104,7 +105,7 @@ public class Retry {
 	 * @return result from supplier
 	 */
 	public <T, U> T when(final Supplier<T> resultSupplier, final Predicate<T> exitCondition, final Accumulator<U> accumulator) {
-		return when(resultSupplier, exitCondition, Threads.consumeNothing(), accumulator);
+		return when(resultSupplier, exitCondition, Consumers.consumeNothing(), accumulator);
 	}
 
 	/**
@@ -119,7 +120,7 @@ public class Retry {
 	 * @return result from supplier
 	 */
 	public <T, U> T when(final Supplier<T> resultSupplier, final Predicate<T> exitCondition, final Supplier<Accumulator<U>> accumulatorSupplier) {
-		return when(resultSupplier, exitCondition, Threads.consumeNothing(), accumulatorSupplier);
+		return when(resultSupplier, exitCondition, Consumers.noConsumer(), accumulatorSupplier);
 	}
 
 	/**
@@ -136,9 +137,7 @@ public class Retry {
 	 */
 	public <T, U> T when(final Supplier<T> resultSupplier, final Predicate<T> exitCondition, final Consumer<U> beforeWait,
 			final Accumulator<U> accumulator) {
-		return when(resultSupplier, (r, a) -> {
-			// empty
-		}, exitCondition, beforeWait, accumulator);
+		return when(resultSupplier, Consumers.noBiConsumer(), exitCondition, beforeWait, accumulator);
 	}
 
 	/**
@@ -322,12 +321,12 @@ public class Retry {
 		/**
 		 * An action to execute before waiting between retries.
 		 */
-		private Runnable doBeforeWait = Threads.doNothing();
+		private Runnable doBeforeWait = Runnables.doNothing();
 
 		/**
 		 * A consumer to process accumulated information before waiting between retries.
 		 */
-		private Consumer<U> consumeBeforeWait = Threads.consumeNothing();
+		private Consumer<U> consumeBeforeWait = Consumers.consumeNothing();
 
 		/**
 		 * The accumulator used to collect information during retries.

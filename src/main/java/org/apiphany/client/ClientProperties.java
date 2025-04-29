@@ -10,7 +10,7 @@ import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Maps;
 import org.morphix.lang.JavaObjects;
-import org.morphix.lang.thread.Threads;
+import org.morphix.lang.function.Consumers;
 import org.morphix.reflection.Constructors;
 import org.morphix.reflection.Fields;
 import org.morphix.reflection.Reflection;
@@ -235,7 +235,7 @@ public class ClientProperties {
 	 * @param properties the object containing the custom properties.
 	 */
 	public <T> void setCustomProperties(final String prefix, final T properties) {
-		this.custom.put(prefix, JsonBuilder.toMap(properties, Threads.noConsumer()));
+		this.custom.put(prefix, JsonBuilder.toMap(properties, Consumers.noConsumer()));
 	}
 
 	/**
@@ -263,7 +263,7 @@ public class ClientProperties {
 		if (Maps.isEmpty(properties)) {
 			return null;
 		}
-		return JsonBuilder.fromMap(properties, cls, Threads.noConsumer());
+		return JsonBuilder.fromMap(properties, cls, Consumers.noConsumer());
 	}
 
 	/**
@@ -685,7 +685,7 @@ public class ClientProperties {
 			if (!expectedConfigClass.isAssignableFrom(cls)) {
 				return null;
 			}
-			return JsonBuilder.fromMap(properties, cls, Threads.consumeNothing());
+			return JsonBuilder.fromMap(properties, cls, Consumers.consumeNothing());
 		}
 	}
 }

@@ -9,7 +9,7 @@ import org.apiphany.lang.Strings;
 import org.apiphany.lang.builder.PropertyNameBuilder;
 import org.morphix.lang.Nullables;
 import org.morphix.lang.Unchecked;
-import org.morphix.lang.thread.Threads;
+import org.morphix.lang.function.Runnables;
 import org.morphix.reflection.Methods;
 
 import io.micrometer.core.instrument.Counter;
@@ -262,7 +262,7 @@ public record BasicMeters(Timer latency, Counter requests, Counter retries, Coun
 	 * @param runnable the code to wrap with metrics.
 	 */
 	public static void wrap(final String prefix, final Tags tags, final Runnable runnable) {
-		wrap(prefix, tags, Threads.toSupplier(runnable));
+		wrap(prefix, tags, Runnables.toSupplier(runnable));
 	}
 
 	/**
@@ -311,7 +311,7 @@ public record BasicMeters(Timer latency, Counter requests, Counter retries, Coun
 	 * @param runnable the code to wrap with metrics.
 	 */
 	public static void wrapAndSwallow(final String prefix, final Tags tags, final Runnable runnable) {
-		wrapAndSwallow(prefix, tags, Threads.toSupplier(runnable), Nullables.supplyNull());
+		wrapAndSwallow(prefix, tags, Runnables.toSupplier(runnable), Nullables.supplyNull());
 	}
 
 	/**

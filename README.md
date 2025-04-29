@@ -21,7 +21,7 @@ This is a simple wrapper over the `java.net.http` library to be able to use a fl
 
 Project being in development, you need to build it yourself.
 
-```access transformers
+```
 git clone git@github.com:raduking/apiphany.git
 cd apiphany
 mvn clean install

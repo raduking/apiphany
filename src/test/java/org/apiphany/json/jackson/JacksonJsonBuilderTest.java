@@ -6,7 +6,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
-import org.morphix.lang.thread.Threads;
+import org.morphix.lang.function.Consumers;
 
 /**
  * Test class for {@link JacksonJsonBuilder}.
@@ -26,7 +26,7 @@ class JacksonJsonBuilderTest {
 				)
 		);
 
-		A result = jsonBuilder.fromPropertiesMap(props, A.class, Threads.noConsumer());
+		A result = jsonBuilder.fromPropertiesMap(props, A.class, Consumers.noConsumer());
 
 		assertThat(result.getElements().get("customer-one").customerId, equalTo("cid1"));
 		assertThat(result.getElements().get("customer-one").tenantId, equalTo("tid1"));
@@ -43,7 +43,7 @@ class JacksonJsonBuilderTest {
 				)
 		);
 
-		A result = jsonBuilder.fromPropertiesMap(props, A.class, Threads.noConsumer());
+		A result = jsonBuilder.fromPropertiesMap(props, A.class, Consumers.noConsumer());
 
 		assertThat(result.getElements().get("customerOne").customerId, equalTo("cid1"));
 		assertThat(result.getElements().get("customerOne").tenantId, equalTo("tid1"));
