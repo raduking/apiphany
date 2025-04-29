@@ -234,7 +234,7 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 	 */
 	@Override
 	public <T> T fromPropertiesMap(final Map<String, Object> propertiesMap, final Class<T> cls, final Consumer<Exception> onError) {
-		final ObjectMapper propertiesObjectMapper = new ObjectMapper()
+		final ObjectMapper propertiesObjectMapper = objectMapper.copy()
 				.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 				.setPropertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
 		try {
@@ -257,7 +257,7 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 	 */
 	@Override
 	public <T> Map<String, Object> toPropertiesMap(final T properties, final Consumer<Exception> onError) {
-		final ObjectMapper propertiesObjectMapper = new ObjectMapper()
+		final ObjectMapper propertiesObjectMapper = objectMapper.copy()
 				.setPropertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
 		try {
 			return propertiesObjectMapper.convertValue(properties, new TypeReference<Map<String, Object>>() {

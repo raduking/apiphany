@@ -115,13 +115,13 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	}
 
 	/**
-	 * Sets the HTTP method.
+	 * Sets the request method.
 	 *
-	 * @param requestMethod the method to set
+	 * @param method the method to set
 	 * @return this
 	 */
-	public ApiClientFluentAdapter requestMethod(final RequestMethod requestMethod) {
-		this.method = requestMethod;
+	public ApiClientFluentAdapter method(final RequestMethod method) {
+		this.method = method;
 		return this;
 	}
 
@@ -462,66 +462,66 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	}
 
 	/**
-	 * Sets the HTTP method to GET.
+	 * Sets the request method to GET.
 	 *
 	 * @return this
 	 */
 	public ApiClientFluentAdapter get() {
-		return requestMethod(exchangeClient.get());
+		return method(exchangeClient.get());
 	}
 
 	/**
-	 * Sets the HTTP method to PUT.
+	 * Sets the request method to PUT.
 	 *
 	 * @return this
 	 */
 	public ApiClientFluentAdapter put() {
-		return requestMethod(exchangeClient.put());
+		return method(exchangeClient.put());
 	}
 
 	/**
-	 * Sets the HTTP method to POST.
+	 * Sets the request method to POST.
 	 *
 	 * @return this
 	 */
 	public ApiClientFluentAdapter post() {
-		return requestMethod(exchangeClient.post());
+		return method(exchangeClient.post());
 	}
 
 	/**
-	 * Sets the HTTP method to DELETE.
+	 * Sets the request method to DELETE.
 	 *
 	 * @return this
 	 */
 	public ApiClientFluentAdapter delete() {
-		return requestMethod(exchangeClient.delete());
+		return method(exchangeClient.delete());
 	}
 
 	/**
-	 * Sets the HTTP method to PATCH.
+	 * Sets the request method to PATCH.
 	 *
 	 * @return this
 	 */
 	public ApiClientFluentAdapter patch() {
-		return requestMethod(exchangeClient.patch());
+		return method(exchangeClient.patch());
 	}
 
 	/**
-	 * Sets the HTTP method to HEAD.
+	 * Sets the request method to HEAD.
 	 *
 	 * @return this
 	 */
 	public ApiClientFluentAdapter head() {
-		return requestMethod(exchangeClient.head());
+		return method(exchangeClient.head());
 	}
 
 	/**
-	 * Sets the HTTP method to TRACE.
+	 * Sets the request method to TRACE.
 	 *
 	 * @return this
 	 */
 	public ApiClientFluentAdapter trace() {
-		return requestMethod(exchangeClient.trace());
+		return method(exchangeClient.trace());
 	}
 
 	/**

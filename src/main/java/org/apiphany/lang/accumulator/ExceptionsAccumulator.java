@@ -28,7 +28,7 @@ public class ExceptionsAccumulator extends Accumulator<Exception> {
 	private final boolean throwException;
 
 	/**
-	 * Specifies the exception types accumulated. If this list is empty all exceptions are accumulated, otherwise only the
+	 * Specifies the exception types accumulated. If this list is empty, all exceptions are accumulated; otherwise only the
 	 * types present in this list are accumulated.
 	 * <p>
 	 * Linked list is used because:
@@ -58,7 +58,7 @@ public class ExceptionsAccumulator extends Accumulator<Exception> {
 	}
 
 	/**
-	 * Private constructor with accumulated exception types. If no type is specified then all exceptions are accumulated,
+	 * Private constructor with accumulated exception types. If no type is specified, then all exceptions are accumulated,
 	 * otherwise only the types given are accumulated.
 	 *
 	 * @param exceptionTypes exception types to accumulate
@@ -68,7 +68,7 @@ public class ExceptionsAccumulator extends Accumulator<Exception> {
 	}
 
 	/**
-	 * Returns a new exceptions accumulator. If no exception type is specified then all exceptions are accumulated,
+	 * Returns a new exceptions accumulator. If no exception type is specified, then all exceptions are accumulated,
 	 * otherwise only the types given are accumulated.
 	 *
 	 * @param wrapException flag for exception wrapping
@@ -95,7 +95,7 @@ public class ExceptionsAccumulator extends Accumulator<Exception> {
 	 * Returns a new exceptions accumulator with no exception wrapping, accumulation of all exceptions and automatic
 	 * throwing of the last exception when {@link #rest()} method is called.
 	 * <p>
-	 * If no exception type is specified then all exceptions are accumulated, otherwise only the types given are
+	 * If no exception type is specified, then all exceptions are accumulated, otherwise only the types given are
 	 * accumulated.
 	 *
 	 * @param exceptionTypes exceptions to accumulate

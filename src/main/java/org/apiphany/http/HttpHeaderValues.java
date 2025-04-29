@@ -24,7 +24,7 @@ public class HttpHeaderValues extends HeaderValues { // NOSONAR singleton since 
 	 * {@link HeaderValues} in the chain.
 	 *
 	 * @param <N> header name type
-	 * @param header the name of the header to retrieve (typically case-insensitive according to HTTP standards)
+	 * @param header the name of the header to retrieve (typically case-insensitive, according to HTTP standards)
 	 * @param headers the headers object, expected to be an {@link HttpHeaders} instance or any other type that subsequent
 	 *     handlers in the chain might process
 	 * @return a list of values for the specified header if headers is an HttpHeaders instance and contains the header,

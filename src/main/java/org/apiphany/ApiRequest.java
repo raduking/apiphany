@@ -151,16 +151,12 @@ public class ApiRequest<T> extends ApiMessage<T> {
 	 * Returns the response type.
 	 *
 	 * @return the response type
-	 * @throws IllegalStateException if the request doesn't have a response type set
 	 */
 	public Type getResponseType() {
 		if (hasGenericType()) {
 			return genericResponseType.getType();
 		}
-		if (null != classResponseType) {
-			return classResponseType;
-		}
-		throw new IllegalStateException("No response type defined!");
+		return classResponseType;
 	}
 
 	/**

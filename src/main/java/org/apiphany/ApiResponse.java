@@ -177,7 +177,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 *
 	 * @param <U> return list component type
 	 *
-	 * @param bodyListFunction function to be used on body to retrieve the wanted list
+	 * @param bodyListFunction function to be used on the body to retrieve the wanted list
 	 * @param defaultList default list to be returned
 	 * @return response body list
 	 */
@@ -190,8 +190,8 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 *
 	 * @param <U> return list component type
 	 *
-	 * @param bodyListFunction function to be used on body to retrieve the wanted list
-	 * @return response body list or empty list if body doesn't exist
+	 * @param bodyListFunction function to be used on the body to retrieve the wanted list
+	 * @return response body list or empty list if the body doesn't exist
 	 */
 	public <U> List<U> asListFromOrEmpty(final Function<T, List<U>> bodyListFunction) {
 		return getListFromBodyOrDefault(this, bodyListFunction, Collections.emptyList());
@@ -203,7 +203,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 *
 	 * @param <U> return list component type
 	 *
-	 * @param bodyListFunction function to be used on body to retrieve the wanted list
+	 * @param bodyListFunction function to be used on the body to retrieve the wanted list
 	 * @param defaultValue value returned when the request was unsuccessful or the list is empty
 	 * @return Returns the first element from a list from the response body
 	 */
@@ -277,12 +277,12 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @param <U> return type
 	 *
 	 * @param response response object
-	 * @param listFunction function to be used on body to retrieve the wanted list
+	 * @param listFunction function to be used on the body to retrieve the wanted list
 	 * @param defaultList default list to be returned
 	 * @return response body list
 	 */
-	public static <T, U> List<U> getListFromBodyOrDefault(final ApiResponse<T> response,
-			final Function<T, List<U>> listFunction, final List<U> defaultList) {
+	public static <T, U> List<U> getListFromBodyOrDefault(final ApiResponse<T> response, final Function<T, List<U>> listFunction,
+			final List<U> defaultList) {
 		return getFromBodyOrDefault(response, listFunction, defaultList);
 	}
 
@@ -442,7 +442,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 		 *
 		 * @param headers the response headers (cannot be null)
 		 * @return this builder instance
-		 * @throws NullPointerException if headers is null
+		 * @throws NullPointerException if headers map is null
 		 */
 		public Builder<T> headers(final Map<String, List<String>> headers) {
 			this.headers = Objects.requireNonNull(headers, "headers cannot be null");
