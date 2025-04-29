@@ -89,25 +89,7 @@ public class Retry {
 	 * @return result from supplier
 	 */
 	public <T> T when(final Supplier<T> resultSupplier, final Predicate<T> exitCondition, final Runnable beforeWait) {
-		if (this == NO_RETRY) {
-			return resultSupplier.get();
-		}
-		boolean successful;
-		T result;
-
-		Wait wait = waitPrototype.copy();
-		wait.start();
-		do {
-			result = resultSupplier.get();
-			successful = exitCondition.test(result);
-
-			if (!successful) {
-				beforeWait.run();
-				wait.now();
-			}
-		} while (!successful && wait.keepWaiting());
-
-		return result;
+		return when(resultSupplier, exitCondition, e -> beforeWait.run());
 	}
 
 	/**
@@ -157,6 +139,21 @@ public class Retry {
 		return when(resultSupplier, (r, a) -> {
 			// empty
 		}, exitCondition, beforeWait, accumulator);
+	}
+
+	/**
+	 * Retries the {@link Supplier#get()} until the predicate is satisfied or the timeout is reached.
+	 *
+	 * @param <T> result type
+	 * @param <U> the accumulated type
+	 *
+	 * @param resultSupplier result supplier
+	 * @param exitCondition end predicate
+	 * @param beforeWait code to run before wait
+	 * @return result from supplier
+	 */
+	public <T, U> T when(final Supplier<T> resultSupplier, final Predicate<T> exitCondition, final Consumer<U> beforeWait) {
+		return when(resultSupplier, exitCondition, beforeWait, Accumulator.noAccumulator());
 	}
 
 	/**
