@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import org.morphix.lang.thread.Threads;
+import org.morphix.lang.function.Consumers;
 
 /**
  * {@link String} utility methods.
@@ -124,7 +124,7 @@ public interface Strings {
 	 * @return string
 	 */
 	static String toString(final InputStream inputStream, final Charset encoding, final int bufferSize) {
-		return toString(inputStream, encoding, bufferSize, Threads.consumeNothing());
+		return toString(inputStream, encoding, bufferSize, Consumers.consumeNothing());
 	}
 
 	/**
@@ -155,7 +155,7 @@ public interface Strings {
 	 * @return the file content as string
 	 */
 	static String fromFile(final String path, final Charset encoding, final int bufferSize) {
-		return fromFile(path, encoding, bufferSize, Threads.consumeNothing());
+		return fromFile(path, encoding, bufferSize, Consumers.consumeNothing());
 	}
 
 	/**

@@ -4,7 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 
 import org.junit.jupiter.api.Test;
-import org.morphix.lang.thread.Threads;
+import org.morphix.lang.function.Runnables;
 
 /**
  * Test class for {@link CompositeAccumulator}.
@@ -29,7 +29,7 @@ class CompositeAccumulatorTest {
 		DurationAccumulator da2 = DurationAccumulator.of();
 
 		CompositeAccumulator victim = CompositeAccumulator.of(da1, da2);
-		victim.accumulate(Threads.doNothing());
+		victim.accumulate(Runnables.doNothing());
 
 		assertThat(victim.getInformationList(), hasSize(2));
 	}
@@ -40,7 +40,7 @@ class CompositeAccumulatorTest {
 		ExceptionsAccumulator ea1 = ExceptionsAccumulator.of();
 
 		CompositeAccumulator victim = CompositeAccumulator.of(da1, ea1);
-		victim.accumulate(Threads.doNothing());
+		victim.accumulate(Runnables.doNothing());
 
 		assertThat(victim.getInformationList(), hasSize(1));
 	}
