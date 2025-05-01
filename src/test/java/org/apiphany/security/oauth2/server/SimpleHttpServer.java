@@ -23,12 +23,16 @@ import com.sun.net.httpserver.HttpServer;
 /**
  * A simple HTTP server that has only one endpoint validated with OAuth2 with tokens generated from
  * {@link SimpleOAuth2Server} if a validator was provided.
+ * <p>
+ * This server provides a single route: {@code /api/name} which returns the string {@code "Mumu"}
  *
  * @author Radu Sebastian LAZIN
  */
-public class SimpleHttpApiServer {
+public class SimpleHttpServer {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(SimpleHttpApiServer.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(SimpleHttpServer.class);
+
+	public static final String ROUTE_API_NAME = "/api/name";
 
 	public static final String NAME = "Mumu";
 
@@ -36,9 +40,9 @@ public class SimpleHttpApiServer {
 	private final HttpServer httpServer;
 	private final int port;
 
-	public SimpleHttpApiServer(final int port, final JwtTokenValidator tokenValidator) {
+	public SimpleHttpServer(final int port, final JwtTokenValidator tokenValidator) {
 		this.httpServer = createHttpServer(port);
-		this.httpServer.createContext("/api/name", new NameHandler(this));
+		this.httpServer.createContext(ROUTE_API_NAME, new NameHandler(this));
 		this.httpServer.start();
 		this.port = port;
 		this.tokenValidator = tokenValidator;
@@ -60,9 +64,9 @@ public class SimpleHttpApiServer {
 
 	static class NameHandler implements HttpHandler {
 
-		private final SimpleHttpApiServer server;
+		private final SimpleHttpServer server;
 
-		public NameHandler(final SimpleHttpApiServer server) {
+		public NameHandler(final SimpleHttpServer server) {
 			this.server = server;
 		}
 
@@ -72,7 +76,7 @@ public class SimpleHttpApiServer {
 				if (!isAuthorized(exchange)) {
 					return;
 				}
-				sendResponse(exchange, HttpStatus.OK, SimpleHttpApiServer.NAME);
+				sendResponse(exchange, HttpStatus.OK, SimpleHttpServer.NAME);
 			} else {
 				exchange.sendResponseHeaders(HttpStatus.METHOD_NOT_ALLOWED.value(), -1);
 			}

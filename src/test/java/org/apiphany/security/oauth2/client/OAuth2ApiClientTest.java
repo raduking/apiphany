@@ -17,7 +17,7 @@ import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.JwtTokenValidator;
 import org.apiphany.security.JwtTokenValidator.TokenValidationException;
 import org.apiphany.security.oauth2.OAuth2ProviderDetails;
-import org.apiphany.security.oauth2.server.SimpleHttpApiServer;
+import org.apiphany.security.oauth2.server.SimpleHttpServer;
 import org.apiphany.security.oauth2.server.SimpleOAuth2Server;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,7 +42,7 @@ class OAuth2ApiClientTest {
 	private static final JwtTokenValidator JWT_TOKEN_VALIDATOR = new JwtTokenValidator(CLIENT_ID, CLIENT_SECRET, OAUTH2_SERVER.getUrl());
 
 	@SuppressWarnings("unused")
-	private static final SimpleHttpApiServer API_SERVER = new SimpleHttpApiServer(API_SERVER_PORT, JWT_TOKEN_VALIDATOR);
+	private static final SimpleHttpServer API_SERVER = new SimpleHttpServer(API_SERVER_PORT, JWT_TOKEN_VALIDATOR);
 
 	private OAuth2ClientRegistration clientRegistration;
 	private OAuth2ProviderDetails providerDetails;
