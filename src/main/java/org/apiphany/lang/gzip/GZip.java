@@ -105,7 +105,7 @@ public class GZip {
 
 	/**
 	 * Returns a {@link GZIPInputStream} if the stream represents a GZip encoded stream. If the stream is not an input
-	 * stream it returns the input stream wrapped in a {@link PushbackInputStream}.
+	 * stream, it returns the input stream wrapped in a {@link PushbackInputStream}.
 	 *
 	 * @param inputStream GZIP input stream de-compress
 	 * @return GZip input stream if the stream is a GZip input stream

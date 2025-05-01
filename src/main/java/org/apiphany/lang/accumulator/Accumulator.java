@@ -133,6 +133,15 @@ public abstract class Accumulator<T> {
 	}
 
 	/**
+	 * Returns the size of this accumulator meaning how many informations it accumulated.
+	 *
+	 * @return the size of this accumulator meaning how many informations it accumulated
+	 */
+	public int size() {
+		return list.size();
+	}
+
+	/**
 	 * Returns an empty accumulator. Equivalent to {@link #emptyAccumulator()}
 	 *
 	 * @param <T> accumulator information type

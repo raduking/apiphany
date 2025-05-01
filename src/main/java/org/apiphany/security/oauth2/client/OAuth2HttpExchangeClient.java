@@ -205,7 +205,7 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	}
 
 	/**
-	 * Returns the authentication token. If the current token is expired it tries to retrieve a new one.
+	 * Returns the authentication token. If the current token is expired, it tries to retrieve a new one.
 	 *
 	 * @return the authentication token
 	 */

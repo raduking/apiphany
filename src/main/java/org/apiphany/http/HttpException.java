@@ -46,7 +46,7 @@ public class HttpException extends RuntimeException {
 	 *
 	 * @param statusCode the HTTP status code associated with this exception.
 	 * @param message the detail message explaining the exception.
-	 * @param cause the cause of the exception (may be null).
+	 * @param cause the cause of the exception (can be null).
 	 */
 	public HttpException(final int statusCode, final String message, final Throwable cause) {
 		this(HttpStatus.from(statusCode), message, cause);
@@ -57,7 +57,7 @@ public class HttpException extends RuntimeException {
 	 *
 	 * @param status the HTTP status associated with this exception.
 	 * @param message the detail message explaining the exception.
-	 * @param cause the cause of the exception (may be null).
+	 * @param cause the cause of the exception (can be null).
 	 */
 	public HttpException(final HttpStatus status, final String message, final Throwable cause) {
 		super(message, cause);

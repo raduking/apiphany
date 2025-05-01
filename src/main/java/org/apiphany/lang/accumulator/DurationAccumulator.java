@@ -13,6 +13,8 @@ import org.morphix.lang.Unchecked;
  * Accumulates durations for operations executed by {@link Runnable} or {@link Supplier} instances. This class provides
  * functionality to measure and analyze the duration of operations, including calculating statistics such as average,
  * maximum, and percentile durations.
+ * <p>
+ * Before reusing this accumulator, make sure to clear it if new statistics are needed.
  *
  * @author Radu Sebastian LAZIN
  */
@@ -101,7 +103,7 @@ public class DurationAccumulator extends Accumulator<Duration> {
 	 */
 	public List<Double> durationsAsDouble() {
 		return getInformationList().stream()
-				.map(Temporals::toDouble)
+				.map(Temporals::toSeconds)
 				.toList();
 	}
 
@@ -111,11 +113,11 @@ public class DurationAccumulator extends Accumulator<Duration> {
 	 * @return the average duration in seconds.
 	 */
 	public Double average() {
-		return durationsAsDouble()
+		return Math.round(durationsAsDouble()
 				.stream()
 				.mapToDouble(a -> a)
 				.average()
-				.orElse(0);
+				.orElse(0) * 1000) / 1000.0;
 	}
 
 	/**
@@ -173,9 +175,12 @@ public class DurationAccumulator extends Accumulator<Duration> {
 	/**
 	 * Builds the statistics for the accumulated durations. This method must be called explicitly to calculate and store
 	 * statistics.
+	 *
+	 * @return returns the built statistics
 	 */
-	public void buildStatistics() {
+	public Statistics buildStatistics() {
 		this.statistics = new Statistics(this);
+		return getStatistics();
 	}
 
 	/**
@@ -229,7 +234,7 @@ public class DurationAccumulator extends Accumulator<Duration> {
 		 * @param durationAccumulator the accumulator containing the durations to analyze.
 		 */
 		public Statistics(final DurationAccumulator durationAccumulator) {
-			requestCount = durationAccumulator.getInformationList().size();
+			requestCount = durationAccumulator.size();
 			avgRequestTime = durationAccumulator.average();
 			maxRequestTime = durationAccumulator.max();
 			p95RequestTime = durationAccumulator.percentile(95.0);
@@ -243,12 +248,12 @@ public class DurationAccumulator extends Accumulator<Duration> {
 		 */
 		@Override
 		public String toString() {
-			return "Statistics" + Strings.EOL + Strings.EOL
-					+ "Number of requests: " + requestCount + Strings.EOL
-					+ "Average request time: " + avgRequestTime + "s" + Strings.EOL
-					+ "p95 request time: " + p95RequestTime + "s" + Strings.EOL
-					+ "p90 request time: " + p90RequestTime + "s" + Strings.EOL
-					+ "Max request time: " + maxRequestTime + "s";
+			return "Statistics" + Strings.EOL
+					+ "Count: " + requestCount + Strings.EOL
+					+ "Avg time: " + avgRequestTime + "s" + Strings.EOL
+					+ "p95 time: " + p95RequestTime + "s" + Strings.EOL
+					+ "p90 time: " + p90RequestTime + "s" + Strings.EOL
+					+ "Max time: " + maxRequestTime + "s";
 		}
 
 		/**
