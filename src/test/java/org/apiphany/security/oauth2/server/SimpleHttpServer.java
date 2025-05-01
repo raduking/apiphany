@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.apiphany.header.MapHeaderValues;
+import org.apiphany.http.HttpAuthScheme;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
@@ -24,7 +25,7 @@ import com.sun.net.httpserver.HttpServer;
  * A simple HTTP server that has only one endpoint validated with OAuth2 with tokens generated from
  * {@link SimpleOAuth2Server} if a validator was provided.
  * <p>
- * This server provides a single route: {@code /api/name} which returns the string {@code "Mumu"}
+ * This server provides a single route: {@code /api/name} which returns the string {@code "Mumu"}.
  *
  * @author Radu Sebastian LAZIN
  */
@@ -99,6 +100,12 @@ public class SimpleHttpServer {
 			String[] pair = authorizationHeaderValue.split(" ");
 			if (pair.length != 2) {
 				sendResponse(exchange, HttpStatus.UNAUTHORIZED, "Invalid " + HttpHeader.AUTHORIZATION + " header value.");
+				return false;
+			}
+			try {
+				HttpAuthScheme.fromString(pair[0]);
+			} catch (IllegalArgumentException e) {
+				sendResponse(exchange, HttpStatus.UNAUTHORIZED, "Invalid authorization scheme.");
 				return false;
 			}
 			String token = pair[1];
