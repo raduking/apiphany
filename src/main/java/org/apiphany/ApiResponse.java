@@ -2,7 +2,6 @@ package org.apiphany;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +16,7 @@ import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Lists;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Nullables;
+import org.morphix.lang.Unchecked;
 import org.morphix.reflection.Constructors;
 
 /**
@@ -83,7 +83,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @return response body
 	 */
 	public T orDefault(final T defaultBody) {
-		return getBodyOrDefault(this, () -> defaultBody);
+		return orDefault(() -> defaultBody);
 	}
 
 	/**
@@ -97,7 +97,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @return an instance of the given class
 	 */
 	public T orDefault(final Class<T> cls) {
-		return getBodyOrDefault(this, () -> Constructors.IgnoreAccess.newInstance(cls));
+		return orDefault(() -> Constructors.IgnoreAccess.newInstance(cls));
 	}
 
 	/**
@@ -107,7 +107,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @return an instance of the given class
 	 */
 	public T orDefault(final Supplier<T> defaultSupplier) {
-		return getBodyOrDefault(this, defaultSupplier);
+		return isSuccessful() ? getBody() : defaultSupplier.get();
 	}
 
 	/**
@@ -116,7 +116,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @return response body or null
 	 */
 	public T orNull() {
-		return getBodyOrDefault(this, Nullables.supplyNull());
+		return orDefault(Nullables.supplyNull());
 	}
 
 	/**
@@ -130,7 +130,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @return body part / field
 	 */
 	public <U> U fromOrDefault(final Function<T, U> bodyFunction, final U defaultValue) {
-		return getFromBodyOrDefault(this, bodyFunction, defaultValue);
+		return isSuccessful() ? bodyFunction.apply(getBody()) : defaultValue;
 	}
 
 	/**
@@ -144,7 +144,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @return body part / field
 	 */
 	public <U> U fromOrDefault(final BiFunction<T, U, U> bodyFunction, final U defaultValue) {
-		return getFromBodyOrDefault(this, bodyFunction, defaultValue);
+		return isSuccessful() ? bodyFunction.apply(getBody(), defaultValue) : defaultValue;
 	}
 
 	/**
@@ -157,7 +157,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @return response body list
 	 */
 	public <U> List<U> asListOrDefault(final List<U> defaultList) {
-		return getListBodyOrDefault(JavaObjects.cast(this), defaultList);
+		return isSuccessful() ? JavaObjects.cast(getBody()) : defaultList;
 	}
 
 	/**
@@ -169,7 +169,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @return response body list
 	 */
 	public <U> List<U> asList() {
-		return getListBodyOrDefault(JavaObjects.cast(this), Collections.emptyList());
+		return asListOrDefault(Collections.emptyList());
 	}
 
 	/**
@@ -182,7 +182,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @return response body list
 	 */
 	public <U> List<U> asListFromOrDefault(final Function<T, List<U>> bodyListFunction, final List<U> defaultList) {
-		return getListFromBodyOrDefault(this, bodyListFunction, defaultList);
+		return isSuccessful() ? bodyListFunction.apply(JavaObjects.cast(getBody())) : defaultList;
 	}
 
 	/**
@@ -194,7 +194,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @return response body list or empty list if the body doesn't exist
 	 */
 	public <U> List<U> asListFromOrEmpty(final Function<T, List<U>> bodyListFunction) {
-		return getListFromBodyOrDefault(this, bodyListFunction, Collections.emptyList());
+		return asListFromOrDefault(bodyListFunction, Collections.emptyList());
 	}
 
 	/**
@@ -208,82 +208,26 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @return Returns the first element from a list from the response body
 	 */
 	public <U> U firstFromOrDefault(final Function<T, List<U>> bodyListFunction, final U defaultValue) {
-		return Lists.first(getListFromBodyOrDefault(this, bodyListFunction, Collections.emptyList()), defaultValue);
+		return Lists.first(asListFromOrDefault(bodyListFunction, Collections.emptyList()), defaultValue);
 	}
 
 	/**
-	 * Returns the response body or the given default if the request wasn't 2xx successful.
+	 * Re-throws the exception in the response or {@code null} if the response has no exception.
 	 *
-	 * @param <U> return type
-	 *
-	 * @param response response object
-	 * @param defaultBody default value to be returned
-	 * @return response body
+	 * @return null if the response has no errors or re-throws the exception
 	 */
-	public static <U> U getBodyOrDefault(final ApiResponse<U> response, final Supplier<U> defaultBody) {
-		return response.isSuccessful() ? response.getBody() : defaultBody.get();
+	public T orRethrow() {
+		return hasException() ? Unchecked.reThrow(getException()) : orNull();
 	}
 
 	/**
-	 * Returns a part / field from the response body by giving a function or the given default if the request wasn't 2xx
-	 * successful.
+	 * Handles the error in the response.
 	 *
-	 * @param <T> response body type
-	 * @param <U> return type
-	 *
-	 * @param response API response object
-	 * @param bodyConverter function to apply on body
-	 * @param defaultValue default value to be returned
-	 * @return body part / field
+	 * @param onError error handling function which takes the exception as a parameter
+	 * @return error handling function result
 	 */
-	public static <T, U> U getFromBodyOrDefault(final ApiResponse<T> response, final Function<T, U> bodyConverter, final U defaultValue) {
-		return response.isSuccessful() ? bodyConverter.apply(response.getBody()) : defaultValue;
-	}
-
-	/**
-	 * Returns a part / field from the response body by giving a function or the given default if the request wasn't 2xx
-	 * successful.
-	 *
-	 * @param <T> response body type
-	 * @param <U> return type
-	 *
-	 * @param response API response object
-	 * @param bodyConverter function to apply to body
-	 * @param defaultValue default value to be returned
-	 * @return body part / field
-	 */
-	public static <T, U> U getFromBodyOrDefault(final ApiResponse<T> response, final BiFunction<T, U, U> bodyConverter, final U defaultValue) {
-		return response.isSuccessful() ? bodyConverter.apply(response.getBody(), defaultValue) : defaultValue;
-	}
-
-	/**
-	 * Returns a list from the response body when the body is an array or the given default list if the request wasn't 2xx
-	 * successful.
-	 *
-	 * @param <U> return list component type
-	 *
-	 * @param response response object
-	 * @param defaultList default list to be returned
-	 * @return response body list
-	 */
-	public static <U> List<U> getListBodyOrDefault(final ApiResponse<U[]> response, final List<U> defaultList) {
-		return getFromBodyOrDefault(response, (Function<U[], List<U>>) Arrays::asList, defaultList);
-	}
-
-	/**
-	 * Returns a list from the response body or the given default list if the request wasn't 2xx successful.
-	 *
-	 * @param <T> response body type
-	 * @param <U> return type
-	 *
-	 * @param response response object
-	 * @param listFunction function to be used on the body to retrieve the wanted list
-	 * @param defaultList default list to be returned
-	 * @return response body list
-	 */
-	public static <T, U> List<U> getListFromBodyOrDefault(final ApiResponse<T> response, final Function<T, List<U>> listFunction,
-			final List<U> defaultList) {
-		return getFromBodyOrDefault(response, listFunction, defaultList);
+	public T orHandleError(final Function<? super Exception, T> onError) {
+		return onError.apply(getException());
 	}
 
 	/**
