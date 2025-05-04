@@ -1,9 +1,13 @@
 package org.apiphany.header;
 
+import java.net.http.HttpHeaders;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.apiphany.http.HttpMessages;
+import org.apiphany.lang.Strings;
+import org.apiphany.lang.collections.Lists;
+import org.apiphany.lang.collections.Maps;
 import org.morphix.lang.JavaObjects;
 
 /**
@@ -16,13 +20,12 @@ import org.morphix.lang.JavaObjects;
  *
  * @author Radu Sebastian LAZIN
  */
-public class MapHeaderValues extends HeaderValues { // NOSONAR singleton since it has no state
+public class MapHeaderValues extends HeaderValues {
 
 	/**
 	 * Retrieves header values from a Map structure or delegates to the next handler in the chain. If the input headers
-	 * object is a {@link Map}, this method extracts values for the specified header using
-	 * {@link HttpMessages#getHeaderValues(Object, Map)}. Otherwise, it passes the request to the next {@link HeaderValues}
-	 * in the chain.
+	 * object is a {@link Map}, this method extracts values for the specified header using {@link #get(Object, Map)}.
+	 * Otherwise, it passes the request to the next {@link HeaderValues} in the chain.
 	 *
 	 * @param <N> header name type
 	 * @param header the name of the header to retrieve (case sensitivity depends on implementation)
@@ -34,32 +37,31 @@ public class MapHeaderValues extends HeaderValues { // NOSONAR singleton since i
 	 */
 	@Override
 	public <N> List<String> get(final N header, final Object headers) {
-		if (null != headers && Map.class.isAssignableFrom(headers.getClass())) {
-			Map<String, List<String>> headersMap = JavaObjects.cast(headers);
-			return HttpMessages.getHeaderValues(header, headersMap);
+		if (headers instanceof Map<?, ?> mapHeaders) {
+			Map<String, List<String>> headersMap = JavaObjects.cast(mapHeaders);
+			return get(header, headersMap);
 		}
 		return getNext().get(header, headers);
 	}
 
 	/**
-	 * Returns the instance (new instances can still be created with {@code new}).
+	 * Retrieves the values of a specific header from the provided {@link Map} of headers. The map is converted to an
+	 * {@link HttpHeaders} object internally to fetch the header values.
 	 *
-	 * @return the singleton {@link MapHeaderValues} instance
-	 */
-	public static MapHeaderValues getInstance() {
-		return InstanceHolder.INSTANCE;
-	}
-
-	/**
-	 * Instance holder.
+	 * @param <N> header name type
 	 *
-	 * @author Radu Sebastian LAZIN
+	 * @param header the name of the header whose values are to be retrieved.
+	 * @param headers the map of headers, where each key is a header name and the value is a list of header values.
+	 * @return a list of values for the specified header. If the header is not found, an empty list is returned.
 	 */
-	private static class InstanceHolder {
-
-		/**
-		 * Actual {@link MapHeaderValues} singleton instance
-		 */
-		private static final MapHeaderValues INSTANCE = new MapHeaderValues();
+	public static <N> List<String> get(final N header, final Map<String, List<String>> headers) {
+		if (Maps.isEmpty(headers)) {
+			return Collections.emptyList();
+		}
+		List<String> values = headers.get(Strings.safeToString(header));
+		if (Lists.isEmpty(values)) {
+			return Collections.emptyList();
+		}
+		return values;
 	}
 }

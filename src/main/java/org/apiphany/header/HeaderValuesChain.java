@@ -56,4 +56,19 @@ public class HeaderValuesChain {
 	public <N> List<String> get(final N header, final Object headers) {
 		return Nullables.apply(headerValuesList.getFirst(), hv -> hv.get(header, headers));
 	}
+
+	/**
+	 * Returns true if the given headers contain the given header with the given value, false otherwise.
+	 *
+	 * @param <N> header name type
+	 * @param <V> header value type
+	 * @param headerName header name
+	 * @param headerValue header value
+	 * @param headers headers to check
+	 * @return true if the given headers contain the given header with the given value, false otherwise
+	 */
+	public <N, V> boolean contains(final N headerName, final V headerValue, final Object headers) {
+		return Nullables.apply(headerValuesList.getFirst(), hv -> hv.contains(headerName, headerValue, headers));
+	}
+
 }

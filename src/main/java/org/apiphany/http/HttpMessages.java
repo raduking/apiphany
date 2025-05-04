@@ -1,9 +1,6 @@
 package org.apiphany.http;
 
 import java.net.http.HttpClient.Version;
-import java.net.http.HttpHeaders;
-import java.util.List;
-import java.util.Map;
 
 import org.morphix.lang.Nullables;
 import org.morphix.reflection.Constructors;
@@ -57,33 +54,6 @@ public class HttpMessages {
 			throw new IllegalArgumentException("rangeEnd must be greater or equal to rangeStart");
 		}
 		return String.format("bytes=%d-%d", actualRangeStart, actualRangeEnd);
-	}
-
-	/**
-	 * Retrieves the values of a specific header from the provided {@link HttpHeaders} object.
-	 *
-	 * @param <N> header name type
-	 *
-	 * @param header the name of the header whose values are to be retrieved.
-	 * @param headers the {@link HttpHeaders} object from which to retrieve the header values.
-	 * @return a list of values for the specified header. If the header is not found, an empty list is returned.
-	 */
-	public static <N> List<String> getHeaderValues(final N header, final HttpHeaders headers) {
-		return headers.allValues(String.valueOf(header));
-	}
-
-	/**
-	 * Retrieves the values of a specific header from the provided {@link Map} of headers. The map is converted to an
-	 * {@link HttpHeaders} object internally to fetch the header values.
-	 *
-	 * @param <N> header name type
-	 *
-	 * @param header the name of the header whose values are to be retrieved.
-	 * @param headers the map of headers, where each key is a header name and the value is a list of header values.
-	 * @return a list of values for the specified header. If the header is not found, an empty list is returned.
-	 */
-	public static <N> List<String> getHeaderValues(final N header, final Map<String, List<String>> headers) {
-		return getHeaderValues(header, HttpHeaders.of(headers, (name, value) -> true));
 	}
 
 	/**

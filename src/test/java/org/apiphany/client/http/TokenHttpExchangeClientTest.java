@@ -106,7 +106,7 @@ class TokenHttpExchangeClientTest {
 		client.exchange(apiRequest);
 
 		Map<String, List<String>> headers = apiRequest.getHeaders();
-		String authorizationHeader = MapHeaderValues.getInstance().get(HttpHeader.AUTHORIZATION, headers).getFirst();
+		String authorizationHeader = MapHeaderValues.get(HttpHeader.AUTHORIZATION, headers).getFirst();
 
 		assertThat(authorizationHeader, equalTo(HeaderValues.value(HttpAuthScheme.BEARER, TOKEN)));
 	}
@@ -128,7 +128,7 @@ class TokenHttpExchangeClientTest {
 		client.exchange(apiRequest);
 
 		Map<String, List<String>> headers = apiRequest.getHeaders();
-		String authorizationHeader = MapHeaderValues.getInstance().get(HttpHeader.AUTHORIZATION, headers).getFirst();
+		String authorizationHeader = MapHeaderValues.get(HttpHeader.AUTHORIZATION, headers).getFirst();
 
 		assertThat(authorizationHeader, equalTo(HeaderValues.value(HttpAuthScheme.BEARER, TOKEN)));
 	}
