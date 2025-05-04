@@ -76,8 +76,8 @@ public abstract class AbstractHttpExchangeClient implements ExchangeClient {
 	 * @param headerValuesChain the header values chain object
 	 */
 	public static void addDefaultHeaderValues(final HeaderValuesChain headerValuesChain) {
-		headerValuesChain.add(HttpHeaderValues.getInstance());
-		headerValuesChain.add(MapHeaderValues.getInstance());
+		headerValuesChain.add(new HttpHeaderValues());
+		headerValuesChain.add(new MapHeaderValues());
 	}
 
 	/**

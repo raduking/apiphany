@@ -4,6 +4,7 @@ import java.net.http.HttpHeaders;
 import java.util.List;
 
 import org.apiphany.header.HeaderValues;
+import org.apiphany.lang.Strings;
 
 /**
  * A {@link HeaderValues} implementation specifically designed to handle {@link HttpHeaders} objects. This concrete
@@ -15,13 +16,12 @@ import org.apiphany.header.HeaderValues;
  *
  * @author Radu Sebastian LAZIN
  */
-public class HttpHeaderValues extends HeaderValues { // NOSONAR singleton since it has no state
+public class HttpHeaderValues extends HeaderValues {
 
 	/**
 	 * Retrieves header values from an {@link HttpHeaders} object or delegates to the next handler. If the input headers
 	 * object is an instance of {@link HttpHeaders}, this method extracts values for the specified header using
-	 * {@link HttpMessages#getHeaderValues(Object, HttpHeaders)}. Otherwise, it passes the request to the next
-	 * {@link HeaderValues} in the chain.
+	 * {@link #get(Object, HttpHeaders)}. Otherwise, it passes the request to the next {@link HeaderValues} in the chain.
 	 *
 	 * @param <N> header name type
 	 * @param header the name of the header to retrieve (typically case-insensitive, according to HTTP standards)
@@ -34,30 +34,21 @@ public class HttpHeaderValues extends HeaderValues { // NOSONAR singleton since 
 	@Override
 	public <N> List<String> get(final N header, final Object headers) {
 		if (headers instanceof HttpHeaders httpHeaders) {
-			return HttpMessages.getHeaderValues(header, httpHeaders);
+			return get(header, httpHeaders);
 		}
 		return getNext().get(header, headers);
 	}
 
 	/**
-	 * Returns the instance (new instances can still be created with {@code new}).
+	 * Retrieves the values of a specific header from the provided {@link HttpHeaders} object.
 	 *
-	 * @return the singleton {@link HttpHeaderValues} instance
-	 */
-	public static HttpHeaderValues getInstance() {
-		return InstanceHolder.INSTANCE;
-	}
-
-	/**
-	 * Instance holder.
+	 * @param <N> header name type
 	 *
-	 * @author Radu Sebastian LAZIN
+	 * @param header the name of the header whose values are to be retrieved.
+	 * @param headers the {@link HttpHeaders} object from which to retrieve the header values.
+	 * @return a list of values for the specified header. If the header is not found, an empty list is returned.
 	 */
-	private static class InstanceHolder {
-
-		/**
-		 * Actual {@link HttpHeaderValues} singleton instance
-		 */
-		private static final HttpHeaderValues INSTANCE = new HttpHeaderValues();
+	public static <N> List<String> get(final N header, final HttpHeaders headers) {
+		return headers.allValues(Strings.safeToString(header));
 	}
 }

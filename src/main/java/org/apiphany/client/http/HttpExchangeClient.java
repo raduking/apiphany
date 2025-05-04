@@ -20,10 +20,14 @@ import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
+import org.apiphany.header.Headers;
+import org.apiphany.http.ContentType;
 import org.apiphany.http.HttpException;
+import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpProperties;
 import org.apiphany.http.HttpStatus;
+import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Maps;
 import org.morphix.lang.Nullables;
@@ -119,6 +123,7 @@ public class HttpExchangeClient extends AbstractHttpExchangeClient {
 	protected <T> HttpRequest buildRequest(final ApiRequest<T> apiRequest) {
 		HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder()
 				.uri(apiRequest.getUri());
+		addHeaders(httpRequestBuilder, apiRequest.getHeaders());
 
 		HttpMethod httpMethod = apiRequest.getMethod();
 		switch (httpMethod) {
@@ -131,8 +136,6 @@ public class HttpExchangeClient extends AbstractHttpExchangeClient {
 			case OPTIONS -> httpRequestBuilder.method(httpMethod.value(), BodyPublishers.noBody());
 			default -> throw new UnsupportedOperationException("HTTP method " + httpMethod + " is not supported!");
 		}
-		addHeaders(httpRequestBuilder, apiRequest.getHeaders());
-
 		return httpRequestBuilder.build();
 	}
 
@@ -162,6 +165,8 @@ public class HttpExchangeClient extends AbstractHttpExchangeClient {
 					throw new HttpException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
 				}
 			}
+			case Object obj when Headers.contains(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_JSON, apiRequest) -> BodyPublishers
+					.ofString(JsonBuilder.toJson(obj));
 			default -> BodyPublishers.ofString(Strings.safeToString(body), charset);
 		};
 	}

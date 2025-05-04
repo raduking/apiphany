@@ -87,7 +87,7 @@ public class SimpleHttpServer {
 			if (null == server.tokenValidator) {
 				return true;
 			}
-			List<String> authorizationHeaderValues = MapHeaderValues.getInstance().get(HttpHeader.AUTHORIZATION, exchange.getRequestHeaders());
+			List<String> authorizationHeaderValues = MapHeaderValues.get(HttpHeader.AUTHORIZATION, exchange.getRequestHeaders());
 			if (Lists.isEmpty(authorizationHeaderValues)) {
 				sendResponse(exchange, HttpStatus.UNAUTHORIZED, "Missing " + HttpHeader.AUTHORIZATION + " header.");
 				return false;
