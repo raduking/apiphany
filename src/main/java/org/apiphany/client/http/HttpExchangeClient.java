@@ -1,14 +1,20 @@
 package org.apiphany.client.http;
 
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.net.http.HttpClient;
 import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
+import java.net.http.HttpRequest.BodyPublisher;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.nio.charset.Charset;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
@@ -115,20 +121,49 @@ public class HttpExchangeClient extends AbstractHttpExchangeClient {
 				.uri(apiRequest.getUri());
 
 		HttpMethod httpMethod = apiRequest.getMethod();
-		String stringBody = Strings.safeToString(apiRequest.getBody());
 		switch (httpMethod) {
 			case GET -> httpRequestBuilder.GET();
-			case PUT -> httpRequestBuilder.PUT(BodyPublishers.ofString(stringBody));
-			case POST -> httpRequestBuilder.POST(BodyPublishers.ofString(stringBody));
+			case PUT -> httpRequestBuilder.PUT(toBodyPublisher(apiRequest));
+			case POST -> httpRequestBuilder.POST(toBodyPublisher(apiRequest));
 			case DELETE -> httpRequestBuilder.DELETE();
 			case HEAD -> httpRequestBuilder.HEAD();
-			case PATCH -> httpRequestBuilder.method(httpMethod.value(), BodyPublishers.ofString(stringBody));
+			case PATCH -> httpRequestBuilder.method(httpMethod.value(), toBodyPublisher(apiRequest));
 			case OPTIONS -> httpRequestBuilder.method(httpMethod.value(), BodyPublishers.noBody());
 			default -> throw new UnsupportedOperationException("HTTP method " + httpMethod + " is not supported!");
 		}
 		addHeaders(httpRequestBuilder, apiRequest.getHeaders());
 
 		return httpRequestBuilder.build();
+	}
+
+	/**
+	 * Creates a {@link BodyPublisher} from the given API request. It checks for the body common types to create the
+	 * appropriate publisher.
+	 *
+	 * @param <T> body type
+	 * @param apiRequest the API request object
+	 * @return a body publisher needed in building the HTTP request
+	 */
+	public static <T> BodyPublisher toBodyPublisher(final ApiRequest<T> apiRequest) {
+		T body = apiRequest.getBody();
+		if (body == null) {
+			return BodyPublishers.noBody();
+		}
+		Charset charset = Nullables.nonNullOrDefault(apiRequest.getCharset(), Strings.DEFAULT_CHARSET);
+		return switch (body) {
+			case String str -> BodyPublishers.ofString(str, charset);
+			case byte[] bytes -> BodyPublishers.ofByteArray(bytes);
+			case InputStream is -> BodyPublishers.ofInputStream(() -> is);
+			case Supplier<?> supplier when supplier.get() instanceof InputStream is -> BodyPublishers.ofInputStream(() -> is);
+			case Path path -> {
+				try {
+					yield BodyPublishers.ofFile(path);
+				} catch (FileNotFoundException e) {
+					throw new HttpException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
+				}
+			}
+			default -> BodyPublishers.ofString(Strings.safeToString(body), charset);
+		};
 	}
 
 	/**
