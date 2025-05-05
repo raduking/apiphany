@@ -16,56 +16,63 @@ public enum HttpMethod implements RequestMethod {
 	/**
 	 * The HTTP method {@code GET}.
 	 *
-	 * @see <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">HTTP 1.1, section 9.3</a>
+	 * @see <a href="https://www.rfc-editor.org/rfc/rfc9110.html#name-get">RFC 9110, section 9.3.1</a>
 	 */
 	GET("GET"),
 
 	/**
 	 * The HTTP method {@code HEAD}.
 	 *
-	 * @see <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.4">HTTP 1.1, section 9.4</a>
+	 * @see <a href="https://www.rfc-editor.org/rfc/rfc9110.html#name-head">RFC 9110, section 9.3.2</a>
 	 */
 	HEAD("HEAD"),
 
 	/**
 	 * The HTTP method {@code POST}.
 	 *
-	 * @see <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.5">HTTP 1.1, section 9.5</a>
+	 * @see <a href="https://www.rfc-editor.org/rfc/rfc9110.html#name-post">RFC 9110, section 9.3.3</a>
 	 */
 	POST("POST"),
 
 	/**
 	 * The HTTP method {@code PUT}.
 	 *
-	 * @see <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.6">HTTP 1.1, section 9.6</a>
+	 * @see <a href="https://www.rfc-editor.org/rfc/rfc9110.html#name-put">RFC 9110, section 9.3.4</a>
 	 */
 	PUT("PUT"),
 
 	/**
 	 * The HTTP method {@code PATCH}.
 	 *
-	 * @see <a href="https://datatracker.ietf.org/doc/html/rfc5789#section-2">RFC 5789</a>
+	 * @see <a href="https://www.rfc-editor.org/rfc/rfc5789.html#section-2">RFC 5789, section 2</a>
 	 */
 	PATCH("PATCH"),
 
 	/**
 	 * The HTTP method {@code DELETE}.
 	 *
-	 * @see <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.7">HTTP 1.1, section 9.7</a>
+	 * @see <a href="https://www.rfc-editor.org/rfc/rfc9110.html#name-delete">RFC 9110, section 9.3.5</a>
 	 */
 	DELETE("DELETE"),
 
 	/**
+	 * The HTTP method {@code CONNECT}.
+	 *
+	 * @see <a href="https://www.rfc-editor.org/rfc/rfc9110.html#name-connect">RFC 9110, section 9.3.6</a>
+	 */
+	CONNECT("CONNECT"),
+
+	/**
 	 * The HTTP method {@code OPTIONS}.
 	 *
-	 * @see <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.2">HTTP 1.1, section 9.2</a>
+	 * @see <a href="https://www.rfc-editor.org/rfc/rfc9110.html#name-options">RFC 9110, section 9.3.7</a>
 	 */
 	OPTIONS("OPTIONS"),
 
 	/**
 	 * The HTTP method {@code TRACE}.
 	 *
-	 * @see <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.8">HTTP 1.1, section 9.8</a>
+	 * @see <a href="https://www.rfc-editor.org/rfc/rfc9110.html#name-trace">RFC 9110, section 9.3.8</a>
 	 */
 	TRACE("TRACE");
 
