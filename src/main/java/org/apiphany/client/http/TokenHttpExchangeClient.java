@@ -105,7 +105,7 @@ public class TokenHttpExchangeClient extends AbstractHttpExchangeClient {
 			throw new AuthenticationException("Missing authentication token");
 		}
 		String headerValue = HeaderValues.value(getAuthenticationScheme(), token.getAccessToken());
-		Headers.addTo(apiRequest, HttpHeader.AUTHORIZATION, headerValue);
+		Headers.addTo(apiRequest.getHeaders(), HttpHeader.AUTHORIZATION, headerValue);
 		return exchangeClient.exchange(apiRequest);
 	}
 

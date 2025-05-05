@@ -19,7 +19,6 @@ import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
-import org.apiphany.header.Headers;
 import org.apiphany.http.ContentType;
 import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
@@ -157,8 +156,8 @@ public class HttpExchangeClient extends AbstractHttpExchangeClient {
 			case byte[] bytes -> BodyPublishers.ofByteArray(bytes);
 			case InputStream is -> BodyPublishers.ofInputStream(() -> is);
 			case Supplier<?> supplier when supplier.get() instanceof InputStream is -> BodyPublishers.ofInputStream(() -> is);
-			case Path path -> HttpException.onError(() -> BodyPublishers.ofFile(path), HttpStatus.BAD_REQUEST);
-			case Object obj when Headers.contains(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_JSON, apiRequest) -> BodyPublishers
+			case Path path -> HttpException.ifThrows(() -> BodyPublishers.ofFile(path), HttpStatus.BAD_REQUEST);
+			case Object obj when apiRequest.containsHeader(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_JSON) -> BodyPublishers
 					.ofString(JsonBuilder.toJson(obj));
 			default -> BodyPublishers.ofString(Strings.safeToString(body), charset);
 		};

@@ -94,11 +94,25 @@ public class HttpException extends RuntimeException {
 	 * @param httpStatus HTTP status for the HTTP exception
 	 * @return the value supplied
 	 */
-	public static <T> T onError(final ThrowingSupplier<T> throwingSupplier, final HttpStatus httpStatus) {
+	public static <T> T ifThrows(final ThrowingSupplier<T> throwingSupplier, final HttpStatus httpStatus) {
 		try {
 			return throwingSupplier.get();
 		} catch (Throwable e) {
 			throw new HttpException(httpStatus, e.getMessage(), e);
 		}
+	}
+
+	/**
+	 * Returns the value supplied by the supplier if no exception is thrown, otherwise it wraps the throwable thrown by the
+	 * supplier into a {@link HttpException}. The exception will have the status set to
+	 * {@link HttpStatus#INTERNAL_SERVER_ERROR}.
+	 *
+	 * @param <T> return type
+	 *
+	 * @param throwingSupplier supplier
+	 * @return the value supplied
+	 */
+	public static <T> T ifThrows(final ThrowingSupplier<T> throwingSupplier) {
+		return ifThrows(throwingSupplier, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 }

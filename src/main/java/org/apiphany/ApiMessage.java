@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.apiphany.header.Headers;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.collections.Maps;
 
@@ -100,6 +101,20 @@ public class ApiMessage<T> {
 	 */
 	public boolean hasNoBody() {
 		return !hasBody();
+	}
+
+	/**
+	 * Returns true if the API message contains the given header with the given value, false otherwise.
+	 *
+	 * @param <N> header name type
+	 * @param <V> header value type
+	 *
+	 * @param headerName header name
+	 * @param headerValue header value
+	 * @return true if the given headers contain the given header with the given value, false otherwise
+	 */
+	public <N, V> boolean containsHeader(final N headerName, final V headerValue) {
+		return Headers.contains(headerName, headerValue, getHeaders());
 	}
 
 }
