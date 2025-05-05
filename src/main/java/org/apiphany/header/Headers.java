@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import org.apiphany.ApiMessage;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Lists;
 import org.apiphany.lang.collections.Maps;
@@ -60,21 +59,6 @@ public interface Headers {
 	}
 
 	/**
-	 * Adds a header to the headers of the given API message.
-	 *
-	 * @param <T> message body type
-	 * @param <N> header name type
-	 * @param <H> header value type
-	 *
-	 * @param apiRequest API message object
-	 * @param headerName header name
-	 * @param headerValue header value
-	 */
-	static <T, N, H> void addTo(final ApiMessage<T> apiRequest, final N headerName, final H headerValue) {
-		addTo(apiRequest.getHeaders(), headerName, headerValue);
-	}
-
-	/**
 	 * Returns true if the headers returned by the given header values function contain the given header with the given
 	 * value, false otherwise.
 	 *
@@ -118,19 +102,4 @@ public interface Headers {
 		return contains(headerName, headerValue, hn -> MapHeaderValues.get(hn, headers));
 	}
 
-	/**
-	 * Returns true if the API message contains the given header with the given value, false otherwise.
-	 *
-	 * @param <N> header name type
-	 * @param <V> header value type
-	 * @param <T> API message body type
-	 *
-	 * @param headerName header name
-	 * @param headerValue header value
-	 * @param apiMessage API message object
-	 * @return true if the given headers contain the given header with the given value, false otherwise
-	 */
-	static <N, V, T> boolean contains(final N headerName, final V headerValue, final ApiMessage<T> apiMessage) {
-		return contains(headerName, headerValue, apiMessage.getHeaders());
-	}
 }
