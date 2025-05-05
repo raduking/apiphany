@@ -104,17 +104,29 @@ public class ApiMessage<T> {
 	}
 
 	/**
-	 * Returns true if the API message contains the given header with the given value, false otherwise.
+	 * Returns true if the headers contain the given header with the given value, false otherwise.
 	 *
 	 * @param <N> header name type
 	 * @param <V> header value type
 	 *
 	 * @param headerName header name
 	 * @param headerValue header value
-	 * @return true if the given headers contain the given header with the given value, false otherwise
+	 * @return true if the headers contain the given header with the given value, false otherwise
 	 */
 	public <N, V> boolean containsHeader(final N headerName, final V headerValue) {
 		return Headers.contains(headerName, headerValue, getHeaders());
+	}
+
+	/**
+	 * Returns true if the headers contain the given header, false otherwise.
+	 *
+	 * @param <N> header name type
+	 *
+	 * @param headerName header name
+	 * @return true if the headers contain the given header, false otherwise
+	 */
+	public <N> boolean containsHeader(final N headerName) {
+		return containsHeader(headerName, null);
 	}
 
 }

@@ -2,6 +2,7 @@ package org.apiphany.client.http;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -11,15 +12,19 @@ import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ContentConverter;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.header.HeaderValuesChain;
+import org.apiphany.header.Headers;
 import org.apiphany.header.MapHeaderValues;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpHeaderValues;
 import org.apiphany.http.HttpMethod;
+import org.apiphany.http.TracingHeader;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.json.jackson.JacksonJsonHttpContentConverter;
+import org.apiphany.lang.Strings;
 import org.morphix.lang.JavaObjects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 /**
  * Abstract HTTP exchange client which holds all the common information needed to build an HTTP exchange client.
@@ -115,6 +120,22 @@ public abstract class AbstractHttpExchangeClient implements ExchangeClient {
 		}
 		throw new UnsupportedOperationException("No content converter found to convert response to: " + apiRequest.getResponseType().getTypeName()
 				+ ", for the response content type: " + getHeaderValuesChain().get(HttpHeader.CONTENT_TYPE, headers));
+	}
+
+	/**
+	 * Adds tracing headers to the given headers.
+	 * <p>
+	 * TODO: make it more generic
+	 *
+	 * @param headers headers to add tracing headers to
+	 */
+	public static void addTracingHeaders(final Map<String, List<String>> headers) {
+		String traceId = MDC.get("traceId");
+        if (Strings.isNotEmpty(traceId)) {
+        	String spanId = MDC.get("spanId");
+        	Headers.addTo(headers, TracingHeader.B3_TRACE_ID, traceId);
+        	Headers.addTo(headers, TracingHeader.B3_SPAN_ID, spanId);
+        }
 	}
 
 	/**
