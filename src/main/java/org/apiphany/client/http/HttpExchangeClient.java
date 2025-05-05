@@ -1,6 +1,5 @@
 package org.apiphany.client.http;
 
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.net.http.HttpClient;
 import java.net.http.HttpHeaders;
@@ -158,13 +157,7 @@ public class HttpExchangeClient extends AbstractHttpExchangeClient {
 			case byte[] bytes -> BodyPublishers.ofByteArray(bytes);
 			case InputStream is -> BodyPublishers.ofInputStream(() -> is);
 			case Supplier<?> supplier when supplier.get() instanceof InputStream is -> BodyPublishers.ofInputStream(() -> is);
-			case Path path -> {
-				try {
-					yield BodyPublishers.ofFile(path);
-				} catch (FileNotFoundException e) {
-					throw new HttpException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
-				}
-			}
+			case Path path -> HttpException.onError(() -> BodyPublishers.ofFile(path), HttpStatus.BAD_REQUEST);
 			case Object obj when Headers.contains(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_JSON, apiRequest) -> BodyPublishers
 					.ofString(JsonBuilder.toJson(obj));
 			default -> BodyPublishers.ofString(Strings.safeToString(body), charset);

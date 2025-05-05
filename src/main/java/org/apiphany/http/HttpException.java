@@ -2,6 +2,8 @@ package org.apiphany.http;
 
 import java.io.Serial;
 
+import org.morphix.lang.function.ThrowingSupplier;
+
 /**
  * Represents a basic HTTP exception, typically used to indicate an error during an HTTP request or response. This
  * exception includes an {@link HttpStatus} to provide detailed information about the HTTP error.
@@ -80,5 +82,23 @@ public class HttpException extends RuntimeException {
 	 */
 	public int getStatusCode() {
 		return getStatus().value();
+	}
+
+	/**
+	 * Returns the value supplied by the supplier if no exception is thrown, otherwise it wraps the throwable thrown by the
+	 * supplier into a {@link HttpException}.
+	 *
+	 * @param <T> return type
+	 *
+	 * @param throwingSupplier supplier
+	 * @param httpStatus HTTP status for the HTTP exception
+	 * @return the value supplied
+	 */
+	public static <T> T onError(final ThrowingSupplier<T> throwingSupplier, final HttpStatus httpStatus) {
+		try {
+			return throwingSupplier.get();
+		} catch (Throwable e) {
+			throw new HttpException(httpStatus, e.getMessage(), e);
+		}
 	}
 }
