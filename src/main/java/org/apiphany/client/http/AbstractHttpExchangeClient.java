@@ -4,7 +4,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 import org.apiphany.ApiRequest;
 import org.apiphany.RequestMethod;
@@ -105,18 +104,14 @@ public abstract class AbstractHttpExchangeClient implements ExchangeClient {
 	 * @throws UnsupportedOperationException if no compatible content converter is found
 	 */
 	protected <T, U, H> U convertBody(final ApiRequest<T> apiRequest, final H headers, final Object body) {
-		Supplier<StringHttpContentConverter> stringConverterSupplier = StringHttpContentConverter::new;
+		if (String.class.equals(apiRequest.getClassResponseType())) {
+			return JavaObjects.cast(StringHttpContentConverter.instance().from(body, String.class));
+		}
 		for (ContentConverter<?> contentConverter : getContentConverters()) {
 			if (contentConverter.isConvertible(apiRequest, headers, getHeaderValuesChain())) {
 				ContentConverter<U> typeConverter = JavaObjects.cast(contentConverter);
 				return ContentConverter.convertBody(typeConverter, apiRequest, body);
 			}
-			if (contentConverter instanceof StringHttpContentConverter stringConverter) {
-				stringConverterSupplier = () -> stringConverter;
-			}
-		}
-		if (String.class.equals(apiRequest.getClassResponseType())) {
-			return JavaObjects.cast(stringConverterSupplier.get().from(body, String.class));
 		}
 		throw new UnsupportedOperationException("No content converter found to convert response to: " + apiRequest.getResponseType().getTypeName()
 				+ ", for the response content type: " + getHeaderValuesChain().get(HttpHeader.CONTENT_TYPE, headers));

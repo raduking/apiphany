@@ -25,6 +25,15 @@ public class StringHttpContentConverter implements HttpContentConverter<String> 
 	}
 
 	/**
+	 * Returns the singleton instance.
+	 *
+	 * @return the singleton instance
+	 */
+	public static StringHttpContentConverter instance() {
+		return InstanceHolder.INSTANCE;
+	}
+
+	/**
 	 * Converts the given object to a {@link String} representation.
 	 *
 	 * @param obj the object to convert.
@@ -67,6 +76,19 @@ public class StringHttpContentConverter implements HttpContentConverter<String> 
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Singleton instance holder.
+	 *
+	 * @author Radu Sebastian LAZIN
+	 */
+	private static class InstanceHolder {
+
+		/**
+		 * Actual singleton instance.
+		 */
+		private static final StringHttpContentConverter INSTANCE = new StringHttpContentConverter();
 	}
 
 }
