@@ -58,7 +58,7 @@
 		<jacoco.plugin.version>0.8.12</jacoco.plugin.version>
 		<gpg.plugin.version>3.2.7</gpg.plugin.version>
 		<project.info.reports.plugin.version>3.7.0</project.info.reports.plugin.version>
-		<central.publishing.plugin.version>0.6.0</central.publishing.plugin.version>
+		<central.publishing.plugin.version>0.7.0</central.publishing.plugin.version>
 		<apiphanyArgLine>
 			-Djson-builder.to-json.indent-output=true
 			-XX:+EnableDynamicAgentLoading
@@ -359,7 +359,7 @@
 
 	<profiles>
 		<profile>
-			<id>active-on-property-environment</id>
+			<id>active-on-property-environment-release</id>
 			<activation>
 				<property>
 					<name>release</name>
@@ -403,7 +403,7 @@
 						<configuration>
 							<autoPublish>true</autoPublish>
 							<deploymentName>release-${project.version}</deploymentName>
-							<publishingServerId>ossrh</publishingServerId>
+							<publishingServerId>central</publishingServerId>
 						</configuration>
 					</plugin>
 
@@ -464,13 +464,13 @@
 
 	<distributionManagement>
 		<snapshotRepository>
-			<id>ossrh</id>
-			<name>Central Repository OSSRH Snapshots</name>
+			<id>central</id>
+			<name>Central Repository Snapshots</name>
 			<url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
 		</snapshotRepository>
   		<repository>
-			<id>ossrh</id>
-			<name>Central Repository OSSRH</name>
+			<id>central</id>
+			<name>Central Repository</name>
     		<url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
 		</repository>
 	</distributionManagement>
