@@ -10,6 +10,7 @@ import java.util.function.Supplier;
 import org.apiphany.RequestParameters.ParameterFunction;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.header.Headers;
+import org.apiphany.lang.collections.Maps;
 import org.apiphany.lang.retry.Retry;
 import org.apiphany.meters.BasicMeters;
 import org.apiphany.security.AuthenticationType;
@@ -272,15 +273,15 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	}
 
 	/**
-	 * Sets the request parameters.
+	 * Sets the request parameters. If the input request parameters is {@code null} then the request
+	 * parameters will be set to a an empty map.
 	 *
 	 * @param requestParams request parameters
 	 * @return this
 	 */
 	public ApiClientFluentAdapter params(final Map<String, String> requestParams) {
-		Objects.requireNonNull(requestParams, "Request parameters cannot be null");
 		Objects.requireNonNull(getUrl(), "Request parameters must be set after URL/URI");
-		this.params = requestParams;
+		this.params = Maps.safe(requestParams);
 		return this;
 	}
 
