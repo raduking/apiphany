@@ -380,13 +380,23 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	}
 
 	/**
+	 * Sets the stream flag.
+	 *
+	 * @param stream value to set
+	 * @return this
+	 */
+	public ApiClientFluentAdapter stream(boolean stream) {
+		this.stream = stream;
+		return this;
+	}
+
+	/**
 	 * Sets the stream flag to true.
 	 *
 	 * @return this
 	 */
 	public ApiClientFluentAdapter stream() {
-		this.stream = true;
-		return this;
+		return stream(true);
 	}
 
 	/**
@@ -460,6 +470,27 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 */
 	public ApiClientFluentAdapter defaultRetry() {
 		return retry(Retry.defaultRetry());
+	}
+
+	/**
+	 * Sets all the information from the given API request except the response type.
+	 *
+	 * @param <T> body type
+	 * @param apiRequest API request object
+	 * @return this
+	 */
+	public <T> ApiClientFluentAdapter apiRequest(final ApiRequest<T> apiRequest) {
+		return authenticationType(apiRequest.getAuthenticationType())
+				.method(apiRequest.getMethod())
+				.url(apiRequest.getUrl())
+				.params(apiRequest.getParams())
+				.headers(apiRequest.getHeaders())
+				.body(apiRequest.getBody())
+				.charset(apiRequest.getCharset())
+				.urlEncode(apiRequest.isUrlEncoded())
+				.stream(apiRequest.isStream())
+				.meters(apiRequest.getMeters())
+				.retry(apiRequest.getRetry());
 	}
 
 	/**
