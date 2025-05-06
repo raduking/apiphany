@@ -473,16 +473,15 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	}
 
 	/**
-	 * Sets all the information from the given API request except the response type.
+	 * Sets all the information from the given API request except the response type and authentication type.
 	 *
 	 * @param <T> body type
 	 * @param apiRequest API request object
 	 * @return this
 	 */
 	public <T> ApiClientFluentAdapter apiRequest(final ApiRequest<T> apiRequest) {
-		return authenticationType(apiRequest.getAuthenticationType())
+		return url(apiRequest.getUrl())
 				.method(apiRequest.getMethod())
-				.url(apiRequest.getUrl())
 				.params(apiRequest.getParams())
 				.headers(apiRequest.getHeaders())
 				.body(apiRequest.getBody())
