@@ -17,7 +17,7 @@
 
 	<groupId>io.github.raduking</groupId>
 	<artifactId>apiphany</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.1</version>
 	<packaging>jar</packaging>
 
 	<name>${project.groupId}:${project.artifactId}</name>
@@ -402,7 +402,7 @@
 						<extensions>true</extensions>
 						<configuration>
 							<autoPublish>true</autoPublish>
-							<deploymentName>release-${project.version}</deploymentName>
+							<deploymentName>release-${project.artifactId}-${project.version}</deploymentName>
 							<publishingServerId>central</publishingServerId>
 						</configuration>
 					</plugin>
