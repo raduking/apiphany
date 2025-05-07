@@ -1,6 +1,6 @@
 package org.apiphany.security.oauth2.client;
 
-import static org.apiphany.RequestParameters.ParameterFunction.parameter;
+import static org.apiphany.ParameterFunction.parameter;
 
 import java.time.Duration;
 import java.util.Map;

@@ -50,15 +50,20 @@
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<testcontainers.keycloak.version>3.6.0</testcontainers.keycloak.version>
+		
+		<!-- Testing dependencies versions -->
+		<testcontainers.keycloak.version>3.7.0</testcontainers.keycloak.version>
 		<nimbus.jose.jwt.version>10.1</nimbus.jose.jwt.version>
 		<nimbus.oauth2.oidc.sdk.version>11.23.1</nimbus.oauth2.oidc.sdk.version>
 		<pitest.plugin.version>1.19.1</pitest.plugin.version>
 		<pitest.plugin.junit5.version>1.2.2</pitest.plugin.junit5.version>
 		<jacoco.plugin.version>0.8.13</jacoco.plugin.version>
-		<gpg.plugin.version>3.2.7</gpg.plugin.version>
 		<project.info.reports.plugin.version>3.9.0</project.info.reports.plugin.version>
+		
+		<!-- Publishing dependencies versions -->		
+		<gpg.plugin.version>3.2.7</gpg.plugin.version>
 		<central.publishing.plugin.version>0.7.0</central.publishing.plugin.version>
+		
 		<apiphanyArgLine>
 			-Djson-builder.to-json.indent-output=true
 			-XX:+EnableDynamicAgentLoading

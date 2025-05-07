@@ -135,7 +135,7 @@ public enum HttpAuthScheme {
 	 * Returns a {@link HttpAuthScheme} enum from a {@link String}.
 	 *
 	 * @param header HTTP authentication scheme as string
-	 * @return a HTTP authentication scheme enum
+	 * @return an HTTP authentication scheme enum
 	 */
 	public static HttpAuthScheme fromString(final String header) {
 		return Enums.fromString(Objects.requireNonNull(header).toLowerCase(), NAME_MAP, values());

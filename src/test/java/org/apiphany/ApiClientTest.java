@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import org.apiphany.RequestParameters.ParameterFunction;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.header.Headers;
 import org.apiphany.http.ContentType;
