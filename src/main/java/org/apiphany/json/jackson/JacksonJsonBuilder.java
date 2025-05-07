@@ -260,7 +260,7 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 		final ObjectMapper propertiesObjectMapper = objectMapper.copy()
 				.setPropertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
 		try {
-			return propertiesObjectMapper.convertValue(properties, new TypeReference<Map<String, Object>>() {
+			return propertiesObjectMapper.convertValue(properties, new TypeReference<>() {
 				// empty
 			});
 		} catch (Exception e) {

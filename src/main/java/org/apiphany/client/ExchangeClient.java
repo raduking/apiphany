@@ -57,7 +57,7 @@ public interface ExchangeClient {
 	}
 
 	/**
-	 * Returns the authentication type. By default it returns {@link AuthenticationType#NONE}.
+	 * Returns the authentication type. By default, it returns {@link AuthenticationType#NONE}.
 	 *
 	 * @return the authentication type
 	 */
@@ -89,18 +89,12 @@ public interface ExchangeClient {
 			List<String> headerValues = getRedactedHeaderPredicate().test(headerName)
 					? Collections.singletonList(HeaderValues.REDACTED)
 					: entry.getValue();
-
-			StringBuilder sb = new StringBuilder();
-			sb.append(headerName).append(":");
-			sb.append("\"");
-			sb.append(String.join(", ", headerValues));
-			sb.append("\"");
-			return sb.toString();
+            return headerName + ":\"" + String.join(", ", headerValues) + "\"";
 		}).toList().toString();
 	}
 
 	/**
-	 * Returns a predicate for the headers that should be redacted. By default nothing is redacted.
+	 * Returns a predicate for the headers that should be redacted. By default, nothing is redacted.
 	 *
 	 * @return a predicate for the headers that should be redacted
 	 */
