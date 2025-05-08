@@ -16,7 +16,7 @@ import org.apiphany.lang.Strings;
  *
  * @author Radu Sebastian LAZIN
  */
-public record Filter(String value) implements RequestParameters.ParameterFunction {
+public record Filter(String value) implements ParameterFunction {
 
 	/**
 	 * Basic filtering operations enumeration. Represents logical and comparison operators used in expressions or
