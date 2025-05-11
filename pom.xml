@@ -400,6 +400,8 @@
 					</plugin>
 				
 					<!-- Publish to Maven Central -->
+					<!-- https://central.sonatype.org/publish/publish-portal-guide/ -->
+					<!-- For snapshots: https://central.sonatype.org/publish/publish-portal-snapshots/ -->
 					<plugin>
 						<groupId>org.sonatype.central</groupId>
 						<artifactId>central-publishing-maven-plugin</artifactId>
