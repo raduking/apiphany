@@ -17,7 +17,7 @@
 
 	<groupId>io.github.raduking</groupId>
 	<artifactId>apiphany</artifactId>
-	<version>1.0.1</version>
+	<version>1.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>${project.groupId}:${project.artifactId}</name>
@@ -331,7 +331,7 @@
 				</executions>
 			</plugin>
 
-			<!-- Mutation testing -->
+  			<!-- Mutation testing -->
 			<!-- mvn org.jacoco:jacoco-maven-plugin:prepare-agent org.pitest:pitest-maven:mutationCoverage -->
 			<!-- mvn -DwithHistory org.jacoco:jacoco-maven-plugin:prepare-agent org.pitest:pitest-maven:mutationCoverage -->
 			<plugin>
@@ -471,7 +471,7 @@
 		<snapshotRepository>
 			<id>central</id>
 			<name>Central Repository Snapshots</name>
-			<url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+			<url>https://central.sonatype.com/repository/maven-snapshots</url>
 		</snapshotRepository>
   		<repository>
 			<id>central</id>
