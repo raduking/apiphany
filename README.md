@@ -17,6 +17,10 @@ This is a simple wrapper over the `java.net.http` library to be able to use a fl
 
 [Apache License, Version 2.0](LICENSE)
 
+### Releases
+
+Current release `1.0.1`
+
 ### Getting Started
 
 Project being in development, you need to build it yourself.
@@ -33,7 +37,7 @@ Maven: add this dependency to your `pom.xml`
 <dependency>
     <groupId>io.github.raduking</groupId>
     <artifactId>apiphany</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 </dependency>
 ```
 

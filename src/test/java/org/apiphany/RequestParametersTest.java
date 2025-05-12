@@ -1,7 +1,7 @@
 package org.apiphany;
 
-import static org.apiphany.RequestParameters.ParameterFunction.parameter;
-import static org.apiphany.RequestParameters.ParameterFunction.withCondition;
+import static org.apiphany.ParameterFunction.parameter;
+import static org.apiphany.ParameterFunction.withCondition;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 

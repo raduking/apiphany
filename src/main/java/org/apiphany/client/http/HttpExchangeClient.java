@@ -132,8 +132,7 @@ public class HttpExchangeClient extends AbstractHttpExchangeClient {
 			case DELETE -> httpRequestBuilder.DELETE();
 			case HEAD -> httpRequestBuilder.HEAD();
 			case PATCH -> httpRequestBuilder.method(httpMethod.value(), toBodyPublisher(apiRequest));
-			case OPTIONS -> httpRequestBuilder.method(httpMethod.value(), BodyPublishers.noBody());
-			case TRACE -> httpRequestBuilder.method(httpMethod.value(), BodyPublishers.noBody());
+			case OPTIONS, TRACE -> httpRequestBuilder.method(httpMethod.value(), BodyPublishers.noBody());
 			default -> throw new HttpException(HttpStatus.BAD_REQUEST, "HTTP method " + httpMethod + " is not supported!");
 		}
 		return httpRequestBuilder.build();
