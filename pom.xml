@@ -50,7 +50,7 @@
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		
+
 		<!-- Testing dependencies versions -->
 		<testcontainers.keycloak.version>3.7.0</testcontainers.keycloak.version>
 		<nimbus.jose.jwt.version>10.1</nimbus.jose.jwt.version>
@@ -59,11 +59,11 @@
 		<pitest.plugin.junit5.version>1.2.2</pitest.plugin.junit5.version>
 		<jacoco.plugin.version>0.8.13</jacoco.plugin.version>
 		<project.info.reports.plugin.version>3.9.0</project.info.reports.plugin.version>
-		
-		<!-- Publishing dependencies versions -->		
+
+		<!-- Publishing dependencies versions -->
 		<gpg.plugin.version>3.2.7</gpg.plugin.version>
 		<central.publishing.plugin.version>0.7.0</central.publishing.plugin.version>
-		
+
 		<apiphanyArgLine>
 			-Djson-builder.to-json.indent-output=true
 			-XX:+EnableDynamicAgentLoading
@@ -474,6 +474,9 @@
 			<id>central</id>
 			<name>Central Repository Snapshots</name>
 			<url>https://central.sonatype.com/repository/maven-snapshots</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
 		</snapshotRepository>
   		<repository>
 			<id>central</id>
