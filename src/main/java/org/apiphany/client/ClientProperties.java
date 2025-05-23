@@ -1,6 +1,7 @@
 package org.apiphany.client;
 
 import java.lang.reflect.Constructor;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -303,24 +304,34 @@ public class ClientProperties {
 	public static class Connection {
 
 		/**
+		 * Default time to live: 30 seconds.
+		 */
+		public static final Duration DEFAULT_TIME_TO_LIVE = Duration.ofSeconds(30);
+
+		/**
 		 * Default maximum total connections per pool.
 		 */
-		public static final int DEFAULT_MAX_TOTAL_CONNECTIONS = 100;
+		public static final int DEFAULT_MAX_TOTAL = 100;
 
 		/**
 		 * Default maximum per route connections.
 		 */
-		public static final int DEFAULT_MAX_PER_ROUTE_CONNECTIONS = 100;
+		public static final int DEFAULT_MAX_PER_ROUTE = 100;
+
+		/**
+		 * Time to live.
+		 */
+		private Duration timeToLive = DEFAULT_TIME_TO_LIVE;
 
 		/**
 		 * Maximum total connections.
 		 */
-		private int maxTotal = DEFAULT_MAX_TOTAL_CONNECTIONS;
+		private int maxTotal = DEFAULT_MAX_TOTAL;
 
 		/**
 		 * Maximum per route connections.
 		 */
-		private int maxPerRoute = DEFAULT_MAX_PER_ROUTE_CONNECTIONS;
+		private int maxPerRoute = DEFAULT_MAX_PER_ROUTE;
 
 		/**
 		 * Default constructor.
@@ -374,6 +385,24 @@ public class ClientProperties {
 		public void setMaxTotal(final int maxTotal) {
 			this.maxTotal = maxTotal;
 		}
+
+		/**
+		 * Returns the time to live duration.
+		 *
+		 * @return the time to live duration.
+		 */
+		public Duration getTimeToLive() {
+			return timeToLive;
+		}
+
+		/**
+		 * Sets the time to live duration.
+		 *
+		 * @param timeToLive time to live to set.
+		 */
+		public void setTimeToLive(Duration timeToLive) {
+			this.timeToLive = timeToLive;
+		}
 	}
 
 	/**
@@ -386,22 +415,22 @@ public class ClientProperties {
 		/**
 		 * Constant representing a disabled timeout.
 		 */
-		public static final int DISABLED = 0;
+		public static final Duration DISABLED = Duration.ofMillis(0);
 
 		/**
-		 * Connection timeout in milliseconds.
+		 * Connection timeout.
 		 */
-		private int connectTimeout = DISABLED;
+		private Duration connect = DISABLED;
 
 		/**
-		 * Connection request timeout in milliseconds.
+		 * Connection request timeout.
 		 */
-		private int connectionRequestTimeout = DISABLED;
+		private Duration connectionRequest = DISABLED;
 
 		/**
-		 * Socket timeout in milliseconds.
+		 * Socket timeout.
 		 */
-		private int socketTimeout = DISABLED;
+		private Duration socket = DISABLED;
 
 		/**
 		 * Default constructor.
@@ -416,9 +445,9 @@ public class ClientProperties {
 		 * @param builder the builder containing timeout configurations.
 		 */
 		protected Timeout(final Builder builder) {
-			this.connectTimeout = builder.connectTimeout;
-			this.connectionRequestTimeout = builder.connectionRequestTimeout;
-			this.socketTimeout = builder.socketTimeout;
+			this.connect = builder.connect;
+			this.connectionRequest = builder.connectionRequest;
+			this.socket = builder.socket;
 		}
 
 		/**
@@ -432,57 +461,57 @@ public class ClientProperties {
 		}
 
 		/**
-		 * Returns the connection timeout in milliseconds.
+		 * Returns the connection timeout.
 		 *
 		 * @return the connection timeout.
 		 */
-		public int getConnectTimeout() {
-			return connectTimeout;
+		public Duration getConnect() {
+			return connect;
 		}
 
 		/**
-		 * Sets the connection timeout in milliseconds.
+		 * Sets the connection timeout.
 		 *
 		 * @param connectTimeout the connection timeout to set.
 		 */
-		public void setConnectTimeout(final int connectTimeout) {
-			this.connectTimeout = connectTimeout;
+		public void setConnect(final Duration connectTimeout) {
+			this.connect = connectTimeout;
 		}
 
 		/**
-		 * Returns the connection request timeout in milliseconds.
+		 * Returns the connection request timeout.
 		 *
 		 * @return the connection request timeout.
 		 */
-		public int getConnectionRequestTimeout() {
-			return connectionRequestTimeout;
+		public Duration getConnectionRequest() {
+			return connectionRequest;
 		}
 
 		/**
-		 * Sets the connection request timeout in milliseconds.
+		 * Sets the connection request timeout.
 		 *
 		 * @param connectionRequestTimeout the connection request timeout to set.
 		 */
-		public void setConnectionRequestTimeout(final int connectionRequestTimeout) {
-			this.connectionRequestTimeout = connectionRequestTimeout;
+		public void setConnectionRequest(final Duration connectionRequestTimeout) {
+			this.connectionRequest = connectionRequestTimeout;
 		}
 
 		/**
-		 * Returns the socket timeout in milliseconds.
+		 * Returns the socket timeout.
 		 *
 		 * @return the socket timeout.
 		 */
-		public int getSocketTimeout() {
-			return socketTimeout;
+		public Duration getSocket() {
+			return socket;
 		}
 
 		/**
-		 * Sets the socket timeout in milliseconds.
+		 * Sets the socket timeout.
 		 *
 		 * @param readTimeout the socket timeout to set.
 		 */
-		public void setSocketTimeout(final int readTimeout) {
-			this.socketTimeout = readTimeout;
+		public void setSocket(final Duration readTimeout) {
+			this.socket = readTimeout;
 		}
 
 		/**
@@ -495,17 +524,17 @@ public class ClientProperties {
 			/**
 			 * Connection timeout set to {@link Timeout#DISABLED} by default.
 			 */
-			private int connectTimeout = DISABLED;
+			private Duration connect = DISABLED;
 
 			/**
 			 * Connection request timeout set to {@link Timeout#DISABLED} by default.
 			 */
-			private int connectionRequestTimeout = DISABLED;
+			private Duration connectionRequest = DISABLED;
 
 			/**
 			 * Socket timeout set to {@link Timeout#DISABLED} by default.
 			 */
-			private int socketTimeout = DISABLED;
+			private Duration socket = DISABLED;
 
 			/**
 			 * Default constructor.
@@ -541,8 +570,18 @@ public class ClientProperties {
 			 * @param connectTimeout the connection timeout to set.
 			 * @return this builder instance.
 			 */
-			public Builder connectTimeout(final int connectTimeout) {
-				this.connectTimeout = connectTimeout;
+			public Builder connect(final int connectTimeout) {
+				return connect(Duration.ofMillis(connectTimeout));
+			}
+
+			/**
+			 * Sets the connection timeout in milliseconds.
+			 *
+			 * @param connectTimeout the connection timeout to set.
+			 * @return this builder instance.
+			 */
+			public Builder connect(final Duration connectTimeout) {
+				this.connect = connectTimeout;
 				return this;
 			}
 
@@ -552,8 +591,18 @@ public class ClientProperties {
 			 * @param connectionRequestTimeout the connection request timeout to set.
 			 * @return this builder instance.
 			 */
-			public Builder connectionRequestTimeout(final int connectionRequestTimeout) {
-				this.connectionRequestTimeout = connectionRequestTimeout;
+			public Builder connectionRequest(final int connectionRequestTimeout) {
+				return connectionRequest(Duration.ofMillis(connectionRequestTimeout));
+			}
+
+			/**
+			 * Sets the connection request timeout.
+			 *
+			 * @param connectionRequestTimeout the connection request timeout to set.
+			 * @return this builder instance.
+			 */
+			public Builder connectionRequest(final Duration connectionRequestTimeout) {
+				this.connectionRequest = connectionRequestTimeout;
 				return this;
 			}
 
@@ -563,8 +612,18 @@ public class ClientProperties {
 			 * @param socketTimeout the socket timeout to set.
 			 * @return this builder instance.
 			 */
-			public Builder socketTimeout(final int socketTimeout) {
-				this.socketTimeout = socketTimeout;
+			public Builder socket(final int socketTimeout) {
+				return socket(Duration.ofMillis(socketTimeout));
+			}
+
+			/**
+			 * Sets the socket timeout.
+			 *
+			 * @param socketTimeout the socket timeout to set.
+			 * @return this builder instance.
+			 */
+			public Builder socket(final Duration socketTimeout) {
+				this.socket = socketTimeout;
 				return this;
 			}
 		}

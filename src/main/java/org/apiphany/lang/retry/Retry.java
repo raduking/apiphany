@@ -200,7 +200,7 @@ public class Retry {
 	}
 
 	/**
-	 * Returns the supplier result with accumulated information when no retry is given.
+	 * Returns the supplied result with accumulated information when no retry is given.
 	 *
 	 * @param <T> result type
 	 * @param <U> accumulated information type
@@ -240,7 +240,7 @@ public class Retry {
 	}
 
 	/**
-	 * Simple no wait implementation.
+	 * Returns a wait that does not wait.
 	 *
 	 * @return no wait
 	 */
