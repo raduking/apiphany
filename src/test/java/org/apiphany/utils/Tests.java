@@ -5,8 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
 
-import com.github.dockerjava.api.DockerClient;
-
 /**
  * Utility methods for tests.
  *
@@ -21,12 +19,14 @@ public interface Tests {
 	 *
 	 * @return true if Docker is running, false otherwise
 	 */
+	@SuppressWarnings("resource")
 	public static boolean isDockerRunning() {
-	    try (DockerClient client = DockerClientFactory.instance().client()) {
-	        return true;
-	    } catch (Exception e) {
-	        return false;
-	    }
+		try {
+			DockerClientFactory.instance().client();
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
 	}
 
 	/**
@@ -34,8 +34,10 @@ public interface Tests {
 	 *
 	 * @throws IllegalStateException if docker is not running
 	 */
+	@SuppressWarnings("resource")
 	public static void verifyDockerRunning() {
-		try (DockerClient client = DockerClientFactory.instance().client()) {
+		try {
+			DockerClientFactory.instance().client();
 			LOGGER.info("Docker is running and accessible");
 		} catch (Exception e) {
 			throw new IllegalStateException("""
