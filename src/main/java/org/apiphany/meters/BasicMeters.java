@@ -106,20 +106,14 @@ public record BasicMeters(MeterRegistry meterRegistry, Timer latency, Counter re
 	}
 
 	/**
-	 * Constructs a {@link BasicMeters} object with all meters having the given prefix and tags. This method doesn't call
-	 * the {@link #of(MeterRegistry, String, Tags)} because wee need to keep the call-stack the same.
+	 * Constructs a {@link BasicMeters} object with all meters having the given prefix and tags.
 	 *
 	 * @param prefix the prefix for the metrics.
 	 * @param tags the tags for the metrics.
 	 * @return a {@link BasicMeters} instance.
 	 */
 	public static BasicMeters of(final String prefix, final Tags tags) {
-		return new BasicMeters(
-				Metrics.globalRegistry,
-				Metrics.timer(String.join(SEPARATOR, prefix, LATENCY_METRIC), tags),
-				Metrics.counter(String.join(SEPARATOR, prefix, REQUEST_METRIC), tags),
-				Metrics.counter(String.join(SEPARATOR, prefix, RETRY_METRIC), tags),
-				Metrics.counter(String.join(SEPARATOR, prefix, ERROR_METRIC), tags));
+		return of(Metrics.globalRegistry, prefix, tags);
 	}
 
 	/**
