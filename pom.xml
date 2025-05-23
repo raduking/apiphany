@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.4.6</version>
+		<version>3.5.0</version>
 		<relativePath />
 	</parent>
 
@@ -53,10 +53,10 @@
 
 		<!-- Testing dependencies versions -->
 		<testcontainers.keycloak.version>3.7.0</testcontainers.keycloak.version>
-		<nimbus.jose.jwt.version>10.1</nimbus.jose.jwt.version>
-		<nimbus.oauth2.oidc.sdk.version>11.23.1</nimbus.oauth2.oidc.sdk.version>
-		<pitest.plugin.version>1.19.1</pitest.plugin.version>
-		<pitest.plugin.junit5.version>1.2.2</pitest.plugin.junit5.version>
+		<nimbus.jose.jwt.version>10.3</nimbus.jose.jwt.version>
+		<nimbus.oauth2.oidc.sdk.version>11.25</nimbus.oauth2.oidc.sdk.version>
+		<pitest.plugin.version>1.19.4</pitest.plugin.version>
+		<pitest.plugin.junit5.version>1.2.3</pitest.plugin.junit5.version>
 		<jacoco.plugin.version>0.8.13</jacoco.plugin.version>
 		<project.info.reports.plugin.version>3.9.0</project.info.reports.plugin.version>
 
@@ -77,7 +77,7 @@
 		<dependency>
 			<groupId>io.github.raduking</groupId>
 			<artifactId>morphix-all</artifactId>
-			<version>1.0.3</version>
+			<version>1.0.4</version>
 		</dependency>
 
 		<!-- Logging -->
