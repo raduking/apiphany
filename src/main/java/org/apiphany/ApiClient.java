@@ -30,6 +30,8 @@ import org.morphix.reflection.predicates.MemberPredicates;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.micrometer.core.instrument.MeterRegistry;
+
 /**
  * Generic client for API calls.
  *
@@ -72,15 +74,20 @@ public class ApiClient {
 	private Retry retry = Retry.NO_RETRY;
 
 	/**
+	 * Metrics enable/disable flag.
+	 */
+	private boolean metricsEnabled = true;
+
+	/**
 	 * Basic meters. By default, all metrics are empty. This object is present here so that the implementing client can set
 	 * the same metrics for all requests if needed.
 	 */
 	private BasicMeters meters = BasicMeters.DEFAULT;
 
 	/**
-	 * Metrics enable/disable flag.
+	 * The meter registry.
 	 */
-	private boolean metricsEnabled = true;
+	private MeterRegistry meterRegistry;
 
 	/**
 	 * Exchange clients map based on authentication type.
@@ -421,6 +428,24 @@ public class ApiClient {
 	}
 
 	/**
+	 * Returns the metrics enabled flag.
+	 *
+	 * @return the metrics enabled flag
+	 */
+	public boolean isMetricsEnabled() {
+		return metricsEnabled;
+	}
+
+	/**
+	 * Sets the metrics enabled flag.
+	 *
+	 * @param metricsEnabled metrics enabled flag
+	 */
+	public void setMetricsEnabled(final boolean metricsEnabled) {
+		this.metricsEnabled = metricsEnabled;
+	}
+
+	/**
 	 * Returns the basic meters object.
 	 *
 	 * @return the basic meters object
@@ -439,20 +464,20 @@ public class ApiClient {
 	}
 
 	/**
-	 * Returns the metrics enabled flag.
+	 * Returns the meter registry.
 	 *
-	 * @return the metrics enabled flag
+	 * @return the meter registry
 	 */
-	public boolean isMetricsEnabled() {
-		return metricsEnabled;
+	public MeterRegistry getMeterRegistry() {
+		return meterRegistry;
 	}
 
 	/**
-	 * Sets the metrics enabled flag.
+	 * Sets the meter registry.
 	 *
-	 * @param metricsEnabled metrics enabled flag
+	 * @param meterRegistry meter registry to set
 	 */
-	public void setMetricsEnabled(final boolean metricsEnabled) {
-		this.metricsEnabled = metricsEnabled;
+	public void setMeterRegistry(final MeterRegistry meterRegistry) {
+		this.meterRegistry = meterRegistry;
 	}
 }

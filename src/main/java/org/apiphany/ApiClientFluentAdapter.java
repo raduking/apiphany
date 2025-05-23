@@ -42,7 +42,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @param apiClient the underlying API client
 	 */
 	protected ApiClientFluentAdapter(final ApiClient apiClient) {
-		this.apiClient = apiClient;
+		this.apiClient = Objects.requireNonNull(apiClient);
 	}
 
 	/**
@@ -384,7 +384,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @param stream value to set
 	 * @return this
 	 */
-	public ApiClientFluentAdapter stream(boolean stream) {
+	public ApiClientFluentAdapter stream(final boolean stream) {
 		this.stream = stream;
 		return this;
 	}
@@ -405,7 +405,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @return this
 	 */
 	public ApiClientFluentAdapter meters(final String prefix) {
-		return meters(BasicMeters.of(prefix));
+		return meters(BasicMeters.of(apiClient.getMeterRegistry(), prefix));
 	}
 
 	/**
@@ -416,7 +416,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @return this
 	 */
 	public ApiClientFluentAdapter meters(final String prefix, final Tags tags) {
-		return meters(BasicMeters.of(prefix, tags));
+		return meters(BasicMeters.of(apiClient.getMeterRegistry(), prefix, tags));
 	}
 
 	/**
@@ -426,7 +426,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @return this
 	 */
 	public ApiClientFluentAdapter metersOnMethod(final String prefix) {
-		return meters(BasicMeters.onCallerMethod(prefix));
+		return meters(BasicMeters.onCallerMethod(apiClient.getMeterRegistry(), prefix));
 	}
 
 	/**
@@ -437,7 +437,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @return this
 	 */
 	public ApiClientFluentAdapter metersOnMethod(final String prefix, final Tags tags) {
-		return meters(BasicMeters.onCallerMethod(prefix, tags));
+		return meters(BasicMeters.onCallerMethod(apiClient.getMeterRegistry(), prefix, tags));
 	}
 
 	/**

@@ -131,12 +131,13 @@ public record BasicMeters(MeterRegistry meterRegistry, Timer latency, Counter re
 	 * @return a {@link BasicMeters} instance.
 	 */
 	public static BasicMeters of(final MeterRegistry meterRegistry, final String prefix, final Tags tags) {
+		MeterRegistry registry = Nullables.nonNullOrDefault(meterRegistry, Metrics.globalRegistry);
 		return new BasicMeters(
-				meterRegistry,
-				meterRegistry.timer(String.join(SEPARATOR, prefix, LATENCY_METRIC), tags),
-				meterRegistry.counter(String.join(SEPARATOR, prefix, REQUEST_METRIC), tags),
-				meterRegistry.counter(String.join(SEPARATOR, prefix, RETRY_METRIC), tags),
-				meterRegistry.counter(String.join(SEPARATOR, prefix, ERROR_METRIC), tags));
+				registry,
+				registry.timer(String.join(SEPARATOR, prefix, LATENCY_METRIC), tags),
+				registry.counter(String.join(SEPARATOR, prefix, REQUEST_METRIC), tags),
+				registry.counter(String.join(SEPARATOR, prefix, RETRY_METRIC), tags),
+				registry.counter(String.join(SEPARATOR, prefix, ERROR_METRIC), tags));
 	}
 
 	/**
