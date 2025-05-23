@@ -9,6 +9,7 @@ import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.oauth2.OAuth2ProviderDetails;
+import org.apiphany.utils.Tests;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -33,24 +34,29 @@ class OAuth2ApiClientIT {
 
 	private static final String KEYCLOAK_TOKEN_PATH = "/realms/test-realm/protocol/openid-connect/token";
 
-	@SuppressWarnings("resource")
 	@Container
-	private static final KeycloakContainer KEYCLOAK_CONTAINER = new KeycloakContainer()
-			.withRealmImportFile("keycloak-realm-config.json");
+	private final KeycloakContainer keycloakContainer = initKeycloakContainer();
 
 	private OAuth2ClientRegistration clientRegistration;
 	private OAuth2ProviderDetails providerDetails;
 
+	@SuppressWarnings("resource")
+	private static KeycloakContainer initKeycloakContainer() {
+		Tests.verifyDockerRunning();
+		return new KeycloakContainer()
+				.withRealmImportFile("keycloak-realm-config.json");
+	}
+
 	@BeforeEach
 	void setUp() {
-		String authServerUrl = KEYCLOAK_CONTAINER.getAuthServerUrl();
+		String authServerUrl = keycloakContainer.getAuthServerUrl();
 		LOGGER.info("Authentication Server URL: {}", authServerUrl);
 		assertThat(authServerUrl, notNullValue());
 
 		clientRegistration = JsonBuilder.fromJson(Strings.fromFile("/oauth2-client-registration.json"), OAuth2ClientRegistration.class);
 
 		providerDetails = JsonBuilder.fromJson(Strings.fromFile("/oauth2-provider-details.json"), OAuth2ProviderDetails.class);
-		providerDetails.setTokenUri(KEYCLOAK_CONTAINER.getAuthServerUrl() + KEYCLOAK_TOKEN_PATH);
+		providerDetails.setTokenUri(keycloakContainer.getAuthServerUrl() + KEYCLOAK_TOKEN_PATH);
 	}
 
 	@Test
