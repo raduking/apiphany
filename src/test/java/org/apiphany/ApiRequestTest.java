@@ -6,7 +6,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import java.util.List;
 
 import org.apiphany.client.ExchangeClient;
-import org.apiphany.client.http.HttpExchangeClient;
+import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.collections.Maps;
 import org.junit.jupiter.api.AfterEach;
@@ -38,14 +38,15 @@ class ApiRequestTest {
 	void shouldReturnCorrectJsonStringOnToString() {
 		TestDto dto = TestDto.of(ID, COUNT);
 
-		ExchangeClient exchangeClient = new HttpExchangeClient() {
+		ExchangeClient exchangeClient = new JavaNetHttpExchangeClient() {
 			@Override
-			public <T> String getHeadersAsString(ApiMessage<T> apiMessage) {
+			public <T> String getHeadersAsString(final ApiMessage<T> apiMessage) {
 				return Maps.safe(apiMessage.getHeaders()).toString();
 			}
 		};
 		ApiClient apiClient = ApiClient.of(ApiClient.NO_BASE_URL, exchangeClient);
 		ApiClientFluentAdapter adapter = apiClient.client()
+				.http()
 				.get()
 				.body(dto)
 				.url(URL)

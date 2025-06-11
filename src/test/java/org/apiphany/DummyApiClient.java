@@ -22,6 +22,7 @@ public class DummyApiClient extends ApiClient {
 
 	public TestDto getTest(final String... paths) {
 		return client()
+				.http()
 				.get()
 				.path(paths)
 				.retrieve(TestDto.class)

@@ -6,7 +6,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import java.time.Duration;
 
 import org.apiphany.ApiClient;
-import org.apiphany.client.http.HttpExchangeClient;
+import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.header.HeaderValues;
 import org.apiphany.http.HttpAuthScheme;
 import org.apiphany.http.HttpHeader;
@@ -56,7 +56,7 @@ class OAuth2ApiClientTest {
 		clientRegistration = JsonBuilder.fromJson(Strings.fromFile("/oauth2-client-registration.json"), OAuth2ClientRegistration.class);
 		providerDetails = JsonBuilder.fromJson(Strings.fromFile("/oauth2-provider-details.json"), OAuth2ProviderDetails.class);
 		providerDetails.setTokenUri(OAUTH2_SERVER.getUrl() + "/token");
-		oAuth2ApiClient = new OAuth2ApiClient(clientRegistration, providerDetails, new HttpExchangeClient());
+		oAuth2ApiClient = new OAuth2ApiClient(clientRegistration, providerDetails, new JavaNetHttpExchangeClient());
 	}
 
 	@Test
@@ -82,11 +82,12 @@ class OAuth2ApiClientTest {
 	static class SimpleApiClient extends ApiClient {
 
 		protected SimpleApiClient() {
-			super(new HttpExchangeClient());
+			super(new JavaNetHttpExchangeClient());
 		}
 
 		public String getName(final AuthenticationToken token) {
 			return client()
+					.http()
 					.get()
 					.url("http://localhost:" + API_SERVER_PORT)
 					.path(API, "name")

@@ -4,7 +4,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.apiphany.ApiClient;
-import org.apiphany.client.http.HttpExchangeClient;
+import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.security.AuthenticationToken;
@@ -55,7 +55,7 @@ class OAuth2ApiClientIT {
 
 	@Test
 	void shouldReturnAuthenticationTokenWithClientSecretPost() {
-		OAuth2ApiClient oAuth2ApiClient = new OAuth2ApiClient(clientRegistration, providerDetails, new HttpExchangeClient());
+		OAuth2ApiClient oAuth2ApiClient = new OAuth2ApiClient(clientRegistration, providerDetails, new JavaNetHttpExchangeClient());
 
 		AuthenticationToken token = oAuth2ApiClient.getAuthenticationToken(ClientAuthenticationMethod.CLIENT_SECRET_POST);
 
@@ -64,7 +64,7 @@ class OAuth2ApiClientIT {
 
 	@Test
 	void shouldReturnAuthenticationTokenWithClientSecretBasic() {
-		OAuth2ApiClient oAuth2ApiClient = new OAuth2ApiClient(clientRegistration, providerDetails, new HttpExchangeClient());
+		OAuth2ApiClient oAuth2ApiClient = new OAuth2ApiClient(clientRegistration, providerDetails, new JavaNetHttpExchangeClient());
 
 		AuthenticationToken token = oAuth2ApiClient.getAuthenticationToken(ClientAuthenticationMethod.CLIENT_SECRET_BASIC);
 
@@ -73,7 +73,7 @@ class OAuth2ApiClientIT {
 
 	@Test
 	void shouldReturnAuthenticationTokenWithClientAuthenticationMethodSetInClientRegistration() {
-		OAuth2ApiClient oAuth2ApiClient = new OAuth2ApiClient(clientRegistration, providerDetails, new HttpExchangeClient());
+		OAuth2ApiClient oAuth2ApiClient = new OAuth2ApiClient(clientRegistration, providerDetails, new JavaNetHttpExchangeClient());
 
 		AuthenticationToken token = oAuth2ApiClient.getAuthenticationToken();
 
