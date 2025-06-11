@@ -47,12 +47,12 @@ To make a simple HTTP GET request to `http://my.awesome.domain/api/info`:
 
 ```java
 import org.apiphany.ApiClient;
-import org.apiphany.client.HttpExchangeClient;
+import org.apiphany.client.JavaNetHttpExchangeClient;
 
 public class MyCustomerClient extends ApiClient {
 
     public MyCustomerClient() {
-        super("http://my.awesome.domain", new HttpExchangeClient());
+        super("http://my.awesome.domain", new JavaNetHttpExchangeClient());
     }
 
     public String getInfo() {

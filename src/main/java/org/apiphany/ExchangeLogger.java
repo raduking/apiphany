@@ -8,7 +8,7 @@ import org.morphix.lang.Nullables;
 import org.morphix.reflection.Constructors;
 
 /**
- * A utility class for logging HTTP requests and responses, including success and error cases. This class provides
+ * A utility class for logging API requests and responses, including success and error cases. This class provides
  * methods to log request details, response details, and exceptions in a structured format.
  *
  * @author Radu Sebastian LAZIN
