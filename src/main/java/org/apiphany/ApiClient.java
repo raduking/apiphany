@@ -225,7 +225,7 @@ public class ApiClient {
 	 */
 	public ApiClientFluentAdapter client(final ExchangeClient exchangeClient) {
 		return ApiClientFluentAdapter.of(this)
-				.authenticationType(exchangeClient.getAuthenticationType());
+				.exchangeClient(exchangeClient);
 	}
 
 	/**

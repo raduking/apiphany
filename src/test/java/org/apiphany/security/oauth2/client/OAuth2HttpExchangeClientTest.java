@@ -8,7 +8,7 @@ import java.util.Map;
 
 import org.apiphany.ApiClient;
 import org.apiphany.client.ClientProperties;
-import org.apiphany.client.http.HttpExchangeClient;
+import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.net.Sockets;
@@ -80,11 +80,12 @@ class OAuth2HttpExchangeClientTest {
 	static class SimpleApiClient extends ApiClient {
 
 		protected SimpleApiClient(final ClientProperties properties) {
-			super(new OAuth2HttpExchangeClient(new HttpExchangeClient(properties)));
+			super(new OAuth2HttpExchangeClient(new JavaNetHttpExchangeClient(properties)));
 		}
 
 		public String getName() {
 			return client()
+					.http()
 					.get()
 					.url("http://localhost:" + API_SERVER_PORT)
 					.path(API, "name")

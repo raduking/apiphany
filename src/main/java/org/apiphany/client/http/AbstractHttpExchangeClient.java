@@ -3,19 +3,15 @@ package org.apiphany.client.http;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
 
 import org.apiphany.ApiRequest;
-import org.apiphany.RequestMethod;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ContentConverter;
-import org.apiphany.client.ExchangeClient;
 import org.apiphany.header.HeaderValuesChain;
 import org.apiphany.header.Headers;
 import org.apiphany.header.MapHeaderValues;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpHeaderValues;
-import org.apiphany.http.HttpMethod;
 import org.apiphany.http.TracingHeader;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.json.jackson.JacksonJsonHttpContentConverter;
@@ -30,7 +26,7 @@ import org.slf4j.MDC;
  *
  * @author Radu Sebastian LAZIN
  */
-public abstract class AbstractHttpExchangeClient implements ExchangeClient {
+public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractHttpExchangeClient.class);
 
@@ -159,86 +155,6 @@ public abstract class AbstractHttpExchangeClient implements ExchangeClient {
 	 */
 	public HeaderValuesChain getHeaderValuesChain() {
 		return headerValuesChain;
-	}
-
-	/**
-	 * Redact the {@link HttpHeader#AUTHORIZATION} header.
-	 *
-	 * @return redacted headers predicate
-	 */
-	@Override
-	public Predicate<String> getRedactedHeaderPredicate() {
-		return HttpHeader.AUTHORIZATION::matches;
-	}
-
-	/**
-	 * Returns the GET request method.
-	 *
-	 * @return the GET request method
-	 */
-	@Override
-	public RequestMethod get() {
-		return HttpMethod.GET;
-	}
-
-	/**
-	 * Returns the PUT request method.
-	 *
-	 * @return the PUT request method
-	 */
-	@Override
-	public RequestMethod put() {
-		return HttpMethod.PUT;
-	}
-
-	/**
-	 * Returns the POST request method.
-	 *
-	 * @return the POST request method
-	 */
-	@Override
-	public RequestMethod post() {
-		return HttpMethod.POST;
-	}
-
-	/**
-	 * Returns the DELETE request method.
-	 *
-	 * @return the DELETE request method
-	 */
-	@Override
-	public RequestMethod delete() {
-		return HttpMethod.DELETE;
-	}
-
-	/**
-	 * Returns the PATCH request method.
-	 *
-	 * @return the PATCH request method
-	 */
-	@Override
-	public RequestMethod patch() {
-		return HttpMethod.PATCH;
-	}
-
-	/**
-	 * Returns the HEAD request method.
-	 *
-	 * @return the HEAD request method
-	 */
-	@Override
-	public RequestMethod head() {
-		return HttpMethod.HEAD;
-	}
-
-	/**
-	 * Returns the TRACE request method.
-	 *
-	 * @return the TRACE request method
-	 */
-	@Override
-	public RequestMethod trace() {
-		return HttpMethod.TRACE;
 	}
 
 }

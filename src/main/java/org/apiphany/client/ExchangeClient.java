@@ -6,10 +6,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
 import org.apiphany.ApiMessage;
-import org.apiphany.ApiMethod;
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
-import org.apiphany.RequestMethod;
 import org.apiphany.header.HeaderValues;
 import org.apiphany.lang.collections.Maps;
 import org.apiphany.security.AuthenticationType;
@@ -100,69 +98,6 @@ public interface ExchangeClient {
 	 */
 	default Predicate<String> getRedactedHeaderPredicate() {
 		return s -> false;
-	}
-
-	/**
-	 * Returns the GET request method.
-	 *
-	 * @return the GET request method
-	 */
-	default RequestMethod get() {
-		return ApiMethod.UNDEFINED;
-	}
-
-	/**
-	 * Returns the PUT request method.
-	 *
-	 * @return the PUT request method
-	 */
-	default RequestMethod put() {
-		return ApiMethod.UNDEFINED;
-	}
-
-	/**
-	 * Returns the POST request method.
-	 *
-	 * @return the POST request method
-	 */
-	default RequestMethod post() {
-		return ApiMethod.UNDEFINED;
-	}
-
-	/**
-	 * Returns the DELETE request method.
-	 *
-	 * @return the DELETE request method
-	 */
-	default RequestMethod delete() {
-		return ApiMethod.UNDEFINED;
-	}
-
-	/**
-	 * Returns the PATCH request method.
-	 *
-	 * @return the PATCH request method
-	 */
-	default RequestMethod patch() {
-		return ApiMethod.UNDEFINED;
-	}
-
-	/**
-	 * Returns the HEAD request method.
-	 *
-	 * @return the HEAD request method
-	 */
-	default RequestMethod head() {
-		return ApiMethod.UNDEFINED;
-	}
-
-	/**
-	 * Returns the TRACE request method.
-	 *
-	 * @return the TRACE request method
-	 */
-	default RequestMethod trace() {
-		return ApiMethod.UNDEFINED;
 	}
 
 }

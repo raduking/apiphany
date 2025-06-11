@@ -92,6 +92,7 @@ public class OAuth2ApiClient extends ApiClient {
 				parameter(OAuth2Parameter.GRANT_TYPE, clientRegistration.getAuthorizationGrantType()),
 				parameter(OAuth2Parameter.EXPIRES_IN, expiresIn.toSeconds()));
 		return client()
+				.http()
 				.post()
 				.url(providerDetails.getTokenUri())
 				.body(RequestParameters.asString(RequestParameters.encode(params)))
@@ -113,6 +114,7 @@ public class OAuth2ApiClient extends ApiClient {
 				parameter(OAuth2Parameter.CLIENT_ID, clientRegistration.getClientId()),
 				parameter(OAuth2Parameter.CLIENT_SECRET, clientRegistration.getClientSecret()));
 		return client()
+				.http()
 				.post()
 				.url(providerDetails.getTokenUri())
 				.body(RequestParameters.asString(RequestParameters.encode(params)))

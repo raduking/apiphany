@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import org.apiphany.client.ExchangeClient;
+import org.apiphany.client.http.HttpExchangeClient;
 import org.apiphany.header.Headers;
 import org.apiphany.http.ContentType;
 import org.apiphany.http.HttpHeader;
@@ -66,7 +67,7 @@ class ApiClientTest {
 	@SuppressWarnings("unchecked")
 	@Test
 	void shouldCallExchangeClientOnRetrieve() {
-		ExchangeClient exchangeClient = mock(ExchangeClient.class);
+		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 
 		TestDto expected = TestDto.of(ID1, COUNT1);
@@ -80,6 +81,7 @@ class ApiClientTest {
 		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
 
 		TestDto result = api.client()
+				.http()
 				.get()
 				.path(PATH_TEST)
 				.retrieve(TestDto.class)
@@ -91,7 +93,7 @@ class ApiClientTest {
 	@SuppressWarnings("unchecked")
 	@Test
 	void shouldCallExchangeClientWithProvidedParametersOnGet() {
-		ExchangeClient exchangeClient = mock(ExchangeClient.class);
+		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 
 		TestDto expected = TestDto.of(ID1, COUNT1);
@@ -108,6 +110,7 @@ class ApiClientTest {
 		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
 
 		TestDto result = api.client()
+				.http()
 				.get()
 				.path(PATH_TEST)
 				.retrieve(TestDto.class)
@@ -137,7 +140,7 @@ class ApiClientTest {
 	@SuppressWarnings("unchecked")
 	@Test
 	void shouldCallExchangeClientWithProvidedParametersOnGetWithHeadersAndRequestParametersSet() {
-		ExchangeClient exchangeClient = mock(ExchangeClient.class);
+		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 
 		TestDto expected = TestDto.of(ID1, COUNT1);
@@ -164,6 +167,7 @@ class ApiClientTest {
 		);
 
 		TestDto result = api.client()
+				.http()
 				.get()
 				.path(PATH_TEST)
 				.header(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_JSON)
@@ -197,7 +201,7 @@ class ApiClientTest {
 	@SuppressWarnings("unchecked")
 	@Test
 	void shouldReturnEmptyIfCallExchangeClientWithProvidedParametersReturnsNull() {
-		ExchangeClient exchangeClient = mock(ExchangeClient.class);
+		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 		ApiResponse<TestDto> response = ApiResponse.<TestDto>builder()
 				.status(HTTP_STATUS_BAD_REQUEST, HttpStatus::from)
@@ -208,6 +212,7 @@ class ApiClientTest {
 		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
 
 		TestDto result = api.client()
+				.http()
 				.get()
 				.path(PATH_TEST)
 				.retrieve(TestDto.class)
@@ -219,7 +224,7 @@ class ApiClientTest {
 	@SuppressWarnings("unchecked")
 	@Test
 	void shouldCallTheCorrectExchangeClientWhenMoreArePresent() {
-		ExchangeClient exchangeClient1 = mock(ExchangeClient.class);
+		HttpExchangeClient exchangeClient1 = mock(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient1).getAuthenticationType();
 		TestDto expected1 = TestDto.of(ID1, COUNT1);
 		ApiResponse<TestDto> response1 = ApiResponse.create(expected1)
@@ -228,7 +233,7 @@ class ApiClientTest {
 				.build();
 		doReturn(response1).when(exchangeClient1).exchange(any(ApiRequest.class));
 
-		ExchangeClient exchangeClient2 = mock(ExchangeClient.class);
+		HttpExchangeClient exchangeClient2 = mock(HttpExchangeClient.class);
 		doReturn(AuthenticationType.SSL).when(exchangeClient2).getAuthenticationType();
 		TestDto expected2 = TestDto.of(ID2, COUNT2);
 		ApiResponse<TestDto> response2 = ApiResponse.create(expected2)
@@ -240,6 +245,7 @@ class ApiClientTest {
 		ApiClient api = ApiClient.of(BASE_URL, List.of(exchangeClient1, exchangeClient2));
 
 		TestDto result1 = api.client(AuthenticationType.OAUTH2)
+				.http()
 				.get()
 				.path(PATH_TEST)
 				.retrieve(TestDto.class)
@@ -248,6 +254,7 @@ class ApiClientTest {
 		assertThat(result1, equalTo(expected1));
 
 		TestDto result2 = api.client(AuthenticationType.SSL)
+				.http()
 				.get()
 				.path(PATH_TEST)
 				.retrieve(TestDto.class)
@@ -258,7 +265,7 @@ class ApiClientTest {
 
 	@Test
 	void shouldCallExchangeClientWithTheCorrectParameters() {
-		ExchangeClient exchangeClient = mock(ExchangeClient.class);
+		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 
 		TestDto expected = TestDto.of(ID1, COUNT1);
@@ -268,12 +275,13 @@ class ApiClientTest {
 				.build();
 
 		ApiClient api = spy(ApiClient.of(BASE_URL, exchangeClient));
-		ApiClientFluentAdapter adapter = ApiClientFluentAdapter.of(api).authenticationType(AuthenticationType.OAUTH2);
+		ApiClientFluentAdapter adapter = ApiClientFluentAdapter.of(api).exchangeClient(exchangeClient);
 		doReturn(adapter).when(api).client();
 		doReturn(response).when(exchangeClient).exchange(adapter);
 		doReturn(HttpMethod.GET).when(exchangeClient).get();
 
 		TestDto result = api.client()
+				.http()
 				.get()
 				.path(PATH_TEST)
 				.retrieve(TestDto.class)
@@ -289,7 +297,7 @@ class ApiClientTest {
 	@SuppressWarnings("unchecked")
 	@Test
 	void shouldReturnEmptyIfCallExchangeClientWithProvidedParametersThrowsException() {
-		ExchangeClient exchangeClient = mock(ExchangeClient.class);
+		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 
 		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
@@ -297,6 +305,7 @@ class ApiClientTest {
 		doThrow(e).when(exchangeClient).exchange(any(ApiRequest.class));
 
 		TestDto result = api.client()
+				.http()
 				.get()
 				.path(PATH_TEST)
 				.retrieve(TestDto.class)
@@ -308,7 +317,7 @@ class ApiClientTest {
 	@SuppressWarnings("unchecked")
 	@Test
 	void shouldReturnCorrectApiResponseIfCallExchangeClientWithProvidedParametersThrowsException() {
-		ExchangeClient exchangeClient = mock(ExchangeClient.class);
+		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 
 		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
@@ -316,6 +325,7 @@ class ApiClientTest {
 		doThrow(e).when(exchangeClient).exchange(any(ApiRequest.class));
 
 		ApiResponse<TestDto> result = api.client()
+				.http()
 				.get()
 				.path(PATH_TEST)
 				.retrieve(TestDto.class);
@@ -328,13 +338,14 @@ class ApiClientTest {
 
 	@Test
 	void shouldSetMetricsToThisMethod() {
-		ExchangeClient exchangeClient = mock(ExchangeClient.class);
+		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 
 		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
 
 		ApiClientFluentAdapter adapter = api
 				.client()
+				.http()
 				.get()
 				.path(PATH_TEST)
 				.metersOnMethod(METRICS_PREFIX);
@@ -349,13 +360,14 @@ class ApiClientTest {
 
 	@Test
 	void shouldSetMetricsToThisMethodWithTags() {
-		ExchangeClient exchangeClient = mock(ExchangeClient.class);
+		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 
 		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
 
 		ApiClientFluentAdapter adapter = api
 				.client()
+				.http()
 				.get()
 				.path(PATH_TEST)
 				.metersOnMethod(METRICS_PREFIX, Tags.empty());
@@ -370,13 +382,14 @@ class ApiClientTest {
 
 	@Test
 	void shouldSetMetricsWithoutMethod() {
-		ExchangeClient exchangeClient = mock(ExchangeClient.class);
+		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 
 		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
 
 		ApiClientFluentAdapter adapter = api
 				.client()
+				.http()
 				.get()
 				.path(PATH_TEST)
 				.meters(METRICS_PREFIX);
@@ -391,7 +404,7 @@ class ApiClientTest {
 
 	@Test
 	void shouldUseDefaultMetricsIfNoMetricsAreSetAndMetricsAreDisabled() {
-		ExchangeClient exchangeClient = mock(ExchangeClient.class);
+		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 
 		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
@@ -399,6 +412,7 @@ class ApiClientTest {
 
 		ApiClientFluentAdapter adapter = api
 				.client()
+				.http()
 				.get()
 				.path(PATH_TEST);
 
@@ -412,7 +426,7 @@ class ApiClientTest {
 
 	@Test
 	void shouldUseDefaultMetricsEvenIfNoMetricsAreSetButMetricsAreDisabled() {
-		ExchangeClient exchangeClient = mock(ExchangeClient.class);
+		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 
 		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
@@ -420,6 +434,7 @@ class ApiClientTest {
 
 		ApiClientFluentAdapter adapter = api
 				.client()
+				.http()
 				.get()
 				.path(PATH_TEST)
 				.meters(METRICS_PREFIX);
@@ -464,6 +479,7 @@ class ApiClientTest {
 		Exception result = null;
 		try {
 			api.client()
+					.http()
 					.get()
 					.path(PATH_TEST)
 					.retrieve(TestDto.class)
@@ -501,6 +517,7 @@ class ApiClientTest {
 		Exception result = null;
 		try {
 			api.client()
+					.http()
 					.get()
 					.path(PATH_TEST)
 					.retrieve(TestDto.class)
@@ -579,7 +596,7 @@ class ApiClientTest {
 	@SuppressWarnings("unchecked")
 	@Test
 	void shouldMakeGetCallWithTheCorrectUri() {
-		ExchangeClient exchangeClient = mock(ExchangeClient.class);
+		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 
 		TestDto expected = TestDto.of(ID1, COUNT1);
@@ -590,7 +607,7 @@ class ApiClientTest {
 		doReturn(response).when(exchangeClient).exchange(any(ApiRequest.class));
 
 		DummyApiClient api = spy(new DummyApiClient(BASE_URL, exchangeClient));
-		ApiClientFluentAdapter adapter = ApiClientFluentAdapter.of(api).authenticationType(AuthenticationType.OAUTH2);
+		ApiClientFluentAdapter adapter = ApiClientFluentAdapter.of(api).exchangeClient(exchangeClient);
 		doReturn(adapter).when(api).client();
 
 		TestDto result = api.getTest(PATH_TEST, PATH_TEST);

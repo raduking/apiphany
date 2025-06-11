@@ -57,6 +57,7 @@ public class MyCustomerClient extends ApiClient {
 
     public String getInfo() {
         return client()
+                .http()
                 .get()
                 .path("api", "info")
                 .retrieve(String.class)

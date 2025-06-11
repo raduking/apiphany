@@ -20,7 +20,8 @@ import org.morphix.lang.Nullables;
 
 /**
  * Authorizes all requests with the provided token and authorization scheme in the client properties. Base class for all
- * clients that need to add authorization/authentication headers to the request.
+ * clients that need to add authorization/authentication headers to the request. It delegates all calls to the
+ * underlying exchange client.
  *
  * @author Radu Sebastian LAZIN
  */

@@ -8,6 +8,7 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 import org.apiphany.client.ExchangeClient;
+import org.apiphany.client.http.HttpClientFluentAdapter;
 import org.apiphany.header.Headers;
 import org.apiphany.lang.collections.Maps;
 import org.apiphany.lang.retry.Retry;
@@ -56,15 +57,28 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	}
 
 	/**
-	 * Sets the authentication type and also internally the corresponding exchange client.
+	 * Sets the authentication type and also internally the corresponding exchange client if needed.
 	 *
 	 * @param authenticationType the authentication type to set
 	 * @return this
 	 */
 	public ApiClientFluentAdapter authenticationType(final AuthenticationType authenticationType) {
 		this.authenticationType = authenticationType;
-		this.exchangeClient = apiClient.getExchangeClient(authenticationType);
+		if (null == exchangeClient || authenticationType != exchangeClient.getAuthenticationType()) {
+			return exchangeClient(apiClient.getExchangeClient(authenticationType));
+		}
 		return this;
+	}
+
+	/**
+	 * Sets the exchange client and the authentication type from the given exchange client.
+	 *
+	 * @param exchangeClient exchange client to set
+	 * @return this
+	 */
+	public ApiClientFluentAdapter exchangeClient(final ExchangeClient exchangeClient) {
+		this.exchangeClient = exchangeClient;
+		return authenticationType(exchangeClient.getAuthenticationType());
 	}
 
 	/**
@@ -492,74 +506,34 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	}
 
 	/**
-	 * Sets the request method to GET.
-	 *
-	 * @return this
-	 */
-	public ApiClientFluentAdapter get() {
-		return method(exchangeClient.get());
-	}
-
-	/**
-	 * Sets the request method to PUT.
-	 *
-	 * @return this
-	 */
-	public ApiClientFluentAdapter put() {
-		return method(exchangeClient.put());
-	}
-
-	/**
-	 * Sets the request method to POST.
-	 *
-	 * @return this
-	 */
-	public ApiClientFluentAdapter post() {
-		return method(exchangeClient.post());
-	}
-
-	/**
-	 * Sets the request method to DELETE.
-	 *
-	 * @return this
-	 */
-	public ApiClientFluentAdapter delete() {
-		return method(exchangeClient.delete());
-	}
-
-	/**
-	 * Sets the request method to PATCH.
-	 *
-	 * @return this
-	 */
-	public ApiClientFluentAdapter patch() {
-		return method(exchangeClient.patch());
-	}
-
-	/**
-	 * Sets the request method to HEAD.
-	 *
-	 * @return this
-	 */
-	public ApiClientFluentAdapter head() {
-		return method(exchangeClient.head());
-	}
-
-	/**
-	 * Sets the request method to TRACE.
-	 *
-	 * @return this
-	 */
-	public ApiClientFluentAdapter trace() {
-		return method(exchangeClient.trace());
-	}
-
-	/**
 	 * @see #getHeadersAsString()
 	 */
 	@Override
 	public String getHeadersAsString() {
-		return exchangeClient.getHeadersAsString(this);
+		return getExchangeClient(ExchangeClient.class).getHeadersAsString(this);
+	}
+
+	/**
+	 * Returns the required exchange class.
+	 *
+	 * @param <T> exchange client class type
+	 * @param exchangeClientClass exchange client class
+	 * @return the required exchange class
+	 */
+	public <T extends ExchangeClient> T getExchangeClient(final Class<T> exchangeClientClass) {
+		if (!exchangeClientClass.isAssignableFrom(exchangeClient.getClass())) {
+			throw new IllegalArgumentException("The underlying exchange client cannot be cast to: " + exchangeClientClass);
+		}
+		return JavaObjects.cast(exchangeClient);
+	}
+
+	/**
+	 * Exposes the HTTP specific methods.
+	 *
+	 * @return a new HTTP Client fluent adapter
+	 */
+	public HttpClientFluentAdapter http() {
+		return HttpClientFluentAdapter.of(this);
 	}
 
 }
