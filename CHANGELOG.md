@@ -10,7 +10,11 @@
 - Added `MeterRegistry` to most methods in `BasicMeters`.
 - Changed `ClientProperties` to use `Duration` instead of `int` (milliseconds).
 - Renamed `HttpExchangeClient` to `JavaNetHttpExchangeClient` to emphasize the underlying HTTP client.
-- Added `HttpExchangeClient` interface with HTTP specific methods
+- Added `HttpExchangeClient` interface with HTTP specific methods.
+- Removed HTTP specific methods from `ExchangeClient` those are now available in `HttpExchangeClient`.
+- Added `HttpClientFluentAdapter` class with all HTTP methods.
+- Added `ApiClientFluentAdapter.http` method to directly support HTTP methods like `get`, `put`, `post`, etc.
+- Removed HTTP specific methods from `ApiClientFluentAdapter` those are now available in `HttpClientFluentAdapter`.
 
 ---
 
