@@ -59,7 +59,7 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	/**
 	 * All OAuth2 properties.
 	 */
-	private OAuth2Properties oAuth2Properties;
+	private final OAuth2Properties oAuth2Properties;
 
 	/**
 	 * Decorates an exchange client with OAuth2 authentication.
