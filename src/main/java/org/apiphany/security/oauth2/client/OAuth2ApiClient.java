@@ -2,7 +2,6 @@ package org.apiphany.security.oauth2.client;
 
 import static org.apiphany.ParameterFunction.parameter;
 
-import java.time.Duration;
 import java.util.Map;
 
 import org.apiphany.ApiClient;
@@ -27,19 +26,14 @@ import org.apiphany.security.oauth2.OAuth2ProviderDetails;
 public class OAuth2ApiClient extends ApiClient {
 
 	/**
-	 * Default expiration duration for access tokens.
-	 */
-	private Duration expiresIn = TokenHttpExchangeClient.DEFAULT_EXPIRES_IN;
-
-	/**
 	 * Configuration for the OAuth2 client registration.
 	 */
-	private OAuth2ClientRegistration clientRegistration;
+	private final OAuth2ClientRegistration clientRegistration;
 
 	/**
 	 * Configuration details for the OAuth2 provider.
 	 */
-	private OAuth2ProviderDetails providerDetails;
+	private final OAuth2ProviderDetails providerDetails;
 
 	/**
 	 * Constructs a new OAuth2 API client with the specified configurations.
@@ -90,7 +84,7 @@ public class OAuth2ApiClient extends ApiClient {
 	private AuthenticationToken getTokenWithClientSecretBasic() {
 		Map<String, String> params = RequestParameters.of(
 				parameter(OAuth2Parameter.GRANT_TYPE, clientRegistration.getAuthorizationGrantType()),
-				parameter(OAuth2Parameter.EXPIRES_IN, expiresIn.toSeconds()));
+				parameter(OAuth2Parameter.EXPIRES_IN, TokenHttpExchangeClient.DEFAULT_EXPIRES_IN));
 		return client()
 				.http()
 				.post()
@@ -110,7 +104,7 @@ public class OAuth2ApiClient extends ApiClient {
 	private AuthenticationToken getTokenWithClientSecretPost() {
 		Map<String, String> params = RequestParameters.of(
 				parameter(OAuth2Parameter.GRANT_TYPE, clientRegistration.getAuthorizationGrantType()),
-				parameter(OAuth2Parameter.EXPIRES_IN, expiresIn.toSeconds()),
+				parameter(OAuth2Parameter.EXPIRES_IN, TokenHttpExchangeClient.DEFAULT_EXPIRES_IN),
 				parameter(OAuth2Parameter.CLIENT_ID, clientRegistration.getClientId()),
 				parameter(OAuth2Parameter.CLIENT_SECRET, clientRegistration.getClientSecret()));
 		return client()
