@@ -14,7 +14,6 @@ import org.morphix.lang.JavaObjects;
 import org.morphix.lang.function.Consumers;
 import org.morphix.reflection.Constructors;
 import org.morphix.reflection.Fields;
-import org.morphix.reflection.Reflection;
 
 /**
  * Base class for client properties, it can also be used as a stand-alone class to import common properties for clients.
@@ -400,7 +399,7 @@ public class ClientProperties {
 		 *
 		 * @param timeToLive time to live to set.
 		 */
-		public void setTimeToLive(Duration timeToLive) {
+		public void setTimeToLive(final Duration timeToLive) {
 			this.timeToLive = timeToLive;
 		}
 	}

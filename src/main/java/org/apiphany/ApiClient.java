@@ -186,8 +186,7 @@ public class ApiClient {
 			ParameterizedType parameterizedType = JavaObjects.cast(typeObjectField.getGenericType());
 			Type actualTypeArgument = parameterizedType.getActualTypeArguments()[0];
 			if (actualTypeArgument instanceof ParameterizedType) {
-				Field typeField = Fields.getDeclaredFieldInHierarchy(GenericClass.class, "type");
-				Fields.IgnoreAccess.set(typeObject, typeField, actualTypeArgument);
+				typeObject.setType(actualTypeArgument);
 			} else {
 				throw new IllegalArgumentException("typeObject should only be used for generic types, current type: "
 						+ actualTypeArgument.getTypeName() + " is not a generic type.");
