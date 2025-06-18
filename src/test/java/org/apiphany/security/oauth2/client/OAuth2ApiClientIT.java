@@ -54,29 +54,29 @@ class OAuth2ApiClientIT {
 	}
 
 	@Test
-	void shouldReturnAuthenticationTokenWithClientSecretPost() {
-		OAuth2ApiClient oAuth2ApiClient = new OAuth2ApiClient(clientRegistration, providerDetails, new JavaNetHttpExchangeClient());
+	void shouldReturnAuthenticationTokenWithClientSecretPost() throws Exception {
+		try (OAuth2ApiClient oAuth2ApiClient = new OAuth2ApiClient(clientRegistration, providerDetails, new JavaNetHttpExchangeClient())) {
+			AuthenticationToken token = oAuth2ApiClient.getAuthenticationToken(ClientAuthenticationMethod.CLIENT_SECRET_POST);
 
-		AuthenticationToken token = oAuth2ApiClient.getAuthenticationToken(ClientAuthenticationMethod.CLIENT_SECRET_POST);
-
-		assertThat(token, notNullValue());
+			assertThat(token, notNullValue());
+		}
 	}
 
 	@Test
-	void shouldReturnAuthenticationTokenWithClientSecretBasic() {
-		OAuth2ApiClient oAuth2ApiClient = new OAuth2ApiClient(clientRegistration, providerDetails, new JavaNetHttpExchangeClient());
+	void shouldReturnAuthenticationTokenWithClientSecretBasic() throws Exception {
+		try (OAuth2ApiClient oAuth2ApiClient = new OAuth2ApiClient(clientRegistration, providerDetails, new JavaNetHttpExchangeClient())) {
+			AuthenticationToken token = oAuth2ApiClient.getAuthenticationToken(ClientAuthenticationMethod.CLIENT_SECRET_BASIC);
 
-		AuthenticationToken token = oAuth2ApiClient.getAuthenticationToken(ClientAuthenticationMethod.CLIENT_SECRET_BASIC);
-
-		assertThat(token, notNullValue());
+			assertThat(token, notNullValue());
+		}
 	}
 
 	@Test
-	void shouldReturnAuthenticationTokenWithClientAuthenticationMethodSetInClientRegistration() {
-		OAuth2ApiClient oAuth2ApiClient = new OAuth2ApiClient(clientRegistration, providerDetails, new JavaNetHttpExchangeClient());
+	void shouldReturnAuthenticationTokenWithClientAuthenticationMethodSetInClientRegistration() throws Exception {
+		try (OAuth2ApiClient oAuth2ApiClient = new OAuth2ApiClient(clientRegistration, providerDetails, new JavaNetHttpExchangeClient())) {
+			AuthenticationToken token = oAuth2ApiClient.getAuthenticationToken();
 
-		AuthenticationToken token = oAuth2ApiClient.getAuthenticationToken();
-
-		assertThat(token, notNullValue());
+			assertThat(token, notNullValue());
+		}
 	}
 }

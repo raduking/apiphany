@@ -74,6 +74,14 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	}
 
 	/**
+	 * @see #close()
+	 */
+	@Override
+	public void close() throws Exception {
+		httpClient.close();
+	}
+
+	/**
 	 * Creates the underlying HTTP client.
 	 *
 	 * @param httpClientBuilderCustomizer client builder customizer

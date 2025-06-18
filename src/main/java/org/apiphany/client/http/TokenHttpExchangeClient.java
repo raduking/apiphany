@@ -2,6 +2,7 @@ package org.apiphany.client.http;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 import org.apiphany.ApiRequest;
@@ -65,10 +66,18 @@ public class TokenHttpExchangeClient extends AbstractHttpExchangeClient {
 	protected TokenHttpExchangeClient(final ExchangeClient exchangeClient) {
 		super(exchangeClient.getClientProperties());
 
-		this.exchangeClient = exchangeClient;
+		this.exchangeClient = Objects.requireNonNull(exchangeClient, "exchangeClient cannot be null");
 		this.defaultExpirationSupplier = Instant::now;
 
 		initialize();
+	}
+
+	/**
+	 * @see #close()
+	 */
+	@Override
+	public void close() throws Exception {
+		exchangeClient.close();
 	}
 
 	/**

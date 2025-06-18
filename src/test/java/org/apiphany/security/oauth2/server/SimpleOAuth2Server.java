@@ -41,7 +41,7 @@ import com.sun.net.httpserver.HttpServer;
  *
  * @author Radu Sebastian LAZIN
  */
-public class SimpleOAuth2Server {
+public class SimpleOAuth2Server implements AutoCloseable {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SimpleOAuth2Server.class);
 
@@ -52,18 +52,25 @@ public class SimpleOAuth2Server {
 	private final String clientId;
 	private final String clientSecret;
 
+	private HttpServer httpServer;
+
 	public SimpleOAuth2Server(final int port, final String clientId, final String clientSecret) {
-		HttpServer server = createHttpServer(port);
-		server.createContext("/token", new TokenHandler(this));
-		server.setExecutor(null);
+		this.httpServer = createHttpServer(port);
+		this.httpServer.createContext("/token", new TokenHandler(this));
+		this.httpServer.setExecutor(null);
 
 		this.port = port;
 		this.url = "http://localhost:" + port;
 		this.clientId = clientId;
 		this.clientSecret = clientSecret;
 
-		server.start();
+		httpServer.start();
 		LOGGER.info("OAuth2 server started at {}/token", url);
+	}
+
+	@Override
+	public void close() throws Exception {
+		httpServer.stop(0);
 	}
 
 	public String getUrl() {

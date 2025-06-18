@@ -64,7 +64,7 @@ class ApiClientTest {
 	private static final int HTTP_STATUS_OK = 200;
 	private static final int HTTP_STATUS_BAD_REQUEST = 400;
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "resource" })
 	@Test
 	void shouldCallExchangeClientOnRetrieve() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
@@ -90,7 +90,7 @@ class ApiClientTest {
 		assertThat(result, equalTo(expected));
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "resource" })
 	@Test
 	void shouldCallExchangeClientWithProvidedParametersOnGet() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
@@ -137,7 +137,7 @@ class ApiClientTest {
 		assertFalse(request.isUrlEncoded());
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "resource" })
 	@Test
 	void shouldCallExchangeClientWithProvidedParametersOnGetWithHeadersAndRequestParametersSet() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
@@ -163,8 +163,7 @@ class ApiClientTest {
 		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
 
 		Map<String, String> params = RequestParameters.of(
-				ParameterFunction.parameter(PARAM_ID, ID1)
-		);
+				ParameterFunction.parameter(PARAM_ID, ID1));
 
 		TestDto result = api.client()
 				.http()
@@ -198,7 +197,7 @@ class ApiClientTest {
 		assertFalse(request.isUrlEncoded());
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "resource" })
 	@Test
 	void shouldReturnEmptyIfCallExchangeClientWithProvidedParametersReturnsNull() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
@@ -221,7 +220,7 @@ class ApiClientTest {
 		assertThat(result, equalTo(TestDto.EMPTY));
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "resource" })
 	@Test
 	void shouldCallTheCorrectExchangeClientWhenMoreArePresent() {
 		HttpExchangeClient exchangeClient1 = mock(HttpExchangeClient.class);
@@ -263,6 +262,7 @@ class ApiClientTest {
 		assertThat(result2, equalTo(expected2));
 	}
 
+	@SuppressWarnings("resource")
 	@Test
 	void shouldCallExchangeClientWithTheCorrectParameters() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
@@ -294,7 +294,7 @@ class ApiClientTest {
 		assertThat(adapter.getUrl(), equalTo(BASE_URL + "/" + PATH_TEST));
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "resource" })
 	@Test
 	void shouldReturnEmptyIfCallExchangeClientWithProvidedParametersThrowsException() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
@@ -314,7 +314,7 @@ class ApiClientTest {
 		assertThat(result, equalTo(TestDto.EMPTY));
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "resource" })
 	@Test
 	void shouldReturnCorrectApiResponseIfCallExchangeClientWithProvidedParametersThrowsException() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
@@ -336,6 +336,7 @@ class ApiClientTest {
 		assertThat(Fields.IgnoreAccess.get(result, "exchangeClient"), equalTo(exchangeClient));
 	}
 
+	@SuppressWarnings("resource")
 	@Test
 	void shouldSetMetricsToThisMethod() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
@@ -358,6 +359,7 @@ class ApiClientTest {
 		assertThat(adapter.getMeters().latency().getId().getName(), equalTo(metricStart + BasicMeters.LATENCY_METRIC));
 	}
 
+	@SuppressWarnings("resource")
 	@Test
 	void shouldSetMetricsToThisMethodWithTags() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
@@ -380,6 +382,7 @@ class ApiClientTest {
 		assertThat(adapter.getMeters().latency().getId().getName(), equalTo(metricStart + BasicMeters.LATENCY_METRIC));
 	}
 
+	@SuppressWarnings("resource")
 	@Test
 	void shouldSetMetricsWithoutMethod() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
@@ -402,6 +405,7 @@ class ApiClientTest {
 		assertThat(adapter.getMeters().latency().getId().getName(), equalTo(metricStart + BasicMeters.LATENCY_METRIC));
 	}
 
+	@SuppressWarnings("resource")
 	@Test
 	void shouldUseDefaultMetricsIfNoMetricsAreSetAndMetricsAreDisabled() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
@@ -424,6 +428,7 @@ class ApiClientTest {
 		assertThat(api.getActiveMeters(adapter).latency().getId().getName(), equalTo(BasicMeters.LATENCY_METRIC));
 	}
 
+	@SuppressWarnings("resource")
 	@Test
 	void shouldUseDefaultMetricsEvenIfNoMetricsAreSetButMetricsAreDisabled() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
@@ -452,6 +457,7 @@ class ApiClientTest {
 		assertThat(api.getActiveMeters(adapter).latency().getId().getName(), equalTo(BasicMeters.LATENCY_METRIC));
 	}
 
+	@SuppressWarnings("resource")
 	@Test
 	void shouldSetTheMeters() {
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
@@ -465,7 +471,7 @@ class ApiClientTest {
 		assertThat(result, sameInstance(basicMeters));
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "resource" })
 	@Test
 	void shouldThrowExceptionIfCallExchangeClientWithProvidedParametersThrowsExceptionAndIsBleedExceptionsIsTrue() {
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
@@ -491,7 +497,7 @@ class ApiClientTest {
 		assertThat(result, notNullValue());
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "resource" })
 	@Test
 	void shouldThrowExceptionWhenMoreExchangeClientsArePresent() {
 		ExchangeClient exchangeClient1 = mock(ExchangeClient.class);
@@ -530,7 +536,7 @@ class ApiClientTest {
 		assertThat(result, notNullValue());
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "resource" })
 	@Test
 	void shouldThrowExceptionWhenCreatingClientWithMoreExchangeClientsWithTheSameType() {
 		ExchangeClient exchangeClient1 = mock(ExchangeClient.class);
@@ -567,10 +573,10 @@ class ApiClientTest {
 	}
 
 	@Test
-	void shouldThrowExceptionWhenCreatingClientNoExchangeClients() {
+	void shouldThrowExceptionWhenCreatingClientNoExchangeClients() throws Exception {
 		Exception result = null;
-		try {
-			ApiClient.of(BASE_URL, List.of()).client();
+		try (ApiClient apiClient = ApiClient.of(BASE_URL, List.of())) {
+			apiClient.client();
 		} catch (IllegalStateException e) {
 			result = e;
 			assertThat(result.getMessage(), equalTo("No ExchangeClient has been set before calling client()"));
@@ -579,21 +585,20 @@ class ApiClientTest {
 		assertThat(result, notNullValue());
 	}
 
+	@SuppressWarnings("resource")
 	@Test
-	void shouldThrowExceptionWhenTryingToReturnAuthClientWithNoAuthClientsSet() {
+	void shouldThrowExceptionWhenTryingToReturnAuthClientWithNoAuthClientsSet() throws Exception {
 		Exception result = null;
-		ApiClient api = ApiClient.of(BASE_URL, List.of());
-		try {
+		try (ApiClient api = ApiClient.of(BASE_URL, List.of())) {
 			api.getExchangeClient(AuthenticationType.OAUTH2);
 		} catch (IllegalStateException e) {
 			result = e;
 			assertThat(result.getMessage(), equalTo("No ExchangeClient found for authentication type: " + AuthenticationType.OAUTH2));
 		}
-
 		assertThat(result, notNullValue());
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "resource" })
 	@Test
 	void shouldMakeGetCallWithTheCorrectUri() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
@@ -617,9 +622,11 @@ class ApiClientTest {
 	}
 
 	@Test
-	void shouldInitializeParameterizedTypeReferences() {
-		DummyApiClient apiClient = new DummyApiClient(BASE_URL, new DummyExchangeClient());
-		assertThat(apiClient.getBaseUrl(), equalTo(BASE_URL));
+	void shouldInitializeParameterizedTypeReferences() throws Exception {
+		try (@SuppressWarnings("resource")
+		DummyApiClient apiClient = new DummyApiClient(BASE_URL, new DummyExchangeClient())) {
+			assertThat(apiClient.getBaseUrl(), equalTo(BASE_URL));
+		}
 
 		Type type1 = DummyApiClient.LIST_TYPE_1.getType();
 
@@ -651,6 +658,7 @@ class ApiClientTest {
 		assertThat(field, notNullValue());
 	}
 
+	@SuppressWarnings("resource")
 	@Test
 	void shouldSetTheRetry() {
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);

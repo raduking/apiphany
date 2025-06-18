@@ -24,6 +24,7 @@ import org.apiphany.security.AuthenticationType;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Nullables;
 import org.morphix.lang.Unchecked;
+import org.morphix.lang.function.ThrowingBiConsumer;
 import org.morphix.reflection.Fields;
 import org.morphix.reflection.GenericClass;
 import org.morphix.reflection.predicates.MemberPredicates;
@@ -37,7 +38,7 @@ import io.micrometer.core.instrument.MeterRegistry;
  *
  * @author Radu Sebastian LAZIN
  */
-public class ApiClient {
+public class ApiClient implements AutoCloseable {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ApiClient.class);
 
@@ -138,6 +139,14 @@ public class ApiClient {
 	protected ApiClient(
 			final ExchangeClient exchangeClient) {
 		this(NO_BASE_URL, Collections.singletonList(exchangeClient));
+	}
+
+	/**
+	 * @see #close()
+	 */
+	@Override
+	public void close() throws Exception {
+		exchangeClientsMap.forEach(ThrowingBiConsumer.unchecked((authenticationType, exchangeClient) -> exchangeClient.close()));
 	}
 
 	/**
