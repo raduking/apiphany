@@ -22,7 +22,9 @@
 - Renamed `ClientProperties.Timeout.socketTimeout` to `ClientProperties.Timeout.socket`.
 - Renamed all the builder methods as well to match all the above fields.
 - Moved `getRedactedHeaderPredicate` method from `AbstractHttpExchangeClient` to `HttpExchangeClient` interface.
-- Removed all HTTP methods from `AbstractHttpExchangeClient` since they are already present in the interface `HttpExchangeClient`. 
+- Removed all HTTP methods from `AbstractHttpExchangeClient` since they are already present in the interface `HttpExchangeClient`.
+- Changed `ExchangeClient` to extend `AutoCloseable` so that all exchange clients need to implement a `close` method for graceful shutdowns.
+- Changed `ApiClient` to implement `AutoCloseable` so that all API clients can be gracefully shut down.
 
 ---
 

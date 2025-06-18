@@ -17,7 +17,7 @@ import org.apiphany.security.AuthenticationType;
  *
  * @author Radu Sebastian LAZIN
  */
-public interface ExchangeClient {
+public interface ExchangeClient extends AutoCloseable {
 
 	/**
 	 * Basic rest template like exchange method.

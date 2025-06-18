@@ -9,4 +9,9 @@ public class DummyExchangeClient implements ExchangeClient {
 		return null;
 	}
 
+	@Override
+	public void close() throws Exception {
+		// empty
+	}
+
 }

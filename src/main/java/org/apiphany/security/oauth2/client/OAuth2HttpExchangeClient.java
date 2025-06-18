@@ -2,9 +2,13 @@ package org.apiphany.security.oauth2.client;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.http.TokenHttpExchangeClient;
@@ -16,6 +20,7 @@ import org.apiphany.security.AuthenticationType;
 import org.apiphany.security.oauth2.OAuth2Properties;
 import org.apiphany.security.oauth2.OAuth2ProviderDetails;
 import org.morphix.lang.JavaObjects;
+import org.morphix.lang.thread.Threads;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +35,11 @@ import org.slf4j.LoggerFactory;
 public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(OAuth2HttpExchangeClient.class);
+
+	/**
+	 * The maximum number of attempts the {@link #close()} method tries to close the scheduled task.
+	 */
+	private static final int MAX_CLOSE_ATTEMPTS = 10;
 
 	/**
 	 * The exchange client doing the token refresh.
@@ -49,7 +59,7 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	/**
 	 * Scheduler enabled flag.
 	 */
-	private boolean schedulerEnabled;
+	private AtomicBoolean schedulerEnabled = new AtomicBoolean(false);
 
 	/**
 	 * Client registration name.
@@ -62,6 +72,11 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	private final OAuth2Properties oAuth2Properties;
 
 	/**
+	 * The scheduled future to stop.
+	 */
+	private ScheduledFuture<?> scheduledFuture;
+
+	/**
 	 * Decorates an exchange client with OAuth2 authentication.
 	 *
 	 * @param exchangeClient decorated exchange client
@@ -71,7 +86,7 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	public OAuth2HttpExchangeClient(final ExchangeClient exchangeClient, final ExchangeClient tokenExchangeClient, final String clientRegistrationName) {
 		super(exchangeClient);
 
-		this.tokenExchangeClient = tokenExchangeClient;
+		this.tokenExchangeClient = Objects.requireNonNull(tokenExchangeClient, "tokenExchangeClient cannot be null");
 		this.tokenRefreshScheduler = Executors.newScheduledThreadPool(0, Thread.ofVirtual().factory());
 
 		this.oAuth2Properties = getClientProperties().getCustomProperties(OAuth2Properties.ROOT, OAuth2Properties.class);
@@ -178,6 +193,37 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	}
 
 	/**
+	 * @see #close()
+	 */
+	@Override
+	public void close() throws Exception {
+		super.close();
+		closeTokenRefreshScheduler();
+		tokenExchangeClient.close();
+		if (null != tokenApiClient) {
+			tokenApiClient.close();
+		}
+	}
+
+	/**
+	 * Safely closes the token refresh scheduler.
+	 */
+	private void closeTokenRefreshScheduler() {
+		int attempts = 0;
+		if (null != scheduledFuture) {
+			while (!scheduledFuture.cancel(false) && attempts++ < MAX_CLOSE_ATTEMPTS) {
+				Threads.safeSleep(Duration.ofMillis(200));
+			}
+		}
+		if (attempts < MAX_CLOSE_ATTEMPTS) {
+			tokenRefreshScheduler.close();
+		} else {
+			List<Runnable> runningTasks = tokenRefreshScheduler.shutdownNow();
+			LOGGER.warn("Still running tasks count: {}", runningTasks.size());
+		}
+	}
+
+	/**
 	 * @see #getAuthenticationType()
 	 */
 	@Override
@@ -229,7 +275,7 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 		Instant expiration = getTokenExpiration().minus(TOKEN_EXPIRATION_ERROR_MARGIN);
 		Instant scheduled = JavaObjects.max(expiration, Instant.now());
 		Duration delay = Duration.between(Instant.now(), scheduled);
-		tokenRefreshScheduler.schedule(this::refreshAuthenticationToken, delay.toMillis(), TimeUnit.MILLISECONDS);
+		scheduledFuture = tokenRefreshScheduler.schedule(this::refreshAuthenticationToken, delay.toMillis(), TimeUnit.MILLISECONDS);
 	}
 
 	/**
@@ -254,7 +300,7 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	 * @return true if the scheduler is enabled, false otherwise
 	 */
 	public boolean isSchedulerEnabled() {
-		return schedulerEnabled;
+		return schedulerEnabled.get();
 	}
 
 	/**
@@ -272,7 +318,7 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	 * @param schedulerEnabled scheduler enable flag
 	 */
 	public void setSchedulerEnabled(final boolean schedulerEnabled) {
-		this.schedulerEnabled = schedulerEnabled;
+		this.schedulerEnabled.set(schedulerEnabled);
 	}
 
 	/**

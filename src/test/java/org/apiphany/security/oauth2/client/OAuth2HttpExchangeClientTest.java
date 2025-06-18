@@ -17,6 +17,8 @@ import org.apiphany.security.oauth2.OAuth2Properties;
 import org.apiphany.security.oauth2.OAuth2ProviderDetails;
 import org.apiphany.security.oauth2.server.SimpleHttpServer;
 import org.apiphany.security.oauth2.server.SimpleOAuth2Server;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -39,7 +41,6 @@ class OAuth2HttpExchangeClientTest {
 	private static final SimpleOAuth2Server OAUTH2_SERVER = new SimpleOAuth2Server(OAUTH_SERVER_PORT, CLIENT_ID, CLIENT_SECRET);
 	private static final JwtTokenValidator JWT_TOKEN_VALIDATOR = new JwtTokenValidator(CLIENT_ID, CLIENT_SECRET, OAUTH2_SERVER.getUrl());
 
-	@SuppressWarnings("unused")
 	private static final SimpleHttpServer API_SERVER = new SimpleHttpServer(API_SERVER_PORT, JWT_TOKEN_VALIDATOR);
 
 	private OAuth2ClientRegistration clientRegistration;
@@ -68,6 +69,17 @@ class OAuth2HttpExchangeClientTest {
 		clientProperties.setCustomProperties(oAuth2Properties);
 
 		simpleApiClient = new SimpleApiClient(clientProperties);
+	}
+
+	@AfterEach
+	void tearDown() throws Exception {
+		simpleApiClient.close();
+	}
+
+	@AfterAll
+	static void cleanup() throws Exception {
+		OAUTH2_SERVER.close();
+		API_SERVER.close();
 	}
 
 	@Test

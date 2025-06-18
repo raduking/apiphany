@@ -84,7 +84,7 @@ public class OAuth2ApiClient extends ApiClient {
 	private AuthenticationToken getTokenWithClientSecretBasic() {
 		Map<String, String> params = RequestParameters.of(
 				parameter(OAuth2Parameter.GRANT_TYPE, clientRegistration.getAuthorizationGrantType()),
-				parameter(OAuth2Parameter.EXPIRES_IN, TokenHttpExchangeClient.DEFAULT_EXPIRES_IN));
+				parameter(OAuth2Parameter.EXPIRES_IN, TokenHttpExchangeClient.DEFAULT_EXPIRES_IN.toSeconds()));
 		return client()
 				.http()
 				.post()
@@ -104,7 +104,7 @@ public class OAuth2ApiClient extends ApiClient {
 	private AuthenticationToken getTokenWithClientSecretPost() {
 		Map<String, String> params = RequestParameters.of(
 				parameter(OAuth2Parameter.GRANT_TYPE, clientRegistration.getAuthorizationGrantType()),
-				parameter(OAuth2Parameter.EXPIRES_IN, TokenHttpExchangeClient.DEFAULT_EXPIRES_IN),
+				parameter(OAuth2Parameter.EXPIRES_IN, TokenHttpExchangeClient.DEFAULT_EXPIRES_IN.toSeconds()),
 				parameter(OAuth2Parameter.CLIENT_ID, clientRegistration.getClientId()),
 				parameter(OAuth2Parameter.CLIENT_SECRET, clientRegistration.getClientSecret()));
 		return client()

@@ -29,7 +29,7 @@ import com.sun.net.httpserver.HttpServer;
  *
  * @author Radu Sebastian LAZIN
  */
-public class SimpleHttpServer {
+public class SimpleHttpServer implements AutoCloseable {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SimpleHttpServer.class);
 
@@ -49,6 +49,11 @@ public class SimpleHttpServer {
 		this.tokenValidator = tokenValidator;
 
 		LOGGER.info("Server started on port: {}", port);
+	}
+
+	@Override
+	public void close() throws Exception {
+		httpServer.stop(0);
 	}
 
 	public int getPort() {
