@@ -2,6 +2,10 @@
 
 ---
 
+`1.0.2`
+
+---
+
 `1.0.1`
 
 - Extracted `ParameterFunction` inner class from `RequestParameters` class.
