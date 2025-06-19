@@ -412,24 +412,29 @@ public class ClientProperties {
 	public static class Timeout {
 
 		/**
-		 * Constant representing a disabled timeout.
+		 * Constant representing a zero duration.
 		 */
-		public static final Duration DISABLED = Duration.ofMillis(0);
+		public static final Duration ZERO = Duration.ofMillis(0);
+
+		/**
+		 * Constant representing an infinite timeout.
+		 */
+		public static final Duration INFINITE = ZERO;
 
 		/**
 		 * Connection timeout.
 		 */
-		private Duration connect = DISABLED;
+		private Duration connect = INFINITE;
 
 		/**
 		 * Connection request timeout.
 		 */
-		private Duration connectionRequest = DISABLED;
+		private Duration connectionRequest = INFINITE;
 
 		/**
 		 * Socket timeout.
 		 */
-		private Duration socket = DISABLED;
+		private Duration socket = INFINITE;
 
 		/**
 		 * Default constructor.
@@ -521,19 +526,19 @@ public class ClientProperties {
 		public static class Builder {
 
 			/**
-			 * Connection timeout set to {@link Timeout#DISABLED} by default.
+			 * Connection timeout set to {@link Timeout#INFINITE} by default.
 			 */
-			private Duration connect = DISABLED;
+			private Duration connect = INFINITE;
 
 			/**
-			 * Connection request timeout set to {@link Timeout#DISABLED} by default.
+			 * Connection request timeout set to {@link Timeout#INFINITE} by default.
 			 */
-			private Duration connectionRequest = DISABLED;
+			private Duration connectionRequest = INFINITE;
 
 			/**
-			 * Socket timeout set to {@link Timeout#DISABLED} by default.
+			 * Socket timeout set to {@link Timeout#INFINITE} by default.
 			 */
-			private Duration socket = DISABLED;
+			private Duration socket = INFINITE;
 
 			/**
 			 * Default constructor.

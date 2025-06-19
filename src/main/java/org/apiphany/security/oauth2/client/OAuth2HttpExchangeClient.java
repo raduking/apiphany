@@ -59,7 +59,7 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	/**
 	 * Scheduler enabled flag.
 	 */
-	private AtomicBoolean schedulerEnabled = new AtomicBoolean(false);
+	private final AtomicBoolean schedulerEnabled = new AtomicBoolean(false);
 
 	/**
 	 * Client registration name.
