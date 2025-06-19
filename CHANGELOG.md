@@ -2,6 +2,13 @@
 
 ---
 
+`1.0.2`
+
+- Renamed `ClientProperties.Timeout.DISABLED` to `ClientProperties.Timeout.INFINTE`.
+- Added `ClientProperties.Timeout.ZERO` (which actually also means infinite timeout).
+
+---
+
 `1.0.1`
 
 - Extracted `ParameterFunction` inner class from `RequestParameters` class.
