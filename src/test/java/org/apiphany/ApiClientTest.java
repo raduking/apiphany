@@ -41,6 +41,7 @@ import org.morphix.lang.JavaObjects;
 import org.morphix.reflection.Fields;
 import org.morphix.reflection.GenericClass;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
 
 /**
@@ -469,6 +470,20 @@ class ApiClientTest {
 		BasicMeters result = api.getMeters();
 
 		assertThat(result, sameInstance(basicMeters));
+	}
+
+	@SuppressWarnings("resource")
+	@Test
+	void shouldSetTheMeterRegistry() {
+		ExchangeClient exchangeClient = mock(ExchangeClient.class);
+		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
+		MeterRegistry meterRegistry = mock(MeterRegistry.class);
+		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
+		api.setMeterRegistry(meterRegistry);
+
+		MeterRegistry result = api.getMeterRegistry();
+
+		assertThat(result, sameInstance(meterRegistry));
 	}
 
 	@SuppressWarnings({ "unchecked", "resource" })
