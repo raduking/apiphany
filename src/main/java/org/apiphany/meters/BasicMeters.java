@@ -73,7 +73,7 @@ public record BasicMeters(MeterRegistry meterRegistry, Timer latency, Counter re
 	private static final int OF_METHOD_CALLER_DEPTH = 3;
 
 	/**
-	 * Constructor which uses the global registry to publish metrics.
+	 * Constructor, which uses the global registry to publish metrics.
 	 *
 	 * @param latency the timer for measuring operation latency.
 	 * @param requests the counter for tracking the number of requests.

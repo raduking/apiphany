@@ -58,7 +58,7 @@ public class WaitCounter implements Wait {
 	 * @param maxCount maximum number of retries
 	 * @param interval interval
 	 * @param intervalTimeUnit interval time unit
-	 * @return wait object
+	 * @return the wait object
 	 */
 	public static WaitCounter of(final int maxCount, final long interval, final TimeUnit intervalTimeUnit) {
 		return new WaitCounter(maxCount, interval, intervalTimeUnit);
@@ -69,7 +69,7 @@ public class WaitCounter implements Wait {
 	 *
 	 * @param maxCount maximum number of retries
 	 * @param interval interval
-	 * @return wait object
+	 * @return the wait object
 	 */
 	public static WaitCounter of(final int maxCount, final Duration interval) {
 		return of(maxCount, interval.toMillis(), TimeUnit.MILLISECONDS);

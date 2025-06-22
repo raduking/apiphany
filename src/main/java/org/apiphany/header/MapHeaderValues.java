@@ -12,8 +12,8 @@ import org.morphix.lang.JavaObjects;
 
 /**
  * A {@link HeaderValues} implementation that extracts header values from a {@link Map}. This concrete implementation
- * handles cases where the headers object is a Map structure, typically mapping header names to lists of values. If the
- * input headers are not a Map, it delegates the request to the next {@link HeaderValues} in the chain.
+ * handles cases where the object containing the headers is a Map structure, typically mapping header names to lists of
+ * values. If the input headers are not a Map, it delegates the request to the next {@link HeaderValues} in the chain.
  * <p>
  * This class is particularly useful for processing HTTP headers stored in map structures, following the Chain of
  * Responsibility pattern established by {@link HeaderValues}.
@@ -36,8 +36,8 @@ public class MapHeaderValues extends HeaderValues {
 	 *
 	 * @param <N> header name type
 	 * @param header the name of the header to retrieve (case sensitivity depends on implementation)
-	 * @param headers the headers object, expected to be a {@link Map} of header names to values, or any other type that
-	 *     subsequent handlers in the chain might process
+	 * @param headers the object containing the headers, expected to be a {@link Map} of header names to values, or any
+	 *     other type that subsequent handlers in the chain might process
 	 * @return a list of values for the specified header if headers is a Map and contains the header, otherwise the result
 	 * from the next handler in the chain
 	 * @throws ClassCastException if headers is a Map but cannot be cast to the expected type

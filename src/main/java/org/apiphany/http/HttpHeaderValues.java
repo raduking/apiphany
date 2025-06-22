@@ -32,8 +32,8 @@ public class HttpHeaderValues extends HeaderValues {
 	 *
 	 * @param <N> header name type
 	 * @param header the name of the header to retrieve (typically case-insensitive, according to HTTP standards)
-	 * @param headers the headers object, expected to be an {@link HttpHeaders} instance or any other type that subsequent
-	 *     handlers in the chain might process
+	 * @param headers the object containing the headers, expected to be an {@link HttpHeaders} instance or any other type
+	 *     that subsequent handlers in the chain might process
 	 * @return a list of values for the specified header if headers is an HttpHeaders instance and contains the header,
 	 * otherwise the result from the next handler in the chain
 	 * @throws ClassCastException if headers cannot be properly processed by the next handler in the chain

@@ -41,7 +41,7 @@ public class Retry {
 	/**
 	 * Private constructor.
 	 *
-	 * @param wait wait object
+	 * @param wait the wait object
 	 */
 	private Retry(final Wait wait) {
 		this.waitPrototype = wait;
@@ -50,7 +50,7 @@ public class Retry {
 	/**
 	 * Builds a retry object.
 	 *
-	 * @param wait wait object that configures wait intervals
+	 * @param wait the wait object that configures wait intervals
 	 * @return a retry object
 	 */
 	public static Retry of(final Wait wait) {

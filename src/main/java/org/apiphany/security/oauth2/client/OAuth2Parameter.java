@@ -131,7 +131,7 @@ public enum OAuth2Parameter {
 	VERIFICATION_URI_COMPLETE("verification_uri_complete"),
 
 	/**
-	 * The interval parameter (RFC 8628 Section 3.2). Specifies polling interval for Device Authorization Flow.
+	 * The interval parameter (RFC 8628 Section 3.2). Specifies the polling interval for Device Authorization Flow.
 	 */
 	INTERVAL("interval");
 
