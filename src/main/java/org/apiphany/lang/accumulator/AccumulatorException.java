@@ -15,6 +15,9 @@ public class AccumulatorException extends RuntimeException {
 	@Serial
 	private static final long serialVersionUID = -1040952495776314643L;
 
+	/**
+	 * The accumulator that caused the exception.
+	 */
 	private final transient Accumulator<?> accumulator;
 
 	/**

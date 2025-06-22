@@ -133,9 +133,9 @@ public abstract class Accumulator<T> {
 	}
 
 	/**
-	 * Returns the size of this accumulator meaning how many informations it accumulated.
+	 * Returns the size of this accumulator meaning how much information it accumulated.
 	 *
-	 * @return the size of this accumulator meaning how many informations it accumulated
+	 * @return the size of this accumulator meaning how much information it accumulated
 	 */
 	public int size() {
 		return list.size();

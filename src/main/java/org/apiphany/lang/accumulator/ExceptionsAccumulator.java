@@ -10,7 +10,7 @@ import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Unchecked;
 
 /**
- * Extends the {@link Accumulator} class for exceptions accumulation.
+ * Extends the {@link Accumulator} class for exception accumulation.
  *
  * @author Radu Sebastian LAZIN
  */
@@ -118,7 +118,7 @@ public class ExceptionsAccumulator extends Accumulator<Exception> {
 	/**
 	 * Alias for {@link #getInformationList()}
 	 *
-	 * @return the exceptions list
+	 * @return the exception list
 	 */
 	public List<Exception> getExceptions() {
 		return getInformationList();

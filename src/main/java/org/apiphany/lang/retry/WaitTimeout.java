@@ -77,7 +77,7 @@ public class WaitTimeout implements Wait {
 	 * @param timeoutTimeUnit timeout time unit
 	 * @param interval interval
 	 * @param intervalTimeUnit interval time unit
-	 * @return wait object
+	 * @return the wait object
 	 */
 	public static WaitTimeout of(final long timeout, final TimeUnit timeoutTimeUnit, final long interval, final TimeUnit intervalTimeUnit) {
 		return new WaitTimeout(timeout, timeoutTimeUnit, interval, intervalTimeUnit);
@@ -88,7 +88,7 @@ public class WaitTimeout implements Wait {
 	 *
 	 * @param timeout timeout
 	 * @param interval interval
-	 * @return wait object
+	 * @return the wait object
 	 */
 	public static WaitTimeout of(final Duration timeout, final Duration interval) {
 		return of(timeout.toMillis(), TimeUnit.MILLISECONDS, interval.toMillis(), TimeUnit.MILLISECONDS);

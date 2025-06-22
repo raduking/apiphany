@@ -53,7 +53,7 @@ public enum ClientAuthenticationMethod {
 	 *
 	 * @param value the value to set
 	 */
-	private ClientAuthenticationMethod(final String value) {
+	ClientAuthenticationMethod(final String value) {
 		this.value = value;
 	}
 

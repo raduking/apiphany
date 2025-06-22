@@ -67,7 +67,7 @@ public interface Headers {
 	 *
 	 * @param headerName header name
 	 * @param headerValue header value
-	 * @param headerValuesFunction a function that return the header values for the given header name
+	 * @param headerValuesFunction a function that returns the header values for the given header name
 	 * @return true if the given headers contain the given header with the given value, false otherwise
 	 */
 	static <N, V> boolean contains(final N headerName, final V headerValue, final Function<N, List<String>> headerValuesFunction) {

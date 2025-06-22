@@ -12,7 +12,7 @@ import java.util.zip.GZIPOutputStream;
 import org.apiphany.lang.Strings;
 
 /**
- * Utility class for compressing / de-compressing via GZIP.
+ * Utility class for compressing / decompressing via GZIP.
  *
  * @author Radu Sebastian LAZIN
  */
@@ -80,7 +80,7 @@ public class GZip {
 	/**
 	 * De-compress a GZIP-ed byte array to a {@link String}.
 	 *
-	 * @param body GZIP byte array to de-compress
+	 * @param body GZIP byte array to decompress
 	 * @return de-compressed string
 	 * @throws IOException on error
 	 */
