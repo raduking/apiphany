@@ -60,6 +60,13 @@ public class ClientProperties {
 	private Map<String, Object> custom = new HashMap<>();
 
 	/**
+	 * Default constructor.
+	 */
+	public ClientProperties() {
+		// empty
+	}
+
+	/**
 	 * Returns a JSON representation of this {@link ClientProperties} object.
 	 *
 	 * @return a JSON string representing this object.
@@ -644,6 +651,13 @@ public class ClientProperties {
 		 * Indicates whether GZIP compression is enabled.
 		 */
 		private Boolean gzip;
+
+		/**
+		 * Default constructor.
+		 */
+		protected Compression() {
+			// empty
+		}
 
 		/**
 		 * Returns whether GZIP compression is enabled.

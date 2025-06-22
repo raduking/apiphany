@@ -86,6 +86,13 @@ public class AuthenticationToken {
 	private Instant expiration;
 
 	/**
+	 * Default constructor.
+	 */
+	public AuthenticationToken() {
+		// empty
+	}
+
+	/**
 	 * Returns a JSON representation of this authentication token.
 	 *
 	 * @return a JSON string representing this object.

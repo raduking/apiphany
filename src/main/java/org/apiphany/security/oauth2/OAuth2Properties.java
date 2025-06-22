@@ -29,6 +29,13 @@ public class OAuth2Properties {
 	private Map<String, OAuth2ProviderDetails> provider;
 
 	/**
+	 * Default constructor.
+	 */
+	public OAuth2Properties() {
+		// empty
+	}
+
+	/**
 	 * Returns the string representation of this object as JSON.
 	 *
 	 * @return the string representation of this object as JSON

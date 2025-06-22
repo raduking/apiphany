@@ -69,6 +69,13 @@ public class OAuth2ClientRegistration {
 	private String provider;
 
 	/**
+	 * Default constructor.
+	 */
+	public OAuth2ClientRegistration() {
+		// empty
+	}
+
+	/**
 	 * Returns a JSON representation of this client registration.
 	 *
 	 * @return JSON string representation of this object

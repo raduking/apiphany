@@ -14,6 +14,13 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 public class SimpleExceptionSerializer extends JsonSerializer<Exception> {
 
 	/**
+	 * Default constructor.
+	 */
+	public SimpleExceptionSerializer() {
+		// empty
+	}
+
+	/**
 	 * @see #serialize(Exception, JsonGenerator, SerializerProvider)
 	 */
 	@Override

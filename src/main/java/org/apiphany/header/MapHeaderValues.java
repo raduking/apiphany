@@ -23,6 +23,13 @@ import org.morphix.lang.JavaObjects;
 public class MapHeaderValues extends HeaderValues {
 
 	/**
+	 * Default constructor.
+	 */
+	public MapHeaderValues() {
+		// empty
+	}
+
+	/**
 	 * Retrieves header values from a Map structure or delegates to the next handler in the chain. If the input headers
 	 * object is a {@link Map}, this method extracts values for the specified header using {@link #get(Object, Map)}.
 	 * Otherwise, it passes the request to the next {@link HeaderValues} in the chain.

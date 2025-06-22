@@ -49,6 +49,13 @@ public class OAuth2ProviderDetails {
 	private Map<String, Serializable> configurationMetadata = Collections.emptyMap();
 
 	/**
+	 * Default constructor.
+	 */
+	public OAuth2ProviderDetails() {
+		// empty
+	}
+
+	/**
 	 * Returns a JSON representation of this provider configuration.
 	 *
 	 * @return JSON string representation of this object
@@ -186,6 +193,13 @@ public class OAuth2ProviderDetails {
 		 * The name of the attribute to use as the user's name. Typically, "sub", "name", or "preferred_username".
 		 */
 		private String userNameAttributeName;
+
+		/**
+		 * Default constructor.
+		 */
+		public UserInfoEndpoint() {
+			// empty
+		}
 
 		/**
 		 * Returns the UserInfo endpoint URI.

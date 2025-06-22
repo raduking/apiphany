@@ -137,17 +137,15 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	 */
 	private boolean initialize() { // NOSONAR we don't care about the parent class private method
 		if (exchangeClient.getClientProperties().isDisabled()) {
-			LOGGER.warn("[{}] OAuth2 client is disabled!", getClass().getSimpleName());
+			LOGGER.warn("[{}] OAuth2 client is disabled!", getName());
 			return false;
 		}
 		if (Maps.isEmpty(oAuth2Properties.getRegistration())) {
-			LOGGER.warn("[{}] No OAuth2 client registrations provided in: {}.registration",
-					getClass().getSimpleName(), OAuth2Properties.ROOT);
+			LOGGER.warn("[{}] No OAuth2 client registrations provided in: {}.registration", getName(), OAuth2Properties.ROOT);
 			return false;
 		}
 		if (Maps.isEmpty(oAuth2Properties.getProvider())) {
-			LOGGER.warn("[{}] No OAuth2 providers provided in: {}.provider",
-					getClass().getSimpleName(), OAuth2Properties.ROOT);
+			LOGGER.warn("[{}] No OAuth2 providers provided in: {}.provider", getName(), OAuth2Properties.ROOT);
 			return false;
 		}
 		// TODO: implement for multiple registrations
@@ -173,18 +171,18 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 		OAuth2ClientRegistration clientRegistration = oAuth2Properties.getClientRegistration(clientRegistrationName);
 		if (null == clientRegistration) {
 			LOGGER.warn("[{}] No OAuth2 client provided for client registration in {}.registration.{}",
-					getClass().getSimpleName(), OAuth2Properties.ROOT, clientRegistrationName);
+					getName(), OAuth2Properties.ROOT, clientRegistrationName);
 			return false;
 		}
 		if (!clientRegistration.hasClientSecret()) {
 			LOGGER.warn("[{}] No OAuth2 client-secret provided in {}.registration.{}",
-					getClass().getSimpleName(), OAuth2Properties.ROOT, clientRegistrationName);
+					getName(), OAuth2Properties.ROOT, clientRegistrationName);
 			return false;
 		}
 		OAuth2ProviderDetails providerDetails = oAuth2Properties.getProviderDetails(clientRegistration);
 		if (null == providerDetails) {
 			LOGGER.warn("[{}] No OAuth2 provider named '{}' for found in in {}.provider",
-					getClass().getSimpleName(), clientRegistration.getProvider(), OAuth2Properties.ROOT);
+					getName(), clientRegistration.getProvider(), OAuth2Properties.ROOT);
 			return false;
 		}
 

@@ -19,6 +19,13 @@ import org.apiphany.lang.Strings;
 public class HttpHeaderValues extends HeaderValues {
 
 	/**
+	 * Default constructor.
+	 */
+	public HttpHeaderValues() {
+		// empty
+	}
+
+	/**
 	 * Retrieves header values from an {@link HttpHeaders} object or delegates to the next handler. If the input headers
 	 * object is an instance of {@link HttpHeaders}, this method extracts values for the specified header using
 	 * {@link #get(Object, HttpHeaders)}. Otherwise, it passes the request to the next {@link HeaderValues} in the chain.
