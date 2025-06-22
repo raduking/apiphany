@@ -79,6 +79,13 @@ public class ApiRequest<T> extends ApiMessage<T> {
 	protected AuthenticationType authenticationType;
 
 	/**
+	 * Default constructor.
+	 */
+	public ApiRequest() {
+		// empty
+	}
+
+	/**
 	 * Returns the method for the request.
 	 *
 	 * @param <R> request method type

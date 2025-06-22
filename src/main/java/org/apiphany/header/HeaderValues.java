@@ -28,6 +28,13 @@ public class HeaderValues {
 	private HeaderValues next;
 
 	/**
+	 * Default constructor.
+	 */
+	protected HeaderValues() {
+		// empty
+	}
+
+	/**
 	 * Retrieves values for the specified header. The default implementation always returns an empty list. Subclasses should
 	 * override this method to provide specific header resolution logic.
 	 *

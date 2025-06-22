@@ -23,6 +23,13 @@ public class HttpProperties {
 	private Request request = new Request();
 
 	/**
+	 * Default constructor.
+	 */
+	public HttpProperties() {
+		// empty
+	}
+
+	/**
 	 * Returns a JSON representation of this {@link HttpProperties} object.
 	 *
 	 * @return a JSON string representing this object.
@@ -66,6 +73,13 @@ public class HttpProperties {
 		 * The HTTP version as a string (e.g., "HTTP/1.1" or "HTTP/2").
 		 */
 		private String version = HttpMessages.toProtocolString(DEFAULT_HTTP_VERSION);
+
+		/**
+		 * Default constructor.
+		 */
+		public Request() {
+			// empty
+		}
 
 		/**
 		 * Returns a JSON representation of this {@link Request} object.

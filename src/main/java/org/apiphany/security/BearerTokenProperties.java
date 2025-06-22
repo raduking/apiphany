@@ -18,6 +18,13 @@ public class BearerTokenProperties {
 	private String token;
 
 	/**
+	 * Default constructor.
+	 */
+	public BearerTokenProperties() {
+		// empty
+	}
+
+	/**
 	 * Returns the token.
 	 *
 	 * @return the token

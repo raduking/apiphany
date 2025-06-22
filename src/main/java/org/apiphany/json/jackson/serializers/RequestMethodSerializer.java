@@ -16,6 +16,13 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 public class RequestMethodSerializer extends JsonSerializer<RequestMethod> {
 
 	/**
+	 * Default constructor.
+	 */
+	public RequestMethodSerializer() {
+		// empty
+	}
+
+	/**
 	 * @see #serialize(RequestMethod, JsonGenerator, SerializerProvider)
 	 */
 	@Override

@@ -24,6 +24,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 public class RequestMethodDeserializer extends JsonDeserializer<RequestMethod> {
 
 	/**
+	 * Default constructor.
+	 */
+	public RequestMethodDeserializer() {
+		// empty
+	}
+
+	/**
 	 * Deserializes JSON content into a {@link RequestMethod} instance.
 	 * <p>
 	 * The method processes the JSON input as follows:
