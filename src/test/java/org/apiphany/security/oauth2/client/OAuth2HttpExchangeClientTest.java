@@ -1,7 +1,9 @@
 package org.apiphany.security.oauth2.client;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.time.Duration;
 import java.util.Map;
@@ -9,6 +11,7 @@ import java.util.Map;
 import org.apiphany.ApiClient;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.http.JavaNetHttpExchangeClient;
+import org.apiphany.http.HttpException;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.net.Sockets;
@@ -46,7 +49,7 @@ class OAuth2HttpExchangeClientTest {
 	private OAuth2ClientRegistration clientRegistration;
 	private OAuth2ProviderDetails providerDetails;
 
-	private SimpleApiClient simpleApiClient;
+	private SimpleApiClientWithOAuth2 simpleApiClientWithOAuth2;
 
 	private ClientProperties clientProperties;
 
@@ -68,12 +71,12 @@ class OAuth2HttpExchangeClientTest {
 		clientProperties = new ClientProperties();
 		clientProperties.setCustomProperties(oAuth2Properties);
 
-		simpleApiClient = new SimpleApiClient(clientProperties);
+		simpleApiClientWithOAuth2 = new SimpleApiClientWithOAuth2(clientProperties);
 	}
 
 	@AfterEach
 	void tearDown() throws Exception {
-		simpleApiClient.close();
+		simpleApiClientWithOAuth2.close();
 	}
 
 	@AfterAll
@@ -84,14 +87,34 @@ class OAuth2HttpExchangeClientTest {
 
 	@Test
 	void shouldReturnValidAuthenticationTokenWithSimpleOAuth2Server() {
-		String result = simpleApiClient.getName();
+		String result = simpleApiClientWithOAuth2.getName();
 
 		assertThat(result, equalTo(SimpleHttpServer.NAME));
 	}
 
-	static class SimpleApiClient extends ApiClient {
+	@Test
+	void shouldNotGetTheValueWithoutAToken() throws Exception {
+		try (SimpleApiClient simpleApiClient = new SimpleApiClient(clientProperties)) {
+			String result =  simpleApiClient.getName();
 
-		protected SimpleApiClient(final ClientProperties properties) {
+			assertThat(result, nullValue());
+		}
+	}
+
+	@Test
+	void shouldNotGetTheValueWithoutATokenAndThrowExceptionIfBleedExceptionIsSetToTrue() throws Exception {
+		try (SimpleApiClient simpleApiClient = new SimpleApiClient(clientProperties)) {
+			simpleApiClient.setBleedExceptions(true);
+
+			HttpException httpException = assertThrows(HttpException.class, simpleApiClient::getName);
+
+			assertThat(httpException.getMessage(), equalTo("Missing Authorization header."));
+		}
+	}
+
+	static class SimpleApiClientWithOAuth2 extends ApiClient {
+
+		protected SimpleApiClientWithOAuth2(final ClientProperties properties) {
 			super(new OAuth2HttpExchangeClient(new JavaNetHttpExchangeClient(properties)));
 		}
 
@@ -105,4 +128,22 @@ class OAuth2HttpExchangeClientTest {
 					.orNull();
 		}
 	}
+
+	static class SimpleApiClient extends ApiClient {
+
+		protected SimpleApiClient(final ClientProperties properties) {
+			super(new JavaNetHttpExchangeClient(properties));
+		}
+
+		public String getName() {
+			return client()
+					.http()
+					.get()
+					.url("http://localhost:" + API_SERVER_PORT)
+					.path(API, "name")
+					.retrieve(String.class)
+					.orNull();
+		}
+	}
+
 }
