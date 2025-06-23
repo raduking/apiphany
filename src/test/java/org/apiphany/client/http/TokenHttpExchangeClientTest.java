@@ -18,9 +18,9 @@ import org.apiphany.http.HttpHeader;
 import org.apiphany.lang.Strings;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationType;
-import org.apiphany.security.BearerTokenProperties;
 import org.apiphany.security.JwtTokenValidator;
 import org.apiphany.security.JwtTokenValidator.TokenValidationException;
+import org.apiphany.security.TokenProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -112,12 +112,12 @@ class TokenHttpExchangeClientTest {
 	}
 
 	@Test
-	void shouldAddTheAuthorizationHeaderToTheRequestSpecifiedInClientProperties() {
-		BearerTokenProperties bearerTokenProperties = new BearerTokenProperties();
-		bearerTokenProperties.setToken(TOKEN);
+	void shouldAddTheBearerAuthorizationHeaderToTheRequestWithTokenSpecifiedInClientProperties() {
+		TokenProperties tokenProperties = new TokenProperties();
+		tokenProperties.setValue(TOKEN);
 
 		ClientProperties clientProperties = new ClientProperties();
-		clientProperties.setCustomProperties(bearerTokenProperties);
+		clientProperties.setCustomProperties(tokenProperties);
 
 		doReturn(clientProperties).when(exchangeClient).getClientProperties();
 
@@ -131,5 +131,28 @@ class TokenHttpExchangeClientTest {
 		String authorizationHeader = MapHeaderValues.get(HttpHeader.AUTHORIZATION, headers).getFirst();
 
 		assertThat(authorizationHeader, equalTo(HeaderValues.value(HttpAuthScheme.BEARER, TOKEN)));
+	}
+
+	@Test
+	void shouldAddTheAuthorizationHeaderToTheRequestWithAuthSchemeAndTokenSpecifiedInClientProperties() {
+		TokenProperties tokenProperties = new TokenProperties();
+		tokenProperties.setValue(TOKEN);
+		tokenProperties.setAuthenticationScheme(HttpAuthScheme.BASIC.value());
+
+		ClientProperties clientProperties = new ClientProperties();
+		clientProperties.setCustomProperties(tokenProperties);
+
+		doReturn(clientProperties).when(exchangeClient).getClientProperties();
+
+		client = new TokenHttpExchangeClient(exchangeClient);
+
+		ApiRequest<Object> apiRequest = new ApiRequest<>();
+
+		client.exchange(apiRequest);
+
+		Map<String, List<String>> headers = apiRequest.getHeaders();
+		String authorizationHeader = MapHeaderValues.get(HttpHeader.AUTHORIZATION, headers).getFirst();
+
+		assertThat(authorizationHeader, equalTo(HeaderValues.value(HttpAuthScheme.BASIC, TOKEN)));
 	}
 }

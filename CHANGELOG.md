@@ -7,6 +7,10 @@
 - Renamed `ClientProperties.Timeout.DISABLED` to `ClientProperties.Timeout.INFINTE`.
 - Added `ClientProperties.Timeout.ZERO` (which actually also means infinite timeout).
 - Upgraded parent to `3.5.3`.
+- Renamed `BearerTokenProperties` to `TokenProperties`.
+- Changed `TokenProperties.token` to `TokenProperties.value`.
+- Added `TokenProperties.authenticationScheme` to be able to configure it for a `TokenHttpExchangeClient`.
+- Changed `TokenHttpExchangeClient` to use `TokenProperties.authenticationScheme` and defaults to `HttpAuthScheme.BEARER` if missing.
 
 ---
 
