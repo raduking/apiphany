@@ -16,7 +16,7 @@ import org.apiphany.http.HttpHeader;
 import org.apiphany.security.AuthenticationException;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationType;
-import org.apiphany.security.BearerTokenProperties;
+import org.apiphany.security.TokenProperties;
 import org.morphix.lang.Nullables;
 
 /**
@@ -88,13 +88,19 @@ public class TokenHttpExchangeClient extends AbstractHttpExchangeClient {
 		if (null == clientProperties) {
 			return;
 		}
-		BearerTokenProperties bearerTokenProperties = clientProperties.getCustomProperties(BearerTokenProperties.class);
-		if (null != bearerTokenProperties) {
-			AuthenticationToken authToken = new AuthenticationToken();
-			authToken.setAccessToken(bearerTokenProperties.getToken());
-			setAuthenticationToken(authToken);
-			setAuthenticationScheme(HttpAuthScheme.BEARER);
+		TokenProperties tokenProperties = clientProperties.getCustomProperties(TokenProperties.class);
+		if (null == tokenProperties) {
+			return;
 		}
+		AuthenticationToken authToken = new AuthenticationToken();
+		authToken.setAccessToken(tokenProperties.getValue());
+		setAuthenticationToken(authToken);
+
+		String authScheme = tokenProperties.getAuthenticationScheme();
+		HttpAuthScheme httpAuthScheme = Nullables.notNull(authScheme)
+				.thenYield(HttpAuthScheme::fromString)
+				.orElse(HttpAuthScheme.BEARER);
+		setAuthenticationScheme(httpAuthScheme);
 	}
 
 	/**
