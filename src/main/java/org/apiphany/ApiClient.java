@@ -101,6 +101,7 @@ public class ApiClient implements AutoCloseable {
 	 * @param baseUrl base URL to which all paths will be appended
 	 * @param exchangeClients list of exchange clients
 	 */
+	@SuppressWarnings("resource")
 	protected ApiClient(
 			final String baseUrl,
 			final List<ExchangeClient> exchangeClients) {
@@ -231,7 +232,7 @@ public class ApiClient implements AutoCloseable {
 	 * @param exchangeClient exchange client
 	 * @return API client adapter
 	 */
-	public ApiClientFluentAdapter client(final ExchangeClient exchangeClient) {
+	private ApiClientFluentAdapter client(final ExchangeClient exchangeClient) {
 		return ApiClientFluentAdapter.of(this)
 				.exchangeClient(exchangeClient);
 	}
@@ -242,6 +243,7 @@ public class ApiClient implements AutoCloseable {
 	 * @param authenticationType authentication type
 	 * @return API client adapter
 	 */
+	@SuppressWarnings("resource")
 	public ApiClientFluentAdapter client(final AuthenticationType authenticationType) {
 		ExchangeClient exchangeClient = getExchangeClient(authenticationType);
 		return client(exchangeClient);
@@ -280,6 +282,7 @@ public class ApiClient implements AutoCloseable {
 	 * @param apiRequest API request object
 	 * @return API response object
 	 */
+	@SuppressWarnings("resource")
 	public <T> ApiResponse<T> exchange(final ApiRequest<T> apiRequest) {
 		ExchangeClient exchangeClient = getExchangeClient(apiRequest.getAuthenticationType());
 
@@ -382,6 +385,7 @@ public class ApiClient implements AutoCloseable {
 	 * @param apiRequest API request object
 	 * @return API response object
 	 */
+	@SuppressWarnings("resource")
 	public <T> CompletableFuture<ApiResponse<T>> asyncExchange(final ApiRequest<T> apiRequest) {
 		ExchangeClient exchangeClient = getExchangeClient(apiRequest.getAuthenticationType());
 		return exchangeClient.asyncExchange(apiRequest);
@@ -406,11 +410,13 @@ public class ApiClient implements AutoCloseable {
 	}
 
 	/**
-	 * Returns the exchange client by authentication type.
+	 * Returns the exchange client by authentication type. The returned exchange client should not be closed by the caller.
+	 * The {@link ApiClient} class handles the correct closing of all the associated exchange clients.
 	 *
 	 * @param authenticationType authentication type
 	 * @return an exchange client
 	 */
+	@SuppressWarnings("resource")
 	protected ExchangeClient getExchangeClient(final AuthenticationType authenticationType) {
 		return Nullables.nonNullOrDefault(exchangeClientsMap.get(authenticationType), () -> {
 			throw new IllegalStateException("No ExchangeClient found for authentication type: " + authenticationType);
