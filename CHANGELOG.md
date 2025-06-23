@@ -6,6 +6,7 @@
 
 - Renamed `ClientProperties.Timeout.DISABLED` to `ClientProperties.Timeout.INFINTE`.
 - Added `ClientProperties.Timeout.ZERO` (which actually also means infinite timeout).
+- Upgraded parent to `3.5.3`.
 
 ---
 
