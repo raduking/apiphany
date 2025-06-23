@@ -62,6 +62,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @param authenticationType the authentication type to set
 	 * @return this
 	 */
+	@SuppressWarnings("resource")
 	public ApiClientFluentAdapter authenticationType(final AuthenticationType authenticationType) {
 		this.authenticationType = authenticationType;
 		if (null == exchangeClient || authenticationType != exchangeClient.getAuthenticationType()) {
@@ -76,7 +77,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @param exchangeClient exchange client to set
 	 * @return this
 	 */
-	public ApiClientFluentAdapter exchangeClient(final ExchangeClient exchangeClient) {
+	protected ApiClientFluentAdapter exchangeClient(final ExchangeClient exchangeClient) {
 		this.exchangeClient = exchangeClient;
 		return authenticationType(exchangeClient.getAuthenticationType());
 	}
