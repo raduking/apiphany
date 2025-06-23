@@ -15,12 +15,13 @@ import org.apiphany.client.http.TokenHttpExchangeClient;
 import org.apiphany.http.HttpAuthScheme;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Maps;
+import org.apiphany.lang.retry.Retry;
+import org.apiphany.lang.retry.WaitCounter;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationType;
 import org.apiphany.security.oauth2.OAuth2Properties;
 import org.apiphany.security.oauth2.OAuth2ProviderDetails;
 import org.morphix.lang.JavaObjects;
-import org.morphix.lang.thread.Threads;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -207,13 +208,12 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	 * Safely closes the token refresh scheduler.
 	 */
 	private void closeTokenRefreshScheduler() {
-		int attempts = 0;
+		boolean cancelled = true;
 		if (null != scheduledFuture) {
-			while (!scheduledFuture.cancel(false) && attempts++ < MAX_CLOSE_ATTEMPTS) {
-				Threads.safeSleep(Duration.ofMillis(200));
-			}
+			Retry retry = Retry.of(WaitCounter.of(MAX_CLOSE_ATTEMPTS, Duration.ofMillis(200)));
+			cancelled = retry.when(() -> scheduledFuture.cancel(false), Boolean::booleanValue);
 		}
-		if (attempts < MAX_CLOSE_ATTEMPTS) {
+		if (cancelled) {
 			tokenRefreshScheduler.close();
 		} else {
 			List<Runnable> runningTasks = tokenRefreshScheduler.shutdownNow();

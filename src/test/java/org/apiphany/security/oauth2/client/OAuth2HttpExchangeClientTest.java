@@ -1,12 +1,14 @@
 package org.apiphany.security.oauth2.client;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.time.Duration;
 import java.util.Map;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.apiphany.ApiClient;
 import org.apiphany.client.ClientProperties;
@@ -93,6 +95,17 @@ class OAuth2HttpExchangeClientTest {
 	}
 
 	@Test
+	void shouldInitializeTokenRefreshScheduler() throws Exception {
+		try (OAuth2HttpExchangeClient oAuth2HttpExchangeClient =
+				new OAuth2HttpExchangeClient(new JavaNetHttpExchangeClient(clientProperties))) {
+			@SuppressWarnings("resource")
+			ScheduledExecutorService executorService = oAuth2HttpExchangeClient.getTokenRefreshScheduler();
+
+			assertThat(executorService, notNullValue());
+		}
+	}
+
+	@Test
 	void shouldNotGetTheValueWithoutAToken() throws Exception {
 		try (SimpleApiClient simpleApiClient = new SimpleApiClient(clientProperties)) {
 			String result =  simpleApiClient.getName();
@@ -114,6 +127,7 @@ class OAuth2HttpExchangeClientTest {
 
 	static class SimpleApiClientWithOAuth2 extends ApiClient {
 
+		@SuppressWarnings("resource")
 		protected SimpleApiClientWithOAuth2(final ClientProperties properties) {
 			super(new OAuth2HttpExchangeClient(new JavaNetHttpExchangeClient(properties)));
 		}
@@ -131,6 +145,7 @@ class OAuth2HttpExchangeClientTest {
 
 	static class SimpleApiClient extends ApiClient {
 
+		@SuppressWarnings("resource")
 		protected SimpleApiClient(final ClientProperties properties) {
 			super(new JavaNetHttpExchangeClient(properties));
 		}
