@@ -199,7 +199,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 */
 	public ApiClientFluentAdapter path(final String... pathSegments) {
 		String baseUrl = apiClient.getBaseUrl();
-		if (ApiClient.NO_BASE_URL.equals(baseUrl)) {
+		if (ApiClient.EMPTY_BASE_URL.equals(baseUrl)) {
 			baseUrl = url;
 		}
 		return url(baseUrl, pathSegments);

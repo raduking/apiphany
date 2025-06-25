@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
 import org.apiphany.client.ExchangeClient;
+import org.apiphany.lang.Pair;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.accumulator.DurationAccumulator;
 import org.apiphany.lang.retry.Retry;
@@ -40,6 +41,9 @@ import io.micrometer.core.instrument.MeterRegistry;
  */
 public class ApiClient implements AutoCloseable {
 
+	/**
+	 * Class logger.
+	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(ApiClient.class);
 
 	/**
@@ -50,7 +54,7 @@ public class ApiClient implements AutoCloseable {
 	/**
 	 * No base URL provided to be used when constructing the API client object.
 	 */
-	public static final String NO_BASE_URL = "";
+	public static final String EMPTY_BASE_URL = "";
 
 	/**
 	 * The URL as string as the base path.
@@ -91,9 +95,32 @@ public class ApiClient implements AutoCloseable {
 	private MeterRegistry meterRegistry;
 
 	/**
-	 * Exchange clients map based on authentication type.
+	 * Exchange clients map based on authentication type and a pair of exchange client and managed flag that tells the
+	 * API client if the exchange client's life cycle is managed by the API client or not.
 	 */
-	private final Map<AuthenticationType, ExchangeClient> exchangeClientsMap = new ConcurrentHashMap<>();
+	private final Map<AuthenticationType, Pair<ExchangeClient, Boolean>> exchangeClientsMap = new ConcurrentHashMap<>();
+
+	/**
+	 * Constructor with exchange clients.
+	 *
+	 * @param baseUrl base URL to which all paths will be appended
+	 * @param exchangeClients list of exchange clients
+	 * @param managed flag that indicates whether the exchange clients are managed
+	 */
+	@SuppressWarnings("resource")
+	protected ApiClient(final String baseUrl, final List<ExchangeClient> exchangeClients, final boolean managed) {
+		LOGGER.debug("Initializing: {}(baseUrl: {})", getClass().getSimpleName(), Strings.isEmpty(baseUrl) ? "<no-base-url>" : baseUrl);
+		this.baseUrl = baseUrl;
+
+		for (ExchangeClient exchangeClient : exchangeClients) {
+			AuthenticationType authenticationType = exchangeClient.getAuthenticationType();
+			this.exchangeClientsMap.merge(authenticationType, Pair.of(exchangeClient, managed), (oldValue, newValue) -> {
+				throw new IllegalStateException("Failed to instantiate [" + getClass()
+						+ "]: For authentication type " + authenticationType + ", " + oldValue.left().getName() + " already exists");
+			});
+		}
+		initializeTypeObjects(this);
+	}
 
 	/**
 	 * Constructor with exchange clients.
@@ -101,23 +128,8 @@ public class ApiClient implements AutoCloseable {
 	 * @param baseUrl base URL to which all paths will be appended
 	 * @param exchangeClients list of exchange clients
 	 */
-	@SuppressWarnings("resource")
-	protected ApiClient(
-			final String baseUrl,
-			final List<ExchangeClient> exchangeClients) {
-		LOGGER.debug("Initializing: {}(baseUrl: {})", getClass().getSimpleName(), Strings.isEmpty(baseUrl) ? "<no-base-url>" : baseUrl);
-		this.baseUrl = baseUrl;
-
-		for (ExchangeClient exchangeClient : exchangeClients) {
-			AuthenticationType authenticationType = exchangeClient.getAuthenticationType();
-			if (this.exchangeClientsMap.containsKey(authenticationType)) {
-				throw new IllegalStateException("Failed to instantiate [" + getClass() +
-						"]: More than one " + ExchangeClient.class + " with type " + authenticationType + " found.");
-			}
-			this.exchangeClientsMap.put(authenticationType, exchangeClient);
-		}
-
-		initializeTypeObjects(this);
+	protected ApiClient(final String baseUrl, final List<ExchangeClient> exchangeClients) {
+		this(baseUrl, exchangeClients, false);
 	}
 
 	/**
@@ -126,20 +138,28 @@ public class ApiClient implements AutoCloseable {
 	 * @param baseUrl base URL to which all paths will be appended
 	 * @param exchangeClient exchange client
 	 */
-	protected ApiClient(
-			final String baseUrl,
-			final ExchangeClient exchangeClient) {
+	protected ApiClient(final String baseUrl, final ExchangeClient exchangeClient) {
 		this(baseUrl, Collections.singletonList(exchangeClient));
 	}
 
 	/**
-	 * Constructor with only one exchange client and no base url.
+	 * Constructor with only one exchange client and no base URL.
 	 *
 	 * @param exchangeClient exchange client
 	 */
-	protected ApiClient(
-			final ExchangeClient exchangeClient) {
-		this(NO_BASE_URL, Collections.singletonList(exchangeClient));
+	protected ApiClient(final ExchangeClient exchangeClient) {
+		this(EMPTY_BASE_URL, Collections.singletonList(exchangeClient));
+	}
+
+	/**
+	 * Constructor with base URL and exchange client builder, the built exchange client will be managed by this client.
+	 *
+	 * @param baseUrl
+	 * @param exchangeClientBuilder
+	 */
+	@SuppressWarnings("resource")
+	protected ApiClient(final String baseUrl, final ExchangeClient.Builder exchangeClientBuilder) {
+		this(baseUrl, Collections.singletonList(exchangeClientBuilder.build()), true);
 	}
 
 	/**
@@ -147,7 +167,11 @@ public class ApiClient implements AutoCloseable {
 	 */
 	@Override
 	public void close() throws Exception {
-		exchangeClientsMap.forEach(ThrowingBiConsumer.unchecked((authenticationType, exchangeClient) -> exchangeClient.close()));
+		exchangeClientsMap.forEach(ThrowingBiConsumer.unchecked((k, v) -> {
+			if (v.right().booleanValue()) {
+				v.left().close();
+			}
+		}));
 	}
 
 	/**
@@ -170,6 +194,17 @@ public class ApiClient implements AutoCloseable {
 	 */
 	public static ApiClient of(final String baseUrl, final List<ExchangeClient> exchangeClients) {
 		return new ApiClient(baseUrl, exchangeClients);
+	}
+
+	/**
+	 * Returns a new {@link ApiClient} object.
+	 *
+	 * @param baseUrl base URL
+	 * @param exchangeClientBuilder exchange client object builder
+	 * @return a new ApiClient object
+	 */
+	public static ApiClient of(final String baseUrl, final ExchangeClient.Builder exchangeClientBuilder) {
+		return new ApiClient(baseUrl, exchangeClientBuilder);
 	}
 
 	/**
@@ -416,9 +451,8 @@ public class ApiClient implements AutoCloseable {
 	 * @param authenticationType authentication type
 	 * @return an exchange client
 	 */
-	@SuppressWarnings("resource")
 	protected ExchangeClient getExchangeClient(final AuthenticationType authenticationType) {
-		return Nullables.nonNullOrDefault(exchangeClientsMap.get(authenticationType), () -> {
+		return Nullables.apply(exchangeClientsMap.get(authenticationType), Pair::left, () -> {
 			throw new IllegalStateException("No ExchangeClient found for authentication type: " + authenticationType);
 		});
 	}
