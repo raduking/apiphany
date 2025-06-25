@@ -1,6 +1,8 @@
 package org.apiphany.header;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -8,6 +10,7 @@ import java.util.function.Function;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Lists;
 import org.apiphany.lang.collections.Maps;
+import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Nullables;
 
 /**
@@ -47,15 +50,22 @@ public interface Headers {
 	 * @param headerValue header value
 	 */
 	static <N, H> void addTo(final Map<String, List<String>> existingHeaders, final N headerName, final H headerValue) {
-		String stringHeaderName = Strings.safeToString(headerName);
-		if (headerValue instanceof List<?> headerList) {
-			if (existingHeaders.containsKey(headerName)) {
-				List<String> existing = existingHeaders.computeIfAbsent(stringHeaderName, k -> new ArrayList<>());
-				headerList.forEach(hv -> existing.add(Strings.safeToString(hv)));
-			}
-		} else if (null != headerValue) {
-			existingHeaders.computeIfAbsent(stringHeaderName, k -> new ArrayList<>()).add(headerValue.toString());
+		if (null == headerName) {
+			return;
 		}
+		Collection<?> headerCollection = null;
+		if (headerValue instanceof Collection<?>) {
+			headerCollection = JavaObjects.cast(headerValue);
+		} else {
+			headerCollection = Collections.singletonList(headerValue);
+		}
+		List<String> existing = existingHeaders.computeIfAbsent(headerName.toString(), k -> new ArrayList<>());
+		headerCollection.forEach(hv -> {
+			String stringValue = Strings.safeToString(hv);
+			if (Strings.isNotEmpty(stringValue)) {
+				existing.add(stringValue);
+			}
+		});
 	}
 
 	/**
