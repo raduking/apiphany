@@ -27,7 +27,7 @@ class HeaderValuesChainTest {
 	private static final String HEADER_VALUE2 = "headerValue2";
 	private static final String HEADER_NAME1 = "headerName1";
 
-	private static Stream<Arguments> provideHeadersObjectsForEmptyChain() {
+	private static Stream<Arguments> provideHeadersObjectsForChainWithoutHandlers() {
 		return Stream.of(
 				Arguments.of(Map.of(HEADER_NAME1, List.of(HEADER_VALUE1))),
 				Arguments.of(new Object()),
@@ -36,7 +36,7 @@ class HeaderValuesChainTest {
 	}
 
 	@ParameterizedTest
-	@MethodSource("provideHeadersObjectsForEmptyChain")
+	@MethodSource("provideHeadersObjectsForChainWithoutHandlers")
 	void shouldReturnEmptyListFromHeadersWhenNoElementsAreAddedToTheChain(final Object headers) {
 		HeaderValuesChain chain = new HeaderValuesChain();
 
@@ -46,7 +46,7 @@ class HeaderValuesChainTest {
 	}
 
 	@ParameterizedTest
-	@MethodSource("provideHeadersObjectsForEmptyChain")
+	@MethodSource("provideHeadersObjectsForChainWithoutHandlers")
 	void shouldReturnFalseOnContainsWhenNoElementsAreAddedToTheChain(final Object headers) {
 		HeaderValuesChain chain = new HeaderValuesChain();
 
@@ -85,7 +85,7 @@ class HeaderValuesChainTest {
 	}
 
 	@ParameterizedTest
-	@MethodSource("provideHeadersObjectsForEmptyChain")
+	@MethodSource("provideHeadersObjectsForChainWithoutHandlers")
 	void shouldReturnEmptyListFromHeadersWhenChainIsNotEmptyButNoHeaderValuesCanHandle(final Object headers) {
 		HeaderValuesChain chain = new HeaderValuesChain();
 		chain.add(new HttpHeaderValues());
