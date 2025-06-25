@@ -11,6 +11,9 @@
 - Changed `TokenProperties.token` to `TokenProperties.value`.
 - Added `TokenProperties.authenticationScheme` to be able to configure it for a `TokenHttpExchangeClient`.
 - Changed `TokenHttpExchangeClient` to use `TokenProperties.authenticationScheme` and defaults to `HttpAuthScheme.BEARER` if missing.
+- Renamed `ApiClient.NO_BASE_URL` to `ApiClient.EMPTY_BASE_URL`.
+- Added `Pair` record to hold pairs of objects.
+- Added managed and unmanaged exchange clients support to `ApiClient`.
 
 ---
 

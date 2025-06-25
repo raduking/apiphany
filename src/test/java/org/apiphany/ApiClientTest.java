@@ -9,6 +9,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -25,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.http.HttpExchangeClient;
 import org.apiphany.header.Headers;
@@ -61,6 +63,7 @@ class ApiClientTest {
 	private static final int COUNT2 = 777;
 	private static final String SOME_ERROR_MESSAGE = "someErrorMessage";
 	private static final String METRICS_PREFIX = "test.metrics";
+	private static final String EXCHANGE_CLIENT_NAME = "ThisIsTheName";
 
 	private static final int HTTP_STATUS_OK = 200;
 	private static final int HTTP_STATUS_BAD_REQUEST = 400;
@@ -556,6 +559,7 @@ class ApiClientTest {
 	void shouldThrowExceptionWhenCreatingClientWithMoreExchangeClientsWithTheSameType() {
 		ExchangeClient exchangeClient1 = mock(ExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient1).getAuthenticationType();
+		doReturn(EXCHANGE_CLIENT_NAME).when(exchangeClient1).getName();
 		TestDto expected1 = TestDto.of(ID1, COUNT1);
 		ApiResponse<TestDto> response1 = ApiResponse.create(expected1)
 				.status(HttpStatus.OK)
@@ -579,9 +583,11 @@ class ApiClientTest {
 			result = e;
 			assertThat(result.getMessage(), equalTo("Failed to instantiate "
 					+ "[" + ApiClient.class + "]: "
-					+ "More than one "
-					+ "interface " + ExchangeClient.class.getCanonicalName() + " "
-					+ "with type " + AuthenticationType.OAUTH2 + " found."));
+					+ "For authentication type "
+					+ AuthenticationType.OAUTH2
+					+ ", "
+					+ EXCHANGE_CLIENT_NAME
+					+ " already exists"));
 		}
 
 		assertThat(result, notNullValue());
@@ -685,6 +691,62 @@ class ApiClientTest {
 		Retry result = api.getRetry();
 
 		assertThat(result, sameInstance(retry));
+	}
+
+	static class SomeExchangeClient implements ExchangeClient {
+
+		final ClientProperties clientProperties;
+		boolean closed = false;
+
+		public SomeExchangeClient(final ClientProperties clientProperties) {
+			this.clientProperties = clientProperties;
+		}
+
+		@Override
+		public void close() throws Exception {
+			this.closed = true;
+		}
+
+		@Override
+		public <T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest) {
+			return null;
+		}
+
+		public boolean isClosed() {
+			return closed;
+		}
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldCallCloseOnManagedExchangeClients() throws Exception {
+		ClientProperties clientProperties = new ClientProperties();
+
+		ApiClient api = ApiClient.of(BASE_URL, ExchangeClient.builder()
+				.client(SomeExchangeClient.class)
+				.properties(clientProperties));
+
+		api.close();
+
+		SomeExchangeClient exchangeClient = JavaObjects.cast(api.getExchangeClient(AuthenticationType.NONE));
+
+		assertTrue(exchangeClient.isClosed());
+	}
+
+	@Test
+	void shouldNotCallCloseOnNonManagedExchangeClients() throws Exception {
+		ClientProperties clientProperties = new ClientProperties();
+
+		SomeExchangeClient exchangeClient = new SomeExchangeClient(clientProperties);
+		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
+
+		api.close();
+
+		try {
+			assertFalse(exchangeClient.isClosed());
+		} finally {
+			exchangeClient.close();
+		}
 	}
 
 }

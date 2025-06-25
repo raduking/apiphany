@@ -35,6 +35,7 @@ class ApiRequestTest {
 	}
 
 	@Test
+	@SuppressWarnings("resource")
 	void shouldReturnCorrectJsonStringOnToString() {
 		TestDto dto = TestDto.of(ID, COUNT);
 
@@ -44,7 +45,7 @@ class ApiRequestTest {
 				return Maps.safe(apiMessage.getHeaders()).toString();
 			}
 		};
-		ApiClient apiClient = ApiClient.of(ApiClient.NO_BASE_URL, exchangeClient);
+		ApiClient apiClient = ApiClient.of(ApiClient.EMPTY_BASE_URL, exchangeClient);
 		ApiClientFluentAdapter adapter = apiClient.client()
 				.http()
 				.get()
