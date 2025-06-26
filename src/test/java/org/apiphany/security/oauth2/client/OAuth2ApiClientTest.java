@@ -6,6 +6,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import java.time.Duration;
 
 import org.apiphany.ApiClient;
+import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.header.HeaderValues;
 import org.apiphany.http.HttpAuthScheme;
@@ -52,18 +53,21 @@ class OAuth2ApiClientTest {
 
 	private SimpleApiClient simpleApiClient = new SimpleApiClient();
 
+	private ExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+
 	@BeforeEach
 	void setUp() {
 		clientRegistration = JsonBuilder.fromJson(Strings.fromFile("/oauth2-client-registration.json"), OAuth2ClientRegistration.class);
 		providerDetails = JsonBuilder.fromJson(Strings.fromFile("/oauth2-provider-details.json"), OAuth2ProviderDetails.class);
 		providerDetails.setTokenUri(OAUTH2_SERVER.getUrl() + "/token");
-		oAuth2ApiClient = new OAuth2ApiClient(clientRegistration, providerDetails, new JavaNetHttpExchangeClient());
+		oAuth2ApiClient = new OAuth2ApiClient(clientRegistration, providerDetails, exchangeClient);
 	}
 
 	@AfterEach
 	void tearDown() throws Exception {
 		oAuth2ApiClient.close();
 		simpleApiClient.close();
+		exchangeClient.close();
 	}
 
 	@AfterAll
@@ -95,7 +99,7 @@ class OAuth2ApiClientTest {
 	static class SimpleApiClient extends ApiClient {
 
 		protected SimpleApiClient() {
-			super(new JavaNetHttpExchangeClient());
+			super(with(JavaNetHttpExchangeClient.class));
 		}
 
 		public String getName(final AuthenticationToken token) {

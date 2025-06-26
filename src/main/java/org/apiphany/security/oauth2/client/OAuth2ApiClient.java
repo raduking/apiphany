@@ -40,11 +40,25 @@ public class OAuth2ApiClient extends ApiClient {
 	 *
 	 * @param clientRegistration the OAuth2 client registration details
 	 * @param providerDetails the OAuth2 provider configuration details
-	 * @param exchangeClient the HTTP exchange client to use for requests
+	 * @param httpExchangeClient the HTTP exchange client to use for requests
 	 */
 	public OAuth2ApiClient(final OAuth2ClientRegistration clientRegistration, final OAuth2ProviderDetails providerDetails,
-			final ExchangeClient exchangeClient) {
-		super(exchangeClient);
+			final ExchangeClient httpExchangeClient) {
+		super(httpExchangeClient);
+		this.clientRegistration = clientRegistration;
+		this.providerDetails = providerDetails;
+	}
+
+	/**
+	 * Constructs a new OAuth2 API client with the specified configurations.
+	 *
+	 * @param clientRegistration the OAuth2 client registration details
+	 * @param providerDetails the OAuth2 provider configuration details
+	 * @param exchangeClientBuilder the HTTP exchange client to use for requests
+	 */
+	public OAuth2ApiClient(final OAuth2ClientRegistration clientRegistration, final OAuth2ProviderDetails providerDetails,
+			final ExchangeClient.Builder exchangeClientBuilder) {
+		super(exchangeClientBuilder);
 		this.clientRegistration = clientRegistration;
 		this.providerDetails = providerDetails;
 	}

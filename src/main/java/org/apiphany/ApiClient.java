@@ -154,12 +154,21 @@ public class ApiClient implements AutoCloseable {
 	/**
 	 * Constructor with base URL and exchange client builder, the built exchange client will be managed by this client.
 	 *
-	 * @param baseUrl
-	 * @param exchangeClientBuilder
+	 * @param baseUrl base URL
+	 * @param exchangeClientBuilder exchange client builder
 	 */
 	@SuppressWarnings("resource")
 	protected ApiClient(final String baseUrl, final ExchangeClient.Builder exchangeClientBuilder) {
 		this(baseUrl, Collections.singletonList(exchangeClientBuilder.build()), true);
+	}
+
+	/**
+	 * Constructor with exchange client builder, the built exchange client will be managed by this client.
+	 *
+	 * @param exchangeClientBuilder exchange client builder
+	 */
+	protected ApiClient(final ExchangeClient.Builder exchangeClientBuilder) {
+		this(EMPTY_BASE_URL, exchangeClientBuilder);
 	}
 
 	/**
@@ -307,6 +316,26 @@ public class ApiClient implements AutoCloseable {
 			throw new IllegalStateException("Client has multiple ExchangeClient objects please call client(AuthenticationType)");
 		}
 		return authenticationTypes.iterator().next();
+	}
+
+	/**
+	 * Returns an exchange client builder with the given exchange client set.
+	 *
+	 * @param exchangeClient exchange client
+	 * @return exchange client builder
+	 */
+	public static ExchangeClient.Builder exchangeClient(final Class<? extends ExchangeClient> exchangeClient) {
+		return ExchangeClient.builder().client(exchangeClient);
+	}
+
+	/**
+	 * Alias for {@link #exchangeClient(Class)}.
+	 *
+	 * @param exchangeClient exchange client
+	 * @return exchange client builder
+	 */
+	public static ExchangeClient.Builder with(final Class<? extends ExchangeClient> exchangeClient) {
+		return exchangeClient(exchangeClient);
 	}
 
 	/**

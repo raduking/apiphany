@@ -7,7 +7,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -729,6 +729,24 @@ class ApiClientTest {
 		api.close();
 
 		SomeExchangeClient exchangeClient = JavaObjects.cast(api.getExchangeClient(AuthenticationType.NONE));
+
+		assertTrue(exchangeClient.isClosed());
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldCallCloseOnManagedExchangeClientsBuiltWithApiClientExchangeClientMethod() throws Exception {
+		ClientProperties clientProperties = new ClientProperties();
+
+		ApiClient api = ApiClient.of(BASE_URL, ApiClient
+				.exchangeClient(SomeExchangeClient.class)
+				.properties(clientProperties));
+
+		SomeExchangeClient exchangeClient = JavaObjects.cast(api.getExchangeClient(AuthenticationType.NONE));
+
+		assertFalse(exchangeClient.isClosed());
+
+		api.close();
 
 		assertTrue(exchangeClient.isClosed());
 	}
