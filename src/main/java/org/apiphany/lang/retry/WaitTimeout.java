@@ -179,4 +179,13 @@ public class WaitTimeout implements Wait {
 		return Objects.hash(timeout, timeoutTimeUnit, interval, intervalTimeUnit, start);
 	}
 
+	/**
+	 * Sets the start time.
+	 *
+	 * @param start time to set
+	 */
+	protected void setStart(final Instant start) {
+		this.start = start;
+	}
+
 }
