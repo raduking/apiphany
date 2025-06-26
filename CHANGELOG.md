@@ -14,6 +14,10 @@
 - Renamed `ApiClient.NO_BASE_URL` to `ApiClient.EMPTY_BASE_URL`.
 - Added `Pair` record to hold pairs of objects.
 - Added managed and unmanaged exchange clients support to `ApiClient`.
+- Added `ApiClient.exchangeClient` to create exchange client builder.
+- Added `ApiClient.with` as an alias to `ApiClient.exchangeClient` to create exchange client builder.
+- Added `ExchangeClient.Builder` for managed exchange clients in `ApiClient`.
+- Changed the default exchange client management to not managed when the `ApiClient` is built with direct `ExchangeClient` objects.
 
 ---
 

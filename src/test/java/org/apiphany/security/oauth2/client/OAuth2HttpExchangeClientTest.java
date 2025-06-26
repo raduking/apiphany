@@ -12,11 +12,13 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import org.apiphany.ApiClient;
 import org.apiphany.client.ClientProperties;
+import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.http.HttpException;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.net.Sockets;
+import org.apiphany.security.AuthenticationType;
 import org.apiphany.security.JwtTokenValidator;
 import org.apiphany.security.oauth2.OAuth2Properties;
 import org.apiphany.security.oauth2.OAuth2ProviderDetails;
@@ -115,6 +117,15 @@ class OAuth2HttpExchangeClientTest {
 	}
 
 	@Test
+	void shouldNotGetTheValueWithoutATokenWithManagedClient() throws Exception {
+		try (SimpleManagedApiClient simpleApiClient = new SimpleManagedApiClient(clientProperties)) {
+			String result =  simpleApiClient.getName();
+
+			assertThat(result, nullValue());
+		}
+	}
+
+	@Test
 	void shouldNotGetTheValueWithoutATokenAndThrowExceptionIfBleedExceptionIsSetToTrue() throws Exception {
 		try (SimpleApiClient simpleApiClient = new SimpleApiClient(clientProperties)) {
 			simpleApiClient.setBleedExceptions(true);
@@ -130,6 +141,12 @@ class OAuth2HttpExchangeClientTest {
 		@SuppressWarnings("resource")
 		protected SimpleApiClientWithOAuth2(final ClientProperties properties) {
 			super(new OAuth2HttpExchangeClient(new JavaNetHttpExchangeClient(properties)));
+		}
+
+		@Override
+		public void close() throws Exception {
+			super.close();
+			getExchangeClient(AuthenticationType.OAUTH2).close();
 		}
 
 		public String getName() {
@@ -148,6 +165,56 @@ class OAuth2HttpExchangeClientTest {
 		@SuppressWarnings("resource")
 		protected SimpleApiClient(final ClientProperties properties) {
 			super(new JavaNetHttpExchangeClient(properties));
+		}
+
+		@Override
+		public void close() throws Exception {
+			super.close();
+			getExchangeClient(AuthenticationType.NONE).close();
+		}
+
+		public String getName() {
+			return client()
+					.http()
+					.get()
+					.url("http://localhost:" + API_SERVER_PORT)
+					.path(API, "name")
+					.retrieve(String.class)
+					.orNull();
+		}
+	}
+
+	static class SimpleManagedApiClientWithOAuth2 extends ApiClient {
+
+		protected SimpleManagedApiClientWithOAuth2(final ClientProperties properties) {
+			super(ExchangeClient.builder()
+					.client(JavaNetHttpExchangeClient.class)
+					.properties(properties));
+		}
+
+		@Override
+		public void close() throws Exception {
+			super.close();
+			getExchangeClient(AuthenticationType.OAUTH2).close();
+		}
+
+		public String getName() {
+			return client()
+					.http()
+					.get()
+					.url("http://localhost:" + API_SERVER_PORT)
+					.path(API, "name")
+					.retrieve(String.class)
+					.orNull();
+		}
+	}
+
+	static class SimpleManagedApiClient extends ApiClient {
+
+		protected SimpleManagedApiClient(final ClientProperties properties) {
+			super(ExchangeClient.builder()
+					.client(JavaNetHttpExchangeClient.class)
+					.properties(properties));
 		}
 
 		public String getName() {

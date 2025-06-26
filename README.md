@@ -52,7 +52,7 @@ import org.apiphany.client.JavaNetHttpExchangeClient;
 public class MyCustomerClient extends ApiClient {
 
     public MyCustomerClient() {
-        super("http://my.awesome.domain", new JavaNetHttpExchangeClient());
+        super("http://my.awesome.domain", with(JavaNetHttpExchangeClient.class));
     }
 
     public String getInfo() {
