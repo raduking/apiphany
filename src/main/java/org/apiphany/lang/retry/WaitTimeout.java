@@ -27,7 +27,7 @@ public class WaitTimeout implements Wait {
 	/**
 	 * Default Wait object.
 	 */
-	public static final Wait DEFAULT = WaitTimeout.of(DEFAULT_TIMEOUT, DEFAULT_SLEEP);
+	public static final WaitTimeout DEFAULT = WaitTimeout.of(DEFAULT_TIMEOUT, DEFAULT_SLEEP);
 
 	/**
 	 * Timeout
