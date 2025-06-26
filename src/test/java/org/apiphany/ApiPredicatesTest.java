@@ -64,4 +64,75 @@ class ApiPredicatesTest {
 		assertFalse(result);
 	}
 
+	static class DummyApiPage implements ApiPage<String> {
+
+		private final List<String> content;
+
+		public DummyApiPage(final List<String> content) {
+			this.content = content;
+		}
+
+		@Override
+		public List<String> getContent() {
+			return content;
+		}
+
+	}
+
+	@Test
+	void shouldValidateNonEmptyResponsePage() {
+		DummyApiPage page = ApiPage.of(DummyApiPage.class, List.of(SOME_VALUE));
+
+		boolean result = ApiPredicates.responsePageIsNotEmpty().test(page);
+
+		assertTrue(result);
+	}
+
+	@Test
+	void shouldNotValidateEmptyResponsePage() {
+		DummyApiPage page = ApiPage.of(DummyApiPage.class, List.of());
+
+		boolean result = ApiPredicates.responsePageIsNotEmpty().test(page);
+
+		assertFalse(result);
+	}
+
+	@Test
+	void shouldValidateResponsePageSizeGreaterThan() {
+		DummyApiPage page = ApiPage.of(DummyApiPage.class, List.of(SOME_VALUE, SOME_VALUE));
+
+		boolean result = ApiPredicates.responsePageHasSizeGreaterThan(1).test(page);
+
+		assertTrue(result);
+	}
+
+	@Test
+	void shouldNotValidateResponsePageGreaterThan() {
+		DummyApiPage page = ApiPage.of(DummyApiPage.class, List.of());
+
+		boolean result = ApiPredicates.responsePageHasSizeGreaterThan(1).test(page);
+
+		assertFalse(result);
+	}
+
+	@Test
+	void shouldValidateNonNullResponse() {
+		boolean result = ApiPredicates.nonNullResponse().test(SOME_VALUE);
+
+		assertTrue(result);
+	}
+
+	@Test
+	void shouldNotValidateNullResponse() {
+		boolean result = ApiPredicates.nonNullResponse().test(null);
+
+		assertFalse(result);
+	}
+
+	@Test
+	void shouldValidateResponse() {
+		boolean result = ApiPredicates.hasResponse().test(SOME_VALUE);
+
+		assertTrue(result);
+	}
 }

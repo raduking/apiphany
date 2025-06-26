@@ -10,6 +10,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import org.apiphany.lang.Strings;
+import org.morphix.reflection.Constructors;
 
 /**
  * Utility class for compressing / decompressing via GZIP.
@@ -36,7 +37,7 @@ public class GZip {
 	 * Private constructor.
 	 */
 	private GZip() {
-		throw new UnsupportedOperationException("This class should not be instantiated.");
+		throw Constructors.unsupportedOperationException();
 	}
 
 	/**
