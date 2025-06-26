@@ -2,8 +2,10 @@ package org.apiphany;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import org.apiphany.Filter.Operator;
@@ -211,5 +213,84 @@ class FilterTest {
 		String result = filter.toString();
 
 		assertThat(result, equalTo("filter=type==live;type==song"));
+	}
+
+	@Test
+	void shouldBuildAFilterFromAnEnum() {
+		Filter filter = Filter.of(E.TYPE, Operator.NE, "song");
+
+		String result = filter.toString();
+
+		assertThat(result, equalTo("filter=type!=song"));
+	}
+
+	@Test
+	void shouldBuildAFilterWithEquals() {
+		Filter filter = Filter.equals("type", "song");
+
+		String result = filter.toString();
+
+		assertThat(result, equalTo("filter=type==song"));
+	}
+
+	@Test
+	void shouldNotAppendNoneFilterWithOperation() {
+		Filter filter = Filter.of(E.TYPE, Operator.EQ, "song")
+				.operation(Filter.none(), Operator.AND);
+
+		String result = filter.toString();
+
+		assertThat(result, equalTo("filter=type==song"));
+	}
+
+	@Test
+	void shouldReturnFilterWithConditionTrue() {
+		Filter filter = Filter.withCondition(true, Filter.of(E.TYPE, Operator.EQ, "song"));
+
+		String result = filter.toString();
+
+		assertThat(result, equalTo("filter=type==song"));
+	}
+
+	@Test
+	void shouldReturnNoneFilterWithConditionFalse() {
+		Filter filter = Filter.withCondition(false, Filter.of(E.TYPE, Operator.EQ, "song"));
+
+		assertThat(filter, equalTo(Filter.none()));
+	}
+
+	@Test
+	void shouldReturnFilterWithConditionNonNull() {
+		Filter filter = Filter.withNonNull("", Filter.of(E.TYPE, Operator.EQ, "song"));
+
+		String result = filter.toString();
+
+		assertThat(result, equalTo("filter=type==song"));
+	}
+
+	@Test
+	void shouldReturnNoneFilterWithNull() {
+		Filter filter = Filter.withNonNull(null, Filter.of(E.TYPE, Operator.EQ, "song"));
+
+		assertThat(filter, equalTo(Filter.none()));
+	}
+
+	@Test
+	void shouldPutFilterIntoMap() {
+		var map = new HashMap<String, String>();
+		Filter filter = Filter.of(E.TYPE, Operator.EQ, "song");
+
+		filter.putInto(map);
+
+		assertThat(map.get(Filter.NAME), equalTo("type==song"));
+	}
+
+	@Test
+	void shouldNotPutNoneFilterIntoMap() {
+		var map = new HashMap<String, String>();
+
+		Filter.none().putInto(map);
+
+		assertThat(map.entrySet(), hasSize(0));
 	}
 }
