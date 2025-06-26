@@ -5,6 +5,8 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apiphany.header.MapHeaderValues;
 import org.apiphany.http.HttpAuthScheme;
@@ -39,12 +41,17 @@ public class SimpleHttpServer implements AutoCloseable {
 
 	private final JwtTokenValidator tokenValidator;
 	private final HttpServer httpServer;
+	private final ExecutorService executor;
 	private final int port;
 
 	public SimpleHttpServer(final int port, final JwtTokenValidator tokenValidator) {
+		this.executor = Executors.newVirtualThreadPerTaskExecutor();
+
 		this.httpServer = createHttpServer(port);
 		this.httpServer.createContext(ROUTE_API_NAME, new NameHandler(this));
+		this.httpServer.setExecutor(executor);
 		this.httpServer.start();
+
 		this.port = port;
 		this.tokenValidator = tokenValidator;
 
@@ -54,6 +61,7 @@ public class SimpleHttpServer implements AutoCloseable {
 	@Override
 	public void close() throws Exception {
 		httpServer.stop(0);
+		executor.close();
 	}
 
 	public int getPort() {

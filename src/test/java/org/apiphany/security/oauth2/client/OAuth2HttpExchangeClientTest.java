@@ -5,6 +5,8 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 import java.time.Duration;
 import java.util.Map;
@@ -53,7 +55,7 @@ class OAuth2HttpExchangeClientTest {
 	private OAuth2ClientRegistration clientRegistration;
 	private OAuth2ProviderDetails providerDetails;
 
-	private SimpleApiClientWithOAuth2 simpleApiClientWithOAuth2;
+	private ManagedApiClientWithOAuth2 simpleApiClientWithOAuth2;
 
 	private ClientProperties clientProperties;
 
@@ -75,7 +77,7 @@ class OAuth2HttpExchangeClientTest {
 		clientProperties = new ClientProperties();
 		clientProperties.setCustomProperties(oAuth2Properties);
 
-		simpleApiClientWithOAuth2 = new SimpleApiClientWithOAuth2(clientProperties);
+		simpleApiClientWithOAuth2 = new ManagedApiClientWithOAuth2(clientProperties);
 	}
 
 	@AfterEach
@@ -109,7 +111,7 @@ class OAuth2HttpExchangeClientTest {
 
 	@Test
 	void shouldNotGetTheValueWithoutAToken() throws Exception {
-		try (SimpleApiClient simpleApiClient = new SimpleApiClient(clientProperties)) {
+		try (ManagedApiClient simpleApiClient = new ManagedApiClient(clientProperties)) {
 			String result =  simpleApiClient.getName();
 
 			assertThat(result, nullValue());
@@ -127,7 +129,7 @@ class OAuth2HttpExchangeClientTest {
 
 	@Test
 	void shouldNotGetTheValueWithoutATokenAndThrowExceptionIfBleedExceptionIsSetToTrue() throws Exception {
-		try (SimpleApiClient simpleApiClient = new SimpleApiClient(clientProperties)) {
+		try (ManagedApiClient simpleApiClient = new ManagedApiClient(clientProperties)) {
 			simpleApiClient.setBleedExceptions(true);
 
 			HttpException httpException = assertThrows(HttpException.class, simpleApiClient::getName);
@@ -136,10 +138,23 @@ class OAuth2HttpExchangeClientTest {
 		}
 	}
 
-	static class SimpleApiClientWithOAuth2 extends ApiClient {
+	@Test
+	void shouldBuildExchangeClientWithDifferentExchangeAndTokenExchangeClientsAndCloseResources() throws Exception {
+		ExchangeClient exchangeClient = spy(new JavaNetHttpExchangeClient(clientProperties));
+		ExchangeClient tokenExchangeClient = spy(new JavaNetHttpExchangeClient());
+
+		try (OAuth2HttpExchangeClient oAuth2ExchangeClient = new OAuth2HttpExchangeClient(exchangeClient, tokenExchangeClient)) {
+			assertThat(oAuth2ExchangeClient.getTokenApiClient(), notNullValue());
+		}
+
+		verify(tokenExchangeClient).close();
+		verify(exchangeClient).close();
+	}
+
+	static class ManagedApiClientWithOAuth2 extends ApiClient {
 
 		@SuppressWarnings("resource")
-		protected SimpleApiClientWithOAuth2(final ClientProperties properties) {
+		protected ManagedApiClientWithOAuth2(final ClientProperties properties) {
 			super(new OAuth2HttpExchangeClient(new JavaNetHttpExchangeClient(properties)));
 		}
 
@@ -160,10 +175,10 @@ class OAuth2HttpExchangeClientTest {
 		}
 	}
 
-	static class SimpleApiClient extends ApiClient {
+	static class ManagedApiClient extends ApiClient {
 
 		@SuppressWarnings("resource")
-		protected SimpleApiClient(final ClientProperties properties) {
+		protected ManagedApiClient(final ClientProperties properties) {
 			super(new JavaNetHttpExchangeClient(properties));
 		}
 
