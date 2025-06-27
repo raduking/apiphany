@@ -164,6 +164,18 @@ class OAuth2HttpExchangeClientTest {
 	}
 
 	@Test
+	@SuppressWarnings("resource")
+	void shouldBuildExchangeClientWithEqualExchangeAndTokenExchangeClientsAndCloseResources() throws Exception {
+		ExchangeClient exchangeClient = spy(new JavaNetHttpExchangeClient(clientProperties));
+
+		try (OAuth2HttpExchangeClient oAuth2ExchangeClient = new OAuth2HttpExchangeClient(exchangeClient)) {
+			assertThat(oAuth2ExchangeClient.getTokenApiClient(), notNullValue());
+		}
+
+		verify(exchangeClient).close();
+	}
+
+	@Test
 	void shouldReturnValidAuthenticationTokenWithSimpleApiClientWithOAuth2() throws Exception {
 		try (SimpleApiClientWithOAuth2 simpleApiClientWithOAuth2 = new SimpleApiClientWithOAuth2(clientProperties)) {
 			String result = simpleApiClientWithOAuth2.getName();

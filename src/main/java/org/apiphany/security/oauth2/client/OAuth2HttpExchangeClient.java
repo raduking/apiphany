@@ -198,7 +198,9 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	public void close() throws Exception {
 		super.close();
 		closeTokenRefreshScheduler();
-		tokenExchangeClient.close();
+		if (exchangeClient != tokenExchangeClient) {
+			tokenExchangeClient.close();
+		}
 		if (null != tokenApiClient) {
 			tokenApiClient.close();
 		}
