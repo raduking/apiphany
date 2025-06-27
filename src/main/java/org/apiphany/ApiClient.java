@@ -7,6 +7,7 @@ import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.time.Duration;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -133,7 +134,14 @@ public class ApiClient implements AutoCloseable {
 	 * @param managed flag that indicates whether the exchange clients are managed
 	 */
 	protected ApiClient(final String baseUrl, final List<ExchangeClient> exchangeClients, final boolean managed) {
-		this(baseUrl, exchangeClients.stream().collect(Collectors.toMap(Function.identity(), v -> managed)));
+		this(baseUrl, exchangeClients.stream().collect(
+				Collectors.toMap(
+						Function.identity(),
+						v -> Boolean.valueOf(managed),
+						(existing, replacement) -> existing,
+						() -> new LinkedHashMap<>()
+				)
+		));
 	}
 
 	/**
