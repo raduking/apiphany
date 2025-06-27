@@ -63,7 +63,8 @@ class ApiClientTest {
 	private static final int COUNT2 = 777;
 	private static final String SOME_ERROR_MESSAGE = "someErrorMessage";
 	private static final String METRICS_PREFIX = "test.metrics";
-	private static final String EXCHANGE_CLIENT_NAME = "ThisIsTheName";
+	private static final String EXCHANGE_CLIENT_NAME_1 = "ThisIsTheName1";
+	private static final String EXCHANGE_CLIENT_NAME_2 = "ThisIsTheName2";
 
 	private static final int HTTP_STATUS_OK = 200;
 	private static final int HTTP_STATUS_BAD_REQUEST = 400;
@@ -559,7 +560,7 @@ class ApiClientTest {
 	void shouldThrowExceptionWhenCreatingClientWithMoreExchangeClientsWithTheSameType() {
 		ExchangeClient exchangeClient1 = mock(ExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient1).getAuthenticationType();
-		doReturn(EXCHANGE_CLIENT_NAME).when(exchangeClient1).getName();
+		doReturn(EXCHANGE_CLIENT_NAME_1).when(exchangeClient1).getName();
 		TestDto expected1 = TestDto.of(ID1, COUNT1);
 		ApiResponse<TestDto> response1 = ApiResponse.create(expected1)
 				.status(HttpStatus.OK)
@@ -569,6 +570,7 @@ class ApiClientTest {
 
 		ExchangeClient exchangeClient2 = mock(ExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient2).getAuthenticationType();
+		doReturn(EXCHANGE_CLIENT_NAME_2).when(exchangeClient2).getName();
 		TestDto expected2 = TestDto.of(ID2, COUNT2);
 		ApiResponse<TestDto> response2 = ApiResponse.create(expected2)
 				.status(HttpStatus.OK)
@@ -586,7 +588,7 @@ class ApiClientTest {
 					+ "For authentication type "
 					+ AuthenticationType.OAUTH2
 					+ ", "
-					+ EXCHANGE_CLIENT_NAME
+					+ EXCHANGE_CLIENT_NAME_1
 					+ " already exists"));
 		}
 
