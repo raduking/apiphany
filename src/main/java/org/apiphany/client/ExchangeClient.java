@@ -1,6 +1,5 @@
 package org.apiphany.client;
 
-import java.lang.reflect.Constructor;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -12,8 +11,6 @@ import org.apiphany.ApiResponse;
 import org.apiphany.header.HeaderValues;
 import org.apiphany.lang.collections.Maps;
 import org.apiphany.security.AuthenticationType;
-import org.morphix.lang.Nullables;
-import org.morphix.reflection.Constructors;
 
 /**
  * Interface for exchange clients.
@@ -90,7 +87,7 @@ public interface ExchangeClient extends AutoCloseable {
 			List<String> headerValues = getRedactedHeaderPredicate().test(headerName)
 					? Collections.singletonList(HeaderValues.REDACTED)
 					: entry.getValue();
-            return headerName + ":\"" + String.join(", ", headerValues) + "\"";
+			return headerName + ":\"" + String.join(", ", headerValues) + "\"";
 		}).toList().toString();
 	}
 
@@ -108,61 +105,8 @@ public interface ExchangeClient extends AutoCloseable {
 	 *
 	 * @return an exchange client builder
 	 */
-	static Builder builder() {
-		return new Builder();
-	}
-
-	/**
-	 * Exchange client builder.
-	 *
-	 * @author Radu Sebastian LAZIN
-	 */
-	static class Builder {
-
-		/**
-		 * Exchange client class.
-		 */
-		private Class<? extends ExchangeClient> clientClass;
-
-		/**
-		 * Client properties.
-		 */
-		private ClientProperties clientProperties;
-
-		/**
-		 * Builds the exchange client based on the builder members.
-		 *
-		 * @return a new exchange client
-		 */
-		public ExchangeClient build() {
-			Constructor<? extends ExchangeClient> constructor
-					= Constructors.getDeclaredConstructor(clientClass, ClientProperties.class);
-			ClientProperties properties = Nullables.nonNullOrDefault(clientProperties, ClientProperties::new);
-			return Constructors.IgnoreAccess.newInstance(constructor, properties);
-		}
-
-		/**
-		 * Sets the exchange client class.
-		 *
-		 * @param clientClass client class to set.
-		 * @return this
-		 */
-		public Builder client(final Class<? extends ExchangeClient> clientClass) {
-			this.clientClass = clientClass;
-			return this;
-		}
-
-		/**
-		 * Sets the client properties.
-		 *
-		 * @param clientProperties client properties to set
-		 * @return this
-		 */
-		public Builder properties(final ClientProperties clientProperties) {
-			this.clientProperties = clientProperties;
-			return this;
-		}
-
+	static ExchangeClientBuilder builder() {
+		return ExchangeClientBuilder.create();
 	}
 
 }
