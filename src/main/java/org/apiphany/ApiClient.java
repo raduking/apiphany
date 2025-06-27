@@ -13,7 +13,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.ExchangeClientBuilder;
@@ -105,22 +107,33 @@ public class ApiClient implements AutoCloseable {
 	 * Constructor with exchange clients.
 	 *
 	 * @param baseUrl base URL to which all paths will be appended
-	 * @param exchangeClients list of exchange clients
-	 * @param managed flag that indicates whether the exchange clients are managed
+	 * @param exchangeClients map of exchange clients with life cycle information
 	 */
 	@SuppressWarnings("resource")
-	protected ApiClient(final String baseUrl, final List<ExchangeClient> exchangeClients, final boolean managed) {
+	protected ApiClient(final String baseUrl, final Map<ExchangeClient, Boolean> exchangeClients) {
 		LOGGER.debug("Initializing: {}(baseUrl: {})", getClass().getSimpleName(), Strings.isEmpty(baseUrl) ? "<no-base-url>" : baseUrl);
 		this.baseUrl = baseUrl;
 
-		for (ExchangeClient exchangeClient : exchangeClients) {
+		for (Map.Entry<ExchangeClient, Boolean> entry : exchangeClients.entrySet()) {
+			ExchangeClient exchangeClient = entry.getKey();
 			AuthenticationType authenticationType = exchangeClient.getAuthenticationType();
-			this.exchangeClientsMap.merge(authenticationType, Pair.of(exchangeClient, managed), (oldValue, newValue) -> {
+			this.exchangeClientsMap.merge(authenticationType, Pair.of(exchangeClient, entry.getValue()), (oldValue, newValue) -> {
 				throw new IllegalStateException("Failed to instantiate [" + getClass()
 						+ "]: For authentication type " + authenticationType + ", " + oldValue.left().getName() + " already exists");
 			});
 		}
 		initializeTypeObjects(this);
+	}
+
+	/**
+	 * Constructor with exchange clients.
+	 *
+	 * @param baseUrl base URL to which all paths will be appended
+	 * @param exchangeClients list of exchange clients
+	 * @param managed flag that indicates whether the exchange clients are managed
+	 */
+	protected ApiClient(final String baseUrl, final List<ExchangeClient> exchangeClients, final boolean managed) {
+		this(baseUrl, exchangeClients.stream().collect(Collectors.toMap(Function.identity(), v -> managed)));
 	}
 
 	/**
@@ -158,9 +171,8 @@ public class ApiClient implements AutoCloseable {
 	 * @param baseUrl base URL
 	 * @param exchangeClientBuilder exchange client builder
 	 */
-	@SuppressWarnings("resource")
 	protected ApiClient(final String baseUrl, final ExchangeClientBuilder exchangeClientBuilder) {
-		this(baseUrl, Collections.singletonList(exchangeClientBuilder.build()), true);
+		this(baseUrl, exchangeClientBuilder.build().toMap());
 	}
 
 	/**
