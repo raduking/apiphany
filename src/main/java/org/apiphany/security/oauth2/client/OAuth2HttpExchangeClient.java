@@ -28,7 +28,6 @@ import org.slf4j.LoggerFactory;
 /**
  * OAuth2 exchange client, this class decorates an existing {@link ExchangeClient} with automatic OAuth2 support.
  * <p>
- * TODO: make a builder so that there is no need for so many constructors.
  * TODO: implement refresh token functionality
  *
  * @author Radu Sebastian LAZIN

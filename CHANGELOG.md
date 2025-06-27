@@ -19,6 +19,11 @@
 - Added `ExchangeClientBuilder` for managed exchange clients in `ApiClient`.
 - Changed the default exchange client management to not managed when the `ApiClient` is built with direct `ExchangeClient` objects.
 - Added `ApiPage.of` to construct `ApiPage` objects.
+- Added `OAuth2ExchangeClientBuilder` to build exchange clients with built in OAuth2 functionality.
+- Added `Pair.toMap` to convert a `Pair` object to a `Map` object.
+- Changed the main constructor in `ApiClient` to have an exchange client map with for exchange client life cycle management information.
+- Added `ApiPage.of` factory method with `ApiPage` class and content.
+- Fixed `Headers.addTo` method.
 
 ---
 
