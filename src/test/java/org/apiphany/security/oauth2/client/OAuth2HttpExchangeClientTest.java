@@ -55,7 +55,7 @@ class OAuth2HttpExchangeClientTest {
 	private OAuth2ClientRegistration clientRegistration;
 	private OAuth2ProviderDetails providerDetails;
 
-	private ManagedApiClientWithOAuth2 simpleApiClientWithOAuth2;
+	private ManagedApiClientWithOAuth2 managedApiClientWithOAuth2;
 
 	private ClientProperties clientProperties;
 
@@ -77,12 +77,12 @@ class OAuth2HttpExchangeClientTest {
 		clientProperties = new ClientProperties();
 		clientProperties.setCustomProperties(oAuth2Properties);
 
-		simpleApiClientWithOAuth2 = new ManagedApiClientWithOAuth2(clientProperties);
+		managedApiClientWithOAuth2 = new ManagedApiClientWithOAuth2(clientProperties);
 	}
 
 	@AfterEach
 	void tearDown() throws Exception {
-		simpleApiClientWithOAuth2.close();
+		managedApiClientWithOAuth2.close();
 	}
 
 	@AfterAll
@@ -92,8 +92,8 @@ class OAuth2HttpExchangeClientTest {
 	}
 
 	@Test
-	void shouldReturnValidAuthenticationTokenWithSimpleOAuth2Server() {
-		String result = simpleApiClientWithOAuth2.getName();
+	void shouldReturnValidAuthenticationTokenWithManagedApiClientWithOAuth2() {
+		String result = managedApiClientWithOAuth2.getName();
 
 		assertThat(result, equalTo(SimpleHttpServer.NAME));
 	}
@@ -110,25 +110,16 @@ class OAuth2HttpExchangeClientTest {
 	}
 
 	@Test
-	void shouldNotGetTheValueWithoutAToken() throws Exception {
-		try (ManagedApiClient simpleApiClient = new ManagedApiClient(clientProperties)) {
-			String result =  simpleApiClient.getName();
-
-			assertThat(result, nullValue());
-		}
-	}
-
-	@Test
 	void shouldNotGetTheValueWithoutATokenWithManagedClient() throws Exception {
-		try (SimpleManagedApiClient simpleApiClient = new SimpleManagedApiClient(clientProperties)) {
-			String result =  simpleApiClient.getName();
+		try (ManagedApiClient simpleApiClient = new ManagedApiClient(clientProperties)) {
+			String result = simpleApiClient.getName();
 
 			assertThat(result, nullValue());
 		}
 	}
 
 	@Test
-	void shouldNotGetTheValueWithoutATokenAndThrowExceptionIfBleedExceptionIsSetToTrue() throws Exception {
+	void shouldNotGetTheValueWithoutATokenWithManagedClientAndThrowExceptionIfBleedExceptionIsSetToTrue() throws Exception {
 		try (ManagedApiClient simpleApiClient = new ManagedApiClient(clientProperties)) {
 			simpleApiClient.setBleedExceptions(true);
 
@@ -139,6 +130,27 @@ class OAuth2HttpExchangeClientTest {
 	}
 
 	@Test
+	void shouldNotGetTheValueWithoutATokenWithSimpleClient() throws Exception {
+		try (SimpleApiClient simpleApiClient = new SimpleApiClient(clientProperties)) {
+			String result = simpleApiClient.getName();
+
+			assertThat(result, nullValue());
+		}
+	}
+
+	@Test
+	void shouldNotGetTheValueWithoutATokenWithSimpleClientAndThrowExceptionIfBleedExceptionIsSetToTrue() throws Exception {
+		try (SimpleApiClient simpleApiClient = new SimpleApiClient(clientProperties)) {
+			simpleApiClient.setBleedExceptions(true);
+
+			HttpException httpException = assertThrows(HttpException.class, simpleApiClient::getName);
+
+			assertThat(httpException.getMessage(), equalTo("Missing Authorization header."));
+		}
+	}
+
+	@Test
+	@SuppressWarnings("resource")
 	void shouldBuildExchangeClientWithDifferentExchangeAndTokenExchangeClientsAndCloseResources() throws Exception {
 		ExchangeClient exchangeClient = spy(new JavaNetHttpExchangeClient(clientProperties));
 		ExchangeClient tokenExchangeClient = spy(new JavaNetHttpExchangeClient());
@@ -149,6 +161,15 @@ class OAuth2HttpExchangeClientTest {
 
 		verify(tokenExchangeClient).close();
 		verify(exchangeClient).close();
+	}
+
+	@Test
+	void shouldReturnValidAuthenticationTokenWithSimpleApiClientWithOAuth2() throws Exception {
+		try (SimpleApiClientWithOAuth2 simpleApiClientWithOAuth2 = new SimpleApiClientWithOAuth2(clientProperties)) {
+			String result = simpleApiClientWithOAuth2.getName();
+
+			assertThat(result, equalTo(SimpleHttpServer.NAME));
+		}
 	}
 
 	static class ManagedApiClientWithOAuth2 extends ApiClient {
@@ -199,18 +220,12 @@ class OAuth2HttpExchangeClientTest {
 		}
 	}
 
-	static class SimpleManagedApiClientWithOAuth2 extends ApiClient {
+	static class SimpleApiClientWithOAuth2 extends ApiClient {
 
-		protected SimpleManagedApiClientWithOAuth2(final ClientProperties properties) {
-			super(ExchangeClient.builder()
-					.client(JavaNetHttpExchangeClient.class)
-					.properties(properties));
-		}
-
-		@Override
-		public void close() throws Exception {
-			super.close();
-			getExchangeClient(AuthenticationType.OAUTH2).close();
+		protected SimpleApiClientWithOAuth2(final ClientProperties properties) {
+			super(exchangeClient(JavaNetHttpExchangeClient.class)
+					.properties(properties)
+					.oAuth2());
 		}
 
 		public String getName() {
@@ -224,9 +239,9 @@ class OAuth2HttpExchangeClientTest {
 		}
 	}
 
-	static class SimpleManagedApiClient extends ApiClient {
+	static class SimpleApiClient extends ApiClient {
 
-		protected SimpleManagedApiClient(final ClientProperties properties) {
+		protected SimpleApiClient(final ClientProperties properties) {
 			super(ExchangeClient.builder()
 					.client(JavaNetHttpExchangeClient.class)
 					.properties(properties));
