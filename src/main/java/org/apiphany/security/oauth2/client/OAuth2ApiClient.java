@@ -7,6 +7,7 @@ import java.util.Map;
 import org.apiphany.ApiClient;
 import org.apiphany.RequestParameters;
 import org.apiphany.client.ExchangeClient;
+import org.apiphany.client.ExchangeClientBuilder;
 import org.apiphany.client.http.TokenHttpExchangeClient;
 import org.apiphany.http.ContentType;
 import org.apiphany.http.HttpAuthScheme;
@@ -57,7 +58,7 @@ public class OAuth2ApiClient extends ApiClient {
 	 * @param exchangeClientBuilder the HTTP exchange client to use for requests
 	 */
 	public OAuth2ApiClient(final OAuth2ClientRegistration clientRegistration, final OAuth2ProviderDetails providerDetails,
-			final ExchangeClient.Builder exchangeClientBuilder) {
+			final ExchangeClientBuilder exchangeClientBuilder) {
 		super(exchangeClientBuilder);
 		this.clientRegistration = clientRegistration;
 		this.providerDetails = providerDetails;

@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
 import org.apiphany.client.ExchangeClient;
+import org.apiphany.client.ExchangeClientBuilder;
 import org.apiphany.lang.Pair;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.accumulator.DurationAccumulator;
@@ -158,7 +159,7 @@ public class ApiClient implements AutoCloseable {
 	 * @param exchangeClientBuilder exchange client builder
 	 */
 	@SuppressWarnings("resource")
-	protected ApiClient(final String baseUrl, final ExchangeClient.Builder exchangeClientBuilder) {
+	protected ApiClient(final String baseUrl, final ExchangeClientBuilder exchangeClientBuilder) {
 		this(baseUrl, Collections.singletonList(exchangeClientBuilder.build()), true);
 	}
 
@@ -167,7 +168,7 @@ public class ApiClient implements AutoCloseable {
 	 *
 	 * @param exchangeClientBuilder exchange client builder
 	 */
-	protected ApiClient(final ExchangeClient.Builder exchangeClientBuilder) {
+	protected ApiClient(final ExchangeClientBuilder exchangeClientBuilder) {
 		this(EMPTY_BASE_URL, exchangeClientBuilder);
 	}
 
@@ -212,7 +213,7 @@ public class ApiClient implements AutoCloseable {
 	 * @param exchangeClientBuilder exchange client object builder
 	 * @return a new ApiClient object
 	 */
-	public static ApiClient of(final String baseUrl, final ExchangeClient.Builder exchangeClientBuilder) {
+	public static ApiClient of(final String baseUrl, final ExchangeClientBuilder exchangeClientBuilder) {
 		return new ApiClient(baseUrl, exchangeClientBuilder);
 	}
 
@@ -324,7 +325,7 @@ public class ApiClient implements AutoCloseable {
 	 * @param exchangeClient exchange client
 	 * @return exchange client builder
 	 */
-	public static ExchangeClient.Builder exchangeClient(final Class<? extends ExchangeClient> exchangeClient) {
+	public static ExchangeClientBuilder exchangeClient(final Class<? extends ExchangeClient> exchangeClient) {
 		return ExchangeClient.builder().client(exchangeClient);
 	}
 
@@ -334,7 +335,7 @@ public class ApiClient implements AutoCloseable {
 	 * @param exchangeClient exchange client
 	 * @return exchange client builder
 	 */
-	public static ExchangeClient.Builder with(final Class<? extends ExchangeClient> exchangeClient) {
+	public static ExchangeClientBuilder with(final Class<? extends ExchangeClient> exchangeClient) {
 		return exchangeClient(exchangeClient);
 	}
 
