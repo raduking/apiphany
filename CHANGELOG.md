@@ -2,6 +2,10 @@
 
 ---
 
+`1.0.3`
+
+---
+
 `1.0.2`
 
 - Renamed `ClientProperties.Timeout.DISABLED` to `ClientProperties.Timeout.INFINTE`.
