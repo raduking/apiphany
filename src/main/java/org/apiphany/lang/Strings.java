@@ -169,4 +169,21 @@ public interface Strings {
 	static String fromFile(final String path) {
 		return fromFile(path, DEFAULT_CHARSET, DEFAULT_BUFFER_SIZE);
 	}
+
+	/**
+	 * Envelopes a string with the given envelope.
+	 * <p>
+	 * Example:
+	 * <pre>
+	 * Strings.envelope("==", "example"); // will return: "==example=="
+	 * </pre>
+	 *
+	 * @param envelope string to put in front and back of the string
+	 * @param s string to envelope
+	 * @return enveloped string
+	 */
+	public static String envelope(final String envelope, final String s) {
+		return String.join("", envelope, s, envelope);
+	}
+
 }

@@ -4,6 +4,11 @@
 
 `1.0.3`
 
+- Added `Arrays` class for Java array utility methods.
+- Added `Strings.envelope` method to add a a string as both a prefix and a suffix to a given string.
+- Added `Certificates` class for key stores and trust stores utility methods.
+- Added `CertificateStoreInfo` which holds all information to construct a key store or a trust store.
+
 ---
 
 `1.0.2`
