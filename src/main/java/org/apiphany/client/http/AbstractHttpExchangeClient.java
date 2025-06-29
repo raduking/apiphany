@@ -28,6 +28,9 @@ import org.slf4j.MDC;
  */
 public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 
+	/**
+	 * Class logger.
+	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractHttpExchangeClient.class);
 
 	/**
