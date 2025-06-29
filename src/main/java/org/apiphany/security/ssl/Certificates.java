@@ -31,6 +31,7 @@ public final class Certificates {
 	 * @param keyManagers the key managers, cannot be null
 	 * @param trustManagers the trust managers, cannot be null
 	 * @param random secure random
+	 * @throws GeneralSecurityException when the SSL context cannot be initialized
 	 */
 	public static void initSSLContext(final SSLContext sslContext, final KeyManager[] keyManagers, final TrustManager[] trustManagers,
 			final SecureRandom random) throws GeneralSecurityException {
@@ -42,7 +43,7 @@ public final class Certificates {
 	}
 
 	/**
-	 * Key Managers.
+	 * Returns the key managers.
 	 *
 	 * @param keyStore the key store
 	 * @param password password for the key store
@@ -61,8 +62,9 @@ public final class Certificates {
 	}
 
 	/**
-	 * Trust Managers.
+	 * Returns the trust managers.
 	 *
+	 * @param trustStore the trust store
 	 * @return trust managers
 	 * @throws GeneralSecurityException when it can't create a factory instance
 	 */
