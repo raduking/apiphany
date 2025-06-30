@@ -15,6 +15,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
 import org.apiphany.lang.collections.Arrays;
+import org.morphix.lang.Nullables;
 
 /**
  * Utility methods for working with certificates, key stores, trust stores.
@@ -90,14 +91,15 @@ public final class Certificates {
 	 *
 	 * @param keyStore the key store
 	 * @param password password for the key store
+	 * @param algorithm the algorithm for the key manager factory
 	 * @return key managers
 	 * @throws GeneralSecurityException when it can't create a factory instance
 	 */
-	public static KeyManager[] getKeyManagers(final KeyStore keyStore, final char[] password) throws GeneralSecurityException {
+	public static KeyManager[] getKeyManagers(final KeyStore keyStore, final char[] password, final String algorithm) throws GeneralSecurityException {
 		KeyManager[] result = null;
 		if (null != keyStore) {
-			String algorithm = KeyManagerFactory.getDefaultAlgorithm();
-			KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(algorithm);
+			String alg = Nullables.nonNullOrDefault(algorithm, KeyManagerFactory::getDefaultAlgorithm);
+			KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(alg);
 			keyManagerFactory.init(keyStore, password);
 			result = keyManagerFactory.getKeyManagers();
 		}
@@ -112,21 +114,22 @@ public final class Certificates {
 	 * @throws GeneralSecurityException when it can't create a factory instance
 	 */
 	public static KeyManager[] getKeyManagers(final CertificateStoreInfo keyStoreInfo) throws GeneralSecurityException {
-		return getKeyManagers(keyStore(keyStoreInfo), keyStoreInfo.getPassword());
+		return getKeyManagers(keyStore(keyStoreInfo), keyStoreInfo.getPassword(), keyStoreInfo.getAlgorithm());
 	}
 
 	/**
 	 * Returns the trust managers.
 	 *
 	 * @param trustStore the trust store
+	 * @param algorithm the algorithm for the key manager factory
 	 * @return trust managers
 	 * @throws GeneralSecurityException when it can't create a factory instance
 	 */
-	public static TrustManager[] getTrustManagers(final KeyStore trustStore) throws GeneralSecurityException {
+	public static TrustManager[] getTrustManagers(final KeyStore trustStore, final String algorithm) throws GeneralSecurityException {
 		TrustManager[] result = null;
 		if (null != trustStore) {
-			String algorithm = KeyManagerFactory.getDefaultAlgorithm();
-			TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(algorithm);
+			String alg = Nullables.nonNullOrDefault(algorithm, KeyManagerFactory::getDefaultAlgorithm);
+			TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(alg);
 			trustManagerFactory.init(trustStore);
 			result = trustManagerFactory.getTrustManagers();
 		}
@@ -141,7 +144,7 @@ public final class Certificates {
 	 * @throws GeneralSecurityException when it can't create a factory instance
 	 */
 	public static TrustManager[] getTrustManagers(final CertificateStoreInfo trustStoreInfo) throws GeneralSecurityException {
-		return getTrustManagers(keyStore(trustStoreInfo));
+		return getTrustManagers(keyStore(trustStoreInfo), trustStoreInfo.getAlgorithm());
 	}
 
 	/**
