@@ -1,5 +1,7 @@
 package org.apiphany.security.ssl;
 
+import org.apiphany.json.JsonBuilder;
+
 /**
  * Configuration properties for SSL/TLS connections. This class encapsulates SSL protocol settings and certificate store
  * information for both keystore (client certificates) and truststore (trusted certificates).
@@ -37,6 +39,14 @@ public class SSLProperties {
 	 */
 	public SSLProperties() {
 		// empty
+	}
+
+	/**
+	 * @see #toString()
+	 */
+	@Override
+	public String toString() {
+		return JsonBuilder.toJson(this);
 	}
 
 	/**
