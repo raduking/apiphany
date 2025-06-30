@@ -14,8 +14,11 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
+import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Arrays;
 import org.morphix.lang.Nullables;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility methods for working with certificates, key stores, trust stores.
@@ -25,6 +28,11 @@ import org.morphix.lang.Nullables;
  * @author Radu Sebastian LAZIN
  */
 public final class Certificates {
+
+	/**
+	 * Logger for this class.
+	 */
+	private static final Logger LOGGER = LoggerFactory.getLogger(Certificates.class);
 
 	/**
 	 * Creates a new SSL context based on the provided properties.
@@ -157,7 +165,8 @@ public final class Certificates {
 	 * @return key store
 	 */
 	public static KeyStore keyStore(final String keyStoreLocation, final String keyStoreType, final char[] password, final boolean isExternal) {
-		if (null == keyStoreLocation || keyStoreLocation.isEmpty()) {
+		if (Strings.isEmpty(keyStoreType)) {
+			LOGGER.warn("Location is empty. Key store type: {}, external: {}", keyStoreType, isExternal);
 			return null;
 		}
 		char[] pass = password;
@@ -190,6 +199,9 @@ public final class Certificates {
 		try (InputStream keyStoreInput = isExternal
 				? new FileInputStream(location)
 				: Thread.currentThread().getContextClassLoader().getResourceAsStream(location)) {
+			if (null == keyStoreInput) {
+				throw new IOException("File not found: " + location);
+			}
 			KeyStore keyStore = KeyStore.getInstance(keyStoreType);
 			keyStore.load(keyStoreInput, pass);
 			return keyStore;
