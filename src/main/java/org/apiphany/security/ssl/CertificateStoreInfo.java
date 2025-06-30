@@ -3,8 +3,8 @@ package org.apiphany.security.ssl;
 import org.apiphany.lang.Strings;
 
 /**
- * Certificate store information class to specify Java key stores. This class holds information about certificate store
- * location, type, password, and loading configuration.
+ * Certificate store information class to configure Java key/trust stores. This class holds information about
+ * certificate store location, type, password, and loading configuration.
  *
  * @author Radu Sebastian LAZIN
  */
@@ -26,6 +26,11 @@ public class CertificateStoreInfo {
 	private String type;
 
 	/**
+	 * The key store factory algorithm. If this value is not set the default algorithm will be used.
+	 */
+	private String algorithm;
+
+	/**
 	 * The password to access the certificate store.
 	 */
 	private char[] password;
@@ -44,7 +49,7 @@ public class CertificateStoreInfo {
 	}
 
 	/**
-	 * Gets the password for accessing the certificate store.
+	 * Returns the password for accessing the certificate store.
 	 *
 	 * @return the password as a character array
 	 */
@@ -62,7 +67,7 @@ public class CertificateStoreInfo {
 	}
 
 	/**
-	 * Gets the location of the certificate store.
+	 * Returns the location of the certificate store.
 	 *
 	 * @return the file system path or URL to the certificate store
 	 */
@@ -71,7 +76,7 @@ public class CertificateStoreInfo {
 	}
 
 	/**
-	 * Gets the display location of the certificate store. Returns {@link #UNKNOWN_LOCATION} if the location is not set.
+	 * Returns the display location of the certificate store. Returns {@link #UNKNOWN_LOCATION} if the location is not set.
 	 *
 	 * @return the display location string
 	 */
@@ -89,7 +94,7 @@ public class CertificateStoreInfo {
 	}
 
 	/**
-	 * Gets the type of the certificate store.
+	 * Returns the type of the certificate store.
 	 *
 	 * @return the certificate store type (e.g., "JKS", "PKCS12")
 	 */
@@ -107,6 +112,24 @@ public class CertificateStoreInfo {
 	}
 
 	/**
+	 * Returns the algorithm.
+	 *
+	 * @return the algorithm
+	 */
+	public String getAlgorithm() {
+		return algorithm;
+	}
+
+	/**
+	 * Sets the algorithm, if this value is not set the default algorithm will be used.
+	 *
+	 * @param algorithm the algorithm to set
+	 */
+	public void setAlgorithm(final String algorithm) {
+		this.algorithm = algorithm;
+	}
+
+	/**
 	 * Checks if the certificate should be loaded from an external source.
 	 *
 	 * @return true if certificates should be loaded from external source, false if they should be loaded from the jar file
@@ -116,7 +139,7 @@ public class CertificateStoreInfo {
 	}
 
 	/**
-	 * Gets the external source loading configuration.
+	 * Returns the external source loading configuration.
 	 *
 	 * @return Boolean.TRUE if loading from external source, Boolean.FALSE if loading from jar file, null if not specified
 	 */

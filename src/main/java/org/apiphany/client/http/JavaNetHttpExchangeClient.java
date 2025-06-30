@@ -23,7 +23,6 @@ import org.apiphany.http.ContentType;
 import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
-import org.apiphany.http.HttpProperties;
 import org.apiphany.http.HttpStatus;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
@@ -99,10 +98,10 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	 * @param httpClientBuilder HTTP client builder
 	 */
 	private void customize(final HttpClient.Builder httpClientBuilder) {
-		HttpProperties httpProperties = getClientProperties().getCustomProperties(HttpProperties.class);
+		JavaNetHttpProperties httpProperties = getClientProperties().getCustomProperties(JavaNetHttpProperties.class);
 		HttpClient.Version version = Nullables.notNull(httpProperties)
 				.thenYield(props -> props.getRequest().getHttpVersion())
-				.orElse(() -> HttpProperties.Request.DEFAULT_HTTP_VERSION);
+				.orElse(() -> JavaNetHttpProperties.Request.DEFAULT_HTTP_VERSION);
 		httpClientBuilder.version(version);
 		Nullables.notNull(getSslContext()).then(httpClientBuilder::sslContext);
 	}
