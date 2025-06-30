@@ -4,6 +4,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.net.ssl.SSLContext;
+
 import org.apiphany.ApiRequest;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ContentConverter;
@@ -16,6 +18,8 @@ import org.apiphany.http.TracingHeader;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.json.jackson.JacksonJsonHttpContentConverter;
 import org.apiphany.lang.Strings;
+import org.apiphany.security.ssl.Certificates;
+import org.apiphany.security.ssl.SSLProperties;
 import org.morphix.lang.JavaObjects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +53,11 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	private final HeaderValuesChain headerValuesChain = new HeaderValuesChain();
 
 	/**
+	 * The SSL context for HTTPS if configured in client properties via {@link SSLProperties}.
+	 */
+	private SSLContext sslContext;
+
+	/**
 	 * Initialize the client with the given client properties.
 	 *
 	 * @param clientProperties client properties
@@ -56,8 +65,20 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	protected AbstractHttpExchangeClient(final ClientProperties clientProperties) {
 		LOGGER.debug("Initializing: {}", getClass().getSimpleName());
 		this.clientProperties = clientProperties;
+		initialize();
 		addDefaultContentConverters(contentConverters);
 		addDefaultHeaderValues(headerValuesChain);
+	}
+
+	/**
+	 * Initializes the properties.
+	 */
+	private void initialize() {
+		SSLProperties sslProperties = getClientProperties().getCustomProperties(SSLProperties.class);
+		if (null == sslProperties) {
+			return;
+		}
+		this.sslContext = Certificates.createSSLContext(sslProperties);
 	}
 
 	/**
@@ -158,6 +179,15 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	 */
 	public HeaderValuesChain getHeaderValuesChain() {
 		return headerValuesChain;
+	}
+
+	/**
+	 * Returns the SSL context.
+	 *
+	 * @return the SSL context
+	 */
+	public SSLContext getSslContext() {
+		return sslContext;
 	}
 
 }

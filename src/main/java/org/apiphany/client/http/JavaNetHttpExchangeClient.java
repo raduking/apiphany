@@ -104,6 +104,7 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 				.thenYield(props -> props.getRequest().getHttpVersion())
 				.orElse(() -> HttpProperties.Request.DEFAULT_HTTP_VERSION);
 		httpClientBuilder.version(version);
+		Nullables.notNull(getSslContext()).then(httpClientBuilder::sslContext);
 	}
 
 	/**
