@@ -1,13 +1,12 @@
 package org.apiphany.security.ssl;
 
-import static java.util.Objects.requireNonNull;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.SecureRandom;
+import java.util.Objects;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
@@ -19,10 +18,28 @@ import org.apiphany.lang.collections.Arrays;
 
 /**
  * Utility methods for working with certificates, key stores, trust stores.
+ * <p>
+ * TODO: add a builder
  *
  * @author Radu Sebastian LAZIN
  */
 public final class Certificates {
+
+	/**
+	 * Creates a new SSL context based on the provided properties.
+	 *
+	 * @param sslProperties SSL properties
+	 * @return a new SSL context
+	 */
+	public static SSLContext createSSLContext(final SSLProperties sslProperties) {
+		try {
+			SSLContext sslContext = SSLContext.getInstance(sslProperties.getProtocol().value());
+			Certificates.initSSLContext(sslContext, sslProperties.getKeystore(), sslProperties.getTruststore());
+			return sslContext;
+		} catch (Exception e) {
+			throw new SecurityException("Error initializing SSL context", e);
+		}
+	}
 
 	/**
 	 * Initializes a {@link SSLContext}. See {@link SSLContext#init(KeyManager[], TrustManager[], SecureRandom)}.
@@ -35,11 +52,37 @@ public final class Certificates {
 	 */
 	public static void initSSLContext(final SSLContext sslContext, final KeyManager[] keyManagers, final TrustManager[] trustManagers,
 			final SecureRandom random) throws GeneralSecurityException {
-		requireNonNull(keyManagers, "keyManagers array cannot be null");
-		requireNonNull(keyManagers, "trustManagers array cannot be null");
+		Objects.requireNonNull(keyManagers, "keyManagers array cannot be null");
+		Objects.requireNonNull(keyManagers, "trustManagers array cannot be null");
 		KeyManager[] actualKeyManagers = keyManagers.length == 0 ? null : keyManagers;
 		TrustManager[] actualTrustManagers = trustManagers.length == 0 ? null : trustManagers;
 		sslContext.init(actualKeyManagers, actualTrustManagers, random);
+	}
+
+	/**
+	 * Initializes a {@link SSLContext}. See {@link SSLContext#init(KeyManager[], TrustManager[], SecureRandom)}.
+	 *
+	 * @param sslContext the SSL context to be initialized
+	 * @param keyManagers the key managers, cannot be null
+	 * @param trustManagers the trust managers, cannot be null
+	 * @throws GeneralSecurityException when the SSL context cannot be initialized
+	 */
+	public static void initSSLContext(final SSLContext sslContext, final KeyManager[] keyManagers, final TrustManager[] trustManagers)
+			throws GeneralSecurityException {
+		initSSLContext(sslContext, keyManagers, trustManagers, new SecureRandom());
+	}
+
+	/**
+	 * Initializes a {@link SSLContext}. See {@link SSLContext#init(KeyManager[], TrustManager[], SecureRandom)}.
+	 *
+	 * @param sslContext the SSL context to be initialized
+	 * @param keyStore key store information
+	 * @param trustStore trust store information
+	 * @throws GeneralSecurityException when the SSL context cannot be initialized
+	 */
+	public static void initSSLContext(final SSLContext sslContext, final CertificateStoreInfo keyStore, final CertificateStoreInfo trustStore)
+			throws GeneralSecurityException {
+		initSSLContext(sslContext, getKeyManagers(keyStore), getTrustManagers(trustStore), new SecureRandom());
 	}
 
 	/**
@@ -62,6 +105,17 @@ public final class Certificates {
 	}
 
 	/**
+	 * Returns the key managers.
+	 *
+	 * @param keyStoreInfo the key store information
+	 * @return key managers
+	 * @throws GeneralSecurityException when it can't create a factory instance
+	 */
+	public static KeyManager[] getKeyManagers(final CertificateStoreInfo keyStoreInfo) throws GeneralSecurityException {
+		return getKeyManagers(keyStore(keyStoreInfo), keyStoreInfo.getPassword());
+	}
+
+	/**
 	 * Returns the trust managers.
 	 *
 	 * @param trustStore the trust store
@@ -77,6 +131,17 @@ public final class Certificates {
 			result = trustManagerFactory.getTrustManagers();
 		}
 		return Arrays.safe(result, TrustManager.class);
+	}
+
+	/**
+	 * Returns the trust managers.
+	 *
+	 * @param trustStoreInfo the trust store information
+	 * @return trust managers
+	 * @throws GeneralSecurityException when it can't create a factory instance
+	 */
+	public static TrustManager[] getTrustManagers(final CertificateStoreInfo trustStoreInfo) throws GeneralSecurityException {
+		return getTrustManagers(keyStore(trustStoreInfo));
 	}
 
 	/**

@@ -47,9 +47,12 @@ class TokenHttpExchangeClientTest {
 
 	private TokenHttpExchangeClient client;
 
+	private ClientProperties clientProperties = new ClientProperties();
 
 	@BeforeEach
+	@SuppressWarnings("resource")
 	void setUp() {
+		doReturn(clientProperties).when(exchangeClient).getClientProperties();
 		client = new TokenHttpExchangeClient(exchangeClient);
 		client.setDefaultTokenExpirationSupplier(() -> DEFAULT_EXPIRATION);
 	}

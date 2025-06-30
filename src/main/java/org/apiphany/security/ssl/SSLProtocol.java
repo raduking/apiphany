@@ -1,0 +1,135 @@
+package org.apiphany.security.ssl;
+
+import java.util.Map;
+import java.util.Objects;
+
+import org.morphix.lang.Enums;
+
+/**
+ * Enum representing SSL/TLS protocol versions. Includes both standard protocols and some legacy/deprecated ones.
+ *
+ * @author Radu Sebastian LAZIN
+ */
+public enum SSLProtocol {
+
+	/**
+	 * TLS 1.3 protocol (RFC 8446).
+	 * <p>
+	 * Introduced in Java 11, this is the most recent and secure protocol version. Features include:
+	 * <ul>
+	 * <li>Improved security and performance</li>
+	 * <li>1-RTT handshakes (0-RTT with caveats)</li>
+	 * <li>Removed obsolete cryptographic algorithms</li>
+	 * </ul>
+	 * This should be the preferred protocol when available.
+	 */
+	TLS_1_3("TLSv1.3"),
+
+	/**
+	 * TLS 1.2 protocol (RFC 5246).
+	 * <p>
+	 * Currently the most widely supported secure protocol version. When properly configured with modern cipher suites,
+	 * provides strong security. Supported by virtually all modern systems.
+	 */
+	TLS_1_2("TLSv1.2"),
+
+	/**
+	 * TLS 1.1 protocol (RFC 4346).
+	 * <p>
+	 * Considered obsolete and potentially vulnerable to attacks:
+	 * <ul>
+	 * <li>Lacks modern cipher suites</li>
+	 * <li>Vulnerable to BEAST attack (CVE-2011-3389)</li>
+	 * </ul>
+	 * Disabled by default in Java 8u31+ and should not be used.
+	 */
+	TLS_1_1("TLSv1.1"),
+
+	/**
+	 * TLS 1.0 protocol (RFC 2246).
+	 * <p>
+	 * Originally published as SSL 3.1, this is the first TLS version. Considered insecure due to multiple vulnerabilities:
+	 * <ul>
+	 * <li>POODLE (CVE-2014-3566)</li>
+	 * <li>BEAST (CVE-2011-3389)</li>
+	 * <li>Lacks modern cryptographic algorithms</li>
+	 * </ul>
+	 * Disabled by default in Java 8u31+ and should not be used.
+	 */
+	TLS_1_0("TLSv1"),
+
+	/**
+	 * SSL 3.0 protocol.
+	 * <p>
+	 * Completely insecure and deprecated:
+	 * <ul>
+	 * <li>Vulnerable to POODLE (CVE-2014-3566)</li>
+	 * <li>Lacks modern cryptographic features</li>
+	 * <li>Disabled by default in Java since 8u31</li>
+	 * <li>Removed entirely in Java 11</li>
+	 * </ul>
+	 * Should never be used under any circumstances.
+	 */
+	SSL_3_0("SSLv3"),
+
+	/**
+	 * SSL 2.0 protocol (represented by SSLv2Hello for backward compatibility).
+	 * <p>
+	 * Extremely insecure and deprecated:
+	 * <ul>
+	 * <li>Vulnerable to DROWN (CVE-2016-0800)</li>
+	 * <li>Contains fundamental design flaws</li>
+	 * <li>Disabled by default in Java since 7</li>
+	 * <li>Removed entirely in Java 8</li>
+	 * </ul>
+	 * Note: This is actually the SSLv2Hello pseudo-protocol used for version negotiation, not the actual SSLv2 protocol.
+	 */
+	SSL_2_0("SSLv2Hello");
+
+	/**
+	 * The name map for easy from string implementation.
+	 */
+	private static final Map<String, SSLProtocol> NAME_MAP = Enums.buildNameMap(values());
+
+	/**
+	 * The {@link String} value.
+	 */
+	private String value;
+
+	/**
+	 * Constructs an enumeration.
+	 *
+	 * @param value string value
+	 */
+	SSLProtocol(final String value) {
+		this.value = value;
+	}
+
+	/**
+	 * @see Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return value();
+	}
+
+	/**
+	 * Returns the string value.
+	 *
+	 * @return the string value
+	 */
+	public String value() {
+		return value;
+	}
+
+	/**
+	 * Returns a {@link SSLProtocol} enum from a {@link String}.
+	 *
+	 * @param value the SSL protocol as string
+	 * @return a SSL protocol enum
+	 */
+	public static SSLProtocol fromString(final String value) {
+		return Enums.fromString(Objects.requireNonNull(value), NAME_MAP, values());
+	}
+
+}
