@@ -12,7 +12,6 @@
 - Added SSL capabilities to the HTTP exchange clients.
 - Added `SSLProperties` to be able to configure SSL for the HTTP exchange clients.
 - Added `SSLProtocol` which enumerates SSL protocols.
-- Added `Certificates` utility class with SSL, certificates, key/trust stores related utility methods. 
 
 ---
 
