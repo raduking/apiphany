@@ -1,6 +1,6 @@
 Generate `keystore.jks`
 
-```
+```bash
 keytool -genkeypair \
     -alias io.github.raduking \
     -keyalg RSA \
@@ -14,7 +14,7 @@ keytool -genkeypair \
 
 Check the contents of the `keystore.jks`
 
-```
+```bash
 keytool -list \
     -v \
     -keystore keystore.jks \
@@ -23,7 +23,7 @@ keytool -list \
 
 Export the certificate from `keystore.jks`
 
-```
+```bash
 keytool -exportcert \
     -alias io.github.raduking \
     -keystore keystore.jks \
@@ -33,7 +33,7 @@ keytool -exportcert \
 
 Create a `truststore.jks` and import the certificate
 
-```
+```bash
 keytool -importcert \
     -alias io.github.raduking \
     -file mycertificate.cer \
