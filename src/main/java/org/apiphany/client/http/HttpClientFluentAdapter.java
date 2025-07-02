@@ -9,8 +9,14 @@ import org.apiphany.ApiClientFluentAdapter;
  */
 public class HttpClientFluentAdapter {
 
+	/**
+	 * The API client fluent adapter which constructed this object.
+	 */
 	private final ApiClientFluentAdapter apiClientFluentAdapter;
 
+	/**
+	 * The HTTP exchange client that will process the requests.
+	 */
 	private final HttpExchangeClient httpExchangeClient;
 
 	/**

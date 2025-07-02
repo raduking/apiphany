@@ -40,16 +40,19 @@ class TokenHttpExchangeClientTest {
 	private static final Instant DEFAULT_EXPIRATION = Instant.now();
 
 	private static final String SECRET = "a-string-secret-at-least-256-bits-long";
-	private static final String TOKEN = Strings.fromFile("/access_token.txt");
+	private static final String TOKEN = Strings.fromFile("/access-token.txt");
 
 	@Mock
 	private ExchangeClient exchangeClient;
 
 	private TokenHttpExchangeClient client;
 
+	private ClientProperties clientProperties = new ClientProperties();
 
 	@BeforeEach
+	@SuppressWarnings("resource")
 	void setUp() {
+		doReturn(clientProperties).when(exchangeClient).getClientProperties();
 		client = new TokenHttpExchangeClient(exchangeClient);
 		client.setDefaultTokenExpirationSupplier(() -> DEFAULT_EXPIRATION);
 	}
