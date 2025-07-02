@@ -1,0 +1,78 @@
+package org.apiphany.security.ssl.client;
+
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
+
+import org.apiphany.json.JsonBuilder;
+import org.apiphany.security.ssl.SSLProtocol;
+
+public class RecordHeader {
+
+	public static final int SIZE = 5;
+
+	private RecordHeaderType type;
+
+	private Version version;
+
+	private Int16 messageLength;
+
+	public RecordHeader(RecordHeaderType type, Version version, Int16 messageLength) {
+		this.type = type;
+		this.version = version;
+		this.messageLength = messageLength;
+	}
+
+	public RecordHeader(RecordHeaderType type, SSLProtocol sslProtocol, short messageLength) {
+		this(type, Version.of(sslProtocol), new Int16(messageLength));
+	}
+
+	public RecordHeader(RecordHeaderType type, SSLProtocol sslProtocol) {
+		this(type, sslProtocol, (short) 0x0000);
+	}
+
+	public static RecordHeader from(InputStream is) throws IOException {
+		int firstByte = is.read();
+		if (-1 == firstByte) {
+			throw new EOFException("Connection closed by server");
+		}
+		RecordHeaderType type = RecordHeaderType.fromValue((byte) firstByte);
+
+		Version version = Version.from(is);
+
+		Int16 messageLength = Int16.from(is);
+
+		return new RecordHeader(type, version, messageLength);
+	}
+
+	public byte[] toByteArray() throws IOException {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		DataOutputStream dos = new DataOutputStream(bos);
+
+		dos.writeByte(getType().value());
+		dos.write(version.toByteArray());
+		dos.write(messageLength.toByteArray());
+
+		return bos.toByteArray();
+	}
+
+	@Override
+	public String toString() {
+		return JsonBuilder.toJson(this);
+	}
+
+	public RecordHeaderType getType() {
+		return type;
+	}
+
+	public Version getVersion() {
+		return version;
+	}
+
+	public Int16 getMessageLength() {
+		return messageLength;
+	}
+}
+
