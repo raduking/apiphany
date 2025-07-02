@@ -11,16 +11,16 @@ public class Certificate {
 
 	private byte[] bytes;
 
-	public Certificate(Int24 length, byte[] bytes) {
+	public Certificate(final Int24 length, final byte[] bytes) {
 		this.length = length;
 		this.bytes = bytes;
 	}
 
-	public Certificate(int length, byte[] bytes) {
+	public Certificate(final int length, final byte[] bytes) {
 		this(new Int24(length), bytes);
 	}
 
-	public static Certificate from(InputStream is) throws IOException {
+	public static Certificate from(final InputStream is) throws IOException {
 		Int24 length = Int24.from(is);
 
 		byte[] buffer = new byte[length.getValue()];

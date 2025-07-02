@@ -12,15 +12,15 @@ public enum CurveType {
 
 	private byte value;
 
-	CurveType(byte value) {
+	CurveType(final byte value) {
 		this.value = value;
 	}
 
-	byte value() {
+	public byte value() {
 		return value;
 	}
 
-	public static CurveType fromValue(byte value) {
+	public static CurveType fromValue(final byte value) {
 		return Enums.from(value, VALUE_MAP, values());
 	}
 }

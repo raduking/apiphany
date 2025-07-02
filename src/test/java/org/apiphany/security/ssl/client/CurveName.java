@@ -15,11 +15,11 @@ public enum CurveName {
 
 	private short value;
 
-	CurveName(short value) {
+	CurveName(final short value) {
 		this.value = value;
 	}
 
-	public static CurveName fromValue(short value) {
+	public static CurveName fromValue(final short value) {
 		return Enums.from(value, VALUE_MAP, values());
 	}
 

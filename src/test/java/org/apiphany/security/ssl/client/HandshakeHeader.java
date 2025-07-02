@@ -16,20 +16,20 @@ public class HandshakeHeader {
 
 	private Int24 messageLength;
 
-	public HandshakeHeader(HandshakeMessageType messageType, Int24 messageLength) {
+	public HandshakeHeader(final HandshakeMessageType messageType, final Int24 messageLength) {
 		this.messageType = messageType;
 		this.messageLength = messageLength;
 	}
 
-	public HandshakeHeader(HandshakeMessageType messageType, int messageLength) {
+	public HandshakeHeader(final HandshakeMessageType messageType, final int messageLength) {
 		this(messageType, new Int24(messageLength));
 	}
 
-	public HandshakeHeader(HandshakeMessageType messageType) {
+	public HandshakeHeader(final HandshakeMessageType messageType) {
 		this(messageType, (short) 0x0000);
 	}
 
-	public static HandshakeHeader from(InputStream is) throws IOException {
+	public static HandshakeHeader from(final InputStream is) throws IOException {
 		int firstByte = is.read();
 		if (-1 == firstByte) {
 			throw new EOFException("Connection closed by server");

@@ -10,7 +10,7 @@ public class Int24 {
 
 	private int value;
 
-	public Int24(int value) {
+	public Int24(final int value) {
 		this.value = value;
 	}
 
@@ -18,7 +18,7 @@ public class Int24 {
 		this((short) 0x0000);
 	}
 
-	public static Int24 from(InputStream is) throws IOException {
+	public static Int24 from(final InputStream is) throws IOException {
 		byte[] buffer = new byte[Bytes.Size.BITS24];
 		int bytesRead = is.read(buffer);
 		if (Bytes.Size.BITS24 != bytesRead) {

@@ -13,17 +13,17 @@ public class Signature {
 
 	private byte[] bytes;
 
-	public Signature(Int16 reserved, Int16 length, byte[] bytes) {
+	public Signature(final Int16 reserved, final Int16 length, final byte[] bytes) {
 		this.reserved = reserved;
 		this.length = length;
 		this.bytes = bytes;
 	}
 
-	public Signature(short length, byte[] bytes) {
+	public Signature(final short length, final byte[] bytes) {
 		this(new Int16((short) 0x0000), new Int16(length), bytes);
 	}
 
-	public static Signature from(InputStream is) throws IOException {
+	public static Signature from(final InputStream is) throws IOException {
 		Int16 reserved = Int16.from(is);
 		Int16 length = Int16.from(is);
 

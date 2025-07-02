@@ -11,7 +11,7 @@ public class HandshakeRandom {
 
 	private byte[] random = new byte[SIZE];
 
-	public static HandshakeRandom from(InputStream is) throws IOException {
+	public static HandshakeRandom from(final InputStream is) throws IOException {
 		HandshakeRandom handshakeRandom = new HandshakeRandom();
 		is.read(handshakeRandom.random);
 		return handshakeRandom;

@@ -12,16 +12,16 @@ public class SessionId {
 
 	private byte[] value;
 
-	public SessionId(Int8 length, byte[] value) {
+	public SessionId(final Int8 length, final byte[] value) {
 		this.length = length;
 		this.value = value;
 	}
 
-	public SessionId(byte length, byte[] value) {
+	public SessionId(final byte length, final byte[] value) {
 		this(new Int8(length), value);
 	}
 
-	public SessionId(String value) {
+	public SessionId(final String value) {
 		this((byte) value.length(), value.getBytes(StandardCharsets.US_ASCII));
 	}
 
@@ -29,7 +29,7 @@ public class SessionId {
 		this("");
 	}
 
-	public static SessionId from(InputStream is) throws IOException {
+	public static SessionId from(final InputStream is) throws IOException {
 		Int8 length = Int8.from(is);
 		byte[] value = new byte[length.getValue()];
 		is.read(value);

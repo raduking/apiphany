@@ -10,7 +10,7 @@ public class Int16 {
 
 	private short value;
 
-	public Int16(short length) {
+	public Int16(final short length) {
 		this.value = length;
 	}
 
@@ -18,7 +18,7 @@ public class Int16 {
 		this((short) 0x0000);
 	}
 
-	public static Int16 from(InputStream is) throws IOException {
+	public static Int16 from(final InputStream is) throws IOException {
 		byte[] shortBuffer = new byte[Bytes.Size.SHORT];
 		int bytesRead = is.read(shortBuffer);
 		if (Bytes.Size.SHORT != bytesRead) {

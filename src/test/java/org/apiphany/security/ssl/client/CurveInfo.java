@@ -12,12 +12,12 @@ public class CurveInfo {
 
 	private CurveName name;
 
-	public CurveInfo(CurveType type, CurveName name) {
+	public CurveInfo(final CurveType type, final CurveName name) {
 		this.type = type;
 		this.name = name;
 	}
 
-	public static CurveInfo from(InputStream is) throws IOException {
+	public static CurveInfo from(final InputStream is) throws IOException {
 		int typeValue = is.read();
 		CurveType type = CurveType.fromValue((byte) typeValue);
 

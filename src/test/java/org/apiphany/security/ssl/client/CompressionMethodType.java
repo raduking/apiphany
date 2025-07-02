@@ -12,15 +12,15 @@ public enum CompressionMethodType {
 
 	private byte value;
 
-	CompressionMethodType(byte value) {
+	CompressionMethodType(final byte value) {
 		this.value = value;
 	}
 
-	byte value() {
+	public byte value() {
 		return value;
 	}
 
-	public static CompressionMethodType fromValue(byte value) {
+	public static CompressionMethodType fromValue(final byte value) {
 		return Enums.from(value, VALUE_MAP, values());
 	}
 }
