@@ -23,7 +23,7 @@ public enum SSLProtocol {
 	 * </ul>
 	 * This should be the preferred protocol when available.
 	 */
-	TLS_1_3("TLSv1.3"),
+	TLS_1_3("TLSv1.3", (byte) 0x03, (byte) 0x04),
 
 	/**
 	 * TLS 1.2 protocol (RFC 5246).
@@ -31,7 +31,7 @@ public enum SSLProtocol {
 	 * Currently the most widely supported secure protocol version. When properly configured with modern cipher suites,
 	 * provides strong security. Supported by virtually all modern systems.
 	 */
-	TLS_1_2("TLSv1.2"),
+	TLS_1_2("TLSv1.2", (byte) 0x03, (byte) 0x03),
 
 	/**
 	 * TLS 1.1 protocol (RFC 4346).
@@ -43,7 +43,7 @@ public enum SSLProtocol {
 	 * </ul>
 	 * Disabled by default in Java 8u31+ and should not be used.
 	 */
-	TLS_1_1("TLSv1.1"),
+	TLS_1_1("TLSv1.1", (byte) 0x03, (byte) 0x02),
 
 	/**
 	 * TLS 1.0 protocol (RFC 2246).
@@ -56,7 +56,7 @@ public enum SSLProtocol {
 	 * </ul>
 	 * Disabled by default in Java 8u31+ and should not be used.
 	 */
-	TLS_1_0("TLSv1"),
+	TLS_1_0("TLSv1", (byte) 0x03, (byte) 0x01),
 
 	/**
 	 * SSL 3.0 protocol.
@@ -70,7 +70,8 @@ public enum SSLProtocol {
 	 * </ul>
 	 * Should never be used under any circumstances.
 	 */
-	SSL_3_0("SSLv3"),
+	@Deprecated
+	SSL_3_0("SSLv3", (byte) 0x03, (byte) 0x00),
 
 	/**
 	 * SSL 2.0 protocol (represented by SSLv2Hello for backward compatibility).
@@ -84,7 +85,8 @@ public enum SSLProtocol {
 	 * </ul>
 	 * Note: This is actually the SSLv2Hello pseudo-protocol used for version negotiation, not the actual SSLv2 protocol.
 	 */
-	SSL_2_0("SSLv2Hello");
+	@Deprecated
+	SSL_2_0("SSLv2Hello", (byte) 0x02, (byte) 0x00);
 
 	/**
 	 * The name map for easy from string implementation.
@@ -92,17 +94,28 @@ public enum SSLProtocol {
 	private static final Map<String, SSLProtocol> NAME_MAP = Enums.buildNameMap(values());
 
 	/**
+	 * The version map for easy from string implementation.
+	 */
+	private static final Map<Short, SSLProtocol> VERSION_MAP = Enums.buildNameMap(values(), SSLProtocol::handshakeVersion);
+
+	/**
 	 * The {@link String} value.
 	 */
 	private String value;
+
+	/**
+	 * The SSL handshake version as {@code short}.
+	 */
+	private short handshakeVersion;
 
 	/**
 	 * Constructs an enumeration.
 	 *
 	 * @param value string value
 	 */
-	SSLProtocol(final String value) {
+	SSLProtocol(final String value, byte handshakeVersionMajor, byte handshakeVersionMinor) {
 		this.value = value;
+		this.handshakeVersion = (short) (((short) (handshakeVersionMajor << 8)) + handshakeVersionMinor);
 	}
 
 	/**
@@ -123,6 +136,15 @@ public enum SSLProtocol {
 	}
 
 	/**
+	 * Returns the SSL handshake version for this protocol.
+	 *
+	 * @return the SSL handshake version for this protocol
+	 */
+	public short handshakeVersion() {
+		return handshakeVersion;
+	}
+
+	/**
 	 * Returns a {@link SSLProtocol} enum from a {@link String}.
 	 *
 	 * @param value the SSL protocol as string
@@ -130,6 +152,16 @@ public enum SSLProtocol {
 	 */
 	public static SSLProtocol fromString(final String value) {
 		return Enums.fromString(Objects.requireNonNull(value), NAME_MAP, values());
+	}
+
+	/**
+	 * Returns a {@link SSLProtocol} enum from a {@code short}.
+	 *
+	 * @param value the SSL protocol as short
+	 * @return a SSL protocol enum
+	 */
+	public static SSLProtocol fromVersion(final short version) {
+		return Enums.from(version, VERSION_MAP, values());
 	}
 
 }
