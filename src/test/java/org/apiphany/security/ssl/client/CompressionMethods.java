@@ -9,7 +9,7 @@ public class CompressionMethods {
 
 	private List<CompressionMethod> methods;
 
-	public CompressionMethods(List<CompressionMethod> methods) {
+	public CompressionMethods(final List<CompressionMethod> methods) {
 		this.size = new Int8((byte) methods.size());
 		this.methods = new ArrayList<>(this.size.getValue());
 		this.methods.addAll(methods);

@@ -19,21 +19,21 @@ public class RecordHeader {
 
 	private Int16 messageLength;
 
-	public RecordHeader(RecordHeaderType type, Version version, Int16 messageLength) {
+	public RecordHeader(final RecordHeaderType type, final Version version, final Int16 messageLength) {
 		this.type = type;
 		this.version = version;
 		this.messageLength = messageLength;
 	}
 
-	public RecordHeader(RecordHeaderType type, SSLProtocol sslProtocol, short messageLength) {
+	public RecordHeader(final RecordHeaderType type, final SSLProtocol sslProtocol, final short messageLength) {
 		this(type, Version.of(sslProtocol), new Int16(messageLength));
 	}
 
-	public RecordHeader(RecordHeaderType type, SSLProtocol sslProtocol) {
+	public RecordHeader(final RecordHeaderType type, final SSLProtocol sslProtocol) {
 		this(type, sslProtocol, (short) 0x0000);
 	}
 
-	public static RecordHeader from(InputStream is) throws IOException {
+	public static RecordHeader from(final InputStream is) throws IOException {
 		int firstByte = is.read();
 		if (-1 == firstByte) {
 			throw new EOFException("Connection closed by server");

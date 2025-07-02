@@ -17,15 +17,15 @@ public enum HandshakeMessageType {
 
 	private byte value;
 
-	HandshakeMessageType(byte value) {
+	HandshakeMessageType(final byte value) {
 		this.value = value;
 	}
 
-	byte value() {
+	public byte value() {
 		return value;
 	}
 
-	public static HandshakeMessageType fromValue(byte value) {
+	public static HandshakeMessageType fromValue(final byte value) {
 		return Enums.from(value, VALUE_MAP, values());
 	}
 }

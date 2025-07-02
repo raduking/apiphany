@@ -9,15 +9,15 @@ public class CompressionMethod {
 
 	private CompressionMethodType method;
 
-	public CompressionMethod(CompressionMethodType method) {
+	public CompressionMethod(final CompressionMethodType method) {
 		this.method = method;
 	}
 
-	public CompressionMethod(byte method) {
+	public CompressionMethod(final byte method) {
 		this.method = CompressionMethodType.fromValue(method);
 	}
 
-	public static CompressionMethod from(InputStream is) throws IOException {
+	public static CompressionMethod from(final InputStream is) throws IOException {
 		int method = is.read();
 		return new CompressionMethod((byte) method);
 	}

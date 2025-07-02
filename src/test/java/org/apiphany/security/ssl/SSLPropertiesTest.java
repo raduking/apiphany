@@ -7,8 +7,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.List;
 
 import javax.net.ssl.SSLHandshakeException;
+import javax.net.ssl.SSLSocketFactory;
 
 import org.apiphany.ApiClient;
 import org.apiphany.client.ClientProperties;
@@ -18,6 +20,8 @@ import org.apiphany.lang.Strings;
 import org.apiphany.net.Sockets;
 import org.apiphany.security.ssl.client.Bytes;
 import org.apiphany.security.ssl.client.ClientHello;
+import org.apiphany.security.ssl.client.CypherSuite;
+import org.apiphany.security.ssl.client.CypherSuiteName;
 import org.apiphany.security.ssl.client.MinimalTLSClient;
 import org.apiphany.security.ssl.server.SimpleHttpsServer;
 import org.junit.jupiter.api.AfterEach;
@@ -131,8 +135,27 @@ class SSLPropertiesTest {
 				(byte) 0x03, (byte) 0xFF, (byte) 0x01, (byte) 0x00, (byte) 0x01, (byte) 0x00, (byte) 0x00, (byte) 0x12,
 				(byte) 0x00, (byte) 0x00
 		};
+		final CypherSuiteName[] cypherSuitesArray = {
+				CypherSuiteName.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256,
+				CypherSuiteName.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,
+				CypherSuiteName.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+				CypherSuiteName.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+				CypherSuiteName.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+				CypherSuiteName.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+				CypherSuiteName.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
+				CypherSuiteName.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
+				CypherSuiteName.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+				CypherSuiteName.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
+				CypherSuiteName.TLS_RSA_WITH_AES_128_GCM_SHA256,
+				CypherSuiteName.TLS_RSA_WITH_AES_256_GCM_SHA384,
+				CypherSuiteName.TLS_RSA_WITH_AES_128_CBC_SHA,
+				CypherSuiteName.TLS_RSA_WITH_AES_256_CBC_SHA,
+				CypherSuiteName.TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA,
+				CypherSuiteName.TLS_RSA_WITH_3DES_EDE_CBC_SHA
+		};
+		List<CypherSuite> cypherSuites = List.of(cypherSuitesArray).stream().map(CypherSuite::new).toList();
 
-		ClientHello clientHello = new ClientHello("example.ulfheim.net");
+		ClientHello clientHello = new ClientHello(List.of("example.ulfheim.net"), cypherSuites);
 
 		byte[] bytes = clientHello.toByteArray();
 
@@ -146,6 +169,19 @@ class SSLPropertiesTest {
 
 	@Test
 	void test() {
+        SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+        String[] defaultCiphers = factory.getDefaultCipherSuites();
+        String[] supportedCiphers = factory.getSupportedCipherSuites();
+
+        LOGGER.info("Default Cipher Suites:");
+        for (String cipher : defaultCiphers) {
+        	LOGGER.info(cipher);
+        }
+
+        LOGGER.info("\nSupported Cipher Suites:");
+        for (String cipher : supportedCiphers) {
+        	LOGGER.info(cipher);
+        }
 		assertTrue(true);
 	}
 

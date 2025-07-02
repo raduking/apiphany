@@ -113,7 +113,7 @@ public enum SSLProtocol {
 	 *
 	 * @param value string value
 	 */
-	SSLProtocol(final String value, byte handshakeVersionMajor, byte handshakeVersionMinor) {
+	SSLProtocol(final String value, final byte handshakeVersionMajor, final byte handshakeVersionMinor) {
 		this.value = value;
 		this.handshakeVersion = (short) (((short) (handshakeVersionMajor << 8)) + handshakeVersionMinor);
 	}

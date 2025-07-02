@@ -11,15 +11,15 @@ public class Version {
 
 	private SSLProtocol protocol;
 
-	public Version(SSLProtocol protocol) {
+	public Version(final SSLProtocol protocol) {
 		this.protocol = protocol;
 	}
 
-	public static Version of(SSLProtocol protocol) {
+	public static Version of(final SSLProtocol protocol) {
 		return new Version(protocol);
 	}
 
-	public static Version from(InputStream is) throws IOException {
+	public static Version from(final InputStream is) throws IOException {
 		byte[] shortBuffer = new byte[Bytes.Size.SHORT];
 		int bytesRead = is.read(shortBuffer);
 		if (Bytes.Size.SHORT != bytesRead) {

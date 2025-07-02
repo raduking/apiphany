@@ -12,7 +12,7 @@ public enum RecordHeaderType {
 
 	private byte value;
 
-	RecordHeaderType(byte value) {
+	RecordHeaderType(final byte value) {
 		this.value = value;
 	}
 
@@ -20,7 +20,7 @@ public enum RecordHeaderType {
 		return value;
 	}
 
-	public static RecordHeaderType fromValue(byte value) {
+	public static RecordHeaderType fromValue(final byte value) {
 		return Enums.from(value, VALUE_MAP, values());
 	}
 }

@@ -9,7 +9,7 @@ public class Int8 {
 
 	private byte value;
 
-	public Int8(byte length) {
+	public Int8(final byte length) {
 		this.value = length;
 	}
 
@@ -17,7 +17,7 @@ public class Int8 {
 		this((byte) 0x00);
 	}
 
-	public static Int8 from(InputStream is) throws IOException {
+	public static Int8 from(final InputStream is) throws IOException {
 		int length = is.read();
 
 		return new Int8((byte) length);

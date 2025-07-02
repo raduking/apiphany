@@ -7,24 +7,24 @@ import org.apiphany.json.JsonBuilder;
 
 public class CypherSuite {
 
-	private Int16 cypher;
+	private CypherSuiteName cypher;
 
-	public CypherSuite(Int16 cypher) {
+	public CypherSuite(final CypherSuiteName cypher) {
 		this.cypher = cypher;
 	}
 
-	public CypherSuite(short cypher) {
-		this(new Int16(cypher));
+	public CypherSuite(final short cypher) {
+		this(CypherSuiteName.fromValue(cypher));
 	}
 
-	public static CypherSuite from(InputStream is) throws IOException {
+	public static CypherSuite from(final InputStream is) throws IOException {
 		Int16 cypher = Int16.from(is);
 
-		return new CypherSuite(cypher);
+		return new CypherSuite(cypher.getValue());
 	}
 
 	public byte[] toByteArray() {
-		return Bytes.from(cypher.getValue());
+		return Bytes.from(cypher.value());
 	}
 
 	@Override
@@ -32,7 +32,7 @@ public class CypherSuite {
 		return JsonBuilder.toJson(this);
 	}
 
-	public Int16 getCypher() {
+	public CypherSuiteName getCypher() {
 		return cypher;
 	}
 }

@@ -18,11 +18,11 @@ public enum ExtensionType {
 
 	private short value;
 
-	ExtensionType(short value) {
+	ExtensionType(final short value) {
 		this.value = value;
 	}
 
-	public static ExtensionType fromValue(short value) {
+	public static ExtensionType fromValue(final short value) {
 		return Enums.from(value, VALUE_MAP, values());
 	}
 

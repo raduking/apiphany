@@ -14,7 +14,7 @@ import javax.net.ssl.SSLSocketFactory;
  * client hello message during handshake, even when only TLSv1 is enabled. This only appears to be an issue on the
  * client sockets, not the server sockets.
  * <p>
- * This class wraps the SSLSocketFactory ensuring that the SSLSocket is properly configured.
+ * This class wraps the {@link SSLSocketFactory} ensuring that the SSLSocket is properly configured.
  * <p>
  * Every {@code createSocket} method returns a {@link Socket} and the caller is always responsible for closing it.
  *

@@ -2,7 +2,6 @@ package org.apiphany.security.ssl.client;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -16,13 +15,13 @@ public class RenegotiationInfo {
 
 	private Int8 length;
 
-	public RenegotiationInfo(ExtensionType type, Int16 size, Int8 length) {
+	public RenegotiationInfo(final ExtensionType type, final Int16 size, final Int8 length) {
 		this.type = type;
 		this.size = size;
 		this.length = length;
 	}
 
-	public RenegotiationInfo(ExtensionType type, short size, byte length) {
+	public RenegotiationInfo(final ExtensionType type, final short size, final byte length) {
 		this(type, new Int16(size), new Int8(length));
 	}
 
@@ -30,16 +29,11 @@ public class RenegotiationInfo {
 		this(ExtensionType.RENEGOTIATION_INFO, (short) 0x0001, (byte) 0x00);
 	}
 
-	public static RenegotiationInfo from(InputStream is) throws IOException {
-		byte[] shortBuffer = new byte[Bytes.Size.SHORT];
-		int bytesRead = is.read(shortBuffer);
-		if (Bytes.Size.SHORT != bytesRead) {
-			throw new EOFException("Short renegotiation infe, cannot read extension type");
-		}
-		ExtensionType type = ExtensionType.fromValue(Bytes.toShort(shortBuffer));
+	public static RenegotiationInfo from(final InputStream is) throws IOException {
+		Int16 extensionType = Int16.from(is);
+		ExtensionType type = ExtensionType.fromValue(extensionType.getValue());
 
 		Int16 size = Int16.from(is);
-
 		Int8 length = Int8.from(is);
 
 		return new RenegotiationInfo(type, size, length);

@@ -11,6 +11,7 @@ import java.security.SecureRandom;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
+import java.util.List;
 
 import javax.crypto.Cipher;
 
@@ -57,12 +58,12 @@ public class MinimalTLSClient implements AutoCloseable {
 				tcpSocket.getInetAddress(), tcpSocket.getPort(), tcpSocket.getLocalPort());
 	}
 
-	public void sendTLSRecord(byte[] bytes) throws IOException {
+	public void sendTLSRecord(final byte[] bytes) throws IOException {
 		out.write(bytes);
 		out.flush();
 	}
 
-	public static byte[] receiveTLSRecord(InputStream is) throws IOException {
+	public static byte[] receiveTLSRecord(final InputStream is) throws IOException {
 		LOGGER.debug("Waiting for server response...");
 		RecordHeader recordHeader = RecordHeader.from(is);
 
@@ -82,7 +83,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		return receiveTLSRecord(in);
 	}
 
-	public byte[] receiveTLSRecord(int timeout) throws IOException {
+	public byte[] receiveTLSRecord(final int timeout) throws IOException {
 		int savedTimeout = tcpSocket.getSoTimeout();
 		tcpSocket.setSoTimeout(timeout);
 		try {
@@ -93,16 +94,16 @@ public class MinimalTLSClient implements AutoCloseable {
 	}
 
 	public byte[] createClientHello() throws Exception {
-		ClientHello clientHello = new ClientHello(host);
+		ClientHello clientHello = new ClientHello(List.of(host), new CypherSuites(CypherSuiteName.values()));
 		return clientHello.toByteArray();
 	}
 
-	public X509Certificate parseCertificate(byte[] certData) throws Exception {
+	public X509Certificate parseCertificate(final byte[] certData) throws Exception {
 		CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
 		return (X509Certificate) certFactory.generateCertificate(new ByteArrayInputStream(certData));
 	}
 
-	public byte[] generateKeyExchange(X509Certificate serverCert) throws Exception {
+	public byte[] generateKeyExchange(final X509Certificate serverCert) throws Exception {
 		// Generate random pre-master secret (48 bytes total)
 		byte[] preMasterSecret = new byte[48];
 		SecureRandom random = new SecureRandom();
@@ -122,7 +123,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		return rsa.doFinal(preMasterSecret);
 	}
 
-	public byte[] createKeyExchangeMessage(byte[] publicKeyBytes) throws Exception {
+	public byte[] createKeyExchangeMessage(final byte[] publicKeyBytes) throws Exception {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(bos);
 
@@ -182,7 +183,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		return message;
 	}
 
-	public static void readServerHello(InputStream in) throws Exception {
+	public static void readServerHello(final InputStream in) throws Exception {
 		RecordHeader recordHeader = RecordHeader.from(in);
 		LOGGER.debug("[ServerHello] record header: {}", recordHeader);
 
@@ -211,7 +212,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		LOGGER.debug("[ServerHello] renegotiation information: {}", renegotiationInfo);
 	}
 
-	public static byte[] readServerCertificate(InputStream in) throws Exception {
+	public static byte[] readServerCertificate(final InputStream in) throws Exception {
 		HandshakeHeader handshakeHeader = HandshakeHeader.from(in);
 		LOGGER.debug("[ServerCertificate] handshake header: {}", handshakeHeader);
 
@@ -223,7 +224,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		return certificate.getBytes();
 	}
 
-	public static void readServerKeyExchange(InputStream in) throws Exception {
+	public static void readServerKeyExchange(final InputStream in) throws Exception {
 		HandshakeHeader handshakeHeader = HandshakeHeader.from(in);
 		LOGGER.debug("[ServerKeyExchange] handshake header: {}", handshakeHeader);
 
@@ -237,7 +238,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		LOGGER.debug("[ServerKeyExchange] signature: {}", signature);
 	}
 
-	public static void readServerHelloDone(InputStream in) throws Exception {
+	public static void readServerHelloDone(final InputStream in) throws Exception {
 		HandshakeHeader handshakeHeader = HandshakeHeader.from(in);
 		LOGGER.debug("[ServerHelloDone] handshake header: {}", handshakeHeader);
 	}

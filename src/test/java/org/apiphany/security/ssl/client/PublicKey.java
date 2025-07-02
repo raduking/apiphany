@@ -13,20 +13,20 @@ public class PublicKey {
 
 	private byte[] bytes;
 
-	public PublicKey(Int8 length, byte[] bytes) {
+	public PublicKey(final Int8 length, final byte[] bytes) {
 		this.length = length;
 		this.bytes = bytes;
 	}
 
-	public PublicKey(byte length, byte[] bytes) {
+	public PublicKey(final byte length, final byte[] bytes) {
 		this(new Int8(length), bytes);
 	}
 
-	public PublicKey(byte[] bytes) {
+	public PublicKey(final byte[] bytes) {
 		this((byte) bytes.length, bytes);
 	}
 
-	public static PublicKey from(InputStream is) throws IOException {
+	public static PublicKey from(final InputStream is) throws IOException {
 		Int8 length = Int8.from(is);
 
 		byte[] buffer = new byte[length.getValue()];
