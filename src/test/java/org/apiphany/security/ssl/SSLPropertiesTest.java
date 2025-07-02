@@ -10,7 +10,6 @@ import java.time.Duration;
 import java.util.List;
 
 import javax.net.ssl.SSLHandshakeException;
-import javax.net.ssl.SSLSocketFactory;
 
 import org.apiphany.ApiClient;
 import org.apiphany.client.ClientProperties;
@@ -165,24 +164,6 @@ class SSLPropertiesTest {
 			boolean valid = bytes[i] == byteArray[i];
 			assertTrue(valid);
 		}
-	}
-
-	@Test
-	void test() {
-        SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-        String[] defaultCiphers = factory.getDefaultCipherSuites();
-        String[] supportedCiphers = factory.getSupportedCipherSuites();
-
-        LOGGER.info("Default Cipher Suites:");
-        for (String cipher : defaultCiphers) {
-        	LOGGER.info(cipher);
-        }
-
-        LOGGER.info("\nSupported Cipher Suites:");
-        for (String cipher : supportedCiphers) {
-        	LOGGER.info(cipher);
-        }
-		assertTrue(true);
 	}
 
 	static class SimpleApiClient extends ApiClient {
