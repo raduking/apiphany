@@ -7,6 +7,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.security.SecureRandom;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -31,6 +32,14 @@ public class MinimalTLSClient implements AutoCloseable {
 	private Socket tcpSocket;
 	private DataOutputStream out;
 	private InputStream in;
+
+	private byte[] clientRandom;
+	private byte[] serverRandom;
+
+	private byte[] preMasterSecret;
+	private byte[] masterSecret;
+
+	private final ByteArrayOutputStream handshakeMessages = new ByteArrayOutputStream();
 
 	public MinimalTLSClient(final String host, final int port) {
 		this.host = host;
@@ -93,24 +102,19 @@ public class MinimalTLSClient implements AutoCloseable {
 		}
 	}
 
-	public byte[] createClientHello() throws Exception {
-		ClientHello clientHello = new ClientHello(List.of(host), new CypherSuites(CypherSuiteName.values()));
-		return clientHello.toByteArray();
-	}
-
 	public X509Certificate parseCertificate(final byte[] certData) throws Exception {
 		CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
 		return (X509Certificate) certFactory.generateCertificate(new ByteArrayInputStream(certData));
 	}
 
 	public byte[] generateKeyExchange(final X509Certificate serverCert) throws Exception {
-		// Generate random pre-master secret (48 bytes total)
-		byte[] preMasterSecret = new byte[48];
 		SecureRandom random = new SecureRandom();
 
-		// First 2 bytes indicate TLS version (0x0303 for TLS 1.2)
-		preMasterSecret[0] = 0x03;
-		preMasterSecret[1] = 0x03;
+		// Generate random pre-master secret (48 bytes total)
+		this.preMasterSecret = new byte[48];
+
+		// First 2 bytes indicate TLS version
+		Bytes.set(SSLProtocol.TLS_1_2.handshakeVersion(), preMasterSecret, 0);
 
 		// Remaining 46 bytes are random
 		byte[] randomBytes = new byte[46];
@@ -123,7 +127,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		return rsa.doFinal(preMasterSecret);
 	}
 
-	public byte[] createKeyExchangeMessage(final byte[] publicKeyBytes) throws Exception {
+	public byte[] createKeyExchangeMessage(final byte[] encryptedPreMasterSecret) throws Exception {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(bos);
 
@@ -133,7 +137,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		HandshakeHeader handshakeHeader = new HandshakeHeader(HandshakeMessageType.CLIENT_KEY_EXCHANGE);
 		dos.write(handshakeHeader.toByteArray());
 
-		PublicKey publicKey = new PublicKey(publicKeyBytes);
+		PublicKey publicKey = new PublicKey(encryptedPreMasterSecret);
 		dos.write(publicKey.getBytes());
 
 		// Update lengths
@@ -149,41 +153,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		return message;
 	}
 
-	public byte[] createFinishedMessage() throws Exception {
-		// Note: This is a simplified version that won't actually work
-		// In a real implementation, you would need to:
-		// 1. Calculate the verify data using PRF
-		// 2. Properly encrypt it with the negotiated keys
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		DataOutputStream dos = new DataOutputStream(bos);
-
-		// TLS record header
-		dos.write(0x16); // Handshake type
-		dos.writeShort(0x0303); // TLS 1.2
-		dos.writeShort(0x0000); // Length placeholder
-
-		// Handshake header
-		dos.write(0x14); // Finished type
-		dos.writeShort(0x0000); // Length placeholder
-
-		// Verify data (dummy value - should be 12 bytes for TLS 1.2)
-		byte[] verifyData = new byte[12];
-		dos.write(verifyData);
-
-		// Update lengths
-		byte[] message = bos.toByteArray();
-		int payloadLength = message.length - 5;
-		message[3] = (byte) (payloadLength >> 8);
-		message[4] = (byte) payloadLength;
-
-		int handshakeLength = payloadLength - 4;
-		message[6] = (byte) (handshakeLength >> 8);
-		message[7] = (byte) handshakeLength;
-
-		return message;
-	}
-
-	public static void readServerHello(final InputStream in) throws Exception {
+	public static byte[] readServerHello(final InputStream in) throws Exception {
 		RecordHeader recordHeader = RecordHeader.from(in);
 		LOGGER.debug("[ServerHello] record header: {}", recordHeader);
 
@@ -210,6 +180,8 @@ public class MinimalTLSClient implements AutoCloseable {
 
 		RenegotiationInfo renegotiationInfo = RenegotiationInfo.from(in);
 		LOGGER.debug("[ServerHello] renegotiation information: {}", renegotiationInfo);
+
+		return handshakeRandom.getRandom();
 	}
 
 	public static byte[] readServerCertificate(final InputStream in) throws Exception {
@@ -247,9 +219,13 @@ public class MinimalTLSClient implements AutoCloseable {
 		connect();
 
 		// 1. Send Client Hello
-		byte[] clientHello = createClientHello();
-		LOGGER.debug("Sending Client Hello: {}", Bytes.hexString(clientHello));
-		sendTLSRecord(clientHello);
+		ClientHello clientHello = new ClientHello(List.of(host), new CypherSuites(CypherSuiteName.values()));
+		byte[] clientHelloBytes = clientHello.toByteArray();
+		accumulateHandshake(clientHelloBytes);
+		this.clientRandom = clientHello.clientRandom.getRandom();
+
+		LOGGER.debug("Sending Client Hello: {}", Bytes.hexString(clientHelloBytes));
+		sendTLSRecord(clientHelloBytes);
 		LOGGER.debug("Sent Client Hello");
 
 		// 2. Receive Server Hello
@@ -258,7 +234,7 @@ public class MinimalTLSClient implements AutoCloseable {
 
 		ByteArrayInputStream bis = new ByteArrayInputStream(serverHello);
 		// a. Read Server Hello
-		readServerHello(bis);
+		this.serverRandom = readServerHello(bis);
 
 		// b. Read Server Certificate
 		byte[] certificate = readServerCertificate(bis);
@@ -276,10 +252,39 @@ public class MinimalTLSClient implements AutoCloseable {
 
 		// 4. Send Client Key Exchange
 		byte[] clientKeyExchange = createKeyExchangeMessage(encryptedPreMaster);
+		accumulateHandshake(clientKeyExchange);
 		sendTLSRecord(clientKeyExchange);
-		LOGGER.debug("Sent ClientKeyExchange");
+		LOGGER.debug("Sent Client Key Exchange");
 
-		return clientKeyExchange;
+		// 5. Derive Master Secret and Keys
+		this.masterSecret = Bytes.deriveMasterSecret(preMasterSecret, clientRandom, serverRandom);
+		byte[] keyBlock = Bytes.deriveKeyBlock(masterSecret, serverRandom, clientRandom, 104);
+
+		// Extract keys
+		ByteBuffer buf = ByteBuffer.wrap(keyBlock);
+		byte[] clientMAC = new byte[20];
+		buf.get(clientMAC);
+		byte[] serverMAC = new byte[20];
+		buf.get(serverMAC);
+		byte[] clientKey = new byte[16];
+		buf.get(clientKey);
+		byte[] serverKey = new byte[16];
+		buf.get(serverKey);
+		byte[] clientIV = new byte[16];
+		buf.get(clientIV);
+		byte[] serverIV = new byte[16];
+		buf.get(serverIV);
+
+		LOGGER.info("TLS 1.2 handshake complete!");
+
+		return serverIV;
 	}
 
+	public void accumulateHandshake(final byte[] tlsRecord) {
+		// Skip the 5-byte TLS record header: [ContentType, Version (2), Length (2)]
+		if (tlsRecord.length < 6) {
+			return;
+		}
+		handshakeMessages.write(tlsRecord, 5, tlsRecord.length - 5);
+	}
 }
