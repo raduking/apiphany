@@ -24,19 +24,19 @@ public class ClientHello {
 
 	SessionId sessionId = new SessionId();
 
-	CypherSuites cypherSuites;
+	CipherSuites cypherSuites;
 
 	CompressionMethods compressionMethods = new CompressionMethods();
 
 	Extensions extensions;
 
-	public ClientHello(final List<String> serverNames, final CypherSuites cypherSuites) {
+	public ClientHello(final List<String> serverNames, final CipherSuites cypherSuites) {
 		this.extensions = new Extensions(serverNames);
 		this.cypherSuites = cypherSuites;
 	}
 
-	public ClientHello(final List<String> serverNames, final List<CypherSuite> cypherSuites) {
-		this(serverNames, new CypherSuites(cypherSuites));
+	public ClientHello(final List<String> serverNames, final List<CipherSuite> cypherSuites) {
+		this(serverNames, new CipherSuites(cypherSuites));
 	}
 
 	public byte[] toByteArray() throws IOException {

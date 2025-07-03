@@ -6,7 +6,8 @@ import org.morphix.lang.Enums;
 
 public enum RecordHeaderType {
 
-	HANDSHAKE_RECORD((byte) 0x16);
+	HANDSHAKE_RECORD((byte) 0x16),
+	CHANGE_CIPHER_SPEC((byte) 0x14);
 
 	private static final Map<Byte, RecordHeaderType> VALUE_MAP = Enums.buildNameMap(values(), RecordHeaderType::value);
 
