@@ -1,6 +1,5 @@
 package org.apiphany.security.ssl.client;
 
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -21,13 +20,8 @@ public class CurveInfo {
 		int typeValue = is.read();
 		CurveType type = CurveType.fromValue((byte) typeValue);
 
-		byte[] shortBuffer = new byte[Bytes.Size.SHORT];
-		int bytesRead = is.read(shortBuffer);
-		if (Bytes.Size.SHORT != bytesRead) {
-			throw new EOFException("Short curve info, cannot read curve name");
-		}
-		short nameValue = Bytes.toShort(shortBuffer);
-		CurveName name = CurveName.fromValue(nameValue);
+		Int16 nameValue = Int16.from(is);
+		CurveName name = CurveName.fromValue(nameValue.getValue());
 
 		return new CurveInfo(type, name);
 	}

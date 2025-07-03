@@ -20,9 +20,9 @@ public class Version {
 	}
 
 	public static Version from(final InputStream is) throws IOException {
-		byte[] shortBuffer = new byte[Bytes.Size.SHORT];
+		byte[] shortBuffer = new byte[Int16.BYTES];
 		int bytesRead = is.read(shortBuffer);
-		if (Bytes.Size.SHORT != bytesRead) {
+		if (Int16.BYTES != bytesRead) {
 			throw new EOFException("Short version, cannot read TLS version");
 		}
 		SSLProtocol protocol = SSLProtocol.fromVersion(Bytes.toShort(shortBuffer));

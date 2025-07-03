@@ -39,8 +39,7 @@ public class ServerNames {
 		byte[] bytes = bos.toByteArray();
 
 		// write actual size
-		bytes[ENTRIES_SIZE_INDEX] = (byte) ((entriesSize >> 8) & 0xFF);
-		bytes[ENTRIES_SIZE_INDEX + 1] = (byte) (entriesSize & 0xFF);
+		Bytes.set(entriesSize, bytes, ENTRIES_SIZE_INDEX);
 
 		return bytes;
 	}

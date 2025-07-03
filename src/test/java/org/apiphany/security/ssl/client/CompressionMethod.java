@@ -23,9 +23,7 @@ public class CompressionMethod {
 	}
 
 	public byte[] toByteArray() {
-		return new byte[] {
-				method.value()
-		};
+		return Bytes.from(method.value());
 	}
 
 	@Override
