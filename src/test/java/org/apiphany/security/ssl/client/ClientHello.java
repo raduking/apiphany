@@ -20,7 +20,7 @@ public class ClientHello {
 
 	Version clientVersion = new Version(SSLProtocol.TLS_1_2);
 
-	HandshakeRandom clientRandom = new HandshakeRandom();
+	HandshakeRandom clientRandom = new HandshakeRandom(HandshakeRandom.generateLinear());
 
 	SessionId sessionId = new SessionId();
 

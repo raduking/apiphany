@@ -1,5 +1,6 @@
 package org.apiphany.security.ssl.client;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -28,7 +29,10 @@ public class Signature {
 		Int16 length = Int16.from(is);
 
 		byte[] buffer = new byte[length.getValue()];
-		is.read(buffer);
+		int bytesRead = is.read(buffer);
+		if (length.getValue() != bytesRead) {
+			throw new EOFException("Error reading " + length.getValue() + " bytes");
+		}
 
 		return new Signature(reserved, length, buffer);
 	}

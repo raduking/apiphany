@@ -200,9 +200,8 @@ public class Extensions {
 		byte[] bytes = bos.toByteArray();
 
 		// write actual size
-		short extensionsSize = (short) (bytes.length - 2); // 2 is sizeof(length)
-		bytes[EXTENSIONS_SIZE_INDEX] = (byte) ((extensionsSize >> 8) & 0xFF);
-		bytes[EXTENSIONS_SIZE_INDEX + 1] = (byte) (extensionsSize & 0xFF);
+		short extensionsSize = (short) (bytes.length - length.size());
+		Bytes.set(extensionsSize, bytes, EXTENSIONS_SIZE_INDEX);
 
 		return bytes;
 	}

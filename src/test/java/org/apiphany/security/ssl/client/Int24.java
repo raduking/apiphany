@@ -8,6 +8,8 @@ import org.apiphany.json.JsonBuilder;
 
 public class Int24 {
 
+	public static final int BYTES = 3;
+
 	private int value;
 
 	public Int24(final int value) {
@@ -19,15 +21,16 @@ public class Int24 {
 	}
 
 	public static Int24 from(final InputStream is) throws IOException {
-		byte[] buffer = new byte[Bytes.Size.BITS24];
+		byte[] buffer = new byte[BYTES];
 		int bytesRead = is.read(buffer);
-		if (Bytes.Size.BITS24 != bytesRead) {
-			throw new EOFException("Short length");
+		if (BYTES != bytesRead) {
+			throw new EOFException("Error reading " + BYTES + " bytes");
 		}
-		int length = ((buffer[0] & 0xFF) << 16) |
+		int int24 = ((buffer[0] & 0xFF) << 16) |
 				((buffer[1] & 0xFF) << 8) |
 				(buffer[2] & 0xFF);
-		return new Int24(length);
+
+		return new Int24(int24);
 	}
 
 	public byte[] toByteArray() {
@@ -47,4 +50,7 @@ public class Int24 {
 		return value;
 	}
 
+	public int size() {
+		return BYTES;
+	}
 }

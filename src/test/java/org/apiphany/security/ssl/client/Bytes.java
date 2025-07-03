@@ -2,12 +2,6 @@ package org.apiphany.security.ssl.client;
 
 public class Bytes {
 
-	public interface Size {
-
-		public static final int SHORT = 2;
-		public static final int BITS24 = 3;
-	}
-
 	public static short toShort(final byte[] bytes) {
 		if (2 != bytes.length) {
 			throw new IllegalArgumentException("Can only convert 2 bytes to short, actual bytes: " + bytes.length);
@@ -26,6 +20,14 @@ public class Bytes {
 		return new byte[] {
 				value
 		};
+	}
+
+	public static void set(final short value, final byte[] bytes, final int index) {
+		if (index + 1 >= bytes.length || 0 > index) {
+			throw new IllegalArgumentException("Index out of bounds: " + index);
+		}
+		bytes[index] = (byte) ((value >> 8) & 0xFF);
+		bytes[index + 1] = (byte) (value & 0xFF);
 	}
 
 	public static String hexString(final byte[] bytes) {

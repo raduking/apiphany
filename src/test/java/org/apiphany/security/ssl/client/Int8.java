@@ -1,11 +1,14 @@
 package org.apiphany.security.ssl.client;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 
 import org.apiphany.json.JsonBuilder;
 
 public class Int8 {
+
+	public static final int BYTES = 1;
 
 	private byte value;
 
@@ -18,9 +21,13 @@ public class Int8 {
 	}
 
 	public static Int8 from(final InputStream is) throws IOException {
-		int length = is.read();
+		byte[] buffer = new byte[BYTES];
+		int bytesRead = is.read(buffer);
+		if (BYTES != bytesRead) {
+			throw new EOFException("Error reading " + BYTES + " bytes");
+		}
 
-		return new Int8((byte) length);
+		return new Int8(buffer[0]);
 	}
 
 	public byte[] toByteArray() {
@@ -36,4 +43,7 @@ public class Int8 {
 		return value;
 	}
 
+	public int size() {
+		return BYTES;
+	}
 }
