@@ -5,6 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.List;
 
+import org.apiphany.json.JsonBuilder;
 import org.apiphany.security.ssl.SSLProtocol;
 
 /**
@@ -14,25 +15,25 @@ import org.apiphany.security.ssl.SSLProtocol;
  */
 public class ClientHello {
 
-	RecordHeader recordHeader = new RecordHeader(RecordHeaderType.HANDSHAKE_RECORD, SSLProtocol.TLS_1_0);
+	private RecordHeader recordHeader = new RecordHeader(RecordHeaderType.HANDSHAKE_RECORD, SSLProtocol.TLS_1_0);
 
-	HandshakeHeader handshakeHeader = new HandshakeHeader(HandshakeMessageType.CLIENT_HELLO);
+	private HandshakeHeader handshakeHeader = new HandshakeHeader(HandshakeMessageType.CLIENT_HELLO);
 
-	Version clientVersion = new Version(SSLProtocol.TLS_1_2);
+	private Version clientVersion = new Version(SSLProtocol.TLS_1_2);
 
-	HandshakeRandom clientRandom = new HandshakeRandom(HandshakeRandom.generateLinear());
+	private HandshakeRandom clientRandom = new HandshakeRandom(HandshakeRandom.generateLinear());
 
-	SessionId sessionId = new SessionId();
+	private SessionId sessionId = new SessionId();
 
-	CipherSuites cypherSuites;
+	private CipherSuites cipherSuites;
 
-	CompressionMethods compressionMethods = new CompressionMethods();
+	private CompressionMethods compressionMethods = new CompressionMethods();
 
-	Extensions extensions;
+	private Extensions extensions;
 
 	public ClientHello(final List<String> serverNames, final CipherSuites cypherSuites) {
 		this.extensions = new Extensions(serverNames);
-		this.cypherSuites = cypherSuites;
+		this.cipherSuites = cypherSuites;
 	}
 
 	public ClientHello(final List<String> serverNames, final List<CipherSuite> cypherSuites) {
@@ -59,7 +60,7 @@ public class ClientHello {
 		dos.write(sessionId.toByteArray());
 
 		// Cipher Suites
-		dos.write(cypherSuites.toByteArray());
+		dos.write(cipherSuites.toByteArray());
 
 		// Compression Methods
 		dos.write(compressionMethods.toByteArray());
@@ -80,5 +81,42 @@ public class ClientHello {
 		bytes[8] = (byte) (bytesAfterHandshakeHeader & 0xFF);
 
 		return bytes;
+	}
+
+	@Override
+	public String toString() {
+		return JsonBuilder.toJson(this);
+	}
+
+	public RecordHeader getRecordHeader() {
+		return recordHeader;
+	}
+
+	public HandshakeHeader getHandshakeHeader() {
+		return handshakeHeader;
+	}
+
+	public Version getClientVersion() {
+		return clientVersion;
+	}
+
+	public HandshakeRandom getClientRandom() {
+		return clientRandom;
+	}
+
+	public SessionId getSessionId() {
+		return sessionId;
+	}
+
+	public CipherSuites getCipherSuites() {
+		return cipherSuites;
+	}
+
+	public CompressionMethods getCompressionMethods() {
+		return compressionMethods;
+	}
+
+	public Extensions getExtensions() {
+		return extensions;
 	}
 }
