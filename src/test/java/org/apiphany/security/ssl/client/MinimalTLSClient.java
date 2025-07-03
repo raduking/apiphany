@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -15,6 +17,10 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.crypto.Cipher;
+import javax.crypto.Mac;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+import javax.net.ssl.SSLException;
 
 import org.apiphany.security.ssl.SSLProtocol;
 import org.morphix.lang.Nullables;
@@ -153,35 +159,8 @@ public class MinimalTLSClient implements AutoCloseable {
 		return message;
 	}
 
-	public static byte[] readServerHello(final InputStream in) throws Exception {
-		RecordHeader recordHeader = RecordHeader.from(in);
-		LOGGER.debug("[ServerHello] record header: {}", recordHeader);
-
-		HandshakeHeader handshakeHeader = HandshakeHeader.from(in);
-		LOGGER.debug("[ServerHello] handshake header: {}", handshakeHeader);
-
-		Version version = Version.from(in);
-		LOGGER.debug("[ServerHello] version: {}", version);
-
-		HandshakeRandom handshakeRandom = HandshakeRandom.from(in);
-		LOGGER.debug("[ServerHello] random: {}", handshakeRandom);
-
-		SessionId sessionId = SessionId.from(in);
-		LOGGER.debug("[ServerHello] session ID: {}", sessionId);
-
-		CipherSuite cypherSuite = CipherSuite.from(in);
-		LOGGER.debug("[ServerHello] session ID: {}", cypherSuite);
-
-		CompressionMethod compressionMethod = CompressionMethod.from(in);
-		LOGGER.debug("[ServerHello] compression method: {}", compressionMethod);
-
-		Int16 extensionsLength = Int16.from(in);
-		LOGGER.debug("[ServerHello] extensions length: {}", extensionsLength);
-
-		RenegotiationInfo renegotiationInfo = RenegotiationInfo.from(in);
-		LOGGER.debug("[ServerHello] renegotiation information: {}", renegotiationInfo);
-
-		return handshakeRandom.getRandom();
+	public static ServerHello readServerHello(final InputStream in) throws Exception {
+		return ServerHello.from(in);
 	}
 
 	public static byte[] readServerCertificate(final InputStream in) throws Exception {
@@ -196,23 +175,91 @@ public class MinimalTLSClient implements AutoCloseable {
 		return certificate.getBytes();
 	}
 
-	public static void readServerKeyExchange(final InputStream in) throws Exception {
-		HandshakeHeader handshakeHeader = HandshakeHeader.from(in);
-		LOGGER.debug("[ServerKeyExchange] handshake header: {}", handshakeHeader);
-
-		CurveInfo curveInfo = CurveInfo.from(in);
-		LOGGER.debug("[ServerKeyExchange] curve information: {}", curveInfo);
-
-		PublicKey publicKey = PublicKey.from(in);
-		LOGGER.debug("[ServerKeyExchange] public key: {}", publicKey);
-
-		Signature signature = Signature.from(in);
-		LOGGER.debug("[ServerKeyExchange] signature: {}", signature);
+	public static ServerKeyExchange readServerKeyExchange(final InputStream in) throws Exception {
+		return ServerKeyExchange.from(in);
 	}
 
-	public static void readServerHelloDone(final InputStream in) throws Exception {
-		HandshakeHeader handshakeHeader = HandshakeHeader.from(in);
-		LOGGER.debug("[ServerHelloDone] handshake header: {}", handshakeHeader);
+	public static HandshakeHeader readServerHelloDone(final InputStream in) throws Exception {
+		return HandshakeHeader.from(in);
+	}
+
+	public byte[] createFinishedMessage(byte[] masterSecret, byte[] handshakeHash,
+			byte[] clientWriteKey, byte[] clientMacKey, byte[] clientIV) throws Exception {
+		// 1. Compute verify_data
+		byte[] verifyData = prf(masterSecret, "client finished", handshakeHash, 12);
+
+		// 2. Construct handshake body for Finished message
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		DataOutputStream dos = new DataOutputStream(bos);
+		dos.write(0x14); // Handshake type: Finished
+		dos.writeByte(0x00); // Length high byte
+		dos.writeShort(verifyData.length); // Length low bytes
+		dos.write(verifyData); // Payload
+		byte[] finishedPlaintext = bos.toByteArray(); // Handshake message (unencrypted)
+
+		// 3. Encrypt with keys
+		return encryptWithClientKey(finishedPlaintext, clientWriteKey, clientMacKey, clientIV);
+	}
+
+	public static byte[] buildTLSRecord(byte type, byte[] data) throws IOException {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		bos.write(type);
+		bos.write(0x03);
+		bos.write(0x03); // TLS 1.2
+		bos.write((data.length >> 8) & 0xFF);
+		bos.write(data.length & 0xFF);
+		bos.write(data);
+		return bos.toByteArray();
+	}
+
+	public byte[] encryptWithClientKey(byte[] plaintext, byte[] clientKey, byte[] clientMacKey, byte[] clientIV) throws Exception {
+		// 1. Compute MAC
+		byte[] mac = hmacSha1(clientMacKey, plaintext);
+
+		// 2. Append MAC to plaintext
+		byte[] macAppended = concatenate(plaintext, mac);
+
+		// 3. Apply PKCS#7 padding (AES block = 16 bytes)
+		byte[] padded = padPKCS7(macAppended, 16);
+
+		// 4. Encrypt with AES/CBC
+		Cipher cipher = Cipher.getInstance("AES/CBC/NoPadding");
+		SecretKeySpec keySpec = new SecretKeySpec(clientKey, "AES");
+		IvParameterSpec ivSpec = new IvParameterSpec(clientIV);
+		cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
+
+		byte[] encrypted = cipher.doFinal(padded);
+
+		// 5. Wrap into TLS Record
+		return buildTLSRecord((byte) 0x16, encrypted); // Handshake record
+	}
+
+	public byte[] decryptWithServerKey(byte[] tlsRecord, byte[] serverKey, byte[] serverMacKey, byte[] serverIV) throws Exception {
+		// Extract ciphertext
+		byte[] ciphertext = Arrays.copyOfRange(tlsRecord, 5, tlsRecord.length); // skip record header
+
+		// Decrypt AES/CBC
+		Cipher cipher = Cipher.getInstance("AES/CBC/NoPadding");
+		SecretKeySpec keySpec = new SecretKeySpec(serverKey, "AES");
+		IvParameterSpec ivSpec = new IvParameterSpec(serverIV);
+		cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec);
+		byte[] decryptedPadded = cipher.doFinal(ciphertext);
+
+		// Remove PKCS#7 padding
+		byte[] decryptedWithMac = unpadPKCS7(decryptedPadded);
+
+		// Separate MAC
+		int macLen = 20;
+		byte[] data = Arrays.copyOfRange(decryptedWithMac, 0, decryptedWithMac.length - macLen);
+		byte[] mac = Arrays.copyOfRange(decryptedWithMac, decryptedWithMac.length - macLen, decryptedWithMac.length);
+
+		// Validate MAC
+		byte[] expectedMac = hmacSha1(serverMacKey, data);
+		if (!Arrays.equals(mac, expectedMac)) {
+			throw new SSLException("Invalid MAC in server Finished record");
+		}
+
+		return data; // includes Finished handshake
 	}
 
 	public byte[] performHandshake() throws Exception {
@@ -222,19 +269,24 @@ public class MinimalTLSClient implements AutoCloseable {
 		ClientHello clientHello = new ClientHello(List.of(host), new CipherSuites(CipherSuiteName.values()));
 		byte[] clientHelloBytes = clientHello.toByteArray();
 		accumulateHandshake(clientHelloBytes);
-		this.clientRandom = clientHello.clientRandom.getRandom();
+		this.clientRandom = clientHello.getClientRandom().getRandom();
 
-		LOGGER.debug("Sending Client Hello: {}", Bytes.hexString(clientHelloBytes));
+		LOGGER.debug("Sending Client Hello: {}", clientHello);
 		sendTLSRecord(clientHelloBytes);
 		LOGGER.debug("Sent Client Hello");
 
 		// 2. Receive Server Hello
-		byte[] serverHello = receiveTLSRecord();
-		LOGGER.debug("Received Server Hello: {}", Bytes.hexString(serverHello));
+		byte[] serverHelloBytes = receiveTLSRecord();
+		accumulateHandshake(serverHelloBytes);
+		LOGGER.debug("Received Server Hello: {}", Bytes.hexString(serverHelloBytes));
 
-		ByteArrayInputStream bis = new ByteArrayInputStream(serverHello);
+		// it looks like this contains all bytes including Server Hello Done so we create a new input
+		// stream to read all the needed information from these bytes
+		ByteArrayInputStream bis = new ByteArrayInputStream(serverHelloBytes);
 		// a. Read Server Hello
-		this.serverRandom = readServerHello(bis);
+		ServerHello serverHello = readServerHello(bis);
+		LOGGER.debug("Received Server Hello: {}", serverHello);
+		this.serverRandom = serverHello.getServerRandom().getRandom();
 
 		// b. Read Server Certificate
 		byte[] certificate = readServerCertificate(bis);
@@ -242,10 +294,13 @@ public class MinimalTLSClient implements AutoCloseable {
 		LOGGER.debug("Received Server Certificate: {}", x509Certificate);
 
 		// c. Read Server Key Exchange
-		readServerKeyExchange(bis);
+		ServerKeyExchange serverKeyExchange = readServerKeyExchange(bis);
+		LOGGER.debug("[ServerKeyExchange]: {}", serverKeyExchange);
 
 		// d. Read Server Hello Done
-		readServerHelloDone(bis);
+		HandshakeHeader serverHelloDone = readServerHelloDone(bis);
+		LOGGER.debug("[ServerHelloDone] handshake header: {}", serverHelloDone);
+		// accumulateHandshake(serverHelloDone);
 
 		// 3. Generate Client Key Exchange
 		byte[] encryptedPreMaster = generateKeyExchange(x509Certificate);
@@ -257,19 +312,19 @@ public class MinimalTLSClient implements AutoCloseable {
 		LOGGER.debug("Sent Client Key Exchange");
 
 		// 5. Derive Master Secret and Keys
-		this.masterSecret = Bytes.deriveMasterSecret(preMasterSecret, clientRandom, serverRandom);
-		byte[] keyBlock = Bytes.deriveKeyBlock(masterSecret, serverRandom, clientRandom, 104);
+		this.masterSecret = deriveMasterSecret(preMasterSecret, clientRandom, serverRandom);
+		byte[] keyBlock = deriveKeyBlock(masterSecret, serverRandom, clientRandom, 104);
 
 		// Extract keys
 		ByteBuffer buf = ByteBuffer.wrap(keyBlock);
-		byte[] clientMAC = new byte[20];
-		buf.get(clientMAC);
-		byte[] serverMAC = new byte[20];
-		buf.get(serverMAC);
-		byte[] clientKey = new byte[16];
-		buf.get(clientKey);
-		byte[] serverKey = new byte[16];
-		buf.get(serverKey);
+		byte[] clientMACKey = new byte[20];
+		buf.get(clientMACKey);
+		byte[] serverMACKey = new byte[20];
+		buf.get(serverMACKey);
+		byte[] clientWriteKey = new byte[16];
+		buf.get(clientWriteKey);
+		byte[] serverWriteKey = new byte[16];
+		buf.get(serverWriteKey);
 		byte[] clientIV = new byte[16];
 		buf.get(clientIV);
 		byte[] serverIV = new byte[16];
@@ -278,6 +333,26 @@ public class MinimalTLSClient implements AutoCloseable {
 		// 6. Client Change Cipher Spec
 		Record changeCypherSpecRecord = new Record(RecordHeaderType.CHANGE_CIPHER_SPEC, SSLProtocol.TLS_1_2);
 		sendTLSRecord(changeCypherSpecRecord.toByteArray());
+
+		// 7. Send Finished
+		byte[] handshakeHash = sha256(getHandshakeTranscript()); // SHA-256 hash of accumulated handshake
+		byte[] finished = createFinishedMessage(masterSecret, handshakeHash, clientWriteKey, clientMACKey, clientIV);
+		sendTLSRecord(finished);
+
+		// 7. Receive ChangeCipherSpec and Finished
+		byte[] serverChangeCipherSpec = receiveTLSRecord(); // type 0x14
+		LOGGER.debug("Received ChangeCipherSpec: ", serverChangeCipherSpec);
+
+		// 8. Receive Server Finished Record
+		byte[] serverFinishedRecord = receiveTLSRecord(); // type 0x16
+
+		byte[] serverFinishedDecrypted = decryptWithServerKey(serverFinishedRecord, serverWriteKey, serverIV, serverMACKey);
+		byte[] expectedServerVerifyData = prf(masterSecret, "server finished", handshakeHash, 12);
+
+		byte[] serverVerifyData = Arrays.copyOfRange(serverFinishedDecrypted, 4, 4 + 12); // skip handshake header
+		if (!Arrays.equals(serverVerifyData, expectedServerVerifyData)) {
+			throw new SSLException("Server Finished verification failed!");
+		}
 
 		LOGGER.info("TLS 1.2 handshake complete!");
 
@@ -291,4 +366,70 @@ public class MinimalTLSClient implements AutoCloseable {
 		}
 		handshakeMessages.write(tlsRecord, 5, tlsRecord.length - 5);
 	}
+
+	public byte[] getHandshakeTranscript() {
+		return handshakeMessages.toByteArray();
+	}
+
+	public static byte[] prf(final byte[] secret, final String label, final byte[] seed, final int length) throws Exception {
+		byte[] labelSeed = concatenate(label.getBytes(StandardCharsets.US_ASCII), seed);
+		return pHash(secret, labelSeed, length);
+	}
+
+	private static byte[] pHash(final byte[] secret, final byte[] seed, final int length) throws Exception {
+		Mac hmac = Mac.getInstance("HmacSHA256");
+		SecretKeySpec keySpec = new SecretKeySpec(secret, "HmacSHA256");
+		hmac.init(keySpec);
+
+		byte[] seedBytes = seed;
+		ByteArrayOutputStream result = new ByteArrayOutputStream();
+
+		while (result.size() < length) {
+			seedBytes = hmac.doFinal(seedBytes);
+			byte[] output = hmac.doFinal(concatenate(seedBytes, seed));
+			result.write(output);
+		}
+		return Arrays.copyOf(result.toByteArray(), length);
+	}
+
+	public static byte[] concatenate(final byte[]... arrays) throws IOException {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		for (byte[] arr : arrays) {
+			bos.write(arr);
+		}
+		return bos.toByteArray();
+	}
+
+	public static byte[] deriveMasterSecret(final byte[] preMasterSecret, final byte[] clientRandom, final byte[] serverRandom) throws Exception {
+		return prf(preMasterSecret, "master secret", concatenate(clientRandom, serverRandom), 48);
+	}
+
+	public static byte[] deriveKeyBlock(final byte[] masterSecret, final byte[] serverRandom, final byte[] clientRandom, final int length)
+			throws Exception {
+		return prf(masterSecret, "key expansion", concatenate(serverRandom, clientRandom), length);
+	}
+
+	public static byte[] hmacSha1(byte[] key, byte[] data) throws Exception {
+		Mac mac = Mac.getInstance("HmacSHA1");
+		mac.init(new SecretKeySpec(key, "HmacSHA1"));
+		return mac.doFinal(data);
+	}
+
+	public static byte[] padPKCS7(byte[] data, int blockSize) throws IOException {
+		int padLen = blockSize - (data.length % blockSize);
+		byte[] padding = new byte[padLen];
+		Arrays.fill(padding, (byte) padLen);
+		return concatenate(data, padding);
+	}
+
+	public static byte[] unpadPKCS7(byte[] padded) {
+		int padLen = padded[padded.length - 1];
+		return Arrays.copyOfRange(padded, 0, padded.length - padLen);
+	}
+
+	public static byte[] sha256(byte[] input) throws Exception {
+		MessageDigest digest = MessageDigest.getInstance("SHA-256");
+		return digest.digest(input);
+	}
+
 }

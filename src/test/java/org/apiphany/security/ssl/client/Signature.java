@@ -1,5 +1,7 @@
 package org.apiphany.security.ssl.client;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,6 +37,17 @@ public class Signature {
 		}
 
 		return new Signature(reserved, length, buffer);
+	}
+
+	public byte[] toByteArray() throws IOException {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		DataOutputStream dos = new DataOutputStream(bos);
+
+		dos.write(reserved.toByteArray());
+		dos.write(length.toByteArray());
+		dos.write(bytes);
+
+		return bos.toByteArray();
 	}
 
 	@Override

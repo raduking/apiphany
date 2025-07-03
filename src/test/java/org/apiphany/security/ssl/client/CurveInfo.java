@@ -1,5 +1,7 @@
 package org.apiphany.security.ssl.client;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -24,6 +26,16 @@ public class CurveInfo {
 		CurveName name = CurveName.fromValue(nameValue.getValue());
 
 		return new CurveInfo(type, name);
+	}
+
+	public byte[] toByteArray() throws IOException {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		DataOutputStream dos = new DataOutputStream(bos);
+
+		dos.writeByte(type.value());
+		dos.writeShort(name.value());
+
+		return bos.toByteArray();
 	}
 
 	@Override
