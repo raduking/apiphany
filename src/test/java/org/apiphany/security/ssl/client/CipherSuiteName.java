@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.morphix.lang.Enums;
 
-public enum CypherSuiteName {
+public enum CipherSuiteName {
 
     /**
      * TLS 1.3 suites (no traditional hex codes, using pseudo-values)
@@ -77,15 +77,15 @@ public enum CypherSuiteName {
      */
     TLS_EMPTY_RENEGOTIATION_INFO_SCSV((short) 0x00FF);
 
-	private static final Map<Short, CypherSuiteName> VALUE_MAP = Enums.buildNameMap(values(), CypherSuiteName::value);
+	private static final Map<Short, CipherSuiteName> VALUE_MAP = Enums.buildNameMap(values(), CipherSuiteName::value);
 
 	private short value;
 
-	CypherSuiteName(final short value) {
+	CipherSuiteName(final short value) {
 		this.value = value;
 	}
 
-	public static CypherSuiteName fromValue(final short value) {
+	public static CipherSuiteName fromValue(final short value) {
 		return Enums.from(value, VALUE_MAP, values());
 	}
 

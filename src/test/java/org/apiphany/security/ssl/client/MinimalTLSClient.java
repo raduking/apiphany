@@ -169,7 +169,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		SessionId sessionId = SessionId.from(in);
 		LOGGER.debug("[ServerHello] session ID: {}", sessionId);
 
-		CypherSuite cypherSuite = CypherSuite.from(in);
+		CipherSuite cypherSuite = CipherSuite.from(in);
 		LOGGER.debug("[ServerHello] session ID: {}", cypherSuite);
 
 		CompressionMethod compressionMethod = CompressionMethod.from(in);
@@ -219,7 +219,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		connect();
 
 		// 1. Send Client Hello
-		ClientHello clientHello = new ClientHello(List.of(host), new CypherSuites(CypherSuiteName.values()));
+		ClientHello clientHello = new ClientHello(List.of(host), new CipherSuites(CipherSuiteName.values()));
 		byte[] clientHelloBytes = clientHello.toByteArray();
 		accumulateHandshake(clientHelloBytes);
 		this.clientRandom = clientHello.clientRandom.getRandom();
@@ -274,6 +274,10 @@ public class MinimalTLSClient implements AutoCloseable {
 		buf.get(clientIV);
 		byte[] serverIV = new byte[16];
 		buf.get(serverIV);
+
+		// 6. Client Change Cipher Spec
+		Record changeCypherSpecRecord = new Record(RecordHeaderType.CHANGE_CIPHER_SPEC, SSLProtocol.TLS_1_2);
+		sendTLSRecord(changeCypherSpecRecord.toByteArray());
 
 		LOGGER.info("TLS 1.2 handshake complete!");
 
