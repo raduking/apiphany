@@ -157,7 +157,7 @@ public enum SSLProtocol {
 	/**
 	 * Returns a {@link SSLProtocol} enum from a {@code short}.
 	 *
-	 * @param value the SSL protocol as short
+	 * @param version the SSL protocol as short
 	 * @return a SSL protocol enum
 	 */
 	public static SSLProtocol fromVersion(final short version) {
