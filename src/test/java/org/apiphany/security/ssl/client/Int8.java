@@ -12,8 +12,8 @@ public class Int8 {
 
 	private byte value;
 
-	public Int8(final byte length) {
-		this.value = length;
+	public Int8(final byte value) {
+		this.value = value;
 	}
 
 	public Int8() {
@@ -41,6 +41,10 @@ public class Int8 {
 
 	public byte getValue() {
 		return value;
+	}
+
+	public void setValue(byte value) {
+		this.value = value;
 	}
 
 	public int size() {

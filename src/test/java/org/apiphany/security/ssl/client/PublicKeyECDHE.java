@@ -2,48 +2,43 @@ package org.apiphany.security.ssl.client;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 
 import org.apiphany.json.JsonBuilder;
 
-public class Signature {
+public class PublicKeyECDHE {
 
-	private Int16 reserved;
-
-	private Int16 length;
+	private Int8 length;
 
 	private byte[] bytes;
 
-	public Signature(final Int16 reserved, final Int16 length, final byte[] bytes) {
-		this.reserved = reserved;
+	public PublicKeyECDHE(final Int8 length, final byte[] bytes) {
 		this.length = length;
 		this.bytes = bytes;
 	}
 
-	public Signature(final short length, final byte[] bytes) {
-		this(new Int16((short) 0x0000), new Int16(length), bytes);
+	public PublicKeyECDHE(final byte length, final byte[] bytes) {
+		this(new Int8(length), bytes);
 	}
 
-	public static Signature from(final InputStream is) throws IOException {
-		Int16 reserved = Int16.from(is);
-		Int16 length = Int16.from(is);
+	public PublicKeyECDHE(final byte[] bytes) {
+		this((byte) bytes.length, bytes);
+	}
+
+	public static PublicKeyECDHE from(final InputStream is) throws IOException {
+		Int8 length = Int8.from(is);
 
 		byte[] buffer = new byte[length.getValue()];
-		int bytesRead = is.read(buffer);
-		if (length.getValue() != bytesRead) {
-			throw new EOFException("Error reading " + length.getValue() + " bytes");
-		}
+		is.read(buffer);
 
-		return new Signature(reserved, length, buffer);
+		return new PublicKeyECDHE(length, buffer);
 	}
 
 	public byte[] toByteArray() throws IOException {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(bos);
 
-		dos.write(reserved.toByteArray());
 		dos.write(length.toByteArray());
 		dos.write(bytes);
 
@@ -55,11 +50,7 @@ public class Signature {
 		return JsonBuilder.toJson(this);
 	}
 
-	public Int16 getReserved() {
-		return reserved;
-	}
-
-	public Int16 getLength() {
+	public Int8 getLength() {
 		return length;
 	}
 

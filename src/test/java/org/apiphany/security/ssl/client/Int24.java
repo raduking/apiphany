@@ -50,6 +50,10 @@ public class Int24 {
 		return value;
 	}
 
+	public void setValue(int value) {
+		this.value = value;
+	}
+
 	public int size() {
 		return BYTES;
 	}

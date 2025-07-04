@@ -59,5 +59,9 @@ public class SessionId {
 	public byte[] getValue() {
 		return value;
 	}
+
+	public String getHexValue() {
+		return Bytes.hexString(value, "");
+	}
 }
 

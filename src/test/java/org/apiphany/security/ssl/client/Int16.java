@@ -44,6 +44,10 @@ public class Int16 {
 		return value;
 	}
 
+	public void setValue(short value) {
+		this.value = value;
+	}
+
 	public int size() {
 		return BYTES;
 	}
