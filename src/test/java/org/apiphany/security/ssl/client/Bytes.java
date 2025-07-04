@@ -31,9 +31,13 @@ public class Bytes {
 	}
 
 	public static String hexString(final byte[] bytes) {
+		return hexString(bytes, " ");
+	}
+
+	public static String hexString(final byte[] bytes, String separator) {
 		StringBuilder sb = new StringBuilder();
 		for (byte b : bytes) {
-			sb.append(String.format("%02X ", b));
+			sb.append(String.format("%02X%s", b, separator));
 		}
 		return sb.toString();
 	}

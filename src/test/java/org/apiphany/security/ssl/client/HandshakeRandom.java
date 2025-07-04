@@ -60,5 +60,9 @@ public class HandshakeRandom {
 	public byte[] getRandom() {
 		return random;
 	}
+
+	public String getHexRandom() {
+		return Bytes.hexString(random, "");
+	}
 }
 

@@ -7,32 +7,32 @@ import java.io.InputStream;
 
 import org.apiphany.json.JsonBuilder;
 
-public class PublicKey {
+public class PublicKeyRSA {
 
-	private Int8 length;
+	private Int16 length;
 
 	private byte[] bytes;
 
-	public PublicKey(final Int8 length, final byte[] bytes) {
+	public PublicKeyRSA(final Int16 length, final byte[] bytes) {
 		this.length = length;
 		this.bytes = bytes;
 	}
 
-	public PublicKey(final byte length, final byte[] bytes) {
-		this(new Int8(length), bytes);
+	public PublicKeyRSA(final short length, final byte[] bytes) {
+		this(new Int16(length), bytes);
 	}
 
-	public PublicKey(final byte[] bytes) {
-		this((byte) bytes.length, bytes);
+	public PublicKeyRSA(final byte[] bytes) {
+		this((short) bytes.length, bytes);
 	}
 
-	public static PublicKey from(final InputStream is) throws IOException {
-		Int8 length = Int8.from(is);
+	public static PublicKeyRSA from(final InputStream is) throws IOException {
+		Int16 length = Int16.from(is);
 
 		byte[] buffer = new byte[length.getValue()];
 		is.read(buffer);
 
-		return new PublicKey(length, buffer);
+		return new PublicKeyRSA(length, buffer);
 	}
 
 	public byte[] toByteArray() throws IOException {
@@ -50,12 +50,20 @@ public class PublicKey {
 		return JsonBuilder.toJson(this);
 	}
 
-	public Int8 getLength() {
+	public Int16 getLength() {
 		return length;
 	}
 
 	public byte[] getBytes() {
 		return bytes;
+	}
+
+	public String getHexBytes() {
+		return Bytes.hexString(bytes, "");
+	}
+
+	public short size() {
+		return (short) (length.size() + bytes.length);
 	}
 
 }
