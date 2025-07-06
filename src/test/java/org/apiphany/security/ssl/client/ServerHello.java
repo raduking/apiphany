@@ -7,7 +7,7 @@ import java.io.InputStream;
 
 import org.apiphany.json.JsonBuilder;
 
-public class ServerHello {
+public class ServerHello implements Sizeable {
 
 	private RecordHeader recordHeader;
 
@@ -15,11 +15,11 @@ public class ServerHello {
 
 	private Version version;
 
-	private HandshakeRandom serverRandom;
+	private ExchangeRandom serverRandom;
 
 	private SessionId sessionId;
 
-	private CipherSuite cypherSuite;
+	private CipherSuite cipherSuite;
 
 	private CompressionMethod compressionMethod;
 
@@ -27,33 +27,33 @@ public class ServerHello {
 
 	private RenegotiationInfo renegotiationInfo;
 
-	public ServerHello(RecordHeader recordHeader,
-			HandshakeHeader handshakeHeader,
-			Version version,
-			HandshakeRandom handshakeRandom,
-			SessionId sessionId,
-			CipherSuite cypherSuite,
-			CompressionMethod compressionMethod,
-			Int16 extensionsLength,
-			RenegotiationInfo renegotiationInfo) {
+	public ServerHello(final RecordHeader recordHeader,
+			final HandshakeHeader handshakeHeader,
+			final Version version,
+			final ExchangeRandom serverRandom,
+			final SessionId sessionId,
+			final CipherSuite cipherSuite,
+			final CompressionMethod compressionMethod,
+			final Int16 extensionsLength,
+			final RenegotiationInfo renegotiationInfo) {
 		this.recordHeader = recordHeader;
 		this.handshakeHeader = handshakeHeader;
 		this.version = version;
-		this.serverRandom = handshakeRandom;
+		this.serverRandom = serverRandom;
 		this.sessionId = sessionId;
-		this.cypherSuite = cypherSuite;
+		this.cipherSuite = cipherSuite;
 		this.compressionMethod = compressionMethod;
 		this.extensionsLength = extensionsLength;
 		this.renegotiationInfo = renegotiationInfo;
 	}
 
-	public static ServerHello from(InputStream is) throws IOException {
+	public static ServerHello from(final InputStream is) throws IOException {
 		RecordHeader recordHeader = RecordHeader.from(is);
 		HandshakeHeader handshakeHeader = HandshakeHeader.from(is);
 		Version version = Version.from(is);
-		HandshakeRandom serverRandom = HandshakeRandom.from(is);
+		ExchangeRandom serverRandom = ExchangeRandom.from(is);
 		SessionId sessionId = SessionId.from(is);
-		CipherSuite cypherSuite = CipherSuite.from(is);
+		CipherSuite cipherSuite = CipherSuite.from(is);
 		CompressionMethod compressionMethod = CompressionMethod.from(is);
 		Int16 extensionsLength = Int16.from(is);
 		RenegotiationInfo renegotiationInfo = RenegotiationInfo.from(is);
@@ -64,7 +64,7 @@ public class ServerHello {
 				version,
 				serverRandom,
 				sessionId,
-				cypherSuite,
+				cipherSuite,
 				compressionMethod,
 				extensionsLength,
 				renegotiationInfo);
@@ -79,12 +79,25 @@ public class ServerHello {
 		dos.write(version.toByteArray());
 		dos.write(serverRandom.toByteArray());
 		dos.write(sessionId.toByteArray());
-		dos.write(cypherSuite.toByteArray());
+		dos.write(cipherSuite.toByteArray());
 		dos.write(compressionMethod.toByteArray());
 		dos.write(extensionsLength.toByteArray());
 		dos.write(renegotiationInfo.toByteArray());
 
 		return bos.toByteArray();
+	}
+
+	@Override
+	public int size() {
+		return recordHeader.size()
+				+ handshakeHeader.size()
+				+ version.size()
+				+ serverRandom.size()
+				+ sessionId.size()
+				+ cipherSuite.size()
+				+ compressionMethod.size()
+				+ extensionsLength.size()
+				+ renegotiationInfo.size();
 	}
 
 	@Override
@@ -104,7 +117,7 @@ public class ServerHello {
 		return version;
 	}
 
-	public HandshakeRandom getServerRandom() {
+	public ExchangeRandom getServerRandom() {
 		return serverRandom;
 	}
 
@@ -112,8 +125,8 @@ public class ServerHello {
 		return sessionId;
 	}
 
-	public CipherSuite getCypherSuite() {
-		return cypherSuite;
+	public CipherSuite getCipherSuite() {
+		return cipherSuite;
 	}
 
 	public CompressionMethod getCompressionMethod() {

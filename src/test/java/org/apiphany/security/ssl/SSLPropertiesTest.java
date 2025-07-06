@@ -6,7 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.net.ssl.SSLHandshakeException;
@@ -18,10 +20,11 @@ import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.net.Sockets;
 import org.apiphany.security.ssl.client.Bytes;
-import org.apiphany.security.ssl.client.ClientHello;
 import org.apiphany.security.ssl.client.CipherSuite;
 import org.apiphany.security.ssl.client.CipherSuiteName;
+import org.apiphany.security.ssl.client.ClientHello;
 import org.apiphany.security.ssl.client.MinimalTLSClient;
+import org.apiphany.security.ssl.client.PseudoRandomFunction;
 import org.apiphany.security.ssl.server.SimpleHttpsServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -155,6 +158,7 @@ class SSLPropertiesTest {
 		List<CipherSuite> cypherSuites = List.of(cypherSuitesArray).stream().map(CipherSuite::new).toList();
 
 		ClientHello clientHello = new ClientHello(List.of("example.ulfheim.net"), cypherSuites);
+		LOGGER.info("Client Hello: {}", clientHello);
 
 		byte[] bytes = clientHello.toByteArray();
 
@@ -164,6 +168,26 @@ class SSLPropertiesTest {
 			boolean valid = bytes[i] == byteArray[i];
 			assertTrue(valid);
 		}
+	}
+
+	@Test
+	void shouldApplyTheCorrectPseudoRandomFunction() throws Exception {
+	    byte[] secret = new byte[48];
+	    Arrays.fill(secret, (byte) 0x0b);
+
+	    String label = "test label";
+	    byte[] seed = "test seed".getBytes(StandardCharsets.US_ASCII);
+	    int length = 32;
+
+	    byte[] output = PseudoRandomFunction.apply(secret, label, seed, length);
+
+	    String hexOutput = Bytes.hexString(output).toLowerCase().trim();
+	    LOGGER.info("PRF Output: {}", hexOutput);
+
+	    String hexExpected = "ac 9e 5d 4b 58 63 20 73 30 d5 86 ab 2e f0 11 1a aa 4f f0 78 5d 89 40 96 41 1d 1a dd 3a 9a a0 ad";
+	    LOGGER.info("PRF Expect: {}", hexExpected);
+
+	    assertThat(hexOutput, equalTo(hexExpected));
 	}
 
 	static class SimpleApiClient extends ApiClient {

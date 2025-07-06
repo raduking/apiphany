@@ -77,6 +77,8 @@ public enum CipherSuiteName {
      */
     TLS_EMPTY_RENEGOTIATION_INFO_SCSV((short) 0x00FF);
 
+	public static final int BYTES = 2;
+
 	private static final Map<Short, CipherSuiteName> VALUE_MAP = Enums.buildNameMap(values(), CipherSuiteName::value);
 
 	private short value;

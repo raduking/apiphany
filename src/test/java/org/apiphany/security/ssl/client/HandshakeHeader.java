@@ -8,9 +8,9 @@ import java.io.InputStream;
 
 import org.apiphany.json.JsonBuilder;
 
-public class HandshakeHeader {
+public class HandshakeHeader implements Sizeable {
 
-	public static final int SIZE = 4;
+	public static final int BYTES = 4;
 
 	private HandshakeMessageType messageType;
 
@@ -54,6 +54,11 @@ public class HandshakeHeader {
 	@Override
 	public String toString() {
 		return JsonBuilder.toJson(this);
+	}
+
+	@Override
+	public int size() {
+		return messageType.size() + messageLength.size();
 	}
 
 	public HandshakeMessageType getMessageType() {

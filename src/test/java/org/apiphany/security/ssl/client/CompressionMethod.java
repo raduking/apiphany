@@ -5,7 +5,9 @@ import java.io.InputStream;
 
 import org.apiphany.json.JsonBuilder;
 
-public class CompressionMethod {
+import com.fasterxml.jackson.annotation.JsonValue;
+
+public class CompressionMethod implements Sizeable {
 
 	private CompressionMethodType method;
 
@@ -31,6 +33,12 @@ public class CompressionMethod {
 		return JsonBuilder.toJson(this);
 	}
 
+	@Override
+	public int size() {
+		return CompressionMethodType.BYTES;
+	}
+
+	@JsonValue
 	public CompressionMethodType getMethod() {
 		return method;
 	}

@@ -9,9 +9,9 @@ import java.io.InputStream;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.security.ssl.SSLProtocol;
 
-public class RecordHeader {
+public class RecordHeader implements Sizeable {
 
-	public static final int SIZE = 5;
+	public static final int BYTES = 5;
 
 	private RecordHeaderType type;
 
@@ -63,6 +63,11 @@ public class RecordHeader {
 		return JsonBuilder.toJson(this);
 	}
 
+	@Override
+	public int size() {
+		return type.size() + version.size() + messageLength.size();
+	}
+
 	public RecordHeaderType getType() {
 		return type;
 	}
@@ -74,5 +79,6 @@ public class RecordHeader {
 	public Int16 getMessageLength() {
 		return messageLength;
 	}
+
 }
 

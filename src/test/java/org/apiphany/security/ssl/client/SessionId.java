@@ -1,20 +1,26 @@
 package org.apiphany.security.ssl.client;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import org.apiphany.json.JsonBuilder;
 
-public class SessionId {
+public class SessionId implements Sizeable {
 
 	private Int8 length;
 
-	private byte[] value;
+	private BinaryData value;
 
-	public SessionId(final Int8 length, final byte[] value) {
+	public SessionId(final Int8 length, final BinaryData value) {
 		this.length = length;
 		this.value = value;
+	}
+
+	public SessionId(final Int8 length, final byte[] value) {
+		this(length, new BinaryData(value));
 	}
 
 	public SessionId(final byte length, final byte[] value) {
@@ -31,20 +37,19 @@ public class SessionId {
 
 	public static SessionId from(final InputStream is) throws IOException {
 		Int8 length = Int8.from(is);
-		byte[] value = new byte[length.getValue()];
-		is.read(value);
+		BinaryData value = BinaryData.from(is, length.getValue());
 
 		return new SessionId(length, value);
 	}
 
-	public byte[] toByteArray() {
-		byte size = length.getValue();
-		byte[] result = new byte[size + 1];
-		result[0] = size;
-		for (int i = 0; i < size; ++i) {
-			result[i + 1] = value[i];
-		}
-		return result;
+	public byte[] toByteArray() throws IOException {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		DataOutputStream dos = new DataOutputStream(bos);
+
+		dos.write(length.toByteArray());
+		dos.write(value.toByteArray());
+
+		return bos.toByteArray();
 	}
 
 	@Override
@@ -52,16 +57,18 @@ public class SessionId {
 		return JsonBuilder.toJson(this);
 	}
 
+	@Override
+	public int size() {
+		return length.size() + value.size();
+	}
+
 	public Int8 getLength() {
 		return length;
 	}
 
-	public byte[] getValue() {
+	public BinaryData getValue() {
 		return value;
 	}
 
-	public String getHexValue() {
-		return Bytes.hexString(value, "");
-	}
 }
 

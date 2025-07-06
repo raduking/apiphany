@@ -14,32 +14,32 @@ public class ClientKeyExchange {
 
 	private HandshakeHeader handshakeHeader;
 
-	private PublicKeyRSA publicKey;
+	private PublicKeyECDHE publicKey;
 
-	public ClientKeyExchange(RecordHeader recordHeader, HandshakeHeader handshakeHeader, PublicKeyRSA publicKey, boolean updateSizes) {
+	public ClientKeyExchange(final RecordHeader recordHeader, final HandshakeHeader handshakeHeader, final PublicKeyECDHE publicKey, final boolean updateSizes) {
 		this.recordHeader = recordHeader;
 		this.handshakeHeader = handshakeHeader;
 		this.publicKey = publicKey;
 		if (updateSizes) {
-			this.recordHeader.getMessageLength().setValue((short) (HandshakeHeader.SIZE + publicKey.size()));
+			this.recordHeader.getMessageLength().setValue((short) (HandshakeHeader.BYTES + publicKey.size()));
 			this.handshakeHeader.getMessageLength().setValue(publicKey.size());
 		}
 	}
 
-	public ClientKeyExchange(RecordHeader recordHeader, HandshakeHeader handshakeHeader, PublicKeyRSA publicKey) {
+	public ClientKeyExchange(final RecordHeader recordHeader, final HandshakeHeader handshakeHeader, final PublicKeyECDHE publicKey) {
 		this(recordHeader, handshakeHeader, publicKey, true);
 	}
 
 	public ClientKeyExchange(final byte[] encryptedPreMasterSecret) {
 		this(new RecordHeader(RecordHeaderType.HANDSHAKE_RECORD, SSLProtocol.TLS_1_2),
 				new HandshakeHeader(HandshakeMessageType.CLIENT_KEY_EXCHANGE),
-				new PublicKeyRSA(encryptedPreMasterSecret));
+				new PublicKeyECDHE(encryptedPreMasterSecret));
 	}
 
-	public static ClientKeyExchange from(InputStream is) throws IOException {
+	public static ClientKeyExchange from(final InputStream is) throws IOException {
 		RecordHeader recordHeader = RecordHeader.from(is);
 		HandshakeHeader handshakeHeader = HandshakeHeader.from(is);
-		PublicKeyRSA publicKey = PublicKeyRSA.from(is);
+		PublicKeyECDHE publicKey = PublicKeyECDHE.from(is);
 
 		return new ClientKeyExchange(recordHeader, handshakeHeader, publicKey, false);
 	}
@@ -68,7 +68,7 @@ public class ClientKeyExchange {
 		return handshakeHeader;
 	}
 
-	public PublicKeyRSA getPublicKey() {
+	public PublicKeyECDHE getPublicKey() {
 		return publicKey;
 	}
 }

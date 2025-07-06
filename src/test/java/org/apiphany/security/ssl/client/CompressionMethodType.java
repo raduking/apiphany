@@ -8,6 +8,8 @@ public enum CompressionMethodType {
 
 	NO_COMPRESSION((byte) 0x00);
 
+	public static final int BYTES = 1;
+
 	private static final Map<Byte, CompressionMethodType> VALUE_MAP = Enums.buildNameMap(values(), CompressionMethodType::value);
 
 	private byte value;

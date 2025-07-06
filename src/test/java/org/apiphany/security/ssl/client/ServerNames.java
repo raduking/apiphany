@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ServerNames {
+import org.apiphany.json.JsonBuilder;
+
+public class ServerNames implements Sizeable {
 
 	private static final int ENTRIES_SIZE_INDEX = 2;
 
@@ -42,5 +44,31 @@ public class ServerNames {
 		Bytes.set(entriesSize, bytes, ENTRIES_SIZE_INDEX);
 
 		return bytes;
+	}
+
+	@Override
+	public String toString() {
+		return JsonBuilder.toJson(this);
+	}
+
+	@Override
+	public int size() {
+		int result = type.size() + size.size();
+		for (ServerName entry : entries) {
+			result += entry.size();
+		}
+		return result;
+	}
+
+	public ExtensionType getType() {
+		return type;
+	}
+
+	public Int16 getSize() {
+		return size;
+	}
+
+	public List<ServerName> getEntries() {
+		return entries;
 	}
 }
