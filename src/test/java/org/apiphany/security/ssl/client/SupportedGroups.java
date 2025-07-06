@@ -3,41 +3,75 @@ package org.apiphany.security.ssl.client;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apiphany.json.JsonBuilder;
+import org.morphix.lang.function.ThrowingRunnable;
 
-public class SupportedGroups implements Sizeable {
+public class SupportedGroups implements Extension {
 
-	private ExtensionType type = ExtensionType.SUPPORTED_GROUPS;
+	private ExtensionType type;
 
-	private Int16 size;
+	private Int16 length;
 
 	private Int16 listSize;
 
 	private List<CurveName> groups;
 
-	public SupportedGroups(final CurveName... curveNames) {
-		this.listSize = new Int16((short) (curveNames.length * CurveName.BYTES));
-		this.size = new Int16((short) (listSize.getValue() + listSize.size()));
-		this.groups = List.of(curveNames);
+	public SupportedGroups(final ExtensionType type, final Int16 size, final Int16 listSize, final List<CurveName> groups) {
+		this.type = type;
+		this.length = size;
+		this.listSize = listSize;
+		this.groups = groups;
+	}
+
+	public SupportedGroups(final List<CurveName> curveNames) {
+		this(
+				ExtensionType.SUPPORTED_GROUPS,
+				new Int16((short) (curveNames.size() * CurveName.BYTES + Int16.BYTES)),
+				new Int16((short) (curveNames.size() * CurveName.BYTES)),
+				curveNames
+		);
 	}
 
 	public SupportedGroups() {
-		this(CurveName.values());
+		this(List.of(CurveName.values()));
 	}
 
-	public byte[] toByteArray() throws IOException {
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		DataOutputStream dos = new DataOutputStream(bos);
+	public static SupportedGroups from(final InputStream is) throws IOException {
+		Int16 value = Int16.from(is);
+		ExtensionType type = ExtensionType.fromValue(value.getValue());
 
-		dos.writeShort(type.value());
-		dos.write(size.toByteArray());
-		dos.write(listSize.toByteArray());
-		for (CurveName group : groups) {
-			dos.writeShort(group.value());
+		return from(is, type);
+	}
+
+	public static SupportedGroups from(final InputStream is, final ExtensionType type) throws IOException {
+		Int16 length = Int16.from(is);
+		Int16 listSize = Int16.from(is);
+		List<CurveName> groups = new ArrayList<>();
+		for (int i = 0; i < listSize.getValue() / CurveName.BYTES; ++i) {
+			Int16 value = Int16.from(is);
+			CurveName curveName = CurveName.fromValue(value.getValue());
+			groups.add(curveName);
 		}
 
+		return new SupportedGroups(type, length, listSize, groups);
+	}
+
+	@Override
+	public byte[] toByteArray() {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		DataOutputStream dos = new DataOutputStream(bos);
+		ThrowingRunnable.unchecked(() -> {
+			dos.writeShort(type.value());
+			dos.write(length.toByteArray());
+			dos.write(listSize.toByteArray());
+			for (CurveName group : groups) {
+				dos.writeShort(group.value());
+			}
+		}).run();
 		return bos.toByteArray();
 	}
 
@@ -48,19 +82,20 @@ public class SupportedGroups implements Sizeable {
 
 	@Override
 	public int size() {
-		int result = type.size() + size.size() + listSize.size();
+		int result = type.size() + length.size() + listSize.size();
 		for (CurveName group : groups) {
 			result += group.size();
 		}
 		return result;
 	}
 
+	@Override
 	public ExtensionType getType() {
 		return type;
 	}
 
-	public Int16 getSize() {
-		return size;
+	public Int16 getLength() {
+		return length;
 	}
 
 	public Int16 getListSize() {

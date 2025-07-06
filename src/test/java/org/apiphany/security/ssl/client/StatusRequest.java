@@ -3,47 +3,91 @@ package org.apiphany.security.ssl.client;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
-public class StatusRequest implements Sizeable {
+import org.apiphany.json.JsonBuilder;
+import org.morphix.lang.function.ThrowingRunnable;
 
-	private ExtensionType type = ExtensionType.STATUS_REQUEST;
+public class StatusRequest implements Extension, Sizeable {
 
-	private Int16 size = new Int16((short) 0x0005);
+	private ExtensionType type;
 
-	private Int8 certificateStatusType = new Int8((byte) 0x01); // OCSP
+	private Int16 length;
 
-	private Int16 responderIDInfoSize = new Int16((short) 0x0000);
+	private Int8 certificateStatusType; // OCSP
 
-	private Int16 requestExtensionInfoSize = new Int16((short) 0x0000);
+	private Int16 responderIDInfoSize;
 
-	public byte[] toByteArray() throws IOException {
+	private Int16 requestExtensionInfoSize;
+
+	public StatusRequest(
+			final ExtensionType type,
+			final Int16 length,
+			final Int8 certificateStatusType,
+			final Int16 responderIDInfoSize,
+			final Int16 requestExtensionInfoSize) {
+		this.type = type;
+		this.length = length;
+		this.certificateStatusType = certificateStatusType;
+		this.responderIDInfoSize = responderIDInfoSize;
+		this.requestExtensionInfoSize = requestExtensionInfoSize;
+	}
+
+	public StatusRequest() {
+		this(ExtensionType.STATUS_REQUEST, new Int16((short) 0x0005), new Int8((byte) 0x01), new Int16((short) 0x0000), new Int16((short) 0x0000));
+	}
+
+	public static StatusRequest from(final InputStream is) throws IOException {
+		Int16 value = Int16.from(is);
+		ExtensionType type = ExtensionType.fromValue(value.getValue());
+
+		return from(is, type);
+	}
+
+	public static StatusRequest from(final InputStream is, final ExtensionType type) throws IOException {
+		Int16 length = Int16.from(is);
+		Int8 certificateStatusType = Int8.from(is);
+		Int16 responderIDInfoSize = Int16.from(is);
+		Int16 requestExtensionInfoSize = Int16.from(is);
+
+		return new StatusRequest(type, length, certificateStatusType, responderIDInfoSize, requestExtensionInfoSize);
+	}
+
+	@Override
+	public byte[] toByteArray() {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(bos);
-
-		dos.writeShort(type.value());
-		dos.write(size.toByteArray());
-		dos.write(certificateStatusType.toByteArray());
-		dos.write(responderIDInfoSize.toByteArray());
-		dos.write(requestExtensionInfoSize.toByteArray());
-
+		ThrowingRunnable.unchecked(() -> {
+			dos.writeShort(type.value());
+			dos.write(length.toByteArray());
+			dos.write(certificateStatusType.toByteArray());
+			dos.write(responderIDInfoSize.toByteArray());
+			dos.write(requestExtensionInfoSize.toByteArray());
+		}).run();
 		return bos.toByteArray();
+	}
+
+	@Override
+	public String toString() {
+		return JsonBuilder.toJson(this);
 	}
 
 	@Override
 	public int size() {
 		return type.size()
-				+ size.size()
+				+ length.size()
 				+ certificateStatusType.size()
 				+ responderIDInfoSize.size()
 				+ requestExtensionInfoSize.size();
 	}
 
+	@Override
 	public ExtensionType getType() {
 		return type;
 	}
 
-	public Int16 getSize() {
-		return size;
+	public Int16 getLength() {
+		return length;
 	}
 
 	public Int8 getCertificateStatusType() {

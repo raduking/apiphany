@@ -42,7 +42,7 @@ public enum CipherSuiteName {
     TLS_DHE_RSA_WITH_AES_256_CBC_SHA256((short) 0x006B),
     TLS_DHE_DSS_WITH_AES_256_CBC_SHA256((short) 0x006A),
     TLS_DHE_RSA_WITH_AES_128_CBC_SHA256((short) 0x0067),
-    TLS_DHE_DSS_WITH_AES_128_CBC_SHA256((short) 0x0040),
+    TLS_DHE_DSS_WITH_AES_128_CBC_SHA256((short) 0x0066),
 
     /**
      * Legacy suites.
@@ -69,8 +69,10 @@ public enum CipherSuiteName {
     /**
      * Open SSL suites.
      */
-    DHE_RSA_WITH_AES_256_CCM_8((short) 0xFF9F),
     DHE_RSA_WITH_AES_128_CCM_8((short) 0xFF9E),
+    DHE_RSA_WITH_AES_256_CCM_8((short) 0xFF9F),
+    DHE_RSA_WITH_AES_128_CCM((short) 0xFF9C),
+    DHE_RSA_WITH_AES_256_CCM((short) 0xFF9D),
     TLS_GOSTR341112_256_WITH_KUZNYECHIK_CTR_OMAC((short) 0xCBA9),
     TLS_GOSTR341112_256_WITH_MAGMA_CTR_OMAC((short) 0xCBA8),
     TLS_GOSTR341112_256_WITH_28147_CNT_IMIT((short) 0xCBAA),
@@ -80,17 +82,20 @@ public enum CipherSuiteName {
      */
 	TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA((short) 0xC012),
 	TLS_RSA_WITH_3DES_EDE_CBC_SHA((short) 0x000A),
+	TLS_RSA_EXPORT1024_WITH_RC4_56_SHA((short) 0x0040),
 
     /**
      * Special.
      */
-    TLS_EMPTY_RENEGOTIATION_INFO_SCSV((short) 0x00FF);
+    TLS_EMPTY_RENEGOTIATION_INFO_SCSV((short) 0x00FF),
+	RESERVED((short) 0xFFFF),
+	UNASSIGNED((short) 0x0100);
 
 	public static final int BYTES = 2;
 
 	private static final Map<Short, CipherSuiteName> VALUE_MAP = Enums.buildNameMap(values(), CipherSuiteName::value);
 
-	private short value;
+	private final short value;
 
 	CipherSuiteName(final short value) {
 		this.value = value;

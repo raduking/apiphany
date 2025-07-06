@@ -3,11 +3,14 @@ package org.apiphany.security.ssl.client;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apiphany.json.JsonBuilder;
+import org.morphix.lang.function.ThrowingRunnable;
 
-public class SignatureAlgorithms implements Sizeable {
+public class SignatureAlgorithms implements Extension {
 
 	public static final Short[] ALGORITHMS = {
 			(short) 0x0401, // RSA/PKCS1/SHA256
@@ -22,35 +25,65 @@ public class SignatureAlgorithms implements Sizeable {
 
 	private static final int BYTES_PER_ALGORITHM = 2;
 
-	private ExtensionType type = ExtensionType.SIGNATURE_ALGORITHMS;
+	private ExtensionType type;
 
-	private Int16 size;
+	private Int16 length;
 
 	private Int16 listSize;
 
 	private List<Short> algorithms;
 
+	public SignatureAlgorithms(final ExtensionType type, final Int16 length, final Int16 listSize, final List<Short> algorithms) {
+		this.type = type;
+		this.length = length;
+		this.listSize = listSize;
+		this.algorithms = algorithms;
+	}
+
 	public SignatureAlgorithms(final Short... algorithms) {
-		this.listSize = new Int16((short) (algorithms.length * BYTES_PER_ALGORITHM));
-		this.size = new Int16((short) (listSize.getValue() + listSize.size()));
-		this.algorithms = List.of(algorithms);
+		this(
+				ExtensionType.SIGNATURE_ALGORITHMS,
+				new Int16((short) (algorithms.length * BYTES_PER_ALGORITHM + Int16.BYTES)),
+				new Int16((short) (algorithms.length * BYTES_PER_ALGORITHM)),
+				List.of(algorithms)
+		);
 	}
 
 	public SignatureAlgorithms() {
 		this(ALGORITHMS);
 	}
 
-	public byte[] toByteArray() throws IOException {
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		DataOutputStream dos = new DataOutputStream(bos);
+	public static SignatureAlgorithms from(final InputStream is) throws IOException {
+		Int16 extensionType = Int16.from(is);
+		ExtensionType type = ExtensionType.fromValue(extensionType.getValue());
 
-		dos.writeShort(type.value());
-		dos.write(size.toByteArray());
-		dos.write(listSize.toByteArray());
-		for (Short algorithm : algorithms) {
-			dos.writeShort(algorithm);
+		return from(is, type);
+	}
+
+	public static SignatureAlgorithms from(final InputStream is, final ExtensionType type) throws IOException {
+		Int16 length = Int16.from(is);
+		Int16 listSize = Int16.from(is);
+		List<Short> algorithms = new ArrayList<>();
+		for (int i = 0; i < listSize.getValue() / BYTES_PER_ALGORITHM; ++i) {
+			Int16 format = Int16.from(is);
+			algorithms.add(format.getValue());
 		}
 
+		return new SignatureAlgorithms(type, length, listSize, algorithms);
+	}
+
+	@Override
+	public byte[] toByteArray() {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		DataOutputStream dos = new DataOutputStream(bos);
+		ThrowingRunnable.unchecked(() -> {
+			dos.writeShort(type.value());
+			dos.write(length.toByteArray());
+			dos.write(listSize.toByteArray());
+			for (Short algorithm : algorithms) {
+				dos.writeShort(algorithm);
+			}
+		}).run();
 		return bos.toByteArray();
 	}
 
@@ -61,15 +94,16 @@ public class SignatureAlgorithms implements Sizeable {
 
 	@Override
 	public int size() {
-		return type.size() + size.size() + listSize.size() + algorithms.size() * BYTES_PER_ALGORITHM;
+		return type.size() + length.size() + listSize.size() + algorithms.size() * BYTES_PER_ALGORITHM;
 	}
 
+	@Override
 	public ExtensionType getType() {
 		return type;
 	}
 
-	public Int16 getSize() {
-		return size;
+	public Int16 getLength() {
+		return length;
 	}
 
 	public Int16 getListSize() {

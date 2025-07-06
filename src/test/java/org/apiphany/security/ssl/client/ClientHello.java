@@ -16,19 +16,19 @@ import org.apiphany.security.ssl.SSLProtocol;
  */
 public class ClientHello implements Sizeable {
 
-	private RecordHeader recordHeader = new RecordHeader(RecordHeaderType.HANDSHAKE, SSLProtocol.TLS_1_0);
+	private RecordHeader recordHeader;
 
-	private HandshakeHeader handshakeHeader = new HandshakeHeader(HandshakeMessageType.CLIENT_HELLO);
+	private HandshakeHeader handshakeHeader;
 
-	private Version clientVersion = new Version(SSLProtocol.TLS_1_2);
+	private Version clientVersion;
 
-	private ExchangeRandom clientRandom = new ExchangeRandom(ExchangeRandom.generateLinear());
+	private ExchangeRandom clientRandom;
 
-	private SessionId sessionId = new SessionId();
+	private SessionId sessionId;
 
 	private CipherSuites cipherSuites;
 
-	private CompressionMethods compressionMethods = new CompressionMethods();
+	private CompressionMethods compressionMethods;
 
 	private Extensions extensions;
 
@@ -78,7 +78,7 @@ public class ClientHello implements Sizeable {
 		);
 	}
 
-	public ClientHello(final List<String> serverNames, final CipherSuites cypherSuites) {
+	public ClientHello(final List<String> serverNames, final CipherSuites cypherSuites, final List<CurveName> curveNames) {
 		this(
 				new RecordHeader(RecordHeaderType.HANDSHAKE, SSLProtocol.TLS_1_0),
 				new HandshakeHeader(HandshakeMessageType.CLIENT_HELLO),
@@ -87,12 +87,12 @@ public class ClientHello implements Sizeable {
 				new SessionId(),
 				cypherSuites,
 				new CompressionMethods(),
-				new Extensions(serverNames)
+				new Extensions(serverNames, curveNames)
 		);
 	}
 
-	public ClientHello(final List<String> serverNames, final List<CipherSuite> cypherSuites) {
-		this(serverNames, new CipherSuites(cypherSuites));
+	public ClientHello(final List<String> serverNames, final List<CipherSuite> cypherSuites, final List<CurveName> curveNames) {
+		this(serverNames, new CipherSuites(cypherSuites), curveNames);
 	}
 
 	public byte[] toByteArray() throws IOException {

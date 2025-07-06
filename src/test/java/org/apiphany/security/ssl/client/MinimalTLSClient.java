@@ -283,7 +283,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		connect();
 
 		// 1. Send Client Hello
-		ClientHello clientHello = new ClientHello(List.of(host), new CipherSuites(CipherSuiteName.values()));
+		ClientHello clientHello = new ClientHello(List.of(host), new CipherSuites(CipherSuiteName.values()), List.of(CurveName.values()));
 		byte[] clientHelloBytes = clientHello.toByteArray();
 		accumulateHandshake(clientHelloBytes);
 		this.clientRandom = clientHello.getClientRandom().getRandom();

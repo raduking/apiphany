@@ -52,7 +52,7 @@ public class CipherSuites implements Sizeable {
 	public static CipherSuites from(final InputStream is) throws IOException {
 		Int16 size = Int16.from(is);
 		List<CipherSuite> cipherSuites = new ArrayList<>();
-		for (int i = 0; i < size.getValue(); ++i) {
+		for (int i = 0; i < size.getValue() / 2; ++i) {
 			CipherSuite cipherSuite = CipherSuite.from(is);
 			cipherSuites.add(cipherSuite);
 		}
