@@ -19,8 +19,8 @@ public class CurveInfo {
 	}
 
 	public static CurveInfo from(final InputStream is) throws IOException {
-		int typeValue = is.read();
-		CurveType type = CurveType.fromValue((byte) typeValue);
+		Int8 typeValue = Int8.from(is);
+		CurveType type = CurveType.fromValue(typeValue.getValue());
 
 		Int16 nameValue = Int16.from(is);
 		CurveName name = CurveName.fromValue(nameValue.getValue());

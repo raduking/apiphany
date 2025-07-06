@@ -5,6 +5,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apiphany.json.JsonBuilder;
+
 public class CompressionMethods implements Sizeable {
 
 	private Int8 size;
@@ -32,6 +34,11 @@ public class CompressionMethods implements Sizeable {
 			result[i + 1] = methods.get(i).getMethod().value();
 		}
 		return result;
+	}
+
+	@Override
+	public String toString() {
+		return JsonBuilder.toJson(this);
 	}
 
 	public static CompressionMethods from(final InputStream is) throws IOException {

@@ -10,6 +10,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public class BinaryData implements Sizeable {
 
+	private static final byte[] EMPTY = new byte[] { };
+
 	private byte[] bytes;
 
 	public BinaryData(final byte[] bytes) {
@@ -21,6 +23,9 @@ public class BinaryData implements Sizeable {
 	}
 
 	public static BinaryData from(final InputStream is, final int size) throws IOException {
+		if (0 >= size) {
+			return new BinaryData(EMPTY);
+		}
 		byte[] bytes = new byte[size];
 		int bytesRead = is.read(bytes);
 		if (size != bytesRead) {

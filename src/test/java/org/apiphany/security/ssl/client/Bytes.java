@@ -6,7 +6,7 @@ public class Bytes {
 		if (2 != bytes.length) {
 			throw new IllegalArgumentException("Can only convert 2 bytes to short, actual bytes: " + bytes.length);
 		}
-		return (short) (((short) (bytes[0] << 8)) + bytes[1]);
+		return (short) (((short) (bytes[0] << 8)) | ((short) (bytes[1] & 0xFF)));
 	}
 
 	public static byte[] from(final short value) {
@@ -59,34 +59,27 @@ public class Bytes {
 		StringBuilder sb = new StringBuilder();
 
 		for (int i = 0; i < bytes.length; i += width) {
-			// Print offset
 			sb.append(String.format("%04X: ", i));
 
-			// Print hex values
 			for (int j = 0; j < width; j++) {
 				if (i + j < bytes.length) {
 					sb.append(String.format("%02X ", bytes[i + j]));
 				} else {
 					sb.append("   ");
 				}
-
-				// Add extra space after 8 bytes
 				if (j == 7) {
 					sb.append(" ");
 				}
 			}
-
-			// Print ASCII representation
 			sb.append(" ");
 			for (int j = 0; j < width; j++) {
 				if (i + j < bytes.length) {
-					char c = (char) (bytes[i + j] & 0xFF); // Convert to unsigned
+					char c = (char) (bytes[i + j] & 0xFF);
 					sb.append((c >= 32 && c < 127) ? c : '.');
 				}
 			}
 			sb.append("\n");
 		}
-
 		return sb.toString();
 	}
 
@@ -115,7 +108,7 @@ public class Bytes {
 
 	public static byte[] hexStringToByteArray(final String hexString) {
 		String cleanedHex = hexString.replaceAll("\\s", "");
-		if (cleanedHex.length() % 2 != 0) {
+		if (0 != cleanedHex.length() % 2) {
 			throw new IllegalArgumentException("Hex string must have an even number of characters");
 		}
 

@@ -4,46 +4,20 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apiphany.json.JsonBuilder;
 
 public class Extensions implements Sizeable {
 
-	private Int16 length = new Int16();
+	private Int16 length;
 
-	private ServerNames serverNames;
+	private List<Extension> extensions = new ArrayList<>();
 
-	private StatusRequest statusRequest = new StatusRequest();
-
-	private SupportedGroups supportedGroups = new SupportedGroups();
-
-	private ECPointFormats ecPointFormats = new ECPointFormats();
-
-	private SignatureAlgorithms signatureAlgorithms = new SignatureAlgorithms();
-
-	private RenegotiationInfo renegotiationInfo = new RenegotiationInfo();
-
-	private SignedCertificateTimestamp signedCertificateTimestamp = new SignedCertificateTimestamp();
-
-	public Extensions(
-			final Int16 length,
-			final ServerNames serverNames,
-			final StatusRequest statusRequest,
-			final SupportedGroups supportedGroups,
-			final ECPointFormats ecPointFormats,
-			final SignatureAlgorithms signatureAlgorithms,
-			final RenegotiationInfo renegotiationInfo,
-			final SignedCertificateTimestamp signedCertificateTimestamp,
-			final boolean setSizes) {
+	public Extensions(final Int16 length, final List<Extension> extensions, final boolean setSizes) {
 		this.length = length;
-		this.serverNames = serverNames;
-		this.statusRequest = statusRequest;
-		this.supportedGroups = supportedGroups;
-		this.ecPointFormats = ecPointFormats;
-		this.signatureAlgorithms = signatureAlgorithms;
-		this.renegotiationInfo = renegotiationInfo;
-		this.signedCertificateTimestamp = signedCertificateTimestamp;
+		this.extensions.addAll(extensions);
 		if (setSizes) {
 			this.length.setValue((short) (size() - length.size()));
 		}
@@ -51,36 +25,22 @@ public class Extensions implements Sizeable {
 
 	public Extensions(
 			final Int16 length,
-			final ServerNames serverNames,
-			final StatusRequest statusRequest,
-			final SupportedGroups supportedGroups,
-			final ECPointFormats ecPointFormats,
-			final SignatureAlgorithms signatureAlgorithms,
-			final RenegotiationInfo renegotiationInfo,
-			final SignedCertificateTimestamp signedCertificateTimestamp) {
-		this(
-				length,
-				serverNames,
-				statusRequest,
-				supportedGroups,
-				ecPointFormats,
-				signatureAlgorithms,
-				renegotiationInfo,
-				signedCertificateTimestamp,
-				true
-		);
+			final List<Extension> extensions) {
+		this(length, extensions, true);
 	}
 
-	public Extensions(final List<String> serverNames) {
+	public Extensions(final List<String> serverNames, final List<CurveName> curveNames) {
 		this(
 				new Int16(),
-				new ServerNames(serverNames),
-				new StatusRequest(),
-				new SupportedGroups(),
-				new ECPointFormats(),
-				new SignatureAlgorithms(),
-				new RenegotiationInfo(),
-				new SignedCertificateTimestamp()
+				List.of(
+						new ServerNames(serverNames),
+						new StatusRequest(),
+						new SupportedGroups(curveNames),
+						new ECPointFormats(),
+						new SignatureAlgorithms(),
+						new RenegotiationInfo(),
+						new SignedCertificateTimestamp()
+				)
 		);
 	}
 
@@ -89,30 +49,29 @@ public class Extensions implements Sizeable {
 		DataOutputStream dos = new DataOutputStream(bos);
 
 		dos.write(length.toByteArray());
-		dos.write(serverNames.toByteArray());
-		dos.write(statusRequest.toByteArray());
-		dos.write(supportedGroups.toByteArray());
-		dos.write(ecPointFormats.toByteArray());
-		dos.write(signatureAlgorithms.toByteArray());
-		dos.write(renegotiationInfo.toByteArray());
-		dos.write(signedCertificateTimestamp.toByteArray());
+		for (Extension extension : extensions) {
+			dos.write(extension.toByteArray());
+		}
 
 		return bos.toByteArray();
 	}
 
 	public static Extensions from(final InputStream is) throws IOException {
 		Int16 length = Int16.from(is);
-		ServerNames serverNames = ServerNames.from(is);
-		StatusRequest statusRequest = new StatusRequest();
-		SupportedGroups supportedGroups = new SupportedGroups();
-		ECPointFormats ecPointFormats = new ECPointFormats();
-		SignatureAlgorithms signatureAlgorithms = new SignatureAlgorithms();
-		RenegotiationInfo renegotiationInfo = new RenegotiationInfo();
-		SignedCertificateTimestamp signedCertificateTimestamp = new SignedCertificateTimestamp();
 
-		return new Extensions(
-				length, serverNames, statusRequest, supportedGroups, ecPointFormats,
-				signatureAlgorithms, renegotiationInfo, signedCertificateTimestamp, false);
+		List<Extension> extensions = new ArrayList<>();
+		int currentLength = 0;
+		while (currentLength < length.getValue()) {
+			Int16 extensionType = Int16.from(is);
+			ExtensionType type = ExtensionType.fromValue(extensionType.getValue());
+
+			Extension extension = type.extensionFrom(is);
+			extensions.add(extension);
+
+			currentLength += extension.size();
+		}
+
+		return new Extensions(length, extensions, false);
 	}
 
 	@Override
@@ -122,45 +81,18 @@ public class Extensions implements Sizeable {
 
 	@Override
 	public int size() {
-		return length.size()
-				+ serverNames.size()
-				+ statusRequest.size()
-				+ supportedGroups.size()
-				+ ecPointFormats.size()
-				+ signatureAlgorithms.size()
-				+ renegotiationInfo.size()
-				+ signedCertificateTimestamp.size();
+		int result = length.size();
+		for (Extension extension : extensions) {
+			result += extension.size();
+		}
+		return result;
 	}
 
 	public Int16 getLength() {
 		return length;
 	}
 
-	public ServerNames getServerNames() {
-		return serverNames;
-	}
-
-	public StatusRequest getStatusRequest() {
-		return statusRequest;
-	}
-
-	public SupportedGroups getSupportedGroups() {
-		return supportedGroups;
-	}
-
-	public ECPointFormats getEcPointFormats() {
-		return ecPointFormats;
-	}
-
-	public SignatureAlgorithms getSignatureAlgorithms() {
-		return signatureAlgorithms;
-	}
-
-	public RenegotiationInfo getRenegotiationInfo() {
-		return renegotiationInfo;
-	}
-
-	public SignedCertificateTimestamp getSignedCertificateTimestamp() {
-		return signedCertificateTimestamp;
+	public List<Extension> getExtensions() {
+		return extensions;
 	}
 }

@@ -6,8 +6,9 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apiphany.json.JsonBuilder;
+import org.morphix.lang.function.ThrowingRunnable;
 
-public class RenegotiationInfo implements Sizeable {
+public class RenegotiationInfo implements Extension {
 
 	private ExtensionType type;
 
@@ -33,20 +34,25 @@ public class RenegotiationInfo implements Sizeable {
 		Int16 extensionType = Int16.from(is);
 		ExtensionType type = ExtensionType.fromValue(extensionType.getValue());
 
+		return from(is, type);
+	}
+
+	public static RenegotiationInfo from(final InputStream is, final ExtensionType type) throws IOException {
 		Int16 size = Int16.from(is);
 		Int8 length = Int8.from(is);
 
 		return new RenegotiationInfo(type, size, length);
 	}
 
-	public byte[] toByteArray() throws IOException {
+	@Override
+	public byte[] toByteArray() {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(bos);
-
-		dos.writeShort(type.value());
-		dos.write(size.toByteArray());
-		dos.write(length.toByteArray());
-
+		ThrowingRunnable.unchecked(() -> {
+			dos.writeShort(type.value());
+			dos.write(size.toByteArray());
+			dos.write(length.toByteArray());
+		}).run();
 		return bos.toByteArray();
 	}
 
@@ -60,6 +66,7 @@ public class RenegotiationInfo implements Sizeable {
 		return type.size() + size.size() + length.size();
 	}
 
+	@Override
 	public ExtensionType getType() {
 		return type;
 	}
