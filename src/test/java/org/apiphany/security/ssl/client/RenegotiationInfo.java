@@ -7,7 +7,7 @@ import java.io.InputStream;
 
 import org.apiphany.json.JsonBuilder;
 
-public class RenegotiationInfo {
+public class RenegotiationInfo implements Sizeable {
 
 	private ExtensionType type;
 
@@ -53,6 +53,11 @@ public class RenegotiationInfo {
 	@Override
 	public String toString() {
 		return JsonBuilder.toJson(this);
+	}
+
+	@Override
+	public int size() {
+		return type.size() + size.size() + length.size();
 	}
 
 	public ExtensionType getType() {

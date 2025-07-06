@@ -7,7 +7,11 @@ import java.io.InputStream;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.security.ssl.SSLProtocol;
 
-public class Version {
+import com.fasterxml.jackson.annotation.JsonValue;
+
+public class Version implements Sizeable {
+
+	public static final int BYTES = 2;
 
 	private SSLProtocol protocol;
 
@@ -39,7 +43,17 @@ public class Version {
 		return JsonBuilder.toJson(this);
 	}
 
+	@Override
+	public int size() {
+		return BYTES;
+	}
+
 	public SSLProtocol getProtocol() {
 		return protocol;
+	}
+
+	@JsonValue
+	public String getProtocolString() {
+		return protocol.value();
 	}
 }

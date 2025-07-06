@@ -2,26 +2,43 @@ package org.apiphany.security.ssl.client;
 
 import java.nio.ByteBuffer;
 
+/**
+ * TODO: extract fields into their own classes with length.
+ */
 public class ExchangeKeys {
+
+	public enum Type {
+		AHEAD,
+		OTHER;
+	}
 
 	private byte[] clientMACKey = new byte[20];
 	private byte[] serverMACKey = new byte[20];
 	private byte[] clientWriteKey = new byte[16];
 	private byte[] serverWriteKey = new byte[16];
-	private byte[] clientIV = new byte[16];
-	private byte[] serverIV = new byte[16];
+	private byte[] clientIV;
+	private byte[] serverIV;
 
-	public static ExchangeKeys from(byte[] keyBlock) {
+	public static ExchangeKeys from(final byte[] keyBlock, final Type type) {
 		ExchangeKeys exchangeKeys = new ExchangeKeys();
 
 		ByteBuffer buffer = ByteBuffer.wrap(keyBlock);
-		buffer.get(exchangeKeys.clientMACKey);
-		buffer.get(exchangeKeys.serverMACKey);
-		buffer.get(exchangeKeys.clientWriteKey);
+		if (Type.AHEAD != type) {
+			buffer.get(exchangeKeys.serverMACKey);
+			buffer.get(exchangeKeys.clientMACKey);
+		}
 		buffer.get(exchangeKeys.serverWriteKey);
+		buffer.get(exchangeKeys.clientWriteKey);
 		if (keyBlock.length > 72) {
-			buffer.get(exchangeKeys.clientIV);
+			exchangeKeys.serverIV = new byte[16];
 			buffer.get(exchangeKeys.serverIV);
+			exchangeKeys.clientIV = new byte[16];
+			buffer.get(exchangeKeys.clientIV);
+		} else if (Type.AHEAD == type) {
+			exchangeKeys.serverIV = new byte[4];
+			buffer.get(exchangeKeys.serverIV);
+			exchangeKeys.clientIV = new byte[4];
+			buffer.get(exchangeKeys.clientIV);
 		}
 
 		return exchangeKeys;

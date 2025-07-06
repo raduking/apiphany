@@ -5,7 +5,9 @@ import java.io.InputStream;
 
 import org.apiphany.json.JsonBuilder;
 
-public class CipherSuite {
+import com.fasterxml.jackson.annotation.JsonValue;
+
+public class CipherSuite implements Sizeable {
 
 	private CipherSuiteName cipher;
 
@@ -32,6 +34,12 @@ public class CipherSuite {
 		return JsonBuilder.toJson(this);
 	}
 
+	@Override
+	public int size() {
+		return CipherSuiteName.BYTES;
+	}
+
+	@JsonValue
 	public CipherSuiteName getCipher() {
 		return cipher;
 	}

@@ -61,4 +61,8 @@ public class PublicKeyECDHE {
 	public String getHexBytes() {
 		return Bytes.hexString(bytes, "");
 	}
+
+	public byte size() {
+		return (byte) (length.size() + bytes.length);
+	}
 }

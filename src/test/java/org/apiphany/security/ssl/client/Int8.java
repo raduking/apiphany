@@ -6,7 +6,9 @@ import java.io.InputStream;
 
 import org.apiphany.json.JsonBuilder;
 
-public class Int8 {
+import com.fasterxml.jackson.annotation.JsonValue;
+
+public class Int8 implements Sizeable {
 
 	public static final int BYTES = 1;
 
@@ -39,14 +41,16 @@ public class Int8 {
 		return JsonBuilder.toJson(this);
 	}
 
+	@JsonValue
 	public byte getValue() {
 		return value;
 	}
 
-	public void setValue(byte value) {
+	public void setValue(final byte value) {
 		this.value = value;
 	}
 
+	@Override
 	public int size() {
 		return BYTES;
 	}

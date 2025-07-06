@@ -5,7 +5,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-public class ServerName {
+import org.apiphany.json.JsonBuilder;
+
+public class ServerName implements Sizeable {
 
 	private Int16 size;
 
@@ -14,14 +16,14 @@ public class ServerName {
 	 */
 	private Int8 type = new Int8((byte) 0x00);
 
-	private Int16 nameLength;
+	private Int16 length;
 
-	private byte[] name;
+	private BinaryData name;
 
 	public ServerName(final String name) {
-		this.name = name.getBytes(StandardCharsets.US_ASCII);
-		this.nameLength = new Int16((short) name.length());
-		this.size = new Int16((short) (type.size() + nameLength.size() + name.length()));
+		this.name = new BinaryData(name.getBytes(StandardCharsets.US_ASCII));
+		this.length = new Int16((short) name.length());
+		this.size = new Int16((short) (type.size() + length.size() + name.length()));
 	}
 
 	public byte[] toByteArray() throws IOException {
@@ -30,9 +32,39 @@ public class ServerName {
 
 		dos.write(size.toByteArray());
 		dos.write(type.toByteArray());
-		dos.write(nameLength.toByteArray());
-		dos.write(name);
+		dos.write(length.toByteArray());
+		dos.write(name.toByteArray());
 
 		return bos.toByteArray();
+	}
+
+	@Override
+	public String toString() {
+		return JsonBuilder.toJson(this);
+	}
+
+	@Override
+	public int size() {
+		return size.size() + type.size() + length.size() + name.size();
+	}
+
+	public Int16 getSize() {
+		return size;
+	}
+
+	public Int8 getType() {
+		return type;
+	}
+
+	public Int16 getLength() {
+		return length;
+	}
+
+	public BinaryData getName() {
+		return name;
+	}
+
+	public String getNameASCII() {
+		return new String(name.getBytes(), StandardCharsets.US_ASCII);
 	}
 }

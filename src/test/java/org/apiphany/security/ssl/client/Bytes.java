@@ -34,11 +34,19 @@ public class Bytes {
 		return hexString(bytes, " ");
 	}
 
-	public static String hexString(final byte[] bytes, String separator) {
+	public static String hexString(final byte[] bytes, final String separator) {
 		StringBuilder sb = new StringBuilder();
 		for (byte b : bytes) {
-			sb.append(String.format("%02X%s", b, separator));
+			sb.append(hex(b, separator));
 		}
 		return sb.toString();
+	}
+
+	public static String hex(final byte b) {
+		return String.format("%02X%s", b, " ");
+	}
+
+	public static String hex(final byte b, final String separator) {
+		return String.format("%02X%s", b, separator);
 	}
 }

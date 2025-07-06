@@ -7,25 +7,27 @@ import java.security.SecureRandom;
 
 import org.apiphany.json.JsonBuilder;
 
-public class HandshakeRandom {
+import com.fasterxml.jackson.annotation.JsonValue;
+
+public class ExchangeRandom implements Sizeable {
 
 	public static final int BYTES = 32;
 
 	private final byte[] random;
 
-	public HandshakeRandom(final byte[] random) {
+	public ExchangeRandom(final byte[] random) {
 		if (BYTES != random.length) {
 			throw new IllegalArgumentException("Invalid buffer size: " + random.length);
 		}
 		this.random = random.clone();
 	}
 
-	public HandshakeRandom() {
+	public ExchangeRandom() {
 		this(new byte[BYTES]);
 	}
 
-	public static HandshakeRandom from(final InputStream is) throws IOException {
-		HandshakeRandom handshakeRandom = new HandshakeRandom();
+	public static ExchangeRandom from(final InputStream is) throws IOException {
+		ExchangeRandom handshakeRandom = new ExchangeRandom();
 		int bytesRead = is.read(handshakeRandom.random);
 		if (BYTES != bytesRead) {
 			throw new EOFException("Error reading " + BYTES + " bytes");
@@ -57,12 +59,18 @@ public class HandshakeRandom {
 		return JsonBuilder.toJson(this);
 	}
 
-	public byte[] getRandom() {
-		return random;
+	@JsonValue
+	public String toHexString() {
+		return Bytes.hexString(random, "");
 	}
 
-	public String getHexRandom() {
-		return Bytes.hexString(random, "");
+	@Override
+	public int size() {
+		return BYTES;
+	}
+
+	public byte[] getRandom() {
+		return random;
 	}
 }
 

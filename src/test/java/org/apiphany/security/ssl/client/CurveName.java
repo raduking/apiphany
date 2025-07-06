@@ -4,12 +4,14 @@ import java.util.Map;
 
 import org.morphix.lang.Enums;
 
-public enum CurveName {
+public enum CurveName implements Sizeable {
 
 	X25519((short) 0x001D),
 	SECP256R1((short) 0x0017),
 	SECP384R1((short) 0x0018),
 	SECP521R1((short) 0x0019);
+
+	public static final int BYTES = 2;
 
 	private static final Map<Short, CurveName> VALUE_MAP = Enums.buildNameMap(values(), CurveName::value);
 
@@ -25,5 +27,10 @@ public enum CurveName {
 
 	public short value() {
 		return value;
+	}
+
+	@Override
+	public int size() {
+		return BYTES;
 	}
 }

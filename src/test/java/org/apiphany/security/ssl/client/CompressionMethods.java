@@ -3,7 +3,7 @@ package org.apiphany.security.ssl.client;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CompressionMethods {
+public class CompressionMethods implements Sizeable {
 
 	private Int8 size;
 
@@ -24,6 +24,23 @@ public class CompressionMethods {
 		result[0] = size.getValue();
 		for (int i = 0; i < size.getValue(); ++i) {
 			result[i + 1] = methods.get(i).getMethod().value();
+		}
+		return result;
+	}
+
+	public Int8 getSize() {
+		return size;
+	}
+
+	public List<CompressionMethod> getMethods() {
+		return methods;
+	}
+
+	@Override
+	public int size() {
+		int result = size.size();
+		for (CompressionMethod method : methods) {
+			result += method.size();
 		}
 		return result;
 	}

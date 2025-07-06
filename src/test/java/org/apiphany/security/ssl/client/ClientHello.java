@@ -13,7 +13,7 @@ import org.apiphany.security.ssl.SSLProtocol;
  *
  * @author Radu Sebastian LAZIN
  */
-public class ClientHello {
+public class ClientHello implements Sizeable {
 
 	private RecordHeader recordHeader = new RecordHeader(RecordHeaderType.HANDSHAKE_RECORD, SSLProtocol.TLS_1_0);
 
@@ -21,7 +21,7 @@ public class ClientHello {
 
 	private Version clientVersion = new Version(SSLProtocol.TLS_1_2);
 
-	private HandshakeRandom clientRandom = new HandshakeRandom(HandshakeRandom.generateLinear());
+	private ExchangeRandom clientRandom = new ExchangeRandom(ExchangeRandom.generateLinear());
 
 	private SessionId sessionId = new SessionId();
 
@@ -71,12 +71,12 @@ public class ClientHello {
 		byte[] bytes = bos.toByteArray();
 
 		// bytes after record header
-		short bytesAfterRecordHeader = (short) (bytes.length - RecordHeader.SIZE);
+		short bytesAfterRecordHeader = (short) (bytes.length - RecordHeader.BYTES);
 		bytes[3] = (byte) ((bytesAfterRecordHeader >> 8) & 0xFF);
 		bytes[4] = (byte) (bytesAfterRecordHeader & 0xFF);
 
 		// bytes after handshake header
-		short bytesAfterHandshakeHeader = (short) (bytesAfterRecordHeader - HandshakeHeader.SIZE);
+		short bytesAfterHandshakeHeader = (short) (bytesAfterRecordHeader - HandshakeHeader.BYTES);
 		bytes[7] = (byte) ((bytesAfterHandshakeHeader >> 8) & 0xFF);
 		bytes[8] = (byte) (bytesAfterHandshakeHeader & 0xFF);
 
@@ -86,6 +86,17 @@ public class ClientHello {
 	@Override
 	public String toString() {
 		return JsonBuilder.toJson(this);
+	}
+
+	@Override
+	public int size() {
+		return recordHeader.size()
+				+ handshakeHeader.size()
+				+ clientVersion.size()
+				+ clientRandom.size()
+				+ sessionId.size()
+				+ cipherSuites.size()
+				+ compressionMethods.size();
 	}
 
 	public RecordHeader getRecordHeader() {
@@ -100,7 +111,7 @@ public class ClientHello {
 		return clientVersion;
 	}
 
-	public HandshakeRandom getClientRandom() {
+	public ExchangeRandom getClientRandom() {
 		return clientRandom;
 	}
 
