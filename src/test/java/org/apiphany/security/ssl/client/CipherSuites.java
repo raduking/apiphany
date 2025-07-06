@@ -3,6 +3,7 @@ package org.apiphany.security.ssl.client;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,6 +47,17 @@ public class CipherSuites implements Sizeable {
 		}
 
 		return bos.toByteArray();
+	}
+
+	public static CipherSuites from(final InputStream is) throws IOException {
+		Int16 size = Int16.from(is);
+		List<CipherSuite> cipherSuites = new ArrayList<>();
+		for (int i = 0; i < size.getValue(); ++i) {
+			CipherSuite cipherSuite = CipherSuite.from(is);
+			cipherSuites.add(cipherSuite);
+		}
+
+		return new CipherSuites(size, cipherSuites);
 	}
 
 	@Override

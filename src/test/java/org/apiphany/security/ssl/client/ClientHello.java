@@ -3,6 +3,7 @@ package org.apiphany.security.ssl.client;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 import org.apiphany.json.JsonBuilder;
@@ -31,9 +32,63 @@ public class ClientHello implements Sizeable {
 
 	private Extensions extensions;
 
+	private ClientHello(
+			final RecordHeader recordHeader,
+			final HandshakeHeader handshakeHeader,
+			final Version clientVersion,
+			final ExchangeRandom clientRandom,
+			final SessionId sessionId,
+			final CipherSuites cipherSuites,
+			final CompressionMethods compressionMethods,
+			final Extensions extensions,
+			final boolean setSizes) {
+		this.recordHeader = recordHeader;
+		this.handshakeHeader = handshakeHeader;
+		this.clientVersion = clientVersion;
+		this.clientRandom = clientRandom;
+		this.sessionId = sessionId;
+		this.cipherSuites = cipherSuites;
+		this.compressionMethods = compressionMethods;
+		this.extensions = extensions;
+		if (setSizes) {
+			this.recordHeader.getLength().setValue((short) (size() - RecordHeader.BYTES));
+			this.handshakeHeader.getLength().setValue((short) (recordHeader.getLength().getValue() - HandshakeHeader.BYTES));
+		}
+	}
+
+	public ClientHello(
+			final RecordHeader recordHeader,
+			final HandshakeHeader handshakeHeader,
+			final Version clientVersion,
+			final ExchangeRandom clientRandom,
+			final SessionId sessionId,
+			final CipherSuites cipherSuites,
+			final CompressionMethods compressionMethods,
+			final Extensions extensions) {
+		this(
+				recordHeader,
+				handshakeHeader,
+				clientVersion,
+				clientRandom,
+				sessionId,
+				cipherSuites,
+				compressionMethods,
+				extensions,
+				true
+		);
+	}
+
 	public ClientHello(final List<String> serverNames, final CipherSuites cypherSuites) {
-		this.extensions = new Extensions(serverNames);
-		this.cipherSuites = cypherSuites;
+		this(
+				new RecordHeader(RecordHeaderType.HANDSHAKE, SSLProtocol.TLS_1_0),
+				new HandshakeHeader(HandshakeMessageType.CLIENT_HELLO),
+				new Version(SSLProtocol.TLS_1_2),
+				new ExchangeRandom(ExchangeRandom.generateLinear()),
+				new SessionId(),
+				cypherSuites,
+				new CompressionMethods(),
+				new Extensions(serverNames)
+		);
 	}
 
 	public ClientHello(final List<String> serverNames, final List<CipherSuite> cypherSuites) {
@@ -44,43 +99,30 @@ public class ClientHello implements Sizeable {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(bos);
 
-		// Record Header
 		dos.write(recordHeader.toByteArray());
-
-		// Handshake Header
 		dos.write(handshakeHeader.toByteArray());
-
-		// Client Version
 		dos.write(clientVersion.toByteArray());
-
-		// Client Random
 		dos.write(clientRandom.toByteArray());
-
-		// Session ID
 		dos.write(sessionId.toByteArray());
-
-		// Cipher Suites
 		dos.write(cipherSuites.toByteArray());
-
-		// Compression Methods
 		dos.write(compressionMethods.toByteArray());
-
-		// Extensions Length
 		dos.write(extensions.toByteArray());
 
-		byte[] bytes = bos.toByteArray();
+		return bos.toByteArray();
+	}
 
-		// bytes after record header
-		short bytesAfterRecordHeader = (short) (bytes.length - RecordHeader.BYTES);
-		bytes[3] = (byte) ((bytesAfterRecordHeader >> 8) & 0xFF);
-		bytes[4] = (byte) (bytesAfterRecordHeader & 0xFF);
+	public static ClientHello from(final InputStream is) throws IOException {
+		RecordHeader recordHeader = RecordHeader.from(is);
+		HandshakeHeader handshakeHeader = HandshakeHeader.from(is);
+		Version clientVersion = Version.from(is);
+		ExchangeRandom clientRandom = ExchangeRandom.from(is);
+		SessionId sessionId = SessionId.from(is);
+		CipherSuites cipherSuites = CipherSuites.from(is);
+		CompressionMethods compressionMethods = CompressionMethods.from(is);
+		Extensions extensions = Extensions.from(is);
 
-		// bytes after handshake header
-		short bytesAfterHandshakeHeader = (short) (bytesAfterRecordHeader - HandshakeHeader.BYTES);
-		bytes[7] = (byte) ((bytesAfterHandshakeHeader >> 8) & 0xFF);
-		bytes[8] = (byte) (bytesAfterHandshakeHeader & 0xFF);
-
-		return bytes;
+		return new ClientHello(recordHeader, handshakeHeader, clientVersion, clientRandom,
+				sessionId, cipherSuites, compressionMethods, extensions, false);
 	}
 
 	@Override
@@ -96,7 +138,8 @@ public class ClientHello implements Sizeable {
 				+ clientRandom.size()
 				+ sessionId.size()
 				+ cipherSuites.size()
-				+ compressionMethods.size();
+				+ compressionMethods.size()
+				+ extensions.size();
 	}
 
 	public RecordHeader getRecordHeader() {

@@ -87,6 +87,7 @@ public class MinimalTLSClient implements AutoCloseable {
 	public static byte[] receiveTLSRecord(final InputStream is) throws IOException {
 		LOGGER.debug("Waiting for server response...");
 		RecordHeader recordHeader = RecordHeader.from(is);
+		LOGGER.debug("Received record header (size: {}): {}", recordHeader.size(), recordHeader);
 
 		int length = recordHeader.getLength().getValue();
 		byte[] content = new byte[length];
@@ -289,12 +290,12 @@ public class MinimalTLSClient implements AutoCloseable {
 
 		LOGGER.debug("Sending Client Hello: {}", clientHello);
 		sendTLSRecord(clientHelloBytes);
-		LOGGER.debug("Sent Client Hello");
+		LOGGER.debug("Sent Client Hello: \n{}", Bytes.hexDump(clientHelloBytes));
 
 		// 2. Receive Server Hello
 		byte[] serverHelloBytes = receiveTLSRecord();
 		accumulateHandshake(serverHelloBytes);
-		LOGGER.debug("Received Server Hello: {}", Bytes.hexString(serverHelloBytes));
+		LOGGER.debug("Received Server Hello: {}", Bytes.hexDump(serverHelloBytes));
 
 		// it looks like this contains all bytes including Server Hello Done so we create a new input
 		// stream to read all the needed information from these bytes

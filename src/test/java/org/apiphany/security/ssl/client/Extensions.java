@@ -3,13 +3,12 @@ package org.apiphany.security.ssl.client;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 import org.apiphany.json.JsonBuilder;
 
 public class Extensions implements Sizeable {
-
-	private static final int EXTENSIONS_SIZE_INDEX = 0;
 
 	private Int16 length = new Int16();
 
@@ -27,8 +26,62 @@ public class Extensions implements Sizeable {
 
 	private SignedCertificateTimestamp signedCertificateTimestamp = new SignedCertificateTimestamp();
 
+	public Extensions(
+			final Int16 length,
+			final ServerNames serverNames,
+			final StatusRequest statusRequest,
+			final SupportedGroups supportedGroups,
+			final ECPointFormats ecPointFormats,
+			final SignatureAlgorithms signatureAlgorithms,
+			final RenegotiationInfo renegotiationInfo,
+			final SignedCertificateTimestamp signedCertificateTimestamp,
+			final boolean setSizes) {
+		this.length = length;
+		this.serverNames = serverNames;
+		this.statusRequest = statusRequest;
+		this.supportedGroups = supportedGroups;
+		this.ecPointFormats = ecPointFormats;
+		this.signatureAlgorithms = signatureAlgorithms;
+		this.renegotiationInfo = renegotiationInfo;
+		this.signedCertificateTimestamp = signedCertificateTimestamp;
+		if (setSizes) {
+			this.length.setValue((short) (size() - length.size()));
+		}
+	}
+
+	public Extensions(
+			final Int16 length,
+			final ServerNames serverNames,
+			final StatusRequest statusRequest,
+			final SupportedGroups supportedGroups,
+			final ECPointFormats ecPointFormats,
+			final SignatureAlgorithms signatureAlgorithms,
+			final RenegotiationInfo renegotiationInfo,
+			final SignedCertificateTimestamp signedCertificateTimestamp) {
+		this(
+				length,
+				serverNames,
+				statusRequest,
+				supportedGroups,
+				ecPointFormats,
+				signatureAlgorithms,
+				renegotiationInfo,
+				signedCertificateTimestamp,
+				true
+		);
+	}
+
 	public Extensions(final List<String> serverNames) {
-		this.serverNames = new ServerNames(serverNames);
+		this(
+				new Int16(),
+				new ServerNames(serverNames),
+				new StatusRequest(),
+				new SupportedGroups(),
+				new ECPointFormats(),
+				new SignatureAlgorithms(),
+				new RenegotiationInfo(),
+				new SignedCertificateTimestamp()
+		);
 	}
 
 	public byte[] toByteArray() throws IOException {
@@ -44,13 +97,22 @@ public class Extensions implements Sizeable {
 		dos.write(renegotiationInfo.toByteArray());
 		dos.write(signedCertificateTimestamp.toByteArray());
 
-		byte[] bytes = bos.toByteArray();
+		return bos.toByteArray();
+	}
 
-		// write actual size
-		short extensionsSize = (short) (bytes.length - length.size());
-		Bytes.set(extensionsSize, bytes, EXTENSIONS_SIZE_INDEX);
+	public static Extensions from(final InputStream is) throws IOException {
+		Int16 length = Int16.from(is);
+		ServerNames serverNames = ServerNames.from(is);
+		StatusRequest statusRequest = new StatusRequest();
+		SupportedGroups supportedGroups = new SupportedGroups();
+		ECPointFormats ecPointFormats = new ECPointFormats();
+		SignatureAlgorithms signatureAlgorithms = new SignatureAlgorithms();
+		RenegotiationInfo renegotiationInfo = new RenegotiationInfo();
+		SignedCertificateTimestamp signedCertificateTimestamp = new SignedCertificateTimestamp();
 
-		return bytes;
+		return new Extensions(
+				length, serverNames, statusRequest, supportedGroups, ecPointFormats,
+				signatureAlgorithms, renegotiationInfo, signedCertificateTimestamp, false);
 	}
 
 	@Override

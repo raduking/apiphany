@@ -3,6 +3,7 @@ package org.apiphany.security.ssl.client;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import org.apiphany.json.JsonBuilder;
@@ -11,19 +12,26 @@ public class ServerName implements Sizeable {
 
 	private Int16 size;
 
-	/**
-	 * 0x00 - DNS hostname.
-	 */
-	private Int8 type = new Int8((byte) 0x00);
+	private Int8 type;
 
 	private Int16 length;
 
 	private BinaryData name;
 
+	public ServerName(final Int16 size, final Int8 type, final Int16 length, final BinaryData name) {
+		this.size = size;
+		this.type = type;
+		this.length = length;
+		this.name = name;
+	}
+
 	public ServerName(final String name) {
-		this.name = new BinaryData(name.getBytes(StandardCharsets.US_ASCII));
-		this.length = new Int16((short) name.length());
-		this.size = new Int16((short) (type.size() + length.size() + name.length()));
+		this(
+				new Int16((short) (Int8.BYTES + Int16.BYTES + name.length())),
+				new Int8((byte) 0x00),
+				new Int16((short) name.length()),
+				new BinaryData(name.getBytes(StandardCharsets.US_ASCII))
+		);
 	}
 
 	public byte[] toByteArray() throws IOException {
@@ -36,6 +44,15 @@ public class ServerName implements Sizeable {
 		dos.write(name.toByteArray());
 
 		return bos.toByteArray();
+	}
+
+	public static ServerName from(final InputStream is) throws IOException {
+		Int16 size = Int16.from(is);
+		Int8 type = Int8.from(is);
+		Int16 length = Int16.from(is);
+		BinaryData name = BinaryData.from(is, length.getValue());
+
+		return new ServerName(size, type, length, name);
 	}
 
 	@Override

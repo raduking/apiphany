@@ -67,6 +67,15 @@ public enum CipherSuiteName {
     TLS_RSA_WITH_AES_128_CBC_SHA((short) 0x002F),
 
     /**
+     * Open SSL suites.
+     */
+    DHE_RSA_WITH_AES_256_CCM_8((short) 0xFF9F),
+    DHE_RSA_WITH_AES_128_CCM_8((short) 0xFF9E),
+    TLS_GOSTR341112_256_WITH_KUZNYECHIK_CTR_OMAC((short) 0xCBA9),
+    TLS_GOSTR341112_256_WITH_MAGMA_CTR_OMAC((short) 0xCBA8),
+    TLS_GOSTR341112_256_WITH_28147_CNT_IMIT((short) 0xCBAA),
+
+    /**
      * Old suites.
      */
 	TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA((short) 0xC012),

@@ -3,6 +3,7 @@ package org.apiphany.security.ssl.client;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,10 +19,13 @@ public class ServerNames implements Sizeable {
 
 	private List<ServerName> entries = new ArrayList<>();
 
+	public ServerNames(final Int16 size, final List<ServerName> serverNames) {
+		this.size = size;
+		this.entries = serverNames;
+	}
+
 	public ServerNames(final List<String> names) {
-		for (String name : names) {
-			entries.add(new ServerName(name));
-		}
+		this(new Int16((short) names.size()), names.stream().map(ServerName::new).toList());
 	}
 
 	public byte[] toByteArray() throws IOException {
@@ -44,6 +48,17 @@ public class ServerNames implements Sizeable {
 		Bytes.set(entriesSize, bytes, ENTRIES_SIZE_INDEX);
 
 		return bytes;
+	}
+
+	public static ServerNames from(final InputStream is) throws IOException {
+		Int16 size = Int16.from(is);
+		List<ServerName> serverNames = new ArrayList<>();
+		for (int i = 0; i < size.size(); ++i) {
+			ServerName serverName = ServerName.from(is);
+			serverNames.add(serverName);
+		}
+
+		return new ServerNames(size, serverNames);
 	}
 
 	@Override
