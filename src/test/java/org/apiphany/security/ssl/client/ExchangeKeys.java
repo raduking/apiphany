@@ -2,54 +2,43 @@ package org.apiphany.security.ssl.client;
 
 import java.nio.ByteBuffer;
 
-/**
- * TODO: extract fields into their own classes with length.
- */
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ExchangeKeys {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(ExchangeKeys.class);
+
 	public enum Type {
-		AHEAD,
-		OTHER;
+		AHEAD;
 	}
 
-	private byte[] clientMACKey = new byte[20];
-	private byte[] serverMACKey = new byte[20];
 	private byte[] clientWriteKey = new byte[16];
 	private byte[] serverWriteKey = new byte[16];
-	private byte[] clientIV;
-	private byte[] serverIV;
+	private byte[] clientIV = new byte[4];
+	private byte[] serverIV = new byte[4];
 
 	public static ExchangeKeys from(final byte[] keyBlock, final Type type) {
+		if (Type.AHEAD != type) {
+			throw new UnsupportedOperationException("Unsupported exchange key type");
+		}
+		LOGGER.debug("Key block length: {}", keyBlock.length);
+		LOGGER.debug("Key block: {}", Bytes.hexString(keyBlock));
+
 		ExchangeKeys exchangeKeys = new ExchangeKeys();
 
 		ByteBuffer buffer = ByteBuffer.wrap(keyBlock);
-		if (Type.AHEAD != type) {
-			buffer.get(exchangeKeys.serverMACKey);
-			buffer.get(exchangeKeys.clientMACKey);
-		}
-		buffer.get(exchangeKeys.serverWriteKey);
 		buffer.get(exchangeKeys.clientWriteKey);
-		if (keyBlock.length > 72) {
-			exchangeKeys.serverIV = new byte[16];
-			buffer.get(exchangeKeys.serverIV);
-			exchangeKeys.clientIV = new byte[16];
-			buffer.get(exchangeKeys.clientIV);
-		} else if (Type.AHEAD == type) {
-			exchangeKeys.serverIV = new byte[4];
-			buffer.get(exchangeKeys.serverIV);
-			exchangeKeys.clientIV = new byte[4];
-			buffer.get(exchangeKeys.clientIV);
-		}
+		buffer.get(exchangeKeys.serverWriteKey);
+		buffer.get(exchangeKeys.clientIV);
+		buffer.get(exchangeKeys.serverIV);
+
+		LOGGER.debug("Client write key: {}", Bytes.hexString(exchangeKeys.clientWriteKey));
+		LOGGER.debug("Server write key: {}", Bytes.hexString(exchangeKeys.serverWriteKey));
+		LOGGER.debug("Client IV: {}", Bytes.hexString(exchangeKeys.clientIV));
+		LOGGER.debug("Server IV: {}", Bytes.hexString(exchangeKeys.serverIV));
 
 		return exchangeKeys;
-	}
-
-	public byte[] getClientMACKey() {
-		return clientMACKey;
-	}
-
-	public byte[] getServerMACKey() {
-		return serverMACKey;
 	}
 
 	public byte[] getClientWriteKey() {

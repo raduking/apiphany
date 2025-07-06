@@ -88,7 +88,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		LOGGER.debug("Waiting for server response...");
 		RecordHeader recordHeader = RecordHeader.from(is);
 
-		int length = recordHeader.getMessageLength().getValue();
+		int length = recordHeader.getLength().getValue();
 		byte[] content = new byte[length];
 		is.read(content);
 
@@ -120,7 +120,7 @@ public class MinimalTLSClient implements AutoCloseable {
 	}
 
 	public byte[] generateX25519KeyExchange(final ServerKeyExchange ske) throws Exception {
-		byte[] serverPubBytes = ske.getPublicKey().getBytes();
+		byte[] serverPubBytes = ske.getPublicKey().getValue().getBytes();
 
 		// 1. Parse server public key
 		KeyFactory kf = KeyFactory.getInstance("XDH");
@@ -213,7 +213,10 @@ public class MinimalTLSClient implements AutoCloseable {
 		int aadLen = plaintext.length + 16;
 
 		// 4. Construct AAD (TLS header)
+		// first 8 bytes is the AAD sequence number (zero in this case for the finished message)
 		byte[] aad = new byte[] {
+				0x00, 0x00, 0x00, 0x00,
+				0x00, 0x00, 0x00, 0x00,
 				0x16, 0x03, 0x03,
 				(byte) ((aadLen >> 8) & 0xFF),
 				(byte) (aadLen & 0xFF)
@@ -257,6 +260,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		// 1. Extract TLS header and fragment
 		byte[] header = Arrays.copyOfRange(record, 0, 5);
 		byte[] fragment = Arrays.copyOfRange(record, 5, record.length);
+		LOGGER.debug("Server Finished explicit nonce: {}", Bytes.hexString(Arrays.copyOfRange(fragment, 0, 8)));
 
 		// 2. Extract explicit nonce (8 bytes)
 		byte[] explicitNonce = Arrays.copyOfRange(fragment, 0, 8);
@@ -264,6 +268,7 @@ public class MinimalTLSClient implements AutoCloseable {
 
 		// 3. Rebuild nonce
 		byte[] nonce = concatenate(keys.getServerIV(), explicitNonce);
+		LOGGER.debug("Server Finished full nonce: {}", Bytes.hexString(nonce));
 
 		// 4. Decrypt
 		Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
@@ -279,7 +284,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		// 1. Send Client Hello
 		ClientHello clientHello = new ClientHello(List.of(host), new CipherSuites(CipherSuiteName.values()));
 		byte[] clientHelloBytes = clientHello.toByteArray();
-		accumulateHandshake(clientHelloBytes, true);
+		accumulateHandshake(clientHelloBytes);
 		this.clientRandom = clientHello.getClientRandom().getRandom();
 
 		LOGGER.debug("Sending Client Hello: {}", clientHello);
@@ -288,6 +293,7 @@ public class MinimalTLSClient implements AutoCloseable {
 
 		// 2. Receive Server Hello
 		byte[] serverHelloBytes = receiveTLSRecord();
+		accumulateHandshake(serverHelloBytes);
 		LOGGER.debug("Received Server Hello: {}", Bytes.hexString(serverHelloBytes));
 
 		// it looks like this contains all bytes including Server Hello Done so we create a new input
@@ -295,16 +301,14 @@ public class MinimalTLSClient implements AutoCloseable {
 		ByteArrayInputStream bis = new ByteArrayInputStream(serverHelloBytes);
 		// a. Read Server Hello
 		ServerHello serverHello = readServerHello(bis);
-		accumulateHandshake(serverHello.toByteArray(), true);
 		LOGGER.debug("Received Server Hello: {}", serverHello);
 		this.serverRandom = serverHello.getServerRandom().getRandom();
 
 		// b. Read Server Certificate
 		ServerCertificate serverCertificate = readServerCertificate(bis);
-		accumulateHandshake(serverCertificate.toByteArray(), false);
 		LOGGER.debug("Received Server Certificate: {}", serverCertificate);
 
-		X509Certificate x509Certificate = parseCertificate(serverCertificate.getCertificate().getBytes());
+		X509Certificate x509Certificate = parseCertificate(serverCertificate.getCertificate().getData().getBytes());
 		LOGGER.debug("Received Server Certificate: {}", x509Certificate);
 
 		// c. Read Server Key Exchange
@@ -313,7 +317,6 @@ public class MinimalTLSClient implements AutoCloseable {
 
 		// d. Read Server Hello Done
 		HandshakeHeader serverHelloDone = readServerHelloDone(bis);
-		accumulateHandshake(serverHelloDone.toByteArray(), false);
 		LOGGER.debug("[ServerHelloDone] handshake header: {}", serverHelloDone);
 
 		// 3. Generate Client Key Exchange
@@ -328,10 +331,10 @@ public class MinimalTLSClient implements AutoCloseable {
 		// 4. Send Client Key Exchange
 		ClientKeyExchange clientKeyExchange = new ClientKeyExchange(encryptedPreMaster);
 		byte[] clientKeyExchangeBytes = clientKeyExchange.toByteArray();
+		accumulateHandshake(clientKeyExchangeBytes);
 
 		LOGGER.debug("Sending Client Key Exchange: {}", clientKeyExchange);
 		sendTLSRecord(clientKeyExchangeBytes);
-		accumulateHandshake(clientKeyExchangeBytes, true);
 		LOGGER.debug("Sent Client Key Exchange");
 
 		// 5. Derive Master Secret and Keys
@@ -364,6 +367,7 @@ public class MinimalTLSClient implements AutoCloseable {
 
 		// 8. Receive Server Finished Record
 		byte[] serverFinishedRecord = receiveTLSRecord(); // type 0x16
+		LOGGER.debug("Server Finished TLS Record Header: {}", Bytes.hexString(Arrays.copyOfRange(serverFinishedRecord, 0, 5)));
 
 		byte[] serverFinishedDecrypted = decryptWithServerKeyAEAD(serverFinishedRecord, keys);
 		byte[] expectedServerVerifyData = PseudoRandomFunction.apply(masterSecret, "server finished", handshakeHash, 12);
@@ -378,52 +382,8 @@ public class MinimalTLSClient implements AutoCloseable {
 		return keys.getServerIV();
 	}
 
-	public void accumulateHandshake(final byte[] tlsRecord, final boolean skipRecord) {
-		// Skip the 5-byte TLS record header: [ContentType, Version (2), Length (2)]
-		if (tlsRecord.length < 6) {
-			return;
-		}
-		if (skipRecord) {
-			handshakeMessages.write(tlsRecord, RecordHeader.BYTES, tlsRecord.length - RecordHeader.BYTES);
-		} else {
-			handshakeMessages.write(tlsRecord, 0, tlsRecord.length);
-		}
-	}
-
-	public void newWccumulateHandshake(final byte[] tlsRecord, final boolean skipRecord) {
-		LOGGER.debug("Accumulate TLS Record: type={}, length={}", Bytes.hex(tlsRecord[0]), tlsRecord.length);
-		if (tlsRecord.length < 6) {
-			return;
-		}
-
-		// Check TLS record ContentType (byte 0)
-		int contentType = tlsRecord[0] & 0xFF;
-		if (contentType != 0x16) {
-			// Not a handshake record — skip accumulation
-			return;
-		}
-
-		int offset = RecordHeader.BYTES; // 5
-		int remaining = tlsRecord.length - offset;
-
-		while (remaining >= 4) {
-			int handshakeType = tlsRecord[offset] & 0xFF;
-			LOGGER.debug("Handshake type: {}", handshakeType);
-
-			int len = ((tlsRecord[offset + 1] & 0xFF) << 16) |
-			          ((tlsRecord[offset + 2] & 0xFF) << 8) |
-			          ((tlsRecord[offset + 3] & 0xFF));
-			int totalLength = 4 + len;
-
-			if (remaining < totalLength) {
-				throw new IllegalArgumentException("Truncated Handshake message");
-			}
-
-			handshakeMessages.write(tlsRecord, offset, totalLength);
-
-			offset += totalLength;
-			remaining -= totalLength;
-		}
+	public void accumulateHandshake(final byte[] tlsRecord) {
+		handshakeMessages.write(tlsRecord, RecordHeader.BYTES, tlsRecord.length - RecordHeader.BYTES);
 	}
 
 	public byte[] getHandshakeTranscript() {

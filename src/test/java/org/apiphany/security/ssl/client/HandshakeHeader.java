@@ -12,21 +12,21 @@ public class HandshakeHeader implements Sizeable {
 
 	public static final int BYTES = 4;
 
-	private HandshakeMessageType messageType;
+	private HandshakeMessageType type;
 
-	private Int24 messageLength;
+	private Int24 length;
 
-	public HandshakeHeader(final HandshakeMessageType messageType, final Int24 messageLength) {
-		this.messageType = messageType;
-		this.messageLength = messageLength;
+	public HandshakeHeader(final HandshakeMessageType type, final Int24 length) {
+		this.type = type;
+		this.length = length;
 	}
 
-	public HandshakeHeader(final HandshakeMessageType messageType, final int messageLength) {
-		this(messageType, new Int24(messageLength));
+	public HandshakeHeader(final HandshakeMessageType type, final int length) {
+		this(type, new Int24(length));
 	}
 
-	public HandshakeHeader(final HandshakeMessageType messageType) {
-		this(messageType, (short) 0x0000);
+	public HandshakeHeader(final HandshakeMessageType type) {
+		this(type, (short) 0x0000);
 	}
 
 	public static HandshakeHeader from(final InputStream is) throws IOException {
@@ -45,8 +45,8 @@ public class HandshakeHeader implements Sizeable {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(bos);
 
-		dos.writeByte(messageType.value());
-		dos.write(messageLength.toByteArray());
+		dos.writeByte(type.value());
+		dos.write(length.toByteArray());
 
 		return bos.toByteArray();
 	}
@@ -58,15 +58,15 @@ public class HandshakeHeader implements Sizeable {
 
 	@Override
 	public int size() {
-		return messageType.size() + messageLength.size();
+		return type.size() + length.size();
 	}
 
-	public HandshakeMessageType getMessageType() {
-		return messageType;
+	public HandshakeMessageType getType() {
+		return type;
 	}
 
-	public Int24 getMessageLength() {
-		return messageLength;
+	public Int24 getLength() {
+		return length;
 	}
 }
 

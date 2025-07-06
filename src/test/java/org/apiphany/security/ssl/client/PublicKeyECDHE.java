@@ -11,11 +11,15 @@ public class PublicKeyECDHE {
 
 	private Int8 length;
 
-	private byte[] bytes;
+	private BinaryData value;
+
+	public PublicKeyECDHE(final Int8 length, final BinaryData value) {
+		this.length = length;
+		this.value = value;
+	}
 
 	public PublicKeyECDHE(final Int8 length, final byte[] bytes) {
-		this.length = length;
-		this.bytes = bytes;
+		this(length, new BinaryData(bytes));
 	}
 
 	public PublicKeyECDHE(final byte length, final byte[] bytes) {
@@ -28,11 +32,9 @@ public class PublicKeyECDHE {
 
 	public static PublicKeyECDHE from(final InputStream is) throws IOException {
 		Int8 length = Int8.from(is);
+		BinaryData value = BinaryData.from(is, length.getValue());
 
-		byte[] buffer = new byte[length.getValue()];
-		is.read(buffer);
-
-		return new PublicKeyECDHE(length, buffer);
+		return new PublicKeyECDHE(length, value);
 	}
 
 	public byte[] toByteArray() throws IOException {
@@ -40,7 +42,7 @@ public class PublicKeyECDHE {
 		DataOutputStream dos = new DataOutputStream(bos);
 
 		dos.write(length.toByteArray());
-		dos.write(bytes);
+		dos.write(value.toByteArray());
 
 		return bos.toByteArray();
 	}
@@ -54,15 +56,11 @@ public class PublicKeyECDHE {
 		return length;
 	}
 
-	public byte[] getBytes() {
-		return bytes;
-	}
-
-	public String getHexBytes() {
-		return Bytes.hexString(bytes, "");
+	public BinaryData getValue() {
+		return value;
 	}
 
 	public byte size() {
-		return (byte) (length.size() + bytes.length);
+		return (byte) (length.size() + value.size());
 	}
 }

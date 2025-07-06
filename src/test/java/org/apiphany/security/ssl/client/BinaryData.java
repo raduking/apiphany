@@ -1,5 +1,6 @@
 package org.apiphany.security.ssl.client;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -21,7 +22,10 @@ public class BinaryData implements Sizeable {
 
 	public static BinaryData from(final InputStream is, final int size) throws IOException {
 		byte[] bytes = new byte[size];
-		is.read(bytes);
+		int bytesRead = is.read(bytes);
+		if (size != bytesRead) {
+			throw new EOFException("Error reading " + size + " bytes");
+		}
 
 		return new BinaryData(bytes);
 	}

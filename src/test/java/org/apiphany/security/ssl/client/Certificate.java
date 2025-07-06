@@ -11,11 +11,15 @@ public class Certificate {
 
 	private Int24 length;
 
-	private byte[] bytes;
+	private BinaryData data;
+
+	public Certificate(final Int24 length, final BinaryData data) {
+		this.length = length;
+		this.data = data;
+	}
 
 	public Certificate(final Int24 length, final byte[] bytes) {
-		this.length = length;
-		this.bytes = bytes;
+		this(length, new BinaryData(bytes));
 	}
 
 	public Certificate(final int length, final byte[] bytes) {
@@ -24,11 +28,9 @@ public class Certificate {
 
 	public static Certificate from(final InputStream is) throws IOException {
 		Int24 length = Int24.from(is);
+		BinaryData data = BinaryData.from(is, length.getValue());
 
-		byte[] buffer = new byte[length.getValue()];
-		is.read(buffer);
-
-		return new Certificate(length, buffer);
+		return new Certificate(length, data);
 	}
 
 	public byte[] toByteArray() throws IOException {
@@ -36,7 +38,7 @@ public class Certificate {
 		DataOutputStream dos = new DataOutputStream(bos);
 
 		dos.write(length.toByteArray());
-		dos.write(bytes);
+		dos.write(data.toByteArray());
 
 		return bos.toByteArray();
 	}
@@ -50,7 +52,7 @@ public class Certificate {
 		return length;
 	}
 
-	public byte[] getBytes() {
-		return bytes;
+	public BinaryData getData() {
+		return data;
 	}
 }

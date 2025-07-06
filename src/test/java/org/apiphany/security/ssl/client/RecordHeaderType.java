@@ -6,7 +6,7 @@ import org.morphix.lang.Enums;
 
 public enum RecordHeaderType implements Sizeable {
 
-	HANDSHAKE_RECORD((byte) 0x16),
+	HANDSHAKE((byte) 0x16),
 	CHANGE_CIPHER_SPEC((byte) 0x14);
 
 	public static final int BYTES = 1;
