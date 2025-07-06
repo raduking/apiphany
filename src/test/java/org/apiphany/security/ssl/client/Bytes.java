@@ -39,7 +39,7 @@ public class Bytes {
 		for (byte b : bytes) {
 			sb.append(hex(b, separator));
 		}
-		return sb.toString();
+		return sb.toString().trim();
 	}
 
 	public static String hex(final byte b) {
@@ -48,5 +48,45 @@ public class Bytes {
 
 	public static String hex(final byte b, final String separator) {
 		return String.format("%02X%s", b, separator);
+	}
+
+	public static String hexDump(final byte[] bytes) {
+		if (bytes == null) {
+			return "null";
+		}
+
+		int width = 16;
+		StringBuilder sb = new StringBuilder();
+
+		for (int i = 0; i < bytes.length; i += width) {
+			// Print offset
+			sb.append(String.format("%04X: ", i));
+
+			// Print hex values
+			for (int j = 0; j < width; j++) {
+				if (i + j < bytes.length) {
+					sb.append(String.format("%02X ", bytes[i + j]));
+				} else {
+					sb.append("   ");
+				}
+
+				// Add extra space after 8 bytes
+				if (j == 7) {
+					sb.append(" ");
+				}
+			}
+
+			// Print ASCII representation
+			sb.append(" ");
+			for (int j = 0; j < width; j++) {
+				if (i + j < bytes.length) {
+					char c = (char) (bytes[i + j] & 0xFF); // Convert to unsigned
+					sb.append((c >= 32 && c < 127) ? c : '.');
+				}
+			}
+			sb.append("\n");
+		}
+
+		return sb.toString();
 	}
 }

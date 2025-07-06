@@ -2,7 +2,6 @@ package org.apiphany.security.ssl.client;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -14,12 +13,16 @@ public class Signature {
 
 	private Int16 length;
 
-	private byte[] bytes;
+	private BinaryData value;
 
-	public Signature(final Int16 reserved, final Int16 length, final byte[] bytes) {
+	public Signature(final Int16 reserved, final Int16 length, final BinaryData value) {
 		this.reserved = reserved;
 		this.length = length;
-		this.bytes = bytes;
+		this.value = value;
+	}
+
+	public Signature(final Int16 reserved, final Int16 length, final byte[] bytes) {
+		this(reserved, length, new BinaryData(bytes));
 	}
 
 	public Signature(final short length, final byte[] bytes) {
@@ -29,14 +32,9 @@ public class Signature {
 	public static Signature from(final InputStream is) throws IOException {
 		Int16 reserved = Int16.from(is);
 		Int16 length = Int16.from(is);
+		BinaryData value = BinaryData.from(is, length.getValue());
 
-		byte[] buffer = new byte[length.getValue()];
-		int bytesRead = is.read(buffer);
-		if (length.getValue() != bytesRead) {
-			throw new EOFException("Error reading " + length.getValue() + " bytes");
-		}
-
-		return new Signature(reserved, length, buffer);
+		return new Signature(reserved, length, value);
 	}
 
 	public byte[] toByteArray() throws IOException {
@@ -45,7 +43,7 @@ public class Signature {
 
 		dos.write(reserved.toByteArray());
 		dos.write(length.toByteArray());
-		dos.write(bytes);
+		dos.write(value.toByteArray());
 
 		return bos.toByteArray();
 	}
@@ -63,11 +61,7 @@ public class Signature {
 		return length;
 	}
 
-	public byte[] getBytes() {
-		return bytes;
-	}
-
-	public String getHexBytes() {
-		return Bytes.hexString(bytes, "");
+	public BinaryData getValue() {
+		return value;
 	}
 }

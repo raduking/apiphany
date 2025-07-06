@@ -21,8 +21,8 @@ public class ClientKeyExchange {
 		this.handshakeHeader = handshakeHeader;
 		this.publicKey = publicKey;
 		if (updateSizes) {
-			this.recordHeader.getMessageLength().setValue((short) (HandshakeHeader.BYTES + publicKey.size()));
-			this.handshakeHeader.getMessageLength().setValue(publicKey.size());
+			this.recordHeader.getLength().setValue((short) (HandshakeHeader.BYTES + publicKey.size()));
+			this.handshakeHeader.getLength().setValue(publicKey.size());
 		}
 	}
 
@@ -31,7 +31,7 @@ public class ClientKeyExchange {
 	}
 
 	public ClientKeyExchange(final byte[] encryptedPreMasterSecret) {
-		this(new RecordHeader(RecordHeaderType.HANDSHAKE_RECORD, SSLProtocol.TLS_1_2),
+		this(new RecordHeader(RecordHeaderType.HANDSHAKE, SSLProtocol.TLS_1_2),
 				new HandshakeHeader(HandshakeMessageType.CLIENT_KEY_EXCHANGE),
 				new PublicKeyECDHE(encryptedPreMasterSecret));
 	}

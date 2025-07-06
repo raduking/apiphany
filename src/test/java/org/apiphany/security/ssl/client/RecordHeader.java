@@ -17,16 +17,16 @@ public class RecordHeader implements Sizeable {
 
 	private Version version;
 
-	private Int16 messageLength;
+	private Int16 length;
 
-	public RecordHeader(final RecordHeaderType type, final Version version, final Int16 messageLength) {
+	public RecordHeader(final RecordHeaderType type, final Version version, final Int16 length) {
 		this.type = type;
 		this.version = version;
-		this.messageLength = messageLength;
+		this.length = length;
 	}
 
-	public RecordHeader(final RecordHeaderType type, final SSLProtocol sslProtocol, final short messageLength) {
-		this(type, Version.of(sslProtocol), new Int16(messageLength));
+	public RecordHeader(final RecordHeaderType type, final SSLProtocol sslProtocol, final short length) {
+		this(type, Version.of(sslProtocol), new Int16(length));
 	}
 
 	public RecordHeader(final RecordHeaderType type, final SSLProtocol sslProtocol) {
@@ -39,12 +39,10 @@ public class RecordHeader implements Sizeable {
 			throw new EOFException("Connection closed by server");
 		}
 		RecordHeaderType type = RecordHeaderType.fromValue((byte) firstByte);
-
 		Version version = Version.from(is);
+		Int16 length = Int16.from(is);
 
-		Int16 messageLength = Int16.from(is);
-
-		return new RecordHeader(type, version, messageLength);
+		return new RecordHeader(type, version, length);
 	}
 
 	public byte[] toByteArray() throws IOException {
@@ -53,7 +51,7 @@ public class RecordHeader implements Sizeable {
 
 		dos.writeByte(getType().value());
 		dos.write(version.toByteArray());
-		dos.write(messageLength.toByteArray());
+		dos.write(length.toByteArray());
 
 		return bos.toByteArray();
 	}
@@ -65,7 +63,7 @@ public class RecordHeader implements Sizeable {
 
 	@Override
 	public int size() {
-		return type.size() + version.size() + messageLength.size();
+		return type.size() + version.size() + length.size();
 	}
 
 	public RecordHeaderType getType() {
@@ -76,8 +74,8 @@ public class RecordHeader implements Sizeable {
 		return version;
 	}
 
-	public Int16 getMessageLength() {
-		return messageLength;
+	public Int16 getLength() {
+		return length;
 	}
 
 }

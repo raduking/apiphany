@@ -15,7 +15,7 @@ import org.apiphany.security.ssl.SSLProtocol;
  */
 public class ClientHello implements Sizeable {
 
-	private RecordHeader recordHeader = new RecordHeader(RecordHeaderType.HANDSHAKE_RECORD, SSLProtocol.TLS_1_0);
+	private RecordHeader recordHeader = new RecordHeader(RecordHeaderType.HANDSHAKE, SSLProtocol.TLS_1_0);
 
 	private HandshakeHeader handshakeHeader = new HandshakeHeader(HandshakeMessageType.CLIENT_HELLO);
 
