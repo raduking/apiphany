@@ -16,11 +16,11 @@ public class ClientKeyExchange {
 
 	private PublicKeyECDHE publicKey;
 
-	public ClientKeyExchange(final RecordHeader recordHeader, final HandshakeHeader handshakeHeader, final PublicKeyECDHE publicKey, final boolean updateSizes) {
+	public ClientKeyExchange(final RecordHeader recordHeader, final HandshakeHeader handshakeHeader, final PublicKeyECDHE publicKey, final boolean setSizes) {
 		this.recordHeader = recordHeader;
 		this.handshakeHeader = handshakeHeader;
 		this.publicKey = publicKey;
-		if (updateSizes) {
+		if (setSizes) {
 			this.recordHeader.getLength().setValue((short) (HandshakeHeader.BYTES + publicKey.size()));
 			this.handshakeHeader.getLength().setValue(publicKey.size());
 		}

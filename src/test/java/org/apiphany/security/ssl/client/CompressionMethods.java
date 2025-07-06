@@ -1,5 +1,7 @@
 package org.apiphany.security.ssl.client;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,10 +11,14 @@ public class CompressionMethods implements Sizeable {
 
 	private List<CompressionMethod> methods;
 
-	public CompressionMethods(final List<CompressionMethod> methods) {
-		this.size = new Int8((byte) methods.size());
+	public CompressionMethods(final Int8 size, final List<CompressionMethod> methods) {
+		this.size = size;
 		this.methods = new ArrayList<>(this.size.getValue());
 		this.methods.addAll(methods);
+	}
+
+	public CompressionMethods(final List<CompressionMethod> methods) {
+		this(new Int8((byte) methods.size()), methods);
 	}
 
 	public CompressionMethods() {
@@ -26,6 +32,17 @@ public class CompressionMethods implements Sizeable {
 			result[i + 1] = methods.get(i).getMethod().value();
 		}
 		return result;
+	}
+
+	public static CompressionMethods from(final InputStream is) throws IOException {
+		Int8 size = Int8.from(is);
+		List<CompressionMethod> methods = new ArrayList<>();
+		for (int i = 0; i < size.getValue(); ++i) {
+			CompressionMethod method = CompressionMethod.from(is);
+			methods.add(method);
+		}
+
+		return new CompressionMethods(size, methods);
 	}
 
 	public Int8 getSize() {
