@@ -7,7 +7,7 @@ import java.io.InputStream;
 
 import org.apiphany.json.JsonBuilder;
 
-public class CurveInfo {
+public class CurveInfo implements Sizeable {
 
 	private CurveType type;
 
@@ -41,6 +41,11 @@ public class CurveInfo {
 	@Override
 	public String toString() {
 		return JsonBuilder.toJson(this);
+	}
+
+	@Override
+	public int size() {
+		return CurveType.BYTES + CurveName.BYTES;
 	}
 
 	public CurveType getType() {

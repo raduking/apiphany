@@ -23,9 +23,13 @@ public class ServerHello implements Sizeable {
 
 	private CompressionMethod compressionMethod;
 
-	private Int16 extensionsLength;
+	private Extensions extensions;
 
-	private RenegotiationInfo renegotiationInfo;
+	private ServerCertificate serverCertificate;
+
+	private ServerKeyExchange serverKeyExchange;
+
+	private HandshakeHeader serverHelloDone;
 
 	public ServerHello(final RecordHeader recordHeader,
 			final HandshakeHeader handshakeHeader,
@@ -34,8 +38,10 @@ public class ServerHello implements Sizeable {
 			final SessionId sessionId,
 			final CipherSuite cipherSuite,
 			final CompressionMethod compressionMethod,
-			final Int16 extensionsLength,
-			final RenegotiationInfo renegotiationInfo) {
+			final Extensions extensions,
+			final ServerCertificate serverCertificate,
+			final ServerKeyExchange serverKeyExchange,
+			final HandshakeHeader serverHelloDone) {
 		this.recordHeader = recordHeader;
 		this.handshakeHeader = handshakeHeader;
 		this.version = version;
@@ -43,8 +49,10 @@ public class ServerHello implements Sizeable {
 		this.sessionId = sessionId;
 		this.cipherSuite = cipherSuite;
 		this.compressionMethod = compressionMethod;
-		this.extensionsLength = extensionsLength;
-		this.renegotiationInfo = renegotiationInfo;
+		this.extensions = extensions;
+		this.serverCertificate = serverCertificate;
+		this.serverKeyExchange = serverKeyExchange;
+		this.serverHelloDone = serverHelloDone;
 	}
 
 	public static ServerHello from(final InputStream is) throws IOException {
@@ -55,8 +63,10 @@ public class ServerHello implements Sizeable {
 		SessionId sessionId = SessionId.from(is);
 		CipherSuite cipherSuite = CipherSuite.from(is);
 		CompressionMethod compressionMethod = CompressionMethod.from(is);
-		Int16 extensionsLength = Int16.from(is);
-		RenegotiationInfo renegotiationInfo = RenegotiationInfo.from(is);
+		Extensions extensions = Extensions.from(is);
+		ServerCertificate serverCertificate = ServerCertificate.from(is);
+		ServerKeyExchange serverKeyExchange = ServerKeyExchange.from(is);
+		HandshakeHeader serverHelloDone = HandshakeHeader.from(is);
 
 		return new ServerHello(
 				recordHeader,
@@ -66,8 +76,10 @@ public class ServerHello implements Sizeable {
 				sessionId,
 				cipherSuite,
 				compressionMethod,
-				extensionsLength,
-				renegotiationInfo);
+				extensions,
+				serverCertificate,
+				serverKeyExchange,
+				serverHelloDone);
 	}
 
 	public byte[] toByteArray() throws IOException {
@@ -81,8 +93,10 @@ public class ServerHello implements Sizeable {
 		dos.write(sessionId.toByteArray());
 		dos.write(cipherSuite.toByteArray());
 		dos.write(compressionMethod.toByteArray());
-		dos.write(extensionsLength.toByteArray());
-		dos.write(renegotiationInfo.toByteArray());
+		dos.write(extensions.toByteArray());
+		dos.write(serverCertificate.toByteArray());
+		dos.write(serverKeyExchange.toByteArray());
+		dos.write(serverHelloDone.toByteArray());
 
 		return bos.toByteArray();
 	}
@@ -96,8 +110,10 @@ public class ServerHello implements Sizeable {
 				+ sessionId.size()
 				+ cipherSuite.size()
 				+ compressionMethod.size()
-				+ extensionsLength.size()
-				+ renegotiationInfo.size();
+				+ extensions.size()
+				+ serverCertificate.size()
+				+ serverKeyExchange.size()
+				+ serverHelloDone.size();
 	}
 
 	@Override
@@ -133,11 +149,19 @@ public class ServerHello implements Sizeable {
 		return compressionMethod;
 	}
 
-	public Int16 getExtensionsLength() {
-		return extensionsLength;
+	public Extensions getExtensions() {
+		return extensions;
 	}
 
-	public RenegotiationInfo getRenegotiationInfo() {
-		return renegotiationInfo;
+	public ServerCertificate getServerCertificate() {
+		return serverCertificate;
+	}
+
+	public ServerKeyExchange getServerKeyExchange() {
+		return serverKeyExchange;
+	}
+
+	public HandshakeHeader getServerHelloDone() {
+		return serverHelloDone;
 	}
 }
