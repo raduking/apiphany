@@ -29,6 +29,10 @@ public class ChangeCipherSpec {
 		this(type, sslProtocol, (short) 0x0001, (byte) 0x01);
 	}
 
+	public ChangeCipherSpec() {
+		this(RecordHeaderType.CHANGE_CIPHER_SPEC, SSLProtocol.TLS_1_2);
+	}
+
 	public static ChangeCipherSpec from(final InputStream is) throws IOException {
 		RecordHeader recordHeader = RecordHeader.from(is);
 		Int8 payload = Int8.from(is);

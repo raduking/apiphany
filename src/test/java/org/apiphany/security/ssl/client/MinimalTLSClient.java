@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -50,6 +51,8 @@ public class MinimalTLSClient implements AutoCloseable {
 
 	private byte[] preMasterSecret;
 	private byte[] masterSecret;
+
+	private long clientSequenceNumber = 0;
 
 	private final ByteArrayOutputStream handshakeMessages = new ByteArrayOutputStream();
 
@@ -171,26 +174,30 @@ public class MinimalTLSClient implements AutoCloseable {
 		ExchangeKeys keys = ExchangeKeys.from(keyBlock, ExchangeKeys.Type.AHEAD);
 
 		// 6. Client Change Cipher Spec
-		ChangeCipherSpec changeCypherSpecRecord = new ChangeCipherSpec(RecordHeaderType.CHANGE_CIPHER_SPEC, SSLProtocol.TLS_1_2);
+		ChangeCipherSpec changeCypherSpecRecord = new ChangeCipherSpec();
 		LOGGER.debug("Sending Client Change Cipher Spec: {}", changeCypherSpecRecord);
 		sendTLSRecord(changeCypherSpecRecord.toByteArray());
 		LOGGER.debug("Sent Client Change Cipher Spec:\n{}", Bytes.hexDump(changeCypherSpecRecord.toByteArray()));
 
 		// 7. Send Finished
-		byte[] handshakeHash = sha256(getHandshakeTranscript()); // SHA-256 hash of accumulated handshake
+		byte[] handshakeBytes = getHandshakeTranscript();
+		byte[] handshakeHash = sha256(handshakeBytes); // SHA-256 hash of accumulated handshake
 		byte[] verifyData = PseudoRandomFunction.apply(masterSecret, "client finished", handshakeHash, 12);
 
 		byte[] finished = createFinishedMessage(masterSecret, handshakeHash, keys);
-		ClientHandshakeFinised clientHandshakeFinised = new ClientHandshakeFinised(RecordHeaderType.HANDSHAKE, SSLProtocol.TLS_1_2, (short) finished.length, finished);
+		ClientFinishedEncrypted clientFinished = new ClientFinishedEncrypted(finished);
 
-		LOGGER.debug("Handshake hash input ({} bytes): {}", getHandshakeTranscript().length, Bytes.hexString(getHandshakeTranscript()));
-		LOGGER.debug("Handshake SHA-256 hash: {}", Bytes.hexString(sha256(getHandshakeTranscript())));
+		LOGGER.debug("Handshake hash input ({} bytes): {}", handshakeBytes.length, Bytes.hexString(handshakeBytes));
+		LOGGER.debug("Handshake SHA-256 hash: {}", Bytes.hexString(handshakeHash));
 		LOGGER.debug("Computed verify_data: {}", Bytes.hexString(verifyData));
 		LOGGER.debug("Master secret: {}", Bytes.hexString(masterSecret));
 		LOGGER.debug("Client write key: {}", Bytes.hexString(keys.getClientWriteKey()));
 		LOGGER.debug("Client IV: {}", Bytes.hexString(keys.getClientIV()));
 
-		sendTLSRecord(clientHandshakeFinised.toByteArray());
+		LOGGER.debug("Sending Client Finished Message: {}", clientFinished);
+		byte[] clientFinishedBytes = clientFinished.toByteArray();
+		sendTLSRecord(clientFinishedBytes);
+		LOGGER.debug("Sent Client Finished Message:\n{}", Bytes.hexDump(clientFinishedBytes));
 
 		// 7. Receive ChangeCipherSpec and Finished
 		byte[] serverChangeCipherSpec = receiveTLSRecord(); // type 0x14
@@ -257,13 +264,8 @@ public class MinimalTLSClient implements AutoCloseable {
 		byte[] verifyData = PseudoRandomFunction.apply(masterSecret, "client finished", handshakeHash, 12);
 
 		// 2. Construct handshake body for Finished message
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		DataOutputStream dos = new DataOutputStream(bos);
-		dos.write(0x14); // Handshake type: Finished
-		dos.writeByte(0x00); // Length high byte
-		dos.writeShort(verifyData.length); // Length low bytes
-		dos.write(verifyData); // Payload
-		byte[] finishedPlaintext = bos.toByteArray(); // Handshake message (unencrypted)
+		ClientFinished clientFinished = new ClientFinished(verifyData);
+		byte[] finishedPlaintext = clientFinished.toByteArray(); // Handshake message (unencrypted)
 
 		// 3. Encrypt with keys
 		return encryptWithClientKeyAEAD(finishedPlaintext, keys);
@@ -278,17 +280,19 @@ public class MinimalTLSClient implements AutoCloseable {
 		byte[] fullNonce = Bytes.concatenate(keys.getClientIV(), explicitNonce);
 
 		// 3. Calculate AAD length = plaintext length + 16 (tag length)
-		int aadLen = plaintext.length + 16;
+		short tagLength = 16;
+		int aadLength = plaintext.length + tagLength;
 
 		// 4. Construct AAD (TLS header)
-		// first 8 bytes is the AAD sequence number (zero in this case for the finished message)
-		byte[] aad = new byte[] {
-				0x00, 0x00, 0x00, 0x00,
-				0x00, 0x00, 0x00, 0x01,
-				0x16, 0x03, 0x03,
-				(byte) ((aadLen >> 8) & 0xFF),
-				(byte) (aadLen & 0xFF)
-		};
+		ByteBuffer aadBuffer = ByteBuffer.allocate(13);
+		// first 8 bytes is the AAD sequence number
+		aadBuffer.putLong(clientSequenceNumber); // 8-byte sequence number
+		aadBuffer.put(RecordHeaderType.HANDSHAKE.value()); // Handshake
+		aadBuffer.putShort(SSLProtocol.TLS_1_2.handshakeVersion());
+		aadBuffer.putShort((short) aadLength); // Encrypted Finished length
+		byte[] aad = aadBuffer.array();
+
+		this.clientSequenceNumber++;
 
 		// 5. Initialize Cipher and provide AAD before encrypting
 		Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
@@ -299,22 +303,16 @@ public class MinimalTLSClient implements AutoCloseable {
 		// 6. Encrypt plaintext
 		byte[] ciphertext = cipher.doFinal(plaintext);
 
-		// 7. Prepare TLS record header (nonce + ciphertext length)
-		int recordLen = explicitNonce.length + ciphertext.length;
-		byte[] recordHeader = new byte[] {
-				0x16, 0x03, 0x03,
-				(byte) ((recordLen >> 8) & 0xFF),
-				(byte) (recordLen & 0xFF)
-		};
-
-		// 8. Concatenate record header, explicit nonce, ciphertext
+		// 7. Concatenate explicit nonce, ciphertext
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		bos.write(recordHeader);
 		bos.write(explicitNonce);
 		bos.write(ciphertext);
 
 		LOGGER.debug("Encrypting Finished Message:");
-		LOGGER.debug("Fixed IV: {}", Bytes.hexString(keys.getClientIV()));
+		LOGGER.debug("Client IV: {}", Bytes.hexString(keys.getClientIV()));
+		LOGGER.debug("Server IV: {}", Bytes.hexString(keys.getServerIV()));
+		LOGGER.debug("Client Write Key: {}", Bytes.hexString(keys.getClientWriteKey()));
+		LOGGER.debug("Server Write Key: {}", Bytes.hexString(keys.getServerWriteKey()));
 		LOGGER.debug("Explicit nonce: {}", Bytes.hexString(explicitNonce));
 		LOGGER.debug("Full nonce: {}", Bytes.hexString(fullNonce));
 		LOGGER.debug("AAD (TLS Header): {}", Bytes.hexString(aad));

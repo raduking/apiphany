@@ -11,7 +11,8 @@ public enum HandshakeMessageType implements Sizeable {
 	CERTIFICATE((byte) 0x0B),
 	SERVER_KEY_EXCHANGE((byte) 0x0C),
 	SERVER_HELLO_DONE((byte) 0x0E),
-	CLIENT_KEY_EXCHANGE((byte) 0x10);
+	CLIENT_KEY_EXCHANGE((byte) 0x10),
+	FINISHED((byte) 0x14);
 
 	public static final int BYTES = 1;
 
