@@ -158,22 +158,6 @@ public class MinimalTLSClient implements AutoCloseable {
 		return buildTLSRecord((byte) 0x16, bos.toByteArray());
 	}
 
-	public static ServerHello readServerHello(final InputStream in) throws Exception {
-		return ServerHello.from(in);
-	}
-
-	public static ServerCertificate readServerCertificate(final InputStream in) throws Exception {
-		return ServerCertificate.from(in);
-	}
-
-	public static ServerKeyExchange readServerKeyExchange(final InputStream in) throws Exception {
-		return ServerKeyExchange.from(in);
-	}
-
-	public static HandshakeHeader readServerHelloDone(final InputStream in) throws Exception {
-		return HandshakeHeader.from(in);
-	}
-
 	public byte[] createFinishedMessage(final byte[] masterSecret, final byte[] handshakeHash, final ExchangeKeys keys) throws Exception {
 		// 1. Compute verify_data
 		byte[] verifyData = PseudoRandomFunction.apply(masterSecret, "client finished", handshakeHash, 12);
@@ -297,28 +281,17 @@ public class MinimalTLSClient implements AutoCloseable {
 		accumulateHandshake(serverHelloBytes);
 		LOGGER.debug("Received Server Hello: {}", Bytes.hexDump(serverHelloBytes));
 
-		// it looks like this contains all bytes including Server Hello Done so we create a new input
-		// stream to read all the needed information from these bytes
 		ByteArrayInputStream bis = new ByteArrayInputStream(serverHelloBytes);
-		// a. Read Server Hello
-		ServerHello serverHello = readServerHello(bis);
-		LOGGER.debug("Received Server Hello: {}", serverHello);
+		ServerHello serverHello = ServerHello.from(bis);
+
 		this.serverRandom = serverHello.getServerRandom().getRandom();
+		LOGGER.debug("Received Server Hello: {}", serverHello);
 
-		// b. Read Server Certificate
-		ServerCertificate serverCertificate = readServerCertificate(bis);
-		LOGGER.debug("Received Server Certificate: {}", serverCertificate);
-
-		X509Certificate x509Certificate = parseCertificate(serverCertificate.getCertificate().getData().getBytes());
+		X509Certificate x509Certificate = parseCertificate(serverHello.getServerCertificate().getCertificate().getData().getBytes());
 		LOGGER.debug("Received Server Certificate: {}", x509Certificate);
-
-		// c. Read Server Key Exchange
-		ServerKeyExchange serverKeyExchange = readServerKeyExchange(bis);
-		LOGGER.debug("Received Server Key Exchange: {}", serverKeyExchange);
-
-		// d. Read Server Hello Done
-		HandshakeHeader serverHelloDone = readServerHelloDone(bis);
-		LOGGER.debug("[ServerHelloDone] handshake header: {}", serverHelloDone);
+		ServerKeyExchange serverKeyExchange = serverHello.getServerKeyExchange();
+		LOGGER.debug("Received Server Key Exchange: {}", serverHello.getServerKeyExchange());
+		LOGGER.debug("[ServerHelloDone] handshake header: {}", serverHello.getServerHelloDone());
 
 		// 3. Generate Client Key Exchange
 		CipherSuiteName selectedCipher = serverHello.getCipherSuite().getCipher();

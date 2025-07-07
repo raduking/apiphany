@@ -7,7 +7,7 @@ import java.io.InputStream;
 
 import org.apiphany.json.JsonBuilder;
 
-public class Certificate {
+public class Certificate implements Sizeable {
 
 	private Int24 length;
 
@@ -46,6 +46,11 @@ public class Certificate {
 	@Override
 	public String toString() {
 		return JsonBuilder.toJson(this);
+	}
+
+	@Override
+	public int size() {
+		return length.size() + data.size();
 	}
 
 	public Int24 getLength() {

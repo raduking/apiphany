@@ -7,7 +7,7 @@ import java.io.InputStream;
 
 import org.apiphany.json.JsonBuilder;
 
-public class ServerCertificate {
+public class ServerCertificate implements Sizeable {
 
 	private HandshakeHeader handshakeHeader;
 
@@ -15,13 +15,13 @@ public class ServerCertificate {
 
 	private Certificate certificate;
 
-	public ServerCertificate(HandshakeHeader handshakeHeader, Int24 certificatesLength, Certificate certificate) {
+	public ServerCertificate(final HandshakeHeader handshakeHeader, final Int24 certificatesLength, final Certificate certificate) {
 		this.handshakeHeader = handshakeHeader;
 		this.certificatesLength = certificatesLength;
 		this.certificate = certificate;
 	}
 
-	public static ServerCertificate from(InputStream is) throws IOException {
+	public static ServerCertificate from(final InputStream is) throws IOException {
 		HandshakeHeader handshakeHeader = HandshakeHeader.from(is);
 		Int24 certificatesLength = Int24.from(is);
 		Certificate certificate = Certificate.from(is);
@@ -43,6 +43,11 @@ public class ServerCertificate {
 	@Override
 	public String toString() {
 		return JsonBuilder.toJson(this);
+	}
+
+	@Override
+	public int size() {
+		return handshakeHeader.size() + certificatesLength.size() + certificate.size();
 	}
 
 	public HandshakeHeader getHandshakeHeader() {

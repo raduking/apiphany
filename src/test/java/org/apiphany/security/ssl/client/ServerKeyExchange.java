@@ -7,7 +7,7 @@ import java.io.InputStream;
 
 import org.apiphany.json.JsonBuilder;
 
-public class ServerKeyExchange {
+public class ServerKeyExchange implements Sizeable {
 
 	private HandshakeHeader handshakeHeader;
 
@@ -17,14 +17,14 @@ public class ServerKeyExchange {
 
 	private Signature signature;
 
-	public ServerKeyExchange(HandshakeHeader handshakeHeader, CurveInfo curveInfo, PublicKeyECDHE publicKey, Signature signature) {
+	public ServerKeyExchange(final HandshakeHeader handshakeHeader, final CurveInfo curveInfo, final PublicKeyECDHE publicKey, final Signature signature) {
 		this.handshakeHeader = handshakeHeader;
 		this.curveInfo = curveInfo;
 		this.publicKey = publicKey;
 		this.signature = signature;
 	}
 
-	public static ServerKeyExchange from(InputStream is) throws IOException {
+	public static ServerKeyExchange from(final InputStream is) throws IOException {
 		HandshakeHeader handshakeHeader = HandshakeHeader.from(is);
 		CurveInfo curveInfo = CurveInfo.from(is);
 		PublicKeyECDHE publicKey = PublicKeyECDHE.from(is);
@@ -48,6 +48,11 @@ public class ServerKeyExchange {
 	@Override
 	public String toString() {
 		return JsonBuilder.toJson(this);
+	}
+
+	@Override
+	public int size() {
+		return handshakeHeader.size() + curveInfo.size() + publicKey.size() + signature.size();
 	}
 
 	public HandshakeHeader getHandshakeHeader() {

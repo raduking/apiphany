@@ -7,7 +7,7 @@ import java.io.InputStream;
 
 import org.apiphany.json.JsonBuilder;
 
-public class Signature {
+public class Signature implements Sizeable {
 
 	private Int16 reserved;
 
@@ -51,6 +51,11 @@ public class Signature {
 	@Override
 	public String toString() {
 		return JsonBuilder.toJson(this);
+	}
+
+	@Override
+	public int size() {
+		return reserved.size() + length.size() + value.size();
 	}
 
 	public Int16 getReserved() {
