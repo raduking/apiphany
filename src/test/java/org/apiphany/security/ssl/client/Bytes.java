@@ -1,5 +1,8 @@
 package org.apiphany.security.ssl.client;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
 public class Bytes {
 
 	public static short toShort(final byte[] bytes) {
@@ -28,6 +31,14 @@ public class Bytes {
 		}
 		bytes[index] = (byte) ((value >> 8) & 0xFF);
 		bytes[index + 1] = (byte) (value & 0xFF);
+	}
+
+	public static byte[] concatenate(final byte[]... arrays) throws IOException {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		for (byte[] arr : arrays) {
+			bos.write(arr);
+		}
+		return bos.toByteArray();
 	}
 
 	public static String hexString(final byte[] bytes) {

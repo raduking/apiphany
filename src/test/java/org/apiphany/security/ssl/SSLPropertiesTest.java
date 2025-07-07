@@ -117,7 +117,7 @@ class SSLPropertiesTest {
 	}
 
 	@Test
-	void shouldBuildClientHello() throws IOException {
+	void shouldBuildClientHello() {
 		final byte[] byteArray = new byte[] {
 				(byte) 0x16, (byte) 0x03, (byte) 0x01, (byte) 0x00, (byte) 0xA5, (byte) 0x01, (byte) 0x00, (byte) 0x00,
 				(byte) 0xA1, (byte) 0x03, (byte) 0x03, (byte) 0x00, (byte) 0x01, (byte) 0x02, (byte) 0x03, (byte) 0x04,

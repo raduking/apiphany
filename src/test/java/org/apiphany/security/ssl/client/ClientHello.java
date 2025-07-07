@@ -8,13 +8,14 @@ import java.util.List;
 
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.security.ssl.SSLProtocol;
+import org.morphix.lang.function.ThrowingRunnable;
 
 /**
  * Minimal Client Hello builder.
  *
  * @author Radu Sebastian LAZIN
  */
-public class ClientHello implements Sizeable {
+public class ClientHello implements Sizeable, BinaryRepresentable {
 
 	private RecordHeader recordHeader;
 
@@ -95,19 +96,20 @@ public class ClientHello implements Sizeable {
 		this(serverNames, new CipherSuites(cypherSuites), curveNames);
 	}
 
-	public byte[] toByteArray() throws IOException {
+	@Override
+	public byte[] toByteArray() {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(bos);
-
-		dos.write(recordHeader.toByteArray());
-		dos.write(handshakeHeader.toByteArray());
-		dos.write(clientVersion.toByteArray());
-		dos.write(clientRandom.toByteArray());
-		dos.write(sessionId.toByteArray());
-		dos.write(cipherSuites.toByteArray());
-		dos.write(compressionMethods.toByteArray());
-		dos.write(extensions.toByteArray());
-
+		ThrowingRunnable.unchecked(() -> {
+			dos.write(recordHeader.toByteArray());
+			dos.write(handshakeHeader.toByteArray());
+			dos.write(clientVersion.toByteArray());
+			dos.write(clientRandom.toByteArray());
+			dos.write(sessionId.toByteArray());
+			dos.write(cipherSuites.toByteArray());
+			dos.write(compressionMethods.toByteArray());
+			dos.write(extensions.toByteArray());
+		}).run();
 		return bos.toByteArray();
 	}
 
