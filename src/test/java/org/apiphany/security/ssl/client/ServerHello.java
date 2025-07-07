@@ -6,8 +6,9 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apiphany.json.JsonBuilder;
+import org.morphix.lang.function.ThrowingRunnable;
 
-public class ServerHello implements Sizeable {
+public class ServerHello implements Sizeable, BinaryRepresentable {
 
 	private RecordHeader recordHeader;
 
@@ -82,22 +83,23 @@ public class ServerHello implements Sizeable {
 				serverHelloDone);
 	}
 
-	public byte[] toByteArray() throws IOException {
+	@Override
+	public byte[] toByteArray() {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(bos);
-
-		dos.write(recordHeader.toByteArray());
-		dos.write(handshakeHeader.toByteArray());
-		dos.write(version.toByteArray());
-		dos.write(serverRandom.toByteArray());
-		dos.write(sessionId.toByteArray());
-		dos.write(cipherSuite.toByteArray());
-		dos.write(compressionMethod.toByteArray());
-		dos.write(extensions.toByteArray());
-		dos.write(serverCertificate.toByteArray());
-		dos.write(serverKeyExchange.toByteArray());
-		dos.write(serverHelloDone.toByteArray());
-
+		ThrowingRunnable.unchecked(() -> {
+			dos.write(recordHeader.toByteArray());
+			dos.write(handshakeHeader.toByteArray());
+			dos.write(version.toByteArray());
+			dos.write(serverRandom.toByteArray());
+			dos.write(sessionId.toByteArray());
+			dos.write(cipherSuite.toByteArray());
+			dos.write(compressionMethod.toByteArray());
+			dos.write(extensions.toByteArray());
+			dos.write(serverCertificate.toByteArray());
+			dos.write(serverKeyExchange.toByteArray());
+			dos.write(serverHelloDone.toByteArray());
+		}).run();
 		return bos.toByteArray();
 	}
 

@@ -115,12 +115,110 @@ public class MinimalTLSClient implements AutoCloseable {
 		}
 	}
 
+	public byte[] performHandshake() throws Exception {
+		connect();
+
+		// 1. Send Client Hello
+		ClientHello clientHello = new ClientHello(List.of(host), new CipherSuites(CipherSuiteName.values()), List.of(CurveName.values()));
+		byte[] clientHelloBytes = clientHello.toByteArray();
+		accumulateHandshake(clientHelloBytes);
+		this.clientRandom = clientHello.getClientRandom().getRandom();
+
+		LOGGER.debug("Sending Client Hello: {}", clientHello);
+		sendTLSRecord(clientHelloBytes);
+		LOGGER.debug("Sent Client Hello:\n{}", Bytes.hexDump(clientHelloBytes));
+
+		// 2. Receive Server Hello
+		byte[] serverHelloBytes = receiveTLSRecord();
+		accumulateHandshake(serverHelloBytes);
+		LOGGER.debug("Received Server Hello: {}", Bytes.hexDump(serverHelloBytes));
+
+		ByteArrayInputStream bis = new ByteArrayInputStream(serverHelloBytes);
+		ServerHello serverHello = ServerHello.from(bis);
+
+		this.serverRandom = serverHello.getServerRandom().getRandom();
+		LOGGER.debug("Received Server Hello: {}", serverHello);
+
+		X509Certificate x509Certificate = parseCertificate(serverHello.getServerCertificate().getCertificate().getData().getBytes());
+		LOGGER.debug("Received Server Certificate: {}", x509Certificate);
+		ServerKeyExchange serverKeyExchange = serverHello.getServerKeyExchange();
+		LOGGER.debug("Received Server Key Exchange: {}", serverHello.getServerKeyExchange());
+		LOGGER.debug("Received Server Key Exchange:\n{}", Bytes.hexDump(serverHello.getServerKeyExchange().toByteArray()));
+		LOGGER.debug("[ServerHelloDone] handshake header: {}", serverHello.getServerHelloDone());
+
+		// 3. Generate Client Key Exchange
+		CipherSuiteName selectedCipher = serverHello.getCipherSuite().getCipher();
+		byte[] clientPublic;
+		if (serverKeyExchange.getCurveInfo().getName() == CurveName.X25519) {
+			clientPublic = generateX25519KeyExchangeClientPublic(serverKeyExchange);
+		} else {
+			throw new SSLException("Unsupported cipher suite: " + selectedCipher);
+		}
+
+		// 4. Send Client Key Exchange
+		ClientKeyExchange clientKeyExchange = new ClientKeyExchange(clientPublic);
+		byte[] clientKeyExchangeBytes = clientKeyExchange.toByteArray();
+		accumulateHandshake(clientKeyExchangeBytes);
+
+		LOGGER.debug("Sending Client Key Exchange: {}", clientKeyExchange);
+		sendTLSRecord(clientKeyExchangeBytes);
+		LOGGER.debug("Sent Client Key Exchange:\n{}", Bytes.hexDump(clientKeyExchangeBytes));
+
+		// 5. Derive Master Secret and Keys
+		this.masterSecret = deriveMasterSecret(preMasterSecret, clientRandom, serverRandom);
+		byte[] keyBlock = deriveKeyBlock(masterSecret, serverRandom, clientRandom, 40);
+		// Extract keys
+		ExchangeKeys keys = ExchangeKeys.from(keyBlock, ExchangeKeys.Type.AHEAD);
+
+		// 6. Client Change Cipher Spec
+		ChangeCipherSpec changeCypherSpecRecord = new ChangeCipherSpec(RecordHeaderType.CHANGE_CIPHER_SPEC, SSLProtocol.TLS_1_2);
+		LOGGER.debug("Sending Client Change Cipher Spec: {}", changeCypherSpecRecord);
+		sendTLSRecord(changeCypherSpecRecord.toByteArray());
+		LOGGER.debug("Sent Client Change Cipher Spec:\n{}", Bytes.hexDump(changeCypherSpecRecord.toByteArray()));
+
+		// 7. Send Finished
+		byte[] handshakeHash = sha256(getHandshakeTranscript()); // SHA-256 hash of accumulated handshake
+		byte[] verifyData = PseudoRandomFunction.apply(masterSecret, "client finished", handshakeHash, 12);
+
+		byte[] finished = createFinishedMessage(masterSecret, handshakeHash, keys);
+		ClientHandshakeFinised clientHandshakeFinised = new ClientHandshakeFinised(RecordHeaderType.HANDSHAKE, SSLProtocol.TLS_1_2, (short) finished.length, finished);
+
+		LOGGER.debug("Handshake hash input ({} bytes): {}", getHandshakeTranscript().length, Bytes.hexString(getHandshakeTranscript()));
+		LOGGER.debug("Handshake SHA-256 hash: {}", Bytes.hexString(sha256(getHandshakeTranscript())));
+		LOGGER.debug("Computed verify_data: {}", Bytes.hexString(verifyData));
+		LOGGER.debug("Master secret: {}", Bytes.hexString(masterSecret));
+		LOGGER.debug("Client write key: {}", Bytes.hexString(keys.getClientWriteKey()));
+		LOGGER.debug("Client IV: {}", Bytes.hexString(keys.getClientIV()));
+
+		sendTLSRecord(clientHandshakeFinised.toByteArray());
+
+		// 7. Receive ChangeCipherSpec and Finished
+		byte[] serverChangeCipherSpec = receiveTLSRecord(); // type 0x14
+		LOGGER.debug("Received ChangeCipherSpec: {}", serverChangeCipherSpec);
+
+		// 8. Receive Server Finished Record
+		byte[] serverFinishedRecord = receiveTLSRecord(); // type 0x16
+		LOGGER.debug("Server Finished TLS Record Header: {}", Bytes.hexString(Arrays.copyOfRange(serverFinishedRecord, 0, 5)));
+
+		byte[] serverFinishedDecrypted = decryptWithServerKeyAEAD(serverFinishedRecord, keys);
+		byte[] expectedServerVerifyData = PseudoRandomFunction.apply(masterSecret, "server finished", handshakeHash, 12);
+
+		byte[] serverVerifyData = Arrays.copyOfRange(serverFinishedDecrypted, 4, 4 + 12); // skip handshake header
+		if (!Arrays.equals(serverVerifyData, expectedServerVerifyData)) {
+			throw new SSLException("Server Finished verification failed!");
+		}
+
+		LOGGER.info("TLS 1.2 handshake complete!");
+
+		return keys.getServerIV();
+	}
+
 	public X509Certificate parseCertificate(final byte[] certData) throws Exception {
 		CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
 		return (X509Certificate) certFactory.generateCertificate(new ByteArrayInputStream(certData));
 	}
 
-	public byte[] generateX25519KeyExchange(final ServerKeyExchange ske) throws Exception {
+	public byte[] generateX25519KeyExchangeClientPublic(final ServerKeyExchange ske) throws Exception {
 		byte[] serverPubBytes = ske.getPublicKey().getValue().getBytes();
 
 		// 1. Parse server public key
@@ -143,19 +241,15 @@ public class MinimalTLSClient implements AutoCloseable {
 		this.preMasterSecret = sharedSecret;
 
 		// 4. Encode client public key
-		byte[] clientPublic = ((XECPublicKey) kp.getPublic()).getU().toByteArray();
-		clientPublic = Arrays.copyOfRange(clientPublic, clientPublic.length - 32, clientPublic.length); // ensure 32 bytes
+		BigInteger uCoord = ((XECPublicKey) kp.getPublic()).getU();
+		byte[] unsigned = uCoord.toByteArray();
+		byte[] clientPublic = new byte[32];
 
-		// 5. Format TLS ClientKeyExchange message
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		bos.write(0x10); // handshake type
-		bos.write(0x00);
-		bos.write(0x00);
-		bos.write(1 + clientPublic.length); // length
-		bos.write(clientPublic.length);
-		bos.write(clientPublic);
+		int offset = Math.max(0, unsigned.length - 32);
+		int length = Math.min(unsigned.length, 32);
+		System.arraycopy(unsigned, offset, clientPublic, 32 - length, length);
 
-		return buildTLSRecord((byte) 0x16, bos.toByteArray());
+		return clientPublic;
 	}
 
 	public byte[] createFinishedMessage(final byte[] masterSecret, final byte[] handshakeHash, final ExchangeKeys keys) throws Exception {
@@ -175,24 +269,13 @@ public class MinimalTLSClient implements AutoCloseable {
 		return encryptWithClientKeyAEAD(finishedPlaintext, keys);
 	}
 
-	public static byte[] buildTLSRecord(final byte type, final byte[] data) throws IOException {
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		bos.write(type);
-		bos.write(0x03);
-		bos.write(0x03); // TLS 1.2
-		bos.write((data.length >> 8) & 0xFF);
-		bos.write(data.length & 0xFF);
-		bos.write(data);
-		return bos.toByteArray();
-	}
-
 	public byte[] encryptWithClientKeyAEAD(final byte[] plaintext, final ExchangeKeys keys) throws Exception {
 		// 1. Generate 8-byte explicit nonce
 		byte[] explicitNonce = new byte[8];
 		new SecureRandom().nextBytes(explicitNonce);
 
 		// 2. Full nonce = 4-byte fixed IV + 8-byte explicit nonce
-		byte[] fullNonce = concatenate(keys.getClientIV(), explicitNonce);
+		byte[] fullNonce = Bytes.concatenate(keys.getClientIV(), explicitNonce);
 
 		// 3. Calculate AAD length = plaintext length + 16 (tag length)
 		int aadLen = plaintext.length + 16;
@@ -201,7 +284,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		// first 8 bytes is the AAD sequence number (zero in this case for the finished message)
 		byte[] aad = new byte[] {
 				0x00, 0x00, 0x00, 0x00,
-				0x00, 0x00, 0x00, 0x00,
+				0x00, 0x00, 0x00, 0x01,
 				0x16, 0x03, 0x03,
 				(byte) ((aadLen >> 8) & 0xFF),
 				(byte) (aadLen & 0xFF)
@@ -252,7 +335,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		byte[] ciphertext = Arrays.copyOfRange(fragment, 8, fragment.length); // includes tag
 
 		// 3. Rebuild nonce
-		byte[] nonce = concatenate(keys.getServerIV(), explicitNonce);
+		byte[] nonce = Bytes.concatenate(keys.getServerIV(), explicitNonce);
 		LOGGER.debug("Server Finished full nonce: {}", Bytes.hexString(nonce));
 
 		// 4. Decrypt
@@ -263,122 +346,21 @@ public class MinimalTLSClient implements AutoCloseable {
 		return cipher.doFinal(ciphertext); // plaintext or throws AEADBadTagException
 	}
 
-	public byte[] performHandshake() throws Exception {
-		connect();
-
-		// 1. Send Client Hello
-		ClientHello clientHello = new ClientHello(List.of(host), new CipherSuites(CipherSuiteName.values()), List.of(CurveName.values()));
-		byte[] clientHelloBytes = clientHello.toByteArray();
-		accumulateHandshake(clientHelloBytes);
-		this.clientRandom = clientHello.getClientRandom().getRandom();
-
-		LOGGER.debug("Sending Client Hello: {}", clientHello);
-		sendTLSRecord(clientHelloBytes);
-		LOGGER.debug("Sent Client Hello: \n{}", Bytes.hexDump(clientHelloBytes));
-
-		// 2. Receive Server Hello
-		byte[] serverHelloBytes = receiveTLSRecord();
-		accumulateHandshake(serverHelloBytes);
-		LOGGER.debug("Received Server Hello: {}", Bytes.hexDump(serverHelloBytes));
-
-		ByteArrayInputStream bis = new ByteArrayInputStream(serverHelloBytes);
-		ServerHello serverHello = ServerHello.from(bis);
-
-		this.serverRandom = serverHello.getServerRandom().getRandom();
-		LOGGER.debug("Received Server Hello: {}", serverHello);
-
-		X509Certificate x509Certificate = parseCertificate(serverHello.getServerCertificate().getCertificate().getData().getBytes());
-		LOGGER.debug("Received Server Certificate: {}", x509Certificate);
-		ServerKeyExchange serverKeyExchange = serverHello.getServerKeyExchange();
-		LOGGER.debug("Received Server Key Exchange: {}", serverHello.getServerKeyExchange());
-		LOGGER.debug("[ServerHelloDone] handshake header: {}", serverHello.getServerHelloDone());
-
-		// 3. Generate Client Key Exchange
-		CipherSuiteName selectedCipher = serverHello.getCipherSuite().getCipher();
-		byte[] encryptedPreMaster;
-		if (serverKeyExchange.getCurveInfo().getName() == CurveName.X25519) {
-			encryptedPreMaster = generateX25519KeyExchange(serverKeyExchange);
-		} else {
-			throw new SSLException("Unsupported cipher suite: " + selectedCipher);
-		}
-
-		// 4. Send Client Key Exchange
-		ClientKeyExchange clientKeyExchange = new ClientKeyExchange(encryptedPreMaster);
-		byte[] clientKeyExchangeBytes = clientKeyExchange.toByteArray();
-		accumulateHandshake(clientKeyExchangeBytes);
-
-		LOGGER.debug("Sending Client Key Exchange: {}", clientKeyExchange);
-		sendTLSRecord(clientKeyExchangeBytes);
-		LOGGER.debug("Sent Client Key Exchange");
-
-		// 5. Derive Master Secret and Keys
-		this.masterSecret = deriveMasterSecret(preMasterSecret, clientRandom, serverRandom);
-		byte[] keyBlock = deriveKeyBlock(masterSecret, serverRandom, clientRandom, 40);
-		// Extract keys
-		ExchangeKeys keys = ExchangeKeys.from(keyBlock, ExchangeKeys.Type.AHEAD);
-
-		// 6. Client Change Cipher Spec
-		Record changeCypherSpecRecord = new Record(RecordHeaderType.CHANGE_CIPHER_SPEC, SSLProtocol.TLS_1_2);
-		sendTLSRecord(changeCypherSpecRecord.toByteArray());
-		LOGGER.debug("Sent Client Change Cipher Spec: {}", changeCypherSpecRecord);
-
-		// 7. Send Finished
-		byte[] handshakeHash = sha256(getHandshakeTranscript()); // SHA-256 hash of accumulated handshake
-		byte[] verifyData = PseudoRandomFunction.apply(masterSecret, "client finished", handshakeHash, 12);
-		byte[] finished = createFinishedMessage(masterSecret, handshakeHash, keys);
-
-		LOGGER.debug("Handshake hash input ({} bytes): {}", getHandshakeTranscript().length, Bytes.hexString(getHandshakeTranscript()));
-		LOGGER.debug("Handshake SHA-256 hash: {}", Bytes.hexString(sha256(getHandshakeTranscript())));
-		LOGGER.debug("Computed verify_data: {}", Bytes.hexString(verifyData));
-		LOGGER.debug("Master secret: {}", Bytes.hexString(masterSecret));
-		LOGGER.debug("Client write key: {}", Bytes.hexString(keys.getClientWriteKey()));
-		LOGGER.debug("Client IV: {}", Bytes.hexString(keys.getClientIV()));
-		sendTLSRecord(finished);
-
-		// 7. Receive ChangeCipherSpec and Finished
-		byte[] serverChangeCipherSpec = receiveTLSRecord(); // type 0x14
-		LOGGER.debug("Received ChangeCipherSpec: ", serverChangeCipherSpec);
-
-		// 8. Receive Server Finished Record
-		byte[] serverFinishedRecord = receiveTLSRecord(); // type 0x16
-		LOGGER.debug("Server Finished TLS Record Header: {}", Bytes.hexString(Arrays.copyOfRange(serverFinishedRecord, 0, 5)));
-
-		byte[] serverFinishedDecrypted = decryptWithServerKeyAEAD(serverFinishedRecord, keys);
-		byte[] expectedServerVerifyData = PseudoRandomFunction.apply(masterSecret, "server finished", handshakeHash, 12);
-
-		byte[] serverVerifyData = Arrays.copyOfRange(serverFinishedDecrypted, 4, 4 + 12); // skip handshake header
-		if (!Arrays.equals(serverVerifyData, expectedServerVerifyData)) {
-			throw new SSLException("Server Finished verification failed!");
-		}
-
-		LOGGER.info("TLS 1.2 handshake complete!");
-
-		return keys.getServerIV();
-	}
-
-	public void accumulateHandshake(final byte[] tlsRecord) {
-		handshakeMessages.write(tlsRecord, RecordHeader.BYTES, tlsRecord.length - RecordHeader.BYTES);
+	public void accumulateHandshake(final byte[] tlsRecordBytes) {
+		handshakeMessages.write(tlsRecordBytes, RecordHeader.BYTES, tlsRecordBytes.length - RecordHeader.BYTES);
 	}
 
 	public byte[] getHandshakeTranscript() {
 		return handshakeMessages.toByteArray();
 	}
 
-	public static byte[] concatenate(final byte[]... arrays) throws IOException {
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		for (byte[] arr : arrays) {
-			bos.write(arr);
-		}
-		return bos.toByteArray();
-	}
-
 	public static byte[] deriveMasterSecret(final byte[] preMasterSecret, final byte[] clientRandom, final byte[] serverRandom) throws Exception {
-		return PseudoRandomFunction.apply(preMasterSecret, "master secret", concatenate(clientRandom, serverRandom), 48);
+		return PseudoRandomFunction.apply(preMasterSecret, "master secret", Bytes.concatenate(clientRandom, serverRandom), 48);
 	}
 
 	public static byte[] deriveKeyBlock(final byte[] masterSecret, final byte[] serverRandom, final byte[] clientRandom, final int length)
 			throws Exception {
-		return PseudoRandomFunction.apply(masterSecret, "key expansion", concatenate(serverRandom, clientRandom), length);
+		return PseudoRandomFunction.apply(masterSecret, "key expansion", Bytes.concatenate(serverRandom, clientRandom), length);
 	}
 
 	public static byte[] sha256(final byte[] input) throws Exception {
