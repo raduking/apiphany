@@ -8,26 +8,34 @@ import java.io.InputStream;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.security.ssl.SSLProtocol;
 
-public class ClientHandshakeFinised {
+public class ClientFinishedEncrypted {
 
 	private RecordHeader recordHeader;
 
 	private BinaryData encryptedData;
 
-	public ClientHandshakeFinised(final RecordHeader recordHeader, final BinaryData encryptedData) {
+	public ClientFinishedEncrypted(final RecordHeader recordHeader, final BinaryData encryptedData) {
 		this.recordHeader = recordHeader;
 		this.encryptedData = encryptedData;
 	}
 
-	public ClientHandshakeFinised(final RecordHeaderType type, final SSLProtocol sslProtocol, final short bytes, final byte[] payload) {
+	public ClientFinishedEncrypted(final RecordHeaderType type, final SSLProtocol sslProtocol, final short bytes, final byte[] payload) {
 		this(new RecordHeader(type, Version.of(sslProtocol), new Int16(bytes)), new BinaryData(payload));
 	}
 
-	public static ClientHandshakeFinised from(final InputStream is) throws IOException {
+	public ClientFinishedEncrypted(final RecordHeaderType type, final SSLProtocol sslProtocol, final byte[] payload) {
+		this(type, sslProtocol, (short) payload.length, payload);
+	}
+
+	public ClientFinishedEncrypted(final byte[] payload) {
+		this(RecordHeaderType.HANDSHAKE, SSLProtocol.TLS_1_2, payload);
+	}
+
+	public static ClientFinishedEncrypted from(final InputStream is) throws IOException {
 		RecordHeader recordHeader = RecordHeader.from(is);
 		BinaryData payload = BinaryData.from(is, recordHeader.getLength().getValue());
 
-		return new ClientHandshakeFinised(recordHeader, payload);
+		return new ClientFinishedEncrypted(recordHeader, payload);
 	}
 
 	public byte[] toByteArray() throws IOException {
