@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.security.SecureRandom;
 
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.security.ssl.DeterministicSecureRandom;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -39,19 +40,18 @@ public class ExchangeRandom implements Sizeable {
 		return random.clone();
 	}
 
-	public static byte[] generateRandom() {
-		SecureRandom secureRandom = new SecureRandom();
+	public static byte[] generateRandom(final SecureRandom secureRandom) {
 		byte[] random = new byte[BYTES];
 		secureRandom.nextBytes(random);
 		return random;
 	}
 
+	public static byte[] generateRandom() {
+		return generateRandom(new SecureRandom());
+	}
+
 	public static byte[] generateLinear() {
-		byte[] random = new byte[BYTES];
-		for (byte b = 0; b < BYTES; ++b) {
-			random[b] = b;
-		}
-		return random;
+		return generateRandom(new DeterministicSecureRandom());
 	}
 
 	@Override

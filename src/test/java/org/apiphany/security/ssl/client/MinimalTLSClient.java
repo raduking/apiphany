@@ -181,15 +181,13 @@ public class MinimalTLSClient implements AutoCloseable {
 
 		// 7. Send Finished
 		byte[] handshakeBytes = getHandshakeTranscript();
-		byte[] handshakeHash = sha256(handshakeBytes); // SHA-256 hash of accumulated handshake
-		byte[] verifyData = PseudoRandomFunction.apply(masterSecret, "client finished", handshakeHash, 12);
+		byte[] handshakeHash = sha384(handshakeBytes);
 
 		byte[] finished = createFinishedMessage(masterSecret, handshakeHash, keys);
 		ClientFinishedEncrypted clientFinished = new ClientFinishedEncrypted(finished);
 
 		LOGGER.debug("Handshake hash input ({} bytes): {}", handshakeBytes.length, Bytes.hexString(handshakeBytes));
 		LOGGER.debug("Handshake SHA-256 hash: {}", Bytes.hexString(handshakeHash));
-		LOGGER.debug("Computed verify_data: {}", Bytes.hexString(verifyData));
 		LOGGER.debug("Master secret: {}", Bytes.hexString(masterSecret));
 		LOGGER.debug("Client write key: {}", Bytes.hexString(keys.getClientWriteKey()));
 		LOGGER.debug("Client IV: {}", Bytes.hexString(keys.getClientIV()));
@@ -262,6 +260,7 @@ public class MinimalTLSClient implements AutoCloseable {
 	public byte[] createFinishedMessage(final byte[] masterSecret, final byte[] handshakeHash, final ExchangeKeys keys) throws Exception {
 		// 1. Compute verify_data
 		byte[] verifyData = PseudoRandomFunction.apply(masterSecret, "client finished", handshakeHash, 12);
+		LOGGER.debug("Computed verify_data: {}", Bytes.hexString(verifyData));
 
 		// 2. Construct handshake body for Finished message
 		ClientFinished clientFinished = new ClientFinished(verifyData);
@@ -366,4 +365,8 @@ public class MinimalTLSClient implements AutoCloseable {
 		return digest.digest(input);
 	}
 
+	public static byte[] sha384(final byte[] input) throws Exception {
+		MessageDigest digest = MessageDigest.getInstance("SHA-384");
+		return digest.digest(input);
+	}
 }

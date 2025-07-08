@@ -4,6 +4,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
+import java.security.KeyFactory;
+import java.security.PublicKey;
+import java.security.spec.NamedParameterSpec;
+import java.security.spec.XECPublicKeySpec;
 
 import org.apiphany.json.JsonBuilder;
 
@@ -62,5 +67,12 @@ public class PublicKeyECDHE {
 
 	public byte size() {
 		return (byte) (length.size() + value.size());
+	}
+
+	public PublicKey loadX25519PublicKey() throws Exception {
+	    KeyFactory kf = KeyFactory.getInstance("X25519");
+	    NamedParameterSpec spec = new NamedParameterSpec("X25519");
+	    XECPublicKeySpec pubSpec = new XECPublicKeySpec(spec, new BigInteger(1, value.getBytes()));
+	    return kf.generatePublic(pubSpec);
 	}
 }

@@ -27,6 +27,7 @@ import org.apiphany.security.ssl.client.CipherSuiteName;
 import org.apiphany.security.ssl.client.ClientHello;
 import org.apiphany.security.ssl.client.CurveName;
 import org.apiphany.security.ssl.client.MinimalTLSClient;
+import org.apiphany.security.ssl.client.MinimalTLSClientX25519;
 import org.apiphany.security.ssl.client.PseudoRandomFunction;
 import org.apiphany.security.ssl.client.ServerHello;
 import org.apiphany.security.ssl.server.SimpleHttpsServer;
@@ -107,6 +108,26 @@ class SSLPropertiesTest {
 		byte[] serverFinished = null;
 		try (MinimalTLSClient client = new MinimalTLSClient(LOCALHOST, port)) {
 			serverFinished = client.performHandshake();
+		} catch (Exception e) {
+			LOGGER.error("Error performing SSL handshake", e);
+		} finally {
+			server.close();
+		}
+		//assertNotNull(serverFinished);
+		assertNull(serverFinished);
+	}
+
+	@Test
+	void shouldPerformTLS_V_1_2_SSLHandshakeX5519() throws Exception {
+		int port = Sockets.findAvailableTcpPort(PORT_CHECK_TIMEOUT);
+		SSLProperties sslProperties = JsonBuilder.fromJson(Strings.fromFile("/ssl-properties.json"), SSLProperties.class);
+		sslProperties.setProtocol(SSLProtocol.TLS_1_2);
+		SimpleHttpsServer server = new SimpleHttpsServer(port, sslProperties);
+
+		byte[] serverFinished = null;
+		try {
+			MinimalTLSClientX25519 client = new MinimalTLSClientX25519();
+			serverFinished = client.performHandshake(LOCALHOST, port);
 		} catch (Exception e) {
 			LOGGER.error("Error performing SSL handshake", e);
 		} finally {
