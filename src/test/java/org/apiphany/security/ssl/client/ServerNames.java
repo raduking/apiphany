@@ -17,7 +17,7 @@ public class ServerNames implements Extension {
 
 	private ExtensionType type;
 
-	private Int16 length = new Int16();
+	private Int16 length;
 
 	private List<ServerName> entries = new ArrayList<>();
 

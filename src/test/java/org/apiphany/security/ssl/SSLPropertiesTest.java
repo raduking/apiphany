@@ -224,7 +224,7 @@ class SSLPropertiesTest {
 				0b 08 04 08 05 08 06 04 01 05 01 06 01 03 03 03
 				01 03 02 04 02 05 02 06 02
     	""";
-		byte[] expected = Bytes.hexStringToByteArray(openSSLClientHelloHexString);
+		byte[] expected = Bytes.fromHexString(openSSLClientHelloHexString);
 		ByteArrayInputStream bis = new ByteArrayInputStream(expected);
 
 		ClientHello clientHello = ClientHello.from(bis);
@@ -327,7 +327,7 @@ class SSLPropertiesTest {
 				ce b6 3d 1f 33 b1 24 e1 02 17 01 55
 				0e 00 00 00
 		""";
-		byte[] expected = Bytes.hexStringToByteArray(openSSLReceivedServerHello);
+		byte[] expected = Bytes.fromHexString(openSSLReceivedServerHello);
 		ByteArrayInputStream bis = new ByteArrayInputStream(expected);
 
 		ServerHello serverHello = ServerHello.from(bis);

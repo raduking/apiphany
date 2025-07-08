@@ -21,16 +21,16 @@ public class ChangeCipherSpec {
 		this.payload = payload;
 	}
 
-	public ChangeCipherSpec(final RecordHeaderType type, final SSLProtocol sslProtocol, final short bytes, final byte payload) {
+	public ChangeCipherSpec(final RecordType type, final SSLProtocol sslProtocol, final short bytes, final byte payload) {
 		this(new RecordHeader(type, Version.of(sslProtocol), new Int16(bytes)), new Int8(payload));
 	}
 
-	public ChangeCipherSpec(final RecordHeaderType type, final SSLProtocol sslProtocol) {
+	public ChangeCipherSpec(final RecordType type, final SSLProtocol sslProtocol) {
 		this(type, sslProtocol, (short) 0x0001, (byte) 0x01);
 	}
 
 	public ChangeCipherSpec() {
-		this(RecordHeaderType.CHANGE_CIPHER_SPEC, SSLProtocol.TLS_1_2);
+		this(RecordType.CHANGE_CIPHER_SPEC, SSLProtocol.TLS_1_2);
 	}
 
 	public static ChangeCipherSpec from(final InputStream is) throws IOException {

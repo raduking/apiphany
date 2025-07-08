@@ -8,7 +8,7 @@ import java.io.InputStream;
 import org.apiphany.json.JsonBuilder;
 import org.morphix.lang.function.ThrowingRunnable;
 
-public class StatusRequest implements Extension, Sizeable {
+public class StatusRequest implements Extension {
 
 	private ExtensionType type;
 

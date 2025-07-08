@@ -10,7 +10,7 @@ import org.apiphany.security.ssl.DeterministicSecureRandom;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
-public class ExchangeRandom implements Sizeable {
+public class ExchangeRandom implements Sizeable, BinaryRepresentable {
 
 	public static final int BYTES = 32;
 
@@ -18,7 +18,7 @@ public class ExchangeRandom implements Sizeable {
 
 	public ExchangeRandom(final byte[] random) {
 		if (BYTES != random.length) {
-			throw new IllegalArgumentException("Invalid buffer size: " + random.length);
+			throw new IllegalArgumentException("Invalid buffer length: " + random.length + " must be: " + BYTES);
 		}
 		this.random = random.clone();
 	}
@@ -36,6 +36,7 @@ public class ExchangeRandom implements Sizeable {
 		return handshakeRandom;
 	}
 
+	@Override
 	public byte[] toByteArray() {
 		return random.clone();
 	}

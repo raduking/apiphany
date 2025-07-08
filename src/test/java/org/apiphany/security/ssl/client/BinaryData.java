@@ -22,9 +22,13 @@ public class BinaryData implements Sizeable {
 		this(new byte[size]);
 	}
 
+	public BinaryData() {
+		this(EMPTY);
+	}
+
 	public static BinaryData from(final InputStream is, final int size) throws IOException {
 		if (0 >= size) {
-			return new BinaryData(EMPTY);
+			return new BinaryData();
 		}
 		byte[] bytes = new byte[size];
 		int bytesRead = is.read(bytes);

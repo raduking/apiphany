@@ -13,23 +13,23 @@ public class RecordHeader implements Sizeable {
 
 	public static final int BYTES = 5;
 
-	private RecordHeaderType type;
+	private RecordType type;
 
 	private Version version;
 
 	private Int16 length;
 
-	public RecordHeader(final RecordHeaderType type, final Version version, final Int16 length) {
+	public RecordHeader(final RecordType type, final Version version, final Int16 length) {
 		this.type = type;
 		this.version = version;
 		this.length = length;
 	}
 
-	public RecordHeader(final RecordHeaderType type, final SSLProtocol sslProtocol, final short length) {
+	public RecordHeader(final RecordType type, final SSLProtocol sslProtocol, final short length) {
 		this(type, Version.of(sslProtocol), new Int16(length));
 	}
 
-	public RecordHeader(final RecordHeaderType type, final SSLProtocol sslProtocol) {
+	public RecordHeader(final RecordType type, final SSLProtocol sslProtocol) {
 		this(type, sslProtocol, (short) 0x0000);
 	}
 
@@ -38,7 +38,7 @@ public class RecordHeader implements Sizeable {
 		if (-1 == firstByte) {
 			throw new EOFException("Connection closed by server");
 		}
-		RecordHeaderType type = RecordHeaderType.fromValue((byte) firstByte);
+		RecordType type = RecordType.fromValue((byte) firstByte);
 		Version version = Version.from(is);
 		Int16 length = Int16.from(is);
 
@@ -66,7 +66,7 @@ public class RecordHeader implements Sizeable {
 		return type.size() + version.size() + length.size();
 	}
 
-	public RecordHeaderType getType() {
+	public RecordType getType() {
 		return type;
 	}
 

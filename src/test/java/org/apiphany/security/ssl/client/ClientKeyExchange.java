@@ -31,8 +31,8 @@ public class ClientKeyExchange {
 	}
 
 	public ClientKeyExchange(final byte[] encryptedPreMasterSecret) {
-		this(new RecordHeader(RecordHeaderType.HANDSHAKE, SSLProtocol.TLS_1_2),
-				new HandshakeHeader(HandshakeMessageType.CLIENT_KEY_EXCHANGE),
+		this(new RecordHeader(RecordType.HANDSHAKE, SSLProtocol.TLS_1_2),
+				new HandshakeHeader(HandshakeType.CLIENT_KEY_EXCHANGE),
 				new PublicKeyECDHE(encryptedPreMasterSecret));
 	}
 
