@@ -25,7 +25,7 @@ public class CompressionMethod implements Sizeable {
 	}
 
 	public byte[] toByteArray() {
-		return Bytes.from(method.value());
+		return Int8.toByteArray(method.value());
 	}
 
 	@Override

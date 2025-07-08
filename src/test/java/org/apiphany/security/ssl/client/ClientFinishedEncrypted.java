@@ -19,16 +19,16 @@ public class ClientFinishedEncrypted {
 		this.encryptedData = encryptedData;
 	}
 
-	public ClientFinishedEncrypted(final RecordHeaderType type, final SSLProtocol sslProtocol, final short bytes, final byte[] payload) {
+	public ClientFinishedEncrypted(final RecordType type, final SSLProtocol sslProtocol, final short bytes, final byte[] payload) {
 		this(new RecordHeader(type, Version.of(sslProtocol), new Int16(bytes)), new BinaryData(payload));
 	}
 
-	public ClientFinishedEncrypted(final RecordHeaderType type, final SSLProtocol sslProtocol, final byte[] payload) {
+	public ClientFinishedEncrypted(final RecordType type, final SSLProtocol sslProtocol, final byte[] payload) {
 		this(type, sslProtocol, (short) payload.length, payload);
 	}
 
 	public ClientFinishedEncrypted(final byte[] payload) {
-		this(RecordHeaderType.HANDSHAKE, SSLProtocol.TLS_1_2, payload);
+		this(RecordType.HANDSHAKE, SSLProtocol.TLS_1_2, payload);
 	}
 
 	public static ClientFinishedEncrypted from(final InputStream is) throws IOException {

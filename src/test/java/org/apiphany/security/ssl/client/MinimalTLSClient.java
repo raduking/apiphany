@@ -90,13 +90,12 @@ public class MinimalTLSClient implements AutoCloseable {
 	public static byte[] receiveTLSRecord(final InputStream is) throws IOException {
 		LOGGER.debug("Waiting for server response...");
 		RecordHeader recordHeader = RecordHeader.from(is);
-		LOGGER.debug("Received record header (size: {}): {}", recordHeader.size(), recordHeader);
+		short bytesToRead = recordHeader.getLength().getValue();
+		LOGGER.debug("Received record header (length: {} bytes): {}", bytesToRead, recordHeader);
 
-		int length = recordHeader.getLength().getValue();
-		byte[] content = new byte[length];
+		byte[] content = new byte[bytesToRead];
 		is.read(content);
-
-		LOGGER.debug("Received content ({} bytes): {}", length, Bytes.hexString(content));
+		LOGGER.debug("Received content ({} bytes):\n{}", bytesToRead, Bytes.hexDump(content));
 
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		bos.write(recordHeader.toByteArray());
@@ -123,29 +122,25 @@ public class MinimalTLSClient implements AutoCloseable {
 
 		// 1. Send Client Hello
 		ClientHello clientHello = new ClientHello(List.of(host), new CipherSuites(CipherSuiteName.values()), List.of(CurveName.values()));
+		LOGGER.debug("Sending Client Hello: {}", clientHello);
 		byte[] clientHelloBytes = clientHello.toByteArray();
 		accumulateHandshake(clientHelloBytes);
-		this.clientRandom = clientHello.getClientRandom().getRandom();
-
-		LOGGER.debug("Sending Client Hello: {}", clientHello);
 		sendTLSRecord(clientHelloBytes);
 		LOGGER.debug("Sent Client Hello:\n{}", Bytes.hexDump(clientHelloBytes));
+
+		this.clientRandom = clientHello.getClientRandom().getRandom();
 
 		// 2. Receive Server Hello
 		byte[] serverHelloBytes = receiveTLSRecord();
 		accumulateHandshake(serverHelloBytes);
-		LOGGER.debug("Received Server Hello: {}", Bytes.hexDump(serverHelloBytes));
-
 		ByteArrayInputStream bis = new ByteArrayInputStream(serverHelloBytes);
 		ServerHello serverHello = ServerHello.from(bis);
-
-		this.serverRandom = serverHello.getServerRandom().getRandom();
 		LOGGER.debug("Received Server Hello: {}", serverHello);
 
+		this.serverRandom = serverHello.getServerRandom().getRandom();
 		X509Certificate x509Certificate = parseCertificate(serverHello.getServerCertificate().getCertificate().getData().getBytes());
 		LOGGER.debug("Received Server Certificate: {}", x509Certificate);
 		ServerKeyExchange serverKeyExchange = serverHello.getServerKeyExchange();
-		LOGGER.debug("Received Server Key Exchange: {}", serverHello.getServerKeyExchange());
 		LOGGER.debug("Received Server Key Exchange:\n{}", Bytes.hexDump(serverHello.getServerKeyExchange().toByteArray()));
 		LOGGER.debug("[ServerHelloDone] handshake header: {}", serverHello.getServerHelloDone());
 
@@ -286,7 +281,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		ByteBuffer aadBuffer = ByteBuffer.allocate(13);
 		// first 8 bytes is the AAD sequence number
 		aadBuffer.putLong(clientSequenceNumber); // 8-byte sequence number
-		aadBuffer.put(RecordHeaderType.HANDSHAKE.value()); // Handshake
+		aadBuffer.put(RecordType.HANDSHAKE.value()); // Handshake
 		aadBuffer.putShort(SSLProtocol.TLS_1_2.handshakeVersion());
 		aadBuffer.putShort((short) aadLength); // Encrypted Finished length
 		byte[] aad = aadBuffer.array();
@@ -344,6 +339,11 @@ public class MinimalTLSClient implements AutoCloseable {
 	}
 
 	public void accumulateHandshake(final byte[] tlsRecordBytes) {
+		RecordType recordType = RecordType.fromValue(tlsRecordBytes[0]);
+		LOGGER.debug("Accumulate handshake: {}", recordType);
+		if (RecordType.HANDSHAKE != recordType) {
+			throw new IllegalArgumentException("Type " + recordType + " is invalid, only accumulate " + RecordType.HANDSHAKE + " type");
+		}
 		handshakeMessages.write(tlsRecordBytes, RecordHeader.BYTES, tlsRecordBytes.length - RecordHeader.BYTES);
 	}
 

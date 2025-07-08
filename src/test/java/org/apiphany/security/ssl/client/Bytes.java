@@ -5,26 +5,6 @@ import java.io.IOException;
 
 public class Bytes {
 
-	public static short toShort(final byte[] bytes) {
-		if (2 != bytes.length) {
-			throw new IllegalArgumentException("Can only convert 2 bytes to short, actual bytes: " + bytes.length);
-		}
-		return (short) (((short) (bytes[0] << 8)) | ((short) (bytes[1] & 0xFF)));
-	}
-
-	public static byte[] from(final short value) {
-		return new byte[] {
-				(byte) (value >> 8),
-				(byte) (value & (short) 0x00FF)
-		};
-	}
-
-	public static byte[] from(final byte value) {
-		return new byte[] {
-				value
-		};
-	}
-
 	public static void set(final short value, final byte[] bytes, final int index) {
 		if (index + 1 >= bytes.length || 0 > index) {
 			throw new IllegalArgumentException("Index out of bounds: " + index);
@@ -117,7 +97,7 @@ public class Bytes {
 		return sb.toString();
 	}
 
-	public static byte[] hexStringToByteArray(final String hexString) {
+	public static byte[] fromHexString(final String hexString) {
 		String cleanedHex = hexString.replaceAll("\\s", "");
 		if (0 != cleanedHex.length() % 2) {
 			throw new IllegalArgumentException("Hex string must have an even number of characters");

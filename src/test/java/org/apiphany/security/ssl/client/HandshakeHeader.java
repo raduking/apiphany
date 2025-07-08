@@ -2,7 +2,6 @@ package org.apiphany.security.ssl.client;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -12,29 +11,26 @@ public class HandshakeHeader implements Sizeable {
 
 	public static final int BYTES = 4;
 
-	private HandshakeMessageType type;
+	private HandshakeType type;
 
 	private Int24 length;
 
-	public HandshakeHeader(final HandshakeMessageType type, final Int24 length) {
+	public HandshakeHeader(final HandshakeType type, final Int24 length) {
 		this.type = type;
 		this.length = length;
 	}
 
-	public HandshakeHeader(final HandshakeMessageType type, final int length) {
+	public HandshakeHeader(final HandshakeType type, final int length) {
 		this(type, new Int24(length));
 	}
 
-	public HandshakeHeader(final HandshakeMessageType type) {
+	public HandshakeHeader(final HandshakeType type) {
 		this(type, (short) 0x0000);
 	}
 
 	public static HandshakeHeader from(final InputStream is) throws IOException {
-		int firstByte = is.read();
-		if (-1 == firstByte) {
-			throw new EOFException("Connection closed by server");
-		}
-		HandshakeMessageType type = HandshakeMessageType.fromValue((byte) firstByte);
+		Int8 int8 = Int8.from(is);
+		HandshakeType type = HandshakeType.fromValue(int8.getValue());
 
 		Int24 messageLength = Int24.from(is);
 
@@ -61,7 +57,7 @@ public class HandshakeHeader implements Sizeable {
 		return type.size() + length.size();
 	}
 
-	public HandshakeMessageType getType() {
+	public HandshakeType getType() {
 		return type;
 	}
 

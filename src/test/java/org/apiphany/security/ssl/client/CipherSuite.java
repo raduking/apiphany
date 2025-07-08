@@ -26,7 +26,7 @@ public class CipherSuite implements Sizeable {
 	}
 
 	public byte[] toByteArray() {
-		return Bytes.from(cipher.value());
+		return Int16.toByteArray(cipher.value());
 	}
 
 	@Override

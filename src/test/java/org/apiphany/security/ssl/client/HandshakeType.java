@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.morphix.lang.Enums;
 
-public enum HandshakeMessageType implements Sizeable {
+public enum HandshakeType implements Sizeable {
 
 	CLIENT_HELLO((byte) 0x01),
 	SERVER_HELLO((byte) 0x02),
@@ -16,11 +16,11 @@ public enum HandshakeMessageType implements Sizeable {
 
 	public static final int BYTES = 1;
 
-	private static final Map<Byte, HandshakeMessageType> VALUE_MAP = Enums.buildNameMap(values(), HandshakeMessageType::value);
+	private static final Map<Byte, HandshakeType> VALUE_MAP = Enums.buildNameMap(values(), HandshakeType::value);
 
 	private byte value;
 
-	HandshakeMessageType(final byte value) {
+	HandshakeType(final byte value) {
 		this.value = value;
 	}
 
@@ -28,7 +28,7 @@ public enum HandshakeMessageType implements Sizeable {
 		return value;
 	}
 
-	public static HandshakeMessageType fromValue(final byte value) {
+	public static HandshakeType fromValue(final byte value) {
 		return Enums.from(value, VALUE_MAP, values());
 	}
 

@@ -8,7 +8,7 @@ import org.apiphany.json.JsonBuilder;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
-public class Int16 implements Sizeable {
+public class Int16 implements Sizeable, BinaryRepresentable {
 
 	public static final int BYTES = 2;
 
@@ -28,13 +28,24 @@ public class Int16 implements Sizeable {
 		if (BYTES != bytesRead) {
 			throw new EOFException("Error reading " + BYTES + " bytes");
 		}
-		short int16 = Bytes.toShort(buffer);
+		short int16 = (short) (
+				((short) ((buffer[0] & 0xFF) << 8)) |
+				((short) (buffer[1] & 0xFF))
+		);
 
 		return new Int16(int16);
 	}
 
+	@Override
 	public byte[] toByteArray() {
-		return Bytes.from(value);
+		return toByteArray(value);
+	}
+
+	public static byte[] toByteArray(short value) {
+		return new byte[] {
+				(byte) ((value >> 8) & 0xFF),
+				(byte) (value & 0xFF)
+		};
 	}
 
 	@Override

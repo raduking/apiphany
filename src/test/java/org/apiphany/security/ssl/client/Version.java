@@ -1,6 +1,5 @@
 package org.apiphany.security.ssl.client;
 
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -24,18 +23,14 @@ public class Version implements Sizeable {
 	}
 
 	public static Version from(final InputStream is) throws IOException {
-		byte[] shortBuffer = new byte[Int16.BYTES];
-		int bytesRead = is.read(shortBuffer);
-		if (Int16.BYTES != bytesRead) {
-			throw new EOFException("Short version, cannot read TLS version");
-		}
-		SSLProtocol protocol = SSLProtocol.fromVersion(Bytes.toShort(shortBuffer));
+		Int16 int16 = Int16.from(is);
+		SSLProtocol protocol = SSLProtocol.fromVersion(int16.getValue());
 
 		return Version.of(protocol);
 	}
 
 	public byte[] toByteArray() {
-		return Bytes.from(protocol.handshakeVersion());
+		return Int16.toByteArray(protocol.handshakeVersion());
 	}
 
 	@Override

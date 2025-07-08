@@ -18,12 +18,12 @@ public class ClientFinished {
 		this.encryptedData = encryptedData;
 	}
 
-	public ClientFinished(final HandshakeMessageType type, final int length, final byte[] payload) {
+	public ClientFinished(final HandshakeType type, final int length, final byte[] payload) {
 		this(new HandshakeHeader(type, new Int24(length)), new BinaryData(payload));
 	}
 
 	public ClientFinished(final byte[] payload) {
-		this(HandshakeMessageType.FINISHED, payload.length, payload);
+		this(HandshakeType.FINISHED, payload.length, payload);
 	}
 
 	public static ClientFinished from(final InputStream is) throws IOException {

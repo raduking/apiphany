@@ -81,8 +81,8 @@ public class ClientHello implements Sizeable, BinaryRepresentable {
 
 	public ClientHello(final List<String> serverNames, final CipherSuites cypherSuites, final List<CurveName> curveNames) {
 		this(
-				new RecordHeader(RecordHeaderType.HANDSHAKE, SSLProtocol.TLS_1_0),
-				new HandshakeHeader(HandshakeMessageType.CLIENT_HELLO),
+				new RecordHeader(RecordType.HANDSHAKE, SSLProtocol.TLS_1_0),
+				new HandshakeHeader(HandshakeType.CLIENT_HELLO),
 				new Version(SSLProtocol.TLS_1_2),
 				new ExchangeRandom(ExchangeRandom.generateLinear()),
 				new SessionId(),
