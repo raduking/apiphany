@@ -28,10 +28,10 @@ public class ExchangeKeys {
 		ExchangeKeys exchangeKeys = new ExchangeKeys();
 
 		ByteBuffer buffer = ByteBuffer.wrap(keyBlock);
-		buffer.get(exchangeKeys.serverWriteKey);
 		buffer.get(exchangeKeys.clientWriteKey);
-		buffer.get(exchangeKeys.serverIV);
+		buffer.get(exchangeKeys.serverWriteKey);
 		buffer.get(exchangeKeys.clientIV);
+		buffer.get(exchangeKeys.serverIV);
 
 		LOGGER.debug("Client write key: {}", Bytes.hexString(exchangeKeys.clientWriteKey));
 		LOGGER.debug("Server write key: {}", Bytes.hexString(exchangeKeys.serverWriteKey));
