@@ -2,7 +2,6 @@ package org.apiphany.security.ssl.client;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -35,11 +34,8 @@ public class RecordHeader implements TLSObject {
 	}
 
 	public static RecordHeader from(final InputStream is) throws IOException {
-		int firstByte = is.read();
-		if (-1 == firstByte) {
-			throw new EOFException("Connection closed by server");
-		}
-		RecordType type = RecordType.fromValue((byte) firstByte);
+		Int8 int8 = Int8.from(is);
+		RecordType type = RecordType.fromValue(int8.getValue());
 		Version version = Version.from(is);
 		Int16 length = Int16.from(is);
 

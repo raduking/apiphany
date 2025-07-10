@@ -8,30 +8,22 @@ import java.io.InputStream;
 import org.apiphany.json.JsonBuilder;
 import org.morphix.lang.function.ThrowingRunnable;
 
-public class ClientFinished implements TLSObject {
-
-	private HandshakeHeader recordHeader;
+public class ClientFinished implements TLSHandshakeBody {
 
 	private BinaryData encryptedData;
 
-	public ClientFinished(final HandshakeHeader recordHeader, final BinaryData encryptedData) {
-		this.recordHeader = recordHeader;
+	public ClientFinished(final BinaryData encryptedData) {
 		this.encryptedData = encryptedData;
 	}
 
-	public ClientFinished(final HandshakeType type, final int length, final byte[] payload) {
-		this(new HandshakeHeader(type, new Int24(length)), new BinaryData(payload));
-	}
-
 	public ClientFinished(final byte[] payload) {
-		this(HandshakeType.FINISHED, payload.length, payload);
+		this(new BinaryData(payload));
 	}
 
-	public static ClientFinished from(final InputStream is) throws IOException {
-		HandshakeHeader handshakeHeader = HandshakeHeader.from(is);
-		BinaryData payload = BinaryData.from(is, handshakeHeader.getLength().getValue());
+	public static ClientFinished from(final InputStream is, int length) throws IOException {
+		BinaryData payload = BinaryData.from(is, length);
 
-		return new ClientFinished(handshakeHeader, payload);
+		return new ClientFinished(payload);
 	}
 
 	@Override
@@ -39,7 +31,6 @@ public class ClientFinished implements TLSObject {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(bos);
 		ThrowingRunnable.unchecked(() -> {
-			dos.write(recordHeader.toByteArray());
 			dos.write(encryptedData.toByteArray());
 		}).run();
 		return bos.toByteArray();
@@ -52,11 +43,12 @@ public class ClientFinished implements TLSObject {
 
 	@Override
 	public int size() {
-		return recordHeader.size() + encryptedData.size();
+		return encryptedData.size();
 	}
 
-	public HandshakeHeader getRecordHeader() {
-		return recordHeader;
+	@Override
+	public HandshakeType type() {
+		return HandshakeType.FINISHED;
 	}
 
 	public BinaryData getEncryptedData() {

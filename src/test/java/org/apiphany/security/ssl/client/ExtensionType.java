@@ -26,7 +26,7 @@ public enum ExtensionType implements Sizeable {
 	public static final int BYTES = 2;
 
 	public interface FromFunction {
-		Extension from(InputStream is, ExtensionType type) throws IOException;
+		TLSExtension from(InputStream is, ExtensionType type) throws IOException;
 	}
 
 	private static final Map<Short, ExtensionType> VALUE_MAP = Enums.buildNameMap(values(), ExtensionType::value);
@@ -53,7 +53,7 @@ public enum ExtensionType implements Sizeable {
 		return BYTES;
 	}
 
-	public Extension extensionFrom(final InputStream is) throws IOException {
+	public TLSExtension extensionFrom(final InputStream is) throws IOException {
 		return fromFunction.from(is, this);
 	}
 }

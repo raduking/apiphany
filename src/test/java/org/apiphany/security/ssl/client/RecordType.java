@@ -6,8 +6,11 @@ import org.morphix.lang.Enums;
 
 public enum RecordType implements Sizeable {
 
-	HANDSHAKE((byte) 0x16, HandshakeMessage::from),
-	CHANGE_CIPHER_SPEC((byte) 0x14, ChangeCipherSpec::from);
+	CHANGE_CIPHER_SPEC((byte) 0x14, ChangeCipherSpec::from),
+	ALERT((byte) 0x15, null),
+	HANDSHAKE((byte) 0x16, TLSHandshake::from),
+	APPLICATION_DATA((byte) 0x17, null),
+	HEARTBEAT((byte) 0x18, null);
 
 	public static final int BYTES = 1;
 
@@ -15,9 +18,9 @@ public enum RecordType implements Sizeable {
 
 	private final byte value;
 
-	private final FromFunction<? extends TLSObject> fromFunction;
+	private final FromFunction.NoSize<? extends TLSObject> fromFunction;
 
-	RecordType(final byte value, FromFunction<? extends TLSObject> fromFunction) {
+	RecordType(final byte value, FromFunction.NoSize<? extends TLSObject> fromFunction) {
 		this.value = value;
 		this.fromFunction = fromFunction;
 	}
@@ -30,12 +33,20 @@ public enum RecordType implements Sizeable {
 		return Enums.from(value, VALUE_MAP, values());
 	}
 
+	public static RecordType from(TLSObject tlsObject) {
+		return switch(tlsObject) {
+			case TLSHandshakeBody tlsHandshakeObject -> HANDSHAKE;
+			case ChangeCipherSpec changeCipherSpec -> CHANGE_CIPHER_SPEC;
+			default -> throw new UnsupportedOperationException("Unknown TLS object type: " + tlsObject.getClass());
+		};
+	}
+
 	@Override
 	public int size() {
 		return BYTES;
 	}
 
-	public FromFunction<? extends TLSObject> message() {
+	public FromFunction.NoSize<? extends TLSObject> fragment() {
 		return fromFunction;
 	}
 }

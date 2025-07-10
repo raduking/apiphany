@@ -10,7 +10,7 @@ import java.util.List;
 import org.apiphany.json.JsonBuilder;
 import org.morphix.lang.function.ThrowingRunnable;
 
-public class ECPointFormats implements Extension {
+public class ECPointFormats implements TLSExtension {
 
 	private ExtensionType type;
 
@@ -32,10 +32,10 @@ public class ECPointFormats implements Extension {
 	}
 
 	public static ECPointFormats from(final InputStream is) throws IOException {
-		Int16 extensionType = Int16.from(is);
-		ExtensionType type = ExtensionType.fromValue(extensionType.getValue());
+		Int16 int16 = Int16.from(is);
+		ExtensionType extensionType = ExtensionType.fromValue(int16.getValue());
 
-		return from(is, type);
+		return from(is, extensionType);
 	}
 
 	public static ECPointFormats from(final InputStream is, final ExtensionType type) throws IOException {

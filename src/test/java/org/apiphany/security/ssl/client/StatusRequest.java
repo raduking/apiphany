@@ -8,7 +8,7 @@ import java.io.InputStream;
 import org.apiphany.json.JsonBuilder;
 import org.morphix.lang.function.ThrowingRunnable;
 
-public class StatusRequest implements Extension {
+public class StatusRequest implements TLSExtension {
 
 	private ExtensionType type;
 
@@ -38,10 +38,10 @@ public class StatusRequest implements Extension {
 	}
 
 	public static StatusRequest from(final InputStream is) throws IOException {
-		Int16 value = Int16.from(is);
-		ExtensionType type = ExtensionType.fromValue(value.getValue());
+		Int16 int16 = Int16.from(is);
+		ExtensionType extensionType = ExtensionType.fromValue(int16.getValue());
 
-		return from(is, type);
+		return from(is, extensionType);
 	}
 
 	public static StatusRequest from(final InputStream is, final ExtensionType type) throws IOException {

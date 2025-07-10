@@ -8,9 +8,7 @@ import java.io.InputStream;
 import org.apiphany.json.JsonBuilder;
 import org.morphix.lang.function.ThrowingRunnable;
 
-public class ServerKeyExchange implements TLSObject {
-
-	private HandshakeHeader handshakeHeader;
+public class ServerKeyExchange implements TLSHandshakeBody {
 
 	private CurveInfo curveInfo;
 
@@ -18,20 +16,18 @@ public class ServerKeyExchange implements TLSObject {
 
 	private Signature signature;
 
-	public ServerKeyExchange(final HandshakeHeader handshakeHeader, final CurveInfo curveInfo, final PublicKeyECDHE publicKey, final Signature signature) {
-		this.handshakeHeader = handshakeHeader;
+	public ServerKeyExchange(final CurveInfo curveInfo, final PublicKeyECDHE publicKey, final Signature signature) {
 		this.curveInfo = curveInfo;
 		this.publicKey = publicKey;
 		this.signature = signature;
 	}
 
 	public static ServerKeyExchange from(final InputStream is) throws IOException {
-		HandshakeHeader handshakeHeader = HandshakeHeader.from(is);
 		CurveInfo curveInfo = CurveInfo.from(is);
 		PublicKeyECDHE publicKey = PublicKeyECDHE.from(is);
 		Signature signature = Signature.from(is);
 
-		return new ServerKeyExchange(handshakeHeader, curveInfo, publicKey, signature);
+		return new ServerKeyExchange(curveInfo, publicKey, signature);
 	}
 
 	@Override
@@ -39,7 +35,6 @@ public class ServerKeyExchange implements TLSObject {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(bos);
 		ThrowingRunnable.unchecked(() -> {
-			dos.write(handshakeHeader.toByteArray());
 			dos.write(curveInfo.toByteArray());
 			dos.write(publicKey.toByteArray());
 			dos.write(signature.toByteArray());
@@ -54,11 +49,12 @@ public class ServerKeyExchange implements TLSObject {
 
 	@Override
 	public int size() {
-		return handshakeHeader.size() + curveInfo.size() + publicKey.size() + signature.size();
+		return curveInfo.size() + publicKey.size() + signature.size();
 	}
 
-	public HandshakeHeader getHandshakeHeader() {
-		return handshakeHeader;
+	@Override
+	public HandshakeType type() {
+		return HandshakeType.SERVER_KEY_EXCHANGE;
 	}
 
 	public CurveInfo getCurveInfo() {

@@ -10,7 +10,7 @@ import java.util.List;
 import org.apiphany.json.JsonBuilder;
 import org.morphix.lang.function.ThrowingRunnable;
 
-public class SignatureAlgorithms implements Extension {
+public class SignatureAlgorithms implements TLSExtension {
 
 	public static final Short[] ALGORITHMS = {
 			(short) 0x0401, // RSA/PKCS1/SHA256
@@ -54,10 +54,10 @@ public class SignatureAlgorithms implements Extension {
 	}
 
 	public static SignatureAlgorithms from(final InputStream is) throws IOException {
-		Int16 extensionType = Int16.from(is);
-		ExtensionType type = ExtensionType.fromValue(extensionType.getValue());
+		Int16 int16 = Int16.from(is);
+		ExtensionType extensionType = ExtensionType.fromValue(int16.getValue());
 
-		return from(is, type);
+		return from(is, extensionType);
 	}
 
 	public static SignatureAlgorithms from(final InputStream is, final ExtensionType type) throws IOException {

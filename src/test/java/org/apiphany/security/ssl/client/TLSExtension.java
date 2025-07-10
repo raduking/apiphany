@@ -1,6 +1,6 @@
 package org.apiphany.security.ssl.client;
 
-public interface Extension extends TLSObject {
+public interface TLSExtension extends TLSObject {
 
 	ExtensionType getType();
 

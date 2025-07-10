@@ -15,7 +15,7 @@ import org.morphix.lang.function.ThrowingRunnable;
  *
  * @author Radu Sebastian LAZIN
  */
-public class ClientHello implements TLSObject {
+public class ClientHello implements TLSHandshakeBody {
 
 	private Version clientVersion;
 
@@ -99,6 +99,11 @@ public class ClientHello implements TLSObject {
 				+ cipherSuites.size()
 				+ compressionMethods.size()
 				+ extensions.size();
+	}
+
+	@Override
+	public HandshakeType type() {
+		return HandshakeType.CLIENT_HELLO;
 	}
 
 	public Version getClientVersion() {

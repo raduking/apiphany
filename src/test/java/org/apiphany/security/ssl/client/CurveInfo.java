@@ -20,11 +20,11 @@ public class CurveInfo implements TLSObject {
 	}
 
 	public static CurveInfo from(final InputStream is) throws IOException {
-		Int8 typeValue = Int8.from(is);
-		CurveType type = CurveType.fromValue(typeValue.getValue());
+		Int8 int8 = Int8.from(is);
+		CurveType type = CurveType.fromValue(int8.getValue());
 
-		Int16 nameValue = Int16.from(is);
-		CurveName name = CurveName.fromValue(nameValue.getValue());
+		Int16 int16 = Int16.from(is);
+		CurveName name = CurveName.fromValue(int16.getValue());
 
 		return new CurveInfo(type, name);
 	}
