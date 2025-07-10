@@ -8,7 +8,7 @@ import java.io.InputStream;
 import org.apiphany.json.JsonBuilder;
 import org.morphix.lang.function.ThrowingRunnable;
 
-public class ExtendedMasterSecret implements Extension {
+public class ExtendedMasterSecret implements TLSExtension {
 
 	private ExtensionType type;
 
@@ -24,10 +24,10 @@ public class ExtendedMasterSecret implements Extension {
 	}
 
 	public static ExtendedMasterSecret from(final InputStream is) throws IOException {
-		Int16 extensionType = Int16.from(is);
-		ExtensionType type = ExtensionType.fromValue(extensionType.getValue());
+		Int16 int16 = Int16.from(is);
+		ExtensionType extensionType = ExtensionType.fromValue(int16.getValue());
 
-		return from(is, type);
+		return from(is, extensionType);
 	}
 
 	public static ExtendedMasterSecret from(final InputStream is, final ExtensionType type) throws IOException {

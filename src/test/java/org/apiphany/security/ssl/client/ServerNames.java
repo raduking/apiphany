@@ -11,7 +11,7 @@ import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Holder;
 import org.morphix.lang.function.ThrowingRunnable;
 
-public class ServerNames implements Extension {
+public class ServerNames implements TLSExtension {
 
 	private static final int ENTRIES_SIZE_INDEX = 2;
 
@@ -61,10 +61,10 @@ public class ServerNames implements Extension {
 	}
 
 	public static ServerNames from(final InputStream is) throws IOException {
-		Int16 value = Int16.from(is);
-		ExtensionType type = ExtensionType.fromValue(value.getValue());
+		Int16 int16 = Int16.from(is);
+		ExtensionType extensionType = ExtensionType.fromValue(int16.getValue());
 
-		return from(is, type);
+		return from(is, extensionType);
 	}
 
 	public static ServerNames from(final InputStream is, final ExtensionType type) throws IOException {

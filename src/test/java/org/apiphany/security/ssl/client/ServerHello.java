@@ -8,7 +8,7 @@ import java.io.InputStream;
 import org.apiphany.json.JsonBuilder;
 import org.morphix.lang.function.ThrowingRunnable;
 
-public class ServerHello implements Sizeable, BinaryRepresentable {
+public class ServerHello implements TLSHandshakeBody {
 
 	private Version version;
 
@@ -77,6 +77,11 @@ public class ServerHello implements Sizeable, BinaryRepresentable {
 				+ cipherSuite.size()
 				+ compressionMethod.size()
 				+ extensions.size();
+	}
+
+	@Override
+	public HandshakeType type() {
+		return HandshakeType.SERVER_HELLO;
 	}
 
 	@Override

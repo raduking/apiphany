@@ -10,7 +10,7 @@ import java.util.List;
 import org.apiphany.json.JsonBuilder;
 import org.morphix.lang.function.ThrowingRunnable;
 
-public class SupportedGroups implements Extension {
+public class SupportedGroups implements TLSExtension {
 
 	private ExtensionType type;
 
@@ -41,10 +41,10 @@ public class SupportedGroups implements Extension {
 	}
 
 	public static SupportedGroups from(final InputStream is) throws IOException {
-		Int16 value = Int16.from(is);
-		ExtensionType type = ExtensionType.fromValue(value.getValue());
+		Int16 int16 = Int16.from(is);
+		ExtensionType extensionType = ExtensionType.fromValue(int16.getValue());
 
-		return from(is, type);
+		return from(is, extensionType);
 	}
 
 	public static SupportedGroups from(final InputStream is, final ExtensionType type) throws IOException {

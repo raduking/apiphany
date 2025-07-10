@@ -14,9 +14,9 @@ public class Extensions implements TLSObject {
 
 	private Int16 length;
 
-	private List<Extension> extensions = new ArrayList<>();
+	private List<TLSExtension> extensions = new ArrayList<>();
 
-	public Extensions(final Int16 length, final List<Extension> extensions, final boolean setSizes) {
+	public Extensions(final Int16 length, final List<TLSExtension> extensions, final boolean setSizes) {
 		this.length = length;
 		this.extensions.addAll(extensions);
 		if (setSizes) {
@@ -26,7 +26,7 @@ public class Extensions implements TLSObject {
 
 	public Extensions(
 			final Int16 length,
-			final List<Extension> extensions) {
+			final List<TLSExtension> extensions) {
 		this(length, extensions, true);
 	}
 
@@ -51,7 +51,7 @@ public class Extensions implements TLSObject {
 		DataOutputStream dos = new DataOutputStream(bos);
 		ThrowingRunnable.unchecked(() -> {
 			dos.write(length.toByteArray());
-			for (Extension extension : extensions) {
+			for (TLSExtension extension : extensions) {
 				dos.write(extension.toByteArray());
 			}
 		}).run();
@@ -61,13 +61,13 @@ public class Extensions implements TLSObject {
 	public static Extensions from(final InputStream is) throws IOException {
 		Int16 length = Int16.from(is);
 
-		List<Extension> extensions = new ArrayList<>();
+		List<TLSExtension> extensions = new ArrayList<>();
 		int currentLength = 0;
 		while (currentLength < length.getValue()) {
-			Int16 extensionType = Int16.from(is);
-			ExtensionType type = ExtensionType.fromValue(extensionType.getValue());
+			Int16 int16 = Int16.from(is);
+			ExtensionType extensionType = ExtensionType.fromValue(int16.getValue());
 
-			Extension extension = type.extensionFrom(is);
+			TLSExtension extension = extensionType.extensionFrom(is);
 			extensions.add(extension);
 
 			currentLength += extension.size();
@@ -84,7 +84,7 @@ public class Extensions implements TLSObject {
 	@Override
 	public int size() {
 		int result = length.size();
-		for (Extension extension : extensions) {
+		for (TLSExtension extension : extensions) {
 			result += extension.size();
 		}
 		return result;
@@ -94,7 +94,7 @@ public class Extensions implements TLSObject {
 		return length;
 	}
 
-	public List<Extension> getExtensions() {
+	public List<TLSExtension> getExtensions() {
 		return extensions;
 	}
 }

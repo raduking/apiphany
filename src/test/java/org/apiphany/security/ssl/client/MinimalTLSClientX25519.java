@@ -30,6 +30,8 @@ import javax.crypto.Mac;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.apiphany.security.ssl.SSLProtocol;
+
 public class MinimalTLSClientX25519 {
 
 	public byte[] performHandshake(final String host, final int port) throws Exception {
@@ -53,7 +55,7 @@ public class MinimalTLSClientX25519 {
 
 		List<HandshakeMessage> messages = new ArrayList<>();
 		while (messages.size() < 3) {
-			TLSRecord record = TLSRecord.read(in);
+			TLSRecordInternal record = TLSRecordInternal.read(in);
 			if (record.contentType == 22) {
 				messages.addAll(HandshakeMessage.parseMessages(record.fragment));
 			}
@@ -146,7 +148,7 @@ public class MinimalTLSClientX25519 {
 		System.out.println("Sent Client Finished. Waiting for Server Finished...");
 		socket.setSoTimeout(2000);
 
-		TLSRecord serverFinishedRecord = TLSRecord.read(in);
+		TLSRecordInternal serverFinishedRecord = TLSRecordInternal.read(in);
 		ByteBuffer buf = ByteBuffer.wrap(serverFinishedRecord.fragment);
 		byte[] recvNonce = new byte[8];
 		buf.get(recvNonce);
@@ -215,7 +217,8 @@ public class MinimalTLSClientX25519 {
 	}
 
 	public static byte[] buildClientHello(final String host) {
-		return new TLSRecordClientHello(List.of(host), new CipherSuites(CipherSuiteName.values()), List.of(CurveName.values())).toByteArray();
+		return new TLSRecord(SSLProtocol.TLS_1_0,
+				new ClientHello(List.of(host), new CipherSuites(CipherSuiteName.values()), List.of(CurveName.values()))).toByteArray();
 	}
 
 	public static byte[] parseServerRandom(final byte[] serverHello) throws IOException {
@@ -233,13 +236,16 @@ public class MinimalTLSClientX25519 {
 
 	public static byte[] parseX25519PublicKeyFromServerKeyExchange(final byte[] skx) throws IOException {
 		ByteArrayInputStream in = new ByteArrayInputStream(skx);
-		if (in.read() != 3)
+		if (in.read() != 3) {
 			throw new IOException("Bad curve type");
+		}
 		int namedCurve = ((in.read() & 0xFF) << 8) | (in.read() & 0xFF);
-		if (namedCurve != 0x001D)
+		if (namedCurve != 0x001D) {
 			throw new IOException("Not X25519");
-		if (in.read() != 32)
+		}
+		if (in.read() != 32) {
 			throw new IOException("Bad key length");
+		}
 		return in.readNBytes(32);
 	}
 
@@ -300,14 +306,14 @@ public class MinimalTLSClientX25519 {
 		}
 	}
 
-	static class TLSRecord {
+	static class TLSRecordInternal {
 
 		public int contentType;
 		public int major;
 		public int minor;
 		public byte[] fragment;
 
-		public static TLSRecord read(final InputStream in) throws IOException {
+		public static TLSRecordInternal read(final InputStream in) throws IOException {
 			byte[] header = in.readNBytes(5);
 			if (header.length < 5) {
 				throw new EOFException("Unexpected end of stream while reading TLS record header");
@@ -321,7 +327,7 @@ public class MinimalTLSClientX25519 {
 				throw new EOFException("Unexpected end of stream while reading TLS record fragment");
 			}
 
-			TLSRecord rec = new TLSRecord();
+			TLSRecordInternal rec = new TLSRecordInternal();
 			rec.contentType = type;
 			rec.major = header[1];
 			rec.minor = header[2];

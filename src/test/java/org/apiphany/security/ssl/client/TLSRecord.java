@@ -8,22 +8,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.security.ssl.SSLProtocol;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.function.ThrowingRunnable;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class TLSRecord implements TLSObject {
 
 	private RecordHeader header;
 
-	private List<TLSObject> messages;
+	private List<TLSObject> fragments;
 
-	public TLSRecord(RecordHeader header, List<TLSObject> messages, boolean setLength) {
+	public TLSRecord(RecordHeader header, List<TLSObject> fragments, boolean updateHeader) {
 		this.header = header;
-		this.messages = messages;
-		if (setLength) {
+		this.fragments = fragments;
+		if (updateHeader) {
 			short length = 0;
-			for (Sizeable message : messages) {
-				length += message.size();
+			for (Sizeable fragment : fragments) {
+				length += fragment.size();
 			}
 			header.getLength().setValue(length);
 		}
@@ -33,18 +36,26 @@ public class TLSRecord implements TLSObject {
 		this(header, messages, true);
 	}
 
+	public TLSRecord(SSLProtocol protocol, TLSObject fragment) {
+		this(new RecordHeader(RecordType.from(fragment), protocol), List.of(fragment), true);
+	}
+
+	public TLSRecord(SSLProtocol protocol, TLSHandshakeBody handshakeObject) {
+		this(new RecordHeader(RecordType.HANDSHAKE, protocol), List.of(new TLSHandshake(handshakeObject)));
+	}
+
 	public static TLSRecord from(InputStream is) throws IOException {
 		RecordHeader header = RecordHeader.from(is);
 		RecordType recordType = header.getType();
 
-		List<TLSObject> messages = new ArrayList<>();
+		List<TLSObject> fragments = new ArrayList<>();
 		int currentLength = header.getLength().getValue();
 		while (currentLength > 0) {
-			TLSObject message = recordType.message().from(is);
-			messages.add(message);
-			currentLength -= message.size();
+			TLSObject fragment = recordType.fragment().from(is);
+			fragments.add(fragment);
+			currentLength -= fragment.size();
 		}
-		return new TLSRecord(header, messages, false);
+		return new TLSRecord(header, fragments, false);
 	}
 
 	@Override
@@ -53,8 +64,8 @@ public class TLSRecord implements TLSObject {
 		DataOutputStream dos = new DataOutputStream(bos);
 		ThrowingRunnable.unchecked(() -> {
 			dos.write(header.toByteArray());
-			for (TLSObject message : messages) {
-				dos.write(message.toByteArray());
+			for (TLSObject fragment : fragments) {
+				dos.write(fragment.toByteArray());
 			}
 		}).run();
 		return bos.toByteArray();
@@ -68,8 +79,8 @@ public class TLSRecord implements TLSObject {
 	@Override
 	public int size() {
 		int result = header.size();
-		for (Sizeable message : messages) {
-			result += message.size();
+		for (TLSObject fragment : fragments) {
+			result += fragment.size();
 		}
 		return result;
 	}
@@ -78,11 +89,29 @@ public class TLSRecord implements TLSObject {
 		return header;
 	}
 
-	public List<TLSObject> getMessages() {
-		return messages;
+	public List<TLSObject> getFragments() {
+		return fragments;
 	}
 
-	public HandshakeMessage getHandshakeMessage(int index) {
-		return JavaObjects.cast(messages.get(index));
+	public TLSHandshake getHandshake(int index) {
+		// TODO: validation
+		return JavaObjects.cast(fragments.get(index));
+	}
+
+	@JsonIgnore
+	public TLSHandshake getHandshake() {
+		return getHandshake(0);
+	}
+
+	public <T extends TLSHandshakeBody> T getHandshake(Class<T> tlsHandshakeClass) {
+		for (TLSObject fragment : fragments) {
+			if (TLSHandshake.class.isAssignableFrom(fragment.getClass())) {
+				TLSHandshake handshake = JavaObjects.cast(fragment);
+				if (handshake.is(tlsHandshakeClass)) {
+					return handshake.get(tlsHandshakeClass);
+				}
+			}
+		}
+		throw new IllegalArgumentException("No handhsake of type " + tlsHandshakeClass + " found in record");
 	}
 }

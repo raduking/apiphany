@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public class BinaryData implements TLSObject {
 
-	private static final byte[] EMPTY = new byte[] { };
+	protected static final byte[] EMPTY = new byte[] { };
 
 	private byte[] bytes;
 
