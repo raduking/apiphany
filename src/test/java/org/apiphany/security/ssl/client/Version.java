@@ -8,7 +8,7 @@ import org.apiphany.security.ssl.SSLProtocol;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
-public class Version implements Sizeable {
+public class Version implements TLSObject {
 
 	public static final int BYTES = 2;
 
@@ -29,6 +29,7 @@ public class Version implements Sizeable {
 		return Version.of(protocol);
 	}
 
+	@Override
 	public byte[] toByteArray() {
 		return Int16.toByteArray(protocol.handshakeVersion());
 	}

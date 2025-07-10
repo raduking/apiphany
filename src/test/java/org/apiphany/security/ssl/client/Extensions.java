@@ -8,8 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apiphany.json.JsonBuilder;
+import org.morphix.lang.function.ThrowingRunnable;
 
-public class Extensions implements Sizeable {
+public class Extensions implements TLSObject {
 
 	private Int16 length;
 
@@ -44,15 +45,16 @@ public class Extensions implements Sizeable {
 		);
 	}
 
-	public byte[] toByteArray() throws IOException {
+	@Override
+	public byte[] toByteArray() {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(bos);
-
-		dos.write(length.toByteArray());
-		for (Extension extension : extensions) {
-			dos.write(extension.toByteArray());
-		}
-
+		ThrowingRunnable.unchecked(() -> {
+			dos.write(length.toByteArray());
+			for (Extension extension : extensions) {
+				dos.write(extension.toByteArray());
+			}
+		}).run();
 		return bos.toByteArray();
 	}
 

@@ -7,7 +7,7 @@ import org.apiphany.json.JsonBuilder;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
-public class CompressionMethod implements Sizeable {
+public class CompressionMethod implements TLSObject {
 
 	private CompressionMethodType method;
 
@@ -24,6 +24,7 @@ public class CompressionMethod implements Sizeable {
 		return new CompressionMethod((byte) method);
 	}
 
+	@Override
 	public byte[] toByteArray() {
 		return Int8.toByteArray(method.value());
 	}

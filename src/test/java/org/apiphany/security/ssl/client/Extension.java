@@ -1,6 +1,6 @@
 package org.apiphany.security.ssl.client;
 
-public interface Extension extends Sizeable, BinaryRepresentable {
+public interface Extension extends TLSObject {
 
 	ExtensionType getType();
 

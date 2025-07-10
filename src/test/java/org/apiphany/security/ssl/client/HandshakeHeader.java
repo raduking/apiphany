@@ -6,8 +6,9 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apiphany.json.JsonBuilder;
+import org.morphix.lang.function.ThrowingRunnable;
 
-public class HandshakeHeader implements Sizeable {
+public class HandshakeHeader implements TLSObject {
 
 	public static final int BYTES = 4;
 
@@ -37,13 +38,14 @@ public class HandshakeHeader implements Sizeable {
 		return new HandshakeHeader(type, messageLength);
 	}
 
-	public byte[] toByteArray() throws IOException {
+	@Override
+	public byte[] toByteArray() {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(bos);
-
-		dos.writeByte(type.value());
-		dos.write(length.toByteArray());
-
+		ThrowingRunnable.unchecked(() -> {
+			dos.writeByte(type.value());
+			dos.write(length.toByteArray());
+		}).run();
 		return bos.toByteArray();
 	}
 

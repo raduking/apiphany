@@ -8,8 +8,9 @@ import java.io.InputStream;
 
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.security.ssl.SSLProtocol;
+import org.morphix.lang.function.ThrowingRunnable;
 
-public class RecordHeader implements Sizeable {
+public class RecordHeader implements TLSObject {
 
 	public static final int BYTES = 5;
 
@@ -45,14 +46,15 @@ public class RecordHeader implements Sizeable {
 		return new RecordHeader(type, version, length);
 	}
 
-	public byte[] toByteArray() throws IOException {
+	@Override
+	public byte[] toByteArray() {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(bos);
-
-		dos.writeByte(getType().value());
-		dos.write(version.toByteArray());
-		dos.write(length.toByteArray());
-
+		ThrowingRunnable.unchecked(() -> {
+			dos.writeByte(getType().value());
+			dos.write(version.toByteArray());
+			dos.write(length.toByteArray());
+		}).run();
 		return bos.toByteArray();
 	}
 

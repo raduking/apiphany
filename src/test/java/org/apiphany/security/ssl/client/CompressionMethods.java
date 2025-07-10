@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.apiphany.json.JsonBuilder;
 
-public class CompressionMethods implements Sizeable {
+public class CompressionMethods implements TLSObject {
 
 	private Int8 size;
 
@@ -27,6 +27,7 @@ public class CompressionMethods implements Sizeable {
 		this(List.of(new CompressionMethod(CompressionMethodType.NO_COMPRESSION)));
 	}
 
+	@Override
 	public byte[] toByteArray() {
 		byte[] result = new byte[size.getValue() + 1];
 		result[0] = size.getValue();

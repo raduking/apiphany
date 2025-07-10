@@ -6,8 +6,9 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apiphany.json.JsonBuilder;
+import org.morphix.lang.function.ThrowingRunnable;
 
-public class Signature implements Sizeable {
+public class Signature implements TLSObject {
 
 	private Int16 reserved;
 
@@ -37,14 +38,15 @@ public class Signature implements Sizeable {
 		return new Signature(reserved, length, value);
 	}
 
-	public byte[] toByteArray() throws IOException {
+	@Override
+	public byte[] toByteArray() {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(bos);
-
-		dos.write(reserved.toByteArray());
-		dos.write(length.toByteArray());
-		dos.write(value.toByteArray());
-
+		ThrowingRunnable.unchecked(() -> {
+			dos.write(reserved.toByteArray());
+			dos.write(length.toByteArray());
+			dos.write(value.toByteArray());
+		}).run();
 		return bos.toByteArray();
 	}
 
