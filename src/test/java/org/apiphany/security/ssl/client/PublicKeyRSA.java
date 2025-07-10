@@ -6,20 +6,21 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apiphany.json.JsonBuilder;
+import org.morphix.lang.function.ThrowingRunnable;
 
-public class PublicKeyRSA {
+public class PublicKeyRSA implements TLSObject {
 
 	private Int16 length;
 
-	private byte[] bytes;
+	private BinaryData bytes;
 
-	public PublicKeyRSA(final Int16 length, final byte[] bytes) {
+	public PublicKeyRSA(final Int16 length, final BinaryData bytes) {
 		this.length = length;
 		this.bytes = bytes;
 	}
 
 	public PublicKeyRSA(final short length, final byte[] bytes) {
-		this(new Int16(length), bytes);
+		this(new Int16(length), new BinaryData(bytes));
 	}
 
 	public PublicKeyRSA(final byte[] bytes) {
@@ -28,20 +29,19 @@ public class PublicKeyRSA {
 
 	public static PublicKeyRSA from(final InputStream is) throws IOException {
 		Int16 length = Int16.from(is);
+		BinaryData bytes = BinaryData.from(is, length.getValue());
 
-		byte[] buffer = new byte[length.getValue()];
-		is.read(buffer);
-
-		return new PublicKeyRSA(length, buffer);
+		return new PublicKeyRSA(length, bytes);
 	}
 
-	public byte[] toByteArray() throws IOException {
+	@Override
+	public byte[] toByteArray() {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(bos);
-
-		dos.write(length.toByteArray());
-		dos.write(bytes);
-
+		ThrowingRunnable.unchecked(() -> {
+			dos.write(length.toByteArray());
+			dos.write(bytes.toByteArray());
+		}).run();
 		return bos.toByteArray();
 	}
 
@@ -54,16 +54,13 @@ public class PublicKeyRSA {
 		return length;
 	}
 
-	public byte[] getBytes() {
+	public BinaryData getBytes() {
 		return bytes;
 	}
 
-	public String getHexBytes() {
-		return Bytes.hexString(bytes, "");
-	}
-
-	public short size() {
-		return (short) (length.size() + bytes.length);
+	@Override
+	public int size() {
+		return length.size() + bytes.size();
 	}
 
 }

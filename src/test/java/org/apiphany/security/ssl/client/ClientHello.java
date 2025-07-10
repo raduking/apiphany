@@ -11,15 +11,11 @@ import org.apiphany.security.ssl.SSLProtocol;
 import org.morphix.lang.function.ThrowingRunnable;
 
 /**
- * Minimal Client Hello builder.
+ * Client Hello TLS record.
  *
  * @author Radu Sebastian LAZIN
  */
-public class ClientHello implements Sizeable, BinaryRepresentable {
-
-	private RecordHeader recordHeader;
-
-	private HandshakeHeader handshakeHeader;
+public class ClientHello implements TLSObject {
 
 	private Version clientVersion;
 
@@ -33,56 +29,23 @@ public class ClientHello implements Sizeable, BinaryRepresentable {
 
 	private Extensions extensions;
 
-	private ClientHello(
-			final RecordHeader recordHeader,
-			final HandshakeHeader handshakeHeader,
-			final Version clientVersion,
-			final ExchangeRandom clientRandom,
-			final SessionId sessionId,
-			final CipherSuites cipherSuites,
-			final CompressionMethods compressionMethods,
-			final Extensions extensions,
-			final boolean setSizes) {
-		this.recordHeader = recordHeader;
-		this.handshakeHeader = handshakeHeader;
-		this.clientVersion = clientVersion;
-		this.clientRandom = clientRandom;
-		this.sessionId = sessionId;
-		this.cipherSuites = cipherSuites;
-		this.compressionMethods = compressionMethods;
-		this.extensions = extensions;
-		if (setSizes) {
-			this.recordHeader.getLength().setValue((short) (size() - RecordHeader.BYTES));
-			this.handshakeHeader.getLength().setValue((short) (recordHeader.getLength().getValue() - HandshakeHeader.BYTES));
-		}
-	}
-
-	public ClientHello(
-			final RecordHeader recordHeader,
-			final HandshakeHeader handshakeHeader,
+	protected ClientHello(
 			final Version clientVersion,
 			final ExchangeRandom clientRandom,
 			final SessionId sessionId,
 			final CipherSuites cipherSuites,
 			final CompressionMethods compressionMethods,
 			final Extensions extensions) {
-		this(
-				recordHeader,
-				handshakeHeader,
-				clientVersion,
-				clientRandom,
-				sessionId,
-				cipherSuites,
-				compressionMethods,
-				extensions,
-				true
-		);
+		this.clientVersion = clientVersion;
+		this.clientRandom = clientRandom;
+		this.sessionId = sessionId;
+		this.cipherSuites = cipherSuites;
+		this.compressionMethods = compressionMethods;
+		this.extensions = extensions;
 	}
 
 	public ClientHello(final List<String> serverNames, final CipherSuites cypherSuites, final List<CurveName> curveNames) {
 		this(
-				new RecordHeader(RecordType.HANDSHAKE, SSLProtocol.TLS_1_0),
-				new HandshakeHeader(HandshakeType.CLIENT_HELLO),
 				new Version(SSLProtocol.TLS_1_2),
 				new ExchangeRandom(ExchangeRandom.generateLinear()),
 				new SessionId(),
@@ -101,8 +64,6 @@ public class ClientHello implements Sizeable, BinaryRepresentable {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(bos);
 		ThrowingRunnable.unchecked(() -> {
-			dos.write(recordHeader.toByteArray());
-			dos.write(handshakeHeader.toByteArray());
 			dos.write(clientVersion.toByteArray());
 			dos.write(clientRandom.toByteArray());
 			dos.write(sessionId.toByteArray());
@@ -114,8 +75,6 @@ public class ClientHello implements Sizeable, BinaryRepresentable {
 	}
 
 	public static ClientHello from(final InputStream is) throws IOException {
-		RecordHeader recordHeader = RecordHeader.from(is);
-		HandshakeHeader handshakeHeader = HandshakeHeader.from(is);
 		Version clientVersion = Version.from(is);
 		ExchangeRandom clientRandom = ExchangeRandom.from(is);
 		SessionId sessionId = SessionId.from(is);
@@ -123,8 +82,8 @@ public class ClientHello implements Sizeable, BinaryRepresentable {
 		CompressionMethods compressionMethods = CompressionMethods.from(is);
 		Extensions extensions = Extensions.from(is);
 
-		return new ClientHello(recordHeader, handshakeHeader, clientVersion, clientRandom,
-				sessionId, cipherSuites, compressionMethods, extensions, false);
+		return new ClientHello(clientVersion, clientRandom,
+				sessionId, cipherSuites, compressionMethods, extensions);
 	}
 
 	@Override
@@ -134,22 +93,12 @@ public class ClientHello implements Sizeable, BinaryRepresentable {
 
 	@Override
 	public int size() {
-		return recordHeader.size()
-				+ handshakeHeader.size()
-				+ clientVersion.size()
+		return clientVersion.size()
 				+ clientRandom.size()
 				+ sessionId.size()
 				+ cipherSuites.size()
 				+ compressionMethods.size()
 				+ extensions.size();
-	}
-
-	public RecordHeader getRecordHeader() {
-		return recordHeader;
-	}
-
-	public HandshakeHeader getHandshakeHeader() {
-		return handshakeHeader;
 	}
 
 	public Version getClientVersion() {

@@ -6,22 +6,25 @@ import org.morphix.lang.Enums;
 
 public enum HandshakeType implements Sizeable {
 
-	CLIENT_HELLO((byte) 0x01),
-	SERVER_HELLO((byte) 0x02),
-	CERTIFICATE((byte) 0x0B),
-	SERVER_KEY_EXCHANGE((byte) 0x0C),
-	SERVER_HELLO_DONE((byte) 0x0E),
-	CLIENT_KEY_EXCHANGE((byte) 0x10),
-	FINISHED((byte) 0x14);
+	CLIENT_HELLO((byte) 0x01, ClientHello::from),
+	SERVER_HELLO((byte) 0x02, null),
+	CERTIFICATE((byte) 0x0B, null),
+	SERVER_KEY_EXCHANGE((byte) 0x0C, null),
+	SERVER_HELLO_DONE((byte) 0x0E, null),
+	CLIENT_KEY_EXCHANGE((byte) 0x10, null),
+	FINISHED((byte) 0x14, null);
 
 	public static final int BYTES = 1;
 
 	private static final Map<Byte, HandshakeType> VALUE_MAP = Enums.buildNameMap(values(), HandshakeType::value);
 
-	private byte value;
+	private final byte value;
 
-	HandshakeType(final byte value) {
+	private final FromFunction<? extends TLSObject> fromFunction;
+
+	HandshakeType(final byte value, FromFunction<? extends TLSObject> fromFunction) {
 		this.value = value;
+		this.fromFunction = fromFunction;
 	}
 
 	public byte value() {
@@ -35,5 +38,9 @@ public enum HandshakeType implements Sizeable {
 	@Override
 	public int size() {
 		return BYTES;
+	}
+
+	public FromFunction<? extends TLSObject> handshake() {
+		return fromFunction;
 	}
 }

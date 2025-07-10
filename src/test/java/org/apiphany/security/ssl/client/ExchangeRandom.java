@@ -10,7 +10,7 @@ import org.apiphany.security.ssl.DeterministicSecureRandom;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
-public class ExchangeRandom implements Sizeable, BinaryRepresentable {
+public class ExchangeRandom implements TLSObject {
 
 	public static final int BYTES = 32;
 

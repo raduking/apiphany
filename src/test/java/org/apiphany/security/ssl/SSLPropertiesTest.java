@@ -24,12 +24,13 @@ import org.apiphany.net.Sockets;
 import org.apiphany.security.ssl.client.Bytes;
 import org.apiphany.security.ssl.client.CipherSuite;
 import org.apiphany.security.ssl.client.CipherSuiteName;
-import org.apiphany.security.ssl.client.ClientHello;
+import org.apiphany.security.ssl.client.TLSRecordClientHello;
 import org.apiphany.security.ssl.client.CurveName;
 import org.apiphany.security.ssl.client.MinimalTLSClient;
 import org.apiphany.security.ssl.client.MinimalTLSClientX25519;
 import org.apiphany.security.ssl.client.PseudoRandomFunction;
-import org.apiphany.security.ssl.client.ServerHello;
+import org.apiphany.security.ssl.client.TLSRecordServerHello;
+import org.apiphany.security.ssl.client.TLSRecord;
 import org.apiphany.security.ssl.server.SimpleHttpsServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -190,7 +191,7 @@ class SSLPropertiesTest {
 		List<CipherSuite> cypherSuites = List.of(cypherSuitesArray).stream().map(CipherSuite::new).toList();
 		List<CurveName> curveNames = List.of(curveNamesArray);
 
-		ClientHello clientHello = new ClientHello(List.of("example.ulfheim.net"), cypherSuites, curveNames);
+		TLSRecordClientHello clientHello = new TLSRecordClientHello(List.of("example.ulfheim.net"), cypherSuites, curveNames);
 		LOGGER.info("Client Hello: {}", clientHello);
 
 		byte[] bytes = clientHello.toByteArray();
@@ -227,10 +228,45 @@ class SSLPropertiesTest {
 		byte[] expected = Bytes.fromHexString(openSSLClientHelloHexString);
 		ByteArrayInputStream bis = new ByteArrayInputStream(expected);
 
-		ClientHello clientHello = ClientHello.from(bis);
+		TLSRecordClientHello clientHello = TLSRecordClientHello.from(bis);
 		LOGGER.info("Parsed Client Hello: {}", clientHello);
 
 		byte[] result = clientHello.toByteArray();
+
+		LOGGER.info("Expected bytes:\n{}", Bytes.hexDump(expected));
+		LOGGER.info("Received bytes:\n{}", Bytes.hexDump(result));
+
+		assertThat(result, equalTo(expected));
+	}
+
+	@Test
+	void shouldReadOpenSSLClientHelloWithTLSRecordAPI() throws IOException {
+		// TODO: handle invalid SNI
+		// string obtained with command:
+		// openssl s_client -connect localhost:<port> -tls1_2 -servername localhost -msg -debug
+		String openSSLClientHelloHexString = """
+				16 03 01 00 c9
+				01 00 00 c5 03 03 df a2 7a 5a 1d b7 c5 92 51 84
+				71 f1 e2 f3 7a f3 80 d7 7a 63 66 59 e5 a5 bc bd
+				f7 17 71 b8 19 a0 00 00 38 c0 2c c0 30 00 9f cc
+				a9 cc a8 cc aa c0 2b c0 2f 00 9e c0 24 c0 28 00
+				6b c0 23 c0 27 00 67 c0 0a c0 14 00 39 c0 09 c0
+				13 00 33 00 9d 00 9c 00 3d 00 3c 00 35 00 2f 00
+				ff 01 00 00 64 00 00 00 0e 00 0c 00 00 09 6c 6f
+				63 61 6c 68 6f 73 74 00 0b 00 04 03 00 01 02 00
+				0a 00 0c 00 0a 00 1d 00 17 00 1e 00 19 00 18 00
+				23 00 00 00 16 00 00 00 17 00 00 00 0d 00 2a 00
+				28 04 03 05 03 06 03 08 07 08 08 08 09 08 0a 08
+				0b 08 04 08 05 08 06 04 01 05 01 06 01 03 03 03
+				01 03 02 04 02 05 02 06 02
+    	""";
+		byte[] expected = Bytes.fromHexString(openSSLClientHelloHexString);
+		ByteArrayInputStream bis = new ByteArrayInputStream(expected);
+
+		TLSRecord tlsRecord = TLSRecord.from(bis);
+		LOGGER.info("Parsed Client Hello: {}", tlsRecord.getHandshakeMessage(0).getBody());
+
+		byte[] result = tlsRecord.toByteArray();
 
 		LOGGER.info("Expected bytes:\n{}", Bytes.hexDump(expected));
 		LOGGER.info("Received bytes:\n{}", Bytes.hexDump(result));
@@ -330,7 +366,7 @@ class SSLPropertiesTest {
 		byte[] expected = Bytes.fromHexString(openSSLReceivedServerHello);
 		ByteArrayInputStream bis = new ByteArrayInputStream(expected);
 
-		ServerHello serverHello = ServerHello.from(bis);
+		TLSRecordServerHello serverHello = TLSRecordServerHello.from(bis);
 
 		LOGGER.info("Parsed Server Hello: {}", serverHello);
 

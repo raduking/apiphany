@@ -6,8 +6,9 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apiphany.json.JsonBuilder;
+import org.morphix.lang.function.ThrowingRunnable;
 
-public class CurveInfo implements Sizeable {
+public class CurveInfo implements TLSObject {
 
 	private CurveType type;
 
@@ -28,13 +29,14 @@ public class CurveInfo implements Sizeable {
 		return new CurveInfo(type, name);
 	}
 
-	public byte[] toByteArray() throws IOException {
+	@Override
+	public byte[] toByteArray() {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(bos);
-
-		dos.writeByte(type.value());
-		dos.writeShort(name.value());
-
+		ThrowingRunnable.unchecked(() -> {
+			dos.writeByte(type.value());
+			dos.writeShort(name.value());
+		}).run();
 		return bos.toByteArray();
 	}
 

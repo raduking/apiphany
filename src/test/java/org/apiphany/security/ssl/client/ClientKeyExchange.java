@@ -7,8 +7,9 @@ import java.io.InputStream;
 
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.security.ssl.SSLProtocol;
+import org.morphix.lang.function.ThrowingRunnable;
 
-public class ClientKeyExchange {
+public class ClientKeyExchange implements TLSObject {
 
 	private RecordHeader recordHeader;
 
@@ -44,20 +45,26 @@ public class ClientKeyExchange {
 		return new ClientKeyExchange(recordHeader, handshakeHeader, publicKey, false);
 	}
 
-	public byte[] toByteArray() throws IOException {
+	@Override
+	public byte[] toByteArray() {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(bos);
-
-		dos.write(recordHeader.toByteArray());
-		dos.write(handshakeHeader.toByteArray());
-		dos.write(publicKey.toByteArray());
-
+		ThrowingRunnable.unchecked(() -> {
+			dos.write(recordHeader.toByteArray());
+			dos.write(handshakeHeader.toByteArray());
+			dos.write(publicKey.toByteArray());
+		}).run();
 		return bos.toByteArray();
 	}
 
 	@Override
 	public String toString() {
 		return JsonBuilder.toJson(this);
+	}
+
+	@Override
+	public int size() {
+		return recordHeader.size() + handshakeHeader.size() + publicKey.size();
 	}
 
 	public RecordHeader getRecordHeader() {

@@ -6,8 +6,9 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apiphany.json.JsonBuilder;
+import org.morphix.lang.function.ThrowingRunnable;
 
-public class ClientFinished {
+public class ClientFinished implements TLSObject {
 
 	private HandshakeHeader recordHeader;
 
@@ -33,19 +34,25 @@ public class ClientFinished {
 		return new ClientFinished(handshakeHeader, payload);
 	}
 
-	public byte[] toByteArray() throws IOException {
+	@Override
+	public byte[] toByteArray() {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(bos);
-
-		dos.write(recordHeader.toByteArray());
-		dos.write(encryptedData.toByteArray());
-
+		ThrowingRunnable.unchecked(() -> {
+			dos.write(recordHeader.toByteArray());
+			dos.write(encryptedData.toByteArray());
+		}).run();
 		return bos.toByteArray();
 	}
 
 	@Override
 	public String toString() {
 		return JsonBuilder.toJson(this);
+	}
+
+	@Override
+	public int size() {
+		return recordHeader.size() + encryptedData.size();
 	}
 
 	public HandshakeHeader getRecordHeader() {

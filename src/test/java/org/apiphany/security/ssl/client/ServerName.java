@@ -7,8 +7,9 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import org.apiphany.json.JsonBuilder;
+import org.morphix.lang.function.ThrowingRunnable;
 
-public class ServerName implements Sizeable {
+public class ServerName implements TLSObject {
 
 	private Int16 size;
 
@@ -34,15 +35,16 @@ public class ServerName implements Sizeable {
 		);
 	}
 
-	public byte[] toByteArray() throws IOException {
+	@Override
+	public byte[] toByteArray() {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(bos);
-
-		dos.write(size.toByteArray());
-		dos.write(type.toByteArray());
-		dos.write(length.toByteArray());
-		dos.write(name.toByteArray());
-
+		ThrowingRunnable.unchecked(() -> {
+			dos.write(size.toByteArray());
+			dos.write(type.toByteArray());
+			dos.write(length.toByteArray());
+			dos.write(name.toByteArray());
+		}).run();
 		return bos.toByteArray();
 	}
 

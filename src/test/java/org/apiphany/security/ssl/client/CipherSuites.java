@@ -8,8 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apiphany.json.JsonBuilder;
+import org.morphix.lang.function.ThrowingRunnable;
 
-public class CipherSuites implements Sizeable {
+public class CipherSuites implements TLSObject {
 
 	private Int16 size;
 
@@ -37,15 +38,16 @@ public class CipherSuites implements Sizeable {
 		this(List.of(cipherSuites).stream().map(CipherSuite::new).toList());
 	}
 
-	public byte[] toByteArray() throws IOException {
+	@Override
+	public byte[] toByteArray() {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(bos);
-
-		dos.write(size.toByteArray());
-		for (CipherSuite cypherSuite : cipherSuites) {
-			dos.write(cypherSuite.toByteArray());
-		}
-
+		ThrowingRunnable.unchecked(() -> {
+			dos.write(size.toByteArray());
+			for (CipherSuite cypherSuite : cipherSuites) {
+				dos.write(cypherSuite.toByteArray());
+			}
+		}).run();
 		return bos.toByteArray();
 	}
 

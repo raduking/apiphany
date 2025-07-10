@@ -215,7 +215,7 @@ public class MinimalTLSClientX25519 {
 	}
 
 	public static byte[] buildClientHello(final String host) {
-		return new ClientHello(List.of(host), new CipherSuites(CipherSuiteName.values()), List.of(CurveName.values())).toByteArray();
+		return new TLSRecordClientHello(List.of(host), new CipherSuites(CipherSuiteName.values()), List.of(CurveName.values())).toByteArray();
 	}
 
 	public static byte[] parseServerRandom(final byte[] serverHello) throws IOException {

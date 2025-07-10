@@ -7,8 +7,9 @@ import java.io.InputStream;
 
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.security.ssl.SSLProtocol;
+import org.morphix.lang.function.ThrowingRunnable;
 
-public class ClientFinishedEncrypted {
+public class ClientFinishedEncrypted implements TLSObject {
 
 	private RecordHeader recordHeader;
 
@@ -38,19 +39,25 @@ public class ClientFinishedEncrypted {
 		return new ClientFinishedEncrypted(recordHeader, payload);
 	}
 
-	public byte[] toByteArray() throws IOException {
+	@Override
+	public byte[] toByteArray() {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(bos);
-
-		dos.write(recordHeader.toByteArray());
-		dos.write(encryptedData.toByteArray());
-
+		ThrowingRunnable.unchecked(() -> {
+			dos.write(recordHeader.toByteArray());
+			dos.write(encryptedData.toByteArray());
+		}).run();
 		return bos.toByteArray();
 	}
 
 	@Override
 	public String toString() {
 		return JsonBuilder.toJson(this);
+	}
+
+	@Override
+	public int size() {
+		return recordHeader.size() + encryptedData.size();
 	}
 
 	public RecordHeader getRecordHeader() {

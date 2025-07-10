@@ -8,7 +8,7 @@ import org.apiphany.json.JsonBuilder;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
-public class BinaryData implements Sizeable {
+public class BinaryData implements TLSObject {
 
 	private static final byte[] EMPTY = new byte[] { };
 
@@ -39,6 +39,7 @@ public class BinaryData implements Sizeable {
 		return new BinaryData(bytes);
 	}
 
+	@Override
 	public byte[] toByteArray() {
 		return getBytes().clone();
 	}

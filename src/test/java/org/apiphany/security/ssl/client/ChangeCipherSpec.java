@@ -7,8 +7,9 @@ import java.io.InputStream;
 
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.security.ssl.SSLProtocol;
+import org.morphix.lang.function.ThrowingRunnable;
 
-public class ChangeCipherSpec {
+public class ChangeCipherSpec implements TLSObject {
 
 	public static final int SIZE = 6;
 
@@ -40,14 +41,20 @@ public class ChangeCipherSpec {
 		return new ChangeCipherSpec(recordHeader, payload);
 	}
 
-	public byte[] toByteArray() throws IOException {
+	@Override
+	public byte[] toByteArray() {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(bos);
-
-		dos.write(recordHeader.toByteArray());
-		dos.write(payload.toByteArray());
-
+		ThrowingRunnable.unchecked(() -> {
+			dos.write(recordHeader.toByteArray());
+			dos.write(payload.toByteArray());
+		}).run();;
 		return bos.toByteArray();
+	}
+
+	@Override
+	public int size() {
+		return SIZE;
 	}
 
 	@Override

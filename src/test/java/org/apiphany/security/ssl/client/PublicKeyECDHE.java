@@ -11,8 +11,9 @@ import java.security.spec.NamedParameterSpec;
 import java.security.spec.XECPublicKeySpec;
 
 import org.apiphany.json.JsonBuilder;
+import org.morphix.lang.function.ThrowingRunnable;
 
-public class PublicKeyECDHE {
+public class PublicKeyECDHE implements TLSObject {
 
 	private Int8 length;
 
@@ -42,13 +43,14 @@ public class PublicKeyECDHE {
 		return new PublicKeyECDHE(length, value);
 	}
 
-	public byte[] toByteArray() throws IOException {
+	@Override
+	public byte[] toByteArray() {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(bos);
-
-		dos.write(length.toByteArray());
-		dos.write(value.toByteArray());
-
+		ThrowingRunnable.unchecked(() -> {
+			dos.write(length.toByteArray());
+			dos.write(value.toByteArray());
+		}).run();
 		return bos.toByteArray();
 	}
 
@@ -65,8 +67,9 @@ public class PublicKeyECDHE {
 		return value;
 	}
 
-	public byte size() {
-		return (byte) (length.size() + value.size());
+	@Override
+	public int size() {
+		return length.size() + value.size();
 	}
 
 	public PublicKey loadX25519PublicKey() throws Exception {

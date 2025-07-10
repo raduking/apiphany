@@ -6,8 +6,9 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apiphany.json.JsonBuilder;
+import org.morphix.lang.function.ThrowingRunnable;
 
-public class Certificate implements Sizeable {
+public class Certificate implements TLSObject {
 
 	private Int24 length;
 
@@ -33,13 +34,14 @@ public class Certificate implements Sizeable {
 		return new Certificate(length, data);
 	}
 
-	public byte[] toByteArray() throws IOException {
+	@Override
+	public byte[] toByteArray() {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(bos);
-
-		dos.write(length.toByteArray());
-		dos.write(data.toByteArray());
-
+		ThrowingRunnable.unchecked(() -> {
+			dos.write(length.toByteArray());
+			dos.write(data.toByteArray());
+		}).run();
 		return bos.toByteArray();
 	}
 

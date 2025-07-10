@@ -121,31 +121,31 @@ public class MinimalTLSClient implements AutoCloseable {
 		connect();
 
 		// 1. Send Client Hello
-		ClientHello clientHello = new ClientHello(List.of(host), new CipherSuites(CipherSuiteName.values()), List.of(CurveName.values()));
-		LOGGER.debug("Sending Client Hello: {}", clientHello);
-		byte[] clientHelloBytes = clientHello.toByteArray();
+		TLSRecordClientHello clientHelloRecord = new TLSRecordClientHello(List.of(host), new CipherSuites(CipherSuiteName.values()), List.of(CurveName.values()));
+		LOGGER.debug("Sending Client Hello: {}", clientHelloRecord);
+		byte[] clientHelloBytes = clientHelloRecord.toByteArray();
 		accumulateHandshake(clientHelloBytes);
 		sendTLSRecord(clientHelloBytes);
 		LOGGER.debug("Sent Client Hello:\n{}", Bytes.hexDump(clientHelloBytes));
 
-		this.clientRandom = clientHello.getClientRandom().getRandom();
+		this.clientRandom = clientHelloRecord.getClientHello().getClientRandom().getRandom();
 
 		// 2. Receive Server Hello
 		byte[] serverHelloBytes = receiveTLSRecord();
 		accumulateHandshake(serverHelloBytes);
 		ByteArrayInputStream bis = new ByteArrayInputStream(serverHelloBytes);
-		ServerHello serverHello = ServerHello.from(bis);
-		LOGGER.debug("Received Server Hello: {}", serverHello);
+		TLSRecordServerHello serverHelloRecord = TLSRecordServerHello.from(bis);
+		LOGGER.debug("Received Server Hello: {}", serverHelloRecord);
 
-		this.serverRandom = serverHello.getServerRandom().getRandom();
-		X509Certificate x509Certificate = parseCertificate(serverHello.getServerCertificate().getCertificate().getData().getBytes());
+		this.serverRandom = serverHelloRecord.getServerHello().getServerRandom().getRandom();
+		X509Certificate x509Certificate = parseCertificate(serverHelloRecord.getServerCertificate().getCertificate().getData().getBytes());
 		LOGGER.debug("Received Server Certificate: {}", x509Certificate);
-		ServerKeyExchange serverKeyExchange = serverHello.getServerKeyExchange();
-		LOGGER.debug("Received Server Key Exchange:\n{}", Bytes.hexDump(serverHello.getServerKeyExchange().toByteArray()));
-		LOGGER.debug("[ServerHelloDone] handshake header: {}", serverHello.getServerHelloDone());
+		ServerKeyExchange serverKeyExchange = serverHelloRecord.getServerKeyExchange();
+		LOGGER.debug("Received Server Key Exchange:\n{}", Bytes.hexDump(serverHelloRecord.getServerKeyExchange().toByteArray()));
+		LOGGER.debug("[ServerHelloDone] handshake header: {}", serverHelloRecord.getServerHelloDone());
 
 		// 3. Generate Client Key Exchange
-		CipherSuiteName selectedCipher = serverHello.getCipherSuite().getCipher();
+		CipherSuiteName selectedCipher = serverHelloRecord.getServerHello().getCipherSuite().getCipher();
 		byte[] clientPublic;
 		if (serverKeyExchange.getCurveInfo().getName() == CurveName.X25519) {
 			clientPublic = generateX25519KeyExchangeClientPublic(serverKeyExchange);
