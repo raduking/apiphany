@@ -2,6 +2,19 @@
 
 ---
 
+`1.0.3`
+
+- Added `Arrays` class for Java array utility methods.
+- Added `Strings.envelope` method to add a a string as both a prefix and a suffix to a given string.
+- Added `Certificates` class for key stores and trust stores utility methods.
+- Added `CertificateStoreInfo` which holds all information to construct a key store or a trust store.
+- Renamed `HttpProperties` to `JavaNetHttpProperties`.
+- Added SSL capabilities to the HTTP exchange clients.
+- Added `SSLProperties` to be able to configure SSL for the HTTP exchange clients.
+- Added `SSLProtocol` which enumerates SSL protocols.
+
+---
+
 `1.0.2`
 
 - Renamed `ClientProperties.Timeout.DISABLED` to `ClientProperties.Timeout.INFINTE`.

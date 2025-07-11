@@ -10,6 +10,7 @@ import java.util.function.Supplier;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.http.HttpClientFluentAdapter;
 import org.apiphany.header.Headers;
+import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Maps;
 import org.apiphany.lang.retry.Retry;
 import org.apiphany.meters.BasicMeters;
@@ -159,6 +160,9 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @return this
 	 */
 	public ApiClientFluentAdapter url(final String url, final String... pathSegments) {
+		if (Strings.isEmpty(url)) {
+			throw new IllegalArgumentException("url cannot be null or empty");
+		}
 		StringBuilder sb = new StringBuilder(url);
 		for (String pathSegment : pathSegments) {
 			if (!sb.isEmpty() && sb.charAt(sb.length() - 1) != '/') {

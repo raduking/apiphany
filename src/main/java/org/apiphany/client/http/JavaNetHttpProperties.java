@@ -1,7 +1,8 @@
-package org.apiphany.http;
+package org.apiphany.client.http;
 
 import java.net.http.HttpClient.Version;
 
+import org.apiphany.http.HttpMessages;
 import org.apiphany.json.JsonBuilder;
 
 /**
@@ -10,7 +11,7 @@ import org.apiphany.json.JsonBuilder;
  *
  * @author Radu Sebastian LAZIN
  */
-public class HttpProperties {
+public class JavaNetHttpProperties {
 
 	/**
 	 * The root key for Java.net HTTP client properties.
@@ -25,12 +26,12 @@ public class HttpProperties {
 	/**
 	 * Default constructor.
 	 */
-	public HttpProperties() {
+	public JavaNetHttpProperties() {
 		// empty
 	}
 
 	/**
-	 * Returns a JSON representation of this {@link HttpProperties} object.
+	 * Returns a JSON representation of this {@link JavaNetHttpProperties} object.
 	 *
 	 * @return a JSON string representing this object.
 	 */
