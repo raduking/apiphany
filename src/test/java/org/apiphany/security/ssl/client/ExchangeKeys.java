@@ -9,21 +9,24 @@ public class ExchangeKeys {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ExchangeKeys.class);
 
+    public static final int KEY_LENGTH = 32; // 256-bit AES
+    public static final int IV_LENGTH = 4;
+
 	public enum Type {
 		AHEAD;
 	}
 
-	private byte[] clientWriteKey = new byte[16];
-	private byte[] serverWriteKey = new byte[16];
-	private byte[] clientIV = new byte[4];
-	private byte[] serverIV = new byte[4];
+	private final byte[] clientWriteKey = new byte[KEY_LENGTH];
+	private final byte[] serverWriteKey = new byte[KEY_LENGTH];
+	private final byte[] clientIV = new byte[IV_LENGTH];
+	private final byte[] serverIV = new byte[IV_LENGTH];
 
 	public static ExchangeKeys from(final byte[] keyBlock, final Type type) {
 		if (Type.AHEAD != type) {
 			throw new UnsupportedOperationException("Unsupported exchange key type");
 		}
 		LOGGER.debug("Key block length: {}", keyBlock.length);
-		LOGGER.debug("Key block: {}", Bytes.hexString(keyBlock));
+		LOGGER.debug("Key block:\n{}", Bytes.hexDumpRaw(keyBlock));
 
 		ExchangeKeys exchangeKeys = new ExchangeKeys();
 
@@ -33,10 +36,10 @@ public class ExchangeKeys {
 		buffer.get(exchangeKeys.clientIV);
 		buffer.get(exchangeKeys.serverIV);
 
-		LOGGER.debug("Client write key: {}", Bytes.hexString(exchangeKeys.clientWriteKey));
-		LOGGER.debug("Server write key: {}", Bytes.hexString(exchangeKeys.serverWriteKey));
-		LOGGER.debug("Client IV: {}", Bytes.hexString(exchangeKeys.clientIV));
-		LOGGER.debug("Server IV: {}", Bytes.hexString(exchangeKeys.serverIV));
+		LOGGER.debug("Client write key:\n{}", Bytes.hexDumpRaw(exchangeKeys.clientWriteKey));
+		LOGGER.debug("Server write key:\n{}", Bytes.hexDumpRaw(exchangeKeys.serverWriteKey));
+		LOGGER.debug("Client IV:\n{}", Bytes.hexDumpRaw(exchangeKeys.clientIV));
+		LOGGER.debug("Server IV:\n{}", Bytes.hexDumpRaw(exchangeKeys.serverIV));
 
 		return exchangeKeys;
 	}

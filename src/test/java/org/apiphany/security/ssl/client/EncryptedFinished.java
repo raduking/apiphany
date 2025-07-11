@@ -8,22 +8,25 @@ import java.io.InputStream;
 import org.apiphany.json.JsonBuilder;
 import org.morphix.lang.function.ThrowingRunnable;
 
-public class ClientFinished implements TLSHandshakeBody {
+public class EncryptedFinished implements TLSObject {
 
+	private BinaryData nonce;
 	private BinaryData encryptedData;
 
-	public ClientFinished(final BinaryData encryptedData) {
+	public EncryptedFinished(final BinaryData nonce, final BinaryData encryptedData) {
+		this.nonce = nonce;
 		this.encryptedData = encryptedData;
 	}
 
-	public ClientFinished(final byte[] payload) {
-		this(new BinaryData(payload));
+	public EncryptedFinished(final byte[] nonce, final byte[] encryptedData) {
+		this(new BinaryData(nonce), new BinaryData(encryptedData));
 	}
 
-	public static ClientFinished from(final InputStream is, int length) throws IOException {
-		BinaryData payload = BinaryData.from(is, length);
+	public static EncryptedFinished from(final InputStream is, final int length) throws IOException {
+		BinaryData nonce = BinaryData.from(is, 8);
+		BinaryData payload = BinaryData.from(is, length - 8);
 
-		return new ClientFinished(payload);
+		return new EncryptedFinished(nonce, payload);
 	}
 
 	@Override
@@ -31,6 +34,7 @@ public class ClientFinished implements TLSHandshakeBody {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(bos);
 		ThrowingRunnable.unchecked(() -> {
+			dos.write(nonce.toByteArray());
 			dos.write(encryptedData.toByteArray());
 		}).run();
 		return bos.toByteArray();
@@ -43,12 +47,11 @@ public class ClientFinished implements TLSHandshakeBody {
 
 	@Override
 	public int size() {
-		return encryptedData.size();
+		return nonce.size() + encryptedData.size();
 	}
 
-	@Override
-	public HandshakeType type() {
-		return HandshakeType.FINISHED;
+	public BinaryData getNonce() {
+		return nonce;
 	}
 
 	public BinaryData getEncryptedData() {

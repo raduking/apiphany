@@ -4,17 +4,18 @@ import java.util.Map;
 
 import org.morphix.lang.Enums;
 
-public enum CurveType {
+public enum AlertLevel {
 
-	NAMED_CURVE((byte) 0x03);
+	WARNIBNG((byte) 0x01),
+	FATAL((byte) 0x02);
 
 	public static final int BYTES = 1;
 
-	private static final Map<Byte, CurveType> VALUE_MAP = Enums.buildNameMap(values(), CurveType::value);
+	private static final Map<Byte, AlertLevel> VALUE_MAP = Enums.buildNameMap(values(), AlertLevel::value);
 
 	private final byte value;
 
-	CurveType(final byte value) {
+	AlertLevel(final byte value) {
 		this.value = value;
 	}
 
@@ -22,7 +23,7 @@ public enum CurveType {
 		return value;
 	}
 
-	public static CurveType fromValue(final byte value) {
+	public static AlertLevel fromValue(final byte value) {
 		return Enums.from(value, VALUE_MAP, values());
 	}
 }

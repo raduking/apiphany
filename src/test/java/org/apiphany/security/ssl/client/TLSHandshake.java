@@ -15,7 +15,7 @@ public class TLSHandshake implements TLSObject {
 
 	private TLSHandshakeBody body;
 
-	public TLSHandshake(HandshakeHeader header, TLSHandshakeBody body, boolean updateHeader) {
+	public TLSHandshake(final HandshakeHeader header, final TLSHandshakeBody body, final boolean updateHeader) {
 		this.header = header;
 		this.body = body;
 		if (updateHeader) {
@@ -23,15 +23,15 @@ public class TLSHandshake implements TLSObject {
 		}
 	}
 
-	public TLSHandshake(TLSHandshakeBody body) {
+	public TLSHandshake(final TLSHandshakeBody body) {
 		this(new HandshakeHeader(body.type()), body, true);
 	}
 
-	public TLSHandshake(HandshakeHeader header, TLSHandshakeBody body) {
+	public TLSHandshake(final HandshakeHeader header, final TLSHandshakeBody body) {
 		this(header, body, true);
 	}
 
-	public static TLSHandshake from(InputStream is) throws IOException {
+	public static TLSHandshake from(final InputStream is) throws IOException {
 		HandshakeHeader header = HandshakeHeader.from(is);
 		HandshakeType type = header.getType();
 
@@ -65,15 +65,15 @@ public class TLSHandshake implements TLSObject {
 		return header;
 	}
 
-	public TLSObject getBody() {
+	public TLSHandshakeBody getBody() {
 		return body;
 	}
 
-	public <T extends TLSHandshakeBody> boolean is(Class<T> tlsObjectClass) {
+	public <T extends TLSHandshakeBody> boolean is(final Class<T> tlsObjectClass) {
 		return body.getClass().isAssignableFrom(tlsObjectClass);
 	}
 
-	public <T extends TLSHandshakeBody> T get(Class<T> tlsObjectClass) {
+	public <T extends TLSHandshakeBody> T get(final Class<T> tlsObjectClass) {
 		if (is(tlsObjectClass)) {
 			return JavaObjects.cast(body);
 		}

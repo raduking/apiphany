@@ -1,14 +1,14 @@
 {
   "protocol": "TLS_1_3",
   "keystore": {
-    "location": "keystore.jks",
+    "location": "security/ssl/keystore.jks",
     "type": "JKS",
     "algorithm": "SunX509",
     "password": "keystorepassword123",
     "external": false
   },
   "truststore": {
-    "location": "truststore.jks",
+    "location": "security/ssl/truststore.jks",
     "type": "JKS",
     "algorithm": "SunX509",
     "password": "truststorepassword123",

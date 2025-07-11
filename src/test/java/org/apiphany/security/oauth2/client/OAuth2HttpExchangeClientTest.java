@@ -63,11 +63,11 @@ class OAuth2HttpExchangeClientTest {
 
 	@BeforeEach
 	void setUp() {
-		clientRegistration = JsonBuilder.fromJson(Strings.fromFile("/oauth2-client-registration.json"), OAuth2ClientRegistration.class);
+		clientRegistration = JsonBuilder.fromJson(Strings.fromFile("/security/oauth2/oauth2-client-registration.json"), OAuth2ClientRegistration.class);
 		clientRegistration.setProvider(PROVIDER_NAME);
 		clientRegistration.setClientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST);
 
-		providerDetails = JsonBuilder.fromJson(Strings.fromFile("/oauth2-provider-details.json"), OAuth2ProviderDetails.class);
+		providerDetails = JsonBuilder.fromJson(Strings.fromFile("/security/oauth2/oauth2-provider-details.json"), OAuth2ProviderDetails.class);
 		providerDetails.setTokenUri(OAUTH2_SERVER.getUrl() + "/token");
 
 		oAuth2Properties = new OAuth2Properties();

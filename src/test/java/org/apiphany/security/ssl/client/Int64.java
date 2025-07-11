@@ -3,36 +3,38 @@ package org.apiphany.security.ssl.client;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 
 import org.apiphany.json.JsonBuilder;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
-public class Int24 implements Sizeable, BinaryRepresentable {
+public class Int64 implements Sizeable, BinaryRepresentable {
 
-	public static final int BYTES = 3;
+	public static final int BYTES = 8;
 
-	private int value;
+	private long value;
 
-	public Int24(final int value) {
+	public Int64(final long value) {
 		this.value = value;
 	}
 
-	public Int24() {
-		this(0x000000);
+	public Int64() {
+		this(0x0000000000000000);
 	}
 
-	public static Int24 from(final InputStream is) throws IOException {
+	public static Int64 from(final InputStream is) throws IOException {
 		byte[] buffer = new byte[BYTES];
 		int bytesRead = is.read(buffer);
 		if (BYTES != bytesRead) {
 			throw new EOFException("Error reading " + BYTES + " bytes");
 		}
-		int int24 = ((buffer[0] & 0xFF) << 16) |
-				((buffer[1] & 0xFF) << 8) |
-				(buffer[2] & 0xFF);
+		long int64 = 0;
+		for (int i = BYTES; i > 0; --i) {
+			int64 |= ((long) buffer[BYTES - i] & 0xFF) << ((i - 1) * 8);
+		}
 
-		return new Int24(int24);
+		return new Int64(int64);
 	}
 
 	@Override
@@ -40,12 +42,10 @@ public class Int24 implements Sizeable, BinaryRepresentable {
 		return toByteArray(value);
 	}
 
-	public static byte[] toByteArray(final int value) {
-		return new byte[] {
-				(byte) ((value >> 16) & 0xFF),
-				(byte) ((value >> 8) & 0xFF),
-				(byte) (value & 0xFF)
-		};
+	public static byte[] toByteArray(final long value) {
+		ByteBuffer buffer = ByteBuffer.allocate(BYTES);
+		buffer.putLong(value);
+		return buffer.array();
 	}
 
 	@Override
@@ -54,11 +54,11 @@ public class Int24 implements Sizeable, BinaryRepresentable {
 	}
 
 	@JsonValue
-	public int getValue() {
+	public long getValue() {
 		return value;
 	}
 
-	public void setValue(final int value) {
+	public void setValue(final long value) {
 		this.value = value;
 	}
 
