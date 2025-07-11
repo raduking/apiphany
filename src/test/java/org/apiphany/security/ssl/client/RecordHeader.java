@@ -13,29 +13,29 @@ public class RecordHeader implements TLSObject {
 
 	public static final int BYTES = 5;
 
-	private RecordType type;
+	private RecordContentType type;
 
 	private Version version;
 
 	private Int16 length;
 
-	public RecordHeader(final RecordType type, final Version version, final Int16 length) {
+	public RecordHeader(final RecordContentType type, final Version version, final Int16 length) {
 		this.type = type;
 		this.version = version;
 		this.length = length;
 	}
 
-	public RecordHeader(final RecordType type, final SSLProtocol sslProtocol, final short length) {
+	public RecordHeader(final RecordContentType type, final SSLProtocol sslProtocol, final short length) {
 		this(type, Version.of(sslProtocol), new Int16(length));
 	}
 
-	public RecordHeader(final RecordType type, final SSLProtocol sslProtocol) {
+	public RecordHeader(final RecordContentType type, final SSLProtocol sslProtocol) {
 		this(type, sslProtocol, (short) 0x0000);
 	}
 
 	public static RecordHeader from(final InputStream is) throws IOException {
 		Int8 int8 = Int8.from(is);
-		RecordType type = RecordType.fromValue(int8.getValue());
+		RecordContentType type = RecordContentType.fromValue(int8.getValue());
 		Version version = Version.from(is);
 		Int16 length = Int16.from(is);
 
@@ -64,7 +64,7 @@ public class RecordHeader implements TLSObject {
 		return type.size() + version.size() + length.size();
 	}
 
-	public RecordType getType() {
+	public RecordContentType getType() {
 		return type;
 	}
 

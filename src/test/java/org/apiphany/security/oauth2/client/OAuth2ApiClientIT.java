@@ -36,7 +36,7 @@ class OAuth2ApiClientIT {
 	@SuppressWarnings("resource")
 	@Container
 	private static final KeycloakContainer KEYCLOAK_CONTAINER = new KeycloakContainer()
-			.withRealmImportFile("keycloak-realm-config.json");
+			.withRealmImportFile("security/oauth2/keycloak-realm-config.json");
 
 	private OAuth2ClientRegistration clientRegistration;
 	private OAuth2ProviderDetails providerDetails;
@@ -47,9 +47,9 @@ class OAuth2ApiClientIT {
 		LOGGER.info("Authentication Server URL: {}", authServerUrl);
 		assertThat(authServerUrl, notNullValue());
 
-		clientRegistration = JsonBuilder.fromJson(Strings.fromFile("/oauth2-client-registration.json"), OAuth2ClientRegistration.class);
+		clientRegistration = JsonBuilder.fromJson(Strings.fromFile("/security/oauth2/oauth2-client-registration.json"), OAuth2ClientRegistration.class);
 
-		providerDetails = JsonBuilder.fromJson(Strings.fromFile("/oauth2-provider-details.json"), OAuth2ProviderDetails.class);
+		providerDetails = JsonBuilder.fromJson(Strings.fromFile("/security/oauth2/oauth2-provider-details.json"), OAuth2ProviderDetails.class);
 		providerDetails.setTokenUri(KEYCLOAK_CONTAINER.getAuthServerUrl() + KEYCLOAK_TOKEN_PATH);
 	}
 

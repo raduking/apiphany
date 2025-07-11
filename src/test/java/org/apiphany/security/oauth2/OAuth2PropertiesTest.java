@@ -22,7 +22,7 @@ class OAuth2PropertiesTest {
 
 	@Test
 	void shouldLoadFromFile() throws JsonProcessingException {
-		String json = Strings.fromFile("/oauth2-properties.json");
+		String json = Strings.fromFile("/security/oauth2/oauth2-properties.json");
 
 		final ObjectMapper propertiesObjectMapper = new ObjectMapper()
 				.setPropertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
@@ -34,7 +34,7 @@ class OAuth2PropertiesTest {
 
 	@Test
 	void shouldSerializeToJson() throws JsonProcessingException {
-		String json = Strings.fromFile("/oauth2-properties.json");
+		String json = Strings.fromFile("/security/oauth2/oauth2-properties.json");
 
 		final ObjectMapper propertiesObjectMapper = new ObjectMapper()
 				.setPropertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);

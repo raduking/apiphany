@@ -2,41 +2,51 @@ package org.apiphany.security.ssl.client;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 public class PseudoRandomFunction {
 
-    public static byte[] apply(final byte[] secret, final String label, final byte[] seed, final int length) throws Exception {
-        byte[] labelBytes = label.getBytes(StandardCharsets.US_ASCII);
-        byte[] labelSeed = concat(labelBytes, seed);
+	public static final String ALGORITHM_SHA384 = "HmacSHA384";
 
-        ByteArrayOutputStream result = new ByteArrayOutputStream();
-        byte[] a = hmac(secret, labelSeed); // A(1) = HMAC(secret, label + seed)
+	public static byte[] apply(final byte[] secret, final String label, final byte[] seed, final int length) throws Exception {
+		return apply(secret, label, seed, length, ALGORITHM_SHA384);
+	}
 
-        while (result.size() < length) {
-            byte[] block = hmac(secret, concat(a, labelSeed));
-            result.write(block);
-            a = hmac(secret, a); // A(i+1) = HMAC(secret, A(i))
-        }
+	public static byte[] apply(final byte[] secret, final String label, final byte[] seed, final int length, final String algorithm) throws Exception {
+		byte[] labelBytes = label.getBytes(StandardCharsets.US_ASCII);
+		byte[] labelSeed = new byte[labelBytes.length + seed.length];
+		System.arraycopy(labelBytes, 0, labelSeed, 0, labelBytes.length);
+		System.arraycopy(seed, 0, labelSeed, labelBytes.length, seed.length);
 
-        return Arrays.copyOf(result.toByteArray(), length);
-    }
+		return pHash(secret, labelSeed, length, algorithm);
+	}
 
-    private static byte[] hmac(final byte[] key, final byte[] data) throws Exception {
-        Mac mac = Mac.getInstance("HmacSHA256");
-        mac.init(new SecretKeySpec(key, "HmacSHA256"));
-        return mac.doFinal(data);
-    }
+	public static byte[] pHash(final byte[] secret, final byte[] seed, final int length, final String algorithm) throws Exception {
+		Mac mac = Mac.getInstance(algorithm);
+		mac.init(new SecretKeySpec(secret, algorithm));
 
-    private static byte[] concat(final byte[]... arrays) {
+		byte[] a = seed;
+		byte[] result = new byte[length];
+		int offset = 0;
+
+		while (offset < length) {
+			a = mac.doFinal(a); // a(i) = HMAC(secret, a(i-1))
+			byte[] output = mac.doFinal(concatenate(a, seed));
+			int copyLength = Math.min(output.length, length - offset);
+			System.arraycopy(output, 0, result, offset, copyLength);
+			offset += copyLength;
+		}
+
+		return result;
+	}
+
+	private static byte[] concatenate(final byte[]... arrays) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         for (byte[] arr : arrays) {
             baos.write(arr, 0, arr.length);
         }
         return baos.toByteArray();
     }
-
 }

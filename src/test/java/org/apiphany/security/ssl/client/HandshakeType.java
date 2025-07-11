@@ -12,7 +12,7 @@ public enum HandshakeType implements Sizeable {
 	SERVER_KEY_EXCHANGE((byte) 0x0C, FromFunction.ignoreSize(ServerKeyExchange::from)),
 	SERVER_HELLO_DONE((byte) 0x0E, FromFunction.ignoreSize(ServerHelloDone::from)),
 	CLIENT_KEY_EXCHANGE((byte) 0x10, FromFunction.ignoreSize(ClientKeyExchange::from)),
-	FINISHED((byte) 0x14, ClientFinished::from);
+	FINISHED((byte) 0x14, null);
 
 	public static final int BYTES = 1;
 
@@ -22,7 +22,7 @@ public enum HandshakeType implements Sizeable {
 
 	private final FromFunction<? extends TLSHandshakeBody> fromFunction;
 
-	HandshakeType(final byte value, FromFunction<? extends TLSHandshakeBody> fromFunction) {
+	HandshakeType(final byte value, final FromFunction<? extends TLSHandshakeBody> fromFunction) {
 		this.value = value;
 		this.fromFunction = fromFunction;
 	}
