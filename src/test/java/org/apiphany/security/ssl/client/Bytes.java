@@ -111,4 +111,12 @@ public class Bytes {
 		}
 		return byteArray;
 	}
+
+	public static void reverse(final byte[] bytes) {
+	    for (int i = 0; i < bytes.length / 2; i++) {
+	        byte tmp = bytes[i];
+	        bytes[i] = bytes[bytes.length - 1 - i];
+	        bytes[bytes.length - 1 - i] = tmp;
+	    }
+	}
 }

@@ -15,6 +15,7 @@ import java.security.interfaces.XECPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.NamedParameterSpec;
 import java.security.spec.XECPublicKeySpec;
+import java.util.Arrays;
 
 import javax.crypto.KeyAgreement;
 
@@ -28,8 +29,18 @@ public class X25519Keys {
 		return keyPairGenerator.generateKeyPair();
 	}
 
-	public static PublicKey getPublicKey(final byte[] publicKeyBytes) throws NoSuchAlgorithmException, InvalidKeySpecException {
+	public static PublicKey getPublicKeyBE(final byte[] publicKeyBytes) throws NoSuchAlgorithmException, InvalidKeySpecException {
 		BigInteger u = new BigInteger(1, publicKeyBytes); // '1' for positive number
+		XECPublicKeySpec pubKeySpec = new XECPublicKeySpec(NamedParameterSpec.X25519, u);
+		KeyFactory keyFactory = KeyFactory.getInstance(ALGORITHM);
+		return keyFactory.generatePublic(pubKeySpec);
+	}
+
+	public static PublicKey getPublicKeyLE(final byte[] lePublicKeyBytes) throws NoSuchAlgorithmException, InvalidKeySpecException {
+		byte[] beBytes = Arrays.copyOf(lePublicKeyBytes, lePublicKeyBytes.length);
+		Bytes.reverse(beBytes);
+
+		BigInteger u = new BigInteger(1, beBytes);
 		XECPublicKeySpec pubKeySpec = new XECPublicKeySpec(NamedParameterSpec.X25519, u);
 		KeyFactory keyFactory = KeyFactory.getInstance(ALGORITHM);
 		return keyFactory.generatePublic(pubKeySpec);
@@ -44,22 +55,28 @@ public class X25519Keys {
 	}
 
 	public static byte[] toRawByteArrayV1(final PublicKey publicKey) {
-		BigInteger uCoord = ((XECPublicKey) publicKey).getU();
-		byte[] unsigned = uCoord.toByteArray();
-		byte[] publicKeyBytes = new byte[BYTES];
+		BigInteger u = ((XECPublicKey) publicKey).getU();
+		byte[] bigEndian = u.toByteArray();
 
-		int offset = Math.max(0, unsigned.length - BYTES);
-		int length = Math.min(unsigned.length, BYTES);
-		System.arraycopy(unsigned, offset, publicKeyBytes, BYTES - length, length);
-
-		// X25519 often uses little endian and the bytes will be reversed
-		return publicKeyBytes;
+		byte[] beNormalized = new byte[32];
+		if (bigEndian.length > 32) {
+			// Strip sign byte if present
+			if (bigEndian.length == 33 && bigEndian[0] == 0x00) {
+				System.arraycopy(bigEndian, 1, beNormalized, 0, 32);
+			} else {
+				throw new IllegalArgumentException("BigInteger too large: " + bigEndian.length);
+			}
+		} else {
+			System.arraycopy(bigEndian, 0, beNormalized, 32 - bigEndian.length, bigEndian.length);
+		}
+		Bytes.reverse(beNormalized);
+		return beNormalized;
 	}
 
 	public static byte[] toRawByteArrayV2(final PublicKey publicKey) {
 		BigInteger uCoord = ((XECPublicKey) publicKey).getU();
 		byte[] unsigned = uCoord.toByteArray();
-		byte[] result = new byte[32];
+		byte[] result = new byte[BYTES];
 
 		int offset = unsigned.length > BYTES ? 1 : 0;
 		int length = Math.min(unsigned.length - offset, BYTES);
@@ -74,5 +91,24 @@ public class X25519Keys {
 
 	public static byte[] toRawByteArray(final PrivateKey privateKey) {
 		return ((XECPrivateKey) privateKey).getScalar().orElseThrow();
+	}
+
+	public static boolean verifyKeyMatch(final byte[] littleEndianKey, final PublicKey publicKey) {
+		BigInteger u = ((XECPublicKey) publicKey).getU();
+		byte[] bigEndian = u.toByteArray();
+
+		byte[] beNormalized = new byte[32];
+		if (bigEndian.length > 32) {
+			// Strip sign byte if present
+			if (bigEndian.length == 33 && bigEndian[0] == 0x00) {
+				System.arraycopy(bigEndian, 1, beNormalized, 0, 32);
+			} else {
+				throw new IllegalArgumentException("BigInteger too large: " + bigEndian.length);
+			}
+		} else {
+			System.arraycopy(bigEndian, 0, beNormalized, 32 - bigEndian.length, bigEndian.length);
+		}
+		Bytes.reverse(beNormalized);
+		return Arrays.equals(littleEndianKey, beNormalized);
 	}
 }

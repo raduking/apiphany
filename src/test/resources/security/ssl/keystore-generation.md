@@ -100,5 +100,6 @@ openssl s_server \
   -debug \
   -msg \
   -state \
-  -tlsextdebug
+  -tlsextdebug \
+  -trace
 ```
