@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.BiFunction;
 
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.collections.Lists;
@@ -62,6 +63,13 @@ public class TLSRecord implements TLSObject {
 			currentLength -= fragment.size();
 		}
 		return new TLSRecord(header, fragments, false);
+	}
+
+	public static TLSRecord from(final InputStream is, final BiFunction<InputStream, Short, TLSObject> fragmentReader) throws IOException {
+		RecordHeader header = RecordHeader.from(is);
+		TLSObject fragment = fragmentReader.apply(is, header.getLength().getValue());
+
+		return new TLSRecord(header, List.of(fragment), false);
 	}
 
 	@Override

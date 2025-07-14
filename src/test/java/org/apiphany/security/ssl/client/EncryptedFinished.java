@@ -22,9 +22,9 @@ public class EncryptedFinished implements TLSObject {
 		this(new BinaryData(nonce), new BinaryData(encryptedData));
 	}
 
-	public static EncryptedFinished from(final InputStream is, final int length) throws IOException {
-		BinaryData nonce = BinaryData.from(is, 8);
-		BinaryData payload = BinaryData.from(is, length - 8);
+	public static EncryptedFinished from(final InputStream is, final int totalLength, final int nonceLength) throws IOException {
+		BinaryData nonce = BinaryData.from(is, nonceLength);
+		BinaryData payload = BinaryData.from(is, totalLength - nonceLength);
 
 		return new EncryptedFinished(nonce, payload);
 	}

@@ -24,6 +24,7 @@ import javax.net.ssl.SSLException;
 import org.apiphany.lang.Strings;
 import org.apiphany.security.ssl.SSLProtocol;
 import org.morphix.lang.Nullables;
+import org.morphix.lang.function.ThrowingBiFunction;
 import org.morphix.lang.function.ThrowingConsumer;
 import org.morphix.lang.function.ThrowingRunnable;
 import org.slf4j.Logger;
@@ -134,7 +135,11 @@ public class MinimalTLSClient implements AutoCloseable {
 		CipherSuiteName selectedCipher = serverHello.getCipherSuite().getCipher();
 		byte[] clientPublic;
 		if (serverKeyExchange.getCurveInfo().getName() == CurveName.X25519) {
+			byte[] leServerPublic = serverKeyExchange.getPublicKey().getValue().getBytes();
+			LOGGER.debug("Server public key (raw bytes from key exchange):\n{}", Bytes.hexDumpRaw(leServerPublic));
 			clientPublic = getX25519ClientPublicBytes(serverKeyExchange);
+			LOGGER.debug("Server public key ({}):\n{}", serverPublicKey.getClass(), serverPublicKey);
+			LOGGER.debug("Keys match: {}", X25519Keys.verifyKeyMatch(X25519Keys.toRawByteArrayV1(serverPublicKey), serverPublicKey));
 		} else {
 			throw new SSLException("Unsupported cipher suite: " + selectedCipher);
 		}
@@ -183,12 +188,12 @@ public class MinimalTLSClient implements AutoCloseable {
 		LOGGER.debug("Received Change Cipher Spec: {}", serverChangeCipherSpec);
 
 		// 9. Receive Server Finished Record
-		TLSRecord serverFinishedRecord = TLSRecord.from(in); // type 0x16
+		TLSRecord serverFinishedRecord = TLSRecord.from(in, ThrowingBiFunction.unchecked((is, total) -> EncryptedFinished.from(is, total, 12)));
 		LOGGER.debug("Server Finished TLS Record Header: {}", Bytes.hexDumpRaw(serverFinishedRecord.toByteArray()));
 
 		LOGGER.info("TLS 1.2 handshake complete!");
 
-		return keys.getServerIV();
+		return serverFinishedRecord.toByteArray();
 	}
 
 	private TLSRecord sendClientHello() throws IOException {
@@ -214,11 +219,11 @@ public class MinimalTLSClient implements AutoCloseable {
 
 	public byte[] getX25519ClientPublicBytes(final ServerKeyExchange ske) throws Exception {
 		byte[] serverPubBytes = ske.getPublicKey().getValue().getBytes();
-		this.serverPublicKey = X25519Keys.getPublicKey(serverPubBytes);
+		this.serverPublicKey = X25519Keys.getPublicKeyLE(serverPubBytes);
 		if (null == clientKeyPair) {
 			this.clientKeyPair = X25519Keys.generateKeyPair();
 		}
-		return X25519Keys.toRawByteArrayV2(clientKeyPair.getPublic());
+		return X25519Keys.toRawByteArrayV1(clientKeyPair.getPublic());
 	}
 
 	public TLSRecord createClientFinished(final TLSHandshake handshake, final ExchangeKeys keys) throws Exception {

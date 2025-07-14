@@ -106,7 +106,9 @@ class SSLPropertiesTest {
 
 	@Test
 	void shouldPerformTLS_V_1_2_SSLHandshake() throws Exception {
-		int port = Sockets.findAvailableTcpPort(PORT_CHECK_TIMEOUT);
+		//int port = Sockets.findAvailableTcpPort(PORT_CHECK_TIMEOUT);
+		int port = 4433;
+
 		SSLProperties sslProperties = JsonBuilder.fromJson(Strings.fromFile("/security/ssl/ssl-properties.json"), SSLProperties.class);
 		sslProperties.setProtocol(SSLProtocol.TLS_1_2);
 		SimpleHttpsServer server = new SimpleHttpsServer(port, sslProperties);
