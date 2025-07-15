@@ -37,7 +37,7 @@ public enum RecordContentType implements Sizeable {
 		return switch(tlsObject) {
 			case TLSHandshakeBody tlsHandshakeObject -> HANDSHAKE;
 			case ChangeCipherSpec changeCipherSpec -> CHANGE_CIPHER_SPEC;
-			case EncryptedFinished encryptedFinished -> HANDSHAKE;
+			case Encrypted encryptedFinished -> HANDSHAKE;
 			default -> throw new UnsupportedOperationException("Unknown TLS object type: " + tlsObject.getClass());
 		};
 	}

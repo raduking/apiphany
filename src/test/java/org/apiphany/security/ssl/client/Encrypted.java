@@ -8,25 +8,25 @@ import java.io.InputStream;
 import org.apiphany.json.JsonBuilder;
 import org.morphix.lang.function.ThrowingRunnable;
 
-public class EncryptedFinished implements TLSObject {
+public class Encrypted implements TLSObject {
 
 	private BinaryData nonce;
 	private BinaryData encryptedData;
 
-	public EncryptedFinished(final BinaryData nonce, final BinaryData encryptedData) {
+	public Encrypted(final BinaryData nonce, final BinaryData encryptedData) {
 		this.nonce = nonce;
 		this.encryptedData = encryptedData;
 	}
 
-	public EncryptedFinished(final byte[] nonce, final byte[] encryptedData) {
+	public Encrypted(final byte[] nonce, final byte[] encryptedData) {
 		this(new BinaryData(nonce), new BinaryData(encryptedData));
 	}
 
-	public static EncryptedFinished from(final InputStream is, final int totalLength, final int nonceLength) throws IOException {
+	public static Encrypted from(final InputStream is, final int totalLength, final int nonceLength) throws IOException {
 		BinaryData nonce = BinaryData.from(is, nonceLength);
 		BinaryData payload = BinaryData.from(is, totalLength - nonceLength);
 
-		return new EncryptedFinished(nonce, payload);
+		return new Encrypted(nonce, payload);
 	}
 
 	@Override

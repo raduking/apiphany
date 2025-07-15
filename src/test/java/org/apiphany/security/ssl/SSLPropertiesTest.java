@@ -122,12 +122,32 @@ class SSLPropertiesTest {
 	}
 
 	@Test
+	void shouldPerformTLS_V_1_2_SSLHandshakeWithCloseNotify() throws Exception {
+		int port = Sockets.findAvailableTcpPort(PORT_CHECK_TIMEOUT);
+		SSLProperties sslProperties = JsonBuilder.fromJson(Strings.fromFile("/security/ssl/ssl-properties.json"), SSLProperties.class);
+		sslProperties.setProtocol(SSLProtocol.TLS_1_2);
+		SimpleHttpsServer server = new SimpleHttpsServer(port, sslProperties);
+
+		byte[] closeNotify = null;
+		try (MinimalTLSClient client = new MinimalTLSClient(LOCALHOST, port, CLIENT_KEY_PAIR)) {
+			client.performHandshake();
+			closeNotify = client.closeNotify();
+		} catch (Exception e) {
+			LOGGER.error("Error performing SSL handshake", e);
+		} finally {
+			server.close();
+		}
+		assertNotNull(closeNotify);
+	}
+
+	@Test
 	void shouldPerformTLS_V_1_2_SSLHandshakeOpenSSL() throws Exception {
 		int port = 4433;
 
 		byte[] serverFinished = null;
 		try (MinimalTLSClient client = new MinimalTLSClient(LOCALHOST, port, CLIENT_KEY_PAIR)) {
 			serverFinished = client.performHandshake();
+			client.closeNotify();
 		} catch (Exception e) {
 			LOGGER.error("Error performing SSL handshake", e);
 		}
