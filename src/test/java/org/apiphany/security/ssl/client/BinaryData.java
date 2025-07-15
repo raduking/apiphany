@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.lang.Hex;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -51,7 +52,7 @@ public class BinaryData implements TLSObject {
 
 	@JsonValue
 	public String toHexString() {
-		return Bytes.hexString(bytes, "");
+		return Hex.string(bytes, "");
 	}
 
 	public byte[] getBytes() {

@@ -1,8 +1,6 @@
 package org.apiphany.security.ssl.client;
 
 import java.math.BigInteger;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -54,39 +52,23 @@ public class X25519Keys {
 		return ka.generateSecret();
 	}
 
-	public static byte[] toRawByteArrayV1(final PublicKey publicKey) {
+	public static byte[] toRawByteArray(final PublicKey publicKey) {
 		BigInteger u = ((XECPublicKey) publicKey).getU();
 		byte[] bigEndian = u.toByteArray();
 
-		byte[] beNormalized = new byte[32];
-		if (bigEndian.length > 32) {
+		byte[] beNormalized = new byte[BYTES];
+		if (bigEndian.length > BYTES) {
 			// Strip sign byte if present
-			if (bigEndian.length == 33 && bigEndian[0] == 0x00) {
-				System.arraycopy(bigEndian, 1, beNormalized, 0, 32);
+			if (bigEndian.length == BYTES + 1 && bigEndian[0] == 0x00) {
+				System.arraycopy(bigEndian, 1, beNormalized, 0, BYTES);
 			} else {
 				throw new IllegalArgumentException("BigInteger too large: " + bigEndian.length);
 			}
 		} else {
-			System.arraycopy(bigEndian, 0, beNormalized, 32 - bigEndian.length, bigEndian.length);
+			System.arraycopy(bigEndian, 0, beNormalized, BYTES - bigEndian.length, bigEndian.length);
 		}
 		Bytes.reverse(beNormalized);
 		return beNormalized;
-	}
-
-	public static byte[] toRawByteArrayV2(final PublicKey publicKey) {
-		BigInteger uCoord = ((XECPublicKey) publicKey).getU();
-		byte[] unsigned = uCoord.toByteArray();
-		byte[] result = new byte[BYTES];
-
-		int offset = unsigned.length > BYTES ? 1 : 0;
-		int length = Math.min(unsigned.length - offset, BYTES);
-
-		// to reverse the order
-		ByteBuffer.wrap(unsigned, offset, length)
-				.order(ByteOrder.LITTLE_ENDIAN)
-				.get(result, 0, length);
-
-		return result;
 	}
 
 	public static byte[] toRawByteArray(final PrivateKey privateKey) {
@@ -94,21 +76,7 @@ public class X25519Keys {
 	}
 
 	public static boolean verifyKeyMatch(final byte[] littleEndianKey, final PublicKey publicKey) {
-		BigInteger u = ((XECPublicKey) publicKey).getU();
-		byte[] bigEndian = u.toByteArray();
-
-		byte[] beNormalized = new byte[32];
-		if (bigEndian.length > 32) {
-			// Strip sign byte if present
-			if (bigEndian.length == 33 && bigEndian[0] == 0x00) {
-				System.arraycopy(bigEndian, 1, beNormalized, 0, 32);
-			} else {
-				throw new IllegalArgumentException("BigInteger too large: " + bigEndian.length);
-			}
-		} else {
-			System.arraycopy(bigEndian, 0, beNormalized, 32 - bigEndian.length, bigEndian.length);
-		}
-		Bytes.reverse(beNormalized);
+		byte[] beNormalized = toRawByteArray(publicKey);
 		return Arrays.equals(littleEndianKey, beNormalized);
 	}
 }

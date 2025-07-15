@@ -2,6 +2,7 @@ package org.apiphany.security.ssl.client;
 
 import java.nio.ByteBuffer;
 
+import org.apiphany.lang.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +27,7 @@ public class ExchangeKeys {
 			throw new UnsupportedOperationException("Unsupported exchange key type");
 		}
 		LOGGER.debug("Key block length: {}", keyBlock.length);
-		LOGGER.debug("Key block:\n{}", Bytes.hexDumpRaw(keyBlock));
+		LOGGER.debug("Key block:\n{}", Hex.dump(keyBlock));
 
 		ExchangeKeys exchangeKeys = new ExchangeKeys();
 
@@ -36,10 +37,10 @@ public class ExchangeKeys {
 		buffer.get(exchangeKeys.clientIV);
 		buffer.get(exchangeKeys.serverIV);
 
-		LOGGER.debug("Client write key:\n{}", Bytes.hexDumpRaw(exchangeKeys.clientWriteKey));
-		LOGGER.debug("Server write key:\n{}", Bytes.hexDumpRaw(exchangeKeys.serverWriteKey));
-		LOGGER.debug("Client IV:\n{}", Bytes.hexDumpRaw(exchangeKeys.clientIV));
-		LOGGER.debug("Server IV:\n{}", Bytes.hexDumpRaw(exchangeKeys.serverIV));
+		LOGGER.debug("Client write key:\n{}", Hex.dump(exchangeKeys.clientWriteKey));
+		LOGGER.debug("Server write key:\n{}", Hex.dump(exchangeKeys.serverWriteKey));
+		LOGGER.debug("Client IV:\n{}", Hex.dump(exchangeKeys.clientIV));
+		LOGGER.debug("Server IV:\n{}", Hex.dump(exchangeKeys.serverIV));
 
 		return exchangeKeys;
 	}
