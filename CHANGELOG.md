@@ -12,6 +12,7 @@
 - Added SSL capabilities to the HTTP exchange clients.
 - Added `SSLProperties` to be able to configure SSL for the HTTP exchange clients.
 - Added `SSLProtocol` which enumerates SSL protocols.
+- Added `Hex` class that helps with conversions between hexadecimal Strings and bytes or byte arrays.
 
 ---
 

@@ -12,7 +12,7 @@ import java.security.PublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
-import org.apiphany.security.ssl.client.Bytes;
+import org.apiphany.lang.Hex;
 import org.apiphany.security.ssl.client.X25519Keys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,24 +52,24 @@ public class Keys {
 		PrivateKey privateKey;
 		try (InputStream is = Keys.class.getResourceAsStream("/security/ssl/" + XDH_PRIVATE_KEY_FILE_NAME)) {
 			byte[] privateKeyBytes = is.readAllBytes();
-			LOGGER.info("Loaded private key bytes:\n{}", Bytes.hexDumpRaw(privateKeyBytes));
+			LOGGER.info("Loaded private key bytes:\n{}", Hex.dump(privateKeyBytes));
 			KeyFactory keyFactory = KeyFactory.getInstance("XDH");
 			privateKey = keyFactory.generatePrivate(new PKCS8EncodedKeySpec(privateKeyBytes));
 		} catch (Exception e) {
 			throw new IllegalStateException("Cannot load " + XDH_PRIVATE_KEY_FILE_NAME, e);
 		}
-		LOGGER.info("Loaded private key:\n{}", Bytes.hexDumpRaw(X25519Keys.toRawByteArray(privateKey)));
+		LOGGER.info("Loaded private key:\n{}", Hex.dump(X25519Keys.toRawByteArray(privateKey)));
 
 		PublicKey publicKey;
 		try (InputStream is = Keys.class.getResourceAsStream("/security/ssl/" + XDH_PUBLIC_KEY_FILE_NAME)) {
 			byte[] publicKeyBytes = is.readAllBytes();
-			LOGGER.info("Loaded public key bytes:\n{}", Bytes.hexDumpRaw(publicKeyBytes));
+			LOGGER.info("Loaded public key bytes:\n{}", Hex.dump(publicKeyBytes));
 			KeyFactory keyFactory = KeyFactory.getInstance("XDH");
 			publicKey = keyFactory.generatePublic(new X509EncodedKeySpec(publicKeyBytes));
 		} catch (Exception e) {
 			throw new IllegalStateException("Cannot load " + XDH_PUBLIC_KEY_FILE_NAME, e);
 		}
-		LOGGER.info("Loaded public key:\n{}", Bytes.hexDumpRaw(X25519Keys.toRawByteArrayV1(publicKey)));
+		LOGGER.info("Loaded public key:\n{}", Hex.dump(X25519Keys.toRawByteArray(publicKey)));
 
 		return new KeyPair(publicKey, privateKey);
 	}

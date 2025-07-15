@@ -3,8 +3,6 @@ package org.apiphany.security.ssl;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -21,6 +19,7 @@ import org.apiphany.ApiClient;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.lang.Hex;
 import org.apiphany.lang.Strings;
 import org.apiphany.net.Sockets;
 import org.apiphany.security.ssl.client.Bytes;
@@ -106,9 +105,7 @@ class SSLPropertiesTest {
 
 	@Test
 	void shouldPerformTLS_V_1_2_SSLHandshake() throws Exception {
-		//int port = Sockets.findAvailableTcpPort(PORT_CHECK_TIMEOUT);
-		int port = 4433;
-
+		int port = Sockets.findAvailableTcpPort(PORT_CHECK_TIMEOUT);
 		SSLProperties sslProperties = JsonBuilder.fromJson(Strings.fromFile("/security/ssl/ssl-properties.json"), SSLProperties.class);
 		sslProperties.setProtocol(SSLProtocol.TLS_1_2);
 		SimpleHttpsServer server = new SimpleHttpsServer(port, sslProperties);
@@ -121,8 +118,7 @@ class SSLPropertiesTest {
 		} finally {
 			server.close();
 		}
-		// assertNotNull(serverFinished);
-		assertNull(serverFinished);
+		assertNotNull(serverFinished);
 	}
 
 	@Test
@@ -135,36 +131,26 @@ class SSLPropertiesTest {
 		} catch (Exception e) {
 			LOGGER.error("Error performing SSL handshake", e);
 		}
-		// assertNotNull(serverFinished);
-		assertNull(serverFinished);
+		assertNotNull(serverFinished);
 	}
 
 	@Test
 	void shouldBuildClientHello() {
-		final byte[] byteArray = new byte[] {
-				(byte) 0x16, (byte) 0x03, (byte) 0x01, (byte) 0x00, (byte) 0xA5, (byte) 0x01, (byte) 0x00, (byte) 0x00,
-				(byte) 0xA1, (byte) 0x03, (byte) 0x03, (byte) 0x00, (byte) 0x01, (byte) 0x02, (byte) 0x03, (byte) 0x04,
-				(byte) 0x05, (byte) 0x06, (byte) 0x07, (byte) 0x08, (byte) 0x09, (byte) 0x0A, (byte) 0x0B, (byte) 0x0C,
-				(byte) 0x0D, (byte) 0x0E, (byte) 0x0F, (byte) 0x10, (byte) 0x11, (byte) 0x12, (byte) 0x13, (byte) 0x14,
-				(byte) 0x15, (byte) 0x16, (byte) 0x17, (byte) 0x18, (byte) 0x19, (byte) 0x1A, (byte) 0x1B, (byte) 0x1C,
-				(byte) 0x1D, (byte) 0x1E, (byte) 0x1F, (byte) 0x00, (byte) 0x00, (byte) 0x20, (byte) 0xCC, (byte) 0xA8,
-				(byte) 0xCC, (byte) 0xA9, (byte) 0xC0, (byte) 0x2F, (byte) 0xC0, (byte) 0x30, (byte) 0xC0, (byte) 0x2B,
-				(byte) 0xC0, (byte) 0x2C, (byte) 0xC0, (byte) 0x13, (byte) 0xC0, (byte) 0x09, (byte) 0xC0, (byte) 0x14,
-				(byte) 0xC0, (byte) 0x0A, (byte) 0x00, (byte) 0x9C, (byte) 0x00, (byte) 0x9D, (byte) 0x00, (byte) 0x2F,
-				(byte) 0x00, (byte) 0x35, (byte) 0xC0, (byte) 0x12, (byte) 0x00, (byte) 0x0A, (byte) 0x01, (byte) 0x00,
-				(byte) 0x00, (byte) 0x58, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x18, (byte) 0x00, (byte) 0x16,
-				(byte) 0x00, (byte) 0x00, (byte) 0x13, (byte) 0x65, (byte) 0x78, (byte) 0x61, (byte) 0x6D, (byte) 0x70,
-				(byte) 0x6C, (byte) 0x65, (byte) 0x2E, (byte) 0x75, (byte) 0x6C, (byte) 0x66, (byte) 0x68, (byte) 0x65,
-				(byte) 0x69, (byte) 0x6D, (byte) 0x2E, (byte) 0x6E, (byte) 0x65, (byte) 0x74, (byte) 0x00, (byte) 0x05,
-				(byte) 0x00, (byte) 0x05, (byte) 0x01, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
-				(byte) 0x0A, (byte) 0x00, (byte) 0x0A, (byte) 0x00, (byte) 0x08, (byte) 0x00, (byte) 0x1D, (byte) 0x00,
-				(byte) 0x17, (byte) 0x00, (byte) 0x18, (byte) 0x00, (byte) 0x19, (byte) 0x00, (byte) 0x0B, (byte) 0x00,
-				(byte) 0x02, (byte) 0x01, (byte) 0x00, (byte) 0x00, (byte) 0x0D, (byte) 0x00, (byte) 0x12, (byte) 0x00,
-				(byte) 0x10, (byte) 0x04, (byte) 0x01, (byte) 0x04, (byte) 0x03, (byte) 0x05, (byte) 0x01, (byte) 0x05,
-				(byte) 0x03, (byte) 0x06, (byte) 0x01, (byte) 0x06, (byte) 0x03, (byte) 0x02, (byte) 0x01, (byte) 0x02,
-				(byte) 0x03, (byte) 0xFF, (byte) 0x01, (byte) 0x00, (byte) 0x01, (byte) 0x00, (byte) 0x00, (byte) 0x12,
-				(byte) 0x00, (byte) 0x00
-		};
+		// these bytes are from: https://tls12.xargs.org/#client-hello
+		final byte[] byteArray = Bytes.fromHex("""
+				16 03 01 00 A5 01 00 00  A1 03 03 00 01 02 03 04
+				05 06 07 08 09 0A 0B 0C  0D 0E 0F 10 11 12 13 14
+				15 16 17 18 19 1A 1B 1C  1D 1E 1F 00 00 20 CC A8
+				CC A9 C0 2F C0 30 C0 2B  C0 2C C0 13 C0 09 C0 14
+				C0 0A 00 9C 00 9D 00 2F  00 35 C0 12 00 0A 01 00
+				00 58 00 00 00 18 00 16  00 00 13 65 78 61 6D 70
+				6C 65 2E 75 6C 66 68 65  69 6D 2E 6E 65 74 00 05
+				00 05 01 00 00 00 00 00  0A 00 0A 00 08 00 1D 00
+				17 00 18 00 19 00 0B 00  02 01 00 00 0D 00 12 00
+				10 04 01 04 03 05 01 05  03 06 01 06 03 02 01 02
+				03 FF 01 00 01 00 00 12  00 00
+		""");
+		LOGGER.info("\n{}", Hex.dump(byteArray));
 		final CipherSuiteName[] cypherSuitesArray = {
 				CipherSuiteName.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256,
 				CipherSuiteName.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,
@@ -197,12 +183,10 @@ class SSLPropertiesTest {
 
 		byte[] bytes = clientHello.toByteArray();
 
-		LOGGER.info("Expected: {}", Bytes.hexString(byteArray));
-		LOGGER.info("Received: {}", Bytes.hexString(bytes));
-		for (int i = 0; i < bytes.length; ++i) {
-			boolean valid = bytes[i] == byteArray[i];
-			assertTrue(valid);
-		}
+		LOGGER.info("Expected: {}", Hex.string(byteArray));
+		LOGGER.info("Received: {}", Hex.string(bytes));
+
+		assertThat(bytes, equalTo(byteArray));
 	}
 
 	@Test
@@ -226,7 +210,7 @@ class SSLPropertiesTest {
 				0b 08 04 08 05 08 06 04 01 05 01 06 01 03 03 03
 				01 03 02 04 02 05 02 06 02
 					""";
-		byte[] expected = Bytes.fromHexString(openSSLClientHelloHexString);
+		byte[] expected = Bytes.fromHex(openSSLClientHelloHexString);
 		ByteArrayInputStream bis = new ByteArrayInputStream(expected);
 
 		TLSRecord tlsRecord = TLSRecord.from(bis);
@@ -234,8 +218,8 @@ class SSLPropertiesTest {
 
 		byte[] result = tlsRecord.toByteArray();
 
-		LOGGER.info("Expected bytes:\n{}", Bytes.hexDump(expected));
-		LOGGER.info("Received bytes:\n{}", Bytes.hexDump(result));
+		LOGGER.info("Expected bytes:\n{}", Hex.dump(expected));
+		LOGGER.info("Received bytes:\n{}", Hex.dump(result));
 
 		assertThat(result, equalTo(expected));
 	}
@@ -329,7 +313,7 @@ class SSLPropertiesTest {
 						ce b6 3d 1f 33 b1 24 e1 02 17 01 55
 						0e 00 00 00
 				""";
-		byte[] expected = Bytes.fromHexString(openSSLReceivedServerHello);
+		byte[] expected = Bytes.fromHex(openSSLReceivedServerHello);
 		ByteArrayInputStream bis = new ByteArrayInputStream(expected);
 
 		TLSRecord serverHello = TLSRecord.from(bis);
@@ -338,8 +322,8 @@ class SSLPropertiesTest {
 
 		byte[] result = serverHello.toByteArray();
 
-		LOGGER.info("Expected bytes:\n{}", Bytes.hexDump(expected));
-		LOGGER.info("Received bytes:\n{}", Bytes.hexDump(result));
+		LOGGER.info("Expected bytes:\n{}", Hex.dump(expected));
+		LOGGER.info("Received bytes:\n{}", Hex.dump(result));
 
 		assertThat(result, equalTo(expected));
 	}
@@ -354,7 +338,7 @@ class SSLPropertiesTest {
 		byte[] seedBytes = seed.getBytes(StandardCharsets.US_ASCII);
 		byte[] output = PseudoRandomFunction.apply(secret, label, seedBytes, length);
 
-		String hexOutput = Bytes.hexString(output).toLowerCase().trim();
+		String hexOutput = Hex.string(output).toLowerCase().trim();
 
 		LOGGER.info("PRF Output: {}", hexOutput);
 		LOGGER.info("PRF Expect: {}", expected);

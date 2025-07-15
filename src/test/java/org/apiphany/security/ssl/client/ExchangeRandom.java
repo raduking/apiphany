@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.security.SecureRandom;
 
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.lang.Hex;
 import org.apiphany.security.ssl.DeterministicSecureRandom;
 
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -62,7 +63,7 @@ public class ExchangeRandom implements TLSObject {
 
 	@JsonValue
 	public String toHexString() {
-		return Bytes.hexString(random, "");
+		return Hex.string(random, "");
 	}
 
 	@Override
