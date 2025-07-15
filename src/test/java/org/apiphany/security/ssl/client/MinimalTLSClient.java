@@ -53,6 +53,8 @@ public class MinimalTLSClient implements AutoCloseable {
 	private KeyPair clientKeyPair;
 	private PublicKey serverPublicKey;
 
+	private ExchangeKeys exchangeKeys;
+
 	private final List<TLSHandshake> handshakeMessages = new ArrayList<>();
 
 	public MinimalTLSClient(final String host, final int port, final KeyPair clientKeyPair) {
@@ -162,7 +164,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		byte[] keyBlock = PseudoRandomFunction.apply(masterSecret, "key expansion",
 				Bytes.concatenate(serverRandom, clientRandom), (ExchangeKeys.KEY_LENGTH + ExchangeKeys.IV_LENGTH) * 2);
 		// Extract keys
-		ExchangeKeys keys = ExchangeKeys.from(keyBlock, ExchangeKeys.Type.AHEAD);
+		exchangeKeys = ExchangeKeys.from(keyBlock, ExchangeKeys.Type.AHEAD);
 
 		// 6. Send Client Change Cipher Spec
 		TLSRecord changeCypherSpecRecord = new TLSRecord(SSLProtocol.TLS_1_2, new ChangeCipherSpec());
@@ -178,7 +180,8 @@ public class MinimalTLSClient implements AutoCloseable {
 		LOGGER.debug("Computed verify_data:\n{}", Hex.dump(verifyData));
 		TLSHandshake finished = new TLSHandshake(new Finished(verifyData));
 
-		TLSRecord clientFinished = createClientFinished(finished, keys);
+		Encrypted encrypted = encrypt(finished, exchangeKeys);
+		TLSRecord clientFinished = new TLSRecord(SSLProtocol.TLS_1_2, encrypted);
 
 		byte[] clientFinishedBytes = clientFinished.toByteArray();
 		sendTLSRecord(clientFinishedBytes);
@@ -189,12 +192,24 @@ public class MinimalTLSClient implements AutoCloseable {
 		LOGGER.debug("Received Change Cipher Spec: {}", serverChangeCipherSpec);
 
 		// 9. Receive Server Finished Record
-		TLSRecord serverFinishedRecord = TLSRecord.from(in, ThrowingBiFunction.unchecked((is, total) -> EncryptedFinished.from(is, total, 12)));
-		LOGGER.debug("Server Finished TLS Record Header: {}", Hex.dump(serverFinishedRecord.toByteArray()));
+		TLSRecord serverFinishedRecord = TLSRecord.from(in, ThrowingBiFunction.unchecked((is, total) -> Encrypted.from(is, total, 12)));
+		LOGGER.debug("Server Finished TLS Record Header:\n{}", Hex.dump(serverFinishedRecord.toByteArray()));
 
 		LOGGER.info("TLS 1.2 handshake complete!");
 
 		return serverFinishedRecord.toByteArray();
+	}
+
+	public byte[] closeNotify() throws Exception {
+		Alert closeAlert = new Alert(AlertLevel.WARNIBNG, AlertDescription.CLOSE_NOTIFY);
+		Encrypted encrypted = encrypt(closeAlert, exchangeKeys);
+
+		TLSRecord closeAlertRecord = new TLSRecord(SSLProtocol.TLS_1_2, encrypted);
+		byte[] closeAlertBytes = closeAlertRecord.toByteArray();
+		sendTLSRecord(closeAlertBytes);
+		LOGGER.debug("Sent Client Close Notify:\n{}", Hex.dump(closeAlertBytes));
+
+		return closeAlertBytes;
 	}
 
 	private TLSRecord sendClientHello() throws IOException {
@@ -227,8 +242,8 @@ public class MinimalTLSClient implements AutoCloseable {
 		return X25519Keys.toRawByteArray(clientKeyPair.getPublic());
 	}
 
-	public TLSRecord createClientFinished(final TLSHandshake handshake, final ExchangeKeys keys) throws Exception {
-		byte[] plaintext = handshake.toByteArray();
+	public Encrypted encrypt(final TLSObject tlsObject, final ExchangeKeys keys) throws Exception {
+		byte[] plaintext = tlsObject.toByteArray();
 		LOGGER.debug("Finished (hex):\n{}", Hex.dump(plaintext));
 
 		long seq = this.clientSequenceNumber++;
@@ -252,8 +267,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		byte[] encrypted = cipher.doFinal(plaintext);
 		LOGGER.debug("Encrypted (ciphertext + tag):\n{}", Hex.dump(encrypted));
 
-		EncryptedFinished encryptedFinished = new EncryptedFinished(explicitNonce, encrypted);
-		return new TLSRecord(SSLProtocol.TLS_1_2, encryptedFinished);
+		return new Encrypted(explicitNonce, encrypted);
 	}
 
 	public void accumulateHandshake(final TLSHandshake handshake) {
