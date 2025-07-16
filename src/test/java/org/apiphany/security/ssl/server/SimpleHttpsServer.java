@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -13,7 +14,6 @@ import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
 import org.apiphany.lang.Strings;
 import org.apiphany.security.ssl.Certificates;
-import org.apiphany.security.ssl.DeterministicSecureRandom;
 import org.apiphany.security.ssl.SSLContextAdapter;
 import org.apiphany.security.ssl.SSLProperties;
 import org.slf4j.Logger;
@@ -42,12 +42,14 @@ public class SimpleHttpsServer implements AutoCloseable {
 	private final HttpsServer httpsServer;
 	private final ExecutorService executor;
 	private final int port;
+	private final SSLContextAdapter sslContext;
 
-	public SimpleHttpsServer(final int port, final SSLProperties sslProperties) {
+	public SimpleHttpsServer(final int port, final SSLProperties sslProperties, SecureRandom secureRandom) {
 		this.executor = Executors.newVirtualThreadPerTaskExecutor();
 
-		SSLContextAdapter sslContext = new SSLContextAdapter(Certificates.createSSLContext(sslProperties));
-		sslContext.setSecureRandom(new DeterministicSecureRandom());
+		this.sslContext = new SSLContextAdapter(Certificates.createSSLContext(sslProperties));
+		this.sslContext.setSecureRandom(secureRandom);
+
 		this.httpsServer = createHttpsServer(port, sslContext);
 		this.httpsServer.createContext(ROUTE_API_NAME, new NameHandler(this));
 		this.httpsServer.setExecutor(executor);
@@ -56,6 +58,10 @@ public class SimpleHttpsServer implements AutoCloseable {
 		this.port = port;
 
 		LOGGER.info("Server started on port: {}", port);
+	}
+
+	public SimpleHttpsServer(final int port, final SSLProperties sslProperties) {
+		this(port, sslProperties, new SecureRandom());
 	}
 
 	@Override

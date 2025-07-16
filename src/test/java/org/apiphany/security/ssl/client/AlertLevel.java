@@ -6,7 +6,7 @@ import org.morphix.lang.Enums;
 
 public enum AlertLevel {
 
-	WARNIBNG((byte) 0x01),
+	WARNING((byte) 0x01),
 	FATAL((byte) 0x02);
 
 	public static final int BYTES = 1;

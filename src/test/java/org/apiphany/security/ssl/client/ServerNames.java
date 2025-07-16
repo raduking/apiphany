@@ -8,12 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apiphany.json.JsonBuilder;
-import org.apiphany.lang.Holder;
 import org.morphix.lang.function.ThrowingRunnable;
 
 public class ServerNames implements TLSExtension {
-
-	private static final int ENTRIES_SIZE_INDEX = 2;
 
 	private ExtensionType type;
 
@@ -21,14 +18,21 @@ public class ServerNames implements TLSExtension {
 
 	private List<ServerName> entries = new ArrayList<>();
 
-	private ServerNames(final ExtensionType type, final Int16 length, final List<ServerName> entries) {
+	private ServerNames(final ExtensionType type, final Int16 length, final List<ServerName> entries, final boolean updateLength) {
 		this.type = type;
 		this.length = length;
 		this.entries = entries;
+		if (updateLength) {
+			int result = 0;
+			for (ServerName serverName : entries) {
+				result += serverName.size();
+			}
+			this.length.setValue((short) result);
+		}
 	}
 
 	public ServerNames(final Int16 size, final List<ServerName> serverNames) {
-		this(ExtensionType.SERVER_NAME, size, serverNames);
+		this(ExtensionType.SERVER_NAME, size, serverNames, true);
 	}
 
 	public ServerNames(final List<String> names) {
@@ -39,25 +43,15 @@ public class ServerNames implements TLSExtension {
 	public byte[] toByteArray() {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(bos);
-
-		Holder<Short> entriesSize = new Holder<>((short) 0);
 		ThrowingRunnable.unchecked(() -> {
 			dos.writeShort(type.value());
 			dos.write(length.toByteArray());
-
 			for (ServerName entry : entries) {
 				byte[] entryBytes = entry.toByteArray();
 				dos.write(entryBytes);
-				entriesSize.setValue((short) (entriesSize.getValue() + entryBytes.length));
 			}
 		}).run();
-
-		byte[] bytes = bos.toByteArray();
-
-		// write actual size
-		Bytes.set(entriesSize.getValue(), bytes, ENTRIES_SIZE_INDEX);
-
-		return bytes;
+		return bos.toByteArray();
 	}
 
 	public static ServerNames from(final InputStream is) throws IOException {
@@ -77,7 +71,7 @@ public class ServerNames implements TLSExtension {
 			currentLength += serverName.size();
 		}
 
-		return new ServerNames(type, length, serverNames);
+		return new ServerNames(type, length, serverNames, false);
 	}
 
 	@Override

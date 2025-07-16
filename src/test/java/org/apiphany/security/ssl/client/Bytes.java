@@ -2,6 +2,9 @@ package org.apiphany.security.ssl.client;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class Bytes {
 
@@ -44,4 +47,8 @@ public class Bytes {
 		return byteArray;
 	}
 
+    public static void toFile(final String filePath, final byte[] data) throws IOException {
+        Path path = Paths.get(filePath);
+        Files.write(path, data);
+    }
 }
