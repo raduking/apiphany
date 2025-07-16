@@ -36,6 +36,14 @@ public class MinimalTLSClient implements AutoCloseable {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(MinimalTLSClient.class);
 
+	public static final List<CurveName> SUPPORTED_CURVE_NAMES = List.of(
+			CurveName.X25519
+	);
+
+	public static final List<CipherSuite> SUPPORTED_CIPHER_SUITES = List.of(
+			CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	);
+
 	private final String host;
 	private final int port;
 
@@ -141,7 +149,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		LOGGER.debug("Received Server Hello Done:\n{}", Hex.dump(serverHelloDone.toByteArray()));
 
 		// 3. Generate Client Key Exchange
-		CipherSuiteName selectedCipher = serverHello.getCipherSuite().getCipher();
+		CipherSuite selectedCipher = serverHello.getCipherSuite();
 		byte[] clientPublic;
 		if (serverKeyExchange.getCurveInfo().getName() == CurveName.X25519) {
 			byte[] leServerPublic = serverKeyExchange.getPublicKey().getValue().getBytes();
@@ -275,7 +283,7 @@ public class MinimalTLSClient implements AutoCloseable {
 
 	private TLSRecord sendClientHello() throws IOException {
 		TLSRecord clientHelloRecord = new TLSRecord(SSLProtocol.TLS_1_0,
-				new ClientHello(List.of(host), new CipherSuites(CipherSuiteName.values()), List.of(CurveName.values())));
+				new ClientHello(List.of(host), new CipherSuites(CipherSuite.values()), List.of(CurveName.values())));
 		byte[] clientHelloBytes = clientHelloRecord.toByteArray();
 		sendTLSRecord(clientHelloBytes);
 		accumulateHandshakes(clientHelloRecord.getFragments(TLSHandshake.class));

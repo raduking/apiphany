@@ -24,7 +24,6 @@ import org.apiphany.lang.Strings;
 import org.apiphany.net.Sockets;
 import org.apiphany.security.ssl.client.Bytes;
 import org.apiphany.security.ssl.client.CipherSuite;
-import org.apiphany.security.ssl.client.CipherSuiteName;
 import org.apiphany.security.ssl.client.ClientHello;
 import org.apiphany.security.ssl.client.CurveName;
 import org.apiphany.security.ssl.client.MinimalTLSClient;
@@ -192,23 +191,23 @@ class SSLPropertiesTest {
 				03 FF 01 00 01 00 00 12  00 00
 		""");
 		LOGGER.info("\n{}", Hex.dump(byteArray));
-		final CipherSuiteName[] cypherSuitesArray = {
-				CipherSuiteName.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256,
-				CipherSuiteName.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,
-				CipherSuiteName.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
-				CipherSuiteName.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-				CipherSuiteName.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
-				CipherSuiteName.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
-				CipherSuiteName.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
-				CipherSuiteName.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
-				CipherSuiteName.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
-				CipherSuiteName.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
-				CipherSuiteName.TLS_RSA_WITH_AES_128_GCM_SHA256,
-				CipherSuiteName.TLS_RSA_WITH_AES_256_GCM_SHA384,
-				CipherSuiteName.TLS_RSA_WITH_AES_128_CBC_SHA,
-				CipherSuiteName.TLS_RSA_WITH_AES_256_CBC_SHA,
-				CipherSuiteName.TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA,
-				CipherSuiteName.TLS_RSA_WITH_3DES_EDE_CBC_SHA
+		final CipherSuite[] cypherSuitesArray = {
+				CipherSuite.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256,
+				CipherSuite.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,
+				CipherSuite.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+				CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+				CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+				CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+				CipherSuite.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
+				CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
+				CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+				CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
+				CipherSuite.TLS_RSA_WITH_AES_128_GCM_SHA256,
+				CipherSuite.TLS_RSA_WITH_AES_256_GCM_SHA384,
+				CipherSuite.TLS_RSA_WITH_AES_128_CBC_SHA,
+				CipherSuite.TLS_RSA_WITH_AES_256_CBC_SHA,
+				CipherSuite.TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA,
+				CipherSuite.TLS_RSA_WITH_3DES_EDE_CBC_SHA
 		};
 		final CurveName[] curveNamesArray = {
 				CurveName.X25519,
@@ -216,7 +215,7 @@ class SSLPropertiesTest {
 				CurveName.SECP384R1,
 				CurveName.SECP521R1
 		};
-		List<CipherSuite> cypherSuites = List.of(cypherSuitesArray).stream().map(CipherSuite::new).toList();
+		List<CipherSuite> cypherSuites = List.of(cypherSuitesArray);
 		List<CurveName> curveNames = List.of(curveNamesArray);
 
 		TLSRecord clientHello = new TLSRecord(SSLProtocol.TLS_1_0, new ClientHello(List.of("example.ulfheim.net"), cypherSuites, curveNames));

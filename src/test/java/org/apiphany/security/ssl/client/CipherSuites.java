@@ -30,12 +30,12 @@ public class CipherSuites implements TLSObject {
 		this((short) (cipherSuites.size() * 2), cipherSuites);
 	}
 
-	public CipherSuites(final CipherSuite... cipherSuites) {
+	public CipherSuites(final CipherSuite cipherSuites) {
 		this(List.of(cipherSuites));
 	}
 
-	public CipherSuites(final CipherSuiteName... cipherSuites) {
-		this(List.of(cipherSuites).stream().map(CipherSuite::new).toList());
+	public CipherSuites(final CipherSuite... cipherSuites) {
+		this(List.of(cipherSuites));
 	}
 
 	@Override
@@ -55,7 +55,8 @@ public class CipherSuites implements TLSObject {
 		Int16 size = Int16.from(is);
 		List<CipherSuite> cipherSuites = new ArrayList<>();
 		for (int i = 0; i < size.getValue() / 2; ++i) {
-			CipherSuite cipherSuite = CipherSuite.from(is);
+			Int16 int16 = Int16.from(is);
+			CipherSuite cipherSuite = CipherSuite.fromValue(int16.getValue());
 			cipherSuites.add(cipherSuite);
 		}
 

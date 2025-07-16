@@ -47,7 +47,7 @@ public class ClientHello implements TLSHandshakeBody {
 	public ClientHello(final List<String> serverNames, final CipherSuites cypherSuites, final List<CurveName> curveNames) {
 		this(
 				new Version(SSLProtocol.TLS_1_2),
-				new ExchangeRandom(ExchangeRandom.generateLinear()),
+				ExchangeRandom.linear(),
 				new SessionId(),
 				cypherSuites,
 				new CompressionMethods(),

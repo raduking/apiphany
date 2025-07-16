@@ -41,8 +41,8 @@ public class ServerHello implements TLSHandshakeBody {
 		Version version = Version.from(is);
 		ExchangeRandom serverRandom = ExchangeRandom.from(is);
 		SessionId sessionId = SessionId.from(is);
-		CipherSuite cipherSuite = CipherSuite.from(is);
-		CompressionMethod compressionMethod = CompressionMethod.from(is);
+		CipherSuite cipherSuite = CipherSuite.fromValue(Int16.from(is).getValue());
+		CompressionMethod compressionMethod = CompressionMethod.fromValue(Int8.from(is).getValue());
 		Extensions extensions = Extensions.from(is);
 
 		return new ServerHello(

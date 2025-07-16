@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.morphix.lang.Enums;
 
-public enum CurveType {
+public enum CurveType implements TLSObject {
 
 	NAMED_CURVE((byte) 0x03);
 
@@ -24,5 +24,15 @@ public enum CurveType {
 
 	public static CurveType fromValue(final byte value) {
 		return Enums.from(value, VALUE_MAP, values());
+	}
+
+	@Override
+	public int size() {
+		return BYTES;
+	}
+
+	@Override
+	public byte[] toByteArray() {
+		return Int8.toByteArray(value);
 	}
 }
