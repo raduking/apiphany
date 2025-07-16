@@ -1,12 +1,10 @@
 package org.apiphany.security.ssl.client;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 
 import org.apiphany.json.JsonBuilder;
-import org.morphix.lang.function.ThrowingRunnable;
 
 public class ServerHello implements TLSHandshakeBody {
 
@@ -56,17 +54,14 @@ public class ServerHello implements TLSHandshakeBody {
 
 	@Override
 	public byte[] toByteArray() {
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		DataOutputStream dos = new DataOutputStream(bos);
-		ThrowingRunnable.unchecked(() -> {
-			dos.write(version.toByteArray());
-			dos.write(serverRandom.toByteArray());
-			dos.write(sessionId.toByteArray());
-			dos.write(cipherSuite.toByteArray());
-			dos.write(compressionMethod.toByteArray());
-			dos.write(extensions.toByteArray());
-		}).run();
-		return bos.toByteArray();
+		ByteBuffer buffer = ByteBuffer.allocate(size());
+		buffer.put(version.toByteArray());
+		buffer.put(serverRandom.toByteArray());
+		buffer.put(sessionId.toByteArray());
+		buffer.put(cipherSuite.toByteArray());
+		buffer.put(compressionMethod.toByteArray());
+		buffer.put(extensions.toByteArray());
+		return buffer.array();
 	}
 
 	@Override

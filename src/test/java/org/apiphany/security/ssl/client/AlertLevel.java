@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.morphix.lang.Enums;
 
-public enum AlertLevel {
+public enum AlertLevel implements TLSObject {
 
 	WARNING((byte) 0x01),
 	FATAL((byte) 0x02);
@@ -21,6 +21,16 @@ public enum AlertLevel {
 
 	public byte value() {
 		return value;
+	}
+
+	@Override
+	public int size() {
+		return BYTES;
+	}
+
+	@Override
+	public byte[] toByteArray() {
+		return Int8.toByteArray(value);
 	}
 
 	public static AlertLevel fromValue(final byte value) {

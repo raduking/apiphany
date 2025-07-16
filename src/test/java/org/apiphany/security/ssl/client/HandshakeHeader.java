@@ -43,7 +43,7 @@ public class HandshakeHeader implements TLSObject {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(bos);
 		ThrowingRunnable.unchecked(() -> {
-			dos.writeByte(type.value());
+			dos.write(type.toByteArray());
 			dos.write(length.toByteArray());
 		}).run();
 		return bos.toByteArray();

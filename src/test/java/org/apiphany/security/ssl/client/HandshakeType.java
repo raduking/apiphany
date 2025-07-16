@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.morphix.lang.Enums;
 
-public enum HandshakeType implements Sizeable {
+public enum HandshakeType implements TLSObject {
 
 	CLIENT_HELLO((byte) 0x01, FromFunction.ignoreSize(ClientHello::from)),
 	SERVER_HELLO((byte) 0x02, FromFunction.ignoreSize(ServerHello::from)),
@@ -38,6 +38,11 @@ public enum HandshakeType implements Sizeable {
 	@Override
 	public int size() {
 		return BYTES;
+	}
+
+	@Override
+	public byte[] toByteArray() {
+		return Int8.toByteArray(value);
 	}
 
 	public FromFunction<? extends TLSHandshakeBody> handshake() {

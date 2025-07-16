@@ -1,11 +1,9 @@
 package org.apiphany.security.ssl.client;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
+import java.nio.ByteBuffer;
 
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.security.ssl.SSLProtocol;
-import org.morphix.lang.function.ThrowingRunnable;
 
 public class AdditionalAuthenticatedData implements TLSObject {
 
@@ -30,15 +28,12 @@ public class AdditionalAuthenticatedData implements TLSObject {
 
 	@Override
 	public byte[] toByteArray() {
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		DataOutputStream dos = new DataOutputStream(bos);
-		ThrowingRunnable.unchecked(() -> {
-			dos.write(sequenceNumber.toByteArray());
-			dos.write(type.value());
-			dos.write(protocolVersion.toByteArray());
-			dos.write(length.toByteArray());
-		}).run();
-		return bos.toByteArray();
+		ByteBuffer buffer = ByteBuffer.allocate(size());
+		buffer.put(sequenceNumber.toByteArray());
+		buffer.put(type.toByteArray());
+		buffer.put(protocolVersion.toByteArray());
+		buffer.put(length.toByteArray());
+		return buffer.array();
 	}
 
 	@Override

@@ -6,6 +6,8 @@ import org.apiphany.json.JsonBuilder;
 
 public class ServerHelloDone implements TLSHandshakeBody {
 
+	public static final int BYTES = 0;
+
 	public ServerHelloDone() {
 		// empty
 	}
@@ -22,7 +24,7 @@ public class ServerHelloDone implements TLSHandshakeBody {
 
 	@Override
 	public int size() {
-		return 0;
+		return BYTES;
 	}
 
 	@Override

@@ -1,12 +1,10 @@
 package org.apiphany.security.ssl.client;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 
 import org.apiphany.json.JsonBuilder;
-import org.morphix.lang.function.ThrowingRunnable;
 
 public class Signature implements TLSObject {
 
@@ -40,14 +38,11 @@ public class Signature implements TLSObject {
 
 	@Override
 	public byte[] toByteArray() {
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		DataOutputStream dos = new DataOutputStream(bos);
-		ThrowingRunnable.unchecked(() -> {
-			dos.write(reserved.toByteArray());
-			dos.write(length.toByteArray());
-			dos.write(value.toByteArray());
-		}).run();
-		return bos.toByteArray();
+		ByteBuffer buffer = ByteBuffer.allocate(size());
+		buffer.put(reserved.toByteArray());
+		buffer.put(length.toByteArray());
+		buffer.put(value.toByteArray());
+		return buffer.array();
 	}
 
 	@Override

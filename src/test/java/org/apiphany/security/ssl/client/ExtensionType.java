@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.morphix.lang.Enums;
 
-public enum ExtensionType implements Sizeable {
+public enum ExtensionType implements TLSObject {
 
 	SERVER_NAME((short) 0x0000, ServerNames::from),
 	STATUS_REQUEST((short) 0x0005, StatusRequest::from),
@@ -51,6 +51,11 @@ public enum ExtensionType implements Sizeable {
 	@Override
 	public int size() {
 		return BYTES;
+	}
+
+	@Override
+	public byte[] toByteArray() {
+		return Int16.toByteArray(value);
 	}
 
 	public TLSExtension extensionFrom(final InputStream is) throws IOException {

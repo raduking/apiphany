@@ -1,12 +1,10 @@
 package org.apiphany.security.ssl.client;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 
 import org.apiphany.json.JsonBuilder;
-import org.morphix.lang.function.ThrowingRunnable;
 
 public class StatusRequest implements TLSExtension {
 
@@ -55,16 +53,13 @@ public class StatusRequest implements TLSExtension {
 
 	@Override
 	public byte[] toByteArray() {
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		DataOutputStream dos = new DataOutputStream(bos);
-		ThrowingRunnable.unchecked(() -> {
-			dos.writeShort(type.value());
-			dos.write(length.toByteArray());
-			dos.write(certificateStatusType.toByteArray());
-			dos.write(responderIDInfoSize.toByteArray());
-			dos.write(requestExtensionInfoSize.toByteArray());
-		}).run();
-		return bos.toByteArray();
+		ByteBuffer buffer = ByteBuffer.allocate(size());
+		buffer.put(type.toByteArray());
+		buffer.put(length.toByteArray());
+		buffer.put(certificateStatusType.toByteArray());
+		buffer.put(responderIDInfoSize.toByteArray());
+		buffer.put(requestExtensionInfoSize.toByteArray());
+		return buffer.array();
 	}
 
 	@Override

@@ -1,14 +1,12 @@
 package org.apiphany.security.ssl.client;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.List;
 
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.security.ssl.SSLProtocol;
-import org.morphix.lang.function.ThrowingRunnable;
 
 /**
  * Client Hello TLS record.
@@ -44,34 +42,31 @@ public class ClientHello implements TLSHandshakeBody {
 		this.extensions = extensions;
 	}
 
-	public ClientHello(final List<String> serverNames, final CipherSuites cypherSuites, final List<CurveName> curveNames) {
+	public ClientHello(final List<String> serverNames, final CipherSuites cypherSuites, final List<CurveName> curveNames, final List<SignatureAlgorithm> signatureAlgorithms) {
 		this(
 				new Version(SSLProtocol.TLS_1_2),
 				ExchangeRandom.linear(),
 				new SessionId(),
 				cypherSuites,
 				new CompressionMethods(),
-				new Extensions(serverNames, curveNames)
+				new Extensions(serverNames, curveNames, signatureAlgorithms)
 		);
 	}
 
-	public ClientHello(final List<String> serverNames, final List<CipherSuite> cypherSuites, final List<CurveName> curveNames) {
-		this(serverNames, new CipherSuites(cypherSuites), curveNames);
+	public ClientHello(final List<String> serverNames, final List<CipherSuite> cypherSuites, final List<CurveName> curveNames, final List<SignatureAlgorithm> signatureAlgorithms) {
+		this(serverNames, new CipherSuites(cypherSuites), curveNames, signatureAlgorithms);
 	}
 
 	@Override
 	public byte[] toByteArray() {
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		DataOutputStream dos = new DataOutputStream(bos);
-		ThrowingRunnable.unchecked(() -> {
-			dos.write(clientVersion.toByteArray());
-			dos.write(clientRandom.toByteArray());
-			dos.write(sessionId.toByteArray());
-			dos.write(cipherSuites.toByteArray());
-			dos.write(compressionMethods.toByteArray());
-			dos.write(extensions.toByteArray());
-		}).run();
-		return bos.toByteArray();
+		ByteBuffer buffer = ByteBuffer.allocate(size());
+		buffer.put(clientVersion.toByteArray());
+		buffer.put(clientRandom.toByteArray());
+		buffer.put(sessionId.toByteArray());
+		buffer.put(cipherSuites.toByteArray());
+		buffer.put(compressionMethods.toByteArray());
+		buffer.put(extensions.toByteArray());
+		return buffer.array();
 	}
 
 	public static ClientHello from(final InputStream is) throws IOException {

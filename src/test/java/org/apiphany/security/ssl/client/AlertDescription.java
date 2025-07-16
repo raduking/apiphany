@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.morphix.lang.Enums;
 
-public enum AlertDescription {
+public enum AlertDescription implements TLSObject {
 
     CLOSE_NOTIFY((byte) 0x00, "close_notify", "Graceful connection closure"),
     UNEXPECTED_MESSAGE((byte) 0x0A, "unexpected_message", "Invalid message received"),
@@ -47,6 +47,16 @@ public enum AlertDescription {
 	@Override
 	public String toString() {
 		return value() + ": " + description();
+	}
+
+	@Override
+	public int size() {
+		return BYTES;
+	}
+
+	@Override
+	public byte[] toByteArray() {
+		return Int8.toByteArray(code);
 	}
 
 	public static AlertDescription fromCode(final byte value) {
