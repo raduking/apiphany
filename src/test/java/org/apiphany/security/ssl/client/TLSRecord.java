@@ -1,9 +1,8 @@
 package org.apiphany.security.ssl.client;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -13,7 +12,6 @@ import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.collections.Lists;
 import org.apiphany.security.ssl.SSLProtocol;
 import org.morphix.lang.JavaObjects;
-import org.morphix.lang.function.ThrowingRunnable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -74,15 +72,12 @@ public class TLSRecord implements TLSObject {
 
 	@Override
 	public byte[] toByteArray() {
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		DataOutputStream dos = new DataOutputStream(bos);
-		ThrowingRunnable.unchecked(() -> {
-			dos.write(header.toByteArray());
-			for (TLSObject fragment : fragments) {
-				dos.write(fragment.toByteArray());
-			}
-		}).run();
-		return bos.toByteArray();
+		ByteBuffer buffer = ByteBuffer.allocate(size());
+		buffer.put(header.toByteArray());
+		for (TLSObject fragment : fragments) {
+			buffer.put(fragment.toByteArray());
+		}
+		return buffer.array();
 	}
 
 	@Override

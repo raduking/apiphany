@@ -1,14 +1,12 @@
 package org.apiphany.security.ssl.client;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apiphany.json.JsonBuilder;
-import org.morphix.lang.function.ThrowingRunnable;
 
 public class Certificates implements TLSHandshakeBody {
 
@@ -16,7 +14,7 @@ public class Certificates implements TLSHandshakeBody {
 
 	private List<Certificate> list;
 
-	public Certificates(final Int24 length, List<Certificate> list, boolean updateLength) {
+	public Certificates(final Int24 length, final List<Certificate> list, final boolean updateLength) {
 		this.length = length;
 		this.list = list;
 		if (updateLength) {
@@ -28,7 +26,7 @@ public class Certificates implements TLSHandshakeBody {
 		}
 	}
 
-	public Certificates(final Int24 length, List<Certificate> list) {
+	public Certificates(final Int24 length, final List<Certificate> list) {
 		this(length, list, true);
 	}
 
@@ -48,15 +46,12 @@ public class Certificates implements TLSHandshakeBody {
 
 	@Override
 	public byte[] toByteArray() {
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		DataOutputStream dos = new DataOutputStream(bos);
-		ThrowingRunnable.unchecked(() -> {
-			dos.write(length.toByteArray());
-			for (Certificate certificate : list) {
-				dos.write(certificate.toByteArray());
-			}
-		}).run();
-		return bos.toByteArray();
+		ByteBuffer buffer = ByteBuffer.allocate(size());
+		buffer.put(length.toByteArray());
+		for (Certificate certificate : list) {
+			buffer.put(certificate.toByteArray());
+		}
+		return buffer.array();
 	}
 
 	@Override

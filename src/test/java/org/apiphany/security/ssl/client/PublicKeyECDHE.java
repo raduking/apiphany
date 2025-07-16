@@ -1,17 +1,15 @@
 package org.apiphany.security.ssl.client;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.spec.NamedParameterSpec;
 import java.security.spec.XECPublicKeySpec;
 
 import org.apiphany.json.JsonBuilder;
-import org.morphix.lang.function.ThrowingRunnable;
 
 public class PublicKeyECDHE implements TLSObject {
 
@@ -45,13 +43,10 @@ public class PublicKeyECDHE implements TLSObject {
 
 	@Override
 	public byte[] toByteArray() {
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		DataOutputStream dos = new DataOutputStream(bos);
-		ThrowingRunnable.unchecked(() -> {
-			dos.write(length.toByteArray());
-			dos.write(value.toByteArray());
-		}).run();
-		return bos.toByteArray();
+		ByteBuffer buffer = ByteBuffer.allocate(size());
+		buffer.put(length.toByteArray());
+		buffer.put(value.toByteArray());
+		return buffer.array();
 	}
 
 	@Override

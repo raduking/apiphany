@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.morphix.lang.Enums;
 
-public enum RecordContentType implements Sizeable {
+public enum RecordContentType implements TLSObject {
 
 	CHANGE_CIPHER_SPEC((byte) 0x14, FromFunction.ignoreSize(ChangeCipherSpec::from)),
 	ALERT((byte) 0x15, FromFunction.ignoreSize(Alert::from)),
@@ -46,6 +46,11 @@ public enum RecordContentType implements Sizeable {
 	@Override
 	public int size() {
 		return BYTES;
+	}
+
+	@Override
+	public byte[] toByteArray() {
+		return Int8.toByteArray(value);
 	}
 
 	public FromFunction<? extends TLSObject> fragment() {

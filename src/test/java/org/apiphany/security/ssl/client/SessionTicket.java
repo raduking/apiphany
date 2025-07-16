@@ -41,7 +41,7 @@ public class SessionTicket implements TLSExtension {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(bos);
 		ThrowingRunnable.unchecked(() -> {
-			dos.writeShort(type.value());
+			dos.write(type.toByteArray());
 			dos.write(length.toByteArray());
 		}).run();
 		return bos.toByteArray();

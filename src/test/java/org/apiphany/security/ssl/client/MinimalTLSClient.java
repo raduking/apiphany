@@ -283,7 +283,7 @@ public class MinimalTLSClient implements AutoCloseable {
 
 	private TLSRecord sendClientHello() throws IOException {
 		TLSRecord clientHelloRecord = new TLSRecord(SSLProtocol.TLS_1_0,
-				new ClientHello(List.of(host), new CipherSuites(CipherSuite.values()), List.of(CurveName.values())));
+				new ClientHello(List.of(host), List.of(CipherSuite.values()), List.of(CurveName.values()), SignatureAlgorithm.STRONG_ALGORITHMS));
 		byte[] clientHelloBytes = clientHelloRecord.toByteArray();
 		sendTLSRecord(clientHelloBytes);
 		accumulateHandshakes(clientHelloRecord.getFragments(TLSHandshake.class));

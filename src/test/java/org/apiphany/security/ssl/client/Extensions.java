@@ -1,14 +1,12 @@
 package org.apiphany.security.ssl.client;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apiphany.json.JsonBuilder;
-import org.morphix.lang.function.ThrowingRunnable;
 
 public class Extensions implements TLSObject {
 
@@ -30,7 +28,7 @@ public class Extensions implements TLSObject {
 		this(length, extensions, true);
 	}
 
-	public Extensions(final List<String> serverNames, final List<CurveName> curveNames) {
+	public Extensions(final List<String> serverNames, final List<CurveName> curveNames, final List<SignatureAlgorithm> signatureAlgorithms) {
 		this(
 				new Int16(),
 				List.of(
@@ -38,7 +36,7 @@ public class Extensions implements TLSObject {
 						new StatusRequest(),
 						new SupportedGroups(curveNames),
 						new ECPointFormats(),
-						new SignatureAlgorithms(),
+						new SignatureAlgorithms(signatureAlgorithms),
 						new RenegotiationInfo(),
 						new SignedCertificateTimestamp()
 				)
@@ -47,15 +45,12 @@ public class Extensions implements TLSObject {
 
 	@Override
 	public byte[] toByteArray() {
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		DataOutputStream dos = new DataOutputStream(bos);
-		ThrowingRunnable.unchecked(() -> {
-			dos.write(length.toByteArray());
-			for (TLSExtension extension : extensions) {
-				dos.write(extension.toByteArray());
-			}
-		}).run();
-		return bos.toByteArray();
+		ByteBuffer buffer = ByteBuffer.allocate(size());
+		buffer.put(length.toByteArray());
+		for (TLSExtension extension : extensions) {
+			buffer.put(extension.toByteArray());
+		}
+		return buffer.array();
 	}
 
 	public static Extensions from(final InputStream is) throws IOException {

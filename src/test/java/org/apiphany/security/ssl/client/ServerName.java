@@ -1,13 +1,11 @@
 package org.apiphany.security.ssl.client;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
 import org.apiphany.json.JsonBuilder;
-import org.morphix.lang.function.ThrowingRunnable;
 
 public class ServerName implements TLSObject {
 
@@ -37,15 +35,12 @@ public class ServerName implements TLSObject {
 
 	@Override
 	public byte[] toByteArray() {
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		DataOutputStream dos = new DataOutputStream(bos);
-		ThrowingRunnable.unchecked(() -> {
-			dos.write(size.toByteArray());
-			dos.write(type.toByteArray());
-			dos.write(length.toByteArray());
-			dos.write(name.toByteArray());
-		}).run();
-		return bos.toByteArray();
+		ByteBuffer buffer = ByteBuffer.allocate(size());
+		buffer.put(size.toByteArray());
+		buffer.put(type.toByteArray());
+		buffer.put(length.toByteArray());
+		buffer.put(name.toByteArray());
+		return buffer.array();
 	}
 
 	public static ServerName from(final InputStream is) throws IOException {

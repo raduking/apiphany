@@ -1,13 +1,11 @@
 package org.apiphany.security.ssl.client;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 
 import org.apiphany.json.JsonBuilder;
 import org.morphix.lang.JavaObjects;
-import org.morphix.lang.function.ThrowingRunnable;
 
 public class TLSHandshake implements TLSObject {
 
@@ -42,13 +40,10 @@ public class TLSHandshake implements TLSObject {
 
 	@Override
 	public byte[] toByteArray() {
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		DataOutputStream dos = new DataOutputStream(bos);
-		ThrowingRunnable.unchecked(() -> {
-			dos.write(header.toByteArray());
-			dos.write(body.toByteArray());
-		}).run();
-		return bos.toByteArray();
+		ByteBuffer buffer = ByteBuffer.allocate(size());
+		buffer.put(header.toByteArray());
+		buffer.put(body.toByteArray());
+		return buffer.array();
 	}
 
 	@Override
