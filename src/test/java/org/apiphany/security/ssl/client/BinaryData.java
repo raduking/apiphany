@@ -3,6 +3,7 @@ package org.apiphany.security.ssl.client;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Hex;
@@ -42,7 +43,10 @@ public class BinaryData implements TLSObject {
 
 	@Override
 	public byte[] toByteArray() {
-		return getBytes();
+		if (0 == bytes.length) {
+			return EMPTY;
+		}
+		return Arrays.copyOf(bytes, bytes.length);
 	}
 
 	@Override

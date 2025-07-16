@@ -2,7 +2,6 @@ package org.apiphany.security.ssl.client;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
 
 import org.apiphany.json.JsonBuilder;
 
@@ -22,9 +21,7 @@ public class ApplicationData implements TLSObject {
 
 	@Override
 	public byte[] toByteArray() {
-		ByteBuffer buffer = ByteBuffer.allocate(sizeOf());
-		buffer.put(data.toByteArray());
-		return buffer.array();
+		return data.toByteArray();
 	}
 
 	@Override
