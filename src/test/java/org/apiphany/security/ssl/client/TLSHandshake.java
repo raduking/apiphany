@@ -17,7 +17,7 @@ public class TLSHandshake implements TLSObject {
 		this.header = header;
 		this.body = body;
 		if (updateHeader) {
-			this.header.getLength().setValue((short) (body.size()));
+			this.header.getLength().setValue((short) (body.sizeOf()));
 		}
 	}
 
@@ -40,7 +40,7 @@ public class TLSHandshake implements TLSObject {
 
 	@Override
 	public byte[] toByteArray() {
-		ByteBuffer buffer = ByteBuffer.allocate(size());
+		ByteBuffer buffer = ByteBuffer.allocate(sizeOf());
 		buffer.put(header.toByteArray());
 		buffer.put(body.toByteArray());
 		return buffer.array();
@@ -52,8 +52,8 @@ public class TLSHandshake implements TLSObject {
 	}
 
 	@Override
-	public int size() {
-		return header.size() + body.size();
+	public int sizeOf() {
+		return header.sizeOf() + body.sizeOf();
 	}
 
 	public HandshakeHeader getHeader() {

@@ -38,7 +38,7 @@ public class Signature implements TLSObject {
 
 	@Override
 	public byte[] toByteArray() {
-		ByteBuffer buffer = ByteBuffer.allocate(size());
+		ByteBuffer buffer = ByteBuffer.allocate(sizeOf());
 		buffer.put(reserved.toByteArray());
 		buffer.put(length.toByteArray());
 		buffer.put(value.toByteArray());
@@ -51,8 +51,8 @@ public class Signature implements TLSObject {
 	}
 
 	@Override
-	public int size() {
-		return reserved.size() + length.size() + value.size();
+	public int sizeOf() {
+		return reserved.sizeOf() + length.sizeOf() + value.sizeOf();
 	}
 
 	public Int16 getReserved() {

@@ -34,7 +34,7 @@ public class Certificate implements TLSObject {
 
 	@Override
 	public byte[] toByteArray() {
-		ByteBuffer buffer = ByteBuffer.allocate(size());
+		ByteBuffer buffer = ByteBuffer.allocate(sizeOf());
 		buffer.put(length.toByteArray());
 		buffer.put(data.toByteArray());
 		return buffer.array();
@@ -46,8 +46,8 @@ public class Certificate implements TLSObject {
 	}
 
 	@Override
-	public int size() {
-		return length.size() + data.size();
+	public int sizeOf() {
+		return length.sizeOf() + data.sizeOf();
 	}
 
 	public Int24 getLength() {

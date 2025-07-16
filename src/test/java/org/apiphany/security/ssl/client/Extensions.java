@@ -18,7 +18,7 @@ public class Extensions implements TLSObject {
 		this.length = length;
 		this.extensions.addAll(extensions);
 		if (setSizes) {
-			this.length.setValue((short) (size() - length.size()));
+			this.length.setValue((short) (sizeOf() - length.sizeOf()));
 		}
 	}
 
@@ -45,7 +45,7 @@ public class Extensions implements TLSObject {
 
 	@Override
 	public byte[] toByteArray() {
-		ByteBuffer buffer = ByteBuffer.allocate(size());
+		ByteBuffer buffer = ByteBuffer.allocate(sizeOf());
 		buffer.put(length.toByteArray());
 		for (TLSExtension extension : extensions) {
 			buffer.put(extension.toByteArray());
@@ -65,7 +65,7 @@ public class Extensions implements TLSObject {
 			TLSExtension extension = extensionType.extensionFrom(is);
 			extensions.add(extension);
 
-			currentLength += extension.size();
+			currentLength += extension.sizeOf();
 		}
 
 		return new Extensions(length, extensions, false);
@@ -77,10 +77,10 @@ public class Extensions implements TLSObject {
 	}
 
 	@Override
-	public int size() {
-		int result = length.size();
+	public int sizeOf() {
+		int result = length.sizeOf();
 		for (TLSExtension extension : extensions) {
-			result += extension.size();
+			result += extension.sizeOf();
 		}
 		return result;
 	}

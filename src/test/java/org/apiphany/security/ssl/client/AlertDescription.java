@@ -50,7 +50,7 @@ public enum AlertDescription implements TLSObject {
 	}
 
 	@Override
-	public int size() {
+	public int sizeOf() {
 		return BYTES;
 	}
 

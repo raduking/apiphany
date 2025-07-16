@@ -26,7 +26,7 @@ public class ClientKeyExchange implements TLSHandshakeBody {
 
 	@Override
 	public byte[] toByteArray() {
-		ByteBuffer buffer = ByteBuffer.allocate(size());
+		ByteBuffer buffer = ByteBuffer.allocate(sizeOf());
 		buffer.put(publicKey.toByteArray());
 		return buffer.array();
 	}
@@ -37,8 +37,8 @@ public class ClientKeyExchange implements TLSHandshakeBody {
 	}
 
 	@Override
-	public int size() {
-		return publicKey.size();
+	public int sizeOf() {
+		return publicKey.sizeOf();
 	}
 
 	@Override

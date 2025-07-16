@@ -43,7 +43,7 @@ public class PublicKeyECDHE implements TLSObject {
 
 	@Override
 	public byte[] toByteArray() {
-		ByteBuffer buffer = ByteBuffer.allocate(size());
+		ByteBuffer buffer = ByteBuffer.allocate(sizeOf());
 		buffer.put(length.toByteArray());
 		buffer.put(value.toByteArray());
 		return buffer.array();
@@ -63,8 +63,8 @@ public class PublicKeyECDHE implements TLSObject {
 	}
 
 	@Override
-	public int size() {
-		return length.size() + value.size();
+	public int sizeOf() {
+		return length.sizeOf() + value.sizeOf();
 	}
 
 	public PublicKey loadX25519PublicKey() throws Exception {

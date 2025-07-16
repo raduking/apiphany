@@ -22,7 +22,7 @@ public class ApplicationData implements TLSObject {
 
 	@Override
 	public byte[] toByteArray() {
-		ByteBuffer buffer = ByteBuffer.allocate(size());
+		ByteBuffer buffer = ByteBuffer.allocate(sizeOf());
 		buffer.put(data.toByteArray());
 		return buffer.array();
 	}
@@ -33,8 +33,8 @@ public class ApplicationData implements TLSObject {
 	}
 
 	@Override
-	public int size() {
-		return data.size();
+	public int sizeOf() {
+		return data.sizeOf();
 	}
 
 	public Encrypted getData() {

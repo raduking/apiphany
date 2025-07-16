@@ -60,7 +60,7 @@ public class SupportedGroups implements TLSExtension {
 
 	@Override
 	public byte[] toByteArray() {
-		ByteBuffer buffer = ByteBuffer.allocate(size());
+		ByteBuffer buffer = ByteBuffer.allocate(sizeOf());
 		buffer.put(type.toByteArray());
 		buffer.put(length.toByteArray());
 		buffer.put(listSize.toByteArray());
@@ -76,10 +76,10 @@ public class SupportedGroups implements TLSExtension {
 	}
 
 	@Override
-	public int size() {
-		int result = type.size() + length.size() + listSize.size();
+	public int sizeOf() {
+		int result = type.sizeOf() + length.sizeOf() + listSize.sizeOf();
 		for (CurveName group : groups) {
-			result += group.size();
+			result += group.sizeOf();
 		}
 		return result;
 	}

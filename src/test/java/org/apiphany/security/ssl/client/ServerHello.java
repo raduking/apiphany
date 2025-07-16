@@ -54,7 +54,7 @@ public class ServerHello implements TLSHandshakeBody {
 
 	@Override
 	public byte[] toByteArray() {
-		ByteBuffer buffer = ByteBuffer.allocate(size());
+		ByteBuffer buffer = ByteBuffer.allocate(sizeOf());
 		buffer.put(version.toByteArray());
 		buffer.put(serverRandom.toByteArray());
 		buffer.put(sessionId.toByteArray());
@@ -65,13 +65,13 @@ public class ServerHello implements TLSHandshakeBody {
 	}
 
 	@Override
-	public int size() {
-		return version.size()
-				+ serverRandom.size()
-				+ sessionId.size()
-				+ cipherSuite.size()
-				+ compressionMethod.size()
-				+ extensions.size();
+	public int sizeOf() {
+		return version.sizeOf()
+				+ serverRandom.sizeOf()
+				+ sessionId.sizeOf()
+				+ cipherSuite.sizeOf()
+				+ compressionMethod.sizeOf()
+				+ extensions.sizeOf();
 	}
 
 	@Override

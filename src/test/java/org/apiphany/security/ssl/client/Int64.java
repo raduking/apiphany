@@ -6,10 +6,12 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.lang.BinaryRepresentable;
+import org.apiphany.lang.ByteSizeable;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
-public class Int64 implements Sizeable, BinaryRepresentable {
+public class Int64 implements ByteSizeable, BinaryRepresentable {
 
 	public static final int BYTES = 8;
 
@@ -63,7 +65,7 @@ public class Int64 implements Sizeable, BinaryRepresentable {
 	}
 
 	@Override
-	public int size() {
+	public int sizeOf() {
 		return BYTES;
 	}
 }

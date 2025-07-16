@@ -18,9 +18,9 @@ public class Certificates implements TLSHandshakeBody {
 		this.length = length;
 		this.list = list;
 		if (updateLength) {
-			int result = length.size();
+			int result = length.sizeOf();
 			for (Certificate certificate : list) {
-				result += certificate.size();
+				result += certificate.sizeOf();
 			}
 			this.length.setValue(result);
 		}
@@ -38,7 +38,7 @@ public class Certificates implements TLSHandshakeBody {
 		while (certificatesLength > 0) {
 			Certificate certificate = Certificate.from(is);
 			certificates.add(certificate);
-			certificatesLength -= certificate.size();
+			certificatesLength -= certificate.sizeOf();
 		}
 
 		return new Certificates(length, certificates, false);
@@ -46,7 +46,7 @@ public class Certificates implements TLSHandshakeBody {
 
 	@Override
 	public byte[] toByteArray() {
-		ByteBuffer buffer = ByteBuffer.allocate(size());
+		ByteBuffer buffer = ByteBuffer.allocate(sizeOf());
 		buffer.put(length.toByteArray());
 		for (Certificate certificate : list) {
 			buffer.put(certificate.toByteArray());
@@ -60,10 +60,10 @@ public class Certificates implements TLSHandshakeBody {
 	}
 
 	@Override
-	public int size() {
-		int result = length.size();
+	public int sizeOf() {
+		int result = length.sizeOf();
 		for (Certificate certificate : list) {
-			result += certificate.size();
+			result += certificate.sizeOf();
 		}
 		return result;
 	}

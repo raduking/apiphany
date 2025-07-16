@@ -23,7 +23,7 @@ public class ServerHelloDone implements TLSHandshakeBody {
 	}
 
 	@Override
-	public int size() {
+	public int sizeOf() {
 		return BYTES;
 	}
 

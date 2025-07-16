@@ -13,6 +13,8 @@
 - Added `SSLProperties` to be able to configure SSL for the HTTP exchange clients.
 - Added `SSLProtocol` which enumerates SSL protocols.
 - Added `Hex` class that helps with conversions between hexadecimal Strings and bytes or byte arrays.
+- Added `ByteSizeable` to represent an object that can report its size in bytes.
+- Added `BinaryRepresentable` to represent an object that can be converted to a binary (byte array) representation.
 
 ---
 

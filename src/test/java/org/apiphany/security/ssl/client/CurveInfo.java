@@ -29,7 +29,7 @@ public class CurveInfo implements TLSObject {
 
 	@Override
 	public byte[] toByteArray() {
-		ByteBuffer buffer = ByteBuffer.allocate(size());
+		ByteBuffer buffer = ByteBuffer.allocate(sizeOf());
 		buffer.put(type.toByteArray());
 		buffer.put(name.toByteArray());
 		return buffer.array();
@@ -41,8 +41,8 @@ public class CurveInfo implements TLSObject {
 	}
 
 	@Override
-	public int size() {
-		return type.size() + name.size();
+	public int sizeOf() {
+		return type.sizeOf() + name.sizeOf();
 	}
 
 	public CurveType getType() {
