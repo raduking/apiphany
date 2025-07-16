@@ -23,7 +23,7 @@ public class ServerNames implements TLSExtension {
 		if (updateLength) {
 			int result = 0;
 			for (ServerName serverName : entries) {
-				result += serverName.size();
+				result += serverName.sizeOf();
 			}
 			this.length.setValue((short) result);
 		}
@@ -39,7 +39,7 @@ public class ServerNames implements TLSExtension {
 
 	@Override
 	public byte[] toByteArray() {
-		ByteBuffer buffer = ByteBuffer.allocate(size());
+		ByteBuffer buffer = ByteBuffer.allocate(sizeOf());
 		buffer.put(type.toByteArray());
 		buffer.put(length.toByteArray());
 		for (ServerName entry : entries) {
@@ -62,7 +62,7 @@ public class ServerNames implements TLSExtension {
 		while (currentLength < length.getValue()) {
 			ServerName serverName = ServerName.from(is);
 			serverNames.add(serverName);
-			currentLength += serverName.size();
+			currentLength += serverName.sizeOf();
 		}
 
 		return new ServerNames(type, length, serverNames, false);
@@ -74,10 +74,10 @@ public class ServerNames implements TLSExtension {
 	}
 
 	@Override
-	public int size() {
-		int result = type.size() + length.size();
+	public int sizeOf() {
+		int result = type.sizeOf() + length.sizeOf();
 		for (ServerName entry : entries) {
-			result += entry.size();
+			result += entry.sizeOf();
 		}
 		return result;
 	}

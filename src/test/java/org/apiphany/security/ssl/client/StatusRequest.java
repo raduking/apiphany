@@ -53,7 +53,7 @@ public class StatusRequest implements TLSExtension {
 
 	@Override
 	public byte[] toByteArray() {
-		ByteBuffer buffer = ByteBuffer.allocate(size());
+		ByteBuffer buffer = ByteBuffer.allocate(sizeOf());
 		buffer.put(type.toByteArray());
 		buffer.put(length.toByteArray());
 		buffer.put(certificateStatusType.toByteArray());
@@ -68,12 +68,12 @@ public class StatusRequest implements TLSExtension {
 	}
 
 	@Override
-	public int size() {
-		return type.size()
-				+ length.size()
-				+ certificateStatusType.size()
-				+ responderIDInfoSize.size()
-				+ requestExtensionInfoSize.size();
+	public int sizeOf() {
+		return type.sizeOf()
+				+ length.sizeOf()
+				+ certificateStatusType.sizeOf()
+				+ responderIDInfoSize.sizeOf()
+				+ requestExtensionInfoSize.sizeOf();
 	}
 
 	@Override

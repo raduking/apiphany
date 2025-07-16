@@ -35,7 +35,7 @@ public class ServerName implements TLSObject {
 
 	@Override
 	public byte[] toByteArray() {
-		ByteBuffer buffer = ByteBuffer.allocate(size());
+		ByteBuffer buffer = ByteBuffer.allocate(sizeOf());
 		buffer.put(size.toByteArray());
 		buffer.put(type.toByteArray());
 		buffer.put(length.toByteArray());
@@ -58,8 +58,8 @@ public class ServerName implements TLSObject {
 	}
 
 	@Override
-	public int size() {
-		return size.size() + type.size() + length.size() + name.size();
+	public int sizeOf() {
+		return size.sizeOf() + type.sizeOf() + length.sizeOf() + name.sizeOf();
 	}
 
 	public Int16 getSize() {

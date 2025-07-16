@@ -1,6 +1,9 @@
 package org.apiphany.security.ssl.client;
 
-public interface TLSObject extends Sizeable, BinaryRepresentable {
+import org.apiphany.lang.BinaryRepresentable;
+import org.apiphany.lang.ByteSizeable;
+
+public interface TLSObject extends ByteSizeable, BinaryRepresentable {
 
 	// empty
 

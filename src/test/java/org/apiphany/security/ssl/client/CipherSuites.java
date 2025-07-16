@@ -38,7 +38,7 @@ public class CipherSuites implements TLSObject {
 
 	@Override
 	public byte[] toByteArray() {
-		ByteBuffer buffer = ByteBuffer.allocate(size());
+		ByteBuffer buffer = ByteBuffer.allocate(sizeOf());
 		buffer.put(size.toByteArray());
 		for (CipherSuite cypherSuite : cipherSuites) {
 			buffer.put(cypherSuite.toByteArray());
@@ -64,10 +64,10 @@ public class CipherSuites implements TLSObject {
 	}
 
 	@Override
-	public int size() {
-		int result = size.size();
+	public int sizeOf() {
+		int result = size.sizeOf();
 		for (CipherSuite cipherSuite : cipherSuites) {
-			result += cipherSuite.size();
+			result += cipherSuite.sizeOf();
 		}
 		return result;
 	}

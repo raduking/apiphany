@@ -36,7 +36,7 @@ public class ExtendedMasterSecret implements TLSExtension {
 
 	@Override
 	public byte[] toByteArray() {
-		ByteBuffer buffer = ByteBuffer.allocate(size());
+		ByteBuffer buffer = ByteBuffer.allocate(sizeOf());
 		buffer.put(type.toByteArray());
 		buffer.put(length.toByteArray());
 		return buffer.array();
@@ -48,8 +48,8 @@ public class ExtendedMasterSecret implements TLSExtension {
 	}
 
 	@Override
-	public int size() {
-		return type.size() + length.size();
+	public int sizeOf() {
+		return type.sizeOf() + length.sizeOf();
 	}
 
 	@Override

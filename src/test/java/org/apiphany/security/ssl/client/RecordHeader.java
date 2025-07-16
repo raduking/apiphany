@@ -42,7 +42,7 @@ public class RecordHeader implements TLSObject {
 
 	@Override
 	public byte[] toByteArray() {
-		ByteBuffer buffer = ByteBuffer.allocate(size());
+		ByteBuffer buffer = ByteBuffer.allocate(sizeOf());
 		buffer.put(type.toByteArray());
 		buffer.put(version.toByteArray());
 		buffer.put(length.toByteArray());
@@ -55,8 +55,8 @@ public class RecordHeader implements TLSObject {
 	}
 
 	@Override
-	public int size() {
-		return type.size() + version.size() + length.size();
+	public int sizeOf() {
+		return type.sizeOf() + version.sizeOf() + length.sizeOf();
 	}
 
 	public RecordContentType getType() {

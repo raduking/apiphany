@@ -40,7 +40,7 @@ public class Version implements TLSObject {
 	}
 
 	@Override
-	public int size() {
+	public int sizeOf() {
 		return BYTES;
 	}
 

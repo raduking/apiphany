@@ -145,7 +145,7 @@ public enum SignatureAlgorithm implements TLSObject {
 	}
 
 	@Override
-	public int size() {
+	public int sizeOf() {
 		return BYTES;
 	}
 

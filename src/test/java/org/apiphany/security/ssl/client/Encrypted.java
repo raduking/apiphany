@@ -29,7 +29,7 @@ public class Encrypted implements TLSObject {
 
 	@Override
 	public byte[] toByteArray() {
-		ByteBuffer buffer = ByteBuffer.allocate(size());
+		ByteBuffer buffer = ByteBuffer.allocate(sizeOf());
 		buffer.put(nonce.toByteArray());
 		buffer.put(encryptedData.toByteArray());
 		return buffer.array();
@@ -41,8 +41,8 @@ public class Encrypted implements TLSObject {
 	}
 
 	@Override
-	public int size() {
-		return nonce.size() + encryptedData.size();
+	public int sizeOf() {
+		return nonce.sizeOf() + encryptedData.sizeOf();
 	}
 
 	public BinaryData getNonce() {

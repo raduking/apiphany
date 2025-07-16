@@ -44,7 +44,7 @@ public class RenegotiationInfo implements TLSExtension {
 
 	@Override
 	public byte[] toByteArray() {
-		ByteBuffer buffer = ByteBuffer.allocate(size());
+		ByteBuffer buffer = ByteBuffer.allocate(sizeOf());
 		buffer.put(type.toByteArray());
 		buffer.put(size.toByteArray());
 		buffer.put(length.toByteArray());
@@ -57,8 +57,8 @@ public class RenegotiationInfo implements TLSExtension {
 	}
 
 	@Override
-	public int size() {
-		return type.size() + size.size() + length.size();
+	public int sizeOf() {
+		return type.sizeOf() + size.sizeOf() + length.sizeOf();
 	}
 
 	@Override

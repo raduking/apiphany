@@ -30,7 +30,7 @@ public class CompressionMethods implements TLSObject {
 
 	@Override
 	public byte[] toByteArray() {
-		ByteBuffer buffer = ByteBuffer.allocate(size());
+		ByteBuffer buffer = ByteBuffer.allocate(sizeOf());
 		buffer.put(size.toByteArray());
 		for (CompressionMethod method : methods) {
 			buffer.put(method.toByteArray());
@@ -64,10 +64,10 @@ public class CompressionMethods implements TLSObject {
 	}
 
 	@Override
-	public int size() {
-		int result = size.size();
+	public int sizeOf() {
+		int result = size.sizeOf();
 		for (CompressionMethod method : methods) {
-			result += method.size();
+			result += method.sizeOf();
 		}
 		return result;
 	}

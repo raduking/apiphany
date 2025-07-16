@@ -32,14 +32,14 @@ public class Alert implements TLSObject {
 
 	@Override
 	public byte[] toByteArray() {
-		ByteBuffer buffer = ByteBuffer.allocate(size());
+		ByteBuffer buffer = ByteBuffer.allocate(sizeOf());
 		buffer.put(level.toByteArray());
 		buffer.put(description.toByteArray());
 		return buffer.array();
 	}
 
 	@Override
-	public int size() {
+	public int sizeOf() {
 		return BYTES;
 	}
 

@@ -28,7 +28,7 @@ public class AdditionalAuthenticatedData implements TLSObject {
 
 	@Override
 	public byte[] toByteArray() {
-		ByteBuffer buffer = ByteBuffer.allocate(size());
+		ByteBuffer buffer = ByteBuffer.allocate(sizeOf());
 		buffer.put(sequenceNumber.toByteArray());
 		buffer.put(type.toByteArray());
 		buffer.put(protocolVersion.toByteArray());
@@ -42,11 +42,11 @@ public class AdditionalAuthenticatedData implements TLSObject {
 	}
 
 	@Override
-	public int size() {
-		return sequenceNumber.size()
-				+ type.size()
-				+ protocolVersion.size()
-				+ length.size();
+	public int sizeOf() {
+		return sequenceNumber.sizeOf()
+				+ type.sizeOf()
+				+ protocolVersion.sizeOf()
+				+ length.sizeOf();
 	}
 
 	public Int64 getSequenceNumber() {

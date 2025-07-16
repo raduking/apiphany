@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.function.BiFunction;
 
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.lang.ByteSizeable;
 import org.apiphany.lang.collections.Lists;
 import org.apiphany.security.ssl.SSLProtocol;
 import org.morphix.lang.JavaObjects;
@@ -26,8 +27,8 @@ public class TLSRecord implements TLSObject {
 		this.fragments = fragments;
 		if (updateHeader) {
 			short length = 0;
-			for (Sizeable fragment : fragments) {
-				length += fragment.size();
+			for (ByteSizeable fragment : fragments) {
+				length += fragment.sizeOf();
 			}
 			header.getLength().setValue(length);
 		}
@@ -58,7 +59,7 @@ public class TLSRecord implements TLSObject {
 		while (currentLength > 0) {
 			TLSObject fragment = recordType.fragment().from(is, currentLength);
 			fragments.add(fragment);
-			currentLength -= fragment.size();
+			currentLength -= fragment.sizeOf();
 		}
 		return new TLSRecord(header, fragments, false);
 	}
@@ -72,7 +73,7 @@ public class TLSRecord implements TLSObject {
 
 	@Override
 	public byte[] toByteArray() {
-		ByteBuffer buffer = ByteBuffer.allocate(size());
+		ByteBuffer buffer = ByteBuffer.allocate(sizeOf());
 		buffer.put(header.toByteArray());
 		for (TLSObject fragment : fragments) {
 			buffer.put(fragment.toByteArray());
@@ -86,10 +87,10 @@ public class TLSRecord implements TLSObject {
 	}
 
 	@Override
-	public int size() {
-		int result = header.size();
+	public int sizeOf() {
+		int result = header.sizeOf();
 		for (TLSObject fragment : fragments) {
-			result += fragment.size();
+			result += fragment.sizeOf();
 		}
 		return result;
 	}

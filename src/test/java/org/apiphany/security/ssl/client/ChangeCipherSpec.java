@@ -30,14 +30,14 @@ public class ChangeCipherSpec implements TLSObject {
 
 	@Override
 	public byte[] toByteArray() {
-		ByteBuffer buffer = ByteBuffer.allocate(size());
+		ByteBuffer buffer = ByteBuffer.allocate(sizeOf());
 		buffer.put(payload.toByteArray());
 		return buffer.array();
 	}
 
 	@Override
-	public int size() {
-		return payload.size();
+	public int sizeOf() {
+		return payload.sizeOf();
 	}
 
 	@Override

@@ -60,7 +60,7 @@ public class BinaryData implements TLSObject {
 	}
 
 	@Override
-	public int size() {
+	public int sizeOf() {
 		return bytes.length;
 	}
 }

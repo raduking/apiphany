@@ -64,7 +64,7 @@ public class SignatureAlgorithms implements TLSExtension {
 
 	@Override
 	public byte[] toByteArray() {
-		ByteBuffer buffer = ByteBuffer.allocate(size());
+		ByteBuffer buffer = ByteBuffer.allocate(sizeOf());
 		buffer.put(type.toByteArray());
 		buffer.put(length.toByteArray());
 		buffer.put(listSize.toByteArray());
@@ -80,8 +80,8 @@ public class SignatureAlgorithms implements TLSExtension {
 	}
 
 	@Override
-	public int size() {
-		return type.size() + length.size() + listSize.size() + algorithms.size() * SignatureAlgorithm.BYTES;
+	public int sizeOf() {
+		return type.sizeOf() + length.sizeOf() + listSize.sizeOf() + algorithms.size() * SignatureAlgorithm.BYTES;
 	}
 
 	@Override

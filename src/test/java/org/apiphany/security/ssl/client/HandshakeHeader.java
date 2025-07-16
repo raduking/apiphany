@@ -55,8 +55,8 @@ public class HandshakeHeader implements TLSObject {
 	}
 
 	@Override
-	public int size() {
-		return type.size() + length.size();
+	public int sizeOf() {
+		return type.sizeOf() + length.sizeOf();
 	}
 
 	public HandshakeType getType() {

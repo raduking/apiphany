@@ -26,7 +26,7 @@ public class Finished implements TLSHandshakeBody {
 
 	@Override
 	public byte[] toByteArray() {
-		ByteBuffer buffer = ByteBuffer.allocate(size());
+		ByteBuffer buffer = ByteBuffer.allocate(sizeOf());
 		buffer.put(verifyData.toByteArray());
 		return buffer.array();
 	}
@@ -37,8 +37,8 @@ public class Finished implements TLSHandshakeBody {
 	}
 
 	@Override
-	public int size() {
-		return verifyData.size();
+	public int sizeOf() {
+		return verifyData.sizeOf();
 	}
 
 	@Override

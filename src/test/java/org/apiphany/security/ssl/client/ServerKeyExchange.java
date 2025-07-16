@@ -30,7 +30,7 @@ public class ServerKeyExchange implements TLSHandshakeBody {
 
 	@Override
 	public byte[] toByteArray() {
-		ByteBuffer buffer = ByteBuffer.allocate(size());
+		ByteBuffer buffer = ByteBuffer.allocate(sizeOf());
 		buffer.put(curveInfo.toByteArray());
 		buffer.put(publicKey.toByteArray());
 		buffer.put(signature.toByteArray());
@@ -43,8 +43,8 @@ public class ServerKeyExchange implements TLSHandshakeBody {
 	}
 
 	@Override
-	public int size() {
-		return curveInfo.size() + publicKey.size() + signature.size();
+	public int sizeOf() {
+		return curveInfo.sizeOf() + publicKey.sizeOf() + signature.sizeOf();
 	}
 
 	@Override

@@ -59,7 +59,7 @@ public class ClientHello implements TLSHandshakeBody {
 
 	@Override
 	public byte[] toByteArray() {
-		ByteBuffer buffer = ByteBuffer.allocate(size());
+		ByteBuffer buffer = ByteBuffer.allocate(sizeOf());
 		buffer.put(clientVersion.toByteArray());
 		buffer.put(clientRandom.toByteArray());
 		buffer.put(sessionId.toByteArray());
@@ -87,13 +87,13 @@ public class ClientHello implements TLSHandshakeBody {
 	}
 
 	@Override
-	public int size() {
-		return clientVersion.size()
-				+ clientRandom.size()
-				+ sessionId.size()
-				+ cipherSuites.size()
-				+ compressionMethods.size()
-				+ extensions.size();
+	public int sizeOf() {
+		return clientVersion.sizeOf()
+				+ clientRandom.sizeOf()
+				+ sessionId.sizeOf()
+				+ cipherSuites.sizeOf()
+				+ compressionMethods.sizeOf()
+				+ extensions.sizeOf();
 	}
 
 	@Override
