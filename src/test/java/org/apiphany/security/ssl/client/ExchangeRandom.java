@@ -40,6 +40,10 @@ public class ExchangeRandom extends BinaryData {
 		return generateRandom(new DeterministicSecureRandom());
 	}
 
+	public static ExchangeRandom linear() {
+		return new ExchangeRandom(generateLinear());
+	}
+
 	@Override
 	public String toString() {
 		return JsonBuilder.toJson(this);

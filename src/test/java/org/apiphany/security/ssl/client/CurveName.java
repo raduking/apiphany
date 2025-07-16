@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.morphix.lang.Enums;
 
-public enum CurveName implements Sizeable {
+public enum CurveName implements TLSObject {
 
 	X25519((short) 0x001D),
 	SECP256R1((short) 0x0017),
@@ -34,5 +34,10 @@ public enum CurveName implements Sizeable {
 	@Override
 	public int size() {
 		return BYTES;
+	}
+
+	@Override
+	public byte[] toByteArray() {
+		return Int16.toByteArray(value);
 	}
 }

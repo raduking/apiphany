@@ -69,7 +69,7 @@ public class SupportedGroups implements TLSExtension {
 			dos.write(length.toByteArray());
 			dos.write(listSize.toByteArray());
 			for (CurveName group : groups) {
-				dos.writeShort(group.value());
+				dos.write(group.toByteArray());
 			}
 		}).run();
 		return bos.toByteArray();

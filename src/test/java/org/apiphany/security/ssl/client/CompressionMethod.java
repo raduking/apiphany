@@ -1,46 +1,38 @@
 package org.apiphany.security.ssl.client;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.util.Map;
 
-import org.apiphany.json.JsonBuilder;
+import org.morphix.lang.Enums;
 
-import com.fasterxml.jackson.annotation.JsonValue;
+public enum CompressionMethod implements TLSObject {
 
-public class CompressionMethod implements TLSObject {
+	NO_COMPRESSION((byte) 0x00);
 
-	private CompressionMethodType method;
+	public static final int BYTES = 1;
 
-	public CompressionMethod(final CompressionMethodType method) {
-		this.method = method;
+	private static final Map<Byte, CompressionMethod> VALUE_MAP = Enums.buildNameMap(values(), CompressionMethod::value);
+
+	private final byte value;
+
+	CompressionMethod(final byte value) {
+		this.value = value;
 	}
 
-	public CompressionMethod(final byte method) {
-		this.method = CompressionMethodType.fromValue(method);
+	public byte value() {
+		return value;
 	}
 
-	public static CompressionMethod from(final InputStream is) throws IOException {
-		int method = is.read();
-		return new CompressionMethod((byte) method);
-	}
-
-	@Override
-	public byte[] toByteArray() {
-		return Int8.toByteArray(method.value());
-	}
-
-	@Override
-	public String toString() {
-		return JsonBuilder.toJson(this);
+	public static CompressionMethod fromValue(final byte value) {
+		return Enums.from(value, VALUE_MAP, values());
 	}
 
 	@Override
 	public int size() {
-		return CompressionMethodType.BYTES;
+		return BYTES;
 	}
 
-	@JsonValue
-	public CompressionMethodType getMethod() {
-		return method;
+	@Override
+	public byte[] toByteArray() {
+		return Int8.toByteArray(value);
 	}
 }

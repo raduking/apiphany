@@ -34,8 +34,8 @@ public class CurveInfo implements TLSObject {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(bos);
 		ThrowingRunnable.unchecked(() -> {
-			dos.writeByte(type.value());
-			dos.writeShort(name.value());
+			dos.write(type.toByteArray());
+			dos.write(name.toByteArray());
 		}).run();
 		return bos.toByteArray();
 	}

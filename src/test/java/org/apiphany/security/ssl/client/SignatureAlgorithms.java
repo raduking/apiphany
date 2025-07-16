@@ -12,8 +12,6 @@ import org.morphix.lang.function.ThrowingRunnable;
 
 public class SignatureAlgorithms implements TLSExtension {
 
-	private static final int BYTES_PER_ALGORITHM = 2;
-
 	private ExtensionType type;
 
 	private Int16 length;
@@ -29,17 +27,21 @@ public class SignatureAlgorithms implements TLSExtension {
 		this.algorithms = algorithms;
 	}
 
-	public SignatureAlgorithms(final SignatureAlgorithm... algorithms) {
+	public SignatureAlgorithms(final List<SignatureAlgorithm> algorithms) {
 		this(
 				ExtensionType.SIGNATURE_ALGORITHMS,
-				new Int16((short) (algorithms.length * BYTES_PER_ALGORITHM + Int16.BYTES)),
-				new Int16((short) (algorithms.length * BYTES_PER_ALGORITHM)),
-				List.of(algorithms)
+				new Int16((short) (algorithms.size() * SignatureAlgorithm.BYTES + Int16.BYTES)),
+				new Int16((short) (algorithms.size() * SignatureAlgorithm.BYTES)),
+				algorithms
 		);
 	}
 
+	public SignatureAlgorithms(final SignatureAlgorithm... algorithms) {
+		this(List.of(algorithms));
+	}
+
 	public SignatureAlgorithms() {
-		this(SignatureAlgorithm.values());
+		this(SignatureAlgorithm.STRONG_ALGORITHMS);
 	}
 
 	public static SignatureAlgorithms from(final InputStream is) throws IOException {
@@ -53,7 +55,7 @@ public class SignatureAlgorithms implements TLSExtension {
 		Int16 length = Int16.from(is);
 		Int16 listSize = Int16.from(is);
 		List<SignatureAlgorithm> algorithms = new ArrayList<>();
-		for (int i = 0; i < listSize.getValue() / BYTES_PER_ALGORITHM; ++i) {
+		for (int i = 0; i < listSize.getValue() / SignatureAlgorithm.BYTES; ++i) {
 			Int16 int16 = Int16.from(is);
 			SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.fromValue(int16.getValue());
 			algorithms.add(signatureAlgorithm);
@@ -71,7 +73,7 @@ public class SignatureAlgorithms implements TLSExtension {
 			dos.write(length.toByteArray());
 			dos.write(listSize.toByteArray());
 			for (SignatureAlgorithm algorithm : algorithms) {
-				dos.writeShort(algorithm.value());
+				dos.write(algorithm.toByteArray());
 			}
 		}).run();
 		return bos.toByteArray();
@@ -84,7 +86,7 @@ public class SignatureAlgorithms implements TLSExtension {
 
 	@Override
 	public int size() {
-		return type.size() + length.size() + listSize.size() + algorithms.size() * BYTES_PER_ALGORITHM;
+		return type.size() + length.size() + listSize.size() + algorithms.size() * SignatureAlgorithm.BYTES;
 	}
 
 	@Override

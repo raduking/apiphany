@@ -1,11 +1,14 @@
 package org.apiphany.security.ssl.client;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apiphany.json.JsonBuilder;
+import org.morphix.lang.function.ThrowingRunnable;
 
 public class CompressionMethods implements TLSObject {
 
@@ -24,17 +27,20 @@ public class CompressionMethods implements TLSObject {
 	}
 
 	public CompressionMethods() {
-		this(List.of(new CompressionMethod(CompressionMethodType.NO_COMPRESSION)));
+		this(List.of(CompressionMethod.NO_COMPRESSION));
 	}
 
 	@Override
 	public byte[] toByteArray() {
-		byte[] result = new byte[size.getValue() + 1];
-		result[0] = size.getValue();
-		for (int i = 0; i < size.getValue(); ++i) {
-			result[i + 1] = methods.get(i).getMethod().value();
-		}
-		return result;
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		DataOutputStream dos = new DataOutputStream(bos);
+		ThrowingRunnable.unchecked(() -> {
+			dos.write(size.toByteArray());
+			for (CompressionMethod method : methods) {
+				dos.write(method.toByteArray());
+			}
+		}).run();
+		return bos.toByteArray();
 	}
 
 	@Override
@@ -46,7 +52,8 @@ public class CompressionMethods implements TLSObject {
 		Int8 size = Int8.from(is);
 		List<CompressionMethod> methods = new ArrayList<>();
 		for (int i = 0; i < size.getValue(); ++i) {
-			CompressionMethod method = CompressionMethod.from(is);
+			Int8 int8 = Int8.from(is);
+			CompressionMethod method = CompressionMethod.fromValue(int8.getValue());
 			methods.add(method);
 		}
 
