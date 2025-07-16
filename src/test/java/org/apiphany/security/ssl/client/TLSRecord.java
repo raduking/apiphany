@@ -58,7 +58,7 @@ public class TLSRecord implements TLSObject {
 		List<TLSObject> fragments = new ArrayList<>();
 		int currentLength = header.getLength().getValue();
 		while (currentLength > 0) {
-			TLSObject fragment = recordType.fragment().from(is);
+			TLSObject fragment = recordType.fragment().from(is, currentLength);
 			fragments.add(fragment);
 			currentLength -= fragment.size();
 		}

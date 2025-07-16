@@ -12,17 +12,6 @@ import org.morphix.lang.function.ThrowingRunnable;
 
 public class SignatureAlgorithms implements TLSExtension {
 
-	public static final Short[] ALGORITHMS = {
-			(short) 0x0401, // RSA/PKCS1/SHA256
-			(short) 0x0403, // ECDSA/SECP256r1/SHA256
-			(short) 0x0501, // RSA/PKCS1/SHA384
-			(short) 0x0503, // ECDSA/SECP384r1/SHA384
-			(short) 0x0601, // RSA/PKCS1/SHA512
-			(short) 0x0603, // ECDSA/SECP521r1/SHA512
-			(short) 0x0201, // RSA/PKCS1/SHA1
-			(short) 0x0203 // ECDSA/SHA1
-	};
-
 	private static final int BYTES_PER_ALGORITHM = 2;
 
 	private ExtensionType type;
@@ -31,16 +20,16 @@ public class SignatureAlgorithms implements TLSExtension {
 
 	private Int16 listSize;
 
-	private List<Short> algorithms;
+	private List<SignatureAlgorithm> algorithms;
 
-	public SignatureAlgorithms(final ExtensionType type, final Int16 length, final Int16 listSize, final List<Short> algorithms) {
+	public SignatureAlgorithms(final ExtensionType type, final Int16 length, final Int16 listSize, final List<SignatureAlgorithm> algorithms) {
 		this.type = type;
 		this.length = length;
 		this.listSize = listSize;
 		this.algorithms = algorithms;
 	}
 
-	public SignatureAlgorithms(final Short... algorithms) {
+	public SignatureAlgorithms(final SignatureAlgorithm... algorithms) {
 		this(
 				ExtensionType.SIGNATURE_ALGORITHMS,
 				new Int16((short) (algorithms.length * BYTES_PER_ALGORITHM + Int16.BYTES)),
@@ -50,7 +39,7 @@ public class SignatureAlgorithms implements TLSExtension {
 	}
 
 	public SignatureAlgorithms() {
-		this(ALGORITHMS);
+		this(SignatureAlgorithm.values());
 	}
 
 	public static SignatureAlgorithms from(final InputStream is) throws IOException {
@@ -63,10 +52,11 @@ public class SignatureAlgorithms implements TLSExtension {
 	public static SignatureAlgorithms from(final InputStream is, final ExtensionType type) throws IOException {
 		Int16 length = Int16.from(is);
 		Int16 listSize = Int16.from(is);
-		List<Short> algorithms = new ArrayList<>();
+		List<SignatureAlgorithm> algorithms = new ArrayList<>();
 		for (int i = 0; i < listSize.getValue() / BYTES_PER_ALGORITHM; ++i) {
-			Int16 format = Int16.from(is);
-			algorithms.add(format.getValue());
+			Int16 int16 = Int16.from(is);
+			SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.fromValue(int16.getValue());
+			algorithms.add(signatureAlgorithm);
 		}
 
 		return new SignatureAlgorithms(type, length, listSize, algorithms);
@@ -80,8 +70,8 @@ public class SignatureAlgorithms implements TLSExtension {
 			dos.writeShort(type.value());
 			dos.write(length.toByteArray());
 			dos.write(listSize.toByteArray());
-			for (Short algorithm : algorithms) {
-				dos.writeShort(algorithm);
+			for (SignatureAlgorithm algorithm : algorithms) {
+				dos.writeShort(algorithm.value());
 			}
 		}).run();
 		return bos.toByteArray();
@@ -110,7 +100,7 @@ public class SignatureAlgorithms implements TLSExtension {
 		return listSize;
 	}
 
-	public List<Short> getAlgorithms() {
+	public List<SignatureAlgorithm> getAlgorithms() {
 		return algorithms;
 	}
 }

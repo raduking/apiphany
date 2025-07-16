@@ -6,10 +6,10 @@ import org.morphix.lang.Enums;
 
 public enum RecordContentType implements Sizeable {
 
-	CHANGE_CIPHER_SPEC((byte) 0x14, ChangeCipherSpec::from),
-	ALERT((byte) 0x15, Alert::from),
-	HANDSHAKE((byte) 0x16, TLSHandshake::from),
-	APPLICATION_DATA((byte) 0x17, null),
+	CHANGE_CIPHER_SPEC((byte) 0x14, FromFunction.ignoreSize(ChangeCipherSpec::from)),
+	ALERT((byte) 0x15, FromFunction.ignoreSize(Alert::from)),
+	HANDSHAKE((byte) 0x16, FromFunction.ignoreSize(TLSHandshake::from)),
+	APPLICATION_DATA((byte) 0x17, ApplicationData::from),
 	HEARTBEAT((byte) 0x18, null);
 
 	public static final int BYTES = 1;
@@ -18,9 +18,9 @@ public enum RecordContentType implements Sizeable {
 
 	private final byte value;
 
-	private final FromFunction.NoSize<? extends TLSObject> fromFunction;
+	private final FromFunction<? extends TLSObject> fromFunction;
 
-	RecordContentType(final byte value, final FromFunction.NoSize<? extends TLSObject> fromFunction) {
+	RecordContentType(final byte value, final FromFunction<? extends TLSObject> fromFunction) {
 		this.value = value;
 		this.fromFunction = fromFunction;
 	}
@@ -38,6 +38,7 @@ public enum RecordContentType implements Sizeable {
 			case TLSHandshakeBody tlsHandshakeObject -> HANDSHAKE;
 			case ChangeCipherSpec changeCipherSpec -> CHANGE_CIPHER_SPEC;
 			case Encrypted encryptedFinished -> HANDSHAKE;
+			case ApplicationData applicationData -> APPLICATION_DATA;
 			default -> throw new UnsupportedOperationException("Unknown TLS object type: " + tlsObject.getClass());
 		};
 	}
@@ -47,7 +48,7 @@ public enum RecordContentType implements Sizeable {
 		return BYTES;
 	}
 
-	public FromFunction.NoSize<? extends TLSObject> fragment() {
+	public FromFunction<? extends TLSObject> fragment() {
 		return fromFunction;
 	}
 }

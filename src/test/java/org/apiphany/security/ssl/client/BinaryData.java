@@ -16,7 +16,7 @@ public class BinaryData implements TLSObject {
 	private byte[] bytes;
 
 	public BinaryData(final byte[] bytes) {
-		this.bytes = bytes.clone();
+		this.bytes = bytes;
 	}
 
 	public BinaryData(final int size) {
@@ -42,7 +42,7 @@ public class BinaryData implements TLSObject {
 
 	@Override
 	public byte[] toByteArray() {
-		return getBytes().clone();
+		return getBytes();
 	}
 
 	@Override
@@ -63,5 +63,4 @@ public class BinaryData implements TLSObject {
 	public int size() {
 		return bytes.length;
 	}
-
 }

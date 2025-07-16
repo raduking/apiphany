@@ -1,27 +1,20 @@
 package org.apiphany.security.ssl.client;
 
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.SecureRandom;
 
 import org.apiphany.json.JsonBuilder;
-import org.apiphany.lang.Hex;
 import org.apiphany.security.ssl.DeterministicSecureRandom;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
-public class ExchangeRandom implements TLSObject {
+public class ExchangeRandom extends BinaryData {
 
 	public static final int BYTES = 32;
 
-	private final byte[] random;
-
 	public ExchangeRandom(final byte[] random) {
-		if (BYTES != random.length) {
-			throw new IllegalArgumentException("Invalid buffer length: " + random.length + " must be: " + BYTES);
-		}
-		this.random = random.clone();
+		super(random);
 	}
 
 	public ExchangeRandom() {
@@ -29,17 +22,8 @@ public class ExchangeRandom implements TLSObject {
 	}
 
 	public static ExchangeRandom from(final InputStream is) throws IOException {
-		ExchangeRandom handshakeRandom = new ExchangeRandom();
-		int bytesRead = is.read(handshakeRandom.random);
-		if (BYTES != bytesRead) {
-			throw new EOFException("Error reading " + BYTES + " bytes");
-		}
-		return handshakeRandom;
-	}
-
-	@Override
-	public byte[] toByteArray() {
-		return random.clone();
+		BinaryData binaryData = BinaryData.from(is, BYTES);
+		return new ExchangeRandom(binaryData.getBytes());
 	}
 
 	public static byte[] generateRandom(final SecureRandom secureRandom) {
@@ -61,18 +45,14 @@ public class ExchangeRandom implements TLSObject {
 		return JsonBuilder.toJson(this);
 	}
 
+	@Override
 	@JsonValue
 	public String toHexString() {
-		return Hex.string(random, "");
-	}
-
-	@Override
-	public int size() {
-		return BYTES;
+		return super.toHexString();
 	}
 
 	public byte[] getRandom() {
-		return random;
+		return getBytes();
 	}
 }
 

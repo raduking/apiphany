@@ -31,6 +31,7 @@ import org.apiphany.security.ssl.client.MinimalTLSClient;
 import org.apiphany.security.ssl.client.PseudoRandomFunction;
 import org.apiphany.security.ssl.client.TLSRecord;
 import org.apiphany.security.ssl.server.SimpleHttpsServer;
+import org.junit.Ignore;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -140,6 +141,26 @@ class SSLPropertiesTest {
 		assertNotNull(closeNotify);
 	}
 
+	@Test
+	void shouldPerformTLS_V_1_2_SSLHandshakeAndGetName() throws Exception {
+		int port = Sockets.findAvailableTcpPort(PORT_CHECK_TIMEOUT);
+		SSLProperties sslProperties = JsonBuilder.fromJson(Strings.fromFile("/security/ssl/ssl-properties.json"), SSLProperties.class);
+		sslProperties.setProtocol(SSLProtocol.TLS_1_2);
+		SimpleHttpsServer server = new SimpleHttpsServer(port, sslProperties);
+
+		String response = null;
+		try (MinimalTLSClient client = new MinimalTLSClient(LOCALHOST, port, CLIENT_KEY_PAIR)) {
+			client.performHandshake();
+			response = client.get("/" + ApiClient.API + "/name");
+		} catch (Exception e) {
+			LOGGER.error("Error performing SSL handshake", e);
+		} finally {
+			server.close();
+		}
+		assertThat(response, equalTo(SimpleHttpsServer.NAME));
+	}
+
+	@Ignore("Run only when OpenSSL is running on port 4433")
 	@Test
 	void shouldPerformTLS_V_1_2_SSLHandshakeOpenSSL() throws Exception {
 		int port = 4433;
