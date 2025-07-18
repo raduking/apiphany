@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.lang.ByteSizeable;
 
 public class Extensions implements TLSObject {
 
@@ -14,12 +15,9 @@ public class Extensions implements TLSObject {
 
 	private final List<TLSExtension> extensions = new ArrayList<>();
 
-	public Extensions(final Int16 length, final List<TLSExtension> extensions, final boolean setSizes) {
-		this.length = length;
+	public Extensions(final Int16 length, final List<TLSExtension> extensions, final boolean updateSize) {
+		this.length = updateSize ? Int16.of((short) ByteSizeable.sizeOf(extensions)) : length;
 		this.extensions.addAll(extensions);
-		if (setSizes) {
-			this.length.setValue((short) (sizeOf() - length.sizeOf()));
-		}
 	}
 
 	public Extensions(
@@ -30,7 +28,7 @@ public class Extensions implements TLSObject {
 
 	public Extensions(final List<String> serverNames, final List<CurveName> curveNames, final List<SignatureAlgorithm> signatureAlgorithms) {
 		this(
-				new Int16(),
+				Int16.ZERO,
 				List.of(
 						new ServerNames(serverNames),
 						new StatusRequest(),
@@ -78,11 +76,7 @@ public class Extensions implements TLSObject {
 
 	@Override
 	public int sizeOf() {
-		int result = length.sizeOf();
-		for (TLSExtension extension : extensions) {
-			result += extension.sizeOf();
-		}
-		return result;
+		return length.sizeOf() + ByteSizeable.sizeOf(extensions);
 	}
 
 	public Int16 getLength() {

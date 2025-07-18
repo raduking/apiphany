@@ -23,15 +23,10 @@ public class TLSRecord implements TLSObject {
 	private final List<TLSObject> fragments;
 
 	public TLSRecord(final RecordHeader header, final List<TLSObject> fragments, final boolean updateHeader) {
-		this.header = header;
+		this.header = updateHeader
+				? new RecordHeader(header.getType(), header.getVersion(), Int16.of((short) ByteSizeable.sizeOf(fragments)))
+				: header;
 		this.fragments = fragments;
-		if (updateHeader) {
-			short length = 0;
-			for (ByteSizeable fragment : fragments) {
-				length += (short) fragment.sizeOf();
-			}
-			header.getLength().setValue(length);
-		}
 	}
 
 	public TLSRecord(final RecordHeader header, final List<TLSObject> messages) {
@@ -88,11 +83,7 @@ public class TLSRecord implements TLSObject {
 
 	@Override
 	public int sizeOf() {
-		int result = header.sizeOf();
-		for (TLSObject fragment : fragments) {
-			result += fragment.sizeOf();
-		}
-		return result;
+		return header.sizeOf() + ByteSizeable.sizeOf(fragments);
 	}
 
 	public RecordHeader getHeader() {

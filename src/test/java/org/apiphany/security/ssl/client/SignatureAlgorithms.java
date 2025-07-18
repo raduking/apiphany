@@ -28,8 +28,8 @@ public class SignatureAlgorithms implements TLSExtension {
 	public SignatureAlgorithms(final List<SignatureAlgorithm> algorithms) {
 		this(
 				ExtensionType.SIGNATURE_ALGORITHMS,
-				new Int16((short) (algorithms.size() * SignatureAlgorithm.BYTES + Int16.BYTES)),
-				new Int16((short) (algorithms.size() * SignatureAlgorithm.BYTES)),
+				Int16.of((short) (algorithms.size() * SignatureAlgorithm.BYTES + Int16.BYTES)),
+				Int16.of((short) (algorithms.size() * SignatureAlgorithm.BYTES)),
 				algorithms
 		);
 	}

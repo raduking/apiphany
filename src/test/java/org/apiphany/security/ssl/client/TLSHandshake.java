@@ -14,11 +14,8 @@ public class TLSHandshake implements TLSObject {
 	private final TLSHandshakeBody body;
 
 	public TLSHandshake(final HandshakeHeader header, final TLSHandshakeBody body, final boolean updateHeader) {
-		this.header = header;
+		this.header = updateHeader ? new HandshakeHeader(header.getType(), Int24.of(body.sizeOf())) : header;
 		this.body = body;
-		if (updateHeader) {
-			this.header.getLength().setValue((short) (body.sizeOf()));
-		}
 	}
 
 	public TLSHandshake(final TLSHandshakeBody body) {

@@ -13,15 +13,16 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public class Int8 implements ByteSizeable, BinaryRepresentable {
 
 	public static final int BYTES = 1;
+	public static final Int8 ZERO = Int8.of((byte) 0x00);
 
-	private byte value;
+	private final byte value;
 
-	public Int8(final byte value) {
+	protected Int8(final byte value) {
 		this.value = value;
 	}
 
-	public Int8() {
-		this((byte) 0x00);
+	public static Int8 of(final byte value) {
+		return new Int8(value);
 	}
 
 	public static Int8 from(final InputStream is) throws IOException {
@@ -30,8 +31,7 @@ public class Int8 implements ByteSizeable, BinaryRepresentable {
 		if (BYTES != bytesRead) {
 			throw new EOFException("Error reading " + BYTES + " bytes");
 		}
-
-		return new Int8(buffer[0]);
+		return Int8.of(buffer[0]);
 	}
 
 	@Override
@@ -53,10 +53,6 @@ public class Int8 implements ByteSizeable, BinaryRepresentable {
 	@JsonValue
 	public byte getValue() {
 		return value;
-	}
-
-	public void setValue(final byte value) {
-		this.value = value;
 	}
 
 	@Override

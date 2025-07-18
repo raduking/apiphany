@@ -18,7 +18,7 @@ public class SignedCertificateTimestamp implements TLSExtension {
 	}
 
 	public SignedCertificateTimestamp() {
-		this(ExtensionType.SCT, new Int16((short) 0x0000));
+		this(ExtensionType.SCT, Int16.of((short) 0x0000));
 	}
 
 	public static SignedCertificateTimestamp from(final InputStream is) throws IOException {

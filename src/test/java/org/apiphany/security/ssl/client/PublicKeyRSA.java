@@ -18,7 +18,7 @@ public class PublicKeyRSA implements TLSObject {
 	}
 
 	public PublicKeyRSA(final short length, final byte[] bytes) {
-		this(new Int16(length), new BinaryData(bytes));
+		this(Int16.of(length), new BinaryData(bytes));
 	}
 
 	public PublicKeyRSA(final byte[] bytes) {

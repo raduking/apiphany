@@ -27,7 +27,7 @@ public class PublicKeyECDHE implements TLSObject {
 	}
 
 	public PublicKeyECDHE(final byte length, final byte[] bytes) {
-		this(new Int8(length), bytes);
+		this(Int8.of(length), bytes);
 	}
 
 	public PublicKeyECDHE(final byte[] bytes) {

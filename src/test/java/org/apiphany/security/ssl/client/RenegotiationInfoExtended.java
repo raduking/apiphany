@@ -18,7 +18,7 @@ public class RenegotiationInfoExtended implements TLSExtension {
 	}
 
 	public RenegotiationInfoExtended() {
-		this(ExtensionType.RENEGOTIATION_INFO_EXTENDED, new Int16((short) 0x0000));
+		this(ExtensionType.RENEGOTIATION_INFO_EXTENDED, Int16.of((short) 0x0000));
 	}
 
 	public static RenegotiationInfoExtended from(final InputStream is) throws IOException {

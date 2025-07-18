@@ -22,7 +22,7 @@ public class HandshakeHeader implements TLSObject {
 	}
 
 	public HandshakeHeader(final HandshakeType type, final int length) {
-		this(type, new Int24(length));
+		this(type, Int24.of(length));
 	}
 
 	public HandshakeHeader(final HandshakeType type) {

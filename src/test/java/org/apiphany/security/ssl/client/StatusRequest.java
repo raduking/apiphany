@@ -32,7 +32,7 @@ public class StatusRequest implements TLSExtension {
 	}
 
 	public StatusRequest() {
-		this(ExtensionType.STATUS_REQUEST, new Int16((short) 0x0005), new Int8((byte) 0x01), new Int16((short) 0x0000), new Int16((short) 0x0000));
+		this(ExtensionType.STATUS_REQUEST, Int16.of((short) 0x0005), Int8.of((byte) 0x01), Int16.ZERO, Int16.ZERO);
 	}
 
 	public static StatusRequest from(final InputStream is) throws IOException {

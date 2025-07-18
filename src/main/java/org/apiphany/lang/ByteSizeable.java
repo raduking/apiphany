@@ -1,5 +1,7 @@
 package org.apiphany.lang;
 
+import java.util.Collection;
+
 /**
  * An object that can report its size in bytes.
  * <p>
@@ -34,4 +36,21 @@ public interface ByteSizeable {
 	 *     measurement).
 	 */
 	int sizeOf();
+
+	/**
+	 * Returns the sum of all sizes of the given collection's elements.
+	 *
+	 * @param <T> byte sizeable type
+	 * @param <U> collection type
+	 *
+	 * @param collection collection of {@link ByteSizeable} elements
+	 * @return the sum of all sizes of the given collection's elements
+	 */
+	static <T extends ByteSizeable, U extends Collection<T>> int sizeOf(U collection) {
+		int sizeOf = 0;
+		for (T byteSizeable : collection) {
+			sizeOf += byteSizeable.sizeOf();
+		}
+		return sizeOf;
+	}
 }

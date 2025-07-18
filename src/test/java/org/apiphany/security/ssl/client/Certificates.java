@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.lang.ByteSizeable;
 
 public class Certificates implements TLSHandshakeBody {
 
@@ -15,15 +16,8 @@ public class Certificates implements TLSHandshakeBody {
 	private final List<Certificate> list;
 
 	public Certificates(final Int24 length, final List<Certificate> list, final boolean updateLength) {
-		this.length = length;
 		this.list = list;
-		if (updateLength) {
-			int result = length.sizeOf();
-			for (Certificate certificate : list) {
-				result += certificate.sizeOf();
-			}
-			this.length.setValue(result);
-		}
+		this.length = updateLength ? Int24.of(length.sizeOf() + ByteSizeable.sizeOf(list)) : length;
 	}
 
 	public Certificates(final Int24 length, final List<Certificate> list) {
@@ -61,11 +55,7 @@ public class Certificates implements TLSHandshakeBody {
 
 	@Override
 	public int sizeOf() {
-		int result = length.sizeOf();
-		for (Certificate certificate : list) {
-			result += certificate.sizeOf();
-		}
-		return result;
+		return length.sizeOf() + ByteSizeable.sizeOf(list);
 	}
 
 	@Override

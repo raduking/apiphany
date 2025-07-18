@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.lang.ByteSizeable;
 
 public class CipherSuites implements TLSObject {
 
@@ -21,7 +22,7 @@ public class CipherSuites implements TLSObject {
 	}
 
 	public CipherSuites(final short size, final List<CipherSuite> cipherSuites) {
-		this(new Int16(size), cipherSuites);
+		this(Int16.of(size), cipherSuites);
 	}
 
 	public CipherSuites(final List<CipherSuite> cipherSuites) {
@@ -65,11 +66,7 @@ public class CipherSuites implements TLSObject {
 
 	@Override
 	public int sizeOf() {
-		int result = size.sizeOf();
-		for (CipherSuite cipherSuite : cipherSuites) {
-			result += cipherSuite.sizeOf();
-		}
-		return result;
+		return size.sizeOf() + ByteSizeable.sizeOf(cipherSuites);
 	}
 
 	public Int16 getSize() {
