@@ -30,7 +30,7 @@ public abstract class Hex {
 	}
 
 	/**
-	 * Converts a byte array to a hexadecimal string representation with default space separator.
+	 * Converts a byte array to a hexadecimal string representation with the default space separator.
 	 *
 	 * @param bytes the byte array to convert
 	 * @return hexadecimal string representation of the byte array

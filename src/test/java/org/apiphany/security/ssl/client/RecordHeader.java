@@ -11,11 +11,11 @@ public class RecordHeader implements TLSObject {
 
 	public static final int BYTES = 5;
 
-	private RecordContentType type;
+	private final RecordContentType type;
 
-	private Version version;
+	private final Version version;
 
-	private Int16 length;
+	private final Int16 length;
 
 	public RecordHeader(final RecordContentType type, final Version version, final Int16 length) {
 		this.type = type;

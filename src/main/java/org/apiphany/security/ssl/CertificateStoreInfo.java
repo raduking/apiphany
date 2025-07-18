@@ -26,7 +26,7 @@ public class CertificateStoreInfo {
 	private String type;
 
 	/**
-	 * The key store factory algorithm. If this value is not set the default algorithm will be used.
+	 * The key store factory algorithm. If this value is not set, the default algorithm will be used.
 	 */
 	private String algorithm;
 
@@ -121,7 +121,7 @@ public class CertificateStoreInfo {
 	}
 
 	/**
-	 * Sets the algorithm, if this value is not set the default algorithm will be used.
+	 * Sets the algorithm, if this value is not set, the default algorithm will be used.
 	 *
 	 * @param algorithm the algorithm to set
 	 */
@@ -132,7 +132,7 @@ public class CertificateStoreInfo {
 	/**
 	 * Checks if the certificate should be loaded from an external source.
 	 *
-	 * @return true if certificates should be loaded from external source, false if they should be loaded from the jar file
+	 * @return true if certificates should be loaded from an external source, false if they should be loaded from the jar file
 	 */
 	public boolean isExternal() {
 		return Boolean.TRUE.equals(external);
@@ -141,7 +141,7 @@ public class CertificateStoreInfo {
 	/**
 	 * Returns the external source loading configuration.
 	 *
-	 * @return Boolean.TRUE if loading from external source, Boolean.FALSE if loading from jar file, null if not specified
+	 * @return Boolean.TRUE if loading from an external source, Boolean.FALSE if loading from the jar file, null if not specified
 	 */
 	public Boolean getExternal() {
 		return external;

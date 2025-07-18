@@ -1,5 +1,6 @@
 package org.apiphany.security;
 
+import java.io.Serial;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.Arrays;
@@ -12,7 +13,7 @@ import com.nimbusds.jwt.SignedJWT;
 
 public class JwtTokenValidator {
 
-	private String clientId;
+	private final String clientId;
     private final byte[] secretKey;
     private final String expectedIssuer;
 
@@ -92,6 +93,7 @@ public class JwtTokenValidator {
 
     public static class TokenValidationException extends Exception {
 
+        @Serial
         private static final long serialVersionUID = -6786082918908973060L;
 
 		public TokenValidationException(final String message) {

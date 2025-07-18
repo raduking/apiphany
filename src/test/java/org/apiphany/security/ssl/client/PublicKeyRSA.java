@@ -8,9 +8,9 @@ import org.apiphany.json.JsonBuilder;
 
 public class PublicKeyRSA implements TLSObject {
 
-	private Int16 length;
+	private final Int16 length;
 
-	private BinaryData bytes;
+	private final BinaryData bytes;
 
 	public PublicKeyRSA(final Int16 length, final BinaryData bytes) {
 		this.length = length;

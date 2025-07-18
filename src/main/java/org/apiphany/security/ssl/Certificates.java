@@ -54,8 +54,8 @@ public final class Certificates {
 	 * Initializes a {@link SSLContext}. See {@link SSLContext#init(KeyManager[], TrustManager[], SecureRandom)}.
 	 *
 	 * @param sslContext the SSL context to be initialized
-	 * @param keyManagers the key managers, cannot be null
-	 * @param trustManagers the trust managers, cannot be null
+	 * @param keyManagers the key managers; cannot be null
+	 * @param trustManagers the trust managers; cannot be null
 	 * @param random secure random
 	 * @throws GeneralSecurityException when the SSL context cannot be initialized
 	 */

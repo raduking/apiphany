@@ -8,9 +8,9 @@ import org.apiphany.json.JsonBuilder;
 
 public class Certificate implements TLSObject {
 
-	private Int24 length;
+	private final Int24 length;
 
-	private BinaryData data;
+	private final BinaryData data;
 
 	public Certificate(final Int24 length, final BinaryData data) {
 		this.length = length;

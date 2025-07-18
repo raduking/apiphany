@@ -10,7 +10,7 @@ import org.morphix.reflection.Fields;
 
 public class SSLContextAdapter extends SSLContext {
 
-	private SSLContextSpi sslContextSpi;
+	private final SSLContextSpi sslContextSpi;
 
 	public SSLContextAdapter(final SSLContext sslContext) {
 		this(Fields.IgnoreAccess.get(sslContext, "contextSpi"), sslContext.getProvider(), sslContext.getProtocol());

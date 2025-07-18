@@ -10,9 +10,9 @@ import org.apiphany.json.JsonBuilder;
 
 public class Certificates implements TLSHandshakeBody {
 
-	private Int24 length;
+	private final Int24 length;
 
-	private List<Certificate> list;
+	private final List<Certificate> list;
 
 	public Certificates(final Int24 length, final List<Certificate> list, final boolean updateLength) {
 		this.length = length;

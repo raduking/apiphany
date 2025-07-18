@@ -10,18 +10,18 @@ import org.apiphany.json.JsonBuilder;
 
 public class ECPointFormats implements TLSExtension {
 
-	private ExtensionType type;
+	private final ExtensionType type;
 
-	private Int16 length;
+	private final Int16 length;
 
-	private Int8 listSize;
+	private final Int8 formatsSize;
 
-	private List<Int8> formats;
+	private final List<Int8> formats;
 
-	public ECPointFormats(final ExtensionType type, final Int16 length, final Int8 listSize, final List<Int8> formats) {
+	public ECPointFormats(final ExtensionType type, final Int16 length, final Int8 formatsSize, final List<Int8> formats) {
 		this.type = type;
 		this.length = length;
-		this.listSize = listSize;
+		this.formatsSize = formatsSize;
 		this.formats = formats;
 	}
 
@@ -53,7 +53,7 @@ public class ECPointFormats implements TLSExtension {
 		ByteBuffer buffer = ByteBuffer.allocate(sizeOf());
 		buffer.put(type.toByteArray());
 		buffer.put(length.toByteArray());
-		buffer.put(listSize.toByteArray());
+		buffer.put(formatsSize.toByteArray());
 		for (Int8 format : formats) {
 			buffer.put(format.toByteArray());
 		}
@@ -67,7 +67,7 @@ public class ECPointFormats implements TLSExtension {
 
 	@Override
 	public int sizeOf() {
-		return type.sizeOf() + length.sizeOf() + listSize.sizeOf() + formats.size();
+		return type.sizeOf() + length.sizeOf() + formatsSize.sizeOf() + formats.size();
 	}
 
 	@Override
@@ -79,8 +79,8 @@ public class ECPointFormats implements TLSExtension {
 		return length;
 	}
 
-	public Int8 getListSize() {
-		return listSize;
+	public Int8 getFormatsSize() {
+		return formatsSize;
 	}
 
 	public List<Int8> getFormats() {

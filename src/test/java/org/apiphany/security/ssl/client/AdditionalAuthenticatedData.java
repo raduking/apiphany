@@ -7,13 +7,13 @@ import org.apiphany.security.ssl.SSLProtocol;
 
 public class AdditionalAuthenticatedData implements TLSObject {
 
-	private Int64 sequenceNumber;
+	private final Int64 sequenceNumber;
 
-	private RecordContentType type;
+	private final RecordContentType type;
 
-	private Version protocolVersion;
+	private final Version protocolVersion;
 
-	private Int16 length;
+	private final Int16 length;
 
 	public AdditionalAuthenticatedData(final Int64 sequenceNumber, final RecordContentType type, final Version protocolVersion, final Int16 length) {
 		this.sequenceNumber = sequenceNumber;

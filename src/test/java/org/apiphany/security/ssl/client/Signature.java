@@ -8,11 +8,11 @@ import org.apiphany.json.JsonBuilder;
 
 public class Signature implements TLSObject {
 
-	private Int16 reserved;
+	private final Int16 reserved;
 
-	private Int16 length;
+	private final Int16 length;
 
-	private BinaryData value;
+	private final BinaryData value;
 
 	public Signature(final Int16 reserved, final Int16 length, final BinaryData value) {
 		this.reserved = reserved;

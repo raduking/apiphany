@@ -12,7 +12,7 @@ public class Version implements TLSObject {
 
 	public static final int BYTES = 2;
 
-	private SSLProtocol protocol;
+	private final SSLProtocol protocol;
 
 	public Version(final SSLProtocol protocol) {
 		this.protocol = protocol;

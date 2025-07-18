@@ -99,7 +99,7 @@ public class ApiClient implements AutoCloseable {
 	private MeterRegistry meterRegistry;
 
 	/**
-	 * Exchange clients map based on authentication type and a pair of exchange client and managed flag that tells the
+	 * Exchange clients map based on the authentication type and a pair of exchange client and managed flag that tells the
 	 * API client if the exchange client's life cycle is managed by the API client or not.
 	 */
 	private final Map<AuthenticationType, Pair<ExchangeClient, Boolean>> exchangeClientsMap = new ConcurrentHashMap<>();
@@ -137,7 +137,7 @@ public class ApiClient implements AutoCloseable {
 		this(baseUrl, exchangeClients.stream().collect(
 				Collectors.toMap(
 						Function.identity(),
-						v -> Boolean.valueOf(managed),
+						v -> managed,
 						(existing, replacement) -> existing,
 						() -> new LinkedHashMap<>()
 				)
@@ -184,7 +184,7 @@ public class ApiClient implements AutoCloseable {
 	}
 
 	/**
-	 * Constructor with exchange client builder, the built exchange client will be managed by this client.
+	 * Constructor with exchange client builder, this client will manage the built exchange client.
 	 *
 	 * @param exchangeClientBuilder exchange client builder
 	 */
@@ -198,7 +198,7 @@ public class ApiClient implements AutoCloseable {
 	@Override
 	public void close() throws Exception {
 		exchangeClientsMap.forEach(ThrowingBiConsumer.unchecked((k, v) -> {
-			if (v.right().booleanValue()) {
+			if (v.right()) {
 				v.left().close();
 			}
 		}));
@@ -495,7 +495,7 @@ public class ApiClient implements AutoCloseable {
 	}
 
 	/**
-	 * Returns the exchange client by authentication type. The returned exchange client should not be closed by the caller.
+	 * Returns the exchange client by authentication type. The caller should not close the returned exchange client.
 	 * The {@link ApiClient} class handles the correct closing of all the associated exchange clients.
 	 *
 	 * @param authenticationType authentication type

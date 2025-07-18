@@ -8,9 +8,9 @@ import org.apiphany.json.JsonBuilder;
 
 public class CurveInfo implements TLSObject {
 
-	private CurveType type;
+	private final CurveType type;
 
-	private CurveName name;
+	private final CurveName name;
 
 	public CurveInfo(final CurveType type, final CurveName name) {
 		this.type = type;

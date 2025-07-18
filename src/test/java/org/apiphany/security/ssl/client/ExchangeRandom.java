@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.SecureRandom;
 
-import org.apiphany.json.JsonBuilder;
 import org.apiphany.security.ssl.DeterministicSecureRandom;
 
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -42,11 +41,6 @@ public class ExchangeRandom extends BinaryData {
 
 	public static ExchangeRandom linear() {
 		return new ExchangeRandom(generateLinear());
-	}
-
-	@Override
-	public String toString() {
-		return JsonBuilder.toJson(this);
 	}
 
 	@Override

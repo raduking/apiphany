@@ -14,7 +14,7 @@ public class BinaryData implements TLSObject {
 
 	protected static final byte[] EMPTY = new byte[] { };
 
-	private byte[] bytes;
+	private final byte[] bytes;
 
 	public BinaryData(final byte[] bytes) {
 		this.bytes = bytes;

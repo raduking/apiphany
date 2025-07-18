@@ -73,7 +73,7 @@ public interface ExchangeClient extends AutoCloseable {
 	}
 
 	/**
-	 * Returns all headers as {@link String}. This method helps log the headers of a message and subsequent implementations
+	 * Returns all headers as {@link String}. This method helps log the headers of a message, and later implementations
 	 * can override this method to show only the wanted headers.
 	 *
 	 * @param <T> the message body type

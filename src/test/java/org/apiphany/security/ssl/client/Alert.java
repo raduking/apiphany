@@ -10,9 +10,9 @@ public class Alert implements TLSObject {
 
 	public static final int BYTES = 2;
 
-	private AlertLevel level;
+	private final AlertLevel level;
 
-	private AlertDescription description;
+	private final AlertDescription description;
 
 	public Alert(final AlertLevel level, final AlertDescription description) {
 		this.level = level;

@@ -8,15 +8,15 @@ import org.apiphany.json.JsonBuilder;
 
 public class StatusRequest implements TLSExtension {
 
-	private ExtensionType type;
+	private final ExtensionType type;
 
-	private Int16 length;
+	private final Int16 length;
 
-	private Int8 certificateStatusType; // OCSP
+	private final Int8 certificateStatusType; // OCSP
 
-	private Int16 responderIDInfoSize;
+	private final Int16 responderIDInfoSize;
 
-	private Int16 requestExtensionInfoSize;
+	private final Int16 requestExtensionInfoSize;
 
 	public StatusRequest(
 			final ExtensionType type,

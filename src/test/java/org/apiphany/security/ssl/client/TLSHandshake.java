@@ -9,9 +9,9 @@ import org.morphix.lang.JavaObjects;
 
 public class TLSHandshake implements TLSObject {
 
-	private HandshakeHeader header;
+	private final HandshakeHeader header;
 
-	private TLSHandshakeBody body;
+	private final TLSHandshakeBody body;
 
 	public TLSHandshake(final HandshakeHeader header, final TLSHandshakeBody body, final boolean updateHeader) {
 		this.header = header;

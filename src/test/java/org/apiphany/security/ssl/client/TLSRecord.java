@@ -18,9 +18,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class TLSRecord implements TLSObject {
 
-	private RecordHeader header;
+	private final RecordHeader header;
 
-	private List<TLSObject> fragments;
+	private final List<TLSObject> fragments;
 
 	public TLSRecord(final RecordHeader header, final List<TLSObject> fragments, final boolean updateHeader) {
 		this.header = header;
@@ -28,7 +28,7 @@ public class TLSRecord implements TLSObject {
 		if (updateHeader) {
 			short length = 0;
 			for (ByteSizeable fragment : fragments) {
-				length += fragment.sizeOf();
+				length += (short) fragment.sizeOf();
 			}
 			header.getLength().setValue(length);
 		}

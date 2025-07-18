@@ -22,7 +22,7 @@ public class ExchangeClientBuilder {
 	private Class<? extends ExchangeClient> exchangeClientClass;
 
 	/**
-	 * Exchange client for which the life cycle will be managed by the caller.
+	 * Exchange client for which the caller will manage the life cycle.
 	 */
 	private ExchangeClient exchangeClient;
 

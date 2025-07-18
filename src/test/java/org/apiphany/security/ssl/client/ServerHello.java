@@ -8,17 +8,17 @@ import org.apiphany.json.JsonBuilder;
 
 public class ServerHello implements TLSHandshakeBody {
 
-	private Version version;
+	private final Version version;
 
-	private ExchangeRandom serverRandom;
+	private final ExchangeRandom serverRandom;
 
-	private SessionId sessionId;
+	private final SessionId sessionId;
 
-	private CipherSuite cipherSuite;
+	private final CipherSuite cipherSuite;
 
-	private CompressionMethod compressionMethod;
+	private final CompressionMethod compressionMethod;
 
-	private Extensions extensions;
+	private final Extensions extensions;
 
 	public ServerHello(
 			final Version version,
