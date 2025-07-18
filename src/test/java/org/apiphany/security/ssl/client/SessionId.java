@@ -23,7 +23,7 @@ public class SessionId implements TLSObject {
 	}
 
 	public SessionId(final byte length, final byte[] value) {
-		this(new Int8(length), value);
+		this(Int8.of(length), value);
 	}
 
 	public SessionId(final String value) {

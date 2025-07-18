@@ -13,6 +13,7 @@ import java.security.MessageDigest;
 import java.security.PublicKey;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -36,6 +37,8 @@ public class MinimalTLSClient implements AutoCloseable {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(MinimalTLSClient.class);
 
+	public static final Duration DEFAULT_SOCKET_TIMEOUT = Duration.ofSeconds(1);
+
 	public static final List<CurveName> SUPPORTED_CURVE_NAMES = List.of(
 			CurveName.X25519
 	);
@@ -46,6 +49,7 @@ public class MinimalTLSClient implements AutoCloseable {
 
 	private final String host;
 	private final int port;
+	private final Duration socketTimeout = DEFAULT_SOCKET_TIMEOUT;
 
 	private Socket tcpSocket;
 	private DataOutputStream out;
@@ -90,6 +94,7 @@ public class MinimalTLSClient implements AutoCloseable {
 
 	public void connect() throws IOException {
 		tcpSocket = new Socket(host, port);
+		tcpSocket.setSoTimeout((int) socketTimeout.toMillis());
 		out = new DataOutputStream(tcpSocket.getOutputStream());
 		in = tcpSocket.getInputStream();
 

@@ -22,7 +22,7 @@ public class Certificate implements TLSObject {
 	}
 
 	public Certificate(final int length, final byte[] bytes) {
-		this(new Int24(length), bytes);
+		this(Int24.of(length), bytes);
 	}
 
 	public static Certificate from(final InputStream is) throws IOException {

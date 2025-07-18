@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.lang.ByteSizeable;
 
 public class ServerNames implements TLSExtension {
 
@@ -18,15 +19,8 @@ public class ServerNames implements TLSExtension {
 
 	private ServerNames(final ExtensionType type, final Int16 length, final List<ServerName> entries, final boolean updateLength) {
 		this.type = type;
-		this.length = length;
+		this.length = updateLength ? Int16.of((short) ByteSizeable.sizeOf(entries)) : length;
 		this.entries = entries;
-		if (updateLength) {
-			int result = 0;
-			for (ServerName serverName : entries) {
-				result += serverName.sizeOf();
-			}
-			this.length.setValue((short) result);
-		}
 	}
 
 	public ServerNames(final Int16 size, final List<ServerName> serverNames) {
@@ -34,7 +28,7 @@ public class ServerNames implements TLSExtension {
 	}
 
 	public ServerNames(final List<String> names) {
-		this(new Int16((short) names.size()), names.stream().map(ServerName::new).toList());
+		this(Int16.of((short) names.size()), names.stream().map(ServerName::new).toList());
 	}
 
 	@Override
@@ -75,11 +69,7 @@ public class ServerNames implements TLSExtension {
 
 	@Override
 	public int sizeOf() {
-		int result = type.sizeOf() + length.sizeOf();
-		for (ServerName entry : entries) {
-			result += entry.sizeOf();
-		}
-		return result;
+		return type.sizeOf() + length.sizeOf() + ByteSizeable.sizeOf(entries);
 	}
 
 	@Override

@@ -26,9 +26,9 @@ public class ServerName implements TLSObject {
 
 	public ServerName(final String name) {
 		this(
-				new Int16((short) (Int8.BYTES + Int16.BYTES + name.length())),
-				new Int8((byte) 0x00),
-				new Int16((short) name.length()),
+				Int16.of((short) (Int8.BYTES + Int16.BYTES + name.length())),
+				Int8.ZERO,
+				Int16.of((short) name.length()),
 				new BinaryData(name.getBytes(StandardCharsets.US_ASCII))
 		);
 	}

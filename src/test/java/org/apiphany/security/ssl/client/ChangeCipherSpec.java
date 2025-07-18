@@ -15,7 +15,7 @@ public class ChangeCipherSpec implements TLSObject {
 	}
 
 	public ChangeCipherSpec(final byte payload) {
-		this(new Int8(payload));
+		this(Int8.of(payload));
 	}
 
 	public ChangeCipherSpec() {

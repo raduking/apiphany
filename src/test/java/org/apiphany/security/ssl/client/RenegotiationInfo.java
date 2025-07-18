@@ -21,7 +21,7 @@ public class RenegotiationInfo implements TLSExtension {
 	}
 
 	public RenegotiationInfo(final ExtensionType type, final short size, final byte length) {
-		this(type, new Int16(size), new Int8(length));
+		this(type, Int16.of(size), Int8.of(length));
 	}
 
 	public RenegotiationInfo() {

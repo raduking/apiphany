@@ -24,7 +24,7 @@ public class RecordHeader implements TLSObject {
 	}
 
 	public RecordHeader(final RecordContentType type, final SSLProtocol sslProtocol, final short length) {
-		this(type, Version.of(sslProtocol), new Int16(length));
+		this(type, Version.of(sslProtocol), Int16.of(length));
 	}
 
 	public RecordHeader(final RecordContentType type, final SSLProtocol sslProtocol) {

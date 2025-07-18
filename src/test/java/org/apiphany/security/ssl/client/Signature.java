@@ -25,7 +25,7 @@ public class Signature implements TLSObject {
 	}
 
 	public Signature(final short length, final byte[] bytes) {
-		this(new Int16((short) 0x0000), new Int16(length), bytes);
+		this(Int16.of((short) 0x0000), Int16.of(length), bytes);
 	}
 
 	public static Signature from(final InputStream is) throws IOException {

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.lang.ByteSizeable;
 
 public class SupportedGroups implements TLSExtension {
 
@@ -28,8 +29,8 @@ public class SupportedGroups implements TLSExtension {
 	public SupportedGroups(final List<CurveName> curveNames) {
 		this(
 				ExtensionType.SUPPORTED_GROUPS,
-				new Int16((short) (curveNames.size() * CurveName.BYTES + Int16.BYTES)),
-				new Int16((short) (curveNames.size() * CurveName.BYTES)),
+				Int16.of((short) (curveNames.size() * CurveName.BYTES + Int16.BYTES)),
+				Int16.of((short) (curveNames.size() * CurveName.BYTES)),
 				curveNames
 		);
 	}
@@ -77,11 +78,7 @@ public class SupportedGroups implements TLSExtension {
 
 	@Override
 	public int sizeOf() {
-		int result = type.sizeOf() + length.sizeOf() + groupsSize.sizeOf();
-		for (CurveName group : groups) {
-			result += group.sizeOf();
-		}
-		return result;
+		return type.sizeOf() + length.sizeOf() + groupsSize.sizeOf() + ByteSizeable.sizeOf(groups);
 	}
 
 	@Override

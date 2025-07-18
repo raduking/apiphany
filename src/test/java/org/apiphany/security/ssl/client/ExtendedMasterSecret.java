@@ -18,7 +18,7 @@ public class ExtendedMasterSecret implements TLSExtension {
 	}
 
 	public ExtendedMasterSecret() {
-		this(ExtensionType.EMT, new Int16((short) 0x0000));
+		this(ExtensionType.EMT, Int16.of((short) 0x0000));
 	}
 
 	public static ExtendedMasterSecret from(final InputStream is) throws IOException {

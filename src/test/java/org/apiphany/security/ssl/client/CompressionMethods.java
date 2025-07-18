@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.lang.ByteSizeable;
 
 public class CompressionMethods implements TLSObject {
 
@@ -21,7 +22,7 @@ public class CompressionMethods implements TLSObject {
 	}
 
 	public CompressionMethods(final List<CompressionMethod> methods) {
-		this(new Int8((byte) methods.size()), methods);
+		this(Int8.of((byte) methods.size()), methods);
 	}
 
 	public CompressionMethods() {
@@ -65,10 +66,6 @@ public class CompressionMethods implements TLSObject {
 
 	@Override
 	public int sizeOf() {
-		int result = size.sizeOf();
-		for (CompressionMethod method : methods) {
-			result += method.sizeOf();
-		}
-		return result;
+		return size.sizeOf() + ByteSizeable.sizeOf(methods);
 	}
 }

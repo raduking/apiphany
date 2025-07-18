@@ -20,7 +20,7 @@ public class SessionTicket implements TLSExtension {
 	}
 
 	public SessionTicket() {
-		this(ExtensionType.SESSION_TICKET, new Int16((short) 0x0000));
+		this(ExtensionType.SESSION_TICKET, Int16.of((short) 0x0000));
 	}
 
 	public static SessionTicket from(final InputStream is) throws IOException {

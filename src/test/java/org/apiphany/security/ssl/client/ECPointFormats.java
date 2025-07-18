@@ -26,7 +26,7 @@ public class ECPointFormats implements TLSExtension {
 	}
 
 	public ECPointFormats() {
-		this(ExtensionType.EC_POINTS_FORMAT, new Int16((short) 0x0002), new Int8((byte) 0x01), List.of(new Int8((byte) 0x00)));
+		this(ExtensionType.EC_POINTS_FORMAT, Int16.of((short) 0x0002), Int8.of((byte) 0x01), List.of(Int8.ZERO));
 	}
 
 	public static ECPointFormats from(final InputStream is) throws IOException {

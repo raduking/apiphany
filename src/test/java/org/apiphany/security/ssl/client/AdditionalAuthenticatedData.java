@@ -23,7 +23,7 @@ public class AdditionalAuthenticatedData implements TLSObject {
 	}
 
 	public AdditionalAuthenticatedData(final long sequenceNumber, final RecordContentType type, final SSLProtocol protocol, final short length) {
-		this(new Int64(sequenceNumber), type, new Version(protocol), new Int16(length));
+		this(Int64.of(sequenceNumber), type, new Version(protocol), Int16.of(length));
 	}
 
 	@Override
