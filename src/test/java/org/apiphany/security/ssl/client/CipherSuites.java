@@ -10,9 +10,9 @@ import org.apiphany.json.JsonBuilder;
 
 public class CipherSuites implements TLSObject {
 
-	private Int16 size;
+	private final Int16 size;
 
-	private List<CipherSuite> cipherSuites;
+	private final List<CipherSuite> cipherSuites;
 
 	public CipherSuites(final Int16 size, final List<CipherSuite> cipherSuites) {
 		this.size = size;

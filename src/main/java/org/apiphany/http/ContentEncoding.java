@@ -47,7 +47,7 @@ public enum ContentEncoding {
 
 	/**
 	 * Zstandard compression format developed by Facebook. Provides excellent compression speed/ratio trade-off. While not
-	 * yet IANA-registered, it's widely supported in modern web servers.
+	 * yet IANA-registered, it's widely supported on modern web servers.
 	 *
 	 * @see <a href="https://facebook.github.io/zstd/">Zstandard Documentation</a>
 	 */

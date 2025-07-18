@@ -14,7 +14,7 @@ public class ExchangeKeys {
     public static final int IV_LENGTH = 4;
 
 	public enum Type {
-		AHEAD;
+		AHEAD
 	}
 
 	private final byte[] clientWriteKey = new byte[KEY_LENGTH];

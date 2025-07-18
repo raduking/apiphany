@@ -8,7 +8,7 @@ import org.apiphany.json.JsonBuilder;
 
 public class ClientKeyExchange implements TLSHandshakeBody {
 
-	private PublicKeyECDHE publicKey;
+	private final PublicKeyECDHE publicKey;
 
 	public ClientKeyExchange(final PublicKeyECDHE publicKey) {
 		this.publicKey = publicKey;

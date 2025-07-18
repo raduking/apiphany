@@ -7,7 +7,7 @@ import org.apiphany.json.JsonBuilder;
 
 public class ApplicationData implements TLSObject {
 
-	private Encrypted data;
+	private final Encrypted data;
 
 	public ApplicationData(final Encrypted data) {
 		this.data = data;

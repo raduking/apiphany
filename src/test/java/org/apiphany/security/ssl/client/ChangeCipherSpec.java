@@ -8,7 +8,7 @@ import org.apiphany.json.JsonBuilder;
 
 public class ChangeCipherSpec implements TLSObject {
 
-	private Int8 payload;
+	private final Int8 payload;
 
 	public ChangeCipherSpec(final Int8 payload) {
 		this.payload = payload;

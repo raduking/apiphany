@@ -10,7 +10,7 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
 /**
- * SSLSocketFactory doesn't seem to properly set the protocols on the SSL sockets that it creates which causes an SSLv2
+ * SSLSocketFactory doesn't seem to properly set the protocols on the SSL sockets that it creates, which causes an SSLv2
  * client hello message during handshake, even when only TLSv1 is enabled. This only appears to be an issue on the
  * client sockets, not the server sockets.
  * <p>

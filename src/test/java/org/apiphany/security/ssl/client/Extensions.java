@@ -10,9 +10,9 @@ import org.apiphany.json.JsonBuilder;
 
 public class Extensions implements TLSObject {
 
-	private Int16 length;
+	private final Int16 length;
 
-	private List<TLSExtension> extensions = new ArrayList<>();
+	private final List<TLSExtension> extensions = new ArrayList<>();
 
 	public Extensions(final Int16 length, final List<TLSExtension> extensions, final boolean setSizes) {
 		this.length = length;

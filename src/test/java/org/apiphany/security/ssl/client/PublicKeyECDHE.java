@@ -13,9 +13,9 @@ import org.apiphany.json.JsonBuilder;
 
 public class PublicKeyECDHE implements TLSObject {
 
-	private Int8 length;
+	private final Int8 length;
 
-	private BinaryData value;
+	private final BinaryData value;
 
 	public PublicKeyECDHE(final Int8 length, final BinaryData value) {
 		this.length = length;

@@ -10,18 +10,18 @@ import org.apiphany.json.JsonBuilder;
 
 public class SupportedGroups implements TLSExtension {
 
-	private ExtensionType type;
+	private final ExtensionType type;
 
-	private Int16 length;
+	private final Int16 length;
 
-	private Int16 listSize;
+	private final Int16 groupsSize;
 
-	private List<CurveName> groups;
+	private final List<CurveName> groups;
 
-	public SupportedGroups(final ExtensionType type, final Int16 size, final Int16 listSize, final List<CurveName> groups) {
+	public SupportedGroups(final ExtensionType type, final Int16 size, final Int16 groupsSize, final List<CurveName> groups) {
 		this.type = type;
 		this.length = size;
-		this.listSize = listSize;
+		this.groupsSize = groupsSize;
 		this.groups = groups;
 	}
 
@@ -63,7 +63,7 @@ public class SupportedGroups implements TLSExtension {
 		ByteBuffer buffer = ByteBuffer.allocate(sizeOf());
 		buffer.put(type.toByteArray());
 		buffer.put(length.toByteArray());
-		buffer.put(listSize.toByteArray());
+		buffer.put(groupsSize.toByteArray());
 		for (CurveName group : groups) {
 			buffer.put(group.toByteArray());
 		}
@@ -77,7 +77,7 @@ public class SupportedGroups implements TLSExtension {
 
 	@Override
 	public int sizeOf() {
-		int result = type.sizeOf() + length.sizeOf() + listSize.sizeOf();
+		int result = type.sizeOf() + length.sizeOf() + groupsSize.sizeOf();
 		for (CurveName group : groups) {
 			result += group.sizeOf();
 		}
@@ -93,8 +93,8 @@ public class SupportedGroups implements TLSExtension {
 		return length;
 	}
 
-	public Int16 getListSize() {
-		return listSize;
+	public Int16 getGroupsSize() {
+		return groupsSize;
 	}
 
 	public List<CurveName> getGroups() {

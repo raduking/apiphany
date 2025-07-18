@@ -9,13 +9,13 @@ import org.apiphany.json.JsonBuilder;
 
 public class ServerName implements TLSObject {
 
-	private Int16 size;
+	private final Int16 size;
 
-	private Int8 type;
+	private final Int8 type;
 
-	private Int16 length;
+	private final Int16 length;
 
-	private BinaryData name;
+	private final BinaryData name;
 
 	public ServerName(final Int16 size, final Int8 type, final Int16 length, final BinaryData name) {
 		this.size = size;

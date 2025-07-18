@@ -10,9 +10,9 @@ import org.morphix.lang.function.ThrowingRunnable;
 
 public class SessionTicket implements TLSExtension {
 
-	private ExtensionType type;
+	private final ExtensionType type;
 
-	private Int16 length;
+	private final Int16 length;
 
 	public SessionTicket(final ExtensionType type, final Int16 length) {
 		this.type = type;

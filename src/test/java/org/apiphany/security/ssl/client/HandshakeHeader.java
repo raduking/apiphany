@@ -12,9 +12,9 @@ public class HandshakeHeader implements TLSObject {
 
 	public static final int BYTES = 4;
 
-	private HandshakeType type;
+	private final HandshakeType type;
 
-	private Int24 length;
+	private final Int24 length;
 
 	public HandshakeHeader(final HandshakeType type, final Int24 length) {
 		this.type = type;

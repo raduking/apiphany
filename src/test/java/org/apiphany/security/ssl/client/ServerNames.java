@@ -10,11 +10,11 @@ import org.apiphany.json.JsonBuilder;
 
 public class ServerNames implements TLSExtension {
 
-	private ExtensionType type;
+	private final ExtensionType type;
 
-	private Int16 length;
+	private final Int16 length;
 
-	private List<ServerName> entries = new ArrayList<>();
+	private final List<ServerName> entries;
 
 	private ServerNames(final ExtensionType type, final Int16 length, final List<ServerName> entries, final boolean updateLength) {
 		this.type = type;

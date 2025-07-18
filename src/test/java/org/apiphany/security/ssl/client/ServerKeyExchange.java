@@ -8,11 +8,11 @@ import org.apiphany.json.JsonBuilder;
 
 public class ServerKeyExchange implements TLSHandshakeBody {
 
-	private CurveInfo curveInfo;
+	private final CurveInfo curveInfo;
 
-	private PublicKeyECDHE publicKey;
+	private final PublicKeyECDHE publicKey;
 
-	private Signature signature;
+	private final Signature signature;
 
 	public ServerKeyExchange(final CurveInfo curveInfo, final PublicKeyECDHE publicKey, final Signature signature) {
 		this.curveInfo = curveInfo;

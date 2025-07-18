@@ -182,7 +182,7 @@ public interface Strings {
 	 * @param s string to envelope
 	 * @return enveloped string
 	 */
-	public static String envelope(final String envelope, final String s) {
+	static String envelope(final String envelope, final String s) {
 		return String.join("", envelope, s, envelope);
 	}
 

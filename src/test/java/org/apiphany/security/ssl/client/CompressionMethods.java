@@ -10,9 +10,9 @@ import org.apiphany.json.JsonBuilder;
 
 public class CompressionMethods implements TLSObject {
 
-	private Int8 size;
+	private final Int8 size;
 
-	private List<CompressionMethod> methods;
+	private final List<CompressionMethod> methods;
 
 	public CompressionMethods(final Int8 size, final List<CompressionMethod> methods) {
 		this.size = size;

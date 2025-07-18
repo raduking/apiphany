@@ -15,17 +15,17 @@ import org.apiphany.security.ssl.SSLProtocol;
  */
 public class ClientHello implements TLSHandshakeBody {
 
-	private Version clientVersion;
+	private final Version clientVersion;
 
-	private ExchangeRandom clientRandom;
+	private final ExchangeRandom clientRandom;
 
-	private SessionId sessionId;
+	private final SessionId sessionId;
 
-	private CipherSuites cipherSuites;
+	private final CipherSuites cipherSuites;
 
-	private CompressionMethods compressionMethods;
+	private final CompressionMethods compressionMethods;
 
-	private Extensions extensions;
+	private final Extensions extensions;
 
 	protected ClientHello(
 			final Version clientVersion,

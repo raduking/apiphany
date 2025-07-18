@@ -8,9 +8,9 @@ import org.apiphany.json.JsonBuilder;
 
 public class RenegotiationInfoExtended implements TLSExtension {
 
-	private ExtensionType type;
+	private final ExtensionType type;
 
-	private Int16 length;
+	private final Int16 length;
 
 	public RenegotiationInfoExtended(final ExtensionType type, final Int16 length) {
 		this.type = type;

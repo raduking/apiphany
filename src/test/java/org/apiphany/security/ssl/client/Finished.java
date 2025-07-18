@@ -8,7 +8,7 @@ import org.apiphany.json.JsonBuilder;
 
 public class Finished implements TLSHandshakeBody {
 
-	private BinaryData verifyData;
+	private final BinaryData verifyData;
 
 	public Finished(final BinaryData verifyData) {
 		this.verifyData = verifyData;

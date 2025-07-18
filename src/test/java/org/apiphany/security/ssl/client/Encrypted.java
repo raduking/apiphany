@@ -8,8 +8,8 @@ import org.apiphany.json.JsonBuilder;
 
 public class Encrypted implements TLSObject {
 
-	private BinaryData nonce;
-	private BinaryData encryptedData;
+	private final BinaryData nonce;
+	private final BinaryData encryptedData;
 
 	public Encrypted(final BinaryData nonce, final BinaryData encryptedData) {
 		this.nonce = nonce;

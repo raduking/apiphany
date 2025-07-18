@@ -10,18 +10,18 @@ import org.apiphany.json.JsonBuilder;
 
 public class SignatureAlgorithms implements TLSExtension {
 
-	private ExtensionType type;
+	private final ExtensionType type;
 
-	private Int16 length;
+	private final Int16 length;
 
-	private Int16 listSize;
+	private final Int16 algorithmsSize;
 
-	private List<SignatureAlgorithm> algorithms;
+	private final List<SignatureAlgorithm> algorithms;
 
-	public SignatureAlgorithms(final ExtensionType type, final Int16 length, final Int16 listSize, final List<SignatureAlgorithm> algorithms) {
+	public SignatureAlgorithms(final ExtensionType type, final Int16 length, final Int16 algorithmsSize, final List<SignatureAlgorithm> algorithms) {
 		this.type = type;
 		this.length = length;
-		this.listSize = listSize;
+		this.algorithmsSize = algorithmsSize;
 		this.algorithms = algorithms;
 	}
 
@@ -51,15 +51,15 @@ public class SignatureAlgorithms implements TLSExtension {
 
 	public static SignatureAlgorithms from(final InputStream is, final ExtensionType type) throws IOException {
 		Int16 length = Int16.from(is);
-		Int16 listSize = Int16.from(is);
+		Int16 algorithmsSize = Int16.from(is);
 		List<SignatureAlgorithm> algorithms = new ArrayList<>();
-		for (int i = 0; i < listSize.getValue() / SignatureAlgorithm.BYTES; ++i) {
+		for (int i = 0; i < algorithmsSize.getValue() / SignatureAlgorithm.BYTES; ++i) {
 			Int16 int16 = Int16.from(is);
 			SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.fromValue(int16.getValue());
 			algorithms.add(signatureAlgorithm);
 		}
 
-		return new SignatureAlgorithms(type, length, listSize, algorithms);
+		return new SignatureAlgorithms(type, length, algorithmsSize, algorithms);
 	}
 
 	@Override
@@ -67,7 +67,7 @@ public class SignatureAlgorithms implements TLSExtension {
 		ByteBuffer buffer = ByteBuffer.allocate(sizeOf());
 		buffer.put(type.toByteArray());
 		buffer.put(length.toByteArray());
-		buffer.put(listSize.toByteArray());
+		buffer.put(algorithmsSize.toByteArray());
 		for (SignatureAlgorithm algorithm : algorithms) {
 			buffer.put(algorithm.toByteArray());
 		}
@@ -81,7 +81,7 @@ public class SignatureAlgorithms implements TLSExtension {
 
 	@Override
 	public int sizeOf() {
-		return type.sizeOf() + length.sizeOf() + listSize.sizeOf() + algorithms.size() * SignatureAlgorithm.BYTES;
+		return type.sizeOf() + length.sizeOf() + algorithmsSize.sizeOf() + algorithms.size() * SignatureAlgorithm.BYTES;
 	}
 
 	@Override
@@ -93,8 +93,8 @@ public class SignatureAlgorithms implements TLSExtension {
 		return length;
 	}
 
-	public Int16 getListSize() {
-		return listSize;
+	public Int16 getAlgorithmsSize() {
+		return algorithmsSize;
 	}
 
 	public List<SignatureAlgorithm> getAlgorithms() {
