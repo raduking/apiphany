@@ -5,6 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.apiphany.io.Int16;
 import org.apiphany.json.JsonBuilder;
 import org.morphix.lang.function.ThrowingRunnable;
 
@@ -20,7 +21,7 @@ public class SessionTicket implements TLSExtension {
 	}
 
 	public SessionTicket() {
-		this(ExtensionType.SESSION_TICKET, Int16.of((short) 0x0000));
+		this(ExtensionType.SESSION_TICKET, Int16.ZERO);
 	}
 
 	public static SessionTicket from(final InputStream is) throws IOException {

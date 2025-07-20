@@ -8,44 +8,46 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
 
+import org.apiphany.io.Int16;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.ByteSizeable;
 import org.apiphany.lang.collections.Lists;
 import org.apiphany.security.ssl.SSLProtocol;
+import org.apiphany.security.tls.TLSObject;
 import org.morphix.lang.JavaObjects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-public class TLSRecord implements TLSObject {
+public class Record implements TLSObject {
 
 	private final RecordHeader header;
 
 	private final List<TLSObject> fragments;
 
-	public TLSRecord(final RecordHeader header, final List<TLSObject> fragments, final boolean updateHeader) {
+	public Record(final RecordHeader header, final List<TLSObject> fragments, final boolean updateHeader) {
 		this.header = updateHeader
 				? new RecordHeader(header.getType(), header.getVersion(), Int16.of((short) ByteSizeable.sizeOf(fragments)))
 				: header;
 		this.fragments = fragments;
 	}
 
-	public TLSRecord(final RecordHeader header, final List<TLSObject> messages) {
+	public Record(final RecordHeader header, final List<TLSObject> messages) {
 		this(header, messages, true);
 	}
 
-	public TLSRecord(final RecordContentType type, final SSLProtocol protocol, final TLSObject fragment) {
+	public Record(final RecordContentType type, final SSLProtocol protocol, final TLSObject fragment) {
 		this(new RecordHeader(type, protocol), List.of(fragment), true);
 	}
 
-	public TLSRecord(final SSLProtocol protocol, final TLSObject fragment) {
+	public Record(final SSLProtocol protocol, final TLSObject fragment) {
 		this(RecordContentType.from(fragment), protocol, fragment);
 	}
 
-	public TLSRecord(final SSLProtocol protocol, final TLSHandshakeBody handshakeObject) {
-		this(new RecordHeader(RecordContentType.HANDSHAKE, protocol), List.of(new TLSHandshake(handshakeObject)));
+	public Record(final SSLProtocol protocol, final TLSHandshakeBody handshakeObject) {
+		this(new RecordHeader(RecordContentType.HANDSHAKE, protocol), List.of(new Handshake(handshakeObject)));
 	}
 
-	public static TLSRecord from(final InputStream is) throws IOException {
+	public static Record from(final InputStream is) throws IOException {
 		RecordHeader header = RecordHeader.from(is);
 		RecordContentType recordType = header.getType();
 
@@ -56,14 +58,14 @@ public class TLSRecord implements TLSObject {
 			fragments.add(fragment);
 			currentLength -= fragment.sizeOf();
 		}
-		return new TLSRecord(header, fragments, false);
+		return new Record(header, fragments, false);
 	}
 
-	public static TLSRecord from(final InputStream is, final BiFunction<InputStream, Short, TLSObject> fragmentReader) throws IOException {
+	public static Record from(final InputStream is, final BiFunction<InputStream, Short, TLSObject> fragmentReader) throws IOException {
 		RecordHeader header = RecordHeader.from(is);
 		TLSObject fragment = fragmentReader.apply(is, header.getLength().getValue());
 
-		return new TLSRecord(header, List.of(fragment), false);
+		return new Record(header, List.of(fragment), false);
 	}
 
 	@Override
@@ -94,7 +96,7 @@ public class TLSRecord implements TLSObject {
 		return fragments;
 	}
 
-	public TLSHandshake getHandshake(final int index) {
+	public Handshake getHandshake(final int index) {
 		return JavaObjects.cast(fragments.get(index));
 	}
 
@@ -112,14 +114,14 @@ public class TLSRecord implements TLSObject {
 	}
 
 	@JsonIgnore
-	public TLSHandshake getHandshake() {
+	public Handshake getHandshake() {
 		return getHandshake(0);
 	}
 
 	public <T extends TLSHandshakeBody> boolean hasHandshake(final Class<T> tlsHandshakeClass) {
 		for (TLSObject fragment : fragments) {
-			if (TLSHandshake.class.isAssignableFrom(fragment.getClass())) {
-				TLSHandshake handshake = JavaObjects.cast(fragment);
+			if (Handshake.class.isAssignableFrom(fragment.getClass())) {
+				Handshake handshake = JavaObjects.cast(fragment);
 				if (handshake.is(tlsHandshakeClass)) {
 					return true;
 				}
@@ -130,8 +132,8 @@ public class TLSRecord implements TLSObject {
 
 	public <T extends TLSHandshakeBody> T getHandshake(final Class<T> tlsHandshakeClass) {
 		for (TLSObject fragment : fragments) {
-			if (TLSHandshake.class.isAssignableFrom(fragment.getClass())) {
-				TLSHandshake handshake = JavaObjects.cast(fragment);
+			if (Handshake.class.isAssignableFrom(fragment.getClass())) {
+				Handshake handshake = JavaObjects.cast(fragment);
 				if (handshake.is(tlsHandshakeClass)) {
 					return handshake.get(tlsHandshakeClass);
 				}

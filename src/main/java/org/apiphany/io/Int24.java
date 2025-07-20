@@ -1,0 +1,147 @@
+package org.apiphany.io;
+
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
+
+import org.apiphany.json.JsonBuilder;
+import org.apiphany.lang.BinaryRepresentable;
+import org.apiphany.lang.ByteSizeable;
+
+import com.fasterxml.jackson.annotation.JsonValue;
+
+/**
+ * Immutable wrapper for a 24-bit unsigned integer with binary serialization capabilities.
+ * <p>
+ * This class provides:
+ * <ul>
+ * <li>Type-safe representation of 24-bit values (stored in a Java {@code int})</li>
+ * <li>Big-endian binary serialization/deserialization</li>
+ * <li>Network byte order support</li>
+ * <li>JSON integration via {@link JsonValue}</li>
+ * <li>Constant-time size operations</li>
+ * </ul>
+ *
+ * <p>
+ * Primary use cases include:
+ * <ul>
+ * <li>Network protocols with 24-bit fields (e.g., audio/video streaming formats)</li>
+ * <li>Embedded systems communication</li>
+ * <li>Legacy file formats</li>
+ * </ul>
+ *
+ * @author Radu Sebastian LAZIN
+ */
+public class Int24 implements ByteSizeable, BinaryRepresentable {
+
+	/**
+	 * The size in bytes of an {@code Int24} value (constant value: 3).
+	 */
+	public static final int BYTES = 3;
+
+	/**
+	 * Predefined instance representing zero (0x000000).
+	 */
+	public static final Int24 ZERO = of(0x00_00_00);
+
+	/**
+	 * The actual encapsulated value.
+	 */
+	private final int value;
+
+	/**
+	 * Constructs a new {@code Int24} instance.
+	 *
+	 * @param value the 24-bit value to wrap (only lower 24 bits are used)
+	 * @throws IllegalArgumentException if value exceeds 24-bit unsigned range
+	 */
+	protected Int24(final int value) {
+		this.value = value;
+	}
+
+	/**
+	 * Creates a new {@code Int24} instance for the specified value.
+	 *
+	 * @param value the 24-bit value to wrap (only lower 24 bits are used)
+	 * @return a new {@code Int24} instance
+	 * @throws IllegalArgumentException if value exceeds 24-bit unsigned range
+	 */
+	public static Int24 of(final int value) {
+		return new Int24(value);
+	}
+
+	/**
+	 * Reads 3 bytes from the input stream and returns them as a big-endian {@code Int24}.
+	 *
+	 * @param is the input stream to read from
+	 * @return a new {@code Int24} containing the read value
+	 * @throws IOException if an I/O error occurs
+	 * @throws EOFException if fewer than 3 bytes are available
+	 * @throws NullPointerException if {@code is} is {@code null}
+	 */
+	public static Int24 from(final InputStream is) throws IOException {
+		byte[] buffer = new byte[BYTES];
+		int bytesRead = is.read(buffer);
+		if (BYTES != bytesRead) {
+			throw new EOFException("Error reading " + BYTES + " bytes");
+		}
+		int int24 = ((buffer[0] & 0xFF) << 16) |
+				((buffer[1] & 0xFF) << 8) |
+				(buffer[2] & 0xFF);
+		return Int24.of(int24);
+	}
+
+	/**
+	 * @see #toByteArray()
+	 */
+	@Override
+	public byte[] toByteArray() {
+		return toByteArray(value);
+	}
+
+	/**
+	 * Converts a 24-bit value to its big-endian binary representation.
+	 *
+	 * @param value the value to convert (only lower 24 bits are used)
+	 * @return a new byte array containing the value in network byte order
+	 */
+	public static byte[] toByteArray(final int value) {
+		return new byte[] {
+				(byte) ((value >> 16) & 0xFF),
+				(byte) ((value >> 8) & 0xFF),
+				(byte) (value & 0xFF)
+		};
+	}
+
+	/**
+	 * Returns a JSON representation of this object.
+	 *
+	 * @return JSON string representation
+	 */
+	@Override
+	public String toString() {
+		return JsonBuilder.toJson(this);
+	}
+
+	/**
+	 * Returns the wrapped value as a Java {@code int}.
+	 * <p>
+	 * Note: The value is always in the range 0-16,777,215 (0xFFFFFF).
+	 * <p>
+	 * Annotated with {@code @JsonValue} for direct JSON serialization.
+	 *
+	 * @return the wrapped value (unsigned 24-bit as int)
+	 */
+	@JsonValue
+	public int getValue() {
+		return value;
+	}
+
+	/**
+	 * @see #sizeOf()
+	 */
+	@Override
+	public int sizeOf() {
+		return BYTES;
+	}
+}

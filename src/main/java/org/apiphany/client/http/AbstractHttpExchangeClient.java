@@ -18,7 +18,7 @@ import org.apiphany.http.TracingHeader;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.json.jackson.JacksonJsonHttpContentConverter;
 import org.apiphany.lang.Strings;
-import org.apiphany.security.ssl.Certificates;
+import org.apiphany.security.ssl.SSLContexts;
 import org.apiphany.security.ssl.SSLProperties;
 import org.morphix.lang.JavaObjects;
 import org.slf4j.Logger;
@@ -78,7 +78,7 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 		if (null == sslProperties) {
 			return;
 		}
-		this.sslContext = Certificates.createSSLContext(sslProperties);
+		this.sslContext = SSLContexts.create(sslProperties);
 	}
 
 	/**

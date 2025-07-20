@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.security.tls.TLSObject;
 
 public class ApplicationData implements TLSObject {
 

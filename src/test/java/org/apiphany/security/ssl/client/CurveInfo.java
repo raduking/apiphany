@@ -4,15 +4,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
+import org.apiphany.io.Int16;
+import org.apiphany.io.Int8;
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.security.tls.TLSObject;
 
 public class CurveInfo implements TLSObject {
 
 	private final CurveType type;
 
-	private final CurveName name;
+	private final NamedCurve name;
 
-	public CurveInfo(final CurveType type, final CurveName name) {
+	public CurveInfo(final CurveType type, final NamedCurve name) {
 		this.type = type;
 		this.name = name;
 	}
@@ -22,7 +25,7 @@ public class CurveInfo implements TLSObject {
 		CurveType type = CurveType.fromValue(int8.getValue());
 
 		Int16 int16 = Int16.from(is);
-		CurveName name = CurveName.fromValue(int16.getValue());
+		NamedCurve name = NamedCurve.fromValue(int16.getValue());
 
 		return new CurveInfo(type, name);
 	}
@@ -49,7 +52,7 @@ public class CurveInfo implements TLSObject {
 		return type;
 	}
 
-	public CurveName getName() {
+	public NamedCurve getName() {
 		return name;
 	}
 }

@@ -4,22 +4,23 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
+import org.apiphany.io.BytesWrapper;
 import org.apiphany.json.JsonBuilder;
 
 public class Finished implements TLSHandshakeBody {
 
-	private final BinaryData verifyData;
+	private final BytesWrapper verifyData;
 
-	public Finished(final BinaryData verifyData) {
+	public Finished(final BytesWrapper verifyData) {
 		this.verifyData = verifyData;
 	}
 
 	public Finished(final byte[] payload) {
-		this(new BinaryData(payload));
+		this(new BytesWrapper(payload));
 	}
 
 	public static Finished from(final InputStream is, final int length) throws IOException {
-		BinaryData payload = BinaryData.from(is, length);
+		BytesWrapper payload = BytesWrapper.from(is, length);
 
 		return new Finished(payload);
 	}
@@ -42,11 +43,11 @@ public class Finished implements TLSHandshakeBody {
 	}
 
 	@Override
-	public HandshakeType type() {
+	public HandshakeType getType() {
 		return HandshakeType.FINISHED;
 	}
 
-	public BinaryData getVerifyData() {
+	public BytesWrapper getVerifyData() {
 		return verifyData;
 	}
 }

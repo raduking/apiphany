@@ -4,35 +4,37 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
+import org.apiphany.io.Int24;
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.security.tls.TLSObject;
 import org.morphix.lang.JavaObjects;
 
-public class TLSHandshake implements TLSObject {
+public class Handshake implements TLSObject {
 
 	private final HandshakeHeader header;
 
 	private final TLSHandshakeBody body;
 
-	public TLSHandshake(final HandshakeHeader header, final TLSHandshakeBody body, final boolean updateHeader) {
+	public Handshake(final HandshakeHeader header, final TLSHandshakeBody body, final boolean updateHeader) {
 		this.header = updateHeader ? new HandshakeHeader(header.getType(), Int24.of(body.sizeOf())) : header;
 		this.body = body;
 	}
 
-	public TLSHandshake(final TLSHandshakeBody body) {
-		this(new HandshakeHeader(body.type()), body, true);
+	public Handshake(final TLSHandshakeBody body) {
+		this(new HandshakeHeader(body.getType()), body, true);
 	}
 
-	public TLSHandshake(final HandshakeHeader header, final TLSHandshakeBody body) {
+	public Handshake(final HandshakeHeader header, final TLSHandshakeBody body) {
 		this(header, body, true);
 	}
 
-	public static TLSHandshake from(final InputStream is) throws IOException {
+	public static Handshake from(final InputStream is) throws IOException {
 		HandshakeHeader header = HandshakeHeader.from(is);
 		HandshakeType type = header.getType();
 
 		TLSHandshakeBody body = type.handshake().from(is, header.getLength().getValue());
 
-		return new TLSHandshake(header, body, false);
+		return new Handshake(header, body, false);
 	}
 
 	@Override

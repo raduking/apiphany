@@ -4,8 +4,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
+import org.apiphany.io.Int16;
+import org.apiphany.io.Int8;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.security.ssl.SSLProtocol;
+import org.apiphany.security.tls.TLSObject;
 
 public class RecordHeader implements TLSObject {
 

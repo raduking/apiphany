@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
+import org.apiphany.io.Int16;
+import org.apiphany.security.tls.TLSObject;
 import org.morphix.lang.Enums;
 
 public enum ExtensionType implements TLSObject {
@@ -14,9 +16,9 @@ public enum ExtensionType implements TLSObject {
 	EC_POINTS_FORMAT((short) 0x000B, ECPointFormats::from),
 	SIGNATURE_ALGORITHMS((short) 0x000D, SignatureAlgorithms::from),
 	RENEGOTIATION_INFO((short) 0xFF01, RenegotiationInfo::from),
-	SCT((short) 0x0012, SignedCertificateTimestamp::from),
+	SIGNED_CERTIFICATE_TIMESTAMP((short) 0x0012, SignedCertificateTimestamp::from),
 	SESSION_TICKET((short) 0x0023, SessionTicket::from),
-	EMT((short) 0x0016, ExtendedMasterSecret::from),
+	EXTENDED_MASTER_SECRET((short) 0x0016, ExtendedMasterSecret::from),
 
 	/**
 	 * Used by OpenSSL, non standard.

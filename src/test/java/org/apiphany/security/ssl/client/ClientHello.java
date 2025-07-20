@@ -42,19 +42,19 @@ public class ClientHello implements TLSHandshakeBody {
 		this.extensions = extensions;
 	}
 
-	public ClientHello(final List<String> serverNames, final CipherSuites cypherSuites, final List<CurveName> curveNames, final List<SignatureAlgorithm> signatureAlgorithms) {
+	public ClientHello(final List<String> serverNames, final CipherSuites cypherSuites, final List<NamedCurve> namedCurves, final List<SignatureAlgorithm> signatureAlgorithms) {
 		this(
 				new Version(SSLProtocol.TLS_1_2),
 				ExchangeRandom.linear(),
 				new SessionId(),
 				cypherSuites,
 				new CompressionMethods(),
-				new Extensions(serverNames, curveNames, signatureAlgorithms)
+				new Extensions(serverNames, namedCurves, signatureAlgorithms)
 		);
 	}
 
-	public ClientHello(final List<String> serverNames, final List<CipherSuite> cypherSuites, final List<CurveName> curveNames, final List<SignatureAlgorithm> signatureAlgorithms) {
-		this(serverNames, new CipherSuites(cypherSuites), curveNames, signatureAlgorithms);
+	public ClientHello(final List<String> serverNames, final List<CipherSuite> cypherSuites, final List<NamedCurve> namedCurves, final List<SignatureAlgorithm> signatureAlgorithms) {
+		this(serverNames, new CipherSuites(cypherSuites), namedCurves, signatureAlgorithms);
 	}
 
 	@Override
@@ -97,7 +97,7 @@ public class ClientHello implements TLSHandshakeBody {
 	}
 
 	@Override
-	public HandshakeType type() {
+	public HandshakeType getType() {
 		return HandshakeType.CLIENT_HELLO;
 	}
 

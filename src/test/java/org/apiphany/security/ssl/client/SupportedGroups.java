@@ -6,6 +6,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apiphany.io.Int16;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.ByteSizeable;
 
@@ -17,26 +18,26 @@ public class SupportedGroups implements TLSExtension {
 
 	private final Int16 groupsSize;
 
-	private final List<CurveName> groups;
+	private final List<NamedCurve> groups;
 
-	public SupportedGroups(final ExtensionType type, final Int16 size, final Int16 groupsSize, final List<CurveName> groups) {
+	public SupportedGroups(final ExtensionType type, final Int16 size, final Int16 groupsSize, final List<NamedCurve> groups) {
 		this.type = type;
 		this.length = size;
 		this.groupsSize = groupsSize;
 		this.groups = groups;
 	}
 
-	public SupportedGroups(final List<CurveName> curveNames) {
+	public SupportedGroups(final List<NamedCurve> namedCurves) {
 		this(
 				ExtensionType.SUPPORTED_GROUPS,
-				Int16.of((short) (curveNames.size() * CurveName.BYTES + Int16.BYTES)),
-				Int16.of((short) (curveNames.size() * CurveName.BYTES)),
-				curveNames
+				Int16.of((short) (namedCurves.size() * NamedCurve.BYTES + Int16.BYTES)),
+				Int16.of((short) (namedCurves.size() * NamedCurve.BYTES)),
+				namedCurves
 		);
 	}
 
 	public SupportedGroups() {
-		this(List.of(CurveName.values()));
+		this(List.of(NamedCurve.values()));
 	}
 
 	public static SupportedGroups from(final InputStream is) throws IOException {
@@ -49,10 +50,10 @@ public class SupportedGroups implements TLSExtension {
 	public static SupportedGroups from(final InputStream is, final ExtensionType type) throws IOException {
 		Int16 length = Int16.from(is);
 		Int16 listSize = Int16.from(is);
-		List<CurveName> groups = new ArrayList<>();
-		for (int i = 0; i < listSize.getValue() / CurveName.BYTES; ++i) {
+		List<NamedCurve> groups = new ArrayList<>();
+		for (int i = 0; i < listSize.getValue() / NamedCurve.BYTES; ++i) {
 			Int16 value = Int16.from(is);
-			CurveName curveName = CurveName.fromValue(value.getValue());
+			NamedCurve curveName = NamedCurve.fromValue(value.getValue());
 			groups.add(curveName);
 		}
 
@@ -65,7 +66,7 @@ public class SupportedGroups implements TLSExtension {
 		buffer.put(type.toByteArray());
 		buffer.put(length.toByteArray());
 		buffer.put(groupsSize.toByteArray());
-		for (CurveName group : groups) {
+		for (NamedCurve group : groups) {
 			buffer.put(group.toByteArray());
 		}
 		return buffer.array();
@@ -94,7 +95,7 @@ public class SupportedGroups implements TLSExtension {
 		return groupsSize;
 	}
 
-	public List<CurveName> getGroups() {
+	public List<NamedCurve> getGroups() {
 		return groups;
 	}
 }

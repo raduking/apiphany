@@ -6,8 +6,10 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apiphany.io.Int8;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.ByteSizeable;
+import org.apiphany.security.tls.TLSObject;
 
 public class CompressionMethods implements TLSObject {
 

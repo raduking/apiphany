@@ -4,21 +4,24 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
+import org.apiphany.io.BytesWrapper;
+import org.apiphany.io.Int16;
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.security.tls.TLSObject;
 
 public class PublicKeyRSA implements TLSObject {
 
 	private final Int16 length;
 
-	private final BinaryData bytes;
+	private final BytesWrapper bytes;
 
-	public PublicKeyRSA(final Int16 length, final BinaryData bytes) {
+	public PublicKeyRSA(final Int16 length, final BytesWrapper bytes) {
 		this.length = length;
 		this.bytes = bytes;
 	}
 
 	public PublicKeyRSA(final short length, final byte[] bytes) {
-		this(Int16.of(length), new BinaryData(bytes));
+		this(Int16.of(length), new BytesWrapper(bytes));
 	}
 
 	public PublicKeyRSA(final byte[] bytes) {
@@ -27,7 +30,7 @@ public class PublicKeyRSA implements TLSObject {
 
 	public static PublicKeyRSA from(final InputStream is) throws IOException {
 		Int16 length = Int16.from(is);
-		BinaryData bytes = BinaryData.from(is, length.getValue());
+		BytesWrapper bytes = BytesWrapper.from(is, length.getValue());
 
 		return new PublicKeyRSA(length, bytes);
 	}
@@ -49,7 +52,7 @@ public class PublicKeyRSA implements TLSObject {
 		return length;
 	}
 
-	public BinaryData getBytes() {
+	public BytesWrapper getBytes() {
 		return bytes;
 	}
 

@@ -8,7 +8,7 @@ import org.apiphany.lang.Strings;
  *
  * @author Radu Sebastian LAZIN
  */
-public class CertificateStoreInfo {
+public class StoreInfo {
 
 	/**
 	 * Constant representing an unknown certificate store location.
@@ -44,7 +44,7 @@ public class CertificateStoreInfo {
 	/**
 	 * Default constructor.
 	 */
-	public CertificateStoreInfo() {
+	public StoreInfo() {
 		// empty
 	}
 

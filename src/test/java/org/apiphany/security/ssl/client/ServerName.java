@@ -5,7 +5,11 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
+import org.apiphany.io.BytesWrapper;
+import org.apiphany.io.Int16;
+import org.apiphany.io.Int8;
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.security.tls.TLSObject;
 
 public class ServerName implements TLSObject {
 
@@ -15,9 +19,9 @@ public class ServerName implements TLSObject {
 
 	private final Int16 length;
 
-	private final BinaryData name;
+	private final BytesWrapper name;
 
-	public ServerName(final Int16 size, final Int8 type, final Int16 length, final BinaryData name) {
+	public ServerName(final Int16 size, final Int8 type, final Int16 length, final BytesWrapper name) {
 		this.size = size;
 		this.type = type;
 		this.length = length;
@@ -29,7 +33,7 @@ public class ServerName implements TLSObject {
 				Int16.of((short) (Int8.BYTES + Int16.BYTES + name.length())),
 				Int8.ZERO,
 				Int16.of((short) name.length()),
-				new BinaryData(name.getBytes(StandardCharsets.US_ASCII))
+				new BytesWrapper(name.getBytes(StandardCharsets.US_ASCII))
 		);
 	}
 
@@ -47,7 +51,7 @@ public class ServerName implements TLSObject {
 		Int16 size = Int16.from(is);
 		Int8 type = Int8.from(is);
 		Int16 length = Int16.from(is);
-		BinaryData name = BinaryData.from(is, length.getValue());
+		BytesWrapper name = BytesWrapper.from(is, length.getValue());
 
 		return new ServerName(size, type, length, name);
 	}
@@ -74,11 +78,11 @@ public class ServerName implements TLSObject {
 		return length;
 	}
 
-	public BinaryData getName() {
+	public BytesWrapper getName() {
 		return name;
 	}
 
 	public String getNameASCII() {
-		return new String(name.getBytes(), StandardCharsets.US_ASCII);
+		return new String(name.toByteArray(), StandardCharsets.US_ASCII);
 	}
 }

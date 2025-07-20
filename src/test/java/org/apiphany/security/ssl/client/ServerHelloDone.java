@@ -3,6 +3,7 @@ package org.apiphany.security.ssl.client;
 import java.io.InputStream;
 
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.lang.Bytes;
 
 public class ServerHelloDone implements TLSHandshakeBody {
 
@@ -19,7 +20,7 @@ public class ServerHelloDone implements TLSHandshakeBody {
 
 	@Override
 	public byte[] toByteArray() {
-		return BinaryData.EMPTY;
+		return Bytes.EMPTY;
 	}
 
 	@Override
@@ -28,7 +29,7 @@ public class ServerHelloDone implements TLSHandshakeBody {
 	}
 
 	@Override
-	public HandshakeType type() {
+	public HandshakeType getType() {
 		return HandshakeType.SERVER_HELLO_DONE;
 	}
 

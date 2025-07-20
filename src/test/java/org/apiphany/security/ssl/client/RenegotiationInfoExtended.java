@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
+import org.apiphany.io.Int16;
 import org.apiphany.json.JsonBuilder;
 
 public class RenegotiationInfoExtended implements TLSExtension {
@@ -18,7 +19,7 @@ public class RenegotiationInfoExtended implements TLSExtension {
 	}
 
 	public RenegotiationInfoExtended() {
-		this(ExtensionType.RENEGOTIATION_INFO_EXTENDED, Int16.of((short) 0x0000));
+		this(ExtensionType.RENEGOTIATION_INFO_EXTENDED, Int16.ZERO);
 	}
 
 	public static RenegotiationInfoExtended from(final InputStream is) throws IOException {

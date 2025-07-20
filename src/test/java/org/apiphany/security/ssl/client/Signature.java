@@ -4,7 +4,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
+import org.apiphany.io.BytesWrapper;
+import org.apiphany.io.Int16;
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.security.tls.TLSObject;
 
 public class Signature implements TLSObject {
 
@@ -12,26 +15,26 @@ public class Signature implements TLSObject {
 
 	private final Int16 length;
 
-	private final BinaryData value;
+	private final BytesWrapper value;
 
-	public Signature(final Int16 reserved, final Int16 length, final BinaryData value) {
+	public Signature(final Int16 reserved, final Int16 length, final BytesWrapper value) {
 		this.reserved = reserved;
 		this.length = length;
 		this.value = value;
 	}
 
 	public Signature(final Int16 reserved, final Int16 length, final byte[] bytes) {
-		this(reserved, length, new BinaryData(bytes));
+		this(reserved, length, new BytesWrapper(bytes));
 	}
 
 	public Signature(final short length, final byte[] bytes) {
-		this(Int16.of((short) 0x0000), Int16.of(length), bytes);
+		this(Int16.ZERO, Int16.of(length), bytes);
 	}
 
 	public static Signature from(final InputStream is) throws IOException {
 		Int16 reserved = Int16.from(is);
 		Int16 length = Int16.from(is);
-		BinaryData value = BinaryData.from(is, length.getValue());
+		BytesWrapper value = BytesWrapper.from(is, length.getValue());
 
 		return new Signature(reserved, length, value);
 	}
@@ -63,7 +66,7 @@ public class Signature implements TLSObject {
 		return length;
 	}
 
-	public BinaryData getValue() {
+	public BytesWrapper getValue() {
 		return value;
 	}
 }

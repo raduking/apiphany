@@ -17,6 +17,8 @@ import java.util.Arrays;
 
 import javax.crypto.KeyAgreement;
 
+import org.apiphany.lang.Bytes;
+
 public class X25519Keys {
 
 	private static final String ALGORITHM = "XDH";

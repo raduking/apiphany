@@ -13,7 +13,7 @@ import javax.net.ssl.SSLContext;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
 import org.apiphany.lang.Strings;
-import org.apiphany.security.ssl.Certificates;
+import org.apiphany.security.ssl.SSLContexts;
 import org.apiphany.security.ssl.SSLContextAdapter;
 import org.apiphany.security.ssl.SSLProperties;
 import org.slf4j.Logger;
@@ -47,7 +47,7 @@ public class SimpleHttpsServer implements AutoCloseable {
 	public SimpleHttpsServer(final int port, final SSLProperties sslProperties, SecureRandom secureRandom) {
 		this.executor = Executors.newVirtualThreadPerTaskExecutor();
 
-		this.sslContext = new SSLContextAdapter(Certificates.createSSLContext(sslProperties));
+		this.sslContext = new SSLContextAdapter(SSLContexts.create(sslProperties));
 		this.sslContext.setSecureRandom(secureRandom);
 
 		this.httpsServer = createHttpsServer(port, sslContext);

@@ -4,25 +4,27 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
+import org.apiphany.io.BytesWrapper;
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.security.tls.TLSObject;
 
 public class Encrypted implements TLSObject {
 
-	private final BinaryData nonce;
-	private final BinaryData encryptedData;
+	private final BytesWrapper nonce;
+	private final BytesWrapper encryptedData;
 
-	public Encrypted(final BinaryData nonce, final BinaryData encryptedData) {
+	public Encrypted(final BytesWrapper nonce, final BytesWrapper encryptedData) {
 		this.nonce = nonce;
 		this.encryptedData = encryptedData;
 	}
 
 	public Encrypted(final byte[] nonce, final byte[] encryptedData) {
-		this(new BinaryData(nonce), new BinaryData(encryptedData));
+		this(new BytesWrapper(nonce), new BytesWrapper(encryptedData));
 	}
 
 	public static Encrypted from(final InputStream is, final int totalLength, final int nonceLength) throws IOException {
-		BinaryData nonce = BinaryData.from(is, nonceLength);
-		BinaryData payload = BinaryData.from(is, totalLength - nonceLength);
+		BytesWrapper nonce = BytesWrapper.from(is, nonceLength);
+		BytesWrapper payload = BytesWrapper.from(is, totalLength - nonceLength);
 
 		return new Encrypted(nonce, payload);
 	}
@@ -45,11 +47,11 @@ public class Encrypted implements TLSObject {
 		return nonce.sizeOf() + encryptedData.sizeOf();
 	}
 
-	public BinaryData getNonce() {
+	public BytesWrapper getNonce() {
 		return nonce;
 	}
 
-	public BinaryData getEncryptedData() {
+	public BytesWrapper getEncryptedData() {
 		return encryptedData;
 	}
 }

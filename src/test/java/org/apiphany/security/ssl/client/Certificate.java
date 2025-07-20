@@ -4,21 +4,24 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
+import org.apiphany.io.BytesWrapper;
+import org.apiphany.io.Int24;
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.security.tls.TLSObject;
 
 public class Certificate implements TLSObject {
 
 	private final Int24 length;
 
-	private final BinaryData data;
+	private final BytesWrapper data;
 
-	public Certificate(final Int24 length, final BinaryData data) {
+	public Certificate(final Int24 length, final BytesWrapper data) {
 		this.length = length;
 		this.data = data;
 	}
 
 	public Certificate(final Int24 length, final byte[] bytes) {
-		this(length, new BinaryData(bytes));
+		this(length, new BytesWrapper(bytes));
 	}
 
 	public Certificate(final int length, final byte[] bytes) {
@@ -27,7 +30,7 @@ public class Certificate implements TLSObject {
 
 	public static Certificate from(final InputStream is) throws IOException {
 		Int24 length = Int24.from(is);
-		BinaryData data = BinaryData.from(is, length.getValue());
+		BytesWrapper data = BytesWrapper.from(is, length.getValue());
 
 		return new Certificate(length, data);
 	}
@@ -54,7 +57,7 @@ public class Certificate implements TLSObject {
 		return length;
 	}
 
-	public BinaryData getData() {
+	public BytesWrapper getData() {
 		return data;
 	}
 }

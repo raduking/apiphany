@@ -48,7 +48,7 @@ public class ServerKeyExchange implements TLSHandshakeBody {
 	}
 
 	@Override
-	public HandshakeType type() {
+	public HandshakeType getType() {
 		return HandshakeType.SERVER_KEY_EXCHANGE;
 	}
 

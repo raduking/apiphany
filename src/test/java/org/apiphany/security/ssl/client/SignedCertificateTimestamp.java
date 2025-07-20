@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
+import org.apiphany.io.Int16;
 import org.apiphany.json.JsonBuilder;
 
 public class SignedCertificateTimestamp implements TLSExtension {
@@ -18,7 +19,7 @@ public class SignedCertificateTimestamp implements TLSExtension {
 	}
 
 	public SignedCertificateTimestamp() {
-		this(ExtensionType.SCT, Int16.of((short) 0x0000));
+		this(ExtensionType.SIGNED_CERTIFICATE_TIMESTAMP, Int16.ZERO);
 	}
 
 	public static SignedCertificateTimestamp from(final InputStream is) throws IOException {

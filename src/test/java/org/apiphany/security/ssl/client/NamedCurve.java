@@ -2,9 +2,11 @@ package org.apiphany.security.ssl.client;
 
 import java.util.Map;
 
+import org.apiphany.io.Int16;
+import org.apiphany.security.tls.TLSObject;
 import org.morphix.lang.Enums;
 
-public enum CurveName implements TLSObject {
+public enum NamedCurve implements TLSObject {
 
 	X25519((short) 0x001D),
 	SECP256R1((short) 0x0017),
@@ -15,15 +17,15 @@ public enum CurveName implements TLSObject {
 
 	public static final int BYTES = 2;
 
-	private static final Map<Short, CurveName> VALUE_MAP = Enums.buildNameMap(values(), CurveName::value);
+	private static final Map<Short, NamedCurve> VALUE_MAP = Enums.buildNameMap(values(), NamedCurve::value);
 
 	private final short value;
 
-	CurveName(final short value) {
+	NamedCurve(final short value) {
 		this.value = value;
 	}
 
-	public static CurveName fromValue(final short value) {
+	public static NamedCurve fromValue(final short value) {
 		return Enums.from(value, VALUE_MAP, values());
 	}
 
