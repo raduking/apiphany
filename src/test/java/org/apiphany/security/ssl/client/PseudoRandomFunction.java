@@ -1,10 +1,11 @@
 package org.apiphany.security.ssl.client;
 
-import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+
+import org.apiphany.lang.Bytes;
 
 public class PseudoRandomFunction {
 
@@ -33,7 +34,7 @@ public class PseudoRandomFunction {
 
 		while (offset < length) {
 			a = mac.doFinal(a); // a(i) = HMAC(secret, a(i-1))
-			byte[] output = mac.doFinal(concatenate(a, seed));
+			byte[] output = mac.doFinal(Bytes.concatenate(a, seed));
 			int copyLength = Math.min(output.length, length - offset);
 			System.arraycopy(output, 0, result, offset, copyLength);
 			offset += copyLength;
@@ -42,11 +43,4 @@ public class PseudoRandomFunction {
 		return result;
 	}
 
-	private static byte[] concatenate(final byte[]... arrays) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        for (byte[] arr : arrays) {
-            baos.write(arr, 0, arr.length);
-        }
-        return baos.toByteArray();
-    }
 }

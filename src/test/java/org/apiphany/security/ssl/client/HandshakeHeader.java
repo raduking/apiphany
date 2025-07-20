@@ -5,7 +5,10 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.apiphany.io.Int24;
+import org.apiphany.io.Int8;
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.security.tls.TLSObject;
 import org.morphix.lang.function.ThrowingRunnable;
 
 public class HandshakeHeader implements TLSObject {

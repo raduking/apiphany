@@ -2,6 +2,8 @@ package org.apiphany.security.ssl.client;
 
 import java.util.Map;
 
+import org.apiphany.io.Int8;
+import org.apiphany.security.tls.TLSObject;
 import org.morphix.lang.Enums;
 
 public enum CurveType implements TLSObject {

@@ -9,21 +9,24 @@ import java.security.PublicKey;
 import java.security.spec.NamedParameterSpec;
 import java.security.spec.XECPublicKeySpec;
 
+import org.apiphany.io.BytesWrapper;
+import org.apiphany.io.Int8;
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.security.tls.TLSObject;
 
 public class PublicKeyECDHE implements TLSObject {
 
 	private final Int8 length;
 
-	private final BinaryData value;
+	private final BytesWrapper value;
 
-	public PublicKeyECDHE(final Int8 length, final BinaryData value) {
+	public PublicKeyECDHE(final Int8 length, final BytesWrapper value) {
 		this.length = length;
 		this.value = value;
 	}
 
 	public PublicKeyECDHE(final Int8 length, final byte[] bytes) {
-		this(length, new BinaryData(bytes));
+		this(length, new BytesWrapper(bytes));
 	}
 
 	public PublicKeyECDHE(final byte length, final byte[] bytes) {
@@ -36,7 +39,7 @@ public class PublicKeyECDHE implements TLSObject {
 
 	public static PublicKeyECDHE from(final InputStream is) throws IOException {
 		Int8 length = Int8.from(is);
-		BinaryData value = BinaryData.from(is, length.getValue());
+		BytesWrapper value = BytesWrapper.from(is, length.getValue());
 
 		return new PublicKeyECDHE(length, value);
 	}
@@ -58,7 +61,7 @@ public class PublicKeyECDHE implements TLSObject {
 		return length;
 	}
 
-	public BinaryData getValue() {
+	public BytesWrapper getValue() {
 		return value;
 	}
 
@@ -70,7 +73,7 @@ public class PublicKeyECDHE implements TLSObject {
 	public PublicKey loadX25519PublicKey() throws Exception {
 	    KeyFactory kf = KeyFactory.getInstance("X25519");
 	    NamedParameterSpec spec = new NamedParameterSpec("X25519");
-	    XECPublicKeySpec pubSpec = new XECPublicKeySpec(spec, new BigInteger(1, value.getBytes()));
+	    XECPublicKeySpec pubSpec = new XECPublicKeySpec(spec, new BigInteger(1, value.toByteArray()));
 	    return kf.generatePublic(pubSpec);
 	}
 }

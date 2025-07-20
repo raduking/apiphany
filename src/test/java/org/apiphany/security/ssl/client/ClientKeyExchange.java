@@ -42,7 +42,7 @@ public class ClientKeyExchange implements TLSHandshakeBody {
 	}
 
 	@Override
-	public HandshakeType type() {
+	public HandshakeType getType() {
 		return HandshakeType.CLIENT_KEY_EXCHANGE;
 	}
 

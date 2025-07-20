@@ -2,8 +2,11 @@ package org.apiphany.security.ssl.client;
 
 import java.nio.ByteBuffer;
 
+import org.apiphany.io.Int16;
+import org.apiphany.io.Int64;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.security.ssl.SSLProtocol;
+import org.apiphany.security.tls.TLSObject;
 
 public class AdditionalAuthenticatedData implements TLSObject {
 

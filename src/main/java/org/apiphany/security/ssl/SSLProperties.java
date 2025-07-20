@@ -27,12 +27,12 @@ public class SSLProperties {
 	/**
 	 * Configuration for the key store containing client certificates and private keys.
 	 */
-	private CertificateStoreInfo keystore = new CertificateStoreInfo();
+	private StoreInfo keystore = new StoreInfo();
 
 	/**
 	 * Configuration for the trust store containing trusted CA certificates.
 	 */
-	private CertificateStoreInfo truststore = new CertificateStoreInfo();
+	private StoreInfo truststore = new StoreInfo();
 
 	/**
 	 * Default constructor.
@@ -52,36 +52,36 @@ public class SSLProperties {
 	/**
 	 * Gets the key store configuration.
 	 *
-	 * @return the {@link CertificateStoreInfo} containing key store settings
+	 * @return the {@link StoreInfo} containing key store settings
 	 */
-	public CertificateStoreInfo getKeystore() {
+	public StoreInfo getKeystore() {
 		return keystore;
 	}
 
 	/**
 	 * Sets the key store configuration.
 	 *
-	 * @param keystore the {@link CertificateStoreInfo} containing key store settings
+	 * @param keystore the {@link StoreInfo} containing key store settings
 	 */
-	public void setKeystore(final CertificateStoreInfo keystore) {
+	public void setKeystore(final StoreInfo keystore) {
 		this.keystore = keystore;
 	}
 
 	/**
 	 * Gets the trust store configuration.
 	 *
-	 * @return the {@link CertificateStoreInfo} containing trust store settings
+	 * @return the {@link StoreInfo} containing trust store settings
 	 */
-	public CertificateStoreInfo getTruststore() {
+	public StoreInfo getTruststore() {
 		return truststore;
 	}
 
 	/**
 	 * Sets the trust store configuration.
 	 *
-	 * @param truststore the {@link CertificateStoreInfo} containing trust store settings
+	 * @param truststore the {@link StoreInfo} containing trust store settings
 	 */
-	public void setTruststore(final CertificateStoreInfo truststore) {
+	public void setTruststore(final StoreInfo truststore) {
 		this.truststore = truststore;
 	}
 

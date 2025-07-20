@@ -15,6 +15,10 @@
 - Added `Hex` class that helps with conversions between hexadecimal Strings and bytes or byte arrays.
 - Added `ByteSizeable` to represent an object that can report its size in bytes.
 - Added `BinaryRepresentable` to represent an object that can be converted to a binary (byte array) representation.
+- Added `Bytes` with utility methods to work with bytes.
+- Added a new package `org.apiphany.io` for I/O classes.
+- Added `BytesWrapper` an immutable container for raw byte data with serialization capabilities.
+- Added `Int8`, `Int16`, `Int24`, `Int32`, `Int64` for 8, 16, 24, 32 and 64 bit integers.
 
 ---
 

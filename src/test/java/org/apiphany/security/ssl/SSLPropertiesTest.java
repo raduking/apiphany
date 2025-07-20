@@ -19,17 +19,17 @@ import org.apiphany.ApiClient;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.lang.Bytes;
 import org.apiphany.lang.Hex;
 import org.apiphany.lang.Strings;
 import org.apiphany.net.Sockets;
-import org.apiphany.security.ssl.client.Bytes;
 import org.apiphany.security.ssl.client.CipherSuite;
 import org.apiphany.security.ssl.client.ClientHello;
-import org.apiphany.security.ssl.client.CurveName;
+import org.apiphany.security.ssl.client.NamedCurve;
 import org.apiphany.security.ssl.client.MinimalTLSClient;
 import org.apiphany.security.ssl.client.PseudoRandomFunction;
+import org.apiphany.security.ssl.client.Record;
 import org.apiphany.security.ssl.client.SignatureAlgorithm;
-import org.apiphany.security.ssl.client.TLSRecord;
 import org.apiphany.security.ssl.server.SimpleHttpsServer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Disabled;
@@ -210,11 +210,11 @@ class SSLPropertiesTest {
 				CipherSuite.TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA,
 				CipherSuite.TLS_RSA_WITH_3DES_EDE_CBC_SHA
 		);
-		final List<CurveName> curveNames = List.of(
-				CurveName.X25519,
-				CurveName.SECP256R1,
-				CurveName.SECP384R1,
-				CurveName.SECP521R1
+		final List<NamedCurve> namedCurves = List.of(
+				NamedCurve.X25519,
+				NamedCurve.SECP256R1,
+				NamedCurve.SECP384R1,
+				NamedCurve.SECP521R1
 		);
 		final List<SignatureAlgorithm> signatureAlgorithms = List.of(
 				SignatureAlgorithm.RSA_PKCS1_SHA256,
@@ -227,8 +227,8 @@ class SSLPropertiesTest {
 				SignatureAlgorithm.ECDSA_SHA1
 		);
 
-		TLSRecord clientHello = new TLSRecord(SSLProtocol.TLS_1_0,
-				new ClientHello(List.of("example.ulfheim.net"), cypherSuites, curveNames, signatureAlgorithms));
+		Record clientHello = new Record(SSLProtocol.TLS_1_0,
+				new ClientHello(List.of("example.ulfheim.net"), cypherSuites, namedCurves, signatureAlgorithms));
 		LOGGER.info("Client Hello: {}", clientHello);
 
 		byte[] result = clientHello.toByteArray();
@@ -240,7 +240,7 @@ class SSLPropertiesTest {
 	}
 
 	@Test
-	void shouldReadOpenSSLClientHelloWithTLSRecordAPI() throws IOException {
+	void shouldReadOpenSSLClientHelloWithRecordAPI() throws IOException {
 		// TODO: handle invalid SNI
 		// string obtained with command:
 		// openssl s_client -connect localhost:<port> -tls1_2 -servername localhost -msg -debug
@@ -263,7 +263,7 @@ class SSLPropertiesTest {
 		byte[] expected = Bytes.fromHex(openSSLClientHelloHexString);
 		ByteArrayInputStream bis = new ByteArrayInputStream(expected);
 
-		TLSRecord tlsRecord = TLSRecord.from(bis);
+		Record tlsRecord = Record.from(bis);
 		LOGGER.info("Parsed Client Hello: {}", tlsRecord.getHandshake(0).getBody());
 
 		byte[] result = tlsRecord.toByteArray();
@@ -275,7 +275,7 @@ class SSLPropertiesTest {
 	}
 
 	@Test
-	void shouldReadServerHelloReceivedByOpenSSLWithTLSRecordAPI() throws IOException {
+	void shouldReadServerHelloReceivedByOpenSSLWithRecordAPI() throws IOException {
 		String openSSLReceivedServerHello = """
 				16 03 03 05 1d
 				02 00 00 55 03 03 f4 01 7a 7c 90 04 0e 3e fe 5d
@@ -366,7 +366,7 @@ class SSLPropertiesTest {
 		byte[] expected = Bytes.fromHex(openSSLReceivedServerHello);
 		ByteArrayInputStream bis = new ByteArrayInputStream(expected);
 
-		TLSRecord serverHello = TLSRecord.from(bis);
+		Record serverHello = Record.from(bis);
 
 		LOGGER.info("Parsed Server Hello: {}", serverHello);
 

@@ -5,21 +5,24 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
+import org.apiphany.io.BytesWrapper;
+import org.apiphany.io.Int8;
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.security.tls.TLSObject;
 
 public class SessionId implements TLSObject {
 
 	private final Int8 length;
 
-	private final BinaryData value;
+	private final BytesWrapper value;
 
-	public SessionId(final Int8 length, final BinaryData value) {
+	public SessionId(final Int8 length, final BytesWrapper value) {
 		this.length = length;
 		this.value = value;
 	}
 
 	public SessionId(final Int8 length, final byte[] value) {
-		this(length, new BinaryData(value));
+		this(length, new BytesWrapper(value));
 	}
 
 	public SessionId(final byte length, final byte[] value) {
@@ -36,7 +39,7 @@ public class SessionId implements TLSObject {
 
 	public static SessionId from(final InputStream is) throws IOException {
 		Int8 length = Int8.from(is);
-		BinaryData value = BinaryData.from(is, length.getValue());
+		BytesWrapper value = BytesWrapper.from(is, length.getValue());
 
 		return new SessionId(length, value);
 	}
@@ -63,7 +66,7 @@ public class SessionId implements TLSObject {
 		return length;
 	}
 
-	public BinaryData getValue() {
+	public BytesWrapper getValue() {
 		return value;
 	}
 

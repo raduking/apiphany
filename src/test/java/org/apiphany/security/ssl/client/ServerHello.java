@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
+import org.apiphany.io.Int16;
+import org.apiphany.io.Int8;
 import org.apiphany.json.JsonBuilder;
 
 public class ServerHello implements TLSHandshakeBody {
@@ -75,7 +77,7 @@ public class ServerHello implements TLSHandshakeBody {
 	}
 
 	@Override
-	public HandshakeType type() {
+	public HandshakeType getType() {
 		return HandshakeType.SERVER_HELLO;
 	}
 

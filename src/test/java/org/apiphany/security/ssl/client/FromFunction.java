@@ -3,6 +3,8 @@ package org.apiphany.security.ssl.client;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.apiphany.security.tls.TLSObject;
+
 public interface FromFunction<T extends TLSObject> {
 
 	T from(InputStream is, int size) throws IOException;

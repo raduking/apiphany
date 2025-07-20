@@ -21,18 +21,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Utility methods for working with certificates, key stores, trust stores.
+ * Utility methods for working with Java SSL like key stores, trust stores, SSL context, etc.
  * <p>
  * TODO: add a builder
  *
  * @author Radu Sebastian LAZIN
  */
-public final class Certificates {
+public final class SSLContexts {
 
 	/**
 	 * Logger for this class.
 	 */
-	private static final Logger LOGGER = LoggerFactory.getLogger(Certificates.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(SSLContexts.class);
 
 	/**
 	 * Creates a new SSL context based on the provided properties.
@@ -40,10 +40,10 @@ public final class Certificates {
 	 * @param sslProperties SSL properties
 	 * @return a new SSL context
 	 */
-	public static SSLContext createSSLContext(final SSLProperties sslProperties) {
+	public static SSLContext create(final SSLProperties sslProperties) {
 		try {
 			SSLContext sslContext = SSLContext.getInstance(sslProperties.getProtocol().value());
-			Certificates.initSSLContext(sslContext, sslProperties.getKeystore(), sslProperties.getTruststore());
+			SSLContexts.initialize(sslContext, sslProperties.getKeystore(), sslProperties.getTruststore());
 			return sslContext;
 		} catch (Exception e) {
 			throw new SecurityException("Error initializing SSL context", e);
@@ -59,8 +59,8 @@ public final class Certificates {
 	 * @param random secure random
 	 * @throws GeneralSecurityException when the SSL context cannot be initialized
 	 */
-	public static void initSSLContext(final SSLContext sslContext, final KeyManager[] keyManagers, final TrustManager[] trustManagers,
-			final SecureRandom random) throws GeneralSecurityException {
+	public static void initialize(final SSLContext sslContext, final KeyManager[] keyManagers, final TrustManager[] trustManagers,
+								  final SecureRandom random) throws GeneralSecurityException {
 		Objects.requireNonNull(keyManagers, "keyManagers array cannot be null");
 		Objects.requireNonNull(keyManagers, "trustManagers array cannot be null");
 		KeyManager[] actualKeyManagers = keyManagers.length == 0 ? null : keyManagers;
@@ -72,13 +72,13 @@ public final class Certificates {
 	 * Initializes a {@link SSLContext}. See {@link SSLContext#init(KeyManager[], TrustManager[], SecureRandom)}.
 	 *
 	 * @param sslContext the SSL context to be initialized
-	 * @param keyManagers the key managers, cannot be null
-	 * @param trustManagers the trust managers, cannot be null
+	 * @param keyManagers the key managers; cannot be null
+	 * @param trustManagers the trust managers; cannot be null
 	 * @throws GeneralSecurityException when the SSL context cannot be initialized
 	 */
-	public static void initSSLContext(final SSLContext sslContext, final KeyManager[] keyManagers, final TrustManager[] trustManagers)
+	public static void initialize(final SSLContext sslContext, final KeyManager[] keyManagers, final TrustManager[] trustManagers)
 			throws GeneralSecurityException {
-		initSSLContext(sslContext, keyManagers, trustManagers, new SecureRandom());
+		initialize(sslContext, keyManagers, trustManagers, new SecureRandom());
 	}
 
 	/**
@@ -89,9 +89,20 @@ public final class Certificates {
 	 * @param trustStore trust store information
 	 * @throws GeneralSecurityException when the SSL context cannot be initialized
 	 */
-	public static void initSSLContext(final SSLContext sslContext, final CertificateStoreInfo keyStore, final CertificateStoreInfo trustStore)
+	public static void initialize(final SSLContext sslContext, final StoreInfo keyStore, final StoreInfo trustStore)
 			throws GeneralSecurityException {
-		initSSLContext(sslContext, getKeyManagers(keyStore), getTrustManagers(trustStore), new SecureRandom());
+		initialize(sslContext, getKeyManagers(keyStore), getTrustManagers(trustStore));
+	}
+
+	/**
+	 * Returns the key managers.
+	 *
+	 * @param keyStoreInfo the key store information
+	 * @return key managers
+	 * @throws GeneralSecurityException when it can't create a factory instance
+	 */
+	public static KeyManager[] getKeyManagers(final StoreInfo keyStoreInfo) throws GeneralSecurityException {
+		return getKeyManagers(keyStore(keyStoreInfo), keyStoreInfo.getPassword(), keyStoreInfo.getAlgorithm());
 	}
 
 	/**
@@ -115,14 +126,14 @@ public final class Certificates {
 	}
 
 	/**
-	 * Returns the key managers.
+	 * Returns the trust managers.
 	 *
-	 * @param keyStoreInfo the key store information
-	 * @return key managers
+	 * @param trustStoreInfo the trust store information
+	 * @return trust managers
 	 * @throws GeneralSecurityException when it can't create a factory instance
 	 */
-	public static KeyManager[] getKeyManagers(final CertificateStoreInfo keyStoreInfo) throws GeneralSecurityException {
-		return getKeyManagers(keyStore(keyStoreInfo), keyStoreInfo.getPassword(), keyStoreInfo.getAlgorithm());
+	public static TrustManager[] getTrustManagers(final StoreInfo trustStoreInfo) throws GeneralSecurityException {
+		return getTrustManagers(keyStore(trustStoreInfo), trustStoreInfo.getAlgorithm());
 	}
 
 	/**
@@ -145,14 +156,13 @@ public final class Certificates {
 	}
 
 	/**
-	 * Returns the trust managers.
+	 * Returns a Key Store with the given parameters.
 	 *
-	 * @param trustStoreInfo the trust store information
-	 * @return trust managers
-	 * @throws GeneralSecurityException when it can't create a factory instance
+	 * @param storeProperties store properties
+	 * @return key store
 	 */
-	public static TrustManager[] getTrustManagers(final CertificateStoreInfo trustStoreInfo) throws GeneralSecurityException {
-		return getTrustManagers(keyStore(trustStoreInfo), trustStoreInfo.getAlgorithm());
+	public static KeyStore keyStore(final StoreInfo storeProperties) {
+		return keyStore(storeProperties.getLocation(), storeProperties.getType(), storeProperties.getPassword(), storeProperties.isExternal());
 	}
 
 	/**
@@ -174,16 +184,6 @@ public final class Certificates {
 			pass = null;
 		}
 		return loadKeystore(keyStoreType, keyStoreLocation, pass, isExternal);
-	}
-
-	/**
-	 * Returns a Key Store with the given parameters.
-	 *
-	 * @param storeProperties store properties
-	 * @return key store
-	 */
-	public static KeyStore keyStore(final CertificateStoreInfo storeProperties) {
-		return keyStore(storeProperties.getLocation(), storeProperties.getType(), storeProperties.getPassword(), storeProperties.isExternal());
 	}
 
 	/**
@@ -213,7 +213,7 @@ public final class Certificates {
 	/**
 	 * Private constructor.
 	 */
-	private Certificates() {
+	private SSLContexts() {
 		// empty
 	}
 }

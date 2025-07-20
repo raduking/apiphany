@@ -3,6 +3,8 @@ package org.apiphany.security.ssl.client;
 import java.util.List;
 import java.util.Map;
 
+import org.apiphany.io.Int16;
+import org.apiphany.security.tls.TLSObject;
 import org.morphix.lang.Enums;
 
 public enum SignatureAlgorithm implements TLSObject {

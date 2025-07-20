@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
+import org.apiphany.io.Int16;
 import org.apiphany.json.JsonBuilder;
 
 public class ExtendedMasterSecret implements TLSExtension {
@@ -18,7 +19,7 @@ public class ExtendedMasterSecret implements TLSExtension {
 	}
 
 	public ExtendedMasterSecret() {
-		this(ExtensionType.EMT, Int16.of((short) 0x0000));
+		this(ExtensionType.EXTENDED_MASTER_SECRET, Int16.ZERO);
 	}
 
 	public static ExtendedMasterSecret from(final InputStream is) throws IOException {

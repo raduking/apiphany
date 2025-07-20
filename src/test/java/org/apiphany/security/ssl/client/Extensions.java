@@ -6,8 +6,10 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apiphany.io.Int16;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.ByteSizeable;
+import org.apiphany.security.tls.TLSObject;
 
 public class Extensions implements TLSObject {
 
@@ -26,13 +28,13 @@ public class Extensions implements TLSObject {
 		this(length, extensions, true);
 	}
 
-	public Extensions(final List<String> serverNames, final List<CurveName> curveNames, final List<SignatureAlgorithm> signatureAlgorithms) {
+	public Extensions(final List<String> serverNames, final List<NamedCurve> namedCurves, final List<SignatureAlgorithm> signatureAlgorithms) {
 		this(
 				Int16.ZERO,
 				List.of(
 						new ServerNames(serverNames),
 						new StatusRequest(),
-						new SupportedGroups(curveNames),
+						new SupportedGroups(namedCurves),
 						new ECPointFormats(),
 						new SignatureAlgorithms(signatureAlgorithms),
 						new RenegotiationInfo(),

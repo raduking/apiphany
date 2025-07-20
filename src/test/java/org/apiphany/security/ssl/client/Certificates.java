@@ -6,6 +6,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apiphany.io.Int24;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.ByteSizeable;
 
@@ -59,7 +60,7 @@ public class Certificates implements TLSHandshakeBody {
 	}
 
 	@Override
-	public HandshakeType type() {
+	public HandshakeType getType() {
 		return HandshakeType.CERTIFICATE;
 	}
 

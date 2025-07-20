@@ -4,11 +4,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.SecureRandom;
 
+import org.apiphany.io.BytesWrapper;
 import org.apiphany.security.ssl.DeterministicSecureRandom;
+import org.apiphany.security.tls.TLSObject;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
-public class ExchangeRandom extends BinaryData {
+public class ExchangeRandom extends BytesWrapper implements TLSObject {
 
 	public static final int BYTES = 32;
 
@@ -21,8 +23,8 @@ public class ExchangeRandom extends BinaryData {
 	}
 
 	public static ExchangeRandom from(final InputStream is) throws IOException {
-		BinaryData binaryData = BinaryData.from(is, BYTES);
-		return new ExchangeRandom(binaryData.getBytes());
+		BytesWrapper binaryData = BytesWrapper.from(is, BYTES);
+		return new ExchangeRandom(binaryData.toByteArray());
 	}
 
 	public static byte[] generateRandom(final SecureRandom secureRandom) {
@@ -50,7 +52,7 @@ public class ExchangeRandom extends BinaryData {
 	}
 
 	public byte[] getRandom() {
-		return getBytes();
+		return toByteArray();
 	}
 }
 

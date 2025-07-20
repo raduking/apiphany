@@ -3,8 +3,10 @@ package org.apiphany.security.ssl.client;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.apiphany.io.Int16;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.security.ssl.SSLProtocol;
+import org.apiphany.security.tls.TLSObject;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
