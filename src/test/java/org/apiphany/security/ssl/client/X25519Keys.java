@@ -19,42 +19,62 @@ import javax.crypto.KeyAgreement;
 
 import org.apiphany.lang.Bytes;
 
-public class X25519Keys {
+public class X25519Keys implements TLSKeysHandler {
 
 	private static final String ALGORITHM = "XDH";
 	private static final int BYTES = 32;
 
-	public static KeyPair generateKeyPair() throws NoSuchAlgorithmException {
-		KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(ALGORITHM);
+	private String algorithm;
+	private KeyFactory keyFactory;
+
+	public X25519Keys() {
+		this.algorithm = ALGORITHM;
+		try {
+			this.keyFactory = KeyFactory.getInstance(algorithm);
+		} catch (NoSuchAlgorithmException e) {
+			throw new SecurityException(e);
+		}
+	}
+
+	@Override
+	public KeyPair generateKeyPair() {
+		try {
+			return generateKeyPair(algorithm);
+		} catch (NoSuchAlgorithmException e) {
+			throw new SecurityException(e);
+		}
+	}
+
+	public static KeyPair generateKeyPair(String algorithm) throws NoSuchAlgorithmException {
+		KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(algorithm);
 		return keyPairGenerator.generateKeyPair();
 	}
 
-	public static PublicKey getPublicKeyBE(final byte[] publicKeyBytes) throws NoSuchAlgorithmException, InvalidKeySpecException {
-		BigInteger u = new BigInteger(1, publicKeyBytes); // '1' for positive number
-		XECPublicKeySpec pubKeySpec = new XECPublicKeySpec(NamedParameterSpec.X25519, u);
-		KeyFactory keyFactory = KeyFactory.getInstance(ALGORITHM);
-		return keyFactory.generatePublic(pubKeySpec);
-	}
-
-	public static PublicKey getPublicKeyLE(final byte[] lePublicKeyBytes) throws NoSuchAlgorithmException, InvalidKeySpecException {
+	@Override
+	public PublicKey getPublicKeyLE(final byte[] lePublicKeyBytes) throws InvalidKeySpecException {
 		byte[] beBytes = Arrays.copyOf(lePublicKeyBytes, lePublicKeyBytes.length);
 		Bytes.reverse(beBytes);
+		return getPublicKeyBE(beBytes);
+	}
 
-		BigInteger u = new BigInteger(1, beBytes);
+	public PublicKey getPublicKeyBE(final byte[] publicKeyBytes) throws InvalidKeySpecException {
+		BigInteger u = new BigInteger(1, publicKeyBytes); // '1' for positive number
 		XECPublicKeySpec pubKeySpec = new XECPublicKeySpec(NamedParameterSpec.X25519, u);
-		KeyFactory keyFactory = KeyFactory.getInstance(ALGORITHM);
 		return keyFactory.generatePublic(pubKeySpec);
 	}
 
-	public static byte[] getECDHESharedSecret(final PrivateKey privateKey, final PublicKey publicKey)
+	@Override
+	public byte[] getSharedSecret(final PrivateKey privateKey, final PublicKey publicKey)
 			throws NoSuchAlgorithmException, InvalidKeyException {
-		KeyAgreement ka = KeyAgreement.getInstance(ALGORITHM);
+		// X25519 is only used with ECDHE
+		KeyAgreement ka = KeyAgreement.getInstance(algorithm);
 		ka.init(privateKey);
 		ka.doPhase(publicKey, true);
 		return ka.generateSecret();
 	}
 
-	public static byte[] toRawByteArray(final PublicKey publicKey) {
+	@Override
+	public byte[] toRawByteArray(final PublicKey publicKey) {
 		BigInteger u = ((XECPublicKey) publicKey).getU();
 		byte[] bigEndian = u.toByteArray();
 
@@ -73,11 +93,13 @@ public class X25519Keys {
 		return beNormalized;
 	}
 
-	public static byte[] toRawByteArray(final PrivateKey privateKey) {
+	@Override
+	public byte[] toRawByteArray(final PrivateKey privateKey) {
 		return ((XECPrivateKey) privateKey).getScalar().orElseThrow();
 	}
 
-	public static boolean verifyKeyMatch(final byte[] littleEndianKey, final PublicKey publicKey) {
+	@Override
+	public boolean verifyKeyMatch(final byte[] littleEndianKey, final PublicKey publicKey) {
 		byte[] beNormalized = toRawByteArray(publicKey);
 		return Arrays.equals(littleEndianKey, beNormalized);
 	}

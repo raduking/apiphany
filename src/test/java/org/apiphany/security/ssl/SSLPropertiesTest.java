@@ -25,8 +25,8 @@ import org.apiphany.lang.Strings;
 import org.apiphany.net.Sockets;
 import org.apiphany.security.ssl.client.CipherSuite;
 import org.apiphany.security.ssl.client.ClientHello;
-import org.apiphany.security.ssl.client.NamedCurve;
 import org.apiphany.security.ssl.client.MinimalTLSClient;
+import org.apiphany.security.ssl.client.NamedCurve;
 import org.apiphany.security.ssl.client.PseudoRandomFunction;
 import org.apiphany.security.ssl.client.Record;
 import org.apiphany.security.ssl.client.SignatureAlgorithm;
@@ -64,6 +64,7 @@ class SSLPropertiesTest {
 	static {
 		CLIENT_PROPERTIES.setCustomProperties(SSL, SSL_PROPERTIES);
 	}
+	private static final List<CipherSuite> CIPHER_SUITES = List.of(CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384);
 
 	private static final SimpleHttpsServer SERVER = new SimpleHttpsServer(SERVER_PORT, SSL_PROPERTIES);
 
@@ -105,14 +106,41 @@ class SSLPropertiesTest {
 	}
 
 	@Test
-	void shouldPerformTLS_V_1_2_SSLHandshake() throws Exception {
+	void shouldPerformTLS_V_1_2_SSLHandshakeWithSupportedCipherSuites() throws Exception {
 		int port = Sockets.findAvailableTcpPort(PORT_CHECK_TIMEOUT);
 		SSLProperties sslProperties = JsonBuilder.fromJson(Strings.fromFile("/security/ssl/ssl-properties.json"), SSLProperties.class);
 		sslProperties.setProtocol(SSLProtocol.TLS_1_2);
 		SimpleHttpsServer server = new SimpleHttpsServer(port, sslProperties);
 
 		byte[] serverFinished = null;
-		try (MinimalTLSClient client = new MinimalTLSClient(LOCALHOST, port, CLIENT_KEY_PAIR)) {
+		try (MinimalTLSClient client = new MinimalTLSClient(LOCALHOST, port, CLIENT_KEY_PAIR, CIPHER_SUITES)) {
+			serverFinished = client.performHandshake();
+		} catch (Exception e) {
+			LOGGER.error("Error performing SSL handshake", e);
+		} finally {
+			server.close();
+		}
+		assertNotNull(serverFinished);
+	}
+
+	private static Stream<Arguments> provideSupportedCipherSuites() {
+		return Stream.of(
+				Arguments.of(CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384),
+				Arguments.of(CipherSuite.TLS_RSA_WITH_AES_256_GCM_SHA384)
+		);
+	}
+
+	@ParameterizedTest
+	@MethodSource("provideSupportedCipherSuites")
+	void shouldPerformTLS_V_1_2_SSLHandshakeWithParameterizedCipherSuites(CipherSuite cipherSuite) throws Exception {
+		int port = Sockets.findAvailableTcpPort(PORT_CHECK_TIMEOUT);
+		SSLProperties sslProperties = JsonBuilder.fromJson(Strings.fromFile("/security/ssl/ssl-properties.json"), SSLProperties.class);
+		sslProperties.setProtocol(SSLProtocol.TLS_1_2);
+		SimpleHttpsServer server = new SimpleHttpsServer(port, sslProperties);
+
+		byte[] serverFinished = null;
+		List<CipherSuite> cipherSuites = List.of(cipherSuite);
+		try (MinimalTLSClient client = new MinimalTLSClient(LOCALHOST, port, CLIENT_KEY_PAIR, cipherSuites)) {
 			serverFinished = client.performHandshake();
 		} catch (Exception e) {
 			LOGGER.error("Error performing SSL handshake", e);
@@ -130,7 +158,7 @@ class SSLPropertiesTest {
 		SimpleHttpsServer server = new SimpleHttpsServer(port, sslProperties);
 
 		byte[] closeNotify = null;
-		try (MinimalTLSClient client = new MinimalTLSClient(LOCALHOST, port, CLIENT_KEY_PAIR)) {
+		try (MinimalTLSClient client = new MinimalTLSClient(LOCALHOST, port, CLIENT_KEY_PAIR, CIPHER_SUITES)) {
 			client.performHandshake();
 			closeNotify = client.closeNotify();
 		} catch (Exception e) {
@@ -149,7 +177,7 @@ class SSLPropertiesTest {
 		SimpleHttpsServer server = new SimpleHttpsServer(port, sslProperties);
 
 		String response = null;
-		try (MinimalTLSClient client = new MinimalTLSClient(LOCALHOST, port, CLIENT_KEY_PAIR)) {
+		try (MinimalTLSClient client = new MinimalTLSClient(LOCALHOST, port, CLIENT_KEY_PAIR, CIPHER_SUITES)) {
 			client.performHandshake();
 			response = client.get("/" + ApiClient.API + "/name");
 		} catch (Exception e) {
@@ -166,7 +194,7 @@ class SSLPropertiesTest {
 		int port = 4433;
 
 		byte[] serverFinished = null;
-		try (MinimalTLSClient client = new MinimalTLSClient(LOCALHOST, port, CLIENT_KEY_PAIR)) {
+		try (MinimalTLSClient client = new MinimalTLSClient(LOCALHOST, port, CLIENT_KEY_PAIR, CIPHER_SUITES)) {
 			serverFinished = client.performHandshake();
 			client.closeNotify();
 		} catch (Exception e) {

@@ -27,18 +27,30 @@ public class ExchangeRandom extends BytesWrapper implements TLSObject {
 		return new ExchangeRandom(binaryData.toByteArray());
 	}
 
-	public static byte[] generateRandom(final SecureRandom secureRandom) {
-		byte[] random = new byte[BYTES];
+	public static byte[] generateRandom(final SecureRandom secureRandom, int bytes) {
+		byte[] random = new byte[bytes];
 		secureRandom.nextBytes(random);
 		return random;
 	}
 
+	public static byte[] generateRandom(final SecureRandom secureRandom) {
+		return generateRandom(secureRandom, BYTES);
+	}
+
 	public static byte[] generateRandom() {
-		return generateRandom(new SecureRandom());
+		return generateRandom(BYTES);
+	}
+
+	public static byte[] generateRandom(int bytes) {
+		return generateRandom(new SecureRandom(), bytes);
 	}
 
 	public static byte[] generateLinear() {
-		return generateRandom(new DeterministicSecureRandom());
+		return generateLinear(BYTES);
+	}
+
+	public static byte[] generateLinear(int bytes) {
+		return generateRandom(new DeterministicSecureRandom(), bytes);
 	}
 
 	public static ExchangeRandom linear() {
