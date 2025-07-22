@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
-import org.apiphany.io.Int8;
+import org.apiphany.io.UInt8;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.security.tls.TLSObject;
 
@@ -26,8 +26,8 @@ public class Alert implements TLSObject {
 	}
 
 	public static Alert from(final InputStream is) throws IOException {
-		Int8 int81 = Int8.from(is);
-		Int8 int82 = Int8.from(is);
+		UInt8 int81 = UInt8.from(is);
+		UInt8 int82 = UInt8.from(is);
 
 		return new Alert(int81.getValue(), int82.getValue());
 	}

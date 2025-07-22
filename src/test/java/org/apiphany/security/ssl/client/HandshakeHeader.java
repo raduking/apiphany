@@ -5,8 +5,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apiphany.io.Int24;
-import org.apiphany.io.Int8;
+import org.apiphany.io.UInt24;
+import org.apiphany.io.UInt8;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.security.tls.TLSObject;
 import org.morphix.lang.function.ThrowingRunnable;
@@ -17,15 +17,15 @@ public class HandshakeHeader implements TLSObject {
 
 	private final HandshakeType type;
 
-	private final Int24 length;
+	private final UInt24 length;
 
-	public HandshakeHeader(final HandshakeType type, final Int24 length) {
+	public HandshakeHeader(final HandshakeType type, final UInt24 length) {
 		this.type = type;
 		this.length = length;
 	}
 
 	public HandshakeHeader(final HandshakeType type, final int length) {
-		this(type, Int24.of(length));
+		this(type, UInt24.of(length));
 	}
 
 	public HandshakeHeader(final HandshakeType type) {
@@ -33,10 +33,10 @@ public class HandshakeHeader implements TLSObject {
 	}
 
 	public static HandshakeHeader from(final InputStream is) throws IOException {
-		Int8 int8 = Int8.from(is);
+		UInt8 int8 = UInt8.from(is);
 		HandshakeType type = HandshakeType.fromValue(int8.getValue());
 
-		Int24 messageLength = Int24.from(is);
+		UInt24 messageLength = UInt24.from(is);
 
 		return new HandshakeHeader(type, messageLength);
 	}
@@ -66,7 +66,7 @@ public class HandshakeHeader implements TLSObject {
 		return type;
 	}
 
-	public Int24 getLength() {
+	public UInt24 getLength() {
 		return length;
 	}
 }

@@ -4,26 +4,26 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
-import org.apiphany.io.Int16;
-import org.apiphany.io.Int8;
+import org.apiphany.io.UInt16;
+import org.apiphany.io.UInt8;
 import org.apiphany.json.JsonBuilder;
 
 public class RenegotiationInfo implements TLSExtension {
 
 	private final ExtensionType type;
 
-	private final Int16 size;
+	private final UInt16 size;
 
-	private final Int8 length;
+	private final UInt8 length;
 
-	public RenegotiationInfo(final ExtensionType type, final Int16 size, final Int8 length) {
+	public RenegotiationInfo(final ExtensionType type, final UInt16 size, final UInt8 length) {
 		this.type = type;
 		this.size = size;
 		this.length = length;
 	}
 
 	public RenegotiationInfo(final ExtensionType type, final short size, final byte length) {
-		this(type, Int16.of(size), Int8.of(length));
+		this(type, UInt16.of(size), UInt8.of(length));
 	}
 
 	public RenegotiationInfo() {
@@ -31,15 +31,15 @@ public class RenegotiationInfo implements TLSExtension {
 	}
 
 	public static RenegotiationInfo from(final InputStream is) throws IOException {
-		Int16 int16 = Int16.from(is);
+		UInt16 int16 = UInt16.from(is);
 		ExtensionType extensionType = ExtensionType.fromValue(int16.getValue());
 
 		return from(is, extensionType);
 	}
 
 	public static RenegotiationInfo from(final InputStream is, final ExtensionType type) throws IOException {
-		Int16 size = Int16.from(is);
-		Int8 length = Int8.from(is);
+		UInt16 size = UInt16.from(is);
+		UInt8 length = UInt8.from(is);
 
 		return new RenegotiationInfo(type, size, length);
 	}
@@ -68,11 +68,11 @@ public class RenegotiationInfo implements TLSExtension {
 		return type;
 	}
 
-	public Int16 getSize() {
+	public UInt16 getSize() {
 		return size;
 	}
 
-	public Int8 getLength() {
+	public UInt8 getLength() {
 		return length;
 	}
 }

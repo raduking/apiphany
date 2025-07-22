@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apiphany.io.Int16;
+import org.apiphany.io.UInt16;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.ByteSizeable;
 
@@ -14,22 +14,22 @@ public class ServerNames implements TLSExtension {
 
 	private final ExtensionType type;
 
-	private final Int16 length;
+	private final UInt16 length;
 
 	private final List<ServerName> entries;
 
-	private ServerNames(final ExtensionType type, final Int16 length, final List<ServerName> entries, final boolean updateLength) {
+	private ServerNames(final ExtensionType type, final UInt16 length, final List<ServerName> entries, final boolean updateLength) {
 		this.type = type;
-		this.length = updateLength ? Int16.of((short) ByteSizeable.sizeOf(entries)) : length;
+		this.length = updateLength ? UInt16.of((short) ByteSizeable.sizeOf(entries)) : length;
 		this.entries = entries;
 	}
 
-	public ServerNames(final Int16 size, final List<ServerName> serverNames) {
+	public ServerNames(final UInt16 size, final List<ServerName> serverNames) {
 		this(ExtensionType.SERVER_NAME, size, serverNames, true);
 	}
 
 	public ServerNames(final List<String> names) {
-		this(Int16.of((short) names.size()), names.stream().map(ServerName::new).toList());
+		this(UInt16.of((short) names.size()), names.stream().map(ServerName::new).toList());
 	}
 
 	@Override
@@ -44,14 +44,14 @@ public class ServerNames implements TLSExtension {
 	}
 
 	public static ServerNames from(final InputStream is) throws IOException {
-		Int16 int16 = Int16.from(is);
+		UInt16 int16 = UInt16.from(is);
 		ExtensionType extensionType = ExtensionType.fromValue(int16.getValue());
 
 		return from(is, extensionType);
 	}
 
 	public static ServerNames from(final InputStream is, final ExtensionType type) throws IOException {
-		Int16 length = Int16.from(is);
+		UInt16 length = UInt16.from(is);
 		List<ServerName> serverNames = new ArrayList<>();
 		int currentLength = 0;
 		while (currentLength < length.getValue()) {
@@ -78,7 +78,7 @@ public class ServerNames implements TLSExtension {
 		return type;
 	}
 
-	public Int16 getLength() {
+	public UInt16 getLength() {
 		return length;
 	}
 

@@ -12,11 +12,11 @@ import org.apiphany.lang.ByteSizeable;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * Immutable wrapper for a 32-bit signed integer with binary serialization capabilities.
+ * Immutable wrapper for a 64-bit unsigned integer with binary serialization capabilities.
  * <p>
  * This class provides:
  * <ul>
- * <li>Type-safe representation of 32-bit integers</li>
+ * <li>Type-safe representation of 64-bit integers</li>
  * <li>Big-endian binary serialization/deserialization</li>
  * <li>Network byte order (MSB-first) support</li>
  * <li>JSON integration via {@link JsonValue}</li>
@@ -26,69 +26,70 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * <p>
  * Primary use cases include:
  * <ul>
- * <li>Network protocol implementations (e.g., IP headers)</li>
- * <li>Binary file formats</li>
- * <li>System-level programming</li>
+ * <li>High-precision timestamps and counters</li>
+ * <li>Cryptographic operations</li>
+ * <li>Database record identifiers</li>
+ * <li>Binary protocols requiring 64-bit values</li>
  * </ul>
  *
  * @author Radu Sebastian LAZIN
  */
-public class Int32 implements ByteSizeable, BinaryRepresentable {
+public class UInt64 implements ByteSizeable, BinaryRepresentable {
 
 	/**
-	 * The size in bytes of an {@code Int32} value (constant value: 4).
+	 * The size in bytes of an {@code Int64} value (constant value: 8).
 	 */
-	public static final int BYTES = 4;
+	public static final int BYTES = 8;
 
 	/**
-	 * Predefined instance representing zero (0x00000000).
+	 * Predefined instance representing zero (0x0000000000000000).
 	 */
-	public static final Int32 ZERO = of(0x00_00_00_00);
+	public static final UInt64 ZERO = of(0x00_00_00_00_00_00_00_00);
 
 	/**
 	 * The actual encapsulated value.
 	 */
-	private final int value;
+	private final long value;
 
 	/**
-	 * Constructs a new {@code Int32} instance.
+	 * Constructs a new {@code Int64} instance.
 	 *
-	 * @param value the 32-bit integer value to wrap
+	 * @param value the 64-bit integer value to wrap
 	 */
-	protected Int32(final int value) {
+	protected UInt64(final long value) {
 		this.value = value;
 	}
 
 	/**
-	 * Creates a new {@code Int32} instance for the specified value.
+	 * Creates a new {@code Int64} instance for the specified value.
 	 *
-	 * @param value the 32-bit integer value to wrap
-	 * @return a new {@code Int32} instance
+	 * @param value the 64-bit integer value to wrap
+	 * @return a new {@code Int64} instance
 	 */
-	public static Int32 of(final int value) {
-		return new Int32(value);
+	public static UInt64 of(final long value) {
+		return new UInt64(value);
 	}
 
 	/**
-	 * Reads 4 bytes from the input stream and returns them as a big-endian {@code Int32}.
+	 * Reads 8 bytes from the input stream and returns them as a big-endian {@code Int64}.
 	 *
 	 * @param is the input stream to read from
-	 * @return a new {@code Int32} containing the read value
+	 * @return a new {@code Int64} containing the read value
 	 * @throws IOException if an I/O error occurs
-	 * @throws EOFException if fewer than 4 bytes are available
+	 * @throws EOFException if fewer than 8 bytes are available
 	 * @throws NullPointerException if {@code is} is {@code null}
 	 */
-	public static Int32 from(final InputStream is) throws IOException {
+	public static UInt64 from(final InputStream is) throws IOException {
 		byte[] buffer = new byte[BYTES];
 		int bytesRead = is.read(buffer);
 		if (BYTES != bytesRead) {
 			throw new EOFException("Error reading " + BYTES + " bytes");
 		}
-		int int32 = 0;
+		long int64 = 0;
 		for (int i = BYTES; i > 0; --i) {
-			int32 |= (buffer[BYTES - i] & 0xFF) << ((i - 1) * 8);
+			int64 |= ((long) buffer[BYTES - i] & 0xFF) << ((i - 1) * 8);
 		}
-		return Int32.of(int32);
+		return UInt64.of(int64);
 	}
 
 	/**
@@ -100,14 +101,14 @@ public class Int32 implements ByteSizeable, BinaryRepresentable {
 	}
 
 	/**
-	 * Converts a 32-bit value to its big-endian binary representation.
+	 * Converts a 64-bit value to its big-endian binary representation.
 	 *
 	 * @param value the value to convert
 	 * @return a new byte array containing the value in network byte order
 	 */
-	public static byte[] toByteArray(final int value) {
+	public static byte[] toByteArray(final long value) {
 		ByteBuffer buffer = ByteBuffer.allocate(BYTES);
-		buffer.putInt(value);
+		buffer.putLong(value);
 		return buffer.array();
 	}
 
@@ -122,11 +123,11 @@ public class Int32 implements ByteSizeable, BinaryRepresentable {
 	}
 
 	/**
-	 * Returns the wrapped 32-bit value.
+	 * Returns the wrapped 64-bit value.
 	 * <p>
 	 * Annotated with {@code @JsonValue} for direct JSON serialization.
 	 *
-	 * @return the wrapped int value
+	 * @return the wrapped long value
 	 */
 	@JsonValue
 	public long getValue() {
@@ -134,7 +135,7 @@ public class Int32 implements ByteSizeable, BinaryRepresentable {
 	}
 
 	/**
-	 * @see #sizeOf()
+	 * @see #toByteArray()
 	 */
 	@Override
 	public int sizeOf() {

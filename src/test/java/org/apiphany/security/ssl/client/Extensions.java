@@ -6,31 +6,31 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apiphany.io.Int16;
+import org.apiphany.io.UInt16;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.ByteSizeable;
 import org.apiphany.security.tls.TLSObject;
 
 public class Extensions implements TLSObject {
 
-	private final Int16 length;
+	private final UInt16 length;
 
 	private final List<TLSExtension> extensions = new ArrayList<>();
 
-	public Extensions(final Int16 length, final List<TLSExtension> extensions, final boolean updateSize) {
-		this.length = updateSize ? Int16.of((short) ByteSizeable.sizeOf(extensions)) : length;
+	public Extensions(final UInt16 length, final List<TLSExtension> extensions, final boolean updateSize) {
+		this.length = updateSize ? UInt16.of((short) ByteSizeable.sizeOf(extensions)) : length;
 		this.extensions.addAll(extensions);
 	}
 
 	public Extensions(
-			final Int16 length,
+			final UInt16 length,
 			final List<TLSExtension> extensions) {
 		this(length, extensions, true);
 	}
 
 	public Extensions(final List<String> serverNames, final List<NamedCurve> namedCurves, final List<SignatureAlgorithm> signatureAlgorithms) {
 		this(
-				Int16.ZERO,
+				UInt16.ZERO,
 				List.of(
 						new ServerNames(serverNames),
 						new StatusRequest(),
@@ -54,12 +54,12 @@ public class Extensions implements TLSObject {
 	}
 
 	public static Extensions from(final InputStream is) throws IOException {
-		Int16 length = Int16.from(is);
+		UInt16 length = UInt16.from(is);
 
 		List<TLSExtension> extensions = new ArrayList<>();
 		int currentLength = 0;
 		while (currentLength < length.getValue()) {
-			Int16 int16 = Int16.from(is);
+			UInt16 int16 = UInt16.from(is);
 			ExtensionType extensionType = ExtensionType.fromValue(int16.getValue());
 
 			TLSExtension extension = extensionType.extensionFrom(is);
@@ -81,7 +81,7 @@ public class Extensions implements TLSObject {
 		return length.sizeOf() + ByteSizeable.sizeOf(extensions);
 	}
 
-	public Int16 getLength() {
+	public UInt16 getLength() {
 		return length;
 	}
 

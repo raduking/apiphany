@@ -6,22 +6,22 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
 import org.apiphany.io.BytesWrapper;
-import org.apiphany.io.Int16;
-import org.apiphany.io.Int8;
+import org.apiphany.io.UInt16;
+import org.apiphany.io.UInt8;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.security.tls.TLSObject;
 
 public class ServerName implements TLSObject {
 
-	private final Int16 size;
+	private final UInt16 size;
 
-	private final Int8 type;
+	private final UInt8 type;
 
-	private final Int16 length;
+	private final UInt16 length;
 
 	private final BytesWrapper name;
 
-	public ServerName(final Int16 size, final Int8 type, final Int16 length, final BytesWrapper name) {
+	public ServerName(final UInt16 size, final UInt8 type, final UInt16 length, final BytesWrapper name) {
 		this.size = size;
 		this.type = type;
 		this.length = length;
@@ -30,9 +30,9 @@ public class ServerName implements TLSObject {
 
 	public ServerName(final String name) {
 		this(
-				Int16.of((short) (Int8.BYTES + Int16.BYTES + name.length())),
-				Int8.ZERO,
-				Int16.of((short) name.length()),
+				UInt16.of((short) (UInt8.BYTES + UInt16.BYTES + name.length())),
+				UInt8.ZERO,
+				UInt16.of((short) name.length()),
 				new BytesWrapper(name.getBytes(StandardCharsets.US_ASCII))
 		);
 	}
@@ -48,9 +48,9 @@ public class ServerName implements TLSObject {
 	}
 
 	public static ServerName from(final InputStream is) throws IOException {
-		Int16 size = Int16.from(is);
-		Int8 type = Int8.from(is);
-		Int16 length = Int16.from(is);
+		UInt16 size = UInt16.from(is);
+		UInt8 type = UInt8.from(is);
+		UInt16 length = UInt16.from(is);
 		BytesWrapper name = BytesWrapper.from(is, length.getValue());
 
 		return new ServerName(size, type, length, name);
@@ -66,15 +66,15 @@ public class ServerName implements TLSObject {
 		return size.sizeOf() + type.sizeOf() + length.sizeOf() + name.sizeOf();
 	}
 
-	public Int16 getSize() {
+	public UInt16 getSize() {
 		return size;
 	}
 
-	public Int8 getType() {
+	public UInt8 getType() {
 		return type;
 	}
 
-	public Int16 getLength() {
+	public UInt16 getLength() {
 		return length;
 	}
 

@@ -3,7 +3,7 @@ package org.apiphany.security.ssl.client;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apiphany.io.Int16;
+import org.apiphany.io.UInt16;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.security.ssl.SSLProtocol;
 import org.apiphany.security.tls.TLSObject;
@@ -25,7 +25,7 @@ public class Version implements TLSObject {
 	}
 
 	public static Version from(final InputStream is) throws IOException {
-		Int16 int16 = Int16.from(is);
+		UInt16 int16 = UInt16.from(is);
 		SSLProtocol protocol = SSLProtocol.fromVersion(int16.getValue());
 
 		return Version.of(protocol);
@@ -33,7 +33,7 @@ public class Version implements TLSObject {
 
 	@Override
 	public byte[] toByteArray() {
-		return Int16.toByteArray(protocol.handshakeVersion());
+		return UInt16.toByteArray(protocol.handshakeVersion());
 	}
 
 	@Override

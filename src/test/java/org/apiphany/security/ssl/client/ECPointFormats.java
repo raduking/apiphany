@@ -6,21 +6,21 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apiphany.io.Int16;
-import org.apiphany.io.Int8;
+import org.apiphany.io.UInt16;
+import org.apiphany.io.UInt8;
 import org.apiphany.json.JsonBuilder;
 
 public class ECPointFormats implements TLSExtension {
 
 	private final ExtensionType type;
 
-	private final Int16 length;
+	private final UInt16 length;
 
-	private final Int8 formatsSize;
+	private final UInt8 formatsSize;
 
-	private final List<Int8> formats;
+	private final List<UInt8> formats;
 
-	public ECPointFormats(final ExtensionType type, final Int16 length, final Int8 formatsSize, final List<Int8> formats) {
+	public ECPointFormats(final ExtensionType type, final UInt16 length, final UInt8 formatsSize, final List<UInt8> formats) {
 		this.type = type;
 		this.length = length;
 		this.formatsSize = formatsSize;
@@ -28,22 +28,22 @@ public class ECPointFormats implements TLSExtension {
 	}
 
 	public ECPointFormats() {
-		this(ExtensionType.EC_POINTS_FORMAT, Int16.of((short) 0x0002), Int8.of((byte) 0x01), List.of(Int8.ZERO));
+		this(ExtensionType.EC_POINTS_FORMAT, UInt16.of((short) 0x0002), UInt8.of((byte) 0x01), List.of(UInt8.ZERO));
 	}
 
 	public static ECPointFormats from(final InputStream is) throws IOException {
-		Int16 int16 = Int16.from(is);
+		UInt16 int16 = UInt16.from(is);
 		ExtensionType extensionType = ExtensionType.fromValue(int16.getValue());
 
 		return from(is, extensionType);
 	}
 
 	public static ECPointFormats from(final InputStream is, final ExtensionType type) throws IOException {
-		Int16 length = Int16.from(is);
-		Int8 listSize = Int8.from(is);
-		List<Int8> formats = new ArrayList<>();
+		UInt16 length = UInt16.from(is);
+		UInt8 listSize = UInt8.from(is);
+		List<UInt8> formats = new ArrayList<>();
 		for (int i = 0; i < listSize.getValue(); ++i) {
-			Int8 format = Int8.from(is);
+			UInt8 format = UInt8.from(is);
 			formats.add(format);
 		}
 
@@ -56,7 +56,7 @@ public class ECPointFormats implements TLSExtension {
 		buffer.put(type.toByteArray());
 		buffer.put(length.toByteArray());
 		buffer.put(formatsSize.toByteArray());
-		for (Int8 format : formats) {
+		for (UInt8 format : formats) {
 			buffer.put(format.toByteArray());
 		}
 		return buffer.array();
@@ -77,15 +77,15 @@ public class ECPointFormats implements TLSExtension {
 		return type;
 	}
 
-	public Int16 getLength() {
+	public UInt16 getLength() {
 		return length;
 	}
 
-	public Int8 getFormatsSize() {
+	public UInt8 getFormatsSize() {
 		return formatsSize;
 	}
 
-	public List<Int8> getFormats() {
+	public List<UInt8> getFormats() {
 		return formats;
 	}
 }

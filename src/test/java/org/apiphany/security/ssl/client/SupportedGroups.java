@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apiphany.io.Int16;
+import org.apiphany.io.UInt16;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.ByteSizeable;
 
@@ -14,13 +14,13 @@ public class SupportedGroups implements TLSExtension {
 
 	private final ExtensionType type;
 
-	private final Int16 length;
+	private final UInt16 length;
 
-	private final Int16 groupsSize;
+	private final UInt16 groupsSize;
 
 	private final List<NamedCurve> groups;
 
-	public SupportedGroups(final ExtensionType type, final Int16 size, final Int16 groupsSize, final List<NamedCurve> groups) {
+	public SupportedGroups(final ExtensionType type, final UInt16 size, final UInt16 groupsSize, final List<NamedCurve> groups) {
 		this.type = type;
 		this.length = size;
 		this.groupsSize = groupsSize;
@@ -30,8 +30,8 @@ public class SupportedGroups implements TLSExtension {
 	public SupportedGroups(final List<NamedCurve> namedCurves) {
 		this(
 				ExtensionType.SUPPORTED_GROUPS,
-				Int16.of((short) (namedCurves.size() * NamedCurve.BYTES + Int16.BYTES)),
-				Int16.of((short) (namedCurves.size() * NamedCurve.BYTES)),
+				UInt16.of((short) (namedCurves.size() * NamedCurve.BYTES + UInt16.BYTES)),
+				UInt16.of((short) (namedCurves.size() * NamedCurve.BYTES)),
 				namedCurves
 		);
 	}
@@ -41,18 +41,18 @@ public class SupportedGroups implements TLSExtension {
 	}
 
 	public static SupportedGroups from(final InputStream is) throws IOException {
-		Int16 int16 = Int16.from(is);
+		UInt16 int16 = UInt16.from(is);
 		ExtensionType extensionType = ExtensionType.fromValue(int16.getValue());
 
 		return from(is, extensionType);
 	}
 
 	public static SupportedGroups from(final InputStream is, final ExtensionType type) throws IOException {
-		Int16 length = Int16.from(is);
-		Int16 listSize = Int16.from(is);
+		UInt16 length = UInt16.from(is);
+		UInt16 listSize = UInt16.from(is);
 		List<NamedCurve> groups = new ArrayList<>();
 		for (int i = 0; i < listSize.getValue() / NamedCurve.BYTES; ++i) {
-			Int16 value = Int16.from(is);
+			UInt16 value = UInt16.from(is);
 			NamedCurve curveName = NamedCurve.fromValue(value.getValue());
 			groups.add(curveName);
 		}
@@ -87,11 +87,11 @@ public class SupportedGroups implements TLSExtension {
 		return type;
 	}
 
-	public Int16 getLength() {
+	public UInt16 getLength() {
 		return length;
 	}
 
-	public Int16 getGroupsSize() {
+	public UInt16 getGroupsSize() {
 		return groupsSize;
 	}
 

@@ -5,22 +5,22 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 import org.apiphany.io.BytesWrapper;
-import org.apiphany.io.Int16;
+import org.apiphany.io.UInt16;
 import org.apiphany.json.JsonBuilder;
 
 public class RSAEncryptedPreMaster implements TLSKeyExchange {
 
-	private final Int16 length;
+	private final UInt16 length;
 
 	private final BytesWrapper bytes;
 
-	public RSAEncryptedPreMaster(final Int16 length, final BytesWrapper bytes) {
+	public RSAEncryptedPreMaster(final UInt16 length, final BytesWrapper bytes) {
 		this.length = length;
 		this.bytes = bytes;
 	}
 
 	public RSAEncryptedPreMaster(final short length, final byte[] bytes) {
-		this(Int16.of(length), new BytesWrapper(bytes));
+		this(UInt16.of(length), new BytesWrapper(bytes));
 	}
 
 	public RSAEncryptedPreMaster(final byte[] bytes) {
@@ -28,7 +28,7 @@ public class RSAEncryptedPreMaster implements TLSKeyExchange {
 	}
 
 	public static RSAEncryptedPreMaster from(final InputStream is) throws IOException {
-		Int16 length = Int16.from(is);
+		UInt16 length = UInt16.from(is);
 		BytesWrapper bytes = BytesWrapper.from(is, length.getValue());
 
 		return new RSAEncryptedPreMaster(length, bytes);
@@ -47,7 +47,7 @@ public class RSAEncryptedPreMaster implements TLSKeyExchange {
 		return JsonBuilder.toJson(this);
 	}
 
-	public Int16 getLength() {
+	public UInt16 getLength() {
 		return length;
 	}
 

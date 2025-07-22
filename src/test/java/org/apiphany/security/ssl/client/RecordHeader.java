@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
-import org.apiphany.io.Int16;
-import org.apiphany.io.Int8;
+import org.apiphany.io.UInt16;
+import org.apiphany.io.UInt8;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.security.ssl.SSLProtocol;
 import org.apiphany.security.tls.TLSObject;
@@ -18,16 +18,16 @@ public class RecordHeader implements TLSObject {
 
 	private final Version version;
 
-	private final Int16 length;
+	private final UInt16 length;
 
-	public RecordHeader(final RecordContentType type, final Version version, final Int16 length) {
+	public RecordHeader(final RecordContentType type, final Version version, final UInt16 length) {
 		this.type = type;
 		this.version = version;
 		this.length = length;
 	}
 
 	public RecordHeader(final RecordContentType type, final SSLProtocol sslProtocol, final short length) {
-		this(type, Version.of(sslProtocol), Int16.of(length));
+		this(type, Version.of(sslProtocol), UInt16.of(length));
 	}
 
 	public RecordHeader(final RecordContentType type, final SSLProtocol sslProtocol) {
@@ -35,10 +35,10 @@ public class RecordHeader implements TLSObject {
 	}
 
 	public static RecordHeader from(final InputStream is) throws IOException {
-		Int8 int8 = Int8.from(is);
+		UInt8 int8 = UInt8.from(is);
 		RecordContentType type = RecordContentType.fromValue(int8.getValue());
 		Version version = Version.from(is);
-		Int16 length = Int16.from(is);
+		UInt16 length = UInt16.from(is);
 
 		return new RecordHeader(type, version, length);
 	}
@@ -70,7 +70,7 @@ public class RecordHeader implements TLSObject {
 		return version;
 	}
 
-	public Int16 getLength() {
+	public UInt16 getLength() {
 		return length;
 	}
 

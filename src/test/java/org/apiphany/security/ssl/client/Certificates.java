@@ -6,27 +6,27 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apiphany.io.Int24;
+import org.apiphany.io.UInt24;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.ByteSizeable;
 
 public class Certificates implements TLSHandshakeBody {
 
-	private final Int24 length;
+	private final UInt24 length;
 
 	private final List<Certificate> list;
 
-	public Certificates(final Int24 length, final List<Certificate> list, final boolean updateLength) {
+	public Certificates(final UInt24 length, final List<Certificate> list, final boolean updateLength) {
 		this.list = list;
-		this.length = updateLength ? Int24.of(length.sizeOf() + ByteSizeable.sizeOf(list)) : length;
+		this.length = updateLength ? UInt24.of(length.sizeOf() + ByteSizeable.sizeOf(list)) : length;
 	}
 
-	public Certificates(final Int24 length, final List<Certificate> list) {
+	public Certificates(final UInt24 length, final List<Certificate> list) {
 		this(length, list, true);
 	}
 
 	public static Certificates from(final InputStream is) throws IOException {
-		Int24 length = Int24.from(is);
+		UInt24 length = UInt24.from(is);
 
 		List<Certificate> certificates = new ArrayList<>();
 		int certificatesLength = length.getValue();
@@ -64,7 +64,7 @@ public class Certificates implements TLSHandshakeBody {
 		return HandshakeType.CERTIFICATE;
 	}
 
-	public Int24 getLength() {
+	public UInt24 getLength() {
 		return length;
 	}
 

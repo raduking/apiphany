@@ -4,20 +4,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
-import org.apiphany.io.Int8;
+import org.apiphany.io.UInt8;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.security.tls.TLSObject;
 
 public class ChangeCipherSpec implements TLSObject {
 
-	private final Int8 payload;
+	private final UInt8 payload;
 
-	public ChangeCipherSpec(final Int8 payload) {
+	public ChangeCipherSpec(final UInt8 payload) {
 		this.payload = payload;
 	}
 
 	public ChangeCipherSpec(final byte payload) {
-		this(Int8.of(payload));
+		this(UInt8.of(payload));
 	}
 
 	public ChangeCipherSpec() {
@@ -25,7 +25,7 @@ public class ChangeCipherSpec implements TLSObject {
 	}
 
 	public static ChangeCipherSpec from(final InputStream is) throws IOException {
-		Int8 payload = Int8.from(is);
+		UInt8 payload = UInt8.from(is);
 
 		return new ChangeCipherSpec(payload);
 	}
@@ -47,7 +47,7 @@ public class ChangeCipherSpec implements TLSObject {
 		return JsonBuilder.toJson(this);
 	}
 
-	public Int8 getPayload() {
+	public UInt8 getPayload() {
 		return payload;
 	}
 }
