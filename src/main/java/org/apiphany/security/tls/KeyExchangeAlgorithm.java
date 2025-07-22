@@ -56,12 +56,15 @@ public enum KeyExchangeAlgorithm {
 	 */
 	NONE;
 
+	/**
+	 * The name map for easy {@link #fromValue(String)} implementation.
+	 */
 	private static final Map<String, KeyExchangeAlgorithm> NAME_MAP = Enums.buildNameMap(values());
 
 	/**
 	 * Parses a string value (case-insensitive) into a {@link KeyExchangeAlgorithm}.
 	 *
-	 * @param value The string representation of the algorithm (e.g., "DHE", "RSA").
+	 * @param value the string representation of the algorithm (e.g., "DHE", "RSA").
 	 * @return the corresponding enum constant, or {@code null} if no match is found.
 	 * @throws IllegalArgumentException If {@code value} is {@code null} (if enforced by {@link Enums#fromString}).
 	 */

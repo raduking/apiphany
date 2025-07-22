@@ -35,7 +35,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public class UInt24 implements ByteSizeable, BinaryRepresentable {
 
 	/**
-	 * The size in bytes of an {@code Int24} value (constant value: 3).
+	 * The size in bytes of an {@code UInt24} value (constant value: 3).
 	 */
 	public static final int BYTES = 3;
 
@@ -50,7 +50,7 @@ public class UInt24 implements ByteSizeable, BinaryRepresentable {
 	private final int value;
 
 	/**
-	 * Constructs a new {@code Int24} instance.
+	 * Constructs a new {@code UInt24} instance.
 	 *
 	 * @param value the 24-bit value to wrap (only lower 24 bits are used)
 	 * @throws IllegalArgumentException if value exceeds 24-bit unsigned range
@@ -60,10 +60,10 @@ public class UInt24 implements ByteSizeable, BinaryRepresentable {
 	}
 
 	/**
-	 * Creates a new {@code Int24} instance for the specified value.
+	 * Creates a new {@code UInt24} instance for the specified value.
 	 *
 	 * @param value the 24-bit value to wrap (only lower 24 bits are used)
-	 * @return a new {@code Int24} instance
+	 * @return a new {@code UInt24} instance
 	 * @throws IllegalArgumentException if value exceeds 24-bit unsigned range
 	 */
 	public static UInt24 of(final int value) {
@@ -71,10 +71,10 @@ public class UInt24 implements ByteSizeable, BinaryRepresentable {
 	}
 
 	/**
-	 * Reads 3 bytes from the input stream and returns them as a big-endian {@code Int24}.
+	 * Reads 3 bytes from the input stream and returns them as a big-endian {@code UInt24}.
 	 *
 	 * @param is the input stream to read from
-	 * @return a new {@code Int24} containing the read value
+	 * @return a new {@code UInt24} containing the read value
 	 * @throws IOException if an I/O error occurs
 	 * @throws EOFException if fewer than 3 bytes are available
 	 * @throws NullPointerException if {@code is} is {@code null}
