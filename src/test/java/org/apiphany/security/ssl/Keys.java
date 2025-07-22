@@ -49,6 +49,8 @@ public class Keys {
 	}
 
 	public static KeyPair loadKeyPairFromResources() {
+		X25519Keys x25519Keys = new X25519Keys();
+
 		PrivateKey privateKey;
 		try (InputStream is = Keys.class.getResourceAsStream("/security/ssl/" + XDH_PRIVATE_KEY_FILE_NAME)) {
 			byte[] privateKeyBytes = is.readAllBytes();
@@ -58,7 +60,7 @@ public class Keys {
 		} catch (Exception e) {
 			throw new IllegalStateException("Cannot load " + XDH_PRIVATE_KEY_FILE_NAME, e);
 		}
-		LOGGER.info("Loaded private key:\n{}", Hex.dump(X25519Keys.toRawByteArray(privateKey)));
+		LOGGER.info("Loaded private key:\n{}", Hex.dump(x25519Keys.toRawByteArray(privateKey)));
 
 		PublicKey publicKey;
 		try (InputStream is = Keys.class.getResourceAsStream("/security/ssl/" + XDH_PUBLIC_KEY_FILE_NAME)) {
@@ -69,7 +71,7 @@ public class Keys {
 		} catch (Exception e) {
 			throw new IllegalStateException("Cannot load " + XDH_PUBLIC_KEY_FILE_NAME, e);
 		}
-		LOGGER.info("Loaded public key:\n{}", Hex.dump(X25519Keys.toRawByteArray(publicKey)));
+		LOGGER.info("Loaded public key:\n{}", Hex.dump(x25519Keys.toRawByteArray(publicKey)));
 
 		return new KeyPair(publicKey, privateKey);
 	}

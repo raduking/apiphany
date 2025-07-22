@@ -2,46 +2,40 @@ package org.apiphany.security.ssl.client;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.math.BigInteger;
 import java.nio.ByteBuffer;
-import java.security.KeyFactory;
-import java.security.PublicKey;
-import java.security.spec.NamedParameterSpec;
-import java.security.spec.XECPublicKeySpec;
 
 import org.apiphany.io.BytesWrapper;
 import org.apiphany.io.Int8;
 import org.apiphany.json.JsonBuilder;
-import org.apiphany.security.tls.TLSObject;
 
-public class PublicKeyECDHE implements TLSObject {
+public class ECDHEPublicKey implements TLSKeyExchange {
 
 	private final Int8 length;
 
 	private final BytesWrapper value;
 
-	public PublicKeyECDHE(final Int8 length, final BytesWrapper value) {
+	public ECDHEPublicKey(final Int8 length, final BytesWrapper value) {
 		this.length = length;
 		this.value = value;
 	}
 
-	public PublicKeyECDHE(final Int8 length, final byte[] bytes) {
+	public ECDHEPublicKey(final Int8 length, final byte[] bytes) {
 		this(length, new BytesWrapper(bytes));
 	}
 
-	public PublicKeyECDHE(final byte length, final byte[] bytes) {
+	public ECDHEPublicKey(final byte length, final byte[] bytes) {
 		this(Int8.of(length), bytes);
 	}
 
-	public PublicKeyECDHE(final byte[] bytes) {
+	public ECDHEPublicKey(final byte[] bytes) {
 		this((byte) bytes.length, bytes);
 	}
 
-	public static PublicKeyECDHE from(final InputStream is) throws IOException {
+	public static ECDHEPublicKey from(final InputStream is) throws IOException {
 		Int8 length = Int8.from(is);
 		BytesWrapper value = BytesWrapper.from(is, length.getValue());
 
-		return new PublicKeyECDHE(length, value);
+		return new ECDHEPublicKey(length, value);
 	}
 
 	@Override
@@ -68,12 +62,5 @@ public class PublicKeyECDHE implements TLSObject {
 	@Override
 	public int sizeOf() {
 		return length.sizeOf() + value.sizeOf();
-	}
-
-	public PublicKey loadX25519PublicKey() throws Exception {
-	    KeyFactory kf = KeyFactory.getInstance("X25519");
-	    NamedParameterSpec spec = new NamedParameterSpec("X25519");
-	    XECPublicKeySpec pubSpec = new XECPublicKeySpec(spec, new BigInteger(1, value.toByteArray()));
-	    return kf.generatePublic(pubSpec);
 	}
 }

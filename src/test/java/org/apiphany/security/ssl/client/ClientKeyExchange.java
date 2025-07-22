@@ -8,26 +8,22 @@ import org.apiphany.json.JsonBuilder;
 
 public class ClientKeyExchange implements TLSHandshakeBody {
 
-	private final PublicKeyECDHE publicKey;
+	private final TLSKeyExchange key;
 
-	public ClientKeyExchange(final PublicKeyECDHE publicKey) {
-		this.publicKey = publicKey;
+	public ClientKeyExchange(final TLSKeyExchange publicKey) {
+		this.key = publicKey;
 	}
 
-	public ClientKeyExchange(final byte[] encryptedPreMasterSecret) {
-		this(new PublicKeyECDHE(encryptedPreMasterSecret));
-	}
+	public static ClientKeyExchange from(final InputStream is, int size) throws IOException {
+		KeyExchangeBytes key = KeyExchangeBytes.from(is, size);
 
-	public static ClientKeyExchange from(final InputStream is) throws IOException {
-		PublicKeyECDHE publicKey = PublicKeyECDHE.from(is);
-
-		return new ClientKeyExchange(publicKey);
+		return new ClientKeyExchange(key);
 	}
 
 	@Override
 	public byte[] toByteArray() {
 		ByteBuffer buffer = ByteBuffer.allocate(sizeOf());
-		buffer.put(publicKey.toByteArray());
+		buffer.put(key.toByteArray());
 		return buffer.array();
 	}
 
@@ -38,7 +34,7 @@ public class ClientKeyExchange implements TLSHandshakeBody {
 
 	@Override
 	public int sizeOf() {
-		return publicKey.sizeOf();
+		return key.sizeOf();
 	}
 
 	@Override
@@ -46,7 +42,7 @@ public class ClientKeyExchange implements TLSHandshakeBody {
 		return HandshakeType.CLIENT_KEY_EXCHANGE;
 	}
 
-	public PublicKeyECDHE getPublicKey() {
-		return publicKey;
+	public TLSKeyExchange getKey() {
+		return key;
 	}
 }

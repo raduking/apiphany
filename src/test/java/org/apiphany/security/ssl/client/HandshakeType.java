@@ -13,7 +13,7 @@ public enum HandshakeType implements TLSObject {
 	CERTIFICATE((byte) 0x0B, FromFunction.ignoreSize(Certificates::from)),
 	SERVER_KEY_EXCHANGE((byte) 0x0C, FromFunction.ignoreSize(ServerKeyExchange::from)),
 	SERVER_HELLO_DONE((byte) 0x0E, FromFunction.ignoreSize(ServerHelloDone::from)),
-	CLIENT_KEY_EXCHANGE((byte) 0x10, FromFunction.ignoreSize(ClientKeyExchange::from)),
+	CLIENT_KEY_EXCHANGE((byte) 0x10, ClientKeyExchange::from),
 	FINISHED((byte) 0x14, Finished::from);
 
 	public static final int BYTES = 1;

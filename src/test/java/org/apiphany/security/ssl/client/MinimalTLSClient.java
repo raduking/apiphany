@@ -17,6 +17,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
@@ -48,16 +49,20 @@ public class MinimalTLSClient implements AutoCloseable {
 	);
 
 	public static final List<CipherSuite> SUPPORTED_CIPHER_SUITES = List.of(
-			CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+			CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+			CipherSuite.TLS_RSA_WITH_AES_256_GCM_SHA384
 	);
 
 	private final String host;
 	private final int port;
 	private final Duration socketTimeout = DEFAULT_SOCKET_TIMEOUT;
+	private final SSLProtocol sslProtocol = SSLProtocol.TLS_1_2;
 
 	private Socket tcpSocket;
 	private DataOutputStream out;
 	private InputStream in;
+
+	private List<CipherSuite> cipherSuites;
 
 	private byte[] clientRandom;
 	private byte[] serverRandom;
@@ -75,14 +80,11 @@ public class MinimalTLSClient implements AutoCloseable {
 
 	private final List<Handshake> handshakeMessages = new ArrayList<>();
 
-	public MinimalTLSClient(final String host, final int port, final KeyPair clientKeyPair) {
+	public MinimalTLSClient(final String host, final int port, final KeyPair clientKeyPair, List<CipherSuite> cipherSuites) {
 		this.host = host;
 		this.port = port;
 		this.clientKeyPair = clientKeyPair;
-	}
-
-	public MinimalTLSClient(final String host, final int port) {
-		this(host, port, null);
+		this.cipherSuites = cipherSuites;
 	}
 
 	@Override
@@ -123,13 +125,15 @@ public class MinimalTLSClient implements AutoCloseable {
 		LOGGER.debug("Client random:\n{}", Hex.dump(clientRandom));
 
 		// 2. Receive Server Hello
-		Record serverHelloRecord = receiveServerHello();
+		Record serverHelloRecord = Record.from(in);
+		accumulateHandshakes(serverHelloRecord.getFragments(Handshake.class));
 
 		// 2a. Server Hello
 		ServerHello serverHello = serverHelloRecord.getHandshake(ServerHello.class);
 		this.serverRandom = serverHello.getServerRandom().toByteArray();
 		LOGGER.debug("Server random:\n{}", Hex.dump(serverRandom));
 		LOGGER.debug("Received Server Hello:\n{}", Hex.dump(serverHello.toByteArray()));
+		CipherSuite serverCipherSuite = serverHello.getCipherSuite();
 
 		// 2b. Server Certificates
 		if (!serverHelloRecord.hasHandshake(Certificates.class)) {
@@ -141,13 +145,16 @@ public class MinimalTLSClient implements AutoCloseable {
 		LOGGER.debug("Received Server Certificate:\n{}", Hex.dump(certificates.toByteArray()));
 		LOGGER.debug("Received Server X509Certificate: {}", x509Certificate);
 
-		// 2b. Server Key Exchange
-		if (!serverHelloRecord.hasHandshake(ServerKeyExchange.class)) {
-			serverHelloRecord = Record.from(in);
-			accumulateHandshakes(serverHelloRecord.getFragments(Handshake.class));
+		// 2b. Server Key Exchange (RSA cipher suites don't have a server key exchange)
+		ServerKeyExchange serverKeyExchange = null;
+		if (KeyExchangeAlgorithm.ECDHE == serverCipherSuite.keyExchange()) {
+			if (!serverHelloRecord.hasHandshake(ServerKeyExchange.class)) {
+				serverHelloRecord = Record.from(in);
+				accumulateHandshakes(serverHelloRecord.getFragments(Handshake.class));
+			}
+			serverKeyExchange = serverHelloRecord.getHandshake(ServerKeyExchange.class);
+			LOGGER.debug("Received Server Key Exchange:\n{}", Hex.dump(serverKeyExchange.toByteArray()));
 		}
-		ServerKeyExchange serverKeyExchange = serverHelloRecord.getHandshake(ServerKeyExchange.class);
-		LOGGER.debug("Received Server Key Exchange:\n{}", Hex.dump(serverKeyExchange.toByteArray()));
 
 		// 2b. Server Hello Done
 		if (!serverHelloRecord.hasHandshake(ServerHelloDone.class)) {
@@ -158,23 +165,34 @@ public class MinimalTLSClient implements AutoCloseable {
 		LOGGER.debug("Received Server Hello Done:\n{}", Hex.dump(serverHelloDone.toByteArray()));
 
 		// 3. Generate Client Key Exchange
-		CipherSuite selectedCipher = serverHello.getCipherSuite();
-		byte[] clientPublic;
-		if (serverKeyExchange.getCurveInfo().getName() == NamedCurve.X25519) {
-			byte[] leServerPublic = serverKeyExchange.getPublicKey().getValue().toByteArray();
+		TLSKeyExchange tlsKeyExchange;
+		switch (serverCipherSuite.keyExchange()) {
+		case ECDHE -> {
+			byte[] leServerPublic = Objects.requireNonNull(serverKeyExchange).getPublicKey().getValue().toByteArray();
 			LOGGER.debug("Server public key (raw bytes from key exchange):\n{}", Hex.dump(leServerPublic));
-			clientPublic = getX25519ClientPublicBytes(serverKeyExchange);
+			X25519Keys keys = new X25519Keys();
+			byte[] clientPublicBytes = getClientPublicBytes(serverKeyExchange, keys);
+			tlsKeyExchange = new ECDHEPublicKey(clientPublicBytes);
 			LOGGER.debug("Server public key ({}):\n{}", serverPublicKey.getClass(), serverPublicKey);
-			LOGGER.debug("Keys match: {}", X25519Keys.verifyKeyMatch(X25519Keys.toRawByteArray(serverPublicKey), serverPublicKey));
-		} else {
-			throw new SSLException("Unsupported cipher suite: " + selectedCipher);
+			LOGGER.debug("Keys match: {}", keys.verifyKeyMatch(keys.toRawByteArray(serverPublicKey), serverPublicKey));
+			// Compute shared secret
+			this.preMasterSecret = keys.getSharedSecret(clientKeyPair.getPrivate(), serverPublicKey);
+			LOGGER.debug("Pre Master Secret:\n{}", Hex.dump(preMasterSecret));
 		}
-		// Compute shared secret
-		this.preMasterSecret = X25519Keys.getECDHESharedSecret(clientKeyPair.getPrivate(), serverPublicKey);
-		LOGGER.debug("Pre Master Secret:\n{}", Hex.dump(preMasterSecret));
+		case RSA -> {
+			this.serverPublicKey = x509Certificate.getPublicKey();
+			this.preMasterSecret = Bytes.concatenate(new Version(SSLProtocol.TLS_1_2).toByteArray(), ExchangeRandom.generateLinear(46));
+			// Encrypt pre-master with server's RSA key
+			Cipher rsa = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+			rsa.init(Cipher.ENCRYPT_MODE, serverPublicKey);
+			byte[] encryptedPreMaster = rsa.doFinal(preMasterSecret);
+			tlsKeyExchange = new RSAEncryptedPreMaster(encryptedPreMaster);
+		}
+		default -> throw new SSLException("Unsupported cipher suite: " + serverCipherSuite);
+		}
 
 		// 4. Send Client Key Exchange
-		Record clientKeyExchangeRecord = new Record(SSLProtocol.TLS_1_2, new ClientKeyExchange(clientPublic));
+		Record clientKeyExchangeRecord = new Record(sslProtocol, new ClientKeyExchange(tlsKeyExchange));
 		byte[] clientKeyExchangeBytes = clientKeyExchangeRecord.toByteArray();
 
 		sendRecord(clientKeyExchangeBytes);
@@ -190,7 +208,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		exchangeKeys = ExchangeKeys.from(keyBlock, ExchangeKeys.Type.AHEAD);
 
 		// 6. Send Client Change Cipher Spec
-		Record changeCypherSpecRecord = new Record(SSLProtocol.TLS_1_2, new ChangeCipherSpec());
+		Record changeCypherSpecRecord = new Record(sslProtocol, new ChangeCipherSpec());
 		sendRecord(changeCypherSpecRecord.toByteArray());
 		LOGGER.debug("Sent Client Change Cipher Spec:\n{}", Hex.dump(changeCypherSpecRecord.toByteArray()));
 
@@ -261,8 +279,8 @@ public class MinimalTLSClient implements AutoCloseable {
 	public String get(final String path) throws Exception {
 		String request =
 				"GET " + path + " HTTP/1.1\r\n" +
-                "Host: " + host + "\r\n" +
-                "Connection: close\r\n\r\n";
+						"Host: " + host + "\r\n" +
+						"Connection: close\r\n\r\n";
 
 		byte[] requestBytes = request.getBytes(StandardCharsets.US_ASCII);
 		Encrypted encrypted = encrypt(new BytesWrapper(requestBytes), RecordContentType.APPLICATION_DATA, exchangeKeys);
@@ -291,11 +309,7 @@ public class MinimalTLSClient implements AutoCloseable {
 	}
 
 	private Record sendClientHello() throws IOException {
-		ClientHello clientHello = new ClientHello(
-				List.of(host),
-				SUPPORTED_CIPHER_SUITES,
-				SUPPORTED_NAMED_CURVES,
-				SignatureAlgorithm.STRONG_ALGORITHMS);
+		ClientHello clientHello = new ClientHello(List.of(host), cipherSuites, SUPPORTED_NAMED_CURVES, SignatureAlgorithm.STRONG_ALGORITHMS);
 		Record clientHelloRecord = new Record(SSLProtocol.TLS_1_0, clientHello);
 		byte[] clientHelloBytes = clientHelloRecord.toByteArray();
 		sendRecord(clientHelloBytes);
@@ -304,24 +318,18 @@ public class MinimalTLSClient implements AutoCloseable {
 		return clientHelloRecord;
 	}
 
-	private Record receiveServerHello() throws IOException {
-		Record serverHelloRecord = Record.from(in);
-		accumulateHandshakes(serverHelloRecord.getFragments(Handshake.class));
-		return serverHelloRecord;
-	}
-
 	public X509Certificate parseCertificate(final byte[] certData) throws Exception {
 		CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
 		return (X509Certificate) certFactory.generateCertificate(new ByteArrayInputStream(certData));
 	}
 
-	public byte[] getX25519ClientPublicBytes(final ServerKeyExchange ske) throws Exception {
+	public byte[] getClientPublicBytes(final ServerKeyExchange ske, TLSKeysHandler keys) throws Exception {
 		byte[] serverPubBytes = ske.getPublicKey().getValue().toByteArray();
-		this.serverPublicKey = X25519Keys.getPublicKeyLE(serverPubBytes);
+		this.serverPublicKey = keys.getPublicKeyLE(serverPubBytes);
 		if (null == clientKeyPair) {
-			this.clientKeyPair = X25519Keys.generateKeyPair();
+			this.clientKeyPair = keys.generateKeyPair();
 		}
-		return X25519Keys.toRawByteArray(clientKeyPair.getPublic());
+		return keys.toRawByteArray(clientKeyPair.getPublic());
 	}
 
 	public Encrypted encrypt(final BinaryRepresentable tlsObject, final RecordContentType type, final ExchangeKeys keys) throws Exception {

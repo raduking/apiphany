@@ -10,11 +10,11 @@ public class ServerKeyExchange implements TLSHandshakeBody {
 
 	private final CurveInfo curveInfo;
 
-	private final PublicKeyECDHE publicKey;
+	private final ECDHEPublicKey publicKey;
 
 	private final Signature signature;
 
-	public ServerKeyExchange(final CurveInfo curveInfo, final PublicKeyECDHE publicKey, final Signature signature) {
+	public ServerKeyExchange(final CurveInfo curveInfo, final ECDHEPublicKey publicKey, final Signature signature) {
 		this.curveInfo = curveInfo;
 		this.publicKey = publicKey;
 		this.signature = signature;
@@ -22,7 +22,7 @@ public class ServerKeyExchange implements TLSHandshakeBody {
 
 	public static ServerKeyExchange from(final InputStream is) throws IOException {
 		CurveInfo curveInfo = CurveInfo.from(is);
-		PublicKeyECDHE publicKey = PublicKeyECDHE.from(is);
+		ECDHEPublicKey publicKey = ECDHEPublicKey.from(is);
 		Signature signature = Signature.from(is);
 
 		return new ServerKeyExchange(curveInfo, publicKey, signature);
@@ -56,7 +56,7 @@ public class ServerKeyExchange implements TLSHandshakeBody {
 		return curveInfo;
 	}
 
-	public PublicKeyECDHE getPublicKey() {
+	public ECDHEPublicKey getPublicKey() {
 		return publicKey;
 	}
 
