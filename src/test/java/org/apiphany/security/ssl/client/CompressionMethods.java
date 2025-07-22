@@ -6,25 +6,25 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apiphany.io.Int8;
+import org.apiphany.io.UInt8;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.ByteSizeable;
 import org.apiphany.security.tls.TLSObject;
 
 public class CompressionMethods implements TLSObject {
 
-	private final Int8 size;
+	private final UInt8 size;
 
 	private final List<CompressionMethod> methods;
 
-	public CompressionMethods(final Int8 size, final List<CompressionMethod> methods) {
+	public CompressionMethods(final UInt8 size, final List<CompressionMethod> methods) {
 		this.size = size;
 		this.methods = new ArrayList<>(this.size.getValue());
 		this.methods.addAll(methods);
 	}
 
 	public CompressionMethods(final List<CompressionMethod> methods) {
-		this(Int8.of((byte) methods.size()), methods);
+		this(UInt8.of((byte) methods.size()), methods);
 	}
 
 	public CompressionMethods() {
@@ -47,10 +47,10 @@ public class CompressionMethods implements TLSObject {
 	}
 
 	public static CompressionMethods from(final InputStream is) throws IOException {
-		Int8 size = Int8.from(is);
+		UInt8 size = UInt8.from(is);
 		List<CompressionMethod> methods = new ArrayList<>();
 		for (int i = 0; i < size.getValue(); ++i) {
-			Int8 int8 = Int8.from(is);
+			UInt8 int8 = UInt8.from(is);
 			CompressionMethod method = CompressionMethod.fromValue(int8.getValue());
 			methods.add(method);
 		}
@@ -58,7 +58,7 @@ public class CompressionMethods implements TLSObject {
 		return new CompressionMethods(size, methods);
 	}
 
-	public Int8 getSize() {
+	public UInt8 getSize() {
 		return size;
 	}
 

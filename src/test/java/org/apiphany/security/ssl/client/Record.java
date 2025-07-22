@@ -8,7 +8,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
 
-import org.apiphany.io.Int16;
+import org.apiphany.io.UInt16;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.ByteSizeable;
 import org.apiphany.lang.collections.Lists;
@@ -26,7 +26,7 @@ public class Record implements TLSObject {
 
 	public Record(final RecordHeader header, final List<TLSObject> fragments, final boolean updateHeader) {
 		this.header = updateHeader
-				? new RecordHeader(header.getType(), header.getVersion(), Int16.of((short) ByteSizeable.sizeOf(fragments)))
+				? new RecordHeader(header.getType(), header.getVersion(), UInt16.of((short) ByteSizeable.sizeOf(fragments)))
 				: header;
 		this.fragments = fragments;
 	}

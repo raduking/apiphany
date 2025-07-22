@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
-import org.apiphany.io.Int16;
-import org.apiphany.io.Int8;
+import org.apiphany.io.UInt16;
+import org.apiphany.io.UInt8;
 import org.apiphany.json.JsonBuilder;
 
 public class ServerHello implements TLSHandshakeBody {
@@ -41,8 +41,8 @@ public class ServerHello implements TLSHandshakeBody {
 		Version version = Version.from(is);
 		ExchangeRandom serverRandom = ExchangeRandom.from(is);
 		SessionId sessionId = SessionId.from(is);
-		CipherSuite cipherSuite = CipherSuite.fromValue(Int16.from(is).getValue());
-		CompressionMethod compressionMethod = CompressionMethod.fromValue(Int8.from(is).getValue());
+		CipherSuite cipherSuite = CipherSuite.fromValue(UInt16.from(is).getValue());
+		CompressionMethod compressionMethod = CompressionMethod.fromValue(UInt8.from(is).getValue());
 		Extensions extensions = Extensions.from(is);
 
 		return new ServerHello(

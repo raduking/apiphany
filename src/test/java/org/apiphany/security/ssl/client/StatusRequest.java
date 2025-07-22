@@ -4,28 +4,28 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
-import org.apiphany.io.Int16;
-import org.apiphany.io.Int8;
+import org.apiphany.io.UInt16;
+import org.apiphany.io.UInt8;
 import org.apiphany.json.JsonBuilder;
 
 public class StatusRequest implements TLSExtension {
 
 	private final ExtensionType type;
 
-	private final Int16 length;
+	private final UInt16 length;
 
-	private final Int8 certificateStatusType; // OCSP
+	private final UInt8 certificateStatusType; // OCSP
 
-	private final Int16 responderIDInfoSize;
+	private final UInt16 responderIDInfoSize;
 
-	private final Int16 requestExtensionInfoSize;
+	private final UInt16 requestExtensionInfoSize;
 
 	public StatusRequest(
 			final ExtensionType type,
-			final Int16 length,
-			final Int8 certificateStatusType,
-			final Int16 responderIDInfoSize,
-			final Int16 requestExtensionInfoSize) {
+			final UInt16 length,
+			final UInt8 certificateStatusType,
+			final UInt16 responderIDInfoSize,
+			final UInt16 requestExtensionInfoSize) {
 		this.type = type;
 		this.length = length;
 		this.certificateStatusType = certificateStatusType;
@@ -34,21 +34,21 @@ public class StatusRequest implements TLSExtension {
 	}
 
 	public StatusRequest() {
-		this(ExtensionType.STATUS_REQUEST, Int16.of((short) 0x0005), Int8.of((byte) 0x01), Int16.ZERO, Int16.ZERO);
+		this(ExtensionType.STATUS_REQUEST, UInt16.of((short) 0x0005), UInt8.of((byte) 0x01), UInt16.ZERO, UInt16.ZERO);
 	}
 
 	public static StatusRequest from(final InputStream is) throws IOException {
-		Int16 int16 = Int16.from(is);
+		UInt16 int16 = UInt16.from(is);
 		ExtensionType extensionType = ExtensionType.fromValue(int16.getValue());
 
 		return from(is, extensionType);
 	}
 
 	public static StatusRequest from(final InputStream is, final ExtensionType type) throws IOException {
-		Int16 length = Int16.from(is);
-		Int8 certificateStatusType = Int8.from(is);
-		Int16 responderIDInfoSize = Int16.from(is);
-		Int16 requestExtensionInfoSize = Int16.from(is);
+		UInt16 length = UInt16.from(is);
+		UInt8 certificateStatusType = UInt8.from(is);
+		UInt16 responderIDInfoSize = UInt16.from(is);
+		UInt16 requestExtensionInfoSize = UInt16.from(is);
 
 		return new StatusRequest(type, length, certificateStatusType, responderIDInfoSize, requestExtensionInfoSize);
 	}
@@ -83,19 +83,19 @@ public class StatusRequest implements TLSExtension {
 		return type;
 	}
 
-	public Int16 getLength() {
+	public UInt16 getLength() {
 		return length;
 	}
 
-	public Int8 getCertificateStatusType() {
+	public UInt8 getCertificateStatusType() {
 		return certificateStatusType;
 	}
 
-	public Int16 getResponderIDInfoSize() {
+	public UInt16 getResponderIDInfoSize() {
 		return responderIDInfoSize;
 	}
 
-	public Int16 getRequestExtensionInfoSize() {
+	public UInt16 getRequestExtensionInfoSize() {
 		return requestExtensionInfoSize;
 	}
 }

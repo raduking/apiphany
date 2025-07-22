@@ -2,23 +2,23 @@ package org.apiphany.security.ssl.client;
 
 import java.nio.ByteBuffer;
 
-import org.apiphany.io.Int16;
-import org.apiphany.io.Int64;
+import org.apiphany.io.UInt16;
+import org.apiphany.io.UInt64;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.security.ssl.SSLProtocol;
 import org.apiphany.security.tls.TLSObject;
 
 public class AdditionalAuthenticatedData implements TLSObject {
 
-	private final Int64 sequenceNumber;
+	private final UInt64 sequenceNumber;
 
 	private final RecordContentType type;
 
 	private final Version protocolVersion;
 
-	private final Int16 length;
+	private final UInt16 length;
 
-	public AdditionalAuthenticatedData(final Int64 sequenceNumber, final RecordContentType type, final Version protocolVersion, final Int16 length) {
+	public AdditionalAuthenticatedData(final UInt64 sequenceNumber, final RecordContentType type, final Version protocolVersion, final UInt16 length) {
 		this.sequenceNumber = sequenceNumber;
 		this.type = type;
 		this.protocolVersion = protocolVersion;
@@ -26,7 +26,7 @@ public class AdditionalAuthenticatedData implements TLSObject {
 	}
 
 	public AdditionalAuthenticatedData(final long sequenceNumber, final RecordContentType type, final SSLProtocol protocol, final short length) {
-		this(Int64.of(sequenceNumber), type, new Version(protocol), Int16.of(length));
+		this(UInt64.of(sequenceNumber), type, new Version(protocol), UInt16.of(length));
 	}
 
 	@Override
@@ -52,7 +52,7 @@ public class AdditionalAuthenticatedData implements TLSObject {
 				+ length.sizeOf();
 	}
 
-	public Int64 getSequenceNumber() {
+	public UInt64 getSequenceNumber() {
 		return sequenceNumber;
 	}
 
@@ -64,7 +64,7 @@ public class AdditionalAuthenticatedData implements TLSObject {
 		return protocolVersion;
 	}
 
-	public Int16 getLength() {
+	public UInt16 getLength() {
 		return length;
 	}
 }

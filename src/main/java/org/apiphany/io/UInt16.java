@@ -11,7 +11,7 @@ import org.apiphany.lang.ByteSizeable;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * Immutable wrapper for a 16-bit signed integer (short) with binary serialization capabilities.
+ * Immutable wrapper for a 16-bit unsigned integer (short) with binary serialization capabilities.
  * <p>
  * This class provides:
  * <ul>
@@ -32,7 +32,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
  *
  * @author Radu Sebastian LAZIN
  */
-public class Int16 implements ByteSizeable, BinaryRepresentable {
+public class UInt16 implements ByteSizeable, BinaryRepresentable {
 
 	/**
 	 * The size in bytes of an {@code Int16} value (constant value: 2).
@@ -42,7 +42,7 @@ public class Int16 implements ByteSizeable, BinaryRepresentable {
 	/**
 	 * Predefined instance representing zero (0x0000).
 	 */
-	public static final Int16 ZERO = of((short) 0x00_00);
+	public static final UInt16 ZERO = of((short) 0x00_00);
 
 	/**
 	 * The actual encapsulated value.
@@ -54,7 +54,7 @@ public class Int16 implements ByteSizeable, BinaryRepresentable {
 	 *
 	 * @param value the 16-bit value to wrap
 	 */
-	protected Int16(final short value) {
+	protected UInt16(final short value) {
 		this.value = value;
 	}
 
@@ -64,8 +64,8 @@ public class Int16 implements ByteSizeable, BinaryRepresentable {
 	 * @param value the 16-bit value to wrap
 	 * @return a new {@code Int16} instance
 	 */
-	public static Int16 of(final short value) {
-		return new Int16(value);
+	public static UInt16 of(final short value) {
+		return new UInt16(value);
 	}
 
 	/**
@@ -77,7 +77,7 @@ public class Int16 implements ByteSizeable, BinaryRepresentable {
 	 * @throws EOFException if fewer than 2 bytes are available
 	 * @throws NullPointerException if {@code is} is {@code null}
 	 */
-	public static Int16 from(final InputStream is) throws IOException {
+	public static UInt16 from(final InputStream is) throws IOException {
 		byte[] buffer = new byte[BYTES];
 		int bytesRead = is.read(buffer);
 		if (BYTES != bytesRead) {
@@ -85,7 +85,7 @@ public class Int16 implements ByteSizeable, BinaryRepresentable {
 		}
 		short int16 = (short) (((short) ((buffer[0] & 0xFF) << 8)) |
 				((short) (buffer[1] & 0xFF)));
-		return Int16.of(int16);
+		return UInt16.of(int16);
 	}
 
 	/**
@@ -102,7 +102,7 @@ public class Int16 implements ByteSizeable, BinaryRepresentable {
 	 * @param value the value to convert
 	 * @return a new byte array containing the value in network byte order
 	 */
-	public static byte[] toByteArray(short value) {
+	public static byte[] toByteArray(final short value) {
 		return new byte[] {
 				(byte) ((value >> 8) & 0xFF),
 				(byte) (value & 0xFF)

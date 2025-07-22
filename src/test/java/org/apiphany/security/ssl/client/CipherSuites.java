@@ -6,25 +6,25 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apiphany.io.Int16;
+import org.apiphany.io.UInt16;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.ByteSizeable;
 import org.apiphany.security.tls.TLSObject;
 
 public class CipherSuites implements TLSObject {
 
-	private final Int16 size;
+	private final UInt16 size;
 
 	private final List<CipherSuite> cipherSuites;
 
-	public CipherSuites(final Int16 size, final List<CipherSuite> cipherSuites) {
+	public CipherSuites(final UInt16 size, final List<CipherSuite> cipherSuites) {
 		this.size = size;
 		this.cipherSuites = new ArrayList<>(size.getValue());
 		this.cipherSuites.addAll(cipherSuites);
 	}
 
 	public CipherSuites(final short size, final List<CipherSuite> cipherSuites) {
-		this(Int16.of(size), cipherSuites);
+		this(UInt16.of(size), cipherSuites);
 	}
 
 	public CipherSuites(final List<CipherSuite> cipherSuites) {
@@ -50,10 +50,10 @@ public class CipherSuites implements TLSObject {
 	}
 
 	public static CipherSuites from(final InputStream is) throws IOException {
-		Int16 size = Int16.from(is);
+		UInt16 size = UInt16.from(is);
 		List<CipherSuite> cipherSuites = new ArrayList<>();
 		for (int i = 0; i < size.getValue() / 2; ++i) {
-			Int16 int16 = Int16.from(is);
+			UInt16 int16 = UInt16.from(is);
 			CipherSuite cipherSuite = CipherSuite.fromValue(int16.getValue());
 			cipherSuites.add(cipherSuite);
 		}
@@ -71,7 +71,7 @@ public class CipherSuites implements TLSObject {
 		return size.sizeOf() + ByteSizeable.sizeOf(cipherSuites);
 	}
 
-	public Int16 getSize() {
+	public UInt16 getSize() {
 		return size;
 	}
 

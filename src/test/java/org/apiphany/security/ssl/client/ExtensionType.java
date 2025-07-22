@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
-import org.apiphany.io.Int16;
+import org.apiphany.io.UInt16;
 import org.apiphany.security.tls.TLSObject;
 import org.morphix.lang.Enums;
 
@@ -57,7 +57,7 @@ public enum ExtensionType implements TLSObject {
 
 	@Override
 	public byte[] toByteArray() {
-		return Int16.toByteArray(value);
+		return UInt16.toByteArray(value);
 	}
 
 	public TLSExtension extensionFrom(final InputStream is) throws IOException {

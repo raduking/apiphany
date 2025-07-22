@@ -25,12 +25,13 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.net.ssl.SSLException;
 
 import org.apiphany.io.BytesWrapper;
-import org.apiphany.io.Int64;
+import org.apiphany.io.UInt64;
 import org.apiphany.lang.BinaryRepresentable;
 import org.apiphany.lang.Bytes;
 import org.apiphany.lang.Hex;
 import org.apiphany.lang.Strings;
 import org.apiphany.security.ssl.SSLProtocol;
+import org.apiphany.security.tls.KeyExchangeAlgorithm;
 import org.morphix.lang.Nullables;
 import org.morphix.lang.function.ThrowingBiFunction;
 import org.morphix.lang.function.ThrowingConsumer;
@@ -337,7 +338,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		LOGGER.debug("Plaintext:\n{}", Hex.dump(plaintext));
 
 		long seq = this.clientSequenceNumber++;
-		byte[] explicitNonce = Int64.toByteArray(seq); // 8 bytes
+		byte[] explicitNonce = UInt64.toByteArray(seq); // 8 bytes
 
 		byte[] fixedIV = keys.getClientIV(); // 4 bytes
 		byte[] fullIV = new byte[12];

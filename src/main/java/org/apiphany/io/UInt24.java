@@ -32,7 +32,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
  *
  * @author Radu Sebastian LAZIN
  */
-public class Int24 implements ByteSizeable, BinaryRepresentable {
+public class UInt24 implements ByteSizeable, BinaryRepresentable {
 
 	/**
 	 * The size in bytes of an {@code Int24} value (constant value: 3).
@@ -42,7 +42,7 @@ public class Int24 implements ByteSizeable, BinaryRepresentable {
 	/**
 	 * Predefined instance representing zero (0x000000).
 	 */
-	public static final Int24 ZERO = of(0x00_00_00);
+	public static final UInt24 ZERO = of(0x00_00_00);
 
 	/**
 	 * The actual encapsulated value.
@@ -55,7 +55,7 @@ public class Int24 implements ByteSizeable, BinaryRepresentable {
 	 * @param value the 24-bit value to wrap (only lower 24 bits are used)
 	 * @throws IllegalArgumentException if value exceeds 24-bit unsigned range
 	 */
-	protected Int24(final int value) {
+	protected UInt24(final int value) {
 		this.value = value;
 	}
 
@@ -66,8 +66,8 @@ public class Int24 implements ByteSizeable, BinaryRepresentable {
 	 * @return a new {@code Int24} instance
 	 * @throws IllegalArgumentException if value exceeds 24-bit unsigned range
 	 */
-	public static Int24 of(final int value) {
-		return new Int24(value);
+	public static UInt24 of(final int value) {
+		return new UInt24(value);
 	}
 
 	/**
@@ -79,7 +79,7 @@ public class Int24 implements ByteSizeable, BinaryRepresentable {
 	 * @throws EOFException if fewer than 3 bytes are available
 	 * @throws NullPointerException if {@code is} is {@code null}
 	 */
-	public static Int24 from(final InputStream is) throws IOException {
+	public static UInt24 from(final InputStream is) throws IOException {
 		byte[] buffer = new byte[BYTES];
 		int bytesRead = is.read(buffer);
 		if (BYTES != bytesRead) {
@@ -88,7 +88,7 @@ public class Int24 implements ByteSizeable, BinaryRepresentable {
 		int int24 = ((buffer[0] & 0xFF) << 16) |
 				((buffer[1] & 0xFF) << 8) |
 				(buffer[2] & 0xFF);
-		return Int24.of(int24);
+		return UInt24.of(int24);
 	}
 
 	/**

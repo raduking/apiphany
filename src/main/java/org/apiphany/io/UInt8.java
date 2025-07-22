@@ -11,7 +11,7 @@ import org.apiphany.lang.ByteSizeable;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * Immutable wrapper for an 8-bit signed integer (byte) with binary serialization capabilities.
+ * Immutable wrapper for an 8-bit unsigned integer (byte) with binary serialization capabilities.
  * <p>
  * This class provides:
  * <ul>
@@ -31,7 +31,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
  *
  * @author Radu Sebastian LAZIN
  */
-public class Int8 implements ByteSizeable, BinaryRepresentable {
+public class UInt8 implements ByteSizeable, BinaryRepresentable {
 
 	/**
 	 * The size in bytes of an {@code Int8} value (constant value: 1).
@@ -41,7 +41,7 @@ public class Int8 implements ByteSizeable, BinaryRepresentable {
 	/**
 	 * Predefined instance representing zero (0x00).
 	 */
-	public static final Int8 ZERO = of((byte) 0x00);
+	public static final UInt8 ZERO = of((byte) 0x00);
 
 	/**
 	 * The actual encapsulated byte value.
@@ -53,7 +53,7 @@ public class Int8 implements ByteSizeable, BinaryRepresentable {
 	 *
 	 * @param value the byte value to wrap
 	 */
-	protected Int8(final byte value) {
+	protected UInt8(final byte value) {
 		this.value = value;
 	}
 
@@ -63,8 +63,8 @@ public class Int8 implements ByteSizeable, BinaryRepresentable {
 	 * @param value the byte value to wrap
 	 * @return a new {@code Int8} instance
 	 */
-	public static Int8 of(final byte value) {
-		return new Int8(value);
+	public static UInt8 of(final byte value) {
+		return new UInt8(value);
 	}
 
 	/**
@@ -76,12 +76,12 @@ public class Int8 implements ByteSizeable, BinaryRepresentable {
 	 * @throws EOFException if the end of stream is reached before reading a byte
 	 * @throws NullPointerException if {@code is} is {@code null}
 	 */
-	public static Int8 from(final InputStream is) throws IOException {
+	public static UInt8 from(final InputStream is) throws IOException {
 		int byteRead = is.read();
 		if (-1 == byteRead) {
 			throw new EOFException("Error reading " + BYTES + " bytes");
 		}
-		return Int8.of((byte) byteRead);
+		return UInt8.of((byte) byteRead);
 	}
 
 	/**
@@ -98,7 +98,7 @@ public class Int8 implements ByteSizeable, BinaryRepresentable {
 	 * @param value the byte value to convert
 	 * @return a new byte array containing the value
 	 */
-	public static byte[] toByteArray(byte value) {
+	public static byte[] toByteArray(final byte value) {
 		return new byte[] {
 				(byte) (value & 0xFF)
 		};

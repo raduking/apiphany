@@ -6,20 +6,20 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apiphany.io.Int16;
+import org.apiphany.io.UInt16;
 import org.apiphany.json.JsonBuilder;
 
 public class SignatureAlgorithms implements TLSExtension {
 
 	private final ExtensionType type;
 
-	private final Int16 length;
+	private final UInt16 length;
 
-	private final Int16 algorithmsSize;
+	private final UInt16 algorithmsSize;
 
 	private final List<SignatureAlgorithm> algorithms;
 
-	public SignatureAlgorithms(final ExtensionType type, final Int16 length, final Int16 algorithmsSize, final List<SignatureAlgorithm> algorithms) {
+	public SignatureAlgorithms(final ExtensionType type, final UInt16 length, final UInt16 algorithmsSize, final List<SignatureAlgorithm> algorithms) {
 		this.type = type;
 		this.length = length;
 		this.algorithmsSize = algorithmsSize;
@@ -29,8 +29,8 @@ public class SignatureAlgorithms implements TLSExtension {
 	public SignatureAlgorithms(final List<SignatureAlgorithm> algorithms) {
 		this(
 				ExtensionType.SIGNATURE_ALGORITHMS,
-				Int16.of((short) (algorithms.size() * SignatureAlgorithm.BYTES + Int16.BYTES)),
-				Int16.of((short) (algorithms.size() * SignatureAlgorithm.BYTES)),
+				UInt16.of((short) (algorithms.size() * SignatureAlgorithm.BYTES + UInt16.BYTES)),
+				UInt16.of((short) (algorithms.size() * SignatureAlgorithm.BYTES)),
 				algorithms
 		);
 	}
@@ -44,18 +44,18 @@ public class SignatureAlgorithms implements TLSExtension {
 	}
 
 	public static SignatureAlgorithms from(final InputStream is) throws IOException {
-		Int16 int16 = Int16.from(is);
+		UInt16 int16 = UInt16.from(is);
 		ExtensionType extensionType = ExtensionType.fromValue(int16.getValue());
 
 		return from(is, extensionType);
 	}
 
 	public static SignatureAlgorithms from(final InputStream is, final ExtensionType type) throws IOException {
-		Int16 length = Int16.from(is);
-		Int16 algorithmsSize = Int16.from(is);
+		UInt16 length = UInt16.from(is);
+		UInt16 algorithmsSize = UInt16.from(is);
 		List<SignatureAlgorithm> algorithms = new ArrayList<>();
 		for (int i = 0; i < algorithmsSize.getValue() / SignatureAlgorithm.BYTES; ++i) {
-			Int16 int16 = Int16.from(is);
+			UInt16 int16 = UInt16.from(is);
 			SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.fromValue(int16.getValue());
 			algorithms.add(signatureAlgorithm);
 		}
@@ -90,11 +90,11 @@ public class SignatureAlgorithms implements TLSExtension {
 		return type;
 	}
 
-	public Int16 getLength() {
+	public UInt16 getLength() {
 		return length;
 	}
 
-	public Int16 getAlgorithmsSize() {
+	public UInt16 getAlgorithmsSize() {
 		return algorithmsSize;
 	}
 

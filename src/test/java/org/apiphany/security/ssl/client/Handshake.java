@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
-import org.apiphany.io.Int24;
+import org.apiphany.io.UInt24;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.security.tls.TLSObject;
 import org.morphix.lang.JavaObjects;
@@ -16,7 +16,7 @@ public class Handshake implements TLSObject {
 	private final TLSHandshakeBody body;
 
 	public Handshake(final HandshakeHeader header, final TLSHandshakeBody body, final boolean updateHeader) {
-		this.header = updateHeader ? new HandshakeHeader(header.getType(), Int24.of(body.sizeOf())) : header;
+		this.header = updateHeader ? new HandshakeHeader(header.getType(), UInt24.of(body.sizeOf())) : header;
 		this.body = body;
 	}
 
