@@ -11,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.security.MessageDigest;
 import java.security.PublicKey;
+import java.security.SecureRandom;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
@@ -30,8 +31,33 @@ import org.apiphany.lang.BinaryRepresentable;
 import org.apiphany.lang.Bytes;
 import org.apiphany.lang.Hex;
 import org.apiphany.lang.Strings;
+import org.apiphany.security.ssl.DeterministicSecureRandom;
 import org.apiphany.security.ssl.SSLProtocol;
+import org.apiphany.security.tls.AdditionalAuthenticatedData;
+import org.apiphany.security.tls.Alert;
+import org.apiphany.security.tls.AlertDescription;
+import org.apiphany.security.tls.AlertLevel;
+import org.apiphany.security.tls.ApplicationData;
+import org.apiphany.security.tls.Certificates;
+import org.apiphany.security.tls.ChangeCipherSpec;
+import org.apiphany.security.tls.CipherSuite;
+import org.apiphany.security.tls.ClientHello;
+import org.apiphany.security.tls.ClientKeyExchange;
+import org.apiphany.security.tls.ECDHEPublicKey;
+import org.apiphany.security.tls.Encrypted;
+import org.apiphany.security.tls.Finished;
+import org.apiphany.security.tls.Handshake;
 import org.apiphany.security.tls.KeyExchangeAlgorithm;
+import org.apiphany.security.tls.NamedCurve;
+import org.apiphany.security.tls.RSAEncryptedPreMaster;
+import org.apiphany.security.tls.Record;
+import org.apiphany.security.tls.RecordContentType;
+import org.apiphany.security.tls.ServerHello;
+import org.apiphany.security.tls.ServerHelloDone;
+import org.apiphany.security.tls.ServerKeyExchange;
+import org.apiphany.security.tls.SignatureAlgorithm;
+import org.apiphany.security.tls.TLSKeyExchange;
+import org.apiphany.security.tls.Version;
 import org.morphix.lang.Nullables;
 import org.morphix.lang.function.ThrowingBiFunction;
 import org.morphix.lang.function.ThrowingConsumer;
@@ -81,7 +107,7 @@ public class MinimalTLSClient implements AutoCloseable {
 
 	private final List<Handshake> handshakeMessages = new ArrayList<>();
 
-	public MinimalTLSClient(final String host, final int port, final KeyPair clientKeyPair, List<CipherSuite> cipherSuites) {
+	public MinimalTLSClient(final String host, final int port, final KeyPair clientKeyPair, final List<CipherSuite> cipherSuites) {
 		this.host = host;
 		this.port = port;
 		this.clientKeyPair = clientKeyPair;
@@ -182,7 +208,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		}
 		case RSA -> {
 			this.serverPublicKey = x509Certificate.getPublicKey();
-			this.preMasterSecret = Bytes.concatenate(new Version(SSLProtocol.TLS_1_2).toByteArray(), ExchangeRandom.generateLinear(46));
+			this.preMasterSecret = Bytes.concatenate(new Version(SSLProtocol.TLS_1_2).toByteArray(), DeterministicSecureRandom.generateLinear(46));
 			// Encrypt pre-master with server's RSA key
 			Cipher rsa = Cipher.getInstance("RSA/ECB/PKCS1Padding");
 			rsa.init(Cipher.ENCRYPT_MODE, serverPublicKey);
@@ -310,7 +336,7 @@ public class MinimalTLSClient implements AutoCloseable {
 	}
 
 	private Record sendClientHello() throws IOException {
-		ClientHello clientHello = new ClientHello(List.of(host), cipherSuites, SUPPORTED_NAMED_CURVES, SignatureAlgorithm.STRONG_ALGORITHMS);
+		ClientHello clientHello = new ClientHello(new SecureRandom(), cipherSuites, List.of(host), SUPPORTED_NAMED_CURVES, SignatureAlgorithm.STRONG_ALGORITHMS);
 		Record clientHelloRecord = new Record(SSLProtocol.TLS_1_0, clientHello);
 		byte[] clientHelloBytes = clientHelloRecord.toByteArray();
 		sendRecord(clientHelloBytes);
@@ -324,7 +350,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		return (X509Certificate) certFactory.generateCertificate(new ByteArrayInputStream(certData));
 	}
 
-	public byte[] getClientPublicBytes(final ServerKeyExchange ske, TLSKeysHandler keys) throws Exception {
+	public byte[] getClientPublicBytes(final ServerKeyExchange ske, final TLSKeysHandler keys) throws Exception {
 		byte[] serverPubBytes = ske.getPublicKey().getValue().toByteArray();
 		this.serverPublicKey = keys.getPublicKeyLE(serverPubBytes);
 		if (null == clientKeyPair) {

@@ -37,7 +37,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public class UInt64 implements ByteSizeable, BinaryRepresentable {
 
 	/**
-	 * The size in bytes of an {@code Int64} value (constant value: 8).
+	 * The size in bytes of an {@code UInt64} value (constant value: 8).
 	 */
 	public static final int BYTES = 8;
 
@@ -52,7 +52,7 @@ public class UInt64 implements ByteSizeable, BinaryRepresentable {
 	private final long value;
 
 	/**
-	 * Constructs a new {@code Int64} instance.
+	 * Constructs a new {@code UInt64} instance.
 	 *
 	 * @param value the 64-bit integer value to wrap
 	 */
@@ -61,20 +61,20 @@ public class UInt64 implements ByteSizeable, BinaryRepresentable {
 	}
 
 	/**
-	 * Creates a new {@code Int64} instance for the specified value.
+	 * Creates a new {@code UInt64} instance for the specified value.
 	 *
 	 * @param value the 64-bit integer value to wrap
-	 * @return a new {@code Int64} instance
+	 * @return a new {@code UInt64} instance
 	 */
 	public static UInt64 of(final long value) {
 		return new UInt64(value);
 	}
 
 	/**
-	 * Reads 8 bytes from the input stream and returns them as a big-endian {@code Int64}.
+	 * Reads 8 bytes from the input stream and returns them as a big-endian {@code UInt64}.
 	 *
 	 * @param is the input stream to read from
-	 * @return a new {@code Int64} containing the read value
+	 * @return a new {@code UInt64} containing the read value
 	 * @throws IOException if an I/O error occurs
 	 * @throws EOFException if fewer than 8 bytes are available
 	 * @throws NullPointerException if {@code is} is {@code null}

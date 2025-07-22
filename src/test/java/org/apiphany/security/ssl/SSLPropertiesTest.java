@@ -23,14 +23,14 @@ import org.apiphany.lang.Bytes;
 import org.apiphany.lang.Hex;
 import org.apiphany.lang.Strings;
 import org.apiphany.net.Sockets;
-import org.apiphany.security.ssl.client.CipherSuite;
-import org.apiphany.security.ssl.client.ClientHello;
 import org.apiphany.security.ssl.client.MinimalTLSClient;
-import org.apiphany.security.ssl.client.NamedCurve;
 import org.apiphany.security.ssl.client.PseudoRandomFunction;
-import org.apiphany.security.ssl.client.Record;
-import org.apiphany.security.ssl.client.SignatureAlgorithm;
 import org.apiphany.security.ssl.server.SimpleHttpsServer;
+import org.apiphany.security.tls.CipherSuite;
+import org.apiphany.security.tls.ClientHello;
+import org.apiphany.security.tls.NamedCurve;
+import org.apiphany.security.tls.Record;
+import org.apiphany.security.tls.SignatureAlgorithm;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -132,7 +132,7 @@ class SSLPropertiesTest {
 
 	@ParameterizedTest
 	@MethodSource("provideSupportedCipherSuites")
-	void shouldPerformTLS_V_1_2_SSLHandshakeWithParameterizedCipherSuites(CipherSuite cipherSuite) throws Exception {
+	void shouldPerformTLS_V_1_2_SSLHandshakeWithParameterizedCipherSuites(final CipherSuite cipherSuite) throws Exception {
 		int port = Sockets.findAvailableTcpPort(PORT_CHECK_TIMEOUT);
 		SSLProperties sslProperties = JsonBuilder.fromJson(Strings.fromFile("/security/ssl/ssl-properties.json"), SSLProperties.class);
 		sslProperties.setProtocol(SSLProtocol.TLS_1_2);
@@ -244,6 +244,7 @@ class SSLPropertiesTest {
 				NamedCurve.SECP384R1,
 				NamedCurve.SECP521R1
 		);
+		@SuppressWarnings("deprecation")
 		final List<SignatureAlgorithm> signatureAlgorithms = List.of(
 				SignatureAlgorithm.RSA_PKCS1_SHA256,
 				SignatureAlgorithm.ECDSA_SECP256R1_SHA256,
@@ -256,7 +257,7 @@ class SSLPropertiesTest {
 		);
 
 		Record clientHello = new Record(SSLProtocol.TLS_1_0,
-				new ClientHello(List.of("example.ulfheim.net"), cypherSuites, namedCurves, signatureAlgorithms));
+				new ClientHello(new DeterministicSecureRandom(), cypherSuites, List.of("example.ulfheim.net"), namedCurves, signatureAlgorithms));
 		LOGGER.info("Client Hello: {}", clientHello);
 
 		byte[] result = clientHello.toByteArray();
