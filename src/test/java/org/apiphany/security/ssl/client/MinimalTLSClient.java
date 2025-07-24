@@ -313,7 +313,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		Encrypted encrypted = encrypt(new BytesWrapper(requestBytes), RecordContentType.APPLICATION_DATA, exchangeKeys);
 		Record requestRecord = new Record(SSLProtocol.TLS_1_2, new ApplicationData(encrypted));
 		sendRecord(requestRecord.toByteArray());
-		LOGGER.debug("Sent Application Data Record: {}", Hex.dump(requestRecord.toByteArray()));
+		LOGGER.debug("Sent Application Data Record:\n{}", Hex.dump(requestRecord.toByteArray()));
 
 		Record responseRecord = Record.from(in, ThrowingBiFunction.unchecked((is, total) -> Encrypted.from(is, total, 8)));
 		LOGGER.debug("Received Application Data Record:\n{}", Hex.dump(responseRecord.toByteArray()));
@@ -324,7 +324,9 @@ public class MinimalTLSClient implements AutoCloseable {
 
 		HttpResponseParser httpResponseParser = new HttpResponseParser(response);
 		int contentLength = Integer.parseInt(httpResponseParser.getHeader("content-length"));
-		if (contentLength > 0) {
+		String body = httpResponseParser.getBody();
+
+		if (contentLength > 0 && body.length() < contentLength) {
 			responseRecord = Record.from(in, ThrowingBiFunction.unchecked((is, total) -> Encrypted.from(is, total, 8)));
 			LOGGER.debug("Received Application Data Record:\n{}", Hex.dump(responseRecord.toByteArray()));
 			decrypted = decrypt(responseRecord, RecordContentType.APPLICATION_DATA, exchangeKeys);

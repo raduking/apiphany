@@ -3,6 +3,7 @@ package org.apiphany.security.ssl;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -201,6 +202,22 @@ class SSLPropertiesTest {
 			LOGGER.error("Error performing SSL handshake", e);
 		}
 		assertNotNull(serverFinished);
+	}
+
+	@Test
+	void shouldPerformTLS_V_1_2_SSLHandshakeWithGoogle() throws Exception {
+		int port = 443;
+		String host = "google.com";
+		assumeTrue(Sockets.canConnectTo(host, port, Duration.ofSeconds(2)), host + " is unreachable, skipping test.");
+
+		String response = null;
+		try (MinimalTLSClient client = new MinimalTLSClient(host, port, CLIENT_KEY_PAIR, CIPHER_SUITES)) {
+			client.performHandshake();
+			response = client.get("/");
+		} catch (Exception e) {
+			LOGGER.error("Error performing SSL handshake", e);
+		}
+		assertNotNull(response);
 	}
 
 	@Test
