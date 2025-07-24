@@ -19,7 +19,9 @@
 - Added a new package `org.apiphany.io` for I/O classes.
 - Added `BytesWrapper` an immutable container for raw byte data with serialization capabilities.
 - Added `UInt8`, `UInt16`, `UInt24`, `UInt32`, `UInt64` for 8, 16, 24, 32 and 64 bit unsigned integers.
-- Added TLS model classes to the `*.security.tls` package.
+- Added first version of TLS model classes to the `*.security.tls` package and a working minimal TLS client in the test packages.
+- Added `BasicMeters` caching for fewer objects creation (this only caches meters without tags).
+- Added `BasicMeters.isEmpty(Tags)` to efficiently check if tags are empty or not.
 
 ---
 

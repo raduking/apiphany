@@ -2,6 +2,8 @@ package org.apiphany.meters;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -73,6 +75,12 @@ public record BasicMeters(MeterRegistry meterRegistry, Timer latency, Counter re
 	private static final int OF_METHOD_CALLER_DEPTH = 3;
 
 	/**
+	 * The meters cache to avoid recreation of the same meters multiple times.
+	 * TODO: implement LRU Cache (Least Recently Used Cache)
+	 */
+	private static final ConcurrentMap<String, BasicMeters> METERS_CACHE = new ConcurrentHashMap<>();
+
+	/**
 	 * Constructor, which uses the global registry to publish metrics.
 	 *
 	 * @param latency the timer for measuring operation latency.
@@ -106,6 +114,22 @@ public record BasicMeters(MeterRegistry meterRegistry, Timer latency, Counter re
 	}
 
 	/**
+	 * Returns true if the tags object is empty, false otherwise.
+	 *
+	 * @param tags the tags to check
+	 * @return true if the tags object is empty, false otherwise
+	 */
+	public static boolean isEmpty(final Tags tags) {
+	    if (tags == Tags.empty()) {
+	        return true;
+	    }
+	    if (tags == null) {
+	        return true;
+	    }
+	    return !tags.iterator().hasNext();
+	}
+
+	/**
 	 * Constructs a {@link BasicMeters} object with all meters having the given prefix and tags.
 	 *
 	 * @param prefix the prefix for the metrics.
@@ -126,12 +150,16 @@ public record BasicMeters(MeterRegistry meterRegistry, Timer latency, Counter re
 	 */
 	public static BasicMeters of(final MeterRegistry meterRegistry, final String prefix, final Tags tags) {
 		MeterRegistry registry = Nullables.nonNullOrDefault(meterRegistry, Metrics.globalRegistry);
-		return new BasicMeters(
+		Supplier<BasicMeters> basicMetersInstantiator = () -> new BasicMeters(
 				registry,
 				registry.timer(String.join(SEPARATOR, prefix, LATENCY_METRIC), tags),
 				registry.counter(String.join(SEPARATOR, prefix, REQUEST_METRIC), tags),
 				registry.counter(String.join(SEPARATOR, prefix, RETRY_METRIC), tags),
 				registry.counter(String.join(SEPARATOR, prefix, ERROR_METRIC), tags));
+		if (isEmpty(tags)) {
+			return METERS_CACHE.computeIfAbsent(prefix, key -> basicMetersInstantiator.get());
+		}
+		return basicMetersInstantiator.get();
 	}
 
 	/**
