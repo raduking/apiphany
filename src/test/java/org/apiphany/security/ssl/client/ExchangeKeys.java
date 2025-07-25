@@ -14,7 +14,7 @@ public class ExchangeKeys {
     public static final int IV_LENGTH = 4;
 
 	public enum Type {
-		AHEAD
+		AEAD
 	}
 
 	private final byte[] clientWriteKey = new byte[KEY_LENGTH];
@@ -23,7 +23,7 @@ public class ExchangeKeys {
 	private final byte[] serverIV = new byte[IV_LENGTH];
 
 	public static ExchangeKeys from(final byte[] keyBlock, final Type type) {
-		if (Type.AHEAD != type) {
+		if (Type.AEAD != type) {
 			throw new UnsupportedOperationException("Unsupported exchange key type");
 		}
 		LOGGER.debug("Key block length: {}", keyBlock.length);
