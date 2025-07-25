@@ -240,7 +240,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		byte[] keyBlock = PseudoRandomFunction.apply(masterSecret, "key expansion",
 				Bytes.concatenate(serverRandom, clientRandom), (ExchangeKeys.KEY_LENGTH + ExchangeKeys.IV_LENGTH) * 2);
 		// Extract keys
-		exchangeKeys = ExchangeKeys.from(keyBlock, ExchangeKeys.Type.AHEAD);
+		exchangeKeys = ExchangeKeys.from(keyBlock, ExchangeKeys.Type.AEAD);
 
 		// 6. Send Client Change Cipher Spec
 		Record changeCypherSpecRecord = new Record(sslProtocol, new ChangeCipherSpec());
