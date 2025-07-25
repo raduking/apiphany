@@ -78,12 +78,15 @@ public abstract class Hex {
 	/**
 	 * Dumps a byte array in hexadecimal format with optional verbose output. Verbose output includes offset, hex values,
 	 * and ASCII representation.
+	 * <p>
+	 * Sonar will complain about the cognitive complexity, well, tough luck, breaking up this method doesn't make sense at
+	 * the moment.
 	 *
 	 * @param bytes the byte array to dump
 	 * @param verbose whether to produce verbose output
 	 * @return formatted hexadecimal dump of the byte array
 	 */
-	public static String dump(final byte[] bytes, final boolean verbose) {
+	public static String dump(final byte[] bytes, final boolean verbose) { // NOSONAR
 		if (bytes == null) {
 			return "null";
 		}
@@ -107,6 +110,9 @@ public abstract class Hex {
 				}
 				if (j == half) {
 					sb.append(" ");
+					if (verbose) {
+						sb.append(" ");
+					}
 				}
 			}
 			if (verbose) {
