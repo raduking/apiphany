@@ -65,6 +65,13 @@ import org.morphix.lang.function.ThrowingRunnable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Minimal TLS Client implementation using simple {@link Socket} connection.
+ *
+ * @see <a target="_blank" href="https://tls12.xargs.org/">The Illustrated TLS 1.2 Connection</a>
+ *
+ * @author Radu Sebastian LAZIN
+ */
 public class MinimalTLSClient implements AutoCloseable {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(MinimalTLSClient.class);
@@ -194,28 +201,29 @@ public class MinimalTLSClient implements AutoCloseable {
 		// 3. Generate Client Key Exchange
 		TLSKeyExchange tlsKeyExchange;
 		switch (serverCipherSuite.keyExchange()) {
-		case ECDHE -> {
-			byte[] leServerPublic = Objects.requireNonNull(serverKeyExchange).getPublicKey().getValue().toByteArray();
-			LOGGER.debug("Server public key (raw bytes from key exchange):\n{}", Hex.dump(leServerPublic));
-			X25519Keys keys = new X25519Keys();
-			byte[] clientPublicBytes = getClientPublicBytes(serverKeyExchange, keys);
-			tlsKeyExchange = new ECDHEPublicKey(clientPublicBytes);
-			LOGGER.debug("Server public key ({}):\n{}", serverPublicKey.getClass(), serverPublicKey);
-			LOGGER.debug("Keys match: {}", keys.verifyKeyMatch(keys.toRawByteArray(serverPublicKey), serverPublicKey));
-			// Compute shared secret
-			this.preMasterSecret = keys.getSharedSecret(clientKeyPair.getPrivate(), serverPublicKey);
-			LOGGER.debug("Pre Master Secret:\n{}", Hex.dump(preMasterSecret));
-		}
-		case RSA -> {
-			this.serverPublicKey = x509Certificate.getPublicKey();
-			this.preMasterSecret = Bytes.concatenate(new Version(SSLProtocol.TLS_1_2).toByteArray(), DeterministicSecureRandom.generateLinear(46));
-			// Encrypt pre-master with server's RSA key
-			Cipher rsa = Cipher.getInstance("RSA/ECB/PKCS1Padding");
-			rsa.init(Cipher.ENCRYPT_MODE, serverPublicKey);
-			byte[] encryptedPreMaster = rsa.doFinal(preMasterSecret);
-			tlsKeyExchange = new RSAEncryptedPreMaster(encryptedPreMaster);
-		}
-		default -> throw new SSLException("Unsupported cipher suite: " + serverCipherSuite);
+			case ECDHE -> {
+				byte[] leServerPublic = Objects.requireNonNull(serverKeyExchange).getPublicKey().getValue().toByteArray();
+				LOGGER.debug("Server public key (raw bytes from key exchange):\n{}", Hex.dump(leServerPublic));
+				X25519Keys keys = new X25519Keys();
+				byte[] clientPublicBytes = getClientPublicBytes(serverKeyExchange, keys);
+				tlsKeyExchange = new ECDHEPublicKey(clientPublicBytes);
+				LOGGER.debug("Server public key ({}):\n{}", serverPublicKey.getClass(), serverPublicKey);
+				LOGGER.debug("Keys match: {}", keys.verifyKeyMatch(keys.toRawByteArray(serverPublicKey), serverPublicKey));
+				// Compute shared secret
+				this.preMasterSecret = keys.getSharedSecret(clientKeyPair.getPrivate(), serverPublicKey);
+				LOGGER.debug("Pre Master Secret:\n{}", Hex.dump(preMasterSecret));
+			}
+			case RSA -> {
+				this.serverPublicKey = x509Certificate.getPublicKey();
+				this.preMasterSecret =
+						Bytes.concatenate(new Version(SSLProtocol.TLS_1_2).toByteArray(), DeterministicSecureRandom.generateLinear(46));
+				// Encrypt pre-master with server's RSA key
+				Cipher rsa = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+				rsa.init(Cipher.ENCRYPT_MODE, serverPublicKey);
+				byte[] encryptedPreMaster = rsa.doFinal(preMasterSecret);
+				tlsKeyExchange = new RSAEncryptedPreMaster(encryptedPreMaster);
+			}
+			default -> throw new SSLException("Unsupported cipher suite: " + serverCipherSuite);
 		}
 
 		// 4. Send Client Key Exchange
@@ -320,25 +328,32 @@ public class MinimalTLSClient implements AutoCloseable {
 		byte[] decrypted = decrypt(responseRecord, RecordContentType.APPLICATION_DATA, exchangeKeys);
 
 		String response = new String(decrypted, StandardCharsets.US_ASCII);
-		LOGGER.debug("Received HTTP Response:\n{}", response);
+		LOGGER.debug("Received HTTP GET Response:\n{}", response);
 
 		HttpResponseParser httpResponseParser = new HttpResponseParser(response);
 		int contentLength = Integer.parseInt(httpResponseParser.getHeader("content-length"));
+		StringBuilder responseBuilder = new StringBuilder();
 		String body = httpResponseParser.getBody();
+		responseBuilder.append(body);
 
-		if (contentLength > 0 && body.length() < contentLength) {
+		int currentLength = body.length();
+		while (contentLength > currentLength) {
 			responseRecord = Record.from(in, ThrowingBiFunction.unchecked((is, total) -> Encrypted.from(is, total, 8)));
 			LOGGER.debug("Received Application Data Record:\n{}", Hex.dump(responseRecord.toByteArray()));
 			decrypted = decrypt(responseRecord, RecordContentType.APPLICATION_DATA, exchangeKeys);
 
-			response = new String(decrypted, StandardCharsets.US_ASCII);
-			LOGGER.debug("Received GET Response:\n{}", response);
+			body = new String(decrypted, StandardCharsets.US_ASCII);
+			LOGGER.debug("Received HTTP GET Content:\n{}", body);
+
+			responseBuilder.append(body);
+			currentLength += decrypted.length;
 		}
-		return response;
+		return responseBuilder.toString();
 	}
 
 	private Record sendClientHello() throws IOException {
-		ClientHello clientHello = new ClientHello(new SecureRandom(), cipherSuites, List.of(host), SUPPORTED_NAMED_CURVES, SignatureAlgorithm.STRONG_ALGORITHMS);
+		ClientHello clientHello =
+				new ClientHello(new SecureRandom(), cipherSuites, List.of(host), SUPPORTED_NAMED_CURVES, SignatureAlgorithm.STRONG_ALGORITHMS);
 		Record clientHelloRecord = new Record(SSLProtocol.TLS_1_0, clientHello);
 		byte[] clientHelloBytes = clientHelloRecord.toByteArray();
 		sendRecord(clientHelloBytes);
