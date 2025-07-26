@@ -3,7 +3,11 @@ package org.apiphany.security.tls;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 
+import org.apiphany.io.ByteBufferInputStream;
 import org.apiphany.io.BytesWrapper;
 import org.apiphany.io.UInt24;
 import org.apiphany.json.JsonBuilder;
@@ -122,4 +126,17 @@ public class Certificate implements TLSObject {
 	public BytesWrapper getData() {
 		return data;
 	}
+
+	/**
+	 * Tries to parse the certificate data into an {@link X509Certificate}.
+	 *
+	 * @return X.509 certificate
+	 * @throws CertificateException when it cannot parse the certificate
+	 */
+	@SuppressWarnings("resource")
+	public X509Certificate toX509Certificate() throws CertificateException {
+		CertificateFactory factory = CertificateFactory.getInstance("X.509");
+		return (X509Certificate) factory.generateCertificate(ByteBufferInputStream.of(data.toByteArray()));
+	}
+
 }
