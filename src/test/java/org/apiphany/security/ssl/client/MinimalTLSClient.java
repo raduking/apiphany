@@ -31,7 +31,6 @@ import org.apiphany.lang.ByteSizeable;
 import org.apiphany.lang.Bytes;
 import org.apiphany.lang.Hex;
 import org.apiphany.lang.Strings;
-import org.apiphany.security.ssl.DeterministicSecureRandom;
 import org.apiphany.security.ssl.SSLProtocol;
 import org.apiphany.security.tls.AdditionalAuthenticatedData;
 import org.apiphany.security.tls.Alert;
@@ -45,6 +44,7 @@ import org.apiphany.security.tls.ClientHello;
 import org.apiphany.security.tls.ClientKeyExchange;
 import org.apiphany.security.tls.ECDHEPublicKey;
 import org.apiphany.security.tls.Encrypted;
+import org.apiphany.security.tls.ExchangeRandom;
 import org.apiphany.security.tls.Finished;
 import org.apiphany.security.tls.Handshake;
 import org.apiphany.security.tls.KeyExchangeAlgorithm;
@@ -222,8 +222,7 @@ public class MinimalTLSClient implements AutoCloseable {
 			}
 			case RSA -> {
 				this.serverPublicKey = x509Certificate.getPublicKey();
-				preMasterSecret =
-						Bytes.concatenate(new Version(sslProtocol).toByteArray(), DeterministicSecureRandom.generateLinear(46));
+				preMasterSecret = Bytes.concatenate(new Version(sslProtocol).toByteArray(), ExchangeRandom.generate(46));
 				// Encrypt pre-master with server's RSA key
 				Cipher rsa = Cipher.getInstance("RSA/ECB/PKCS1Padding");
 				rsa.init(Cipher.ENCRYPT_MODE, serverPublicKey);

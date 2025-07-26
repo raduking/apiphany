@@ -100,4 +100,26 @@ public class ExchangeRandom extends BytesWrapper implements TLSObject {
 		secureRandom.nextBytes(bytes);
 		return bytes;
 	}
+
+	/**
+	 * Generates random bytes using the specified {@link SecureRandom}.
+	 *
+	 * @param secureRandom the random number generator to use
+	 * @param size the size of the array to fill with random bytes
+	 * @return the filled byte array
+	 */
+	public static byte[] generate(final SecureRandom secureRandom, final int size) {
+		return generate(secureRandom, new byte[size]);
+	}
+
+	/**
+	 * Generates random bytes using a new {@link SecureRandom}.
+	 *
+	 * @param secureRandom the random number generator to use
+	 * @param size the size of the array to fill with random bytes
+	 * @return the filled byte array
+	 */
+	public static byte[] generate(final int size) {
+		return generate(new SecureRandom(), size);
+	}
 }
