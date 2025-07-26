@@ -22,6 +22,7 @@
 - Added first version of TLS model classes to the `*.security.tls` package and a working minimal TLS client in the test packages.
 - Added `BasicMeters` caching for fewer objects creation (this only caches meters without tags).
 - Added `BasicMeters.isEmpty(Tags)` to efficiently check if tags are empty or not.
+- Added `ByteBufferInputStream` as an alternative to `ByteArrayInputStream` without synchronization overhead.
 
 ---
 

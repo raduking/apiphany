@@ -1,12 +1,12 @@
 package org.apiphany.security.ssl;
 
+import java.io.Serial;
 import java.security.SecureRandom;
 import java.security.SecureRandomParameters;
 
-import org.apiphany.security.tls.ExchangeRandom;
-
 public class DeterministicSecureRandom extends SecureRandom {
 
+    @Serial
     private static final long serialVersionUID = -6506932033686117081L;
 
     @Override
@@ -38,9 +38,5 @@ public class DeterministicSecureRandom extends SecureRandom {
 
 	public static byte[] generateLinear(final int bytes) {
 		return generateRandom(new DeterministicSecureRandom(), bytes);
-	}
-
-	public static ExchangeRandom linear(final int bytes) {
-		return new ExchangeRandom(generateLinear(bytes));
 	}
 }
