@@ -26,17 +26,4 @@ public class DeterministicSecureRandom extends SecureRandom {
     	nextBytes(bytes);
     }
 
-	public static byte[] generateRandom(final SecureRandom secureRandom, final int bytes) {
-		byte[] random = new byte[bytes];
-		secureRandom.nextBytes(random);
-		return random;
-	}
-
-	public static byte[] generateRandom(final int bytes) {
-		return generateRandom(new SecureRandom(), bytes);
-	}
-
-	public static byte[] generateLinear(final int bytes) {
-		return generateRandom(new DeterministicSecureRandom(), bytes);
-	}
 }
