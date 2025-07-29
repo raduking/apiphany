@@ -2,6 +2,12 @@
 
 Simple fluent style Java API to make API calls.
 
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.raduking/apiphany)](https://central.sonatype.com/artifact/io.github.raduking/morphix-all)
+[![GitHub Release](https://img.shields.io/github/v/release/raduking/apiphany)](https://github.com/raduking/apiphany/releases)
+[![License](https://img.shields.io/github/license/raduking/apiphany)](https://opensource.org/license/apache-2-0)
+[![Java](https://img.shields.io/badge/Java-21+-blue)](https://www.oracle.com/java/technologies/downloads/#java21)
+[![PRs](https://img.shields.io/github/issues-pr/raduking/apiphany)](https://github.com/raduking/apiphany/pulls)
+
 ### Languages and Tools
 
 <p>
