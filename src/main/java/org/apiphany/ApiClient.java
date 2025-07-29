@@ -198,7 +198,7 @@ public class ApiClient implements AutoCloseable {
 	@Override
 	public void close() throws Exception {
 		exchangeClientsMap.forEach(ThrowingBiConsumer.unchecked((k, v) -> {
-			if (v.right()) {
+			if (v.right().booleanValue()) {
 				v.left().close();
 			}
 		}));

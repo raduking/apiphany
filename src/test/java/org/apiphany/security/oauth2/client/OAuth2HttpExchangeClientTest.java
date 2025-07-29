@@ -184,6 +184,15 @@ class OAuth2HttpExchangeClientTest {
 		}
 	}
 
+	@Test
+	void shouldReturnValidAuthenticationTokenWithSimpleApiClientWithOAuth3() throws Exception {
+		try (SimpleApiClientWithOAuth3 simpleApiClientWithOAuth3 = new SimpleApiClientWithOAuth3(clientProperties)) {
+			String result = simpleApiClientWithOAuth3.getName();
+
+			assertThat(result, equalTo(SimpleHttpServer.NAME));
+		}
+	}
+
 	static class ManagedApiClientWithOAuth2 extends ApiClient {
 
 		@SuppressWarnings("resource")
@@ -236,6 +245,25 @@ class OAuth2HttpExchangeClientTest {
 
 		protected SimpleApiClientWithOAuth2(final ClientProperties properties) {
 			super(exchangeClient(JavaNetHttpExchangeClient.class)
+					.properties(properties)
+					.oAuth2());
+		}
+
+		public String getName() {
+			return client()
+					.http()
+					.get()
+					.url("http://localhost:" + API_SERVER_PORT)
+					.path(API, "name")
+					.retrieve(String.class)
+					.orNull();
+		}
+	}
+
+	static class SimpleApiClientWithOAuth3 extends ApiClient {
+
+		protected SimpleApiClientWithOAuth3(final ClientProperties properties) {
+			super(with(JavaNetHttpExchangeClient.class)
 					.properties(properties)
 					.oAuth2());
 		}

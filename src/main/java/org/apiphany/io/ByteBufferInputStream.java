@@ -14,7 +14,6 @@ import java.util.Objects;
  * <ul>
  * <li>This class is not thread safe!</li>
  * </ul>
- * </p>
  *
  * @see java.io.InputStream
  * @see java.nio.ByteBuffer
@@ -35,7 +34,7 @@ public class ByteBufferInputStream extends InputStream {
 	 * @param bytes the byte array to read from
 	 * @throws NullPointerException if the input byte array is null
 	 */
-	public ByteBufferInputStream(byte[] bytes) {
+	public ByteBufferInputStream(final byte[] bytes) {
 		this.buf = ByteBuffer.wrap(Objects.requireNonNull(bytes, "Input byte array cannot be null"));
 	}
 
@@ -44,9 +43,10 @@ public class ByteBufferInputStream extends InputStream {
 	 * of the array.
 	 *
 	 * @param bytes the byte array to read from
+	 * @return a new byte buffer input stream
 	 * @throws NullPointerException if the input byte array is null
 	 */
-	public static ByteBufferInputStream of(byte[] bytes) {
+	public static ByteBufferInputStream of(final byte[] bytes) {
 		return new ByteBufferInputStream(bytes);
 	}
 
@@ -65,7 +65,7 @@ public class ByteBufferInputStream extends InputStream {
 	 * @see #read(byte[], int, int)
 	 */
 	@Override
-	public int read(byte[] bytes, int off, int len) {
+	public int read(final byte[] bytes, final int off, final int len) {
 		if (off < 0 || len < 0 || len > Objects.requireNonNull(bytes, "Byte array cannot be null").length - off) {
 			throw new IndexOutOfBoundsException();
 		}
@@ -89,7 +89,7 @@ public class ByteBufferInputStream extends InputStream {
 	 * @see #skip(long)
 	 */
 	@Override
-	public long skip(long n) {
+	public long skip(final long n) {
 		if (n <= 0) {
 			return 0;
 		}
@@ -102,7 +102,7 @@ public class ByteBufferInputStream extends InputStream {
 	 * @see #mark(int)
 	 */
 	@Override
-	public void mark(int readlimit) {
+	public void mark(final int readlimit) {
 		buf.mark();
 	}
 
