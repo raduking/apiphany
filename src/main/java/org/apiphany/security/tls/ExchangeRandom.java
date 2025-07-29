@@ -115,7 +115,6 @@ public class ExchangeRandom extends BytesWrapper implements TLSObject {
 	/**
 	 * Generates random bytes using a new {@link SecureRandom}.
 	 *
-	 * @param secureRandom the random number generator to use
 	 * @param size the size of the array to fill with random bytes
 	 * @return the filled byte array
 	 */
