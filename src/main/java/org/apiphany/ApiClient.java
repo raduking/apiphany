@@ -244,7 +244,7 @@ public class ApiClient implements AutoCloseable {
 	 */
 	private static void initializeTypeObjects(final ApiClient apiClient) {
 		Predicate<Field> predicate = MemberPredicates.withAllModifiers(Modifier::isStatic, Modifier::isFinal);
-		Fields.getDeclaredFieldsInHierarchy(apiClient.getClass(), predicate)
+		Fields.getAllDeclaredInHierarchy(apiClient.getClass(), predicate)
 				.stream()
 				.filter(field -> Objects.equals(field.getType(), GenericClass.class))
 				.forEach(ApiClient::initializeTypeObject);
