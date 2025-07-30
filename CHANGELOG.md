@@ -2,6 +2,10 @@
 
 ---
 
+`1.0.4`
+
+---
+
 `1.0.3`
 
 - Added `Arrays` class for Java array utility methods.
