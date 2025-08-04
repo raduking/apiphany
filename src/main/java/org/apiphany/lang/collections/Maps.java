@@ -89,8 +89,8 @@ public interface Maps {
 				.collect(Collectors.toMap(entry -> keyConversionFunction.apply(entry.getKey()), entry -> {
 					Object value = entry.getValue();
 					if (value instanceof Map<?, ?> mapValue
-							&& !mapValue.isEmpty()
-							&& mapValue.keySet().stream().allMatch(key -> key.getClass().isAssignableFrom(entry.getKey().getClass()))) {
+							&& isNotEmpty(mapValue)
+							&& mapValue.keySet().stream().allMatch(key -> entry.getKey().getClass().isAssignableFrom(key.getClass()))) {
 						value = convertKeys(JavaObjects.cast(mapValue), keyConversionFunction);
 					}
 					return JavaObjects.cast(value);

@@ -139,4 +139,15 @@ public abstract class Hex {
 	public static String dump(final byte[] bytes) {
 		return dump(bytes, VERBOSE);
 	}
+
+	/**
+	 * Dumps a binary representable object in hexadecimal format with verbose output (includes offset, hex values, and ASCII
+	 * representation if the {@link #VERBOSE_PROPERTY_NAME} is set to true).
+	 *
+	 * @param binaryRepresentable the binary representable object
+	 * @return formatted hexadecimal dump of the binary representable object
+	 */
+	public static String dump(final BinaryRepresentable binaryRepresentable) {
+		return dump(binaryRepresentable.toByteArray());
+	}
 }
