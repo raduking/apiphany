@@ -6,6 +6,7 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apiphany.lang.Bytes;
+import org.apiphany.security.tls.PRFLabel;
 
 public class PseudoRandomFunction {
 

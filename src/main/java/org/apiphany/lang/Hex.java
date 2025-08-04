@@ -98,9 +98,10 @@ public abstract class Hex {
 			if (verbose) {
 				sb.append(String.format("%04X: ", i));
 			}
-			for (int j = 0; j < width; j++) {
+			for (int j = 0; j < width; ++j) {
 				if (i + j < bytes.length) {
-					sb.append(string(bytes[i + j]));
+					boolean addSeparator = verbose || j < width - 1;
+					sb.append(string(bytes[i + j], addSeparator ? " " : ""));
 				} else {
 					if (verbose) {
 						sb.append("   ");

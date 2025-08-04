@@ -49,6 +49,7 @@ import org.apiphany.security.tls.Finished;
 import org.apiphany.security.tls.Handshake;
 import org.apiphany.security.tls.KeyExchangeAlgorithm;
 import org.apiphany.security.tls.NamedCurve;
+import org.apiphany.security.tls.PRFLabel;
 import org.apiphany.security.tls.RSAEncryptedPreMaster;
 import org.apiphany.security.tls.Record;
 import org.apiphany.security.tls.RecordContentType;
