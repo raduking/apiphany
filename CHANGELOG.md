@@ -4,6 +4,10 @@
 
 `1.0.4`
 
+Added `PRFLabel` enum representing labels used in TLS Pseudo-random Function (PRF) operations.
+Added `MessageDigestAlgorithm` representing supported message digest algorithms for cryptographic operations.
+Added the message digest algorithm to each `CipherSuite` enum value.
+
 ---
 
 `1.0.3`

@@ -1,9 +1,11 @@
 package org.apiphany.security.tls;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.Objects;
 
 import org.apiphany.lang.BinaryRepresentable;
+import org.morphix.lang.Enums;
 
 /**
  * Represents labels used in TLS Pseudorandom Function (PRF) operations.
@@ -53,6 +55,11 @@ public enum PRFLabel implements BinaryRepresentable {
 	SERVER_WRITE_IV("server write iv");
 
 	/**
+	 * The name map for easy {@link #fromValue(String)} implementation.
+	 */
+	private static final Map<String, PRFLabel> NAME_MAP = Enums.buildNameMap(values());
+
+	/**
 	 * The ASCII string representation of the label.
 	 */
 	private final String label;
@@ -94,5 +101,16 @@ public enum PRFLabel implements BinaryRepresentable {
 	 */
 	public String getLabel() {
 		return label;
+	}
+
+	/**
+	 * Parses a string value (case-sensitive) into a {@link PRFLabel}.
+	 *
+	 * @param value the string representation of the label (e.g., "master secret", "server finished").
+	 * @return the corresponding enum constant, or {@code null} if no match is found.
+	 * @throws IllegalArgumentException If {@code value} is {@code null} (if enforced by {@link Enums#fromString}).
+	 */
+	public static PRFLabel fromValue(final String value) {
+		return Enums.fromString(value, NAME_MAP, values());
 	}
 }
