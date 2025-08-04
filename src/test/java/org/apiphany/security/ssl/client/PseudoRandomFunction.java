@@ -10,14 +10,8 @@ import org.apiphany.security.tls.PRFLabel;
 
 public class PseudoRandomFunction {
 
-	public static final String ALGORITHM_SHA384 = "HmacSHA384";
-
-	public static byte[] apply(final byte[] secret, final PRFLabel label, final byte[] seed, final int length) throws Exception {
-		return apply(secret, label, seed, length, ALGORITHM_SHA384);
-	}
-
-	public static byte[] apply(final byte[] secret, final String label, final byte[] seed, final int length) throws Exception {
-		return apply(secret, label.getBytes(StandardCharsets.US_ASCII), seed, length, ALGORITHM_SHA384);
+	public static byte[] apply(final byte[] secret, final String label, final byte[] seed, final int length, final String algorithm) throws Exception {
+		return apply(secret, label.getBytes(StandardCharsets.US_ASCII), seed, length, algorithm);
 	}
 
 	public static byte[] apply(final byte[] secret, final PRFLabel label, final byte[] seed, final int length, final String algorithm) throws Exception {

@@ -115,7 +115,7 @@ public enum MessageDigestAlgorithm {
 	 */
 	public byte[] digest(final byte[] input) {
 		if (this == NONE) {
-			throw new UnsupportedOperationException("Message digest algorithm '" + NONE + "' does not support digesting.");
+			throw new UnsupportedOperationException("Digest algorithm '" + this + "' does not support digesting.");
 		}
 		try {
 			MessageDigest digest = MessageDigest.getInstance(getValue());
@@ -141,6 +141,18 @@ public enum MessageDigestAlgorithm {
 	@Override
 	public String toString() {
 		return getValue();
+	}
+
+	/**
+	 * Returns the HMAC (Hash-based Message Authentication Code) string value associated with this message digest algorithm.
+	 *
+	 * @return the HMAC string value associated with this message digest algorithm
+	 */
+	public String hmacName() {
+		if (this == NONE || this == MD2 || this == MD5) {
+			throw new UnsupportedOperationException("Invalid digest algorithm for HMAC PRF: " + this);
+		}
+		return "Hmac" + getValue().replace("-", "");
 	}
 
 	/**
