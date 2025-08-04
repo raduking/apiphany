@@ -177,7 +177,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		CipherSuite serverCipherSuite = serverHello.getCipherSuite();
 
 		// 2b. Server Certificates
-		if (!tlsRecord.hasHandshake(Certificates.class)) {
+		if (tlsRecord.hasNoHandshake(Certificates.class)) {
 			tlsRecord = Record.from(in);
 			accumulateHandshakes(tlsRecord.getFragments(Handshake.class));
 		}
@@ -189,7 +189,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		// 2b. Server Key Exchange (RSA cipher suites don't have a server key exchange)
 		ServerKeyExchange serverKeyExchange = null;
 		if (KeyExchangeAlgorithm.ECDHE == serverCipherSuite.keyExchange()) {
-			if (!tlsRecord.hasHandshake(ServerKeyExchange.class)) {
+			if (tlsRecord.hasNoHandshake(ServerKeyExchange.class)) {
 				tlsRecord = Record.from(in);
 				accumulateHandshakes(tlsRecord.getFragments(Handshake.class));
 			}
@@ -198,7 +198,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		}
 
 		// 2b. Server Hello Done
-		if (!tlsRecord.hasHandshake(ServerHelloDone.class)) {
+		if (tlsRecord.hasNoHandshake(ServerHelloDone.class)) {
 			tlsRecord = Record.from(in);
 			accumulateHandshakes(tlsRecord.getFragments(Handshake.class));
 		}

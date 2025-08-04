@@ -7,6 +7,7 @@
 Added `PRFLabel` enum representing labels used in TLS Pseudo-random Function (PRF) operations.
 Added `MessageDigestAlgorithm` representing supported message digest algorithms for cryptographic operations.
 Added the message digest algorithm to each `CipherSuite` enum value.
+Added `Record.hasNoHandshake` method to check of a TLS record doesn't have the handshake message type specified as a parameter.
 
 ---
 

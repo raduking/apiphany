@@ -50,9 +50,9 @@ public class Record implements TLSObject {
 	/**
 	 * Constructs a new Record with optional header updating.
 	 *
-	 * @param header The record header containing type and version information
-	 * @param fragments The list of message fragments contained in this record
-	 * @param updateHeader If true, the header length will be updated to match the fragments' size
+	 * @param header the record header containing type and version information
+	 * @param fragments the list of message fragments contained in this record
+	 * @param updateHeader if true, the header length will be updated to match the fragments' size
 	 */
 	public Record(final RecordHeader header, final List<TLSObject> fragments, final boolean updateHeader) {
 		this.header = updateHeader
@@ -64,8 +64,8 @@ public class Record implements TLSObject {
 	/**
 	 * Constructs a new Record with automatic header length calculation.
 	 *
-	 * @param header The record header containing type and version information
-	 * @param messages The list of message fragments contained in this record
+	 * @param header the record header containing type and version information
+	 * @param messages the list of message fragments contained in this record
 	 */
 	public Record(final RecordHeader header, final List<TLSObject> messages) {
 		this(header, messages, true);
@@ -74,9 +74,9 @@ public class Record implements TLSObject {
 	/**
 	 * Constructs a new Record containing a single fragment.
 	 *
-	 * @param type The record content type
-	 * @param protocol The SSL/TLS protocol version
-	 * @param fragment The single fragment to include in this record
+	 * @param type the record content type
+	 * @param protocol the SSL/TLS protocol version
+	 * @param fragment the single fragment to include in this record
 	 */
 	public Record(final RecordContentType type, final SSLProtocol protocol, final TLSObject fragment) {
 		this(new RecordHeader(type, protocol), List.of(fragment), true);
@@ -85,8 +85,8 @@ public class Record implements TLSObject {
 	/**
 	 * Constructs a new Record with automatically determined content type.
 	 *
-	 * @param protocol The SSL/TLS protocol version
-	 * @param fragment The fragment to include in this record
+	 * @param protocol the SSL/TLS protocol version
+	 * @param fragment the fragment to include in this record
 	 */
 	public Record(final SSLProtocol protocol, final TLSObject fragment) {
 		this(RecordContentType.from(fragment), protocol, fragment);
@@ -95,8 +95,8 @@ public class Record implements TLSObject {
 	/**
 	 * Constructs a new Handshake-type Record.
 	 *
-	 * @param protocol The SSL/TLS protocol version
-	 * @param handshakeObject The handshake message to wrap in a record
+	 * @param protocol the SSL/TLS protocol version
+	 * @param handshakeObject the handshake message to wrap in a record
 	 */
 	public Record(final SSLProtocol protocol, final TLSHandshakeBody handshakeObject) {
 		this(new RecordHeader(RecordContentType.HANDSHAKE, protocol), List.of(new Handshake(handshakeObject)));
@@ -105,8 +105,8 @@ public class Record implements TLSObject {
 	/**
 	 * Parses a Record from an input stream.
 	 *
-	 * @param is The input stream containing the record data
-	 * @return The parsed Record object
+	 * @param is the input stream containing the record data
+	 * @return the parsed Record object
 	 * @throws IOException If an I/O error occurs while reading
 	 * @throws IllegalArgumentException If the record data is malformed
 	 */
@@ -127,9 +127,9 @@ public class Record implements TLSObject {
 	/**
 	 * Parses a Record from an input stream using a custom fragment reader.
 	 *
-	 * @param is The input stream containing the record data
-	 * @param fragmentReader The function to parse the record's fragments
-	 * @return The parsed Record object
+	 * @param is the input stream containing the record data
+	 * @param fragmentReader the function to parse the record's fragments
+	 * @return the parsed Record object
 	 * @throws IOException If an I/O error occurs while reading
 	 * @throws IllegalArgumentException If the record data is malformed
 	 */
@@ -143,7 +143,7 @@ public class Record implements TLSObject {
 	/**
 	 * Returns the binary representation of this record.
 	 *
-	 * @return A byte array containing the complete serialized record
+	 * @return a byte array containing the complete serialized record
 	 */
 	@Override
 	public byte[] toByteArray() {
@@ -158,7 +158,7 @@ public class Record implements TLSObject {
 	/**
 	 * Returns a JSON representation of this record.
 	 *
-	 * @return A JSON string representing this record
+	 * @return a JSON string representing this record
 	 */
 	@Override
 	public String toString() {
@@ -168,7 +168,7 @@ public class Record implements TLSObject {
 	/**
 	 * Returns the total size of this record when serialized.
 	 *
-	 * @return The size in bytes of this record including header and all fragments
+	 * @return the size in bytes of this record including header and all fragments
 	 */
 	@Override
 	public int sizeOf() {
@@ -178,7 +178,7 @@ public class Record implements TLSObject {
 	/**
 	 * Returns the record header containing type and version information.
 	 *
-	 * @return The RecordHeader for this record
+	 * @return the RecordHeader for this record
 	 */
 	public RecordHeader getHeader() {
 		return header;
@@ -187,7 +187,7 @@ public class Record implements TLSObject {
 	/**
 	 * Returns all fragments contained in this record.
 	 *
-	 * @return An unmodifiable list of fragments in this record
+	 * @return an unmodifiable list of fragments in this record
 	 */
 	public List<TLSObject> getFragments() {
 		return fragments;
@@ -196,8 +196,8 @@ public class Record implements TLSObject {
 	/**
 	 * Returns a specific handshake fragment by index.
 	 *
-	 * @param index The index of the handshake fragment to retrieve
-	 * @return The Handshake fragment at the specified index
+	 * @param index the index of the handshake fragment to retrieve
+	 * @return the Handshake fragment at the specified index
 	 * @throws IndexOutOfBoundsException If the index is invalid
 	 * @throws ClassCastException If the fragment is not a Handshake
 	 */
@@ -208,9 +208,10 @@ public class Record implements TLSObject {
 	/**
 	 * Returns all fragments of a specific type.
 	 *
-	 * @param <T> The type of fragments to filter for
-	 * @param tlsObjectClass The class object of the fragment type to filter for
-	 * @return A list containing all matching fragments (may be empty)
+	 * @param <T> the type of fragments to filter for
+	 *
+	 * @param tlsObjectClass the class object of the fragment type to filter for
+	 * @return a list containing all matching fragments (may be empty)
 	 */
 	public <T extends TLSObject> List<T> getFragments(final Class<T> tlsObjectClass) {
 		if (Lists.isEmpty(fragments)) {
@@ -228,7 +229,7 @@ public class Record implements TLSObject {
 	/**
 	 * Returns the first handshake fragment in this record.
 	 *
-	 * @return The first Handshake fragment
+	 * @return the first Handshake fragment
 	 * @throws IndexOutOfBoundsException If there are no fragments
 	 * @throws ClassCastException If the first fragment is not a Handshake
 	 */
@@ -240,9 +241,10 @@ public class Record implements TLSObject {
 	/**
 	 * Checks if this record contains a specific type of handshake message.
 	 *
-	 * @param <T> The type of handshake message to check for
-	 * @param tlsHandshakeClass The class object of the handshake type to check for
-	 * @return True if the record contains a matching handshake message
+	 * @param <T> the type of handshake message to check for
+	 *
+	 * @param tlsHandshakeClass the class object of the handshake type to check for
+	 * @return true if the record contains a matching handshake message
 	 */
 	public <T extends TLSHandshakeBody> boolean hasHandshake(final Class<T> tlsHandshakeClass) {
 		for (TLSObject fragment : fragments) {
@@ -257,11 +259,24 @@ public class Record implements TLSObject {
 	}
 
 	/**
+	 * Checks if this record does not contain a specific type of handshake message.
+	 *
+	 * @param <T> the type of handshake message to check for
+	 *
+	 * @param tlsHandshakeClass the class object of the handshake type to check for
+	 * @return true if the record does not contain a matching handshake message
+	 */
+	public <T extends TLSHandshakeBody> boolean hasNoHandshake(final Class<T> tlsHandshakeClass) {
+		return !hasHandshake(tlsHandshakeClass);
+	}
+
+	/**
 	 * Returns a specific type of handshake message from this record.
 	 *
-	 * @param <T> The type of handshake message to retrieve
-	 * @param tlsHandshakeClass The class object of the handshake type to retrieve
-	 * @return The matching handshake message
+	 * @param <T> the type of handshake message to retrieve
+	 *
+	 * @param tlsHandshakeClass the class object of the handshake type to retrieve
+	 * @return the matching handshake message
 	 * @throws IllegalArgumentException If no matching handshake is found
 	 */
 	public <T extends TLSHandshakeBody> T getHandshake(final Class<T> tlsHandshakeClass) {
