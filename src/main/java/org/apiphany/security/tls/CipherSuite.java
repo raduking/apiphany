@@ -3,6 +3,7 @@ package org.apiphany.security.tls;
 import java.util.Map;
 
 import org.apiphany.io.UInt16;
+import org.apiphany.security.MessageDigestAlgorithm;
 import org.morphix.lang.Enums;
 
 /**
@@ -29,247 +30,247 @@ public enum CipherSuite implements TLSObject {
 	/**
 	 * TLS 1.3 AES-256 GCM cipher suite with SHA-384.
 	 */
-	TLS_AES_256_GCM_SHA384((short) 0x1302, KeyExchangeAlgorithm.NONE),
+	TLS_AES_256_GCM_SHA384((short) 0x1302, KeyExchangeAlgorithm.NONE, MessageDigestAlgorithm.SHA384),
 
 	/**
 	 * TLS 1.3 AES-128 GCM cipher suite with SHA-256.
 	 */
-	TLS_AES_128_GCM_SHA256((short) 0x1301, KeyExchangeAlgorithm.NONE),
+	TLS_AES_128_GCM_SHA256((short) 0x1301, KeyExchangeAlgorithm.NONE, MessageDigestAlgorithm.SHA256),
 
 	/**
 	 * TLS 1.3 ChaCha20-Poly1305 cipher suite.
 	 */
-	TLS_CHACHA20_POLY1305_SHA256((short) 0x1303, KeyExchangeAlgorithm.NONE),
+	TLS_CHACHA20_POLY1305_SHA256((short) 0x1303, KeyExchangeAlgorithm.NONE, MessageDigestAlgorithm.SHA256),
 
 	/**
 	 * ECDHE-RSA with ChaCha20-Poly1305 cipher suite.
 	 */
-	TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256((short) 0xCCA8, KeyExchangeAlgorithm.ECDHE),
+	TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256((short) 0xCCA8, KeyExchangeAlgorithm.ECDHE, MessageDigestAlgorithm.SHA256),
 
 	/**
 	 * ECDHE-RSA with AES-256 GCM cipher suite.
 	 */
-	TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384((short) 0xC030, KeyExchangeAlgorithm.ECDHE),
+	TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384((short) 0xC030, KeyExchangeAlgorithm.ECDHE, MessageDigestAlgorithm.SHA384),
 
 	/**
 	 * ECDHE-RSA with AES-128 GCM cipher suite.
 	 */
-	TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256((short) 0xC02F, KeyExchangeAlgorithm.ECDHE),
+	TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256((short) 0xC02F, KeyExchangeAlgorithm.ECDHE, MessageDigestAlgorithm.SHA256),
 
 	/**
 	 * ECDHE-ECDSA with AES-256 GCM cipher suite.
 	 */
-	TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384((short) 0xC02C, KeyExchangeAlgorithm.ECDHE),
+	TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384((short) 0xC02C, KeyExchangeAlgorithm.ECDHE, MessageDigestAlgorithm.SHA384),
 
 	/**
 	 * ECDHE-ECDSA with AES-128 GCM cipher suite.
 	 */
-	TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256((short) 0xC02B, KeyExchangeAlgorithm.ECDHE),
+	TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256((short) 0xC02B, KeyExchangeAlgorithm.ECDHE, MessageDigestAlgorithm.SHA256),
 
 	/**
 	 * ECDHE-ECDSA with ChaCha20-Poly1305 cipher suite.
 	 */
-	TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256((short) 0xCCA9, KeyExchangeAlgorithm.ECDHE),
+	TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256((short) 0xCCA9, KeyExchangeAlgorithm.ECDHE, MessageDigestAlgorithm.SHA256),
 
 	/**
 	 * DHE-RSA with AES-256 GCM cipher suite.
 	 */
-	TLS_DHE_RSA_WITH_AES_256_GCM_SHA384((short) 0x009F, KeyExchangeAlgorithm.DHE),
+	TLS_DHE_RSA_WITH_AES_256_GCM_SHA384((short) 0x009F, KeyExchangeAlgorithm.DHE, MessageDigestAlgorithm.SHA384),
 
 	/**
 	 * DHE-RSA with ChaCha20-Poly1305 cipher suite.
 	 */
-	TLS_DHE_RSA_WITH_CHACHA20_POLY1305_SHA256((short) 0xCCAA, KeyExchangeAlgorithm.DHE),
+	TLS_DHE_RSA_WITH_CHACHA20_POLY1305_SHA256((short) 0xCCAA, KeyExchangeAlgorithm.DHE, MessageDigestAlgorithm.SHA256),
 
 	/**
 	 * DHE-DSS with AES-256 GCM cipher suite.
 	 */
-	TLS_DHE_DSS_WITH_AES_256_GCM_SHA384((short) 0x00A3, KeyExchangeAlgorithm.DHE),
+	TLS_DHE_DSS_WITH_AES_256_GCM_SHA384((short) 0x00A3, KeyExchangeAlgorithm.DHE, MessageDigestAlgorithm.SHA384),
 
 	/**
 	 * DHE-RSA with AES-128 GCM cipher suite.
 	 */
-	TLS_DHE_RSA_WITH_AES_128_GCM_SHA256((short) 0x009E, KeyExchangeAlgorithm.DHE),
+	TLS_DHE_RSA_WITH_AES_128_GCM_SHA256((short) 0x009E, KeyExchangeAlgorithm.DHE, MessageDigestAlgorithm.SHA256),
 
 	/**
 	 * DHE-DSS with AES-128 GCM cipher suite.
 	 */
-	TLS_DHE_DSS_WITH_AES_128_GCM_SHA256((short) 0x00A2, KeyExchangeAlgorithm.DHE),
+	TLS_DHE_DSS_WITH_AES_128_GCM_SHA256((short) 0x00A2, KeyExchangeAlgorithm.DHE, MessageDigestAlgorithm.SHA256),
 
 	/**
 	 * ECDHE-ECDSA with AES-256 CBC cipher suite.
 	 */
-	TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384((short) 0xC024, KeyExchangeAlgorithm.ECDHE),
+	TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384((short) 0xC024, KeyExchangeAlgorithm.ECDHE, MessageDigestAlgorithm.SHA384),
 
 	/**
 	 * ECDHE-RSA with AES-256 CBC cipher suite.
 	 */
-	TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384((short) 0xC028, KeyExchangeAlgorithm.ECDHE),
+	TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384((short) 0xC028, KeyExchangeAlgorithm.ECDHE, MessageDigestAlgorithm.SHA384),
 
 	/**
 	 * ECDHE-ECDSA with AES-128 CBC cipher suite.
 	 */
-	TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256((short) 0xC023, KeyExchangeAlgorithm.ECDHE),
+	TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256((short) 0xC023, KeyExchangeAlgorithm.ECDHE, MessageDigestAlgorithm.SHA256),
 
 	/**
 	 * ECDHE-RSA with AES-128 CBC cipher suite.
 	 */
-	TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256((short) 0xC027, KeyExchangeAlgorithm.ECDHE),
+	TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256((short) 0xC027, KeyExchangeAlgorithm.ECDHE, MessageDigestAlgorithm.SHA256),
 
 	/**
 	 * DHE-RSA with AES-256 CBC cipher suite.
 	 */
-	TLS_DHE_RSA_WITH_AES_256_CBC_SHA256((short) 0x006B, KeyExchangeAlgorithm.DHE),
+	TLS_DHE_RSA_WITH_AES_256_CBC_SHA256((short) 0x006B, KeyExchangeAlgorithm.DHE, MessageDigestAlgorithm.SHA256),
 
 	/**
 	 * DHE-DSS with AES-256 CBC cipher suite.
 	 */
-	TLS_DHE_DSS_WITH_AES_256_CBC_SHA256((short) 0x006A, KeyExchangeAlgorithm.DHE),
+	TLS_DHE_DSS_WITH_AES_256_CBC_SHA256((short) 0x006A, KeyExchangeAlgorithm.DHE, MessageDigestAlgorithm.SHA256),
 
 	/**
 	 * DHE-RSA with AES-128 CBC cipher suite.
 	 */
-	TLS_DHE_RSA_WITH_AES_128_CBC_SHA256((short) 0x0067, KeyExchangeAlgorithm.DHE),
+	TLS_DHE_RSA_WITH_AES_128_CBC_SHA256((short) 0x0067, KeyExchangeAlgorithm.DHE, MessageDigestAlgorithm.SHA256),
 
 	/**
 	 * DHE-DSS with AES-128 CBC cipher suite.
 	 */
-	TLS_DHE_DSS_WITH_AES_128_CBC_SHA256((short) 0x0066, KeyExchangeAlgorithm.DHE),
+	TLS_DHE_DSS_WITH_AES_128_CBC_SHA256((short) 0x0066, KeyExchangeAlgorithm.DHE, MessageDigestAlgorithm.SHA256),
 
 	/**
 	 * ECDHE-ECDSA with AES-256 CBC legacy cipher suite.
 	 */
-	TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA((short) 0xC00A, KeyExchangeAlgorithm.ECDHE),
+	TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA((short) 0xC00A, KeyExchangeAlgorithm.ECDHE, MessageDigestAlgorithm.SHA1),
 
 	/**
 	 * ECDHE-RSA with AES-256 CBC legacy cipher suite.
 	 */
-	TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA((short) 0xC014, KeyExchangeAlgorithm.ECDHE),
+	TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA((short) 0xC014, KeyExchangeAlgorithm.ECDHE, MessageDigestAlgorithm.SHA1),
 
 	/**
 	 * ECDHE-ECDSA with AES-128 CBC legacy cipher suite.
 	 */
-	TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA((short) 0xC009, KeyExchangeAlgorithm.ECDHE),
+	TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA((short) 0xC009, KeyExchangeAlgorithm.ECDHE, MessageDigestAlgorithm.SHA1),
 
 	/**
 	 * ECDHE-RSA with AES-128 CBC legacy cipher suite.
 	 */
-	TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA((short) 0xC013, KeyExchangeAlgorithm.ECDHE),
+	TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA((short) 0xC013, KeyExchangeAlgorithm.ECDHE, MessageDigestAlgorithm.SHA1),
 
 	/**
 	 * DHE-RSA with AES-256 CBC legacy cipher suite.
 	 */
-	TLS_DHE_RSA_WITH_AES_256_CBC_SHA((short) 0x0039, KeyExchangeAlgorithm.DHE),
+	TLS_DHE_RSA_WITH_AES_256_CBC_SHA((short) 0x0039, KeyExchangeAlgorithm.DHE, MessageDigestAlgorithm.SHA1),
 
 	/**
 	 * DHE-DSS with AES-256 CBC legacy cipher suite.
 	 */
-	TLS_DHE_DSS_WITH_AES_256_CBC_SHA((short) 0x0038, KeyExchangeAlgorithm.DHE),
+	TLS_DHE_DSS_WITH_AES_256_CBC_SHA((short) 0x0038, KeyExchangeAlgorithm.DHE, MessageDigestAlgorithm.SHA1),
 
 	/**
 	 * DHE-RSA with AES-128 CBC legacy cipher suite.
 	 */
-	TLS_DHE_RSA_WITH_AES_128_CBC_SHA((short) 0x0033, KeyExchangeAlgorithm.DHE),
+	TLS_DHE_RSA_WITH_AES_128_CBC_SHA((short) 0x0033, KeyExchangeAlgorithm.DHE, MessageDigestAlgorithm.SHA1),
 
 	/**
 	 * DHE-DSS with AES-128 CBC legacy cipher suite.
 	 */
-	TLS_DHE_DSS_WITH_AES_128_CBC_SHA((short) 0x0032, KeyExchangeAlgorithm.DHE),
+	TLS_DHE_DSS_WITH_AES_128_CBC_SHA((short) 0x0032, KeyExchangeAlgorithm.DHE, MessageDigestAlgorithm.SHA1),
 
 	/**
 	 * RSA with AES-256 GCM cipher suite.
 	 */
-	TLS_RSA_WITH_AES_256_GCM_SHA384((short) 0x009D, KeyExchangeAlgorithm.RSA),
+	TLS_RSA_WITH_AES_256_GCM_SHA384((short) 0x009D, KeyExchangeAlgorithm.RSA, MessageDigestAlgorithm.SHA384),
 
 	/**
 	 * RSA with AES-128 GCM cipher suite.
 	 */
-	TLS_RSA_WITH_AES_128_GCM_SHA256((short) 0x009C, KeyExchangeAlgorithm.RSA),
+	TLS_RSA_WITH_AES_128_GCM_SHA256((short) 0x009C, KeyExchangeAlgorithm.RSA, MessageDigestAlgorithm.SHA256),
 
 	/**
 	 * RSA with AES-256 CBC cipher suite.
 	 */
-	TLS_RSA_WITH_AES_256_CBC_SHA256((short) 0x003D, KeyExchangeAlgorithm.RSA),
+	TLS_RSA_WITH_AES_256_CBC_SHA256((short) 0x003D, KeyExchangeAlgorithm.RSA, MessageDigestAlgorithm.SHA256),
 
 	/**
 	 * RSA with AES-128 CBC cipher suite.
 	 */
-	TLS_RSA_WITH_AES_128_CBC_SHA256((short) 0x003C, KeyExchangeAlgorithm.RSA),
+	TLS_RSA_WITH_AES_128_CBC_SHA256((short) 0x003C, KeyExchangeAlgorithm.RSA, MessageDigestAlgorithm.SHA256),
 
 	/**
 	 * RSA with AES-256 CBC legacy cipher suite.
 	 */
-	TLS_RSA_WITH_AES_256_CBC_SHA((short) 0x0035, KeyExchangeAlgorithm.RSA),
+	TLS_RSA_WITH_AES_256_CBC_SHA((short) 0x0035, KeyExchangeAlgorithm.RSA, MessageDigestAlgorithm.SHA1),
 
 	/**
 	 * RSA with AES-128 CBC legacy cipher suite.
 	 */
-	TLS_RSA_WITH_AES_128_CBC_SHA((short) 0x002F, KeyExchangeAlgorithm.RSA),
+	TLS_RSA_WITH_AES_128_CBC_SHA((short) 0x002F, KeyExchangeAlgorithm.RSA, MessageDigestAlgorithm.SHA1),
 
 	/**
 	 * OpenSSL DHE-RSA with AES-128 CCM-8 cipher suite.
 	 */
-	DHE_RSA_WITH_AES_128_CCM_8((short) 0xFF9E, KeyExchangeAlgorithm.DHE),
+	DHE_RSA_WITH_AES_128_CCM_8((short) 0xFF9E, KeyExchangeAlgorithm.DHE, MessageDigestAlgorithm.SHA256),
 
 	/**
 	 * OpenSSL DHE-RSA with AES-256 CCM-8 cipher suite.
 	 */
-	DHE_RSA_WITH_AES_256_CCM_8((short) 0xFF9F, KeyExchangeAlgorithm.DHE),
+	DHE_RSA_WITH_AES_256_CCM_8((short) 0xFF9F, KeyExchangeAlgorithm.DHE, MessageDigestAlgorithm.SHA256),
 
 	/**
 	 * OpenSSL DHE-RSA with AES-128 CCM cipher suite.
 	 */
-	DHE_RSA_WITH_AES_128_CCM((short) 0xFF9C, KeyExchangeAlgorithm.DHE),
+	DHE_RSA_WITH_AES_128_CCM((short) 0xFF9C, KeyExchangeAlgorithm.DHE, MessageDigestAlgorithm.SHA256),
 
 	/**
 	 * OpenSSL DHE-RSA with AES-256 CCM cipher suite.
 	 */
-	DHE_RSA_WITH_AES_256_CCM((short) 0xFF9D, KeyExchangeAlgorithm.DHE),
+	DHE_RSA_WITH_AES_256_CCM((short) 0xFF9D, KeyExchangeAlgorithm.DHE, MessageDigestAlgorithm.SHA256),
 
 	/**
 	 * GOST with Kuznyechik CTR cipher suite.
 	 */
-	TLS_GOSTR341112_256_WITH_KUZNYECHIK_CTR_OMAC((short) 0xCBA9, KeyExchangeAlgorithm.NONE),
+	TLS_GOSTR341112_256_WITH_KUZNYECHIK_CTR_OMAC((short) 0xCBA9, KeyExchangeAlgorithm.NONE, MessageDigestAlgorithm.GOST3411_2012_256),
 
 	/**
 	 * GOST with Magma CTR cipher suite.
 	 */
-	TLS_GOSTR341112_256_WITH_MAGMA_CTR_OMAC((short) 0xCBA8, KeyExchangeAlgorithm.NONE),
+	TLS_GOSTR341112_256_WITH_MAGMA_CTR_OMAC((short) 0xCBA8, KeyExchangeAlgorithm.NONE, MessageDigestAlgorithm.GOST3411_2012_256),
 
 	/**
 	 * GOST with 28147 CNT cipher suite.
 	 */
-	TLS_GOSTR341112_256_WITH_28147_CNT_IMIT((short) 0xCBAA, KeyExchangeAlgorithm.NONE),
+	TLS_GOSTR341112_256_WITH_28147_CNT_IMIT((short) 0xCBAA, KeyExchangeAlgorithm.NONE, MessageDigestAlgorithm.GOST3411_2012_256),
 
 	/**
 	 * ECDHE-RSA with 3DES EDE CBC legacy cipher suite.
 	 */
-	TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA((short) 0xC012, KeyExchangeAlgorithm.ECDHE),
+	TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA((short) 0xC012, KeyExchangeAlgorithm.ECDHE, MessageDigestAlgorithm.SHA1),
 
 	/**
 	 * RSA with 3DES EDE CBC legacy cipher suite.
 	 */
-	TLS_RSA_WITH_3DES_EDE_CBC_SHA((short) 0x000A, KeyExchangeAlgorithm.RSA),
+	TLS_RSA_WITH_3DES_EDE_CBC_SHA((short) 0x000A, KeyExchangeAlgorithm.RSA, MessageDigestAlgorithm.SHA1),
 
 	/**
 	 * RSA export with RC4-56 legacy cipher suite.
 	 */
-	TLS_RSA_EXPORT1024_WITH_RC4_56_SHA((short) 0x0040, KeyExchangeAlgorithm.RSA),
+	TLS_RSA_EXPORT1024_WITH_RC4_56_SHA((short) 0x0040, KeyExchangeAlgorithm.RSA, MessageDigestAlgorithm.SHA1),
 
 	/**
 	 * Empty renegotiation info signaling cipher suite.
 	 */
-	TLS_EMPTY_RENEGOTIATION_INFO_SCSV((short) 0x00FF, KeyExchangeAlgorithm.NONE),
+	TLS_EMPTY_RENEGOTIATION_INFO_SCSV((short) 0x00FF, KeyExchangeAlgorithm.NONE, MessageDigestAlgorithm.NONE),
 
 	/**
 	 * Reserved cipher suite value.
 	 */
-	RESERVED((short) 0xFFFF, KeyExchangeAlgorithm.NONE),
+	RESERVED((short) 0xFFFF, KeyExchangeAlgorithm.NONE, MessageDigestAlgorithm.NONE),
 
 	/**
 	 * Unassigned cipher suite value.
 	 */
-	UNASSIGNED((short) 0x0100, KeyExchangeAlgorithm.NONE);
+	UNASSIGNED((short) 0x0100, KeyExchangeAlgorithm.NONE, MessageDigestAlgorithm.NONE);
 
 	/**
 	 * the size in bytes of a cipher suite when serialized (always 2 bytes)
@@ -292,14 +293,20 @@ public enum CipherSuite implements TLSObject {
 	private final KeyExchangeAlgorithm keyExchange;
 
 	/**
+	 * The message digest algorithm.
+	 */
+	private final MessageDigestAlgorithm messageDigest;
+
+	/**
 	 * Constructs a cipher suite enum constant.
 	 *
 	 * @param value the 2-byte code assigned to this cipher suite
 	 * @param keyExchange the key exchange algorithm used by this suite
 	 */
-	CipherSuite(final short value, final KeyExchangeAlgorithm keyExchange) {
+	CipherSuite(final short value, final KeyExchangeAlgorithm keyExchange, final MessageDigestAlgorithm messageDigest) {
 		this.value = value;
 		this.keyExchange = keyExchange;
+		this.messageDigest = messageDigest;
 	}
 
 	/**
@@ -329,6 +336,15 @@ public enum CipherSuite implements TLSObject {
 	 */
 	public KeyExchangeAlgorithm keyExchange() {
 		return keyExchange;
+	}
+
+	/**
+	 * Returns the message digest algorithm used by this cipher suite.
+	 *
+	 * @return the message digest algorithm enum constant
+	 */
+	public MessageDigestAlgorithm getMessageDigest() {
+		return messageDigest;
 	}
 
 	/**

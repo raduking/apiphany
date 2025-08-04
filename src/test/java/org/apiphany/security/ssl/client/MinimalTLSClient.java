@@ -256,7 +256,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		LOGGER.debug("Concatenated handshake message content types:\n{}", getConcatenatedHandshakeMessageTypes());
 		LOGGER.debug("Handshake transcript ({} bytes):\n{}", handshakeBytes.length, Hex.dump(handshakeBytes));
 
-		byte[] handshakeHash = HashingFunction.apply("SHA-384", handshakeBytes);
+		byte[] handshakeHash = serverCipherSuite.getMessageDigest().digest(handshakeBytes);
 		LOGGER.debug("Handshake hash:\n{}", Hex.dump(handshakeHash));
 
 		byte[] clientVerifyData = PseudoRandomFunction.apply(masterSecret, PRFLabel.CLIENT_FINISHED, handshakeHash, 12);
@@ -284,7 +284,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		// 11. Compute server verify data and validate
 		accumulateHandshake(clientFinishedHandshake);
 		handshakeBytes = getConcatenatedHandshakeMessages();
-		handshakeHash = HashingFunction.apply("SHA-384", handshakeBytes);
+		handshakeHash = serverCipherSuite.getMessageDigest().digest(handshakeBytes);
 		LOGGER.debug("Handshake hash:\n{}", Hex.dump(handshakeHash));
 
 		byte[] computedVerifyData = PseudoRandomFunction.apply(masterSecret, PRFLabel.SERVER_FINISHED, handshakeHash, 12);
