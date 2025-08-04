@@ -51,6 +51,7 @@ class SSLPropertiesTest {
 	private static final Logger LOGGER = LoggerFactory.getLogger(SSLPropertiesTest.class);
 
 	private static final String SSL = "ssl";
+	private static final String HMAC_SHA384 = "HmacSHA384";
 
 	private static final Duration PORT_CHECK_TIMEOUT = Duration.ofMillis(500);
 	private static final String LOCALHOST = "localhost";
@@ -432,7 +433,7 @@ class SSLPropertiesTest {
 		Arrays.fill(secret, (byte) 0x0b);
 
 		byte[] seedBytes = seed.getBytes(StandardCharsets.US_ASCII);
-		byte[] output = PseudoRandomFunction.apply(secret, label, seedBytes, length);
+		byte[] output = PseudoRandomFunction.apply(secret, label, seedBytes, length, HMAC_SHA384);
 
 		String hexOutput = Hex.string(output).toLowerCase().trim();
 

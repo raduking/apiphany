@@ -31,6 +31,7 @@ import org.apiphany.lang.ByteSizeable;
 import org.apiphany.lang.Bytes;
 import org.apiphany.lang.Hex;
 import org.apiphany.lang.Strings;
+import org.apiphany.security.MessageDigestAlgorithm;
 import org.apiphany.security.ssl.SSLProtocol;
 import org.apiphany.security.tls.AdditionalAuthenticatedData;
 import org.apiphany.security.tls.Alert;
@@ -79,13 +80,11 @@ public class MinimalTLSClient implements AutoCloseable {
 	public static final Duration DEFAULT_SOCKET_TIMEOUT = Duration.ofSeconds(1);
 
 	public static final List<NamedCurve> SUPPORTED_NAMED_CURVES = List.of(
-			NamedCurve.X25519
-	);
+			NamedCurve.X25519);
 
 	public static final List<CipherSuite> SUPPORTED_CIPHER_SUITES = List.of(
 			CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-			CipherSuite.TLS_RSA_WITH_AES_256_GCM_SHA384
-	);
+			CipherSuite.TLS_RSA_WITH_AES_256_GCM_SHA384);
 
 	private final String host;
 	private final int port;
@@ -149,7 +148,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		String[] fragmentNames = tlsRecord.getFragments().stream()
 				.map(f -> (f instanceof Handshake handshake ? handshake.getBody() : f).getClass().getSimpleName())
 				.toArray(String[]::new);
-		LOGGER.debug("Sent {}:\n{}", String.join(".", fragmentNames),  Hex.dump(bytes));
+		LOGGER.debug("Sent {}:\n{}", String.join(".", fragmentNames), Hex.dump(bytes));
 	}
 
 	public byte[] performHandshake() throws Exception {
@@ -175,6 +174,8 @@ public class MinimalTLSClient implements AutoCloseable {
 		LOGGER.debug("Server random:\n{}", Hex.dump(serverRandom));
 		LOGGER.debug("Received Server Hello:\n{}", Hex.dump(serverHello));
 		CipherSuite serverCipherSuite = serverHello.getCipherSuite();
+		MessageDigestAlgorithm messageDigest = serverCipherSuite.getMessageDigest();
+		String prfAlgorithm = messageDigest.hmacName();
 
 		// 2b. Server Certificates
 		if (tlsRecord.hasNoHandshake(Certificates.class)) {
@@ -240,10 +241,10 @@ public class MinimalTLSClient implements AutoCloseable {
 
 		// 5. Derive Master Secret and Keys
 		byte[] masterSecret = PseudoRandomFunction.apply(preMasterSecret, PRFLabel.MASTER_SECRET,
-				Bytes.concatenate(clientRandom, serverRandom), 48);
+				Bytes.concatenate(clientRandom, serverRandom), 48, prfAlgorithm);
 		LOGGER.debug("Master secret:\n{}", Hex.dump(masterSecret));
 		byte[] keyBlock = PseudoRandomFunction.apply(masterSecret, PRFLabel.KEY_EXPANSION,
-				Bytes.concatenate(serverRandom, clientRandom), (ExchangeKeys.KEY_LENGTH + ExchangeKeys.IV_LENGTH) * 2);
+				Bytes.concatenate(serverRandom, clientRandom), (ExchangeKeys.KEY_LENGTH + ExchangeKeys.IV_LENGTH) * 2, prfAlgorithm);
 		// Extract keys
 		exchangeKeys = ExchangeKeys.from(keyBlock, ExchangeKeys.Type.AEAD);
 
@@ -256,10 +257,10 @@ public class MinimalTLSClient implements AutoCloseable {
 		LOGGER.debug("Concatenated handshake message content types:\n{}", getConcatenatedHandshakeMessageTypes());
 		LOGGER.debug("Handshake transcript ({} bytes):\n{}", handshakeBytes.length, Hex.dump(handshakeBytes));
 
-		byte[] handshakeHash = serverCipherSuite.getMessageDigest().digest(handshakeBytes);
+		byte[] handshakeHash = messageDigest.digest(handshakeBytes);
 		LOGGER.debug("Handshake hash:\n{}", Hex.dump(handshakeHash));
 
-		byte[] clientVerifyData = PseudoRandomFunction.apply(masterSecret, PRFLabel.CLIENT_FINISHED, handshakeHash, 12);
+		byte[] clientVerifyData = PseudoRandomFunction.apply(masterSecret, PRFLabel.CLIENT_FINISHED, handshakeHash, 12, prfAlgorithm);
 		LOGGER.debug("Computed Client verify data:\n{}", Hex.dump(clientVerifyData));
 		Handshake clientFinishedHandshake = new Handshake(new Finished(clientVerifyData));
 
@@ -284,10 +285,10 @@ public class MinimalTLSClient implements AutoCloseable {
 		// 11. Compute server verify data and validate
 		accumulateHandshake(clientFinishedHandshake);
 		handshakeBytes = getConcatenatedHandshakeMessages();
-		handshakeHash = serverCipherSuite.getMessageDigest().digest(handshakeBytes);
+		handshakeHash = messageDigest.digest(handshakeBytes);
 		LOGGER.debug("Handshake hash:\n{}", Hex.dump(handshakeHash));
 
-		byte[] computedVerifyData = PseudoRandomFunction.apply(masterSecret, PRFLabel.SERVER_FINISHED, handshakeHash, 12);
+		byte[] computedVerifyData = PseudoRandomFunction.apply(masterSecret, PRFLabel.SERVER_FINISHED, handshakeHash, 12, prfAlgorithm);
 		LOGGER.debug("Computed Server verify data:\n{}", Hex.dump(computedVerifyData));
 		byte[] serverVerifyData = serverFinished.getVerifyData().toByteArray();
 		LOGGER.debug("Received Server verify data:\n{}", Hex.dump(serverVerifyData));
