@@ -6,10 +6,10 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apiphany.io.ByteSizeable;
 import org.apiphany.io.UInt16;
 import org.apiphany.io.UInt8;
 import org.apiphany.json.JsonBuilder;
-import org.apiphany.lang.ByteSizeable;
 import org.apiphany.security.tls.TLSExtension;
 
 /**

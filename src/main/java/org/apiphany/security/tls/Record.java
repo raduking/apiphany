@@ -8,9 +8,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
 
+import org.apiphany.io.ByteSizeable;
 import org.apiphany.io.UInt16;
 import org.apiphany.json.JsonBuilder;
-import org.apiphany.lang.ByteSizeable;
 import org.apiphany.lang.collections.Lists;
 import org.apiphany.security.ssl.SSLProtocol;
 import org.morphix.lang.JavaObjects;

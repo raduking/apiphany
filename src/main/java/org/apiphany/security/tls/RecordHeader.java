@@ -22,7 +22,7 @@ public class RecordHeader implements TLSObject {
 	/**
 	 * The fixed size of a record header in bytes.
 	 */
-	public static final int BYTES = 5;
+	public static final int BYTES = RecordContentType.BYTES + Version.BYTES + UInt16.BYTES;
 
 	/**
 	 * The type of content in the record.
@@ -119,7 +119,7 @@ public class RecordHeader implements TLSObject {
 	 */
 	@Override
 	public int sizeOf() {
-		return type.sizeOf() + version.sizeOf() + length.sizeOf();
+		return BYTES;
 	}
 
 	/**

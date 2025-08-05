@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.apiphany.io.UInt8;
 import org.morphix.lang.Enums;
+import org.morphix.lang.JavaObjects;
 
 /**
  * Represents the content type of a TLS record layer message.
@@ -46,6 +47,9 @@ public enum RecordContentType implements TLSObject {
 	 */
 	public static final int BYTES = 1;
 
+	/**
+	 * Value map for easy {@link #fromValue(byte)} implementation.
+	 */
 	private static final Map<Byte, RecordContentType> VALUE_MAP = Enums.buildNameMap(values(), RecordContentType::value);
 
 	/**
@@ -129,9 +133,11 @@ public enum RecordContentType implements TLSObject {
 	/**
 	 * Returns the parsing function for this content type.
 	 *
+	 * @param <T> TLS object type
+	 *
 	 * @return the FromFunction that can parse this type's payload
 	 */
-	public FromFunction<? extends TLSObject> fragment() {
-		return fromFunction;
+	public <T extends TLSObject> FromFunction<T> fragment() {
+		return JavaObjects.cast(fromFunction);
 	}
 }

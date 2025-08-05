@@ -1,4 +1,4 @@
-package org.apiphany.lang;
+package org.apiphany.io;
 
 import java.util.Collection;
 
