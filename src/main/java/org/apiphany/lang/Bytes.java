@@ -1,6 +1,5 @@
 package org.apiphany.lang;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Objects;
 
@@ -35,11 +34,21 @@ public final class Bytes {
 	 */
 	public static byte[] concatenate(final byte[]... arrays) throws IOException {
 		Objects.requireNonNull(arrays, "Input arrays cannot be null");
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		int totalLength = 0;
 		for (byte[] arr : arrays) {
-			bos.write(arr != null ? arr : EMPTY);
+			if (arr != null) {
+				totalLength += arr.length;
+			}
 		}
-		return bos.toByteArray();
+		byte[] result = new byte[totalLength];
+		int offset = 0;
+		for (byte[] arr : arrays) {
+			if (arr != null) {
+				System.arraycopy(arr, 0, result, offset, arr.length);
+				offset += arr.length;
+			}
+		}
+		return result;
 	}
 
 	/**

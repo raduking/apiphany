@@ -10,21 +10,19 @@ import org.apiphany.security.tls.PRFLabel;
 
 public class PseudoRandomFunction {
 
-	public static byte[] apply(final byte[] secret, final String label, final byte[] seed, final int length, final String algorithm) throws Exception {
+	public static byte[] apply(final byte[] secret, final String label, final byte[] seed,
+			final int length, final String algorithm) throws Exception {
 		return apply(secret, label.getBytes(StandardCharsets.US_ASCII), seed, length, algorithm);
 	}
 
-	public static byte[] apply(final byte[] secret, final PRFLabel label, final byte[] seed, final int length, final String algorithm) throws Exception {
+	public static byte[] apply(final byte[] secret, final PRFLabel label, final byte[] seed,
+			final int length, final String algorithm) throws Exception {
 		return apply(secret, label.toByteArray(), seed, length, algorithm);
 	}
 
-	public static byte[] apply(final byte[] secret, final byte[] label, final byte[] seed, final int length, final String algorithm) throws Exception {
-		byte[] labelBytes = label;
-		byte[] labelSeed = new byte[labelBytes.length + seed.length];
-		System.arraycopy(labelBytes, 0, labelSeed, 0, labelBytes.length);
-		System.arraycopy(seed, 0, labelSeed, labelBytes.length, seed.length);
-
-		return pHash(secret, labelSeed, length, algorithm);
+	public static byte[] apply(final byte[] secret, final byte[] label, final byte[] seed,
+			final int length, final String algorithm) throws Exception {
+		return pHash(secret, Bytes.concatenate(label, seed), length, algorithm);
 	}
 
 	public static byte[] pHash(final byte[] secret, final byte[] seed, final int length, final String algorithm) throws Exception {
@@ -44,5 +42,4 @@ public class PseudoRandomFunction {
 		}
 		return result;
 	}
-
 }
