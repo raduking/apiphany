@@ -1,6 +1,5 @@
 package org.apiphany.lang;
 
-import java.io.IOException;
 import java.util.Objects;
 
 import org.morphix.reflection.Constructors;
@@ -29,10 +28,9 @@ public final class Bytes {
 	 *
 	 * @param arrays the byte arrays to concatenate (null arrays are treated as empty)
 	 * @return a new byte array containing all input bytes in order
-	 * @throws IOException if an I/O error occurs during concatenation
 	 * @throws OutOfMemoryError if the resulting array would exceed maximum array size
 	 */
-	public static byte[] concatenate(final byte[]... arrays) throws IOException {
+	public static byte[] concatenate(final byte[]... arrays) {
 		Objects.requireNonNull(arrays, "Input arrays cannot be null");
 		int totalLength = 0;
 		for (byte[] arr : arrays) {
@@ -52,18 +50,20 @@ public final class Bytes {
 	}
 
 	/**
-	 * Reverses the order of bytes in the given array in-place.
+	 * Reverses the order of bytes in the given array in-place and returns it.
 	 *
 	 * @param bytes the byte array to reverse (modified directly)
+	 * @return the same reference as the input array
 	 * @throws NullPointerException if the input array is null
 	 */
-	public static void reverse(final byte[] bytes) {
+	public static byte[] reverse(final byte[] bytes) {
 		Objects.requireNonNull(bytes, "Byte array cannot be null");
 		for (int i = 0; i < bytes.length / 2; ++i) {
 			byte tmp = bytes[i];
 			bytes[i] = bytes[bytes.length - 1 - i];
 			bytes[bytes.length - 1 - i] = tmp;
 		}
+		return bytes;
 	}
 
 	/**
