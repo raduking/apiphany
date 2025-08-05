@@ -148,7 +148,7 @@ public class SupportedGroups implements TLSExtension {
 	 */
 	@Override
 	public int sizeOf() {
-		return type.sizeOf() + length.sizeOf() + groupsSize.sizeOf() + ByteSizeable.sizeOf(groups);
+		return type.sizeOf() + length.sizeOf() + groupsSize.sizeOf() + ByteSizeable.sizeOf(groups, NamedCurve.BYTES);
 	}
 
 	/**

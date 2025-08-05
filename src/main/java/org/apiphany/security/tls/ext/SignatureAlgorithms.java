@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.apiphany.io.UInt16;
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.lang.ByteSizeable;
 import org.apiphany.security.tls.SignatureAlgorithm;
 import org.apiphany.security.tls.TLSExtension;
 
@@ -157,7 +158,7 @@ public class SignatureAlgorithms implements TLSExtension {
 	 */
 	@Override
 	public int sizeOf() {
-		return type.sizeOf() + length.sizeOf() + algorithmsSize.sizeOf() + algorithms.size() * SignatureAlgorithm.BYTES;
+		return type.sizeOf() + length.sizeOf() + algorithmsSize.sizeOf() + ByteSizeable.sizeOf(algorithms, SignatureAlgorithm.BYTES);
 	}
 
 	/**

@@ -30,7 +30,7 @@ public class CipherSuites implements TLSObject {
 	/**
 	 * The list of cipher suites.
 	 */
-	private final List<CipherSuite> cipherSuites;
+	private final List<CipherSuite> suites;
 
 	/**
 	 * Constructs a cipher suites list with explicit size and list of suites.
@@ -40,8 +40,8 @@ public class CipherSuites implements TLSObject {
 	 */
 	public CipherSuites(final UInt16 size, final List<CipherSuite> cipherSuites) {
 		this.size = size;
-		this.cipherSuites = new ArrayList<>(size.getValue());
-		this.cipherSuites.addAll(cipherSuites);
+		this.suites = new ArrayList<>(size.getValue());
+		this.suites.addAll(cipherSuites);
 	}
 
 	/**
@@ -60,7 +60,7 @@ public class CipherSuites implements TLSObject {
 	 * @param cipherSuites the list of cipher suites to include
 	 */
 	public CipherSuites(final List<CipherSuite> cipherSuites) {
-		this((short) (cipherSuites.size() * 2), cipherSuites);
+		this((short) (cipherSuites.size() * CipherSuite.BYTES), cipherSuites);
 	}
 
 	/**
@@ -90,7 +90,7 @@ public class CipherSuites implements TLSObject {
 	public byte[] toByteArray() {
 		ByteBuffer buffer = ByteBuffer.allocate(sizeOf());
 		buffer.put(size.toByteArray());
-		for (CipherSuite cypherSuite : cipherSuites) {
+		for (CipherSuite cypherSuite : suites) {
 			buffer.put(cypherSuite.toByteArray());
 		}
 		return buffer.array();
@@ -106,7 +106,7 @@ public class CipherSuites implements TLSObject {
 	public static CipherSuites from(final InputStream is) throws IOException {
 		UInt16 size = UInt16.from(is);
 		List<CipherSuite> cipherSuites = new ArrayList<>();
-		for (int i = 0; i < size.getValue() / 2; ++i) {
+		for (int i = 0; i < size.getValue() / CipherSuite.BYTES; ++i) {
 			UInt16 int16 = UInt16.from(is);
 			CipherSuite cipherSuite = CipherSuite.fromValue(int16.getValue());
 			cipherSuites.add(cipherSuite);
@@ -132,7 +132,7 @@ public class CipherSuites implements TLSObject {
 	 */
 	@Override
 	public int sizeOf() {
-		return size.sizeOf() + ByteSizeable.sizeOf(cipherSuites);
+		return size.sizeOf() + ByteSizeable.sizeOf(suites, CipherSuite.BYTES);
 	}
 
 	/**
@@ -149,7 +149,7 @@ public class CipherSuites implements TLSObject {
 	 *
 	 * @return unmodifiable list of cipher suites
 	 */
-	public List<CipherSuite> getCipherSuites() {
-		return cipherSuites;
+	public List<CipherSuite> getSuites() {
+		return suites;
 	}
 }
