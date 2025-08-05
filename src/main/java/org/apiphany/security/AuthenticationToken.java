@@ -6,6 +6,7 @@ import org.apiphany.json.JsonBuilder;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 /**
  * Represents an authentication token used for accessing secured resources. This class encapsulates the access token,
@@ -15,6 +16,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author Radu Sebastian LAZIN
  */
+@JsonPropertyOrder({
+    "access_token",
+    "refresh_token",
+    "expires_in",
+    "token_type",
+    "refresh_expires_in",
+    "not-before-policy",
+    "scope"
+})
 public class AuthenticationToken {
 
 	/**
