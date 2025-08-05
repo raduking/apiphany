@@ -1,0 +1,9 @@
+{
+  "access_token" : "accesstoken1234",
+  "refresh_token" : "refreshtoken1234",
+  "expires_in" : 3683,
+  "token_type" : "basic",
+  "refresh_expires_in" : 11122,
+  "not-before-policy" : 7,
+  "scope" : "read write"
+}
