@@ -9,6 +9,7 @@ import java.util.List;
 import org.apiphany.io.UInt16;
 import org.apiphany.io.UInt8;
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.lang.ByteSizeable;
 import org.apiphany.security.tls.TLSExtension;
 
 /**
@@ -133,7 +134,7 @@ public class ECPointFormats implements TLSExtension {
 	 */
 	@Override
 	public int sizeOf() {
-		return type.sizeOf() + length.sizeOf() + formatsSize.sizeOf() + formats.size();
+		return type.sizeOf() + length.sizeOf() + formatsSize.sizeOf() + ByteSizeable.sizeOf(formats, UInt8.BYTES);
 	}
 
 	/**

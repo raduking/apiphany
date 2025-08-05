@@ -21,19 +21,23 @@ import org.apiphany.lang.Bytes;
 
 public class X25519Keys implements TLSKeysHandler {
 
-	private static final String ALGORITHM = "XDH";
+	public static final String ALGORITHM = "XDH";
 	private static final int BYTES = 32;
 
 	private String algorithm;
 	private KeyFactory keyFactory;
 
-	public X25519Keys() {
-		this.algorithm = ALGORITHM;
+	public X25519Keys(final String algorithm) {
+		this.algorithm = algorithm;
 		try {
 			this.keyFactory = KeyFactory.getInstance(algorithm);
 		} catch (NoSuchAlgorithmException e) {
 			throw new SecurityException(e);
 		}
+	}
+
+	public X25519Keys() {
+		this(ALGORITHM);
 	}
 
 	@Override
@@ -45,7 +49,7 @@ public class X25519Keys implements TLSKeysHandler {
 		}
 	}
 
-	public static KeyPair generateKeyPair(String algorithm) throws NoSuchAlgorithmException {
+	public static KeyPair generateKeyPair(final String algorithm) throws NoSuchAlgorithmException {
 		KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(algorithm);
 		return keyPairGenerator.generateKeyPair();
 	}

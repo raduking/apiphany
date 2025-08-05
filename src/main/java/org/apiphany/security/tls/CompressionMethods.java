@@ -130,6 +130,6 @@ public class CompressionMethods implements TLSObject {
 	 */
 	@Override
 	public int sizeOf() {
-		return size.sizeOf() + ByteSizeable.sizeOf(methods);
+		return size.sizeOf() + ByteSizeable.sizeOf(methods, CompressionMethod.BYTES);
 	}
 }

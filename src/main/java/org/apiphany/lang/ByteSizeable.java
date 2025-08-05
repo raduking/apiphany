@@ -46,11 +46,25 @@ public interface ByteSizeable {
 	 * @param collection collection of {@link ByteSizeable} elements
 	 * @return the sum of all sizes of the given collection's elements
 	 */
-	static <T extends ByteSizeable, U extends Collection<T>> int sizeOf(U collection) {
+	static <T extends ByteSizeable, U extends Collection<T>> int sizeOf(final U collection) {
 		int sizeOf = 0;
 		for (T byteSizeable : collection) {
 			sizeOf += byteSizeable.sizeOf();
 		}
 		return sizeOf;
+	}
+
+	/**
+	 * Returns the fixed size times the given collection's elements.
+	 *
+	 * @param <T> byte sizeable type
+	 * @param <U> collection type
+	 *
+	 * @param collection collection of {@link ByteSizeable} elements
+	 * @param fixedSize the size of each element
+	 * @return the sum of all sizes of the given collection's elements
+	 */
+	static <T extends ByteSizeable, U extends Collection<T>> int sizeOf(final U collection, final int fixedSize) {
+		return collection.size() * fixedSize;
 	}
 }

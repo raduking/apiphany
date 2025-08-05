@@ -133,4 +133,23 @@ public class Certificates implements TLSHandshakeBody {
 	public List<Certificate> getList() {
 		return list;
 	}
+
+	/**
+	 * Returns the certificate given its index in the list.
+	 *
+	 * @param index the index in the list
+	 * @return the certificate given its index in the list
+	 */
+	public Certificate get(final int index) {
+		return getList().get(index);
+	}
+
+	/**
+	 * Returns the first certificate in the list.
+	 *
+	 * @return the first certificate in the list
+	 */
+	public Certificate first() {
+		return getList().getFirst();
+	}
 }
