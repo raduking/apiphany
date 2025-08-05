@@ -17,6 +17,7 @@ import java.util.Arrays;
 
 import javax.crypto.KeyAgreement;
 
+import org.apiphany.io.BytesOrder;
 import org.apiphany.lang.Bytes;
 
 public class X25519Keys implements TLSKeysHandler {
@@ -55,13 +56,20 @@ public class X25519Keys implements TLSKeysHandler {
 	}
 
 	@Override
-	public PublicKey getPublicKeyLE(final byte[] lePublicKeyBytes) throws InvalidKeySpecException {
-		byte[] beBytes = Arrays.copyOf(lePublicKeyBytes, lePublicKeyBytes.length);
-		Bytes.reverse(beBytes);
-		return getPublicKeyBE(beBytes);
+	public PublicKey from(final byte[] publicKeyBytes, final BytesOrder bytesOrder) throws InvalidKeySpecException {
+		return switch (bytesOrder) {
+		case LITTLE_ENDIAN -> fromLittleEndian(publicKeyBytes);
+		case BIG_ENDIAN -> fromBigEndian(publicKeyBytes);
+		};
 	}
 
-	public PublicKey getPublicKeyBE(final byte[] publicKeyBytes) throws InvalidKeySpecException {
+	public PublicKey fromLittleEndian(final byte[] publicKeyBytes) throws InvalidKeySpecException {
+		byte[] beBytes = Arrays.copyOf(publicKeyBytes, publicKeyBytes.length);
+		Bytes.reverse(beBytes);
+		return fromBigEndian(beBytes);
+	}
+
+	public PublicKey fromBigEndian(final byte[] publicKeyBytes) throws InvalidKeySpecException {
 		BigInteger u = new BigInteger(1, publicKeyBytes); // '1' for positive number
 		XECPublicKeySpec pubKeySpec = new XECPublicKeySpec(NamedParameterSpec.X25519, u);
 		return keyFactory.generatePublic(pubKeySpec);
@@ -78,7 +86,14 @@ public class X25519Keys implements TLSKeysHandler {
 	}
 
 	@Override
-	public byte[] toRawByteArray(final PublicKey publicKey) {
+	public byte[] toByteArray(final PublicKey publicKey, final BytesOrder bytesOrder) {
+		return switch (bytesOrder) {
+		case LITTLE_ENDIAN -> toByteArrayLittleEndian(publicKey);
+		case BIG_ENDIAN -> toByteArrayBigEndian(publicKey);
+		};
+	}
+
+	public byte[] toByteArrayBigEndian(final PublicKey publicKey) {
 		BigInteger u = ((XECPublicKey) publicKey).getU();
 		byte[] bigEndian = u.toByteArray();
 
@@ -93,18 +108,36 @@ public class X25519Keys implements TLSKeysHandler {
 		} else {
 			System.arraycopy(bigEndian, 0, beNormalized, BYTES - bigEndian.length, bigEndian.length);
 		}
+		return beNormalized;
+	}
+
+	public byte[] toByteArrayLittleEndian(final PublicKey publicKey) {
+		byte[] beNormalized = toByteArrayBigEndian(publicKey);
 		Bytes.reverse(beNormalized);
 		return beNormalized;
 	}
 
 	@Override
-	public byte[] toRawByteArray(final PrivateKey privateKey) {
+	public byte[] toByteArray(final PrivateKey privateKey, final BytesOrder bytesOrder) {
+		return switch (bytesOrder) {
+		case LITTLE_ENDIAN -> toByteArrayLittleEndian(privateKey);
+		case BIG_ENDIAN -> toByteArrayBigEndian(privateKey);
+		};
+	}
+
+	public byte[] toByteArrayLittleEndian(final PrivateKey privateKey) {
 		return ((XECPrivateKey) privateKey).getScalar().orElseThrow();
 	}
 
+	public byte[] toByteArrayBigEndian(final PrivateKey privateKey) {
+		byte[] beNormalized = toByteArrayBigEndian(privateKey);
+		Bytes.reverse(beNormalized);
+		return beNormalized;
+	}
+
 	@Override
-	public boolean verifyKeyMatch(final byte[] littleEndianKey, final PublicKey publicKey) {
-		byte[] beNormalized = toRawByteArray(publicKey);
-		return Arrays.equals(littleEndianKey, beNormalized);
+	public boolean verifyKeyMatch(final byte[] key, final BytesOrder bytesOrder, final PublicKey publicKey) {
+		byte[] publicKeyBytes = toByteArray(publicKey, bytesOrder);
+		return Arrays.equals(key, publicKeyBytes);
 	}
 }

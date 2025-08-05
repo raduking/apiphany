@@ -9,6 +9,7 @@ Added `MessageDigestAlgorithm` representing supported message digest algorithms 
 Added the message digest algorithm to each `CipherSuite` enum value.
 Added `Record.hasNoHandshake` method to check of a TLS record doesn't have the handshake message type specified as a parameter.
 Moved `ByteSizeable` and `BinaryRepresentable` to `io` package.
+Added `BytesOrder` enum and streamlined key handling.
 
 ---
 
