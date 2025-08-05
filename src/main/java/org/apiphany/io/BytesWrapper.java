@@ -7,8 +7,6 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import org.apiphany.json.JsonBuilder;
-import org.apiphany.lang.BinaryRepresentable;
-import org.apiphany.lang.ByteSizeable;
 import org.apiphany.lang.Bytes;
 import org.apiphany.lang.Hex;
 

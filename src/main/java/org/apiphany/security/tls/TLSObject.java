@@ -1,7 +1,7 @@
 package org.apiphany.security.tls;
 
-import org.apiphany.lang.BinaryRepresentable;
-import org.apiphany.lang.ByteSizeable;
+import org.apiphany.io.BinaryRepresentable;
+import org.apiphany.io.ByteSizeable;
 
 /**
  * Marker interface for all objects that participate in TLS protocol communication.

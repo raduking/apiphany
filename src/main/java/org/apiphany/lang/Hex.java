@@ -2,6 +2,7 @@ package org.apiphany.lang;
 
 import java.util.Objects;
 
+import org.apiphany.io.BinaryRepresentable;
 import org.morphix.reflection.Constructors;
 
 /**

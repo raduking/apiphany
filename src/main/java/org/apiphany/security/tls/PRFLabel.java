@@ -4,7 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Objects;
 
-import org.apiphany.lang.BinaryRepresentable;
+import org.apiphany.io.BinaryRepresentable;
 import org.morphix.lang.Enums;
 
 /**

@@ -23,11 +23,11 @@ import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.net.ssl.SSLException;
 
+import org.apiphany.io.BinaryRepresentable;
 import org.apiphany.io.ByteBufferInputStream;
+import org.apiphany.io.ByteSizeable;
 import org.apiphany.io.BytesWrapper;
 import org.apiphany.io.UInt64;
-import org.apiphany.lang.BinaryRepresentable;
-import org.apiphany.lang.ByteSizeable;
 import org.apiphany.lang.Bytes;
 import org.apiphany.lang.Hex;
 import org.apiphany.lang.Strings;

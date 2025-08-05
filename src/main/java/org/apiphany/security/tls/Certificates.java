@@ -6,9 +6,9 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apiphany.io.ByteSizeable;
 import org.apiphany.io.UInt24;
 import org.apiphany.json.JsonBuilder;
-import org.apiphany.lang.ByteSizeable;
 
 /**
  * Represents a TLS Certificate message containing a chain of X.509 certificates.
