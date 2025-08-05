@@ -64,9 +64,8 @@ public class X25519Keys implements TLSKeysHandler {
 	}
 
 	public PublicKey fromLittleEndian(final byte[] publicKeyBytes) throws InvalidKeySpecException {
-		byte[] beBytes = Arrays.copyOf(publicKeyBytes, publicKeyBytes.length);
-		Bytes.reverse(beBytes);
-		return fromBigEndian(beBytes);
+		byte[] littleEndianBytes = Arrays.copyOf(publicKeyBytes, publicKeyBytes.length);
+		return fromBigEndian(Bytes.reverse(littleEndianBytes));
 	}
 
 	public PublicKey fromBigEndian(final byte[] publicKeyBytes) throws InvalidKeySpecException {
@@ -112,9 +111,7 @@ public class X25519Keys implements TLSKeysHandler {
 	}
 
 	public byte[] toByteArrayLittleEndian(final PublicKey publicKey) {
-		byte[] beNormalized = toByteArrayBigEndian(publicKey);
-		Bytes.reverse(beNormalized);
-		return beNormalized;
+		return Bytes.reverse(toByteArrayBigEndian(publicKey));
 	}
 
 	@Override
@@ -130,9 +127,7 @@ public class X25519Keys implements TLSKeysHandler {
 	}
 
 	public byte[] toByteArrayBigEndian(final PrivateKey privateKey) {
-		byte[] beNormalized = toByteArrayBigEndian(privateKey);
-		Bytes.reverse(beNormalized);
-		return beNormalized;
+		return Bytes.reverse(toByteArrayLittleEndian(privateKey));
 	}
 
 	@Override
