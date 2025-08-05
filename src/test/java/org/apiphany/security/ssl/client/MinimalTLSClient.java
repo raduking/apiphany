@@ -26,6 +26,7 @@ import javax.net.ssl.SSLException;
 import org.apiphany.io.BinaryRepresentable;
 import org.apiphany.io.ByteBufferInputStream;
 import org.apiphany.io.ByteSizeable;
+import org.apiphany.io.BytesOrder;
 import org.apiphany.io.BytesWrapper;
 import org.apiphany.io.UInt64;
 import org.apiphany.lang.Bytes;
@@ -217,10 +218,8 @@ public class MinimalTLSClient implements AutoCloseable {
 				byte[] clientPublicBytes = getClientPublicBytes(serverKeyExchange, keys);
 				tlsKeyExchange = new ECDHEPublicKey(clientPublicBytes);
 				LOGGER.debug("Server public key ({}):\n{}", serverPublicKey.getClass(), serverPublicKey);
-				LOGGER.debug("Keys match: {}", keys.verifyKeyMatch(keys.toRawByteArray(serverPublicKey), serverPublicKey));
 				// Compute shared secret
 				preMasterSecret = keys.getSharedSecret(clientKeyPair.getPrivate(), serverPublicKey);
-				LOGGER.debug("Pre Master Secret:\n{}", Hex.dump(preMasterSecret));
 			}
 			case RSA -> {
 				this.serverPublicKey = x509Certificate.getPublicKey();
@@ -233,6 +232,7 @@ public class MinimalTLSClient implements AutoCloseable {
 			}
 			default -> throw new SSLException("Unsupported cipher suite: " + serverCipherSuite);
 		}
+		LOGGER.debug("Pre Master Secret:\n{}", Hex.dump(preMasterSecret));
 
 		// 4. Send Client Key Exchange
 		Record clientKeyExchangeRecord = new Record(sslProtocol, new ClientKeyExchange(tlsKeyExchange));
@@ -353,11 +353,11 @@ public class MinimalTLSClient implements AutoCloseable {
 
 	public byte[] getClientPublicBytes(final ServerKeyExchange ske, final TLSKeysHandler keys) throws Exception {
 		byte[] serverPubBytes = ske.getPublicKey().getValue().toByteArray();
-		this.serverPublicKey = keys.getPublicKeyLE(serverPubBytes);
+		this.serverPublicKey = keys.from(serverPubBytes, BytesOrder.LITTLE_ENDIAN);
 		if (null == clientKeyPair) {
 			this.clientKeyPair = keys.generateKeyPair();
 		}
-		return keys.toRawByteArray(clientKeyPair.getPublic());
+		return keys.toByteArray(clientKeyPair.getPublic(), BytesOrder.LITTLE_ENDIAN);
 	}
 
 	public Encrypted encrypt(final BinaryRepresentable tlsObject, final RecordContentType type, final ExchangeKeys keys) throws Exception {

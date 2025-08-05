@@ -7,18 +7,20 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 
-public interface TLSKeysHandler {
+import org.apiphany.io.BytesOrder;
 
-	PublicKey getPublicKeyLE(final byte[] lePublicKeyBytes) throws InvalidKeySpecException;
+public interface TLSKeysHandler {
 
 	byte[] getSharedSecret(final PrivateKey privateKey, final PublicKey publicKey) throws NoSuchAlgorithmException, InvalidKeyException;
 
 	KeyPair generateKeyPair();
 
-	byte[] toRawByteArray(final PublicKey publicKey);
+	PublicKey from(final byte[] publicKeyBytes, BytesOrder bytesOrder) throws InvalidKeySpecException;
 
-	byte[] toRawByteArray(final PrivateKey privateKey);
+	byte[] toByteArray(final PublicKey publicKey, BytesOrder bytesOrder);
 
-	boolean verifyKeyMatch(final byte[] littleEndianKey, final PublicKey publicKey);
+	byte[] toByteArray(final PrivateKey privateKey, BytesOrder bytesOrder);
+
+	boolean verifyKeyMatch(final byte[] key, BytesOrder bytesOrder, final PublicKey publicKey);
 
 }
