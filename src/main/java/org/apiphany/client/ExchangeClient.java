@@ -69,7 +69,7 @@ public interface ExchangeClient extends AutoCloseable {
 	 * @return the client name
 	 */
 	default String getName() {
-		return getClass().getName();
+		return getClass().getSimpleName();
 	}
 
 	/**

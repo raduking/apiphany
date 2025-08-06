@@ -281,16 +281,16 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	 * Updates the authentication token by retrieving a new one.
 	 */
 	private void updateAuthenticationToken() {
-		LOGGER.debug("[{}] Token expired, requesting new token.", getClass().getSimpleName());
+		LOGGER.debug("[{}] Token expired, requesting new token.", getName());
 		Instant expiration = Instant.now();
 		AuthenticationToken token = tokenApiClient.getAuthenticationToken();
 		if (null == token) {
-			LOGGER.error("[{}] Error retrieving token, retrieved token was null", getClass().getSimpleName());
+			LOGGER.error("[{}] Error retrieving token, retrieved token was null", getName());
 			return;
 		}
 		token.setExpiration(expiration.plusSeconds(token.getExpiresIn()));
 		setAuthenticationToken(token);
-		LOGGER.debug("[{}] Successfully retrieved new token.", getClass().getSimpleName());
+		LOGGER.debug("[{}] Successfully retrieved new token.", getName());
 	}
 
 	/**

@@ -192,7 +192,7 @@ public class ClientProperties {
 				actualProps = JavaObjects.cast(mapProps);
 			}
 			if (null == props) {
-				break;
+				return Collections.emptyMap();
 			}
 		}
 		return Maps.convertKeys(actualProps, Strings::fromLowerCamelToKebabCase);
