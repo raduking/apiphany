@@ -123,8 +123,9 @@ public final class Sockets {
 	}
 
 	/**
-	 * Checks the condition is true and throws {@link IllegalArgumentException} if the condition is false. TODO: maybe put
-	 * this method in a Preconditions class
+	 * Checks the condition is true and throws {@link IllegalArgumentException} if the condition is false.
+	 * <p>
+	 * TODO: maybe put this method in a Preconditions class
 	 *
 	 * @param condition condition to check
 	 * @param errorMessageTemplate error message template
