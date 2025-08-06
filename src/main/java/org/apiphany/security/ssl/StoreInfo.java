@@ -6,6 +6,8 @@ import org.apiphany.lang.Strings;
 /**
  * Certificate store information class to configure Java key/trust stores. This class holds information about
  * certificate store location, type, password, and loading configuration.
+ * <p>
+ * TODO: remove the password from toString
  *
  * @author Radu Sebastian LAZIN
  */
@@ -143,16 +145,18 @@ public class StoreInfo {
 	/**
 	 * Checks if the certificate should be loaded from an external source.
 	 *
-	 * @return true if certificates should be loaded from an external source, false if they should be loaded from the jar file
+	 * @return true if certificates should be loaded from an external source, false if they should be loaded from the jar
+	 * file
 	 */
 	public boolean isExternal() {
 		return Boolean.TRUE.equals(external);
 	}
 
 	/**
-	 * Returns the external source loading configuration.
+	 * Returns {@link Boolean#TRUE} if loading from an external source, {@link Boolean#FALSE} if loading from the jar file,
+	 * null if not specified.
 	 *
-	 * @return Boolean.TRUE if loading from an external source, Boolean.FALSE if loading from the jar file, null if not specified
+	 * @return the external source loading configuration
 	 */
 	public Boolean getExternal() {
 		return external;
@@ -161,8 +165,7 @@ public class StoreInfo {
 	/**
 	 * Sets whether certificates should be loaded from an external source.
 	 *
-	 * @param external Boolean.TRUE to load from external source, Boolean.FALSE to load from jar file, null to leave
-	 *     unspecified
+	 * @param external the external Boolean source loading configuration, null to leave unspecified
 	 */
 	public void setExternal(final Boolean external) {
 		this.external = external;
