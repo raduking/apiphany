@@ -1,5 +1,6 @@
 package org.apiphany.security.ssl;
 
+import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 
 /**
@@ -46,6 +47,16 @@ public class StoreInfo {
 	 */
 	public StoreInfo() {
 		// empty
+	}
+
+	/**
+	 * Returns a JSON string representation of this object.
+	 *
+	 * @return a JSON string representation of this object
+	 */
+	@Override
+	public String toString() {
+		return JsonBuilder.toJson(this);
 	}
 
 	/**
