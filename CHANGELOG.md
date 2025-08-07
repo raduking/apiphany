@@ -13,6 +13,9 @@ Added `BytesOrder` enum and streamlined key handling.
 Added `Sockets.DEFAULT_TIMEOUT` set to 2 seconds.
 Added methods without timeout specifier to `Sockets` which use the `Sockets.DEFAULT_TIMEOUT`.
 Added `ScopedResource` class for managed/unmanaged resource handling.
+Added `LoggingFormat` enum to specify logging format configurations.
+Added `TLSObject.serialize` to serialize any TLS object to string depending on configuration.
+Added `TLSObject.FORMAT` as the logging format configurable with `apiphany.logging.format.tls` property.
 
 ---
 
