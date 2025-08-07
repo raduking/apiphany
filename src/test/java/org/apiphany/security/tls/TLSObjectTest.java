@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
@@ -45,13 +44,12 @@ class TLSObjectTest {
 	private static final String SSL = "ssl";
 	private static final String HMAC_SHA384 = "HmacSHA384";
 
-	private static final Duration PORT_CHECK_TIMEOUT = Duration.ofMillis(500);
 	private static final String LOCALHOST = "localhost";
-	private static final int SERVER_PORT = Sockets.findAvailableTcpPort(PORT_CHECK_TIMEOUT);
+	private static final int SERVER_PORT = Sockets.findAvailableTcpPort();
 
 	private static final KeyPair CLIENT_KEY_PAIR = Keys.loadKeyPairFromResources();
-	private static final SSLProperties SSL_PROPERTIES =
-			JsonBuilder.fromJson(Strings.fromFile("/security/ssl/ssl-properties.json"), SSLProperties.class);
+	private static final String SSL_PROPERTIES_JSON = Strings.fromFile("/security/ssl/ssl-properties.json");
+	private static final SSLProperties SSL_PROPERTIES = JsonBuilder.fromJson(SSL_PROPERTIES_JSON, SSLProperties.class);
 	private static final ClientProperties CLIENT_PROPERTIES = new ClientProperties();
 	static {
 		CLIENT_PROPERTIES.setCustomProperties(SSL, SSL_PROPERTIES);
@@ -66,14 +64,34 @@ class TLSObjectTest {
 	}
 
 	@Test
-	void shouldPerformTLS_V_1_2_SSLHandshakeWithSupportedCipherSuites() throws Exception {
-		int port = Sockets.findAvailableTcpPort(PORT_CHECK_TIMEOUT);
-		SSLProperties sslProperties = JsonBuilder.fromJson(Strings.fromFile("/security/ssl/ssl-properties.json"), SSLProperties.class);
+	void shouldPerformTLS12HandshakeWithSupportedCipherSuites() throws Exception {
+		int port = Sockets.findAvailableTcpPort();
+		SSLProperties sslProperties = JsonBuilder.fromJson(SSL_PROPERTIES_JSON, SSLProperties.class);
 		sslProperties.setProtocol(SSLProtocol.TLS_1_2);
 		SimpleHttpsServer server = new SimpleHttpsServer(port, sslProperties);
 
 		byte[] serverFinished = null;
 		try (MinimalTLSClient client = new MinimalTLSClient(LOCALHOST, port, CLIENT_KEY_PAIR, CIPHER_SUITES)) {
+			serverFinished = client.performHandshake();
+		} catch (Exception e) {
+			LOGGER.error("Error performing SSL handshake", e);
+		} finally {
+			server.close();
+		}
+		assertNotNull(serverFinished);
+	}
+
+	@ParameterizedTest
+	@MethodSource("provideSupportedCipherSuites")
+	void shouldPerformTLS12HandshakeWithParameterizedCipherSuites(final CipherSuite cipherSuite) throws Exception {
+		int port = Sockets.findAvailableTcpPort();
+		SSLProperties sslProperties = JsonBuilder.fromJson(SSL_PROPERTIES_JSON, SSLProperties.class);
+		sslProperties.setProtocol(SSLProtocol.TLS_1_2);
+		SimpleHttpsServer server = new SimpleHttpsServer(port, sslProperties);
+
+		byte[] serverFinished = null;
+		List<CipherSuite> cipherSuites = List.of(cipherSuite);
+		try (MinimalTLSClient client = new MinimalTLSClient(LOCALHOST, port, CLIENT_KEY_PAIR, cipherSuites)) {
 			serverFinished = client.performHandshake();
 		} catch (Exception e) {
 			LOGGER.error("Error performing SSL handshake", e);
@@ -90,30 +108,10 @@ class TLSObjectTest {
 		);
 	}
 
-	@ParameterizedTest
-	@MethodSource("provideSupportedCipherSuites")
-	void shouldPerformTLS_V_1_2_SSLHandshakeWithParameterizedCipherSuites(final CipherSuite cipherSuite) throws Exception {
-		int port = Sockets.findAvailableTcpPort(PORT_CHECK_TIMEOUT);
-		SSLProperties sslProperties = JsonBuilder.fromJson(Strings.fromFile("/security/ssl/ssl-properties.json"), SSLProperties.class);
-		sslProperties.setProtocol(SSLProtocol.TLS_1_2);
-		SimpleHttpsServer server = new SimpleHttpsServer(port, sslProperties);
-
-		byte[] serverFinished = null;
-		List<CipherSuite> cipherSuites = List.of(cipherSuite);
-		try (MinimalTLSClient client = new MinimalTLSClient(LOCALHOST, port, CLIENT_KEY_PAIR, cipherSuites)) {
-			serverFinished = client.performHandshake();
-		} catch (Exception e) {
-			LOGGER.error("Error performing SSL handshake", e);
-		} finally {
-			server.close();
-		}
-		assertNotNull(serverFinished);
-	}
-
 	@Test
-	void shouldPerformTLS_V_1_2_SSLHandshakeWithCloseNotify() throws Exception {
-		int port = Sockets.findAvailableTcpPort(PORT_CHECK_TIMEOUT);
-		SSLProperties sslProperties = JsonBuilder.fromJson(Strings.fromFile("/security/ssl/ssl-properties.json"), SSLProperties.class);
+	void shouldPerformTLS12HandshakeWithCloseNotify() throws Exception {
+		int port = Sockets.findAvailableTcpPort();
+		SSLProperties sslProperties = JsonBuilder.fromJson(SSL_PROPERTIES_JSON, SSLProperties.class);
 		sslProperties.setProtocol(SSLProtocol.TLS_1_2);
 		SimpleHttpsServer server = new SimpleHttpsServer(port, sslProperties);
 
@@ -130,9 +128,9 @@ class TLSObjectTest {
 	}
 
 	@Test
-	void shouldPerformTLS_V_1_2_SSLHandshakeAndGetName() throws Exception {
-		int port = Sockets.findAvailableTcpPort(PORT_CHECK_TIMEOUT);
-		SSLProperties sslProperties = JsonBuilder.fromJson(Strings.fromFile("/security/ssl/ssl-properties.json"), SSLProperties.class);
+	void shouldPerformTLS12HandshakeAndGetName() throws Exception {
+		int port = Sockets.findAvailableTcpPort();
+		SSLProperties sslProperties = JsonBuilder.fromJson(SSL_PROPERTIES_JSON, SSLProperties.class);
 		sslProperties.setProtocol(SSLProtocol.TLS_1_2);
 		SimpleHttpsServer server = new SimpleHttpsServer(port, sslProperties);
 
@@ -150,7 +148,7 @@ class TLSObjectTest {
 
 	@Disabled("Run only when OpenSSL is running on port 4433")
 	@Test
-	void shouldPerformTLS_V_1_2_SSLHandshakeOpenSSL() throws Exception {
+	void shouldPerformTLS12HandshakeOpenSSL() throws Exception {
 		int port = 4433;
 
 		byte[] serverFinished = null;
@@ -164,10 +162,10 @@ class TLSObjectTest {
 	}
 
 	@Test
-	void shouldPerformTLS_V_1_2_SSLHandshakeWithGoogle() throws Exception {
+	void shouldPerformTLS12HandshakeWithGoogle() throws Exception {
 		int port = 443;
 		String host = "google.com";
-		assumeTrue(Sockets.canConnectTo(host, port, Duration.ofSeconds(2)), host + " is unreachable, skipping test.");
+		assumeTrue(Sockets.canConnectTo(host, port), host + " is unreachable, skipping test.");
 
 		String response = null;
 		try (MinimalTLSClient client = new MinimalTLSClient(host, port, CLIENT_KEY_PAIR, CIPHER_SUITES)) {

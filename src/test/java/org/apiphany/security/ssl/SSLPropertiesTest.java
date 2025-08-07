@@ -4,8 +4,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.time.Duration;
-
 import javax.net.ssl.SSLHandshakeException;
 
 import org.apiphany.ApiClient;
@@ -27,10 +25,9 @@ class SSLPropertiesTest {
 
 	private static final String SSL = "ssl";
 
-	private static final Duration PORT_CHECK_TIMEOUT = Duration.ofMillis(500);
 	private static final String LOCALHOST = "localhost";
 	private static final String SERVER_HOST = LOCALHOST;
-	private static final int SERVER_PORT = Sockets.findAvailableTcpPort(PORT_CHECK_TIMEOUT);
+	private static final int SERVER_PORT = Sockets.findAvailableTcpPort();
 	private static final String SERVER_URL = "https://" + SERVER_HOST + ":" + SERVER_PORT;
 
 	private static final String SSL_PROPERTIES_JSON = Strings.fromFile("/security/ssl/ssl-properties.json");
@@ -63,7 +60,7 @@ class SSLPropertiesTest {
 
 	@Test
 	void shouldNotGetNameIfSSLIsNotInitialized() throws Exception {
-		int port = Sockets.findAvailableTcpPort(PORT_CHECK_TIMEOUT);
+		int port = Sockets.findAvailableTcpPort();
 		SimpleHttpsServer server = new SimpleHttpsServer(port, new SSLProperties());
 
 		Exception exception = null;

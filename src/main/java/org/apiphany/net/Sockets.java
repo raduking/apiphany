@@ -26,6 +26,12 @@ public final class Sockets {
 	public static final int MAX_PORT = 65535;
 
 	/**
+	 * Default timeout used when methods are called without a timeout. We enforce a default timeout because these are
+	 * utility methods, for infinite timeout use 0 (zero) as a parameter or a zero duration.
+	 */
+	public static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(2);
+
+	/**
 	 * Used for generating a random port number, no need for SecureRandom.
 	 */
 	private static final Random RANDOM = new Random(System.currentTimeMillis()); // NOSONAR see Javadoc
@@ -40,11 +46,20 @@ public final class Sockets {
 	/**
 	 * Finds an available TCP port between {@link #MIN_PORT} and {@link #MAX_PORT}.
 	 *
+	 * @return the available port
+	 */
+	public static int findAvailableTcpPort() {
+		return findAvailableTcpPort(DEFAULT_TIMEOUT);
+	}
+
+	/**
+	 * Finds an available TCP port between {@link #MIN_PORT} and {@link #MAX_PORT}.
+	 *
 	 * @param timeout the operation timeout
 	 * @return the available port
 	 */
 	public static int findAvailableTcpPort(final Duration timeout) {
-		return findAvailableTcpPort((int) timeout.toMillis());
+		return findAvailableTcpPort(Math.toIntExact(timeout.toMillis()));
 	}
 
 	/**
@@ -82,16 +97,37 @@ public final class Sockets {
 	 *
 	 * @param host the host name or IP address to connect to
 	 * @param port the TCP port to connect to
+	 * @return true if connection is successful, false otherwise
+	 */
+	public static boolean canConnectTo(final String host, final int port) {
+		return canConnectTo(host, port, DEFAULT_TIMEOUT);
+	}
+
+	/**
+	 * Checks if a TCP connection can be established to the given host and port within the specified timeout.
+	 *
+	 * @param host the host name or IP address to connect to
+	 * @param port the TCP port to connect to
 	 * @param timeout the timeout duration
 	 * @return true if connection is successful, false otherwise
 	 */
 	public static boolean canConnectTo(final String host, final int port, final Duration timeout) {
 		try (Socket socket = new Socket()) {
-			socket.connect(new InetSocketAddress(host, port), (int) timeout.toMillis());
+			socket.connect(new InetSocketAddress(host, port), Math.toIntExact(timeout.toMillis()));
 			return true;
 		} catch (Exception e) {
 			return false;
 		}
+	}
+
+	/**
+	 * Check if the given TCP port is available.
+	 *
+	 * @param currentPort port to check
+	 * @return true if the port is available
+	 */
+	public static boolean isTcpPortAvailable(final int currentPort) {
+		return isTcpPortAvailable(currentPort, Math.toIntExact(DEFAULT_TIMEOUT.toMillis()));
 	}
 
 	/**
