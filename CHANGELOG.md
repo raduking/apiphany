@@ -10,6 +10,8 @@ Added the message digest algorithm to each `CipherSuite` enum value.
 Added `Record.hasNoHandshake` method to check of a TLS record doesn't have the handshake message type specified as a parameter.
 Moved `ByteSizeable` and `BinaryRepresentable` to `io` package.
 Added `BytesOrder` enum and streamlined key handling.
+Added `Sockets.DEFAULT_TIMEOUT` set to 2 seconds.
+Added methods without timeout specifier to `Sockets` which use the `Sockets.DEFAULT_TIMEOUT`.
 
 ---
 
