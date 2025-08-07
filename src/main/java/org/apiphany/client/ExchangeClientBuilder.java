@@ -68,7 +68,7 @@ public class ExchangeClientBuilder {
 	 * @param clientProperties client properties object
 	 * @return new exchange client
 	 */
-	public static ExchangeClient build(final Class<? extends ExchangeClient> clientClass, final ClientProperties clientProperties) {
+	protected static ExchangeClient build(final Class<? extends ExchangeClient> clientClass, final ClientProperties clientProperties) {
 		Constructor<? extends ExchangeClient> constructor = Constructors.getDeclaredConstructor(clientClass, ClientProperties.class);
 		ClientProperties properties = Nullables.nonNullOrDefault(clientProperties, ClientProperties::new);
 		return Constructors.IgnoreAccess.newInstance(constructor, properties);
