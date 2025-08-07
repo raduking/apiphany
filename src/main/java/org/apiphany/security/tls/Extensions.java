@@ -8,7 +8,6 @@ import java.util.List;
 
 import org.apiphany.io.ByteSizeable;
 import org.apiphany.io.UInt16;
-import org.apiphany.json.JsonBuilder;
 import org.apiphany.security.tls.ext.ECPointFormats;
 import org.apiphany.security.tls.ext.ExtensionType;
 import org.apiphany.security.tls.ext.RenegotiationInfo;
@@ -131,7 +130,7 @@ public class Extensions implements TLSObject {
 	 */
 	@Override
 	public String toString() {
-		return JsonBuilder.toJson(this);
+		return TLSObject.serialize(this);
 	}
 
 	/**

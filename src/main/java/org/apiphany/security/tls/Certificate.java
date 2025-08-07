@@ -10,7 +10,6 @@ import java.security.cert.X509Certificate;
 import org.apiphany.io.ByteBufferInputStream;
 import org.apiphany.io.BytesWrapper;
 import org.apiphany.io.UInt24;
-import org.apiphany.json.JsonBuilder;
 
 /**
  * Represents a TLS Certificate message containing X.509 certificates.
@@ -96,7 +95,7 @@ public class Certificate implements TLSObject {
 	 */
 	@Override
 	public String toString() {
-		return JsonBuilder.toJson(this);
+		return TLSObject.serialize(this);
 	}
 
 	/**

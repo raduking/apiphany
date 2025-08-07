@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 import org.apiphany.io.BytesWrapper;
-import org.apiphany.json.JsonBuilder;
 
 /**
  * Represents the Finished message in TLS handshake protocol.
@@ -72,7 +71,7 @@ public class Finished implements TLSHandshakeBody {
 	 */
 	@Override
 	public String toString() {
-		return JsonBuilder.toJson(this);
+		return TLSObject.serialize(this);
 	}
 
 	/**

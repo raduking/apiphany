@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 import org.apiphany.io.UInt8;
-import org.apiphany.json.JsonBuilder;
 
 /**
  * Represents a ChangeCipherSpec message in the TLS protocol.
@@ -89,7 +88,7 @@ public class ChangeCipherSpec implements TLSObject {
 	 */
 	@Override
 	public String toString() {
-		return JsonBuilder.toJson(this);
+		return TLSObject.serialize(this);
 	}
 
 	/**

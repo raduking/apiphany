@@ -8,7 +8,6 @@ import java.util.List;
 
 import org.apiphany.io.ByteSizeable;
 import org.apiphany.io.UInt8;
-import org.apiphany.json.JsonBuilder;
 
 /**
  * Represents the compression methods supported in a TLS handshake.
@@ -83,7 +82,7 @@ public class CompressionMethods implements TLSObject {
 	 */
 	@Override
 	public String toString() {
-		return JsonBuilder.toJson(this);
+		return TLSObject.serialize(this);
 	}
 
 	/**

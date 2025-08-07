@@ -6,7 +6,6 @@ import java.nio.ByteBuffer;
 
 import org.apiphany.io.UInt16;
 import org.apiphany.io.UInt8;
-import org.apiphany.json.JsonBuilder;
 
 /**
  * Represents elliptic curve information in TLS key exchange.
@@ -75,7 +74,7 @@ public class CurveInfo implements TLSObject {
 	 */
 	@Override
 	public String toString() {
-		return JsonBuilder.toJson(this);
+		return TLSObject.serialize(this);
 	}
 
 	/**

@@ -5,8 +5,8 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 import org.apiphany.io.UInt16;
-import org.apiphany.json.JsonBuilder;
 import org.apiphany.security.tls.TLSExtension;
+import org.apiphany.security.tls.TLSObject;
 
 /**
  * Represents the Session Ticket extension for TLS session resumption.
@@ -98,7 +98,7 @@ public class SessionTicket implements TLSExtension {
 	 */
 	@Override
 	public String toString() {
-		return JsonBuilder.toJson(this);
+		return TLSObject.serialize(this);
 	}
 
 	/**

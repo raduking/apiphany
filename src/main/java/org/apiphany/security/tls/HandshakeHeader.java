@@ -6,7 +6,6 @@ import java.nio.ByteBuffer;
 
 import org.apiphany.io.UInt24;
 import org.apiphany.io.UInt8;
-import org.apiphany.json.JsonBuilder;
 
 /**
  * Represents the header of a TLS Handshake protocol message.
@@ -97,7 +96,7 @@ public class HandshakeHeader implements TLSObject {
 	 */
 	@Override
 	public String toString() {
-		return JsonBuilder.toJson(this);
+		return TLSObject.serialize(this);
 	}
 
 	/**

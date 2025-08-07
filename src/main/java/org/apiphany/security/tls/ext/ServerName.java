@@ -8,7 +8,6 @@ import java.nio.charset.StandardCharsets;
 import org.apiphany.io.BytesWrapper;
 import org.apiphany.io.UInt16;
 import org.apiphany.io.UInt8;
-import org.apiphany.json.JsonBuilder;
 import org.apiphany.security.tls.TLSObject;
 
 /**
@@ -109,7 +108,7 @@ public class ServerName implements TLSObject {
 	 */
 	@Override
 	public String toString() {
-		return JsonBuilder.toJson(this);
+		return TLSObject.serialize(this);
 	}
 
 	/**

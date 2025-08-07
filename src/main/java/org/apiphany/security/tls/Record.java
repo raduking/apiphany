@@ -10,7 +10,6 @@ import java.util.function.BiFunction;
 
 import org.apiphany.io.ByteSizeable;
 import org.apiphany.io.UInt16;
-import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.collections.Lists;
 import org.apiphany.security.ssl.SSLProtocol;
 import org.morphix.lang.JavaObjects;
@@ -162,7 +161,7 @@ public class Record implements TLSObject {
 	 */
 	@Override
 	public String toString() {
-		return JsonBuilder.toJson(this);
+		return TLSObject.serialize(this);
 	}
 
 	/**

@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 import org.apiphany.io.BytesWrapper;
-import org.apiphany.json.JsonBuilder;
 
 /**
  * Represents encrypted data in TLS protocol messages.
@@ -83,7 +82,7 @@ public class Encrypted implements TLSObject {
 	 */
 	@Override
 	public String toString() {
-		return JsonBuilder.toJson(this);
+		return TLSObject.serialize(this);
 	}
 
 	/**

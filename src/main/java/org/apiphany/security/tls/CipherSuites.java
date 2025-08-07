@@ -8,7 +8,6 @@ import java.util.List;
 
 import org.apiphany.io.ByteSizeable;
 import org.apiphany.io.UInt16;
-import org.apiphany.json.JsonBuilder;
 
 /**
  * Represents a collection of TLS cipher suites offered during handshake negotiation.
@@ -122,7 +121,7 @@ public class CipherSuites implements TLSObject {
 	 */
 	@Override
 	public String toString() {
-		return JsonBuilder.toJson(this);
+		return TLSObject.serialize(this);
 	}
 
 	/**

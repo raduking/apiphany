@@ -2,7 +2,6 @@ package org.apiphany.security.tls;
 
 import java.io.InputStream;
 
-import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Bytes;
 
 /**
@@ -78,6 +77,6 @@ public class ServerHelloDone implements TLSHandshakeBody {
 	 */
 	@Override
 	public String toString() {
-		return JsonBuilder.toJson(this);
+		return TLSObject.serialize(this);
 	}
 }
