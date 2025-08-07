@@ -14,7 +14,7 @@ import java.security.spec.X509EncodedKeySpec;
 
 import org.apiphany.io.BytesOrder;
 import org.apiphany.lang.Hex;
-import org.apiphany.security.ssl.client.X25519Keys;
+import org.apiphany.security.tls.client.X25519Keys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,4 +1,4 @@
-package org.apiphany.security.ssl.client;
+package org.apiphany.http;
 
 import java.util.Map;
 import java.util.TreeMap;
