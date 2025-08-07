@@ -5,6 +5,7 @@ import org.apiphany.io.ByteSizeable;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Hex;
 import org.apiphany.lang.LoggingFormat;
+import org.apiphany.lang.Strings;
 
 /**
  * Marker interface for all objects that participate in TLS protocol communication.
@@ -36,7 +37,7 @@ public interface TLSObject extends ByteSizeable, BinaryRepresentable {
 	 */
 	static String serialize(final TLSObject tlsObject) {
 		return switch (FORMAT) {
-		case HEX -> Hex.dump(tlsObject);
+		case HEX -> Strings.EOL + Hex.dump(tlsObject);
 		case JSON -> JsonBuilder.toJson(tlsObject);
 		};
 	}

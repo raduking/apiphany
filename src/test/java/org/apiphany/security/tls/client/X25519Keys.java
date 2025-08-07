@@ -1,4 +1,4 @@
-package org.apiphany.security.ssl.client;
+package org.apiphany.security.tls.client;
 
 import java.math.BigInteger;
 import java.security.InvalidKeyException;

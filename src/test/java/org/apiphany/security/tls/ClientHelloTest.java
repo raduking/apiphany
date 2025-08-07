@@ -9,7 +9,7 @@ import java.util.List;
 
 import org.apiphany.lang.Bytes;
 import org.apiphany.lang.Hex;
-import org.apiphany.security.ssl.DeterministicSecureRandom;
+import org.apiphany.security.DeterministicSecureRandom;
 import org.apiphany.security.ssl.SSLProtocol;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
