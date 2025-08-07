@@ -3,7 +3,7 @@ package org.apiphany.client;
 import java.lang.reflect.Constructor;
 import java.util.function.Consumer;
 
-import org.apiphany.lang.Pair;
+import org.apiphany.lang.ScopedResource;
 import org.apiphany.security.oauth2.client.OAuth2ExchangeClientBuilder;
 import org.morphix.lang.Nullables;
 import org.morphix.lang.function.Consumers;
@@ -53,11 +53,10 @@ public class ExchangeClientBuilder {
 	 * @return a new exchange client pair with life cycle management information
 	 */
 	@SuppressWarnings("resource")
-	public Pair<ExchangeClient, Boolean> build() {
-		if (null != exchangeClient) {
-			return Pair.of(exchangeClient, false);
-		}
-		return Pair.of(build(exchangeClientClass, clientProperties), true);
+	public ScopedResource<ExchangeClient> build() {
+		boolean managed = exchangeClient == null;
+		ExchangeClient client = managed ? build(exchangeClientClass, clientProperties) : exchangeClient;
+		return ScopedResource.of(client, managed);
 	}
 
 	/**
@@ -108,17 +107,26 @@ public class ExchangeClientBuilder {
 	}
 
 	/**
+	 * Copies all fields from another builder.
+	 *
+	 * @param exchangeClientBuilder the source builder
+	 * @return this
+	 */
+	public ExchangeClientBuilder builder(final ExchangeClientBuilder exchangeClientBuilder) {
+		return client(exchangeClientBuilder.exchangeClient)
+				.client(exchangeClientBuilder.exchangeClientClass)
+				.properties(exchangeClientBuilder.clientProperties);
+	}
+
+	/**
 	 * Adds OAuth2 functionality.
 	 *
 	 * @param oAuth2BuilderCustomizer OAuth2 customizer
 	 * @return new OAuth2 exchange client builder
 	 */
-	public OAuth2ExchangeClientBuilder oAuth2(final Consumer<OAuth2ExchangeClientBuilder> oAuth2BuilderCustomizer) {
+	public ExchangeClientBuilder oAuth2(final Consumer<OAuth2ExchangeClientBuilder> oAuth2BuilderCustomizer) {
 		OAuth2ExchangeClientBuilder oAuth2ExchangeClientBuilder = OAuth2ExchangeClientBuilder.create();
-		oAuth2ExchangeClientBuilder
-				.client(exchangeClientClass)
-				.client(exchangeClient)
-				.properties(clientProperties);
+		oAuth2ExchangeClientBuilder.builder(this);
 		oAuth2BuilderCustomizer.accept(oAuth2ExchangeClientBuilder);
 		return oAuth2ExchangeClientBuilder;
 	}
@@ -128,7 +136,7 @@ public class ExchangeClientBuilder {
 	 *
 	 * @return new OAuth2 exchange client builder
 	 */
-	public OAuth2ExchangeClientBuilder oAuth2() {
+	public ExchangeClientBuilder oAuth2() {
 		return oAuth2(Consumers.noConsumer());
 	}
 }
