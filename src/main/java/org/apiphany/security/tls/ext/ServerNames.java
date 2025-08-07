@@ -8,8 +8,8 @@ import java.util.List;
 
 import org.apiphany.io.ByteSizeable;
 import org.apiphany.io.UInt16;
-import org.apiphany.json.JsonBuilder;
 import org.apiphany.security.tls.TLSExtension;
+import org.apiphany.security.tls.TLSObject;
 
 /**
  * Represents the Server Name Indication (SNI) extension in TLS.
@@ -128,7 +128,7 @@ public class ServerNames implements TLSExtension {
 	 */
 	@Override
 	public String toString() {
-		return JsonBuilder.toJson(this);
+		return TLSObject.serialize(this);
 	}
 
 	/**

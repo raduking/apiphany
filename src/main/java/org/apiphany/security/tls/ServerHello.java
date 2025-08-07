@@ -6,7 +6,6 @@ import java.nio.ByteBuffer;
 
 import org.apiphany.io.UInt16;
 import org.apiphany.io.UInt8;
-import org.apiphany.json.JsonBuilder;
 
 /**
  * Represents the ServerHello message in TLS handshake protocol.
@@ -145,7 +144,7 @@ public class ServerHello implements TLSHandshakeBody {
 	 */
 	@Override
 	public String toString() {
-		return JsonBuilder.toJson(this);
+		return TLSObject.serialize(this);
 	}
 
 	/**

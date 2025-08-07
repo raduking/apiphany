@@ -6,7 +6,6 @@ import java.nio.ByteBuffer;
 
 import org.apiphany.io.BytesWrapper;
 import org.apiphany.io.UInt16;
-import org.apiphany.json.JsonBuilder;
 
 /**
  * Represents a digital signature in TLS protocol messages.
@@ -102,7 +101,7 @@ public class Signature implements TLSObject {
 	 */
 	@Override
 	public String toString() {
-		return JsonBuilder.toJson(this);
+		return TLSObject.serialize(this);
 	}
 
 	/**

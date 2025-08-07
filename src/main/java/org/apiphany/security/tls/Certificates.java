@@ -8,7 +8,6 @@ import java.util.List;
 
 import org.apiphany.io.ByteSizeable;
 import org.apiphany.io.UInt24;
-import org.apiphany.json.JsonBuilder;
 
 /**
  * Represents a TLS Certificate message containing a chain of X.509 certificates.
@@ -93,7 +92,7 @@ public class Certificates implements TLSHandshakeBody {
 	 */
 	@Override
 	public String toString() {
-		return JsonBuilder.toJson(this);
+		return TLSObject.serialize(this);
 	}
 
 	/**
