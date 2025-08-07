@@ -513,6 +513,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	/**
 	 * @see #getHeadersAsString()
 	 */
+	@SuppressWarnings("resource")
 	@Override
 	public String getHeadersAsString() {
 		return getExchangeClient(ExchangeClient.class).getHeadersAsString(this);

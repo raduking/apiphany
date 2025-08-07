@@ -19,6 +19,11 @@ public class OAuth2ExchangeClientBuilder extends ExchangeClientBuilder {
 	private Class<? extends ExchangeClient> tokenExchangeClientClass;
 
 	/**
+	 * Token exchange client.
+	 */
+	private ExchangeClient tokenExchangeClient;
+
+	/**
 	 * Hide constructor.
 	 */
 	private OAuth2ExchangeClientBuilder() {
@@ -39,15 +44,20 @@ public class OAuth2ExchangeClientBuilder extends ExchangeClientBuilder {
 	 *
 	 * @return a new exchange client pair with life cycle management information
 	 */
-	@Override
 	@SuppressWarnings("resource")
+	@Override
 	public Pair<ExchangeClient, Boolean> build() {
 		Pair<ExchangeClient, Boolean> clientInfo = super.build();
 		ExchangeClient exchangeClient = clientInfo.left();
-		ExchangeClient tokenExchangeClient = Nullables.notNull(tokenExchangeClientClass)
-				.thenYield(() -> ExchangeClientBuilder.build(tokenExchangeClientClass, clientProperties))
+		ExchangeClient tokenClient = Nullables.notNull(tokenExchangeClientClass)
+				.thenYield(() -> ExchangeClientBuilder.create()
+						.client(tokenExchangeClientClass)
+						.client(tokenExchangeClient)
+						.properties(clientProperties)
+						.build()
+						.left())
 				.orElse(exchangeClient);
-		return Pair.of(new OAuth2HttpExchangeClient(exchangeClient, tokenExchangeClient), clientInfo.right());
+		return Pair.of(new OAuth2HttpExchangeClient(exchangeClient, tokenClient), clientInfo.right());
 	}
 
 	/**
@@ -70,6 +80,17 @@ public class OAuth2ExchangeClientBuilder extends ExchangeClientBuilder {
 	 */
 	public OAuth2ExchangeClientBuilder tokenClient(final Class<? extends ExchangeClient> tokenClientClass) {
 		this.tokenExchangeClientClass = tokenClientClass;
+		return this;
+	}
+
+	/**
+	 * Sets the token exchange client.
+	 *
+	 * @param tokenClient the token client
+	 * @return this
+	 */
+	public OAuth2ExchangeClientBuilder tokenClient(final ExchangeClient tokenClient) {
+		this.tokenExchangeClient = tokenClient;
 		return this;
 	}
 
