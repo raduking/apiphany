@@ -3,7 +3,6 @@ package org.apiphany.security.oauth2.client;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -13,6 +12,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.http.TokenHttpExchangeClient;
 import org.apiphany.http.HttpAuthScheme;
+import org.apiphany.lang.ScopedResource;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Maps;
 import org.apiphany.lang.retry.Retry;
@@ -45,7 +45,7 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	/**
 	 * The exchange client doing the token refresh.
 	 */
-	private final ExchangeClient tokenExchangeClient;
+	private final ScopedResource<ExchangeClient> tokenExchangeClient;
 
 	/**
 	 * Underlying API client that retrieves the token.
@@ -87,7 +87,7 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	public OAuth2HttpExchangeClient(final ExchangeClient exchangeClient, final ExchangeClient tokenExchangeClient, final String clientRegistrationName) {
 		super(exchangeClient);
 
-		this.tokenExchangeClient = Objects.requireNonNull(tokenExchangeClient, "tokenExchangeClient cannot be null");
+		this.tokenExchangeClient = ScopedResource.of(tokenExchangeClient, exchangeClient != tokenExchangeClient);
 		this.tokenRefreshScheduler = Executors.newScheduledThreadPool(0, Thread.ofVirtual().factory());
 
 		this.oAuth2Properties = getClientProperties().getCustomProperties(OAuth2Properties.ROOT, OAuth2Properties.class);
@@ -136,8 +136,9 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	 *
 	 * @return true if the initialization was successful, false otherwise
 	 */
+	@SuppressWarnings("resource")
 	private boolean initialize() { // NOSONAR we don't care about the parent class private method
-		if (exchangeClient.getClientProperties().isDisabled()) {
+		if (getExchangeClient().getClientProperties().isDisabled()) {
 			LOGGER.warn("[{}] OAuth2 client is disabled!", getName());
 			return false;
 		}
@@ -168,6 +169,7 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	 * @param clientRegistrationName client registration name
 	 * @return true if the initialization was successful, false otherwise
 	 */
+	@SuppressWarnings("resource")
 	private boolean initialize(final String clientRegistrationName) {
 		OAuth2ClientRegistration clientRegistration = oAuth2Properties.getClientRegistration(clientRegistrationName);
 		if (null == clientRegistration) {
@@ -187,7 +189,7 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 			return false;
 		}
 
-		this.tokenApiClient = new OAuth2ApiClient(clientRegistration, providerDetails, tokenExchangeClient);
+		this.tokenApiClient = new OAuth2ApiClient(clientRegistration, providerDetails, tokenExchangeClient.unwrap());
 		return true;
 	}
 
@@ -198,9 +200,7 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	public void close() throws Exception {
 		super.close();
 		closeTokenRefreshScheduler();
-		if (exchangeClient != tokenExchangeClient) {
-			tokenExchangeClient.close();
-		}
+		tokenExchangeClient.closeIfManaged();
 		if (null != tokenApiClient) {
 			tokenApiClient.close();
 		}

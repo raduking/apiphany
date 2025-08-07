@@ -2,7 +2,6 @@ package org.apiphany.client.http;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Objects;
 import java.util.function.Supplier;
 
 import org.apiphany.ApiRequest;
@@ -13,6 +12,7 @@ import org.apiphany.header.HeaderValues;
 import org.apiphany.header.Headers;
 import org.apiphany.http.HttpAuthScheme;
 import org.apiphany.http.HttpHeader;
+import org.apiphany.lang.ScopedResource;
 import org.apiphany.security.AuthenticationException;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationType;
@@ -41,7 +41,7 @@ public class TokenHttpExchangeClient extends AbstractHttpExchangeClient {
 	/**
 	 * The actual exchange client doing the request.
 	 */
-	protected final ExchangeClient exchangeClient;
+	protected final ScopedResource<ExchangeClient> exchangeClient;
 
 	/**
 	 * The authentication token.
@@ -63,13 +63,23 @@ public class TokenHttpExchangeClient extends AbstractHttpExchangeClient {
 	 *
 	 * @param exchangeClient actual exchange client making the request
 	 */
-	protected TokenHttpExchangeClient(final ExchangeClient exchangeClient) {
-		super(exchangeClient.getClientProperties());
+	@SuppressWarnings("resource")
+	protected TokenHttpExchangeClient(final ScopedResource<ExchangeClient> exchangeClient) {
+		super(exchangeClient.unwrap().getClientProperties());
 
-		this.exchangeClient = Objects.requireNonNull(exchangeClient, "exchangeClient cannot be null");
+		this.exchangeClient = exchangeClient;
 		this.defaultExpirationSupplier = Instant::now;
 
 		initialize();
+	}
+
+	/**
+	 * Initialize the client with the given exchange client delegate.
+	 *
+	 * @param exchangeClient actual exchange client making the request
+	 */
+	protected TokenHttpExchangeClient(final ExchangeClient exchangeClient) {
+		this(ScopedResource.managed(exchangeClient));
 	}
 
 	/**
@@ -77,7 +87,7 @@ public class TokenHttpExchangeClient extends AbstractHttpExchangeClient {
 	 */
 	@Override
 	public void close() throws Exception {
-		exchangeClient.close();
+		exchangeClient.closeIfManaged();
 	}
 
 	/**
@@ -114,6 +124,7 @@ public class TokenHttpExchangeClient extends AbstractHttpExchangeClient {
 	/**
 	 * @see #exchange(ApiRequest)
 	 */
+	@SuppressWarnings("resource")
 	@Override
 	public <T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest) {
 		AuthenticationToken token = getAuthenticationToken();
@@ -122,7 +133,7 @@ public class TokenHttpExchangeClient extends AbstractHttpExchangeClient {
 		}
 		String headerValue = HeaderValues.value(getAuthenticationScheme(), token.getAccessToken());
 		Headers.addTo(apiRequest.getHeaders(), HttpHeader.AUTHORIZATION, headerValue);
-		return exchangeClient.exchange(apiRequest);
+		return exchangeClient.unwrap().exchange(apiRequest);
 	}
 
 	/**
@@ -201,5 +212,14 @@ public class TokenHttpExchangeClient extends AbstractHttpExchangeClient {
 	 */
 	public void setAuthenticationScheme(final HttpAuthScheme authenticationScheme) {
 		this.authenticationScheme = authenticationScheme;
+	}
+
+	/**
+	 * Returns the exchange client.
+	 *
+	 * @return the exchange client
+	 */
+	protected ExchangeClient getExchangeClient() {
+		return exchangeClient.unwrap();
 	}
 }

@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.ExchangeClientBuilder;
-import org.apiphany.lang.Pair;
+import org.apiphany.lang.ScopedResource;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.accumulator.DurationAccumulator;
 import org.apiphany.lang.retry.Retry;
@@ -102,7 +102,7 @@ public class ApiClient implements AutoCloseable {
 	 * Exchange clients map based on the authentication type and a pair of exchange client and managed flag that tells the
 	 * API client if the exchange client's life cycle is managed by the API client or not.
 	 */
-	private final Map<AuthenticationType, Pair<ExchangeClient, Boolean>> exchangeClientsMap = new ConcurrentHashMap<>();
+	private final Map<AuthenticationType, ScopedResource<ExchangeClient>> exchangeClientsMap = new ConcurrentHashMap<>();
 
 	/**
 	 * Constructor with exchange clients.
@@ -118,9 +118,9 @@ public class ApiClient implements AutoCloseable {
 		for (Map.Entry<ExchangeClient, Boolean> entry : exchangeClients.entrySet()) {
 			ExchangeClient exchangeClient = entry.getKey();
 			AuthenticationType authenticationType = exchangeClient.getAuthenticationType();
-			this.exchangeClientsMap.merge(authenticationType, Pair.of(exchangeClient, entry.getValue()), (oldValue, newValue) -> {
+			this.exchangeClientsMap.merge(authenticationType, ScopedResource.of(exchangeClient, entry.getValue()), (oldValue, newValue) -> {
 				throw new IllegalStateException("Failed to instantiate [" + getClass()
-						+ "]: For authentication type " + authenticationType + ", " + oldValue.left().getName() + " already exists");
+						+ "]: For authentication type " + authenticationType + ", " + oldValue.unwrap().getName() + " already exists");
 			});
 		}
 		initializeTypeObjects(this);
@@ -197,11 +197,7 @@ public class ApiClient implements AutoCloseable {
 	 */
 	@Override
 	public void close() throws Exception {
-		exchangeClientsMap.forEach(ThrowingBiConsumer.unchecked((k, v) -> {
-			if (v.right().booleanValue()) {
-				v.left().close();
-			}
-		}));
+		exchangeClientsMap.forEach(ThrowingBiConsumer.unchecked((k, v) -> v.closeIfManaged()));
 	}
 
 	/**
@@ -502,7 +498,7 @@ public class ApiClient implements AutoCloseable {
 	 * @return an exchange client
 	 */
 	protected ExchangeClient getExchangeClient(final AuthenticationType authenticationType) {
-		return Nullables.apply(exchangeClientsMap.get(authenticationType), Pair::left, () -> {
+		return Nullables.apply(exchangeClientsMap.get(authenticationType), ScopedResource::unwrap, () -> {
 			throw new IllegalStateException("No ExchangeClient found for authentication type: " + authenticationType);
 		});
 	}

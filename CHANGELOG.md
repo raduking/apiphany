@@ -12,6 +12,7 @@ Moved `ByteSizeable` and `BinaryRepresentable` to `io` package.
 Added `BytesOrder` enum and streamlined key handling.
 Added `Sockets.DEFAULT_TIMEOUT` set to 2 seconds.
 Added methods without timeout specifier to `Sockets` which use the `Sockets.DEFAULT_TIMEOUT`.
+Added `ScopedResource` class for managed/unmanaged resource handling.
 
 ---
 
