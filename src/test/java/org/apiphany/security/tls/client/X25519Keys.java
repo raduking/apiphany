@@ -56,11 +56,15 @@ public class X25519Keys implements TLSKeysHandler {
 	}
 
 	@Override
-	public PublicKey from(final byte[] publicKeyBytes, final BytesOrder bytesOrder) throws InvalidKeySpecException {
-		return switch (bytesOrder) {
-		case LITTLE_ENDIAN -> fromLittleEndian(publicKeyBytes);
-		case BIG_ENDIAN -> fromBigEndian(publicKeyBytes);
-		};
+	public PublicKey from(final byte[] publicKeyBytes, final BytesOrder bytesOrder) {
+		try {
+			return switch (bytesOrder) {
+			case LITTLE_ENDIAN -> fromLittleEndian(publicKeyBytes);
+			case BIG_ENDIAN -> fromBigEndian(publicKeyBytes);
+			};
+		} catch (InvalidKeySpecException e) {
+			throw new SecurityException(e);
+		}
 	}
 
 	public PublicKey fromLittleEndian(final byte[] publicKeyBytes) throws InvalidKeySpecException {
@@ -75,13 +79,16 @@ public class X25519Keys implements TLSKeysHandler {
 	}
 
 	@Override
-	public byte[] getSharedSecret(final PrivateKey privateKey, final PublicKey publicKey)
-			throws NoSuchAlgorithmException, InvalidKeyException {
+	public byte[] getSharedSecret(final PrivateKey privateKey, final PublicKey publicKey) {
 		// X25519 is only used with ECDHE
-		KeyAgreement ka = KeyAgreement.getInstance(algorithm);
-		ka.init(privateKey);
-		ka.doPhase(publicKey, true);
-		return ka.generateSecret();
+		try {
+			KeyAgreement ka = KeyAgreement.getInstance(algorithm);
+			ka.init(privateKey);
+			ka.doPhase(publicKey, true);
+			return ka.generateSecret();
+		} catch (NoSuchAlgorithmException | InvalidKeyException e) {
+			throw new SecurityException(e);
+		}
 	}
 
 	@Override
