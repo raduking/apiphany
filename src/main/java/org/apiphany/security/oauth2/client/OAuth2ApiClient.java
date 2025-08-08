@@ -8,7 +8,6 @@ import org.apiphany.ApiClient;
 import org.apiphany.RequestParameters;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.ExchangeClientBuilder;
-import org.apiphany.client.http.TokenHttpExchangeClient;
 import org.apiphany.http.ContentType;
 import org.apiphany.http.HttpAuthScheme;
 import org.apiphany.http.HttpHeader;
@@ -18,6 +17,7 @@ import org.apiphany.security.oauth2.ClientAuthenticationMethod;
 import org.apiphany.security.oauth2.OAuth2ClientRegistration;
 import org.apiphany.security.oauth2.OAuth2Parameter;
 import org.apiphany.security.oauth2.OAuth2ProviderDetails;
+import org.apiphany.security.token.client.TokenHttpExchangeClient;
 
 /**
  * Specialized {@link ApiClient} for OAuth2 authentication flows. Handles token acquisition and management for OAuth2

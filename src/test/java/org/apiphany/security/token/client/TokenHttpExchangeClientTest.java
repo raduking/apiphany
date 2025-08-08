@@ -1,4 +1,4 @@
-package org.apiphany.client.http;
+package org.apiphany.security.token.client;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -20,7 +20,7 @@ import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationType;
 import org.apiphany.security.JwtTokenValidator;
 import org.apiphany.security.JwtTokenValidator.TokenValidationException;
-import org.apiphany.security.TokenProperties;
+import org.apiphany.security.token.TokenProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

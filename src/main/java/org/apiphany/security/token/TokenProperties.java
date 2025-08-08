@@ -1,4 +1,4 @@
-package org.apiphany.security;
+package org.apiphany.security.token;
 
 /**
  * Properties specifying the bearer token.
