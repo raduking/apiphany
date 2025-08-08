@@ -6,7 +6,6 @@ import java.nio.ByteBuffer;
 import java.security.SecureRandom;
 import java.util.List;
 
-import org.apiphany.json.JsonBuilder;
 import org.apiphany.security.ssl.SSLProtocol;
 
 /**
@@ -151,7 +150,7 @@ public class ClientHello implements TLSHandshakeBody {
 	 */
 	@Override
 	public String toString() {
-		return JsonBuilder.toJson(this);
+		return TLSObject.serialize(this);
 	}
 
 	/**

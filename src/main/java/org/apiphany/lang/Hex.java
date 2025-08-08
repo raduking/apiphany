@@ -2,6 +2,7 @@ package org.apiphany.lang;
 
 import java.util.Objects;
 
+import org.apiphany.io.BinaryRepresentable;
 import org.morphix.reflection.Constructors;
 
 /**
@@ -98,9 +99,10 @@ public abstract class Hex {
 			if (verbose) {
 				sb.append(String.format("%04X: ", i));
 			}
-			for (int j = 0; j < width; j++) {
+			for (int j = 0; j < width; ++j) {
 				if (i + j < bytes.length) {
-					sb.append(string(bytes[i + j]));
+					boolean addSeparator = verbose || j < width - 1;
+					sb.append(string(bytes[i + j], addSeparator ? " " : ""));
 				} else {
 					if (verbose) {
 						sb.append("   ");
@@ -138,5 +140,16 @@ public abstract class Hex {
 	 */
 	public static String dump(final byte[] bytes) {
 		return dump(bytes, VERBOSE);
+	}
+
+	/**
+	 * Dumps a binary representable object in hexadecimal format with verbose output (includes offset, hex values, and ASCII
+	 * representation if the {@link #VERBOSE_PROPERTY_NAME} is set to true).
+	 *
+	 * @param binaryRepresentable the binary representable object
+	 * @return formatted hexadecimal dump of the binary representable object
+	 */
+	public static String dump(final BinaryRepresentable binaryRepresentable) {
+		return dump(binaryRepresentable.toByteArray());
 	}
 }

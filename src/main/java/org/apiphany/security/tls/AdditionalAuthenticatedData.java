@@ -4,7 +4,6 @@ import java.nio.ByteBuffer;
 
 import org.apiphany.io.UInt16;
 import org.apiphany.io.UInt64;
-import org.apiphany.json.JsonBuilder;
 import org.apiphany.security.ssl.SSLProtocol;
 
 /**
@@ -88,7 +87,7 @@ public class AdditionalAuthenticatedData implements TLSObject {
 	 */
 	@Override
 	public String toString() {
-		return JsonBuilder.toJson(this);
+		return TLSObject.serialize(this);
 	}
 
 	/**

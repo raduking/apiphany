@@ -6,7 +6,6 @@ import java.nio.ByteBuffer;
 
 import org.apiphany.io.BytesWrapper;
 import org.apiphany.io.UInt16;
-import org.apiphany.json.JsonBuilder;
 
 /**
  * Represents the RSA-encrypted premaster secret in TLS key exchange.
@@ -91,7 +90,7 @@ public class RSAEncryptedPreMaster implements TLSKeyExchange {
 	 */
 	@Override
 	public String toString() {
-		return JsonBuilder.toJson(this);
+		return TLSObject.serialize(this);
 	}
 
 	/**

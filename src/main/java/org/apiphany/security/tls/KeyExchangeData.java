@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apiphany.io.BytesWrapper;
-import org.apiphany.json.JsonBuilder;
 
 /**
  * Represents key exchange data in TLS handshake messages.
@@ -69,7 +68,7 @@ public class KeyExchangeData implements TLSKeyExchange {
 	 */
 	@Override
 	public String toString() {
-		return JsonBuilder.toJson(this);
+		return TLSObject.serialize(this);
 	}
 
 	/**

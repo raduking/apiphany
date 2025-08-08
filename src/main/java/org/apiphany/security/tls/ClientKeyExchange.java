@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
-import org.apiphany.json.JsonBuilder;
-
 /**
  * Represents the Client Key Exchange message in TLS handshake protocol.
  * <p>
@@ -62,7 +60,7 @@ public class ClientKeyExchange implements TLSHandshakeBody {
 	 */
 	@Override
 	public String toString() {
-		return JsonBuilder.toJson(this);
+		return TLSObject.serialize(this);
 	}
 
 	/**

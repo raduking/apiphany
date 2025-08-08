@@ -7,7 +7,6 @@ import java.nio.charset.StandardCharsets;
 
 import org.apiphany.io.BytesWrapper;
 import org.apiphany.io.UInt8;
-import org.apiphany.json.JsonBuilder;
 
 /**
  * Represents a TLS Session Identifier used for session resumption.
@@ -116,7 +115,7 @@ public class SessionId implements TLSObject {
      */
 	@Override
 	public String toString() {
-		return JsonBuilder.toJson(this);
+		return TLSObject.serialize(this);
 	}
 
     /**

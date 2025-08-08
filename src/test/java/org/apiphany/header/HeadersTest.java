@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Test;
  *
  * @author Radu Sebastian LAZIN
  */
-@SuppressWarnings("serial")
 class HeadersTest {
 
 	private static final String N1 = "n1";

@@ -2,6 +2,23 @@
 
 ---
 
+`1.0.4`
+
+Added `PRFLabel` enum representing labels used in TLS Pseudo-random Function (PRF) operations.
+Added `MessageDigestAlgorithm` representing supported message digest algorithms for cryptographic operations.
+Added the message digest algorithm to each `CipherSuite` enum value.
+Added `Record.hasNoHandshake` method to check of a TLS record doesn't have the handshake message type specified as a parameter.
+Moved `ByteSizeable` and `BinaryRepresentable` to `io` package.
+Added `BytesOrder` enum and streamlined key handling.
+Added `Sockets.DEFAULT_TIMEOUT` set to 2 seconds.
+Added methods without timeout specifier to `Sockets` which use the `Sockets.DEFAULT_TIMEOUT`.
+Added `ScopedResource` class for managed/unmanaged resource handling.
+Added `LoggingFormat` enum to specify logging format configurations.
+Added `TLSObject.serialize` to serialize any TLS object to string depending on configuration.
+Added `TLSObject.FORMAT` as the logging format configurable with `apiphany.logging.format.tls` property.
+
+---
+
 `1.0.3`
 
 - Added `Arrays` class for Java array utility methods.

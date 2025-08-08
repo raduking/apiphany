@@ -6,7 +6,6 @@ import java.nio.ByteBuffer;
 
 import org.apiphany.io.BytesWrapper;
 import org.apiphany.io.UInt8;
-import org.apiphany.json.JsonBuilder;
 
 /**
  * Represents an ECDHE (Elliptic Curve Diffie-Hellman Ephemeral) public key in TLS key exchange.
@@ -100,7 +99,7 @@ public class ECDHEPublicKey implements TLSKeyExchange {
 	 */
 	@Override
 	public String toString() {
-		return JsonBuilder.toJson(this);
+		return TLSObject.serialize(this);
 	}
 
 	/**

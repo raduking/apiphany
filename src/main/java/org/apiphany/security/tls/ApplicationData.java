@@ -3,8 +3,6 @@ package org.apiphany.security.tls;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apiphany.json.JsonBuilder;
-
 /**
  * Represents encrypted application data in a TLS connection.
  * <p>
@@ -59,7 +57,7 @@ public class ApplicationData implements TLSObject {
 	 */
 	@Override
 	public String toString() {
-		return JsonBuilder.toJson(this);
+		return TLSObject.serialize(this);
 	}
 
 	/**

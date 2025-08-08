@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apiphany.json.JsonBuilder;
-import org.apiphany.lang.BinaryRepresentable;
-import org.apiphany.lang.ByteSizeable;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
