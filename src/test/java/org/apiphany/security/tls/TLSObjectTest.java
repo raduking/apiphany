@@ -179,6 +179,7 @@ class TLSObjectTest {
 
 	@Test
 	void shouldPerformTLS12HandshakeWithWwwGoogleCom() throws Exception {
+		assumeTrue("true".equals(System.getProperty("test.tls.chunked")));
 		int port = 443;
 		String host = "www.google.com";
 		assumeTrue(Sockets.canConnectTo(host, port), host + " is unreachable, skipping test.");
