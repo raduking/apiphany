@@ -15,6 +15,8 @@ import org.apiphany.io.ByteBufferInputStream;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.security.AuthenticationToken;
+import org.apiphany.security.oauth2.ClientAuthenticationMethod;
+import org.apiphany.security.oauth2.OAuth2ClientRegistration;
 import org.apiphany.security.oauth2.OAuth2ProviderDetails;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

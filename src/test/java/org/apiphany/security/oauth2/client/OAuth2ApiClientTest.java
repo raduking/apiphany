@@ -17,6 +17,8 @@ import org.apiphany.net.Sockets;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.JwtTokenValidator;
 import org.apiphany.security.JwtTokenValidator.TokenValidationException;
+import org.apiphany.security.oauth2.ClientAuthenticationMethod;
+import org.apiphany.security.oauth2.OAuth2ClientRegistration;
 import org.apiphany.security.oauth2.OAuth2ProviderDetails;
 import org.apiphany.security.oauth2.server.SimpleHttpServer;
 import org.apiphany.security.oauth2.server.SimpleOAuth2Server;

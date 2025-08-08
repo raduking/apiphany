@@ -22,6 +22,8 @@ import org.apiphany.lang.Strings;
 import org.apiphany.net.Sockets;
 import org.apiphany.security.AuthenticationType;
 import org.apiphany.security.JwtTokenValidator;
+import org.apiphany.security.oauth2.ClientAuthenticationMethod;
+import org.apiphany.security.oauth2.OAuth2ClientRegistration;
 import org.apiphany.security.oauth2.OAuth2Properties;
 import org.apiphany.security.oauth2.OAuth2ProviderDetails;
 import org.apiphany.security.oauth2.server.SimpleHttpServer;

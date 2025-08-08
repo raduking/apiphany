@@ -1,4 +1,4 @@
-package org.apiphany.security.oauth2.client;
+package org.apiphany.security.oauth2;
 
 import java.util.Base64;
 import java.util.Collections;
@@ -8,7 +8,6 @@ import org.apiphany.header.HeaderValues;
 import org.apiphany.http.HttpAuthScheme;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
-import org.apiphany.security.oauth2.AuthorizationGrantType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 

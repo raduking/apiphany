@@ -4,7 +4,6 @@ import java.util.Map;
 
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.collections.Maps;
-import org.apiphany.security.oauth2.client.OAuth2ClientRegistration;
 
 /**
  * Configuration properties for OAuth2 authentication. Contains provider details and client registration information.
