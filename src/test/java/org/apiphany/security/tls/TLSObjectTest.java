@@ -177,6 +177,23 @@ class TLSObjectTest {
 		assertNotNull(response);
 	}
 
+	@Test
+	void shouldPerformTLS12HandshakeWithWwwGoogleCom() throws Exception {
+		int port = 443;
+		String host = "www.google.com";
+		assumeTrue(Sockets.canConnectTo(host, port), host + " is unreachable, skipping test.");
+
+		String response = null;
+		try (MinimalTLSClient client = new MinimalTLSClient(host, port, CLIENT_KEY_PAIR, CIPHER_SUITES)) {
+			client.performHandshake();
+			response = client.get("/");
+		} catch (Exception e) {
+			LOGGER.error("Error performing SSL handshake", e);
+		}
+		LOGGER.debug("Full response:\n{}", response);
+		assertNotNull(response);
+	}
+
 	@ParameterizedTest
 	@MethodSource("providePRFArguments")
 	void shouldApplyTheCorrectPseudoRandomFunction(final String label, final String seed, final int length, final String expected)
