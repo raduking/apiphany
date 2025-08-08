@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.apiphany.json.JsonBuilder;
-import org.apiphany.security.oauth2.client.OAuth2ClientRegistration;
 
 /**
  * Contains configuration details for an OAuth 2.0 Provider. This includes endpoint URIs and other provider-specific

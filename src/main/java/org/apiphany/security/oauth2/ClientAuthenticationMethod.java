@@ -1,4 +1,4 @@
-package org.apiphany.security.oauth2.client;
+package org.apiphany.security.oauth2;
 
 import java.util.Map;
 

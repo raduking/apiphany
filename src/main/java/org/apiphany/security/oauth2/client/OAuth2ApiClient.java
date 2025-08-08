@@ -14,6 +14,9 @@ import org.apiphany.http.HttpAuthScheme;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.oauth2.AuthorizationGrantType;
+import org.apiphany.security.oauth2.ClientAuthenticationMethod;
+import org.apiphany.security.oauth2.OAuth2ClientRegistration;
+import org.apiphany.security.oauth2.OAuth2Parameter;
 import org.apiphany.security.oauth2.OAuth2ProviderDetails;
 
 /**

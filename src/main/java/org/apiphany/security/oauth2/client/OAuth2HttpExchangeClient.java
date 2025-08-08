@@ -19,6 +19,7 @@ import org.apiphany.lang.retry.Retry;
 import org.apiphany.lang.retry.WaitCounter;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationType;
+import org.apiphany.security.oauth2.OAuth2ClientRegistration;
 import org.apiphany.security.oauth2.OAuth2Properties;
 import org.apiphany.security.oauth2.OAuth2ProviderDetails;
 import org.morphix.lang.JavaObjects;
