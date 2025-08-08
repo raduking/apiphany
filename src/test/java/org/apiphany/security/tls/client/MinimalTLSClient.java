@@ -314,51 +314,37 @@ public class MinimalTLSClient implements AutoCloseable {
 	}
 
 	public String get(final String path) throws Exception {
-		String request =
-				"GET " + path + " HTTP/1.1\r\n" +
-						"Host: " + host + "\r\n" +
-						"Connection: close\r\n\r\n";
+	    String request =
+	            "GET " + path + " HTTP/1.1\r\n" +
+	                    "Host: " + host + "\r\n" +
+	                    "Connection: close\r\n\r\n";
 
+	    sendApplicationData(request);
+
+	    String response = receiveApplicationData();
+	    HttpResponseParser parser = new HttpResponseParser(response);
+	    while (!parser.isComplete()) {
+	    	response = receiveApplicationData();
+	        parser.appendData(response);
+	    }
+	    return parser.getBody();
+	}
+
+	private void sendApplicationData(final String request) throws Exception {
+		LOGGER.debug("Sending request:\n{}", request);
 		byte[] requestBytes = request.getBytes(StandardCharsets.US_ASCII);
 		Encrypted encrypted = encrypt(new BytesWrapper(requestBytes), RecordContentType.APPLICATION_DATA, exchangeKeys);
 		Record requestRecord = new Record(sslProtocol, new ApplicationData(encrypted));
 		sendRecord(requestRecord);
+	}
 
+	private String receiveApplicationData() throws Exception {
 		Record responseRecord = Record.from(in, ThrowingBiFunction.unchecked((is, total) -> Encrypted.from(is, total, 8)));
 		LOGGER.debug("Received Application Data Record:{}", responseRecord);
 		byte[] decrypted = decrypt(responseRecord, RecordContentType.APPLICATION_DATA, exchangeKeys);
-
-		String response = new String(decrypted, StandardCharsets.US_ASCII);
-		LOGGER.debug("Received HTTP GET Response:\n{}", response);
-
-		HttpResponseParser httpResponseParser = new HttpResponseParser(response);
-		int contentLength = Integer.parseInt(httpResponseParser.getHeader("content-length"));
-		StringBuilder responseBuilder = new StringBuilder();
-		String body = httpResponseParser.getBody();
-		responseBuilder.append(body);
-
-		int currentLength = body.length();
-		while (contentLength > currentLength) {
-			responseRecord = Record.from(in, ThrowingBiFunction.unchecked((is, total) -> Encrypted.from(is, total, 8)));
-			LOGGER.debug("Received Application Data Record:{}", responseRecord);
-			decrypted = decrypt(responseRecord, RecordContentType.APPLICATION_DATA, exchangeKeys);
-
-			body = new String(decrypted, StandardCharsets.US_ASCII);
-			LOGGER.debug("Received HTTP GET Content:\n{}", body);
-
-			responseBuilder.append(body);
-			currentLength += decrypted.length;
-		}
-		return responseBuilder.toString();
-	}
-
-	public byte[] getClientPublicBytes(final ServerKeyExchange ske, final TLSKeysHandler keys) throws Exception {
-		byte[] serverPubBytes = ske.getPublicKey().getValue().toByteArray();
-		this.serverPublicKey = keys.from(serverPubBytes, BytesOrder.LITTLE_ENDIAN);
-		if (null == clientKeyPair) {
-			this.clientKeyPair = keys.generateKeyPair();
-		}
-		return keys.toByteArray(clientKeyPair.getPublic(), BytesOrder.LITTLE_ENDIAN);
+		String content = new String(decrypted, StandardCharsets.US_ASCII);
+		LOGGER.debug("Received content:\n{}", content);
+		return content;
 	}
 
 	public Encrypted encrypt(final BinaryRepresentable tlsObject, final RecordContentType type, final ExchangeKeys keys) throws Exception {
@@ -414,6 +400,15 @@ public class MinimalTLSClient implements AutoCloseable {
 		return decrypted;
 	}
 
+	public byte[] getClientPublicBytes(final ServerKeyExchange ske, final TLSKeysHandler keys) {
+		byte[] serverPubBytes = ske.getPublicKey().getValue().toByteArray();
+		this.serverPublicKey = keys.from(serverPubBytes, BytesOrder.LITTLE_ENDIAN);
+		if (null == clientKeyPair) {
+			this.clientKeyPair = keys.generateKeyPair();
+		}
+		return keys.toByteArray(clientKeyPair.getPublic(), BytesOrder.LITTLE_ENDIAN);
+	}
+
 	public void accumulateHandshake(final Handshake handshake) {
 		LOGGER.debug("Accumulate handshake: {}", handshake.getBody().getType());
 		handshakeMessages.add(handshake);
@@ -441,5 +436,4 @@ public class MinimalTLSClient implements AutoCloseable {
 		}
 		return stringBuilder.toString();
 	}
-
 }
