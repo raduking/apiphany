@@ -1,4 +1,4 @@
-package org.apiphany.client.http;
+package org.apiphany.security.token.client;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -8,6 +8,7 @@ import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
+import org.apiphany.client.http.AbstractHttpExchangeClient;
 import org.apiphany.header.HeaderValues;
 import org.apiphany.header.Headers;
 import org.apiphany.http.HttpAuthScheme;
@@ -16,7 +17,7 @@ import org.apiphany.lang.ScopedResource;
 import org.apiphany.security.AuthenticationException;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationType;
-import org.apiphany.security.TokenProperties;
+import org.apiphany.security.token.TokenProperties;
 import org.morphix.lang.Nullables;
 
 /**

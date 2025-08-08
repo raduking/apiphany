@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apiphany.client.ExchangeClient;
-import org.apiphany.client.http.TokenHttpExchangeClient;
 import org.apiphany.http.HttpAuthScheme;
 import org.apiphany.lang.ScopedResource;
 import org.apiphany.lang.Strings;
@@ -22,6 +21,7 @@ import org.apiphany.security.AuthenticationType;
 import org.apiphany.security.oauth2.OAuth2ClientRegistration;
 import org.apiphany.security.oauth2.OAuth2Properties;
 import org.apiphany.security.oauth2.OAuth2ProviderDetails;
+import org.apiphany.security.token.client.TokenHttpExchangeClient;
 import org.morphix.lang.JavaObjects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
