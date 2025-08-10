@@ -46,17 +46,10 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
  */
 public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton implementation
 
+	/**
+	 * Logger instance.
+	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(JacksonJsonBuilder.class);
-
-	/**
-	 * Error message logged when an object could not be serialized.
-	 */
-	static final String LOG_MSG_COULD_NOT_SERIALIZE_OBJECT = "Could not serialize object: {}";
-
-	/**
-	 * Error message logged when an object could not be de-serialized.
-	 */
-	static final String LOG_MSG_COULD_NOT_DESERIALIZE_OBJECT = "Could not deserialize object: {}";
 
 	/**
 	 * Singleton instance holder.
@@ -160,7 +153,7 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 		try {
 			return eol() + objectWriter.writeValueAsString(obj);
 		} catch (JsonProcessingException e) {
-			LOGGER.warn(LOG_MSG_COULD_NOT_SERIALIZE_OBJECT, toString(obj), e);
+			LOGGER.warn(ErrorMessage.COULD_NOT_SERIALIZE_OBJECT, toString(obj), e);
 		}
 		return toString(obj);
 	}
@@ -179,7 +172,7 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 		try {
 			return objectMapper.readValue(json, cls);
 		} catch (JsonProcessingException e) {
-			LOGGER.warn(LOG_MSG_COULD_NOT_DESERIALIZE_OBJECT, json, e);
+			LOGGER.warn(ErrorMessage.COULD_NOT_DESERIALIZE_OBJECT, json, e);
 			return null;
 		}
 	}
@@ -217,7 +210,7 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 		try {
 			return objectMapper.readValue(json, typeReference);
 		} catch (JsonProcessingException e) {
-			LOGGER.warn(LOG_MSG_COULD_NOT_DESERIALIZE_OBJECT, json, e);
+			LOGGER.warn(ErrorMessage.COULD_NOT_DESERIALIZE_OBJECT, json, e);
 			return null;
 		}
 	}

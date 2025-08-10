@@ -23,7 +23,7 @@ class JsonBuilderTest {
 		UnsupportedOperationException e = assertThrows(UnsupportedOperationException.class,
 				() -> jsonBuilder.fromJsonString(null, String.class));
 
-		assertThat(e.getMessage(), equalTo(JsonBuilder.ERROR_JSON_LIBRARY_NOT_FOUND));
+		assertThat(e.getMessage(), equalTo(JsonBuilder.ErrorMessage.JSON_LIBRARY_NOT_FOUND));
 	}
 
 	@Test
@@ -34,7 +34,7 @@ class JsonBuilderTest {
 		UnsupportedOperationException e = assertThrows(UnsupportedOperationException.class,
 				() -> jsonBuilder.fromJsonString(null, type));
 
-		assertThat(e.getMessage(), equalTo(JsonBuilder.ERROR_JSON_LIBRARY_NOT_FOUND));
+		assertThat(e.getMessage(), equalTo(JsonBuilder.ErrorMessage.JSON_LIBRARY_NOT_FOUND));
 	}
 
 	@Test
@@ -42,7 +42,7 @@ class JsonBuilderTest {
 		UnsupportedOperationException e = assertThrows(UnsupportedOperationException.class,
 				() -> jsonBuilder.toPropertiesMap(null, null));
 
-		assertThat(e.getMessage(), equalTo(JsonBuilder.ERROR_JSON_LIBRARY_NOT_FOUND));
+		assertThat(e.getMessage(), equalTo(JsonBuilder.ErrorMessage.JSON_LIBRARY_NOT_FOUND));
 	}
 
 	@Test
@@ -50,7 +50,7 @@ class JsonBuilderTest {
 		UnsupportedOperationException e = assertThrows(UnsupportedOperationException.class,
 				() -> jsonBuilder.fromPropertiesMap(null, null, null));
 
-		assertThat(e.getMessage(), equalTo(JsonBuilder.ERROR_JSON_LIBRARY_NOT_FOUND));
+		assertThat(e.getMessage(), equalTo(JsonBuilder.ErrorMessage.JSON_LIBRARY_NOT_FOUND));
 	}
 
 }
