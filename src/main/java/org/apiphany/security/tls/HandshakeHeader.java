@@ -6,7 +6,6 @@ import java.nio.ByteBuffer;
 
 import org.apiphany.io.UInt24;
 import org.apiphany.io.UInt8;
-import org.apiphany.json.JsonBuilder;
 
 /**
  * Represents the header of a TLS Handshake protocol message.
@@ -21,7 +20,7 @@ public class HandshakeHeader implements TLSObject {
 	/**
 	 * The fixed size of a handshake header in bytes.
 	 */
-	public static final int BYTES = 4;
+	public static final int BYTES = HandshakeType.BYTES + UInt24.BYTES;
 
 	/**
 	 * The type of handshake message.
@@ -97,7 +96,7 @@ public class HandshakeHeader implements TLSObject {
 	 */
 	@Override
 	public String toString() {
-		return JsonBuilder.toJson(this);
+		return TLSObject.serialize(this);
 	}
 
 	/**
@@ -107,7 +106,7 @@ public class HandshakeHeader implements TLSObject {
 	 */
 	@Override
 	public int sizeOf() {
-		return type.sizeOf() + length.sizeOf();
+		return BYTES;
 	}
 
 	/**

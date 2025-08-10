@@ -21,7 +21,7 @@ import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.oauth2.AuthorizationGrantType;
-import org.apiphany.security.oauth2.client.OAuth2Parameter;
+import org.apiphany.security.oauth2.OAuth2Parameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

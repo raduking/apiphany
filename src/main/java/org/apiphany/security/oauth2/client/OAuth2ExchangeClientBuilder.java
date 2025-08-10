@@ -3,7 +3,7 @@ package org.apiphany.security.oauth2.client;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.ExchangeClientBuilder;
-import org.apiphany.lang.Pair;
+import org.apiphany.lang.ScopedResource;
 import org.morphix.lang.Nullables;
 
 /**
@@ -17,6 +17,11 @@ public class OAuth2ExchangeClientBuilder extends ExchangeClientBuilder {
 	 * Token exchange client class.
 	 */
 	private Class<? extends ExchangeClient> tokenExchangeClientClass;
+
+	/**
+	 * Token exchange client.
+	 */
+	private ExchangeClient tokenExchangeClient;
 
 	/**
 	 * Hide constructor.
@@ -39,15 +44,19 @@ public class OAuth2ExchangeClientBuilder extends ExchangeClientBuilder {
 	 *
 	 * @return a new exchange client pair with life cycle management information
 	 */
-	@Override
 	@SuppressWarnings("resource")
-	public Pair<ExchangeClient, Boolean> build() {
-		Pair<ExchangeClient, Boolean> clientInfo = super.build();
-		ExchangeClient exchangeClient = clientInfo.left();
-		ExchangeClient tokenExchangeClient = Nullables.notNull(tokenExchangeClientClass)
-				.thenYield(() -> ExchangeClientBuilder.build(tokenExchangeClientClass, clientProperties))
-				.orElse(exchangeClient);
-		return Pair.of(new OAuth2HttpExchangeClient(exchangeClient, tokenExchangeClient), clientInfo.right());
+	@Override
+	public ScopedResource<ExchangeClient> build() {
+		ScopedResource<ExchangeClient> clientResource = super.build();
+		ScopedResource<ExchangeClient> tokenClientResource = Nullables.notNull(tokenExchangeClientClass)
+				.thenYield(() -> ExchangeClientBuilder.create()
+						.client(tokenExchangeClientClass)
+						.client(tokenExchangeClient)
+						.properties(clientProperties)
+						.build())
+				.orElse(clientResource);
+		ExchangeClient exchangeClient = new OAuth2HttpExchangeClient(clientResource.unwrap(), tokenClientResource.unwrap());
+		return ScopedResource.of(exchangeClient, clientResource.isManaged());
 	}
 
 	/**
@@ -70,6 +79,17 @@ public class OAuth2ExchangeClientBuilder extends ExchangeClientBuilder {
 	 */
 	public OAuth2ExchangeClientBuilder tokenClient(final Class<? extends ExchangeClient> tokenClientClass) {
 		this.tokenExchangeClientClass = tokenClientClass;
+		return this;
+	}
+
+	/**
+	 * Sets the token exchange client.
+	 *
+	 * @param tokenClient the token client
+	 * @return this
+	 */
+	public OAuth2ExchangeClientBuilder tokenClient(final ExchangeClient tokenClient) {
+		this.tokenExchangeClient = tokenClient;
 		return this;
 	}
 

@@ -6,11 +6,11 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apiphany.io.ByteSizeable;
 import org.apiphany.io.UInt16;
-import org.apiphany.json.JsonBuilder;
-import org.apiphany.lang.ByteSizeable;
 import org.apiphany.security.tls.NamedCurve;
 import org.apiphany.security.tls.TLSExtension;
+import org.apiphany.security.tls.TLSObject;
 
 /**
  * Represents the Supported Groups (formerly Elliptic Curves) extension in TLS.
@@ -138,7 +138,7 @@ public class SupportedGroups implements TLSExtension {
 	 */
 	@Override
 	public String toString() {
-		return JsonBuilder.toJson(this);
+		return TLSObject.serialize(this);
 	}
 
 	/**
@@ -148,7 +148,7 @@ public class SupportedGroups implements TLSExtension {
 	 */
 	@Override
 	public int sizeOf() {
-		return type.sizeOf() + length.sizeOf() + groupsSize.sizeOf() + ByteSizeable.sizeOf(groups);
+		return type.sizeOf() + length.sizeOf() + groupsSize.sizeOf() + ByteSizeable.sizeOf(groups, NamedCurve.BYTES);
 	}
 
 	/**

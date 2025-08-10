@@ -31,22 +31,65 @@ import org.slf4j.LoggerFactory;
  */
 public class JsonBuilder { // NOSONAR singleton implementation
 
+	/**
+	 * Logger instance.
+	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(JsonBuilder.class);
 
 	/**
-	 * Property name for indenting output.
+	 * Namespace for configurable properties.
+	 *
+	 * @author Radu Sebastian LAZIN
 	 */
-	public static final String PROPERTY_INDENT_OUTPUT = "json-builder.to-json.indent-output";
+	public static class Property {
+
+		/**
+		 * Property name for indenting output.
+		 */
+		public static final String INDENT_OUTPUT = "json-builder.to-json.indent-output";
+
+		/**
+		 * Property name for logging debug string.
+		 */
+		public static final String DEBUG_STRING = "json-builder.to-json.debug-string";
+
+		/**
+		 * Hide constructor.
+		 */
+		private Property() {
+			throw Constructors.unsupportedOperationException();
+		}
+	}
 
 	/**
-	 * Property name for logging debug string.
+	 * Namespace for error messages. These messages are used for exception or logging error messages.
+	 *
+	 * @author Radu Sebastian LAZIN
 	 */
-	public static final String PROPERTY_DEBUG_STRING = "json-builder.to-json.debug-string";
+	protected static class ErrorMessage {
 
-	/**
-	 * Error message logged when no JSON library was found in the class path.
-	 */
-	protected static final String ERROR_JSON_LIBRARY_NOT_FOUND = "No JSON library found in the class path (like Jackson or Gson)";
+		/**
+		 * Error message logged when no JSON library was found in the class path.
+		 */
+		public static final String JSON_LIBRARY_NOT_FOUND = "No JSON library found in the class path (like Jackson or Gson)";
+
+		/**
+		 * Error message logged when an object could not be serialized.
+		 */
+		public static final String COULD_NOT_SERIALIZE_OBJECT = "Could not serialize object: {}";
+
+		/**
+		 * Error message logged when an object could not be de-serialized.
+		 */
+		public static final String COULD_NOT_DESERIALIZE_OBJECT = "Could not deserialize object: {}";
+
+		/**
+		 * Hide constructor.
+		 */
+		private ErrorMessage() {
+			throw Constructors.unsupportedOperationException();
+		}
+	}
 
 	/**
 	 * Singleton instance holder.
@@ -79,7 +122,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 			if (JACKSON_PRESENT) {
 				return Constructors.IgnoreAccess.newInstance(JacksonJsonBuilder.class);
 			}
-			LOGGER.warn("{}, JsonBuilder.toJson will use the objects toString method!", ERROR_JSON_LIBRARY_NOT_FOUND);
+			LOGGER.warn("{}, JsonBuilder.toJson will use the objects toString method!", ErrorMessage.JSON_LIBRARY_NOT_FOUND);
 			return new JsonBuilder();
 		}
 	}
@@ -103,9 +146,9 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 * Constructor that initializes all fields.
 	 */
 	protected JsonBuilder() {
-		this.indentOutput = isPropertyTrue(PROPERTY_INDENT_OUTPUT);
+		this.indentOutput = isPropertyTrue(Property.INDENT_OUTPUT);
 		computeLineSeparator(indentOutput);
-		this.debugString = isPropertyTrue(PROPERTY_DEBUG_STRING);
+		this.debugString = isPropertyTrue(Property.DEBUG_STRING);
 	}
 
 	/**
@@ -301,7 +344,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 * @return the exception thrown from unimplemented methods
 	 */
 	protected static UnsupportedOperationException jsonLibraryNotFound() {
-		return new UnsupportedOperationException(ERROR_JSON_LIBRARY_NOT_FOUND);
+		return new UnsupportedOperationException(ErrorMessage.JSON_LIBRARY_NOT_FOUND);
 	}
 
 	/**

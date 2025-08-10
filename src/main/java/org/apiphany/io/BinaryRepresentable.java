@@ -1,4 +1,4 @@
-package org.apiphany.lang;
+package org.apiphany.io;
 
 /**
  * Represents an object that can be converted to a binary (byte array) representation. This interface is typically

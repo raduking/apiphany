@@ -7,8 +7,6 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import org.apiphany.json.JsonBuilder;
-import org.apiphany.lang.BinaryRepresentable;
-import org.apiphany.lang.ByteSizeable;
 import org.apiphany.lang.Bytes;
 import org.apiphany.lang.Hex;
 
@@ -94,7 +92,7 @@ public class BytesWrapper implements ByteSizeable, BinaryRepresentable {
 		byte[] bytes = new byte[size];
 		int bytesRead = is.read(bytes);
 		if (size != bytesRead) {
-			throw new EOFException("Error reading " + size + " bytes");
+			throw new EOFException("Error reading: " + size + " bytes (bytes read: " + bytesRead + ")");
 		}
 
 		return new BytesWrapper(bytes);
@@ -160,7 +158,7 @@ public class BytesWrapper implements ByteSizeable, BinaryRepresentable {
 	 * @see BytesWrapper#equals(Object)
 	 */
 	@Override
-	public boolean equals(Object that) {
+	public boolean equals(final Object that) {
 		if (this == that) {
 			return true;
 		}

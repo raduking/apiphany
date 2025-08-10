@@ -6,10 +6,11 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apiphany.io.ByteSizeable;
 import org.apiphany.io.UInt16;
 import org.apiphany.io.UInt8;
-import org.apiphany.json.JsonBuilder;
 import org.apiphany.security.tls.TLSExtension;
+import org.apiphany.security.tls.TLSObject;
 
 /**
  * Represents the Elliptic Curve Point Formats extension in TLS.
@@ -123,7 +124,7 @@ public class ECPointFormats implements TLSExtension {
 	 */
 	@Override
 	public String toString() {
-		return JsonBuilder.toJson(this);
+		return TLSObject.serialize(this);
 	}
 
 	/**
@@ -133,7 +134,7 @@ public class ECPointFormats implements TLSExtension {
 	 */
 	@Override
 	public int sizeOf() {
-		return type.sizeOf() + length.sizeOf() + formatsSize.sizeOf() + formats.size();
+		return type.sizeOf() + length.sizeOf() + formatsSize.sizeOf() + ByteSizeable.sizeOf(formats, UInt8.BYTES);
 	}
 
 	/**

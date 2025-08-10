@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 import org.apiphany.io.UInt24;
-import org.apiphany.json.JsonBuilder;
 import org.morphix.lang.JavaObjects;
 
 /**
@@ -93,7 +92,7 @@ public class Handshake implements TLSObject {
 	 */
 	@Override
 	public String toString() {
-		return JsonBuilder.toJson(this);
+		return TLSObject.serialize(this);
 	}
 
 	/**
