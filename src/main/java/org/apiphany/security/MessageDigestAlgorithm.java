@@ -149,7 +149,7 @@ public enum MessageDigestAlgorithm {
 	 * @return the HMAC string value associated with this message digest algorithm
 	 */
 	public String hmacName() {
-		if (this == NONE || this == MD2 || this == MD5) {
+		if (NONE == this || MD2 == this || MD5 == this) { // NOSONAR
 			throw new UnsupportedOperationException("Invalid digest algorithm for HMAC PRF: " + this);
 		}
 		return "Hmac" + getValue().replace("-", "");

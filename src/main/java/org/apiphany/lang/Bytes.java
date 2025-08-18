@@ -80,7 +80,7 @@ public final class Bytes {
 	 */
 	public static byte[] fromHex(final String hexString) {
 		Objects.requireNonNull(hexString, "Hex string cannot be null");
-		String cleanedHex = hexString.replaceAll("\\s", "");
+		String cleanedHex = Strings.removeAllWhitespace(hexString);
 
 		if (cleanedHex.length() % 2 != 0) {
 			throw new IllegalArgumentException("Hex string must have an even number of characters (after whitespace removal)");

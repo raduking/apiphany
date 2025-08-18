@@ -27,7 +27,7 @@ public class Certificate implements TLSObject {
 	private final UInt24 length;
 
 	/**
-	 * The raw certificate data in ASN.1 DER format.
+	 * The raw certificate data (in ASN.1 DER format).
 	 */
 	private final BytesWrapper data;
 
