@@ -186,4 +186,13 @@ public interface Strings {
 		return String.join("", envelope, s, envelope);
 	}
 
+	/**
+	 * Returns the input string with all whitespace like spaces, tabs, new lines, etc. removed.
+	 *
+	 * @param s input string
+	 * @return the input string with all whitespace removed
+	 */
+	static String removeAllWhitespace(final String s) {
+		return s.replaceAll("\\s", "");
+	}
 }

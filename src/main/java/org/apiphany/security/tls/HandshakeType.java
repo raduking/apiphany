@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.apiphany.io.UInt8;
 import org.morphix.lang.Enums;
+import org.morphix.lang.JavaObjects;
 
 /**
  * Enumerates all possible TLS handshake message types and their associated parsing logic.
@@ -138,7 +139,7 @@ public enum HandshakeType implements TLSObject {
 	 *
 	 * @return the FromFunction that can deserialize this handshake type's body
 	 */
-	public FromFunction<? extends TLSHandshakeBody> handshake() {
-		return fromFunction;
+	public <T extends TLSHandshakeBody> FromFunction<T> handshake() {
+		return JavaObjects.cast(fromFunction);
 	}
 }

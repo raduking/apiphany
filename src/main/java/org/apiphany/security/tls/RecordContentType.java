@@ -102,6 +102,7 @@ public enum RecordContentType implements TLSObject {
 	 */
 	public static RecordContentType from(final TLSObject tlsObject) {
 		return switch (tlsObject) {
+			case Handshake handshake -> HANDSHAKE;
 			case TLSHandshakeBody tlsHandshakeBody -> HANDSHAKE;
 			case ChangeCipherSpec changeCipherSpec -> CHANGE_CIPHER_SPEC;
 			case Encrypted encrypted -> HANDSHAKE;
