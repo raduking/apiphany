@@ -81,3 +81,7 @@ void main() {
     System.out.println("Info: " + info);
 }
 ```
+
+## Documentation
+
+See the [docs](docs/) directory for project specifications, architecture notes, and user guides.

@@ -103,7 +103,8 @@ public class Record implements TLSObject {
 	}
 
 	/**
-	 * Parses a Record from an input stream.
+	 * Parses a Record from an input stream. This method will return a single record for handshake messages that span
+	 * through multiple records.
 	 *
 	 * @param is the input stream containing the record data
 	 * @return the parsed Record object
@@ -273,7 +274,7 @@ public class Record implements TLSObject {
 	 * @throws ClassCastException If the first fragment is not a Handshake
 	 */
 	@JsonIgnore
-	public Handshake getHandshake() {
+	public Handshake getFirstHandshake() {
 		return getHandshake(0);
 	}
 

@@ -94,7 +94,7 @@ public class ByteBufferInputStream extends InputStream {
 		if (n <= 0) {
 			return 0;
 		}
-		int skip = (int) Math.min(n, buf.remaining());
+		int skip = Math.toIntExact(Math.min(n, buf.remaining()));
 		buf.position(buf.position() + skip);
 		return skip;
 	}

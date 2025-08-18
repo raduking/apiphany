@@ -9,8 +9,7 @@ import org.apiphany.io.BytesWrapper;
 /**
  * Represents encrypted data in TLS protocol messages.
  * <p>
- * This class encapsulates encrypted payloads used in TLS, including the nonce/IV and the actual encrypted data. It is
- * typically used in TLS 1.3 for encrypted handshake messages.
+ * This class encapsulates encrypted payloads used in TLS, including the nonce/IV and the actual encrypted data.
  *
  * @author Radu Sebastian LAZIN
  */

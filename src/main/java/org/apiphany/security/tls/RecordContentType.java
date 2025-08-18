@@ -104,9 +104,10 @@ public enum RecordContentType implements TLSObject {
 		return switch (tlsObject) {
 			case Handshake handshake -> HANDSHAKE;
 			case TLSHandshakeBody tlsHandshakeBody -> HANDSHAKE;
+			case EncryptedHandshake encryptedHandshake -> HANDSHAKE;
 			case ChangeCipherSpec changeCipherSpec -> CHANGE_CIPHER_SPEC;
-			case Encrypted encrypted -> HANDSHAKE;
 			case ApplicationData applicationData -> APPLICATION_DATA;
+			case EncryptedAlert encryptedAlert -> ALERT;
 			default -> throw new UnsupportedOperationException("Unknown TLS object type: " + tlsObject.getClass());
 		};
 	}
