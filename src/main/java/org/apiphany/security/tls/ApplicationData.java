@@ -36,6 +36,7 @@ public class ApplicationData implements TLSObject {
 	 * @throws IOException if an I/O error occurs
 	 */
 	public static ApplicationData from(final InputStream is, final int length) throws IOException {
+		// TODO: 8 sized nonce is specific to AES/GCM/NoPadding make it configurable
 		Encrypted payload = Encrypted.from(is, length, 8);
 		return new ApplicationData(payload);
 	}

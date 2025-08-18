@@ -13,6 +13,7 @@ import org.apiphany.io.UInt16;
 import org.apiphany.lang.collections.Lists;
 import org.apiphany.security.ssl.SSLProtocol;
 import org.morphix.lang.JavaObjects;
+import org.morphix.lang.function.ThrowingBiFunction;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -132,11 +133,24 @@ public class Record implements TLSObject {
 	 * @throws IOException If an I/O error occurs while reading
 	 * @throws IllegalArgumentException If the record data is malformed
 	 */
-	public static Record from(final InputStream is, final BiFunction<InputStream, Short, TLSObject> fragmentReader) throws IOException {
+	private static Record from(final InputStream is, final BiFunction<InputStream, Short, TLSObject> fragmentReader) throws IOException {
 		RecordHeader header = RecordHeader.from(is);
 		TLSObject fragment = fragmentReader.apply(is, header.getLength().getValue());
 
 		return new Record(header, List.of(fragment), false);
+	}
+
+	/**
+	 * Parses a Record from an input stream using a custom fragment reader.
+	 *
+	 * @param is the input stream containing the record data
+	 * @param fragmentReader the function to parse the record's fragments
+	 * @return the parsed Record object
+	 * @throws IOException If an I/O error occurs while reading
+	 * @throws IllegalArgumentException If the record data is malformed
+	 */
+	public static Record from(final InputStream is, final ThrowingBiFunction<InputStream, Short, TLSObject> fragmentReader) throws IOException {
+		return from(is, ThrowingBiFunction.unchecked(fragmentReader));
 	}
 
 	/**
@@ -220,6 +234,32 @@ public class Record implements TLSObject {
 		for (TLSObject fragment : fragments) {
 			if (tlsObjectClass.isAssignableFrom(fragment.getClass())) {
 				result.add(JavaObjects.cast(fragment));
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Returns a fragment of a specific type. If there are none or more than one fragments of the same type a
+	 * {@link IllegalStateException} is thrown.
+	 *
+	 * @param <T> the type of fragments to filter for
+	 *
+	 * @param tlsObjectClass the class object of the fragment type to filter for
+	 * @return a matching fragment
+	 * @throws IllegalStateException if there are none or more than one fragments of the required type present
+	 */
+	public <T extends TLSObject> T getFragment(final Class<T> tlsObjectClass) {
+		if (Lists.isEmpty(fragments)) {
+			throw new IllegalStateException("No fragments of type " + tlsObjectClass + " are present in the record.");
+		}
+		T result = null;
+		for (TLSObject fragment : fragments) {
+			if (tlsObjectClass.isAssignableFrom(fragment.getClass())) {
+				if (null != result) {
+					throw new IllegalStateException("More than one fragments of type " + tlsObjectClass + " are present in the record.");
+				}
+				result = JavaObjects.cast(fragment);
 			}
 		}
 		return result;

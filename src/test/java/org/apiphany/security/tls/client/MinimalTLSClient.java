@@ -63,7 +63,6 @@ import org.apiphany.security.tls.SignatureAlgorithm;
 import org.apiphany.security.tls.TLSKeyExchange;
 import org.apiphany.security.tls.Version;
 import org.morphix.lang.Nullables;
-import org.morphix.lang.function.ThrowingBiFunction;
 import org.morphix.lang.function.ThrowingConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -274,11 +273,11 @@ public class MinimalTLSClient implements AutoCloseable {
 		LOGGER.debug("Received Change Cipher Spec:{}", serverChangeCipherSpec);
 
 		// 9. Receive Server Finished Record
-		Record serverFinishedRecord = Record.from(in, ThrowingBiFunction.unchecked((is, total) -> Encrypted.from(is, total, 8)));
+		Record serverFinishedRecord = Record.from(in, (is, total) -> Encrypted.from(is, total, 8));
 		LOGGER.debug("Received Server Finished Record:{}", serverFinishedRecord);
 
 		// 10. Decrypt finished
-		byte[] decrypted = decrypt(serverFinishedRecord, RecordContentType.HANDSHAKE, exchangeKeys);
+		byte[] decrypted = decrypt(serverFinishedRecord, exchangeKeys);
 		Handshake serverFinishedHandshake = Handshake.from(ByteBufferInputStream.of(decrypted));
 		LOGGER.debug("Received Server Finished (decrypted):{}", serverFinishedHandshake);
 		Finished serverFinished = serverFinishedHandshake.get(Finished.class);
@@ -339,9 +338,9 @@ public class MinimalTLSClient implements AutoCloseable {
 	}
 
 	private String receiveApplicationData() throws Exception {
-		Record responseRecord = Record.from(in, ThrowingBiFunction.unchecked((is, total) -> Encrypted.from(is, total, 8)));
+		Record responseRecord = Record.from(in, (is, total) -> Encrypted.from(is, total, 8));
 		LOGGER.debug("Received Application Data Record:{}", responseRecord);
-		byte[] decrypted = decrypt(responseRecord, RecordContentType.APPLICATION_DATA, exchangeKeys);
+		byte[] decrypted = decrypt(responseRecord, exchangeKeys);
 		String content = new String(decrypted, StandardCharsets.US_ASCII);
 		LOGGER.debug("Received content:\n{}", content);
 		return content;
@@ -374,8 +373,9 @@ public class MinimalTLSClient implements AutoCloseable {
 		return new Encrypted(explicitNonce, encrypted);
 	}
 
-	public byte[] decrypt(final Record tlsRecord, final RecordContentType type, final ExchangeKeys keys) throws Exception {
-		Encrypted encrypted = tlsRecord.getFragments(Encrypted.class).getFirst();
+	public byte[] decrypt(final Record tlsRecord, final ExchangeKeys keys) throws Exception {
+		RecordContentType type = tlsRecord.getHeader().getType();
+		Encrypted encrypted = tlsRecord.getFragment(Encrypted.class);
 
 		long seq = this.serverSequenceNumber++;
 		byte[] explicitNonce = encrypted.getNonce().toByteArray();
