@@ -120,7 +120,7 @@ public class Record implements TLSObject {
 
 		InputStream inputStream = is;
 		if (RecordContentType.HANDSHAKE == recordType) {
-			inputStream = getHandshakeRecordInputStream(is, header);
+			inputStream = getHandshakeInputStream(is, header);
 		}
 
 		List<TLSObject> fragments = new ArrayList<>();
@@ -133,15 +133,16 @@ public class Record implements TLSObject {
 	}
 
 	/**
-	 * Returns an input stream that concatenates all chunks for the handshake determined by the given record header.
+	 * Returns an input stream that concatenates all parts for a fragmented handshake message. The returned input stream
+	 * can be parsed as a list of handshake fragments.
 	 *
 	 * @param is the input stream from where to read the data
-	 * @param header record header
+	 * @param initialHeader initial record header
 	 * @return an input stream containing the full handshake
 	 * @throws IOException in case of any error
 	 */
-	private static InputStream getHandshakeRecordInputStream(final InputStream is, final RecordHeader header) throws IOException {
-		RecordHeader recordHeader = header;
+	private static InputStream getHandshakeInputStream(final InputStream is, final RecordHeader initialHeader) throws IOException {
+		RecordHeader recordHeader = initialHeader;
 		HandshakeHeader handshakeHeader = HandshakeHeader.from(is);
 		int neededSize = recordHeader.getLength().getValue();
 		int handshakeSize = handshakeHeader.getLength().getValue();
@@ -162,7 +163,6 @@ public class Record implements TLSObject {
 				handshakeHeader = HandshakeHeader.from(is);
 			}
 		}
-
 		buffer.position(0);
 		return ByteBufferInputStream.of(buffer);
 	}
