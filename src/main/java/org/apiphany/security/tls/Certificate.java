@@ -63,6 +63,15 @@ public class Certificate implements TLSObject {
 	}
 
 	/**
+	 * Constructs a Certificate from raw bytes.
+	 *
+	 * @param bytes the raw certificate bytes
+	 */
+	public Certificate(final byte[] bytes) {
+		this(bytes.length, bytes);
+	}
+
+	/**
 	 * Parses a Certificate from an input stream.
 	 *
 	 * @param is the input stream containing certificate data

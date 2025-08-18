@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
 
+import org.apiphany.io.ByteBufferInputStream;
 import org.apiphany.io.ByteSizeable;
 import org.apiphany.io.UInt16;
 import org.apiphany.lang.collections.Lists;
@@ -111,18 +112,59 @@ public class Record implements TLSObject {
 	 * @throws IOException If an I/O error occurs while reading
 	 * @throws IllegalArgumentException If the record data is malformed
 	 */
+	@SuppressWarnings("resource")
 	public static Record from(final InputStream is) throws IOException {
 		RecordHeader header = RecordHeader.from(is);
+		int currentLength = header.getLength().getValue();
 		RecordContentType recordType = header.getType();
 
+		InputStream inputStream = is;
+		if (RecordContentType.HANDSHAKE == recordType) {
+			inputStream = getHandshakeRecordInputStream(is, header);
+		}
+
 		List<TLSObject> fragments = new ArrayList<>();
-		int currentLength = header.getLength().getValue();
 		while (currentLength > 0) {
-			TLSObject fragment = recordType.fragment().from(is, currentLength);
+			TLSObject fragment = recordType.fragment().from(inputStream, currentLength);
 			fragments.add(fragment);
 			currentLength -= fragment.sizeOf();
 		}
 		return new Record(header, fragments, false);
+	}
+
+	/**
+	 * Returns an input stream that concatenates all chunks for the handshake determined by the given record header.
+	 *
+	 * @param is the input stream from where to read the data
+	 * @param header record header
+	 * @return an input stream containing the full handshake
+	 * @throws IOException in case of any error
+	 */
+	private static InputStream getHandshakeRecordInputStream(final InputStream is, final RecordHeader header) throws IOException {
+		RecordHeader recordHeader = header;
+		HandshakeHeader handshakeHeader = HandshakeHeader.from(is);
+		int neededSize = recordHeader.getLength().getValue();
+		int handshakeSize = handshakeHeader.getLength().getValue();
+		if (handshakeSize > neededSize) {
+			neededSize = handshakeSize + handshakeHeader.sizeOf();
+		}
+		ByteBuffer buffer = ByteBuffer.allocate(neededSize);
+		buffer.put(handshakeHeader.toByteArray());
+		neededSize -= handshakeHeader.sizeOf();
+
+		while (neededSize > 0) {
+			int size = recordHeader.getLength().getValue() - handshakeHeader.sizeOf();
+			RawHandshakeBody handshakeBody = RawHandshakeBody.from(is, handshakeHeader.getType(), size);
+			buffer.put(handshakeBody.toByteArray());
+			neededSize -= size;
+			if (neededSize > 0) {
+				recordHeader = RecordHeader.from(is);
+				handshakeHeader = HandshakeHeader.from(is);
+			}
+		}
+
+		buffer.position(0);
+		return ByteBufferInputStream.of(buffer);
 	}
 
 	/**
