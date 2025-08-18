@@ -17,6 +17,9 @@ Added `LoggingFormat` enum to specify logging format configurations.
 Added `TLSObject.serialize` to serialize any TLS object to string depending on configuration.
 Added `TLSObject.FORMAT` as the logging format configurable with `apiphany.logging.format.tls` property.
 Moved all OAuth2 model classes to the same package `oauth2` since they can be used by both the server or the client despite their names.
+Added support for TLS fragmented handshake records.
+Added `RawHandshakeBody` to be able to build/read raw handshake messages.
+Added `TLSEncryptedObject` abstract class and derived TLS classes to denote any TLS message that is encrypted.
 
 ---
 

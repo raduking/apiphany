@@ -38,17 +38,16 @@ public class Certificates implements TLSHandshakeBody {
 	 */
 	public Certificates(final UInt24 length, final List<Certificate> list, final boolean updateLength) {
 		this.list = list;
-		this.length = updateLength ? UInt24.of(length.sizeOf() + ByteSizeable.sizeOf(list)) : length;
+		this.length = updateLength ? UInt24.of(ByteSizeable.sizeOf(list)) : length;
 	}
 
 	/**
 	 * Constructs a Certificates message with automatic length calculation.
 	 *
-	 * @param length the initial length value
 	 * @param list the list of certificates
 	 */
-	public Certificates(final UInt24 length, final List<Certificate> list) {
-		this(length, list, true);
+	public Certificates(final List<Certificate> list) {
+		this(UInt24.ZERO, list, true);
 	}
 
 	/**

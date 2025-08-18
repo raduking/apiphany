@@ -1,5 +1,6 @@
 package org.apiphany.security.tls;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 
@@ -7,7 +8,10 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.List;
 
+import org.apiphany.io.BytesWrapper;
+import org.apiphany.lang.Bytes;
 import org.apiphany.security.ssl.SSLProtocol;
 import org.junit.jupiter.api.Test;
 
@@ -18,90 +22,75 @@ import org.junit.jupiter.api.Test;
  */
 class RecordTest {
 
-	private static final Version TLS_VERSION = new Version(SSLProtocol.TLS_1_2);
+	private static final int SPLIT_POINT = 300;
+
+	private static final int CERTIFICATE_SIZE = 500;
+	private static final byte CERTIFICATE_BYTE = (byte) 0xAB;
+	private static final byte[] CERTIFICATE_BYTES = new byte[CERTIFICATE_SIZE];
+	static {
+		Arrays.fill(CERTIFICATE_BYTES, CERTIFICATE_BYTE);
+	}
 
 	@Test
-	void shouldReadFragmentedTLSRecord() throws IOException {
+	void shouldReadCertificateTLSRecord() throws IOException {
+		@SuppressWarnings("resource")
+		InputStream is = createCertificateStream();
+
+		Record tlsRecord = Record.from(is);
+
+		assertThat(tlsRecord, notNullValue());
+
+		byte[] result = tlsRecord.getHandshake(Certificates.class).first().getData().toByteArray();
+		for (int i = 0; i < CERTIFICATE_SIZE; ++i) {
+			assertThat(result[i], equalTo(CERTIFICATE_BYTE));
+		}
+	}
+
+	@Test
+	void shouldReadFragmentedCertificateTLSRecord() throws IOException {
 		@SuppressWarnings("resource")
 		InputStream is = createFragmentedCertificateStream();
 
 		Record tlsRecord = Record.from(is);
 
 		assertThat(tlsRecord, notNullValue());
+
+		byte[] result = tlsRecord.getHandshake(Certificates.class).first().getData().toByteArray();
+		for (int i = 0; i < CERTIFICATE_SIZE; ++i) {
+			assertThat(result[i], equalTo(CERTIFICATE_BYTE));
+		}
 	}
 
 	public static InputStream createFragmentedCertificateStream() {
-		// Fake certificate bytes (use any bytes; in a real test you may want real DER)
-		byte[] certBytes = new byte[500];
-		Arrays.fill(certBytes, (byte) 0xAB);
-
-		// Per-certificate length fields
-		int perCertLen = certBytes.length;
-		// certificate_list_length is sum of (3 + certLen) for each cert; for 1 cert: 3 + perCertLen
+		int perCertLen = CERTIFICATE_BYTES.length;
 		int certListLen = 3 + perCertLen;
-		// handshake body length = 3 (certificate_list_length) + sum(each cert entry (3 + certLen))
-		int handshakeBodyLen = 3 + (3 + perCertLen); // for single cert: 6 + perCertLen
+		short handshakeBodyLen = (short) (3 + certListLen);
 
-		// Build handshake header: type (1) + length (3)
-		byte[] handshakeHeader = new byte[4];
-		handshakeHeader[0] = HandshakeType.CERTIFICATE.value();
-		handshakeHeader[1] = (byte) ((handshakeBodyLen >> 16) & 0xFF);
-		handshakeHeader[2] = (byte) ((handshakeBodyLen >> 8) & 0xFF);
-		handshakeHeader[3] = (byte) (handshakeBodyLen & 0xFF);
+		HandshakeHeader handshakeHeader = new HandshakeHeader(HandshakeType.CERTIFICATE, handshakeBodyLen);
 
-		// certificate_list_length (3 bytes, big-endian)
-		byte[] certListLenBytes = new byte[3];
-		certListLenBytes[0] = (byte) ((certListLen >> 16) & 0xFF);
-		certListLenBytes[1] = (byte) ((certListLen >> 8) & 0xFF);
-		certListLenBytes[2] = (byte) (certListLen & 0xFF);
+		Certificate certificate = new Certificate(CERTIFICATE_BYTES);
+		Certificates certificates = new Certificates(List.of(certificate));
 
-		// per-certificate length (3 bytes, big-endian)
-		byte[] certLenBytes = new byte[3];
-		certLenBytes[0] = (byte) ((perCertLen >> 16) & 0xFF);
-		certLenBytes[1] = (byte) ((perCertLen >> 8) & 0xFF);
-		certLenBytes[2] = (byte) (perCertLen & 0xFF);
+		byte[] handshakeBodyBytes = certificates.toByteArray();
 
-		// Assemble full handshake message (header + body)
-		byte[] fullHandshake = new byte[handshakeHeader.length + certListLenBytes.length + certLenBytes.length + certBytes.length];
-		int pos = 0;
-		System.arraycopy(handshakeHeader, 0, fullHandshake, pos, handshakeHeader.length);
-		pos += handshakeHeader.length;
-		System.arraycopy(certListLenBytes, 0, fullHandshake, pos, certListLenBytes.length);
-		pos += certListLenBytes.length;
-		System.arraycopy(certLenBytes, 0, fullHandshake, pos, certLenBytes.length);
-		pos += certLenBytes.length;
-		System.arraycopy(certBytes, 0, fullHandshake, pos, certBytes.length);
+		byte[] fragment1 = Arrays.copyOfRange(handshakeBodyBytes, 0, SPLIT_POINT);
+		byte[] fragment2 = Arrays.copyOfRange(handshakeBodyBytes, SPLIT_POINT, handshakeBodyBytes.length);
 
-		// Split the fullHandshake into two fragments (so it spans two records)
-		// Choose splitPoint anywhere between 1 and fullHandshake.length-1. Here choose 300.
-		int splitPoint = 300;
-		if (splitPoint <= 0 || splitPoint >= fullHandshake.length) {
-			splitPoint = fullHandshake.length / 2;
-		}
-		byte[] fragment1 = Arrays.copyOfRange(fullHandshake, 0, splitPoint);
-		byte[] fragment2 = Arrays.copyOfRange(fullHandshake, splitPoint, fullHandshake.length);
+		RawHandshakeBody handshakeBody1 = new RawHandshakeBody(HandshakeType.CERTIFICATE, new BytesWrapper(fragment1));
+		RawHandshakeBody handshakeBody2 = new RawHandshakeBody(HandshakeType.CERTIFICATE, new BytesWrapper(fragment2));
 
-		// Build TLS record 1 (header + fragment1)
-		byte[] record1 = new byte[5 + fragment1.length];
-		record1[0] = RecordContentType.HANDSHAKE.value();
-		System.arraycopy(TLS_VERSION.toByteArray(), 0, record1, 1, 2);
-		record1[3] = (byte) ((fragment1.length >> 8) & 0xFF);
-		record1[4] = (byte) (fragment1.length & 0xFF);
-		System.arraycopy(fragment1, 0, record1, 5, fragment1.length);
+		Record record1 = new Record(RecordContentType.HANDSHAKE, SSLProtocol.TLS_1_2, new Handshake(handshakeHeader, handshakeBody1, false));
+		Record record2 = new Record(SSLProtocol.TLS_1_2, new Handshake(handshakeBody2));
 
-		// Build TLS record 2 (header + fragment2)
-		byte[] record2 = new byte[5 + fragment2.length];
-		record2[0] = RecordContentType.HANDSHAKE.value();
-		System.arraycopy(TLS_VERSION.toByteArray(), 0, record2, 1, 2);
-		record2[3] = (byte) ((fragment2.length >> 8) & 0xFF);
-		record2[4] = (byte) (fragment2.length & 0xFF);
-		System.arraycopy(fragment2, 0, record2, 5, fragment2.length);
+		return new ByteArrayInputStream(Bytes.concatenate(record1.toByteArray(), record2.toByteArray()));
+	}
 
-		// Combine into one InputStream
-		byte[] combined = new byte[record1.length + record2.length];
-		System.arraycopy(record1, 0, combined, 0, record1.length);
-		System.arraycopy(record2, 0, combined, record1.length, record2.length);
+	public static InputStream createCertificateStream() {
+		Certificate certificate = new Certificate(CERTIFICATE_BYTES);
+		Certificates certificates = new Certificates(List.of(certificate));
 
-		return new ByteArrayInputStream(combined);
+		Record tlsRecord = new Record(RecordContentType.HANDSHAKE, SSLProtocol.TLS_1_2, new Handshake(certificates));
+
+		return new ByteArrayInputStream(tlsRecord.toByteArray());
 	}
 }

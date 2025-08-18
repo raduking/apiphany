@@ -29,6 +29,17 @@ public class ByteBufferInputStream extends InputStream {
 	private final ByteBuffer buf;
 
 	/**
+	 * Creates a new ByteBufferInputStream that reads from the specified byte buffer. The stream will read from the beginning
+	 * of the buffer.
+	 *
+	 * @param buffer the byte buffer to read from
+	 * @throws NullPointerException if the input byte buffer is null
+	 */
+	public ByteBufferInputStream(final ByteBuffer buffer) {
+		this.buf = Objects.requireNonNull(buffer, "Input byte buffer cannot be null");
+	}
+
+	/**
 	 * Creates a new ByteBufferInputStream that reads from the specified byte array. The stream will read from the beginning
 	 * of the array.
 	 *
@@ -36,7 +47,7 @@ public class ByteBufferInputStream extends InputStream {
 	 * @throws NullPointerException if the input byte array is null
 	 */
 	public ByteBufferInputStream(final byte[] bytes) {
-		this.buf = ByteBuffer.wrap(Objects.requireNonNull(bytes, "Input byte array cannot be null"));
+		this(ByteBuffer.wrap(Objects.requireNonNull(bytes, "Input byte array cannot be null")));
 	}
 
 	/**
@@ -49,6 +60,18 @@ public class ByteBufferInputStream extends InputStream {
 	 */
 	public static ByteBufferInputStream of(final byte[] bytes) {
 		return new ByteBufferInputStream(bytes);
+	}
+
+	/**
+	 * Creates a new ByteBufferInputStream that reads from the specified byte buffer. The stream will read from the beginning
+	 * of the buffer.
+	 *
+	 * @param buffer the byte buffer to read from
+	 * @return a new byte buffer input stream
+	 * @throws NullPointerException if the input byte buffer is null
+	 */
+	public static ByteBufferInputStream of(final ByteBuffer buffer) {
+		return new ByteBufferInputStream(buffer);
 	}
 
 	/**
