@@ -137,6 +137,8 @@ public enum HandshakeType implements TLSObject {
 	/**
 	 * Returns the factory function capable of parsing this handshake type's message body.
 	 *
+	 * @param <T> the handshake body type
+	 *
 	 * @return the FromFunction that can deserialize this handshake type's body
 	 */
 	public <T extends TLSHandshakeBody> FromFunction<T> handshake() {

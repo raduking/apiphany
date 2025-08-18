@@ -1,6 +1,7 @@
 package org.apiphany.io;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Objects;
@@ -120,5 +121,14 @@ public class ByteBufferInputStream extends InputStream {
 	@Override
 	public boolean markSupported() {
 		return true;
+	}
+
+	/**
+	 * Closing a {@code ByteArrayInputStream} has no effect. The methods in this class can be called after the stream has
+	 * been closed without generating an {@code IOException}.
+	 */
+	@Override
+	public void close() throws IOException {
+		// empty
 	}
 }

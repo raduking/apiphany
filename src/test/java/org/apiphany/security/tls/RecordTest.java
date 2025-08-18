@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 
+import org.apiphany.security.ssl.SSLProtocol;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -16,6 +17,8 @@ import org.junit.jupiter.api.Test;
  * @author Radu Sebastian LAZIN
  */
 class RecordTest {
+
+	private static final Version TLS_VERSION = new Version(SSLProtocol.TLS_1_2);
 
 	@Test
 	void shouldReadFragmentedTLSRecord() throws IOException {
@@ -28,10 +31,6 @@ class RecordTest {
 	}
 
 	public static InputStream createFragmentedCertificateStream() {
-		final byte TLS_HANDSHAKE = 0x16; // handshake record
-		final byte[] VERSION_TLS12 = { 0x03, 0x03 }; // TLS 1.2
-		final byte HANDSHAKE_CERTIFICATE = 0x0b; // certificate handshake type
-
 		// Fake certificate bytes (use any bytes; in a real test you may want real DER)
 		byte[] certBytes = new byte[500];
 		Arrays.fill(certBytes, (byte) 0xAB);
@@ -45,7 +44,7 @@ class RecordTest {
 
 		// Build handshake header: type (1) + length (3)
 		byte[] handshakeHeader = new byte[4];
-		handshakeHeader[0] = HANDSHAKE_CERTIFICATE;
+		handshakeHeader[0] = HandshakeType.CERTIFICATE.value();
 		handshakeHeader[1] = (byte) ((handshakeBodyLen >> 16) & 0xFF);
 		handshakeHeader[2] = (byte) ((handshakeBodyLen >> 8) & 0xFF);
 		handshakeHeader[3] = (byte) (handshakeBodyLen & 0xFF);
@@ -72,7 +71,6 @@ class RecordTest {
 		System.arraycopy(certLenBytes, 0, fullHandshake, pos, certLenBytes.length);
 		pos += certLenBytes.length;
 		System.arraycopy(certBytes, 0, fullHandshake, pos, certBytes.length);
-		pos += certBytes.length;
 
 		// Split the fullHandshake into two fragments (so it spans two records)
 		// Choose splitPoint anywhere between 1 and fullHandshake.length-1. Here choose 300.
@@ -85,16 +83,16 @@ class RecordTest {
 
 		// Build TLS record 1 (header + fragment1)
 		byte[] record1 = new byte[5 + fragment1.length];
-		record1[0] = TLS_HANDSHAKE;
-		System.arraycopy(VERSION_TLS12, 0, record1, 1, 2);
+		record1[0] = RecordContentType.HANDSHAKE.value();
+		System.arraycopy(TLS_VERSION.toByteArray(), 0, record1, 1, 2);
 		record1[3] = (byte) ((fragment1.length >> 8) & 0xFF);
 		record1[4] = (byte) (fragment1.length & 0xFF);
 		System.arraycopy(fragment1, 0, record1, 5, fragment1.length);
 
 		// Build TLS record 2 (header + fragment2)
 		byte[] record2 = new byte[5 + fragment2.length];
-		record2[0] = TLS_HANDSHAKE;
-		System.arraycopy(VERSION_TLS12, 0, record2, 1, 2);
+		record2[0] = RecordContentType.HANDSHAKE.value();
+		System.arraycopy(TLS_VERSION.toByteArray(), 0, record2, 1, 2);
 		record2[3] = (byte) ((fragment2.length >> 8) & 0xFF);
 		record2[4] = (byte) (fragment2.length & 0xFF);
 		System.arraycopy(fragment2, 0, record2, 5, fragment2.length);

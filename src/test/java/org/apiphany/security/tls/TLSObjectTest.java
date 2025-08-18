@@ -24,7 +24,6 @@ import org.apiphany.security.ssl.server.SimpleHttpsServer;
 import org.apiphany.security.tls.client.MinimalTLSClient;
 import org.apiphany.security.tls.client.PseudoRandomFunction;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -64,7 +63,7 @@ class TLSObjectTest {
 	}
 
 	@Test
-	void shouldPerformTLS12HandshakeWithSupportedCipherSuites() throws Exception {
+	void shouldPerformTLS12HandshakeWithGivenCipherSuites() throws Exception {
 		int port = Sockets.findAvailableTcpPort();
 		SSLProperties sslProperties = JsonBuilder.fromJson(SSL_PROPERTIES_JSON, SSLProperties.class);
 		sslProperties.setProtocol(SSLProtocol.TLS_1_2);
@@ -104,8 +103,7 @@ class TLSObjectTest {
 	private static Stream<Arguments> provideSupportedCipherSuites() {
 		return Stream.of(
 				Arguments.of(CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384),
-				Arguments.of(CipherSuite.TLS_RSA_WITH_AES_256_GCM_SHA384)
-		);
+				Arguments.of(CipherSuite.TLS_RSA_WITH_AES_256_GCM_SHA384));
 	}
 
 	@Test
@@ -146,10 +144,11 @@ class TLSObjectTest {
 		assertThat(response, equalTo(SimpleHttpsServer.NAME));
 	}
 
-	@Disabled("Run only when OpenSSL is running on port 4433")
 	@Test
 	void shouldPerformTLS12HandshakeOpenSSL() throws Exception {
+		// Assumes OpenSSL is running on port 4433 you can run it with the command described in the keystore-generation.md file.
 		int port = 4433;
+		assumeTrue(Sockets.canConnectTo(LOCALHOST, port), LOCALHOST + ":" + port + " is unreachable, skipping test.");
 
 		byte[] serverFinished = null;
 		try (MinimalTLSClient client = new MinimalTLSClient(LOCALHOST, port, CLIENT_KEY_PAIR, CIPHER_SUITES)) {

@@ -17,7 +17,7 @@ import java.io.InputStream;
 public interface FromFunction<T extends TLSObject> {
 
 	/**
-	 * Reads and parses a {@link TLSObject} from the provided input stream.
+	 * Reads and parses a {@link TLSObject} of a given size in bytes from the provided input stream.
 	 *
 	 * @param is the input stream to read from
 	 * @param size the number of bytes available for reading (may be ignored by some implementations)
