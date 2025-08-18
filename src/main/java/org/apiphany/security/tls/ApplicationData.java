@@ -11,12 +11,7 @@ import java.io.InputStream;
  *
  * @author Radu Sebastian LAZIN
  */
-public class ApplicationData implements TLSObject {
-
-	/**
-	 * The encrypted payload data.
-	 */
-	private final Encrypted data;
+public class ApplicationData extends TLSEncryptedObject {
 
 	/**
 	 * Constructs an ApplicationData object with encrypted payload.
@@ -24,7 +19,7 @@ public class ApplicationData implements TLSObject {
 	 * @param data the encrypted data payload
 	 */
 	public ApplicationData(final Encrypted data) {
-		this.data = data;
+		super(data);
 	}
 
 	/**
@@ -39,44 +34,5 @@ public class ApplicationData implements TLSObject {
 		// TODO: 8 sized nonce is specific to AES/GCM/NoPadding make it configurable
 		Encrypted payload = Encrypted.from(is, length, 8);
 		return new ApplicationData(payload);
-	}
-
-	/**
-	 * Returns the binary representation of this encrypted data.
-	 *
-	 * @return byte array containing the encrypted payload
-	 */
-	@Override
-	public byte[] toByteArray() {
-		return data.toByteArray();
-	}
-
-	/**
-	 * Returns a JSON representation of this ApplicationData.
-	 *
-	 * @return JSON string containing metadata about the encrypted data
-	 */
-	@Override
-	public String toString() {
-		return TLSObject.serialize(this);
-	}
-
-	/**
-	 * Returns the size of the encrypted data.
-	 *
-	 * @return size in bytes of the encrypted payload
-	 */
-	@Override
-	public int sizeOf() {
-		return data.sizeOf();
-	}
-
-	/**
-	 * Returns the encrypted data payload.
-	 *
-	 * @return the Encrypted data wrapper
-	 */
-	public Encrypted getData() {
-		return data;
 	}
 }

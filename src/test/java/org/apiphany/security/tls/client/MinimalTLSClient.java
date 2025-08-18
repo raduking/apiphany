@@ -47,6 +47,8 @@ import org.apiphany.security.tls.ClientHello;
 import org.apiphany.security.tls.ClientKeyExchange;
 import org.apiphany.security.tls.ECDHEPublicKey;
 import org.apiphany.security.tls.Encrypted;
+import org.apiphany.security.tls.EncryptedAlert;
+import org.apiphany.security.tls.EncryptedHandshake;
 import org.apiphany.security.tls.ExchangeRandom;
 import org.apiphany.security.tls.Finished;
 import org.apiphany.security.tls.Handshake;
@@ -60,6 +62,7 @@ import org.apiphany.security.tls.ServerHello;
 import org.apiphany.security.tls.ServerHelloDone;
 import org.apiphany.security.tls.ServerKeyExchange;
 import org.apiphany.security.tls.SignatureAlgorithm;
+import org.apiphany.security.tls.TLSEncryptedObject;
 import org.apiphany.security.tls.TLSKeyExchange;
 import org.apiphany.security.tls.Version;
 import org.morphix.lang.Nullables;
@@ -265,7 +268,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		Handshake clientFinishedHandshake = new Handshake(new Finished(clientVerifyData));
 
 		Encrypted encrypted = encrypt(clientFinishedHandshake, RecordContentType.HANDSHAKE, exchangeKeys);
-		Record clientFinished = new Record(sslProtocol, encrypted);
+		Record clientFinished = new Record(sslProtocol, new EncryptedHandshake(encrypted));
 		sendRecord(clientFinished);
 
 		// 8. Receive ChangeCipherSpec and Finished
@@ -273,7 +276,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		LOGGER.debug("Received Change Cipher Spec:{}", serverChangeCipherSpec);
 
 		// 9. Receive Server Finished Record
-		Record serverFinishedRecord = Record.from(in, (is, total) -> Encrypted.from(is, total, 8));
+		Record serverFinishedRecord = Record.from(in, EncryptedHandshake::from);
 		LOGGER.debug("Received Server Finished Record:{}", serverFinishedRecord);
 
 		// 10. Decrypt finished
@@ -306,7 +309,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		Alert closeAlert = new Alert(AlertLevel.WARNING, AlertDescription.CLOSE_NOTIFY);
 		Encrypted encrypted = encrypt(closeAlert, RecordContentType.ALERT, exchangeKeys);
 
-		Record closeAlertRecord = new Record(sslProtocol, encrypted);
+		Record closeAlertRecord = new Record(sslProtocol, new EncryptedAlert(encrypted));
 		sendRecord(closeAlertRecord);
 
 		return closeAlertRecord.toByteArray();
@@ -338,7 +341,7 @@ public class MinimalTLSClient implements AutoCloseable {
 	}
 
 	private String receiveApplicationData() throws Exception {
-		Record responseRecord = Record.from(in, (is, total) -> Encrypted.from(is, total, 8));
+		Record responseRecord = Record.from(in);
 		LOGGER.debug("Received Application Data Record:{}", responseRecord);
 		byte[] decrypted = decrypt(responseRecord, exchangeKeys);
 		String content = new String(decrypted, StandardCharsets.US_ASCII);
@@ -375,7 +378,7 @@ public class MinimalTLSClient implements AutoCloseable {
 
 	public byte[] decrypt(final Record tlsRecord, final ExchangeKeys keys) throws Exception {
 		RecordContentType type = tlsRecord.getHeader().getType();
-		Encrypted encrypted = tlsRecord.getFragment(Encrypted.class);
+		Encrypted encrypted = tlsRecord.getFragment(TLSEncryptedObject.class).getEncrypted();
 
 		long seq = this.serverSequenceNumber++;
 		byte[] explicitNonce = encrypted.getNonce().toByteArray();
