@@ -10,7 +10,6 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apiphany.io.BytesWrapper;
 import org.apiphany.lang.Bytes;
 import org.apiphany.security.ssl.SSLProtocol;
 import org.junit.jupiter.api.Test;
@@ -70,19 +69,23 @@ class RecordTest {
 
 		Certificate certificate = new Certificate(CERTIFICATE_BYTES);
 		Certificates certificates = new Certificates(List.of(certificate));
+		byte[] handshakeBytes = new Handshake(handshakeHeader, certificates).toByteArray(); // includes 4-byte handshake header
 
-		byte[] handshakeBodyBytes = certificates.toByteArray();
+		// Split the handshake into two fragments (simulate TLS record fragmentation)
+		int firstFragmentLen = SPLIT_POINT;
+		byte[] fragment1 = Arrays.copyOfRange(handshakeBytes, 0, firstFragmentLen);
+		byte[] fragment2 = Arrays.copyOfRange(handshakeBytes, firstFragmentLen, handshakeBytes.length);
 
-		byte[] fragment1 = Arrays.copyOfRange(handshakeBodyBytes, 0, SPLIT_POINT);
-		byte[] fragment2 = Arrays.copyOfRange(handshakeBodyBytes, SPLIT_POINT, handshakeBodyBytes.length);
+		// Build the first TLS record with HANDSHAKE type
+		RecordHeader header1 = new RecordHeader(RecordContentType.HANDSHAKE, SSLProtocol.TLS_1_2, (short) fragment1.length);
+		byte[] record1Bytes = Bytes.concatenate(header1.toByteArray(), fragment1);
 
-		RawHandshakeBody handshakeBody1 = new RawHandshakeBody(HandshakeType.CERTIFICATE, new BytesWrapper(fragment1));
-		RawHandshakeBody handshakeBody2 = new RawHandshakeBody(HandshakeType.CERTIFICATE, new BytesWrapper(fragment2));
+		// Build the second TLS record with HANDSHAKE type, only continuation bytes
+		RecordHeader header2 = new RecordHeader(RecordContentType.HANDSHAKE, SSLProtocol.TLS_1_2, (short) fragment2.length);
+		byte[] record2Bytes = Bytes.concatenate(header2.toByteArray(), fragment2);
 
-		Record record1 = new Record(RecordContentType.HANDSHAKE, SSLProtocol.TLS_1_2, new Handshake(handshakeHeader, handshakeBody1, false));
-		Record record2 = new Record(SSLProtocol.TLS_1_2, new Handshake(handshakeBody2));
-
-		return new ByteArrayInputStream(Bytes.concatenate(record1.toByteArray(), record2.toByteArray()));
+		// Combine both records into a single input stream
+		return new ByteArrayInputStream(Bytes.concatenate(record1Bytes, record2Bytes));
 	}
 
 	public static InputStream createCertificateStream() {

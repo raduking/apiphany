@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+import org.apiphany.io.IO;
 import org.morphix.lang.function.Consumers;
 
 /**
@@ -22,11 +23,6 @@ public interface Strings {
 	 * End Of Line, system-dependent line separator.
 	 */
 	String EOL = System.lineSeparator();
-
-	/**
-	 * Default buffer size when building strings from input streams (4096 bytes).
-	 */
-	int DEFAULT_BUFFER_SIZE = 2 << 12;
 
 	/**
 	 * Default character set used when working with strings {@link StandardCharsets#UTF_8}.
@@ -167,7 +163,7 @@ public interface Strings {
 	 * @return the file content as string
 	 */
 	static String fromFile(final String path) {
-		return fromFile(path, DEFAULT_CHARSET, DEFAULT_BUFFER_SIZE);
+		return fromFile(path, DEFAULT_CHARSET, IO.DEFAULT_BUFFER_SIZE);
 	}
 
 	/**

@@ -88,6 +88,23 @@ public class RecordHeader implements TLSObject {
 	}
 
 	/**
+	 * Parses a RecordHeader from an input stream. If the parsed record header is not of the given record content type then an
+	 * {@link IOException} is thrown.
+	 *
+	 * @param is the input stream containing header data
+	 * @param recordContentType the expected record content type
+	 * @return the parsed RecordHeader object
+	 * @throws IOException if an I/O error occurs
+	 */
+	public static RecordHeader from(final InputStream is, final RecordContentType recordContentType) throws IOException {
+		RecordHeader recordHeader = from(is);
+		if (recordContentType != recordHeader.getType()) {
+			throw new IOException("Expected " + recordContentType + " record to continue, got " + recordHeader.getType());
+		}
+		return recordHeader;
+	}
+
+	/**
 	 * Returns the binary representation of this RecordHeader.
 	 *
 	 * @return byte array containing type, version and length
