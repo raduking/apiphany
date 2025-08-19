@@ -5,6 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -21,9 +22,9 @@ import org.junit.jupiter.api.Test;
  */
 class RecordTest {
 
-	private static final int SPLIT_POINT = 300;
+	private static final int SPLIT_POINT = 30;
 
-	private static final int CERTIFICATE_SIZE = 500;
+	private static final int CERTIFICATE_SIZE = 50;
 	private static final byte CERTIFICATE_BYTE = (byte) 0xAB;
 	private static final byte[] CERTIFICATE_BYTES = new byte[CERTIFICATE_SIZE];
 	static {
@@ -60,7 +61,31 @@ class RecordTest {
 		}
 	}
 
-	public static InputStream createFragmentedCertificateStream() {
+	@Test
+	void shouldReadHandshakeByteByByteFragmentedTLSRecord() throws IOException {
+		@SuppressWarnings("resource")
+		InputStream is = createFragmentedByteByByteCertificateStream();
+
+		Record tlsRecord = Record.from(is);
+
+		assertThat(tlsRecord, notNullValue());
+
+		byte[] result = tlsRecord.getHandshake(Certificates.class).first().getData().toByteArray();
+		for (int i = 0; i < CERTIFICATE_SIZE; ++i) {
+			assertThat(result[i], equalTo(CERTIFICATE_BYTE));
+		}
+	}
+
+	private static InputStream createCertificateStream() {
+		Certificate certificate = new Certificate(CERTIFICATE_BYTES);
+		Certificates certificates = new Certificates(List.of(certificate));
+
+		Record tlsRecord = new Record(RecordContentType.HANDSHAKE, SSLProtocol.TLS_1_2, new Handshake(certificates));
+
+		return new ByteArrayInputStream(tlsRecord.toByteArray());
+	}
+
+	private static InputStream createFragmentedCertificateStream() {
 		int perCertLen = CERTIFICATE_BYTES.length;
 		int certListLen = 3 + perCertLen;
 		short handshakeBodyLen = (short) (3 + certListLen);
@@ -88,12 +113,21 @@ class RecordTest {
 		return new ByteArrayInputStream(Bytes.concatenate(record1Bytes, record2Bytes));
 	}
 
-	public static InputStream createCertificateStream() {
+	private static InputStream createFragmentedByteByByteCertificateStream() throws IOException {
+		// Create full handshake bytes (including header)
 		Certificate certificate = new Certificate(CERTIFICATE_BYTES);
 		Certificates certificates = new Certificates(List.of(certificate));
+		Handshake handshake = new Handshake(certificates);
+		byte[] handshakeBytes = handshake.toByteArray(); // includes 4-byte handshake header
 
-		Record tlsRecord = new Record(RecordContentType.HANDSHAKE, SSLProtocol.TLS_1_2, new Handshake(certificates));
-
-		return new ByteArrayInputStream(tlsRecord.toByteArray());
+		// Build an input stream with each byte in its own TLS record
+		ByteArrayOutputStream fragmentedStream = new ByteArrayOutputStream();
+		for (byte b : handshakeBytes) {
+			// Each TLS record contains a single byte of handshake data
+			RecordHeader header = new RecordHeader(RecordContentType.HANDSHAKE, SSLProtocol.TLS_1_2, (short) 1);
+			fragmentedStream.write(header.toByteArray());
+			fragmentedStream.write(b);
+		}
+		return new ByteArrayInputStream(fragmentedStream.toByteArray());
 	}
 }
