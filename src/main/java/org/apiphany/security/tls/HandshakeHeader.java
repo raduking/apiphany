@@ -1,5 +1,6 @@
 package org.apiphany.security.tls;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -74,6 +75,17 @@ public class HandshakeHeader implements TLSObject {
 		HandshakeType type = HandshakeType.fromValue(int8.getValue());
 		UInt24 messageLength = UInt24.from(is);
 		return new HandshakeHeader(type, messageLength);
+	}
+
+	/**
+	 * Parses a HandshakeHeader from an array of bytes.
+	 *
+	 * @param bytes the bytes containing header data
+	 * @return the parsed HandshakeHeader object
+	 * @throws IOException if an I/O error occurs
+	 */
+	public static HandshakeHeader from(final byte[] bytes) throws IOException {
+		return from(new ByteArrayInputStream(bytes));
 	}
 
 	/**

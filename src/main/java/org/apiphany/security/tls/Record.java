@@ -1,5 +1,7 @@
 package org.apiphany.security.tls;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -8,8 +10,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
 
-import org.apiphany.io.ByteBufferInputStream;
 import org.apiphany.io.ByteSizeable;
+import org.apiphany.io.IO;
 import org.apiphany.io.UInt16;
 import org.apiphany.lang.collections.Lists;
 import org.apiphany.security.ssl.SSLProtocol;
@@ -37,6 +39,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * @author Radu Sebastian LAZIN
  */
 public class Record implements TLSObject {
+
+	/**
+	 * The maximum size of a TLS record: 16kb.
+	 */
+	public static final int MAX_SIZE = 16384;
 
 	/**
 	 * The TLS record header.
@@ -133,8 +140,8 @@ public class Record implements TLSObject {
 	}
 
 	/**
-	 * Returns an input stream that concatenates all parts for a fragmented handshake message. The returned input stream
-	 * can be parsed as a list of handshake fragments.
+	 * Returns an input stream that concatenates all parts for a fragmented handshake message. The returned input stream can
+	 * be parsed as a list of handshake fragments.
 	 *
 	 * @param is the input stream from where to read the data
 	 * @param initialHeader initial record header
@@ -142,29 +149,44 @@ public class Record implements TLSObject {
 	 * @throws IOException in case of any error
 	 */
 	private static InputStream getHandshakeInputStream(final InputStream is, final RecordHeader initialHeader) throws IOException {
-		RecordHeader recordHeader = initialHeader;
-		HandshakeHeader handshakeHeader = HandshakeHeader.from(is);
-		int neededSize = recordHeader.getLength().getValue();
-		int handshakeSize = handshakeHeader.getLength().getValue();
-		if (handshakeSize > neededSize) {
-			neededSize = handshakeSize + handshakeHeader.sizeOf();
-		}
-		ByteBuffer buffer = ByteBuffer.allocate(neededSize);
-		buffer.put(handshakeHeader.toByteArray());
-		neededSize -= handshakeHeader.sizeOf();
+		int remainingRecordSize = initialHeader.getLength().getValue();
+		ByteArrayOutputStream os = new ByteArrayOutputStream(remainingRecordSize);
 
-		while (neededSize > 0) {
-			int size = recordHeader.getLength().getValue() - handshakeHeader.sizeOf();
-			RawHandshakeBody handshakeBody = RawHandshakeBody.from(is, handshakeHeader.getType(), size);
-			buffer.put(handshakeBody.toByteArray());
-			neededSize -= size;
-			if (neededSize > 0) {
-				recordHeader = RecordHeader.from(is);
-				handshakeHeader = HandshakeHeader.from(is);
+		while (remainingRecordSize > 0) {
+			byte[] handshakeHeaderBytes = new byte[HandshakeHeader.BYTES];
+			int have = 0;
+			while (have < HandshakeHeader.BYTES) {
+				if (remainingRecordSize == 0) {
+					// Need next record to finish the header (rare but legal)
+					RecordHeader nextRecord = RecordHeader.from(is, RecordContentType.HANDSHAKE);
+					remainingRecordSize = nextRecord.getLength().getValue();
+				}
+				int take = Math.min(HandshakeHeader.BYTES - have, remainingRecordSize);
+				byte[] chunk = IO.readChunk(is, take);
+				System.arraycopy(chunk, 0, handshakeHeaderBytes, have, take);
+				have += take;
+				remainingRecordSize -= take;
+			}
+			os.write(handshakeHeaderBytes);
+			HandshakeHeader handshakeHeader = HandshakeHeader.from(handshakeHeaderBytes);
+
+			int remainingHandshakeBody = handshakeHeader.getLength().getValue();
+			if (remainingRecordSize > 0) {
+				int take = Math.min(remainingRecordSize, remainingHandshakeBody);
+				IO.copy(is, os, take);
+				remainingRecordSize -= take;
+				remainingHandshakeBody -= take;
+			}
+			// If the body spills, keep pulling subsequent HANDSHAKE records
+			while (remainingHandshakeBody > 0) {
+				RecordHeader nextRecord = RecordHeader.from(is, RecordContentType.HANDSHAKE);
+				int chunkSize = Math.min(nextRecord.getLength().getValue(), remainingHandshakeBody);
+				IO.copy(is, os, chunkSize);
+				remainingHandshakeBody -= chunkSize;
+				remainingRecordSize = nextRecord.getLength().getValue() - chunkSize;
 			}
 		}
-		buffer.position(0);
-		return ByteBufferInputStream.of(buffer);
+		return new ByteArrayInputStream(os.toByteArray());
 	}
 
 	/**

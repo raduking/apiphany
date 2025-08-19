@@ -155,6 +155,12 @@ public class MinimalTLSClient implements AutoCloseable {
 		LOGGER.debug("Sent {}:{}", String.join(".", fragmentNames), tlsRecord);
 	}
 
+	public Record receiveRecord() throws IOException {
+		Record tlsRecord = Record.from(in);
+		LOGGER.debug("Received TLS Record:{}", tlsRecord);
+		return tlsRecord;
+	}
+
 	public byte[] performHandshake() throws Exception {
 		connect();
 
@@ -169,7 +175,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		LOGGER.debug("Client random:\n{}", Hex.dump(clientRandom));
 
 		// 2. Receive Server Hello
-		Record tlsRecord = Record.from(in);
+		Record tlsRecord = receiveRecord();
 		accumulateHandshakes(tlsRecord.getFragments(Handshake.class));
 
 		// 2a. Server Hello
@@ -183,7 +189,7 @@ public class MinimalTLSClient implements AutoCloseable {
 
 		// 2b. Server Certificates
 		if (tlsRecord.hasNoHandshake(Certificates.class)) {
-			tlsRecord = Record.from(in);
+			tlsRecord = receiveRecord();
 			accumulateHandshakes(tlsRecord.getFragments(Handshake.class));
 		}
 		Certificates certificates = tlsRecord.getHandshake(Certificates.class);
@@ -195,7 +201,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		ServerKeyExchange serverKeyExchange = null;
 		if (KeyExchangeAlgorithm.ECDHE == serverCipherSuite.keyExchange()) {
 			if (tlsRecord.hasNoHandshake(ServerKeyExchange.class)) {
-				tlsRecord = Record.from(in);
+				tlsRecord = receiveRecord();
 				accumulateHandshakes(tlsRecord.getFragments(Handshake.class));
 			}
 			serverKeyExchange = tlsRecord.getHandshake(ServerKeyExchange.class);
@@ -204,7 +210,7 @@ public class MinimalTLSClient implements AutoCloseable {
 
 		// 2b. Server Hello Done
 		if (tlsRecord.hasNoHandshake(ServerHelloDone.class)) {
-			tlsRecord = Record.from(in);
+			tlsRecord = receiveRecord();
 			accumulateHandshakes(tlsRecord.getFragments(Handshake.class));
 		}
 		ServerHelloDone serverHelloDone = tlsRecord.getHandshake(ServerHelloDone.class);
@@ -272,7 +278,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		sendRecord(clientFinished);
 
 		// 8. Receive ChangeCipherSpec and Finished
-		Record serverChangeCipherSpec = Record.from(in);
+		Record serverChangeCipherSpec = receiveRecord();
 		LOGGER.debug("Received Change Cipher Spec:{}", serverChangeCipherSpec);
 
 		// 9. Receive Server Finished Record
@@ -341,7 +347,7 @@ public class MinimalTLSClient implements AutoCloseable {
 	}
 
 	private String receiveApplicationData() throws Exception {
-		Record responseRecord = Record.from(in);
+		Record responseRecord = receiveRecord();
 		LOGGER.debug("Received Application Data Record:{}", responseRecord);
 		byte[] decrypted = decrypt(responseRecord, exchangeKeys);
 		String content = new String(decrypted, StandardCharsets.US_ASCII);

@@ -20,6 +20,8 @@ Moved all OAuth2 model classes to the same package `oauth2` since they can be us
 Added support for TLS fragmented handshake records.
 Added `RawHandshakeBody` to be able to build/read raw handshake messages.
 Added `TLSEncryptedObject` abstract class and derived TLS classes to denote any TLS message that is encrypted.
+Added `IO` class with input/output stream operations.
+Moved `DEFAULT_BUFFER_SIZE` constant from `Strings` to `IO`.
 
 ---
 
