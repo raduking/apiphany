@@ -154,28 +154,27 @@ public class Record implements TLSObject {
 
 		while (remainingRecordSize > 0) {
 			byte[] handshakeHeaderBytes = new byte[HandshakeHeader.BYTES];
-			int have = 0;
-			while (have < HandshakeHeader.BYTES) {
+			int handshakeHeaderSize = 0;
+			while (handshakeHeaderSize < HandshakeHeader.BYTES) {
 				if (remainingRecordSize == 0) {
 					// Need next record to finish the header (rare but legal)
 					RecordHeader nextRecord = RecordHeader.from(is, RecordContentType.HANDSHAKE);
 					remainingRecordSize = nextRecord.getLength().getValue();
 				}
-				int take = Math.min(HandshakeHeader.BYTES - have, remainingRecordSize);
-				byte[] chunk = IO.readChunk(is, take);
-				System.arraycopy(chunk, 0, handshakeHeaderBytes, have, take);
-				have += take;
-				remainingRecordSize -= take;
+				int available = Math.min(HandshakeHeader.BYTES - handshakeHeaderSize, remainingRecordSize);
+				IO.readFully(is, handshakeHeaderBytes, handshakeHeaderSize, available);
+				handshakeHeaderSize += available;
+				remainingRecordSize -= available;
 			}
 			os.write(handshakeHeaderBytes);
 			HandshakeHeader handshakeHeader = HandshakeHeader.from(handshakeHeaderBytes);
 
 			int remainingHandshakeBody = handshakeHeader.getLength().getValue();
 			if (remainingRecordSize > 0) {
-				int take = Math.min(remainingRecordSize, remainingHandshakeBody);
-				IO.copy(is, os, take);
-				remainingRecordSize -= take;
-				remainingHandshakeBody -= take;
+				int available = Math.min(remainingRecordSize, remainingHandshakeBody);
+				IO.copy(is, os, available);
+				remainingRecordSize -= available;
+				remainingHandshakeBody -= available;
 			}
 			// If the body spills, keep pulling subsequent HANDSHAKE records
 			while (remainingHandshakeBody > 0) {
