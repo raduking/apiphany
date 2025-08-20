@@ -119,16 +119,15 @@ public class Record implements TLSObject {
 	 * @throws IOException If an I/O error occurs while reading
 	 * @throws IllegalArgumentException If the record data is malformed
 	 */
-	@SuppressWarnings("resource")
 	public static Record from(final InputStream is) throws IOException {
 		RecordHeader header = RecordHeader.from(is);
 		int currentLength = header.getLength().getValue();
 		RecordContentType recordType = header.getType();
 
-		InputStream inputStream = is;
-		if (RecordContentType.HANDSHAKE == recordType) {
-			inputStream = getHandshakeInputStream(is, header);
-		}
+		InputStream inputStream = switch (recordType) {
+			case HANDSHAKE -> getHandshakeInputStream(is, header);
+			default -> is;
+		};
 
 		List<TLSObject> fragments = new ArrayList<>();
 		while (currentLength > 0) {
@@ -169,19 +168,19 @@ public class Record implements TLSObject {
 			os.write(handshakeHeaderBytes);
 			HandshakeHeader handshakeHeader = HandshakeHeader.from(handshakeHeaderBytes);
 
-			int remainingHandshakeBody = handshakeHeader.getLength().getValue();
+			int remainingHandshakeSize = handshakeHeader.getLength().getValue();
 			if (remainingRecordSize > 0) {
-				int available = Math.min(remainingRecordSize, remainingHandshakeBody);
+				int available = Math.min(remainingRecordSize, remainingHandshakeSize);
 				IO.copy(is, os, available);
 				remainingRecordSize -= available;
-				remainingHandshakeBody -= available;
+				remainingHandshakeSize -= available;
 			}
 			// If the body spills, keep pulling subsequent HANDSHAKE records
-			while (remainingHandshakeBody > 0) {
+			while (remainingHandshakeSize > 0) {
 				RecordHeader nextRecord = RecordHeader.from(is, RecordContentType.HANDSHAKE);
-				int chunkSize = Math.min(nextRecord.getLength().getValue(), remainingHandshakeBody);
+				int chunkSize = Math.min(nextRecord.getLength().getValue(), remainingHandshakeSize);
 				IO.copy(is, os, chunkSize);
-				remainingHandshakeBody -= chunkSize;
+				remainingHandshakeSize -= chunkSize;
 				remainingRecordSize = nextRecord.getLength().getValue() - chunkSize;
 			}
 		}
