@@ -2,6 +2,10 @@
 
 ---
 
+`1.0.5`
+
+---
+
 `1.0.4`
 
 Added `PRFLabel` enum representing labels used in TLS Pseudo-random Function (PRF) operations.
