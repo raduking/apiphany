@@ -4,6 +4,8 @@
 
 `1.0.5`
 
+Renamed `ExchangeClient.getRedactedHeaderPredicate` to `ExchangeClient.isRedactedHeader`.
+
 ---
 
 `1.0.4`

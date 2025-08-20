@@ -84,7 +84,7 @@ public interface ExchangeClient extends AutoCloseable {
 	default <T> String getHeadersAsString(final ApiMessage<T> apiMessage) {
 		return Maps.safe(apiMessage.getHeaders()).entrySet().stream().map(entry -> {
 			String headerName = entry.getKey();
-			List<String> headerValues = getRedactedHeaderPredicate().test(headerName)
+			List<String> headerValues = isRedactedHeader().test(headerName)
 					? Collections.singletonList(HeaderValues.REDACTED)
 					: entry.getValue();
 			return headerName + ":\"" + String.join(", ", headerValues) + "\"";
@@ -96,8 +96,8 @@ public interface ExchangeClient extends AutoCloseable {
 	 *
 	 * @return a predicate for the headers that should be redacted
 	 */
-	default Predicate<String> getRedactedHeaderPredicate() {
-		return s -> false;
+	default Predicate<String> isRedactedHeader() {
+		return headerName -> false;
 	}
 
 	/**
