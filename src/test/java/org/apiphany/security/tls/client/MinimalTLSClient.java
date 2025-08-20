@@ -1,7 +1,6 @@
 package org.apiphany.security.tls.client;
 
 import java.io.Closeable;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -136,8 +135,8 @@ public class MinimalTLSClient implements AutoCloseable {
 
 	public void connect() throws IOException {
 		tcpSocket = new Socket(host, port);
-		tcpSocket.setSoTimeout((int) socketTimeout.toMillis());
-		out = new DataOutputStream(tcpSocket.getOutputStream());
+		tcpSocket.setSoTimeout(Math.toIntExact(socketTimeout.toMillis()));
+		out = tcpSocket.getOutputStream();
 		in = tcpSocket.getInputStream();
 
 		LOGGER.debug("TCP connection established.");
@@ -149,12 +148,12 @@ public class MinimalTLSClient implements AutoCloseable {
 		byte[] bytes = tlsRecord.toByteArray();
 		out.write(bytes);
 		out.flush();
-		LOGGER.debug("Sent TLS Record {}:{}", String.join(".", tlsRecord.getFragmentNames()), tlsRecord);
+		LOGGER.debug("Sent TLS Record {}:{}", String.join(",", tlsRecord.getFragmentNames()), tlsRecord);
 	}
 
 	public Record receiveRecord() throws IOException {
 		Record tlsRecord = Record.from(in);
-		LOGGER.debug("Received TLS Record {}:{}", String.join(".", tlsRecord.getFragmentNames()), tlsRecord);
+		LOGGER.debug("Received TLS Record {}:{}", String.join(",", tlsRecord.getFragmentNames()), tlsRecord);
 		return tlsRecord;
 	}
 
@@ -207,8 +206,6 @@ public class MinimalTLSClient implements AutoCloseable {
 			tlsRecord = receiveRecord();
 			accumulateHandshakes(tlsRecord.getFragments(Handshake.class));
 		}
-		ServerHelloDone serverHelloDone = tlsRecord.getHandshake(ServerHelloDone.class);
-		LOGGER.debug("Received Server Hello Done:{}", serverHelloDone);
 
 		// 3. Generate Client Key Exchange
 		TLSKeyExchange tlsKeyExchange;
@@ -219,10 +216,10 @@ public class MinimalTLSClient implements AutoCloseable {
 				LOGGER.debug("Server public key (raw bytes from key exchange):\n{}", Hex.dump(serverPublicLittleEndian));
 				X25519Keys keys = new X25519Keys();
 				byte[] clientPublicBytes = getClientPublicBytes(serverKeyExchange, keys);
-				tlsKeyExchange = new ECDHEPublicKey(clientPublicBytes);
 				LOGGER.debug("Server public key ({}):\n{}", serverPublicKey.getClass(), serverPublicKey);
-				// Compute shared secret
+				// Compute shared secret (pre master secret)
 				preMasterSecret = keys.getSharedSecret(clientKeyPair.getPrivate(), serverPublicKey);
+				tlsKeyExchange = new ECDHEPublicKey(clientPublicBytes);
 			}
 			case RSA -> {
 				this.serverPublicKey = x509Certificate.getPublicKey();
