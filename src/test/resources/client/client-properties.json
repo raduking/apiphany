@@ -1,0 +1,68 @@
+{
+	"enabled": true,
+	"timeout": {
+		"connect": "PT0S",
+		"connectionRequest": "PT0S",
+		"socket": "PT0S"
+	},
+	"connection": {
+		"timeToLive": "PT30S",
+		"maxTotal": 100,
+		"maxPerRoute": 100
+	},
+	"compression": {
+		"gzip": true
+	},
+	"client": {
+		"some-client": {
+			"enabled": true,
+			"timeout": {
+				"connect": "PT0S",
+				"connectionRequest": "PT0S",
+				"socket": "PT0S"
+			},
+			"connection": {
+				"timeToLive": "PT30S",
+				"maxTotal": 100,
+				"maxPerRoute": 100
+			},
+			"compression": {
+				"gzip": true
+			},
+			"client": {
+			},
+			"custom": {
+			}
+		},
+		"another-client": {
+			"enabled": true,
+			"timeout": {
+				"connect": "PT0S",
+				"connectionRequest": "PT0S",
+				"socket": "PT0S"
+			},
+			"connection": {
+				"timeToLive": "PT30S",
+				"maxTotal": 100,
+				"maxPerRoute": 100
+			},
+			"compression": {
+				"gzip": true
+			},
+			"client": {
+			},
+			"custom": {
+			}
+		}
+	},
+	"custom": {
+		"java-net-http": {
+			"request": {
+				"version": "HTTP/1.1"
+			}
+		},
+		"ssl": {
+			"protocol": "TLSv1.3"
+		}
+	}
+}
