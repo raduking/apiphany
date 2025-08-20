@@ -118,11 +118,7 @@ class TokenHttpExchangeClientTest {
 	void shouldAddTheBearerAuthorizationHeaderToTheRequestWithTokenSpecifiedInClientProperties() {
 		TokenProperties tokenProperties = new TokenProperties();
 		tokenProperties.setValue(TOKEN);
-
-		ClientProperties clientProperties = new ClientProperties();
 		clientProperties.setCustomProperties(tokenProperties);
-
-		doReturn(clientProperties).when(exchangeClient).getClientProperties();
 
 		client = new TokenHttpExchangeClient(exchangeClient);
 
@@ -141,11 +137,7 @@ class TokenHttpExchangeClientTest {
 		TokenProperties tokenProperties = new TokenProperties();
 		tokenProperties.setValue(TOKEN);
 		tokenProperties.setAuthenticationScheme(HttpAuthScheme.BASIC.value());
-
-		ClientProperties clientProperties = new ClientProperties();
 		clientProperties.setCustomProperties(tokenProperties);
-
-		doReturn(clientProperties).when(exchangeClient).getClientProperties();
 
 		client = new TokenHttpExchangeClient(exchangeClient);
 
