@@ -121,6 +121,14 @@ public enum HttpHeader {
 	AGE("Age"),
 
 	/**
+	 * The HTTP {@code Alt-Svc} header field name. Used to list alternative services for this origin, such as HTTP/3
+	 * endpoints.
+	 *
+	 * @see <a href="https://tools.ietf.org/html/rfc7838">RFC 7838</a>
+	 */
+	ALT_SVC("Alt-Svc"),
+
+	/**
 	 * The HTTP {@code Allow} header field name.
 	 *
 	 * @see <a href="https://tools.ietf.org/html/rfc7231#section-7.4.1">Section 7.4.1 of RFC 7231</a>
@@ -189,6 +197,20 @@ public enum HttpHeader {
 	 * @see <a href="https://tools.ietf.org/html/rfc7233#section-4.2">Section 4.2 of RFC 7233</a>
 	 */
 	CONTENT_RANGE("Content-Range"),
+
+	/**
+	 * The HTTP {@code Content-Security-Policy} header field name.
+	 *
+	 * @see <a href="https://www.w3.org/TR/CSP3/#csp-header">Content Security Policy Level 3, Section 4.1</a>
+	 */
+	CONTENT_SECURITY_POLICY("Content-Security-Policy"),
+
+	/**
+	 * The HTTP {@code Content-Security-Policy-Report-Only} header field name.
+	 *
+	 * @see <a href="https://www.w3.org/TR/CSP3/#cspro-header">Content Security Policy Level 3, Section 4.2</a>
+	 */
+	CONTENT_SECURITY_POLICY_REPORT_ONLY("Content-Security-Policy-Report-Only"),
 
 	/**
 	 * The HTTP {@code Content-Type} header field name.
@@ -440,7 +462,28 @@ public enum HttpHeader {
 	 *
 	 * @see <a href="https://tools.ietf.org/html/rfc7235#section-4.1">Section 4.1 of RFC 7235</a>
 	 */
-	WWW_AUTHENTICATE("WWW-Authenticate");
+	WWW_AUTHENTICATE("WWW-Authenticate"),
+
+	/**
+	 * The de facto standard {@code X-Frame-Options} header field name. Used to indicate whether a browser should be allowed
+	 * to render a page in a {@code <frame>}, {@code <iframe>}, {@code <embed>}, or {@code <object>}.
+	 *
+	 * @see <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options">MDN Web Docs</a>
+	 * @see <a href="https://tools.ietf.org/html/rfc7034">RFC 7034 (This RFC describes the header but does not establish it
+	 * as a standard)</a>
+	 */
+	X_FRAME_OPTIONS("X-Frame-Options"),
+
+	/**
+	 * The non-standard {@code X-XSS-Protection} header field name. Used to control the XSS filter built into older
+	 * browsers.
+	 *
+	 * @see <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-XSS-Protection">MDN Web Docs</a>
+	 * @deprecated This header is deprecated and should be disabled in favor of using Content-Security-Policy. Modern
+	 * browsers have removed support for this header.
+	 */
+	@Deprecated
+	X_XSS_PROTECTION("X-XSS-Protection");
 
 	/**
 	 * The name map for easy from string implementation.
