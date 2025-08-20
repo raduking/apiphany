@@ -149,15 +149,12 @@ public class MinimalTLSClient implements AutoCloseable {
 		byte[] bytes = tlsRecord.toByteArray();
 		out.write(bytes);
 		out.flush();
-		String[] fragmentNames = tlsRecord.getFragments().stream()
-				.map(f -> (f instanceof Handshake handshake ? handshake.getBody() : f).getClass().getSimpleName())
-				.toArray(String[]::new);
-		LOGGER.debug("Sent {}:{}", String.join(".", fragmentNames), tlsRecord);
+		LOGGER.debug("Sent TLS Record {}:{}", String.join(".", tlsRecord.getFragmentNames()), tlsRecord);
 	}
 
 	public Record receiveRecord() throws IOException {
 		Record tlsRecord = Record.from(in);
-		LOGGER.debug("Received TLS Record:{}", tlsRecord);
+		LOGGER.debug("Received TLS Record {}:{}", String.join(".", tlsRecord.getFragmentNames()), tlsRecord);
 		return tlsRecord;
 	}
 
