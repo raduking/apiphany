@@ -182,7 +182,6 @@ public class MinimalTLSClient implements AutoCloseable {
 		ServerHello serverHello = tlsRecord.getHandshake(ServerHello.class);
 		byte[] serverRandom = serverHello.getServerRandom().toByteArray();
 		LOGGER.debug("Server random:\n{}", Hex.dump(serverRandom));
-		LOGGER.debug("Received Server Hello:{}", serverHello);
 		CipherSuite serverCipherSuite = serverHello.getCipherSuite();
 		MessageDigestAlgorithm messageDigest = serverCipherSuite.getMessageDigest();
 		String prfAlgorithm = messageDigest.hmacName();
@@ -193,7 +192,6 @@ public class MinimalTLSClient implements AutoCloseable {
 			accumulateHandshakes(tlsRecord.getFragments(Handshake.class));
 		}
 		Certificates certificates = tlsRecord.getHandshake(Certificates.class);
-		LOGGER.debug("Received Server Certificate:{}", certificates);
 		X509Certificate x509Certificate = certificates.getList().getFirst().toX509Certificate();
 		LOGGER.debug("Received Server X509Certificate: {}", x509Certificate);
 
@@ -205,7 +203,6 @@ public class MinimalTLSClient implements AutoCloseable {
 				accumulateHandshakes(tlsRecord.getFragments(Handshake.class));
 			}
 			serverKeyExchange = tlsRecord.getHandshake(ServerKeyExchange.class);
-			LOGGER.debug("Received Server Key Exchange:{}", serverKeyExchange);
 		}
 
 		// 2b. Server Hello Done
@@ -278,12 +275,11 @@ public class MinimalTLSClient implements AutoCloseable {
 		sendRecord(clientFinished);
 
 		// 8. Receive ChangeCipherSpec and Finished
+		@SuppressWarnings("unused")
 		Record serverChangeCipherSpec = receiveRecord();
-		LOGGER.debug("Received Change Cipher Spec:{}", serverChangeCipherSpec);
 
 		// 9. Receive Server Finished Record
 		Record serverFinishedRecord = Record.from(in, EncryptedHandshake::from);
-		LOGGER.debug("Received Server Finished Record:{}", serverFinishedRecord);
 
 		// 10. Decrypt finished
 		byte[] decrypted = decrypt(serverFinishedRecord, exchangeKeys);
