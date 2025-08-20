@@ -392,4 +392,16 @@ public class Record implements TLSObject {
 		}
 		throw new IllegalArgumentException("No handhsake of type " + tlsHandshakeClass + " found in record");
 	}
+
+	/**
+	 * Returns an array of {@link String}s with all fragment names contained in this record.
+	 *
+	 * @return an array of strings with all fragment names contained in this record
+	 */
+	@JsonIgnore
+	public String[] getFragmentNames() {
+		return getFragments().stream()
+				.map(f -> (f instanceof Handshake handshake ? handshake.getBody() : f).getClass().getSimpleName())
+				.toArray(String[]::new);
+	}
 }
