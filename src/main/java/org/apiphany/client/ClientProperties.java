@@ -15,6 +15,8 @@ import org.morphix.lang.function.Consumers;
 import org.morphix.reflection.Constructors;
 import org.morphix.reflection.Fields;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * Base class for client properties, it can also be used as a stand-alone class to import common properties for clients.
  * It can also hold child client properties if needed.
@@ -99,6 +101,7 @@ public class ClientProperties {
 	 *
 	 * @return true if the client is disabled, false otherwise.
 	 */
+	@JsonIgnore
 	public boolean isDisabled() {
 		return !isEnabled();
 	}
