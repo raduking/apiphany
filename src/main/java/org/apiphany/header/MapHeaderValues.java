@@ -1,12 +1,10 @@
 package org.apiphany.header;
 
-import java.net.http.HttpHeaders;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import org.apiphany.lang.Strings;
-import org.apiphany.lang.collections.Lists;
 import org.apiphany.lang.collections.Maps;
 import org.morphix.lang.JavaObjects;
 
@@ -52,8 +50,7 @@ public class MapHeaderValues extends HeaderValues {
 	}
 
 	/**
-	 * Retrieves the values of a specific header from the provided {@link Map} of headers. The map is converted to an
-	 * {@link HttpHeaders} object internally to fetch the header values.
+	 * Retrieves the values of a specific header from the provided {@link Map} of headers.
 	 *
 	 * @param <N> header name type
 	 *
@@ -65,10 +62,17 @@ public class MapHeaderValues extends HeaderValues {
 		if (Maps.isEmpty(headers)) {
 			return Collections.emptyList();
 		}
-		List<String> values = headers.get(Strings.safeToString(header));
-		if (Lists.isEmpty(values)) {
-			return Collections.emptyList();
+		String headerKey = Strings.safeToString(header);
+
+		List<String> values = headers.get(headerKey);
+		if (null != values) {
+			return values;
 		}
-		return values;
+		for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
+			if (entry.getKey().equalsIgnoreCase(headerKey)) {
+				return entry.getValue();
+			}
+		}
+		return Collections.emptyList();
 	}
 }
