@@ -125,7 +125,7 @@ public interface Headers {
 	 * @return true if the headers contain the given header, false otherwise
 	 */
 	static <N> boolean contains(final N headerName, final Map<String, List<String>> headers) {
-		return contains(headerName, null, hn -> MapHeaderValues.get(hn, headers));
+		return Lists.isNotEmpty(MapHeaderValues.get(headerName, headers));
 	}
 
 }
