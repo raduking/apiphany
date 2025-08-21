@@ -13,20 +13,20 @@ import org.junit.jupiter.api.Test;
  *
  * @author Radu Sebastian LAZIN
  */
-class UInt32Test {
+class UInt64Test {
 
-	private static final int TEST_INT = 666;
+	private static final long TEST_LONG = 666;
 
 	@Test
-	void shouldWriteAndReadUInt32() throws IOException {
-		UInt32 uInt32 = UInt32.of(TEST_INT);
+	void shouldWriteAndReadUInt64() throws IOException {
+		UInt64 uInt64 = UInt64.of(TEST_LONG);
 
-		byte[] bytes = uInt32.toByteArray();
+		byte[] bytes = uInt64.toByteArray();
 		ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
 
-		UInt32 result = UInt32.from(bis);
+		UInt64 result = UInt64.from(bis);
 
-		assertThat(result.getValue(), equalTo(uInt32.getValue()));
+		assertThat(result.getValue(), equalTo(uInt64.getValue()));
 	}
 
 }
