@@ -5,6 +5,8 @@ import java.net.http.HttpClient.Version;
 import org.apiphany.http.HttpMessages;
 import org.apiphany.json.JsonBuilder;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * Represents properties for configuring the Java.net HTTP client. This class includes nested properties for HTTP
  * request configurations.
@@ -107,6 +109,7 @@ public class JavaNetHttpProperties {
 		 *
 		 * @return the HTTP version as a {@link Version} enum.
 		 */
+		@JsonIgnore
 		public Version getHttpVersion() {
 			try {
 				return HttpMessages.parseJavaNetHttpVersion(version);
