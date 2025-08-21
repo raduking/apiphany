@@ -2,8 +2,11 @@ package org.apiphany.header;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,4 +81,38 @@ class HeadersTest {
 		assertThat(headers, equalTo(expected));
 	}
 
+	@Test
+	void shouldReturnTrueWhenCheckingWithEmptyStringHeaderValueOnContains() {
+		boolean result = Headers.contains(N1, "", headers);
+
+		assertTrue(result);
+	}
+
+	@Test
+	void shouldReturnTrueWhenCheckingExistingStringHeaderValueOnContains() {
+		boolean result = Headers.contains(N1, V1, headers);
+
+		assertTrue(result);
+	}
+
+	@Test
+	void shouldReturnFalseWhenCheckingNonExistingStringHeaderValueOnContains() {
+		boolean result = Headers.contains(N1, "non-existing", headers);
+
+		assertFalse(result);
+	}
+
+	@Test
+	void shouldReturnFalseWhenCheckingExistingStringHeaderValueInEmptyHeadersOnContains() {
+		boolean result = Headers.contains(N1, V1, Collections.emptyMap());
+
+		assertFalse(result);
+	}
+
+	@Test
+	void shouldReturnFalseWhenCheckingExistingHeaderInEmptyHeadersOnContains() {
+		boolean result = Headers.contains(N1, Collections.emptyMap());
+
+		assertFalse(result);
+	}
 }
