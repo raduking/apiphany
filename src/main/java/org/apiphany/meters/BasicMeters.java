@@ -23,6 +23,8 @@ import io.micrometer.core.instrument.Timer;
 /**
  * A record class for managing basic metrics such as latency, requests, retries, and errors. This class provides methods
  * to wrap code with metrics and record common metrics for a given prefix.
+ * <p>
+ * TODO: abstract away micrometer to only be used when present in the class path
  *
  * @param meterRegistry the meter registry these metrics will be added to
  * @param latency the timer for measuring operation latency.
