@@ -4,6 +4,7 @@ import static org.apiphany.ParameterFunction.parameter;
 import static org.apiphany.ParameterFunction.withCondition;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.lang.reflect.InvocationTargetException;
@@ -44,4 +45,31 @@ class RequestParametersTest {
 		assertThat(requestParameters, equalTo(expected));
 	}
 
+	@Test
+	void shouldReturnEmptyMapIfNoParametersWereSupplied() {
+		Map<String, String> params = RequestParameters.of(new ParameterFunction[0]);
+
+		assertThat(params.entrySet(), hasSize(0));
+	}
+
+	@Test
+	void shouldReturnEmptyMapIfParametersIsNullSupplied() {
+		Map<String, String> params = RequestParameters.of((ParameterFunction[]) null);
+
+		assertThat(params.entrySet(), hasSize(0));
+	}
+
+	@Test
+	void shouldReturnEmptyMapIfParametersStringIsEmpty() {
+		Map<String, String> params = RequestParameters.from("");
+
+		assertThat(params.entrySet(), hasSize(0));
+	}
+
+	@Test
+	void shouldReturnEmptyMapIfParametersStringIsNull() {
+		Map<String, String> params = RequestParameters.from(null);
+
+		assertThat(params.entrySet(), hasSize(0));
+	}
 }

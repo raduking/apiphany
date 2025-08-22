@@ -100,16 +100,6 @@ public interface ParameterFunction {
 	}
 
 	/**
-	 * Creates a {@link ParameterFunction} for a filter.
-	 *
-	 * @param filter the filter to apply
-	 * @return a {@link ParameterFunction} that inserts parameters based on the filter
-	 */
-	static ParameterFunction parameter(final Filter filter) {
-		return filter;
-	}
-
-	/**
 	 * Creates a {@link ParameterFunction} for a list of elements, which are joined into a single string.
 	 *
 	 * @param name the parameter name
@@ -158,6 +148,34 @@ public interface ParameterFunction {
 	}
 
 	/**
+	 * Creates a {@link ParameterFunction} that inserts all entries from more parameter functions.
+	 *
+	 * @param parameters the parameters containing the entries to insert
+	 * @return a {@link ParameterFunction} that inserts all entries from more parameter functions
+	 */
+	static ParameterFunction parameters(final ParameterFunction... paramFunctions) {
+		if (null == paramFunctions) {
+			return none();
+		}
+		return map -> {
+			for (ParameterFunction paramFunction : paramFunctions) {
+				paramFunction.putInto(map);
+			}
+		};
+	}
+
+	/**
+	 * Returns an empty parameter function.
+	 *
+	 * @return an empty parameter function
+	 */
+	static ParameterFunction none() {
+		return map -> {
+			// empty
+		};
+	}
+
+	/**
 	 * Creates a {@link ParameterFunction} that conditionally inserts parameters based on a condition.
 	 *
 	 * @param condition the condition to evaluate
@@ -165,13 +183,10 @@ public interface ParameterFunction {
 	 * @return a {@link ParameterFunction} that conditionally inserts parameters
 	 */
 	static ParameterFunction withCondition(final boolean condition, final ParameterFunction... paramFunctions) {
-		return map -> {
-			if (condition && null != paramFunctions) {
-				for (ParameterFunction paramFunction : paramFunctions) {
-					paramFunction.putInto(map);
-				}
-			}
-		};
+		if (condition) {
+			return parameters(paramFunctions);
+		}
+		return none();
 	}
 
 	/**
