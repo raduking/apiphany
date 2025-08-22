@@ -126,7 +126,7 @@ public class ApiMessage<T> {
 	 * @return true if the headers contain the given header, false otherwise
 	 */
 	public <N> boolean containsHeader(final N headerName) {
-		return containsHeader(headerName, null);
+		return Headers.contains(headerName, getHeaders());
 	}
 
 }
