@@ -32,10 +32,22 @@ class ParameterFunctionTest {
 	private static final String STRING_INTEGER_VALUE = String.valueOf(INTEGER_VALUE);
 
 	@Test
+	void shouldAddParametersToAMapWithConsumerAPI() {
+		ParameterFunction param = parameter(PARAM_1, STRING_INTEGER_VALUE);
+
+		Map<String, String> params = new HashMap<>();
+		param.accept(params);
+
+		assertThat(params.entrySet(), hasSize(1));
+		assertThat(params.get(PARAM_1), equalTo(STRING_INTEGER_VALUE));
+	}
+
+	@Test
 	void shouldAddNonStringParameterByConvertingItToString() {
 		Map<String, String> params = RequestParameters.of(
 				parameter(PARAM_1, INTEGER_VALUE));
 
+		assertThat(params.entrySet(), hasSize(1));
 		assertThat(params.get(PARAM_1), equalTo(STRING_INTEGER_VALUE));
 	}
 
@@ -44,6 +56,7 @@ class ParameterFunctionTest {
 		Map<String, String> params = RequestParameters.of(
 				parameter(PARAM_1, () -> INTEGER_VALUE));
 
+		assertThat(params.entrySet(), hasSize(1));
 		assertThat(params.get(PARAM_1), equalTo(STRING_INTEGER_VALUE));
 	}
 
@@ -66,6 +79,7 @@ class ParameterFunctionTest {
 		Map<String, String> params = RequestParameters.of(
 				parameter(new A(PARAM_1), () -> INTEGER_VALUE));
 
+		assertThat(params.entrySet(), hasSize(1));
 		assertThat(params.get(PARAM_1), equalTo(STRING_INTEGER_VALUE));
 	}
 
@@ -74,6 +88,7 @@ class ParameterFunctionTest {
 		Map<String, String> params = RequestParameters.of(
 				parameter(() -> new A(PARAM_1), () -> INTEGER_VALUE));
 
+		assertThat(params.entrySet(), hasSize(1));
 		assertThat(params.get(PARAM_1), equalTo(STRING_INTEGER_VALUE));
 	}
 
@@ -84,6 +99,7 @@ class ParameterFunctionTest {
 		Map<String, String> params = RequestParameters.of(
 				parameter(filter));
 
+		assertThat(params.entrySet(), hasSize(1));
 		assertThat(params.get(Filter.NAME), equalTo(filter.getValue()));
 	}
 
@@ -94,6 +110,7 @@ class ParameterFunctionTest {
 		Map<String, String> params = RequestParameters.of(
 				parameter(Filter.NAME, filter.getValue()));
 
+		assertThat(params.entrySet(), hasSize(1));
 		assertThat(params.get(Filter.NAME), equalTo(filter.getValue()));
 	}
 
@@ -120,6 +137,7 @@ class ParameterFunctionTest {
 		Map<String, String> params = RequestParameters.of(
 				parameter(param));
 
+		assertThat(params.entrySet(), hasSize(1));
 		assertThat(params.get(PARAM_1), equalTo(STRING_INTEGER_VALUE));
 	}
 
@@ -130,6 +148,7 @@ class ParameterFunctionTest {
 		Map<String, String> params = RequestParameters.of(
 				parameter(PARAM_1, list));
 
+		assertThat(params.entrySet(), hasSize(1));
 		assertThat(params.get(PARAM_1), equalTo(String.join(",", list)));
 	}
 

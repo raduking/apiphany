@@ -2,6 +2,7 @@ package org.apiphany;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -14,7 +15,7 @@ import org.apiphany.lang.collections.Lists;
  * @author Radu Sebastian LAZIN
  */
 @FunctionalInterface
-public interface ParameterFunction {
+public interface ParameterFunction extends Consumer<Map<String, String>> {
 
 	/**
 	 * Inserts parameters into the given map.
@@ -22,6 +23,14 @@ public interface ParameterFunction {
 	 * @param map the map to insert parameters into
 	 */
 	void putInto(Map<String, String> map);
+
+	/**
+	 * @see #accept(Map)
+	 */
+	@Override
+	default void accept(final Map<String, String> map) {
+		putInto(map);
+	}
 
 	/**
 	 * Creates a {@link ParameterFunction} for a single key-value pair.
@@ -150,7 +159,7 @@ public interface ParameterFunction {
 	/**
 	 * Creates a {@link ParameterFunction} that inserts all entries from more parameter functions.
 	 *
-	 * @param parameters the parameters containing the entries to insert
+	 * @param paramFunctions the parameters containing the entries to insert
 	 * @return a {@link ParameterFunction} that inserts all entries from more parameter functions
 	 */
 	static ParameterFunction parameters(final ParameterFunction... paramFunctions) {
