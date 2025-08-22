@@ -18,6 +18,13 @@ import org.apiphany.lang.collections.Lists;
 public interface ParameterFunction extends Consumer<Map<String, String>> {
 
 	/**
+	 * Cache empty function instance.
+	 */
+	ParameterFunction EMPTY = map -> {
+		// empty
+	};
+
+	/**
 	 * Inserts parameters into the given map.
 	 *
 	 * @param map the map to insert parameters into
@@ -179,9 +186,7 @@ public interface ParameterFunction extends Consumer<Map<String, String>> {
 	 * @return an empty parameter function
 	 */
 	static ParameterFunction none() {
-		return map -> {
-			// empty
-		};
+		return EMPTY;
 	}
 
 	/**
