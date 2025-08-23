@@ -90,7 +90,7 @@ public interface Strings {
 	 * @param encoding character encoding
 	 * @param bufferSize buffer size
 	 * @param onError on error handler
-	 * @return string
+	 * @return the input stream as string
 	 */
 	static String toString(final InputStream inputStream, final Charset encoding, final int bufferSize, final Consumer<Exception> onError) {
 		final char[] buffer = new char[bufferSize];
@@ -117,10 +117,22 @@ public interface Strings {
 	 * @param inputStream input stream
 	 * @param encoding character encoding
 	 * @param bufferSize buffer size
-	 * @return string
+	 * @return the input stream as string
 	 */
 	static String toString(final InputStream inputStream, final Charset encoding, final int bufferSize) {
 		return toString(inputStream, encoding, bufferSize, Consumers.consumeNothing());
+	}
+
+	/**
+	 * Transforms an input stream to a string. If the input stream cannot be converted to string with the given parameters,
+	 * the result will be null.
+	 *
+	 * @param inputStream input stream
+	 * @param encoding character encoding
+	 * @return the input stream as string
+	 */
+	static String toString(final InputStream inputStream, final Charset encoding) {
+		return toString(inputStream, encoding, IO.DEFAULT_BUFFER_SIZE, Consumers.consumeNothing());
 	}
 
 	/**
