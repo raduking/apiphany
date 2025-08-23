@@ -28,7 +28,6 @@ import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Maps;
 import org.morphix.lang.Nullables;
-import org.morphix.lang.function.ThrowingSupplier;
 
 /**
  * Java HTTP exchange client based on the default {@link HttpClient}. The default HTTP version used is HTTP/1.1.
@@ -112,9 +111,8 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	@Override
 	public <T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest) {
 		HttpRequest httpRequest = buildRequest(apiRequest);
-		HttpResponse<String> httpResponse = ThrowingSupplier
-				.unchecked(() -> httpClient.send(httpRequest, BodyHandlers.ofString()))
-				.get();
+		HttpResponse<String> httpResponse = HttpException.ifThrows(
+				() -> httpClient.send(httpRequest, BodyHandlers.ofString()));
 		return buildResponse(apiRequest, httpResponse);
 	}
 
