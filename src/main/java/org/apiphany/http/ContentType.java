@@ -156,7 +156,7 @@ public enum ContentType {
 	TEXT_EVENT_STREAM("text/event-stream", StandardCharsets.UTF_8),
 
 	/**
-	 * Wildcard content type (matches any type).
+	 * Wild card content type (matches any type).
 	 */
 	WILDCARD("*/*");
 

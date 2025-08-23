@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.apiphany.ApiClient;
 import org.apiphany.client.ClientProperties;
+import org.apiphany.http.HttpHeader;
 import org.apiphany.net.Sockets;
 import org.apiphany.server.KeyValueHttpServer;
 import org.junit.jupiter.api.AfterAll;
@@ -69,8 +70,18 @@ class JavaNetHttpExchangeClientTest {
 		String value = API_CLIENT.get(KeyValueHttpServer.DEFAULT_KEY);
 		Map<String, List<String>> headers = API_CLIENT.head(KeyValueHttpServer.DEFAULT_KEY);
 
-		assertThat(headers.get("Content-Length"), equalTo(List.of(String.valueOf(value.length()))));
-		assertThat(headers.get("Content-Type"), equalTo(List.of("text/plain; charset=utf-8")));
+		assertThat(headers.get(HttpHeader.CONTENT_LENGTH.value()), equalTo(List.of(String.valueOf(value.length()))));
+		assertThat(headers.get(HttpHeader.CONTENT_TYPE.value()), equalTo(List.of("text/plain; charset=utf-8")));
+	}
+
+	@Test
+	void shouldReturnOptions() {
+		Map<String, List<String>> headers = API_CLIENT.options();
+
+		assertThat(headers.get(HttpHeader.ALLOW.value()), equalTo(List.of(KeyValueHttpServer.ALLOW_HEADER_VALUE)));
+		assertThat(headers.get(HttpHeader.ACCESS_CONTROL_ALLOW_ORIGIN.value()), equalTo(List.of("*")));
+		assertThat(headers.get(HttpHeader.ACCESS_CONTROL_ALLOW_METHODS.value()), equalTo(List.of(KeyValueHttpServer.ALLOW_HEADER_VALUE)));
+		assertThat(headers.get(HttpHeader.ACCESS_CONTROL_ALLOW_HEADERS.value()), equalTo(List.of(HttpHeader.CONTENT_TYPE.value())));
 	}
 
 	static class SimpleApiClient extends ApiClient {
@@ -134,6 +145,15 @@ class JavaNetHttpExchangeClientTest {
 					.http()
 					.head()
 					.path(API, "keys", key)
+					.retrieve(String.class)
+					.getHeaders();
+		}
+
+		public Map<String, List<String>> options() {
+			return client()
+					.http()
+					.options()
+					.path(API, "keys")
 					.retrieve(String.class)
 					.getHeaders();
 		}

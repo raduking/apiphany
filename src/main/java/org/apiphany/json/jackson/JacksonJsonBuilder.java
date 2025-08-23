@@ -1,5 +1,6 @@
 package org.apiphany.json.jackson;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -133,6 +134,45 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 	}
 
 	/**
+	 * Returns an object from the JSON byte array.
+	 *
+	 * @param <T> type of the object
+	 *
+	 * @param json JSON byte array
+	 * @param cls class of the object
+	 * @return an object from the JSON byte array
+	 */
+	public static <T> T fromJson(final byte[] json, final Class<T> cls) {
+		return InstanceHolder.INSTANCE.fromJsonBytes(json, cls);
+	}
+
+	/**
+	 * Returns an object from the JSON byte array.
+	 *
+	 * @param <T> type of the object
+	 *
+	 * @param json JSON byte array
+	 * @param genericClass generic class wrapper for the type of the generic object
+	 * @return an object from the JSON byte array
+	 */
+	public static <T> T fromJson(final byte[] json, final GenericClass<T> genericClass) {
+		return InstanceHolder.INSTANCE.fromJsonBytes(json, genericClass);
+	}
+
+	/**
+	 * Returns an object from the JSON byte array.
+	 *
+	 * @param <T> type of the object
+	 *
+	 * @param json JSON byte array
+	 * @param typeReference type of the object
+	 * @return an object from the JSON byte array
+	 */
+	public static <T> T fromJson(final byte[] json, final TypeReference<T> typeReference) {
+		return InstanceHolder.INSTANCE.fromJsonBytes(json, typeReference);
+	}
+
+	/**
 	 * Transforms the parameter to a JSON String.
 	 *
 	 * @param <T> type of the object
@@ -210,6 +250,61 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 		try {
 			return objectMapper.readValue(json, typeReference);
 		} catch (JsonProcessingException e) {
+			LOGGER.warn(ErrorMessage.COULD_NOT_DESERIALIZE_OBJECT, json, e);
+			return null;
+		}
+	}
+
+	/**
+	 * Returns an object from the given byte array.
+	 *
+	 * @param <T> type of the object
+	 *
+	 * @param json JSON byte array
+	 * @param cls class of the object
+	 * @return an object from the JSON string
+	 */
+	public <T> T fromJsonBytes(final byte[] json, final Class<T> cls) {
+		try {
+			return objectMapper.readValue(json, cls);
+		} catch (IOException e) {
+			LOGGER.warn(ErrorMessage.COULD_NOT_DESERIALIZE_OBJECT, json, e);
+			return null;
+		}
+	}
+
+	/**
+	 * Returns an object from the JSON byte array.
+	 *
+	 * @param <T> type of the object
+	 *
+	 * @param json JSON byte array
+	 * @param genericClass generic class wrapper for the type of the generic object
+	 * @return an object from the JSON string
+	 */
+	public <T> T fromJsonBytes(final byte[] json, final GenericClass<T> genericClass) {
+		TypeReference<T> typeReference = new TypeReference<>() {
+			@Override
+			public Type getType() {
+				return genericClass.getType();
+			}
+		};
+		return fromJsonBytes(json, typeReference);
+	}
+
+	/**
+	 * Returns an object from the JSON byte array.
+	 *
+	 * @param <T> type of the object
+	 *
+	 * @param json JSON byte array
+	 * @param typeReference type of the object
+	 * @return an object from the JSON string
+	 */
+	public <T> T fromJsonBytes(final byte[] json, final TypeReference<T> typeReference) {
+		try {
+			return objectMapper.readValue(json, typeReference);
+		} catch (IOException e) {
 			LOGGER.warn(ErrorMessage.COULD_NOT_DESERIALIZE_OBJECT, json, e);
 			return null;
 		}

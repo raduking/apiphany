@@ -40,10 +40,10 @@ public class HttpHeaderValues extends HeaderValues {
 	 */
 	@Override
 	public <N> List<String> get(final N header, final Object headers) {
-		if (headers instanceof HttpHeaders httpHeaders) {
-			return get(header, httpHeaders);
-		}
-		return getNext().get(header, headers);
+		return switch (headers) {
+			case HttpHeaders httpHeaders -> get(header, httpHeaders);
+			default -> getNext().get(header, headers);
+		};
 	}
 
 	/**

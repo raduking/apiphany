@@ -5,6 +5,9 @@
 `1.0.5`
 
 Renamed `ExchangeClient.getRedactedHeaderPredicate` to `ExchangeClient.isRedactedHeader`.
+Added `ResolvedContentType` for content types resolved from API responses.
+Changed the default body handler for responses in `JavaNetHttpExchangeClient` from `String` to `byte[]`.
+Changed some `ContentConverter` methods to include the `ResolvedContentType`.
 
 ---
 

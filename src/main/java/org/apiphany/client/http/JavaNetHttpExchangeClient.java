@@ -7,6 +7,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublisher;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandler;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
@@ -24,9 +25,11 @@ import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
+import org.apiphany.http.ResolvedContentType;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Maps;
+import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Nullables;
 
 /**
@@ -111,8 +114,8 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	@Override
 	public <T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest) {
 		HttpRequest httpRequest = buildRequest(apiRequest);
-		HttpResponse<String> httpResponse = HttpException.ifThrows(
-				() -> httpClient.send(httpRequest, BodyHandlers.ofString()));
+		HttpResponse<?> httpResponse = HttpException.ifThrows(
+				() -> httpClient.send(httpRequest, getBodyHandler(apiRequest)));
 		return buildResponse(apiRequest, httpResponse);
 	}
 
@@ -171,12 +174,34 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	}
 
 	/**
+	 * Returns the body handler based on the request.
+	 *
+	 * @param <T> request body type
+	 * @param <U> body handler type
+	 *
+	 * @param apiRequest the API request object
+	 * @return the body handler based on the request
+	 */
+	public static <T, U> BodyHandler<U> getBodyHandler(final ApiRequest<T> apiRequest) {
+		BodyHandler<?> bodyHandler = null;
+		if (apiRequest.isStream()) {
+			bodyHandler = BodyHandlers.ofInputStream();
+		} else if (!apiRequest.hasGenericType() && String.class.equals(apiRequest.getClassResponseType())) {
+			bodyHandler = BodyHandlers.ofString();
+		} else {
+			bodyHandler = BodyHandlers.ofByteArray();
+		}
+		return JavaObjects.cast(bodyHandler);
+	}
+
+	/**
 	 * Builds the {@link ApiResponse} based on the {@link HttpResponse} object.
 	 * <p>
 	 * TODO: implement response handling for non 2xx responses and other than JSON media type
 	 *
 	 * @param <T> request body type
 	 * @param <U> response body type
+	 * @param <R> HTTP response body type
 	 *
 	 * @param apiRequest API request object
 	 * @param httpResponse HTTP response object
@@ -184,11 +209,14 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	 */
 	protected <T, U, R> ApiResponse<U> buildResponse(final ApiRequest<T> apiRequest, final HttpResponse<R> httpResponse) {
 		HttpStatus httpStatus = HttpStatus.from(httpResponse.statusCode());
-		if (httpStatus.isError()) {
-			throw new HttpException(httpStatus, Strings.safeToString(httpResponse.body()));
-		}
 		Map<String, List<String>> headers = Nullables.apply(httpResponse.headers(), HttpHeaders::map);
-		U body = convertBody(apiRequest, headers, httpResponse.body());
+		List<String> contentTypes = getHeaderValuesChain().get(HttpHeader.CONTENT_TYPE, headers);
+		ResolvedContentType resolvedContentType = ResolvedContentType.parseHeader(contentTypes);
+
+		if (httpStatus.isError()) {
+			throw new HttpException(httpStatus, StringHttpContentConverter.instance().from(httpResponse.body(), resolvedContentType, String.class));
+		}
+		U body = convertBody(apiRequest, resolvedContentType, headers, httpResponse.body());
 
 		return ApiResponse.create(body)
 				.status(httpStatus)
@@ -206,5 +234,4 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	public static void addHeaders(final HttpRequest.Builder httpRequestBuilder, final Map<String, List<String>> headers) {
 		Maps.safe(headers).forEach((k, v) -> v.forEach(h -> httpRequestBuilder.header(k, h)));
 	}
-
 }

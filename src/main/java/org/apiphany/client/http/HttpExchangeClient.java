@@ -69,6 +69,15 @@ public interface HttpExchangeClient extends ExchangeClient {
 	}
 
 	/**
+	 * Returns the OPTIONS request method.
+	 *
+	 * @return the OPTIONS request method
+	 */
+	default RequestMethod options() {
+		return HttpMethod.OPTIONS;
+	}
+
+	/**
 	 * Returns the TRACE request method.
 	 *
 	 * @return the TRACE request method

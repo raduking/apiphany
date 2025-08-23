@@ -4,11 +4,13 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
 import org.apiphany.lang.Strings;
@@ -32,6 +34,17 @@ public class KeyValueHttpServer implements AutoCloseable {
 
 	public static final String DEFAULT_KEY = "Mumu";
 	public static final String DEFAULT_VALUE = "Cucu";
+
+	public static final List<HttpMethod> ALLOW = List.of(
+			HttpMethod.GET,
+			HttpMethod.PUT,
+			HttpMethod.POST,
+			HttpMethod.DELETE,
+			HttpMethod.PATCH,
+			HttpMethod.HEAD,
+			HttpMethod.OPTIONS
+	);
+	public static final String ALLOW_HEADER_VALUE = String.join(", ", ALLOW.stream().map(HttpMethod::toString).toList());
 
 	private static final int NO_BODY = -1;
 
@@ -155,11 +168,11 @@ public class KeyValueHttpServer implements AutoCloseable {
 		}
 
 		private static void handleOptions(HttpExchange exchange) throws IOException {
-			// Set CORS headers to allow requests from any origin and the methods we support
-			exchange.getResponseHeaders().set("Allow", "GET, PUT, POST, DELETE, PATCH, HEAD, OPTIONS");
-			exchange.getResponseHeaders().set("Access-Control-Allow-Origin", "*");
-			exchange.getResponseHeaders().set("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE, PATCH, HEAD, OPTIONS");
-			exchange.getResponseHeaders().set("Access-Control-Allow-Headers", "Content-Type");
+			// Set CORS headers to allow requests from any origin and the methods the server supports
+			exchange.getResponseHeaders().set(HttpHeader.ALLOW.value(), ALLOW_HEADER_VALUE);
+			exchange.getResponseHeaders().set(HttpHeader.ACCESS_CONTROL_ALLOW_ORIGIN.value(), "*");
+			exchange.getResponseHeaders().set(HttpHeader.ACCESS_CONTROL_ALLOW_METHODS.value(), ALLOW_HEADER_VALUE);
+			exchange.getResponseHeaders().set(HttpHeader.ACCESS_CONTROL_ALLOW_HEADERS.value(), HttpHeader.CONTENT_TYPE.value());
 
 			exchange.sendResponseHeaders(HttpStatus.OK.value(), NO_BODY);
 		}
