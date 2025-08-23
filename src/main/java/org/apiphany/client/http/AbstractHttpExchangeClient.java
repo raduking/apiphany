@@ -125,6 +125,9 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	 * @throws UnsupportedOperationException if no compatible content converter is found
 	 */
 	protected <T, U, H> U convertBody(final ApiRequest<T> apiRequest, final ResolvedContentType contentType, final H headers, final Object body) {
+		if (body instanceof byte[] bytes && bytes.length == 0) {
+			return null;
+		}
 		if (String.class.equals(apiRequest.getClassResponseType())) {
 			return JavaObjects.cast(StringHttpContentConverter.instance().from(body, contentType, String.class));
 		}

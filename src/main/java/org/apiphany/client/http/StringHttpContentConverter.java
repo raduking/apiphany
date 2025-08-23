@@ -69,12 +69,12 @@ public class StringHttpContentConverter implements HttpContentConverter<String> 
 	 * @param resolvedContentType the content type of the given object
 	 * @return converted object to string
 	 */
-	private static String from(final Object obj, final ResolvedContentType resolvedContentType) {
+	protected static String from(final Object obj, final ResolvedContentType resolvedContentType) {
 		if (obj instanceof String string) {
 			return string;
 		}
 		if (obj instanceof byte[] bytes) {
-			return new String(bytes, resolvedContentType.charset());
+			return new String(bytes, ResolvedContentType.charset(resolvedContentType));
 		}
 		return Strings.safeToString(obj);
 	}
