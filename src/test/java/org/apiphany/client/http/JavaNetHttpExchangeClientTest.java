@@ -1,6 +1,7 @@
 package org.apiphany.client.http;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.time.Duration;
@@ -8,8 +9,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.apiphany.ApiClient;
+import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
+import org.apiphany.http.ContentType;
 import org.apiphany.http.HttpHeader;
+import org.apiphany.http.HttpMethod;
 import org.apiphany.net.Sockets;
 import org.apiphany.server.KeyValueHttpServer;
 import org.junit.jupiter.api.AfterAll;
@@ -84,6 +88,17 @@ class JavaNetHttpExchangeClientTest {
 		assertThat(headers.get(HttpHeader.ACCESS_CONTROL_ALLOW_HEADERS.value()), equalTo(List.of(HttpHeader.CONTENT_TYPE.value())));
 	}
 
+	@Test
+	void shouldReturnTrace() {
+		ApiResponse<String> response = API_CLIENT.trace();
+
+		Map<String, List<String>> headers = response.getHeaders();
+		assertThat(headers.get(HttpHeader.CONTENT_TYPE.value()), equalTo(List.of(ContentType.MESSAGE_HTTP.value())));
+
+		String body = response.getBody();
+		assertThat(body, startsWith(HttpMethod.TRACE.value()));
+	}
+
 	static class SimpleApiClient extends ApiClient {
 
 		protected SimpleApiClient(final ClientProperties properties) {
@@ -145,7 +160,7 @@ class JavaNetHttpExchangeClientTest {
 					.http()
 					.head()
 					.path(API, "keys", key)
-					.retrieve(String.class)
+					.retrieve()
 					.getHeaders();
 		}
 
@@ -154,8 +169,16 @@ class JavaNetHttpExchangeClientTest {
 					.http()
 					.options()
 					.path(API, "keys")
-					.retrieve(String.class)
+					.retrieve()
 					.getHeaders();
+		}
+
+		public ApiResponse<String> trace() {
+			return client()
+					.http()
+					.trace()
+					.path(API, "keys")
+					.retrieve(String.class);
 		}
 	}
 }

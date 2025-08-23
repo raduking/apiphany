@@ -116,6 +116,14 @@ public enum ContentType {
 	IMAGE_WEBP("image/webp"),
 
 	/**
+	 * Content type for a full HTTP message, used primarily in the response to a TRACE request. The body contains the exact
+	 * HTTP message that was received.
+	 *
+	 * @see <a href="https://tools.ietf.org/html/rfc7230#section-8.3.1">RFC 7230, Section 8.3.1</a>
+	 */
+	MESSAGE_HTTP("message/http"),
+
+	/**
 	 * Multipart form data content type.
 	 */
 	MULTIPART_FORM_DATA("multipart/form-data", StandardCharsets.ISO_8859_1),

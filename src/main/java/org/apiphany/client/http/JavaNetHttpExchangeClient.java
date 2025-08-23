@@ -168,7 +168,7 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 			case Supplier<?> supplier when supplier.get() instanceof InputStream is -> BodyPublishers.ofInputStream(() -> is);
 			case Path path -> HttpException.ifThrows(() -> BodyPublishers.ofFile(path), HttpStatus.BAD_REQUEST);
 			case Object obj when apiRequest.containsHeader(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_JSON) -> BodyPublishers
-					.ofString(JsonBuilder.toJson(obj));
+					.ofString(JsonBuilder.toJson(obj), charset);
 			default -> BodyPublishers.ofString(Strings.safeToString(body), charset);
 		};
 	}
@@ -186,8 +186,6 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 		BodyHandler<?> bodyHandler = null;
 		if (apiRequest.isStream()) {
 			bodyHandler = BodyHandlers.ofInputStream();
-		} else if (!apiRequest.hasGenericType() && String.class.equals(apiRequest.getClassResponseType())) {
-			bodyHandler = BodyHandlers.ofString();
 		} else {
 			bodyHandler = BodyHandlers.ofByteArray();
 		}
