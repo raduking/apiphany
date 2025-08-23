@@ -184,10 +184,10 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	 * @param httpResponse HTTP response object
 	 * @return API response object
 	 */
-	protected <T, U> ApiResponse<U> buildResponse(final ApiRequest<T> apiRequest, final HttpResponse<String> httpResponse) {
+	protected <T, U, R> ApiResponse<U> buildResponse(final ApiRequest<T> apiRequest, final HttpResponse<R> httpResponse) {
 		HttpStatus httpStatus = HttpStatus.from(httpResponse.statusCode());
 		if (httpStatus.isError()) {
-			throw new HttpException(httpStatus, httpResponse.body());
+			throw new HttpException(httpStatus, Strings.safeToString(httpResponse.body()));
 		}
 		Map<String, List<String>> headers = Nullables.apply(httpResponse.headers(), HttpHeaders::map);
 		U body = convertBody(apiRequest, headers, httpResponse.body());
