@@ -75,4 +75,31 @@ public class MapHeaderValues extends HeaderValues {
 		}
 		return Collections.emptyList();
 	}
+
+	/**
+	 * Returns true if the headers contain the given header, false otherwise.
+	 *
+	 * @param <N> header name type
+	 *
+	 * @param header header name
+	 * @param headers existing headers
+	 * @return true if the headers contain the given header, false otherwise
+	 */
+	public static <N> boolean contains(final N header, final Map<String, List<String>> headers) {
+		if (Maps.isEmpty(headers)) {
+			return false;
+		}
+		String headerKey = Strings.safeToString(header);
+
+		if (headers.containsKey(headerKey)) {
+			return true;
+		}
+		for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
+			if (entry.getKey().equalsIgnoreCase(headerKey)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 }

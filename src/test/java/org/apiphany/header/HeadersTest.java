@@ -115,4 +115,25 @@ class HeadersTest {
 
 		assertFalse(result);
 	}
+
+	@Test
+	void shouldReturnTrueWhenCheckingExistingHeaderInHeadersOnContains() {
+		boolean result = Headers.contains(N1, headers);
+
+		assertTrue(result);
+	}
+
+	@Test
+	void shouldReturnTrueWhenCheckingExistingHeaderInHeadersIgnoringCaseOnContains() {
+		boolean result = Headers.contains(N1.toUpperCase(), headers);
+
+		assertTrue(result);
+	}
+
+	@Test
+	void shouldReturnFalseWhenCheckingNonExistingHeaderInHeadersOnContains() {
+		boolean result = Headers.contains("non-existing", headers);
+
+		assertFalse(result);
+	}
 }
