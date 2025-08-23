@@ -30,7 +30,7 @@ public class HttpException extends RuntimeException {
 	 * @param message the detail message explaining the exception.
 	 */
 	public HttpException(final HttpStatus status, final String message) {
-		this(status, "[" + status.toString() + "] " + message, null);
+		this(status, message, null);
 	}
 
 	/**
@@ -62,7 +62,7 @@ public class HttpException extends RuntimeException {
 	 * @param cause the cause of the exception (can be null).
 	 */
 	public HttpException(final HttpStatus status, final String message, final Throwable cause) {
-		super(message, cause);
+		super(statusMessage(status) + " " + message, cause);
 		this.status = status;
 	}
 
@@ -114,5 +114,15 @@ public class HttpException extends RuntimeException {
 	 */
 	public static <T> T ifThrows(final ThrowingSupplier<T> throwingSupplier) {
 		return ifThrows(throwingSupplier, HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
+	/**
+	 * Return the status message string.
+	 *
+	 * @param status HTTP status
+	 * @return the status message string
+	 */
+	public static String statusMessage(final HttpStatus status) {
+		return "[" + status.value() + " " + status.getMessage() + "]";
 	}
 }

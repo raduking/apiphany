@@ -94,6 +94,15 @@ public class HttpClientFluentAdapter {
 	}
 
 	/**
+	 * Sets the request method to OPTIONS.
+	 *
+	 * @return this
+	 */
+	public ApiClientFluentAdapter options() {
+		return apiClientFluentAdapter.method(httpExchangeClient.options());
+	}
+
+	/**
 	 * Sets the request method to TRACE.
 	 *
 	 * @return this

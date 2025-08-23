@@ -4,6 +4,7 @@ import org.apiphany.ApiMessage;
 import org.apiphany.client.ContentConverter;
 import org.apiphany.header.HeaderValuesChain;
 import org.apiphany.http.ContentType;
+import org.apiphany.http.ResolvedContentType;
 import org.apiphany.lang.Strings;
 import org.morphix.reflection.GenericClass;
 
@@ -34,48 +35,48 @@ public class StringHttpContentConverter implements HttpContentConverter<String> 
 	}
 
 	/**
-	 * Converts the given object to a {@link String} representation.
-	 *
-	 * @param obj the object to convert.
-	 * @param dstClass the target class, which must be {@link String}.
-	 * @return the string representation of the object.
+	 * @see #from(Object, ResolvedContentType, Class)
 	 */
 	@Override
-	public String from(final Object obj, final Class<String> dstClass) {
+	public String from(final Object obj, final ResolvedContentType resolvedContentType, final Class<String> dstClass) {
+		return from(obj, resolvedContentType);
+	}
+
+	/**
+	 * @see #from(Object, ResolvedContentType, GenericClass)
+	 */
+	@Override
+	public String from(final Object obj, final ResolvedContentType resolvedContentType, final GenericClass<String> genericDstClass) {
 		return Strings.safeToString(obj);
 	}
 
 	/**
-	 * Converts the given object to a {@link String} representation. This method is functionally equivalent to
-	 * {@link #from(Object, Class)} but supports generic types.
-	 *
-	 * @param obj the object to convert.
-	 * @param genericDstClass the target generic class, which must be {@link String}.
-	 * @return the string representation of the object.
+	 * @see #isConvertible(ApiMessage, ResolvedContentType, Object, HeaderValuesChain)
 	 */
 	@Override
-	public String from(final Object obj, final GenericClass<String> genericDstClass) {
-		return Strings.safeToString(obj);
-	}
-
-	/**
-	 * Determines whether this converter can handle the content of the given {@link ApiMessage} based on the provided
-	 * headers. This converter supports content with the {@code text/plain} content type.
-	 *
-	 * @param <U> the type of the content in the {@link ApiMessage}.
-	 * @param <V> the type of the headers.
-	 * @param message the {@link ApiMessage} containing the content to convert.
-	 * @param headers the headers that may influence the conversion.
-	 * @return true if the content type is {@code text/plain}, false otherwise.
-	 */
-	@Override
-	public <U, V> boolean isConvertible(final ApiMessage<U> message, final V headers, final HeaderValuesChain headerValuesChain) {
-		for (String contentType : getContentTypes(headers, headerValuesChain)) {
-			if (ContentType.TEXT_PLAIN.in(contentType)) {
-				return true;
-			}
+	public <U, H> boolean isConvertible(final ApiMessage<U> message, final ResolvedContentType resolvedContentType, final H headers,
+			final HeaderValuesChain headerValuesChain) {
+		if (null != resolvedContentType) {
+			return ContentType.TEXT_PLAIN == resolvedContentType.contentType();
 		}
 		return false;
+	}
+
+	/**
+	 * Converts the object to {@link String}.
+	 *
+	 * @param obj the object to convert
+	 * @param resolvedContentType the content type of the given object
+	 * @return converted object to string
+	 */
+	private static String from(final Object obj, final ResolvedContentType resolvedContentType) {
+		if (obj instanceof String string) {
+			return string;
+		}
+		if (obj instanceof byte[] bytes) {
+			return new String(bytes, resolvedContentType.charset());
+		}
+		return Strings.safeToString(obj);
 	}
 
 	/**

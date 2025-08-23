@@ -12,8 +12,8 @@ import org.apiphany.client.ContentConverter;
 import org.apiphany.header.HeaderValuesChain;
 import org.apiphany.header.Headers;
 import org.apiphany.header.MapHeaderValues;
-import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpHeaderValues;
+import org.apiphany.http.ResolvedContentType;
 import org.apiphany.http.TracingHeader;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.json.jackson.JacksonJsonHttpContentConverter;
@@ -118,23 +118,24 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	 * @param <H> the type of response headers
 	 *
 	 * @param apiRequest the API request containing response type information
+	 * @param contentType the resolved content type
 	 * @param headers the response headers used for content type negotiation
 	 * @param body the raw response body to be converted
 	 * @return the converted body of type {@code U}
 	 * @throws UnsupportedOperationException if no compatible content converter is found
 	 */
-	protected <T, U, H> U convertBody(final ApiRequest<T> apiRequest, final H headers, final Object body) {
+	protected <T, U, H> U convertBody(final ApiRequest<T> apiRequest, final ResolvedContentType contentType, final H headers, final Object body) {
 		if (String.class.equals(apiRequest.getClassResponseType())) {
-			return JavaObjects.cast(StringHttpContentConverter.instance().from(body, String.class));
+			return JavaObjects.cast(StringHttpContentConverter.instance().from(body, contentType, String.class));
 		}
 		for (ContentConverter<?> contentConverter : getContentConverters()) {
-			if (contentConverter.isConvertible(apiRequest, headers, getHeaderValuesChain())) {
+			if (contentConverter.isConvertible(apiRequest, contentType, headers, getHeaderValuesChain())) {
 				ContentConverter<U> typeConverter = JavaObjects.cast(contentConverter);
-				return ContentConverter.convertBody(typeConverter, apiRequest, body);
+				return ContentConverter.convertBody(typeConverter, apiRequest, contentType, body);
 			}
 		}
 		throw new UnsupportedOperationException("No content converter found to convert response to: " + apiRequest.getResponseType().getTypeName()
-				+ ", for the response content type: " + getHeaderValuesChain().get(HttpHeader.CONTENT_TYPE, headers));
+				+ ", for the response content type: " + contentType);
 	}
 
 	/**
