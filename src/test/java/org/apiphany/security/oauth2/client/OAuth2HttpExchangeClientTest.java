@@ -127,7 +127,7 @@ class OAuth2HttpExchangeClientTest {
 
 			HttpException httpException = assertThrows(HttpException.class, simpleApiClient::getName);
 
-			assertThat(httpException.getMessage(), equalTo("Missing Authorization header."));
+			assertThat(httpException.getMessage(), equalTo("[401 UNAUTHORIZED] Missing Authorization header."));
 		}
 	}
 
@@ -147,7 +147,7 @@ class OAuth2HttpExchangeClientTest {
 
 			HttpException httpException = assertThrows(HttpException.class, simpleApiClient::getName);
 
-			assertThat(httpException.getMessage(), equalTo("Missing Authorization header."));
+			assertThat(httpException.getMessage(), equalTo("[401 UNAUTHORIZED] Missing Authorization header."));
 		}
 	}
 
