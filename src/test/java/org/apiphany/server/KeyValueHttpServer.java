@@ -33,6 +33,8 @@ public class KeyValueHttpServer implements AutoCloseable {
 	public static final String DEFAULT_KEY = "Mumu";
 	public static final String DEFAULT_VALUE = "Cucu";
 
+	private static final int NO_BODY = -1;
+
 	private final HttpServer httpServer;
 	private final ExecutorService executor;
 	private final int port;
@@ -86,7 +88,7 @@ public class KeyValueHttpServer implements AutoCloseable {
 			try {
 				method = HttpMethod.fromString(exchange.getRequestMethod());
 			} catch (IllegalArgumentException e) {
-				exchange.sendResponseHeaders(HttpStatus.METHOD_NOT_ALLOWED.value(), -1);
+				exchange.sendResponseHeaders(HttpStatus.METHOD_NOT_ALLOWED.value(), NO_BODY);
 				return;
 			}
 			switch (method) {
@@ -94,21 +96,25 @@ public class KeyValueHttpServer implements AutoCloseable {
 				case PUT -> handlePut(exchange);
 				case POST -> handlePost(exchange);
 				case DELETE -> handleDelete(exchange);
-				default -> exchange.sendResponseHeaders(HttpStatus.METHOD_NOT_ALLOWED.value(), -1);
+				case PATCH -> handlePatch(exchange);
+				case HEAD -> handleHead(exchange);
+				case OPTIONS -> handleOptions(exchange);
+				case TRACE -> handleTrace(exchange);
+				default -> exchange.sendResponseHeaders(HttpStatus.METHOD_NOT_ALLOWED.value(), NO_BODY);
 			}
 		}
 
 		private void handleGet(HttpExchange exchange) throws IOException {
-            String key = getKeyFromPath(exchange);
-            if (server.map.containsKey(key)) {
-            	sendResponse(exchange, HttpStatus.OK, server.map.get(key));
-            } else {
-            	exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.value(), -1);
-            }
+			String key = getKeyFromPath(exchange);
+			if (server.map.containsKey(key)) {
+				sendResponse(exchange, HttpStatus.OK, server.map.get(key));
+			} else {
+				exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.value(), -1);
+			}
 		}
 
 		private void handlePut(HttpExchange exchange) throws IOException {
-            String key = getKeyFromPath(exchange);
+			String key = getKeyFromPath(exchange);
 			String body = Strings.toString(exchange.getRequestBody(), StandardCharsets.UTF_8);
 			server.map.put(key, body);
 			sendResponse(exchange, HttpStatus.OK, body);
@@ -122,9 +128,59 @@ public class KeyValueHttpServer implements AutoCloseable {
 		}
 
 		private void handleDelete(HttpExchange exchange) throws IOException {
-            String key = getKeyFromPath(exchange);
-            String value = server.map.remove(key);
+			String key = getKeyFromPath(exchange);
+			String value = server.map.remove(key);
 			sendResponse(exchange, HttpStatus.OK, value);
+		}
+
+		private void handlePatch(HttpExchange exchange) throws IOException {
+			String key = getKeyFromPath(exchange);
+			String body = Strings.toString(exchange.getRequestBody(), StandardCharsets.UTF_8);
+			String value = server.map.get(key);
+			String newValue = value + body;
+			server.map.put(key, newValue);
+			sendResponse(exchange, HttpStatus.OK, newValue);
+		}
+
+		private void handleHead(HttpExchange exchange) throws IOException {
+			String key = getKeyFromPath(exchange);
+			if (server.map.containsKey(key)) {
+				exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");
+				String value = server.map.get(key);
+				exchange.getResponseHeaders().set("Content-Length", String.valueOf(value.getBytes(StandardCharsets.UTF_8).length));
+				exchange.sendResponseHeaders(HttpStatus.OK.value(), NO_BODY);
+			} else {
+				exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.value(), NO_BODY);
+			}
+		}
+
+		private static void handleOptions(HttpExchange exchange) throws IOException {
+			// Set CORS headers to allow requests from any origin and the methods we support
+			exchange.getResponseHeaders().set("Allow", "GET, PUT, POST, DELETE, PATCH, HEAD, OPTIONS");
+			exchange.getResponseHeaders().set("Access-Control-Allow-Origin", "*");
+			exchange.getResponseHeaders().set("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE, PATCH, HEAD, OPTIONS");
+			exchange.getResponseHeaders().set("Access-Control-Allow-Headers", "Content-Type");
+
+			exchange.sendResponseHeaders(HttpStatus.OK.value(), NO_BODY);
+		}
+
+		private static void handleTrace(HttpExchange exchange) throws IOException {
+			// Reconstruct the request to echo back
+			StringBuilder requestBuilder = new StringBuilder();
+			requestBuilder.append(exchange.getRequestMethod()).append(" ")
+					.append(exchange.getRequestURI()).append(" ")
+					.append(exchange.getProtocol()).append("\r\n");
+			exchange.getRequestHeaders().forEach((key, values) -> {
+				for (String value : values) {
+					requestBuilder.append(key).append(": ").append(value).append("\r\n");
+				}
+			});
+			requestBuilder.append("\r\n");
+			String responseBody = requestBuilder.toString();
+
+			// Set the Content-Type as specified by HTTP for TRACE
+			exchange.getResponseHeaders().set("Content-Type", "message/http");
+			sendResponse(exchange, HttpStatus.OK, responseBody);
 		}
 
 		private static <T> void sendResponse(final HttpExchange exchange, final HttpStatus status, final T response) throws IOException {
@@ -137,7 +193,7 @@ public class KeyValueHttpServer implements AutoCloseable {
 
 		private static String getKeyFromPath(HttpExchange exchange) {
 			String fullPath = exchange.getRequestURI().getPath();
-            return fullPath.substring((ROUTE_API_KEYS + "/").length());
+			return fullPath.substring((ROUTE_API_KEYS + "/").length());
 		}
 
 	}

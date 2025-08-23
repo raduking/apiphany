@@ -30,7 +30,7 @@ public class HttpException extends RuntimeException {
 	 * @param message the detail message explaining the exception.
 	 */
 	public HttpException(final HttpStatus status, final String message) {
-		this(status, message, null);
+		this(status, "[" + status.toString() + "] " + message, null);
 	}
 
 	/**

@@ -65,7 +65,7 @@ public interface HttpExchangeClient extends ExchangeClient {
 	 * @return the HEAD request method
 	 */
 	default RequestMethod head() {
-		return HttpMethod.GET;
+		return HttpMethod.HEAD;
 	}
 
 	/**
