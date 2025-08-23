@@ -9,6 +9,7 @@ import javax.net.ssl.SSLHandshakeException;
 import org.apiphany.ApiClient;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.http.JavaNetHttpExchangeClient;
+import org.apiphany.http.HttpException;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.net.Sockets;
@@ -69,7 +70,9 @@ class SSLClientTest {
 		}
 
 		assertNotNull(exception);
-		assertThat(exception.getClass(), equalTo(SSLHandshakeException.class));
+		assertThat(exception.getClass(), equalTo(HttpException.class));
+		Throwable cause = exception.getCause();
+		assertThat(cause.getClass(), equalTo(SSLHandshakeException.class));
 	}
 
 	static class SimpleApiClient extends ApiClient {
