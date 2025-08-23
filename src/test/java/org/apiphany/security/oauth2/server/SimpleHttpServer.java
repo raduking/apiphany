@@ -58,6 +58,10 @@ public class SimpleHttpServer implements AutoCloseable {
 		LOGGER.info("Server started on port: {}", port);
 	}
 
+	public SimpleHttpServer(final int port) {
+		this(port, null);
+	}
+
 	@Override
 	public void close() throws Exception {
 		httpServer.stop(0);
@@ -86,14 +90,24 @@ public class SimpleHttpServer implements AutoCloseable {
 
 		@Override
 		public void handle(final HttpExchange exchange) throws IOException {
-			if (HttpMethod.GET.matches(exchange.getRequestMethod())) {
-				if (!isAuthorized(exchange)) {
-					return;
-				}
-				sendResponse(exchange, HttpStatus.OK, SimpleHttpServer.NAME);
-			} else {
+			HttpMethod method;
+			try {
+				method = HttpMethod.fromString(exchange.getRequestMethod());
+			} catch (IllegalArgumentException e) {
 				exchange.sendResponseHeaders(HttpStatus.METHOD_NOT_ALLOWED.value(), -1);
+				return;
 			}
+			if (!isAuthorized(exchange)) {
+				return;
+			}
+			switch (method) {
+				case GET -> handleGet(exchange);
+				default -> exchange.sendResponseHeaders(HttpStatus.METHOD_NOT_ALLOWED.value(), -1);
+			}
+		}
+
+		private static void handleGet(HttpExchange exchange) throws IOException {
+			sendResponse(exchange, HttpStatus.OK, SimpleHttpServer.NAME);
 		}
 
 		private boolean isAuthorized(final HttpExchange exchange) throws IOException {
