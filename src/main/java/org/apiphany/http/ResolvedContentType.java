@@ -99,4 +99,22 @@ public record ResolvedContentType(ContentType contentType, Charset charset) {
 		}
 		return new ResolvedContentType(type, charset);
 	}
+
+	/**
+	 * Returns a new resolved content type given the content type and the encoding.
+	 *
+	 * @param contentType the content type
+	 * @param encoding the character set
+	 * @return a new resolved content type
+	 */
+	public static ResolvedContentType from(final String type, final String encoding) {
+		ContentType contentType = ContentType.fromString(type);
+		Charset charset = null;
+		try {
+			charset = Charset.forName(encoding);
+		} catch (Exception ignored) {
+			// continue
+		}
+		return new ResolvedContentType(contentType, charset);
+	}
 }
