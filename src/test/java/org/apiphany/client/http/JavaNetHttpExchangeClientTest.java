@@ -11,7 +11,7 @@ import java.util.Map;
 import org.apiphany.ApiClient;
 import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
-import org.apiphany.header.MapHeaderValues;
+import org.apiphany.header.Headers;
 import org.apiphany.http.ContentType;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
@@ -75,18 +75,18 @@ class JavaNetHttpExchangeClientTest {
 		String value = API_CLIENT.get(KeyValueHttpServer.DEFAULT_KEY);
 		Map<String, List<String>> headers = API_CLIENT.head(KeyValueHttpServer.DEFAULT_KEY);
 
-		assertThat(headers.get(HttpHeader.CONTENT_LENGTH.value()), equalTo(List.of(String.valueOf(value.length()))));
-		assertThat(headers.get(HttpHeader.CONTENT_TYPE.value()), equalTo(List.of("text/plain; charset=utf-8")));
+		assertThat(Headers.get(HttpHeader.CONTENT_LENGTH, headers), equalTo(List.of(String.valueOf(value.length()))));
+		assertThat(Headers.get(HttpHeader.CONTENT_TYPE, headers), equalTo(List.of("text/plain; charset=utf-8")));
 	}
 
 	@Test
 	void shouldReturnOptions() {
 		Map<String, List<String>> headers = API_CLIENT.options();
 
-		assertThat(MapHeaderValues.get(HttpHeader.ALLOW, headers), equalTo(List.of(KeyValueHttpServer.ALLOW_HEADER_VALUE)));
-		assertThat(MapHeaderValues.get(HttpHeader.ACCESS_CONTROL_ALLOW_ORIGIN, headers), equalTo(List.of("*")));
-		assertThat(MapHeaderValues.get(HttpHeader.ACCESS_CONTROL_ALLOW_METHODS, headers), equalTo(List.of(KeyValueHttpServer.ALLOW_HEADER_VALUE)));
-		assertThat(MapHeaderValues.get(HttpHeader.ACCESS_CONTROL_ALLOW_HEADERS, headers), equalTo(List.of(HttpHeader.CONTENT_TYPE.value())));
+		assertThat(Headers.get(HttpHeader.ALLOW, headers), equalTo(List.of(KeyValueHttpServer.ALLOW_HEADER_VALUE)));
+		assertThat(Headers.get(HttpHeader.ACCESS_CONTROL_ALLOW_ORIGIN, headers), equalTo(List.of("*")));
+		assertThat(Headers.get(HttpHeader.ACCESS_CONTROL_ALLOW_METHODS, headers), equalTo(List.of(KeyValueHttpServer.ALLOW_HEADER_VALUE)));
+		assertThat(Headers.get(HttpHeader.ACCESS_CONTROL_ALLOW_HEADERS, headers), equalTo(List.of(HttpHeader.CONTENT_TYPE.value())));
 	}
 
 	@Test

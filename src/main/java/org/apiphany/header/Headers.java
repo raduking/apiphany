@@ -128,4 +128,16 @@ public interface Headers {
 		return MapHeaderValues.contains(headerName, headers);
 	}
 
+	/**
+	 * Retrieves the values of a specific header from the provided {@link Map} of headers.
+	 *
+	 * @param <N> header name type
+	 *
+	 * @param header the name of the header whose values are to be retrieved.
+	 * @param headers the map of headers, where each key is a header name and the value is a list of header values.
+	 * @return a list of values for the specified header. If the header is not found, an empty list is returned.
+	 */
+	public static <N> List<String> get(final N header, final Map<String, List<String>> headers) {
+		return MapHeaderValues.get(header, headers);
+	}
 }
