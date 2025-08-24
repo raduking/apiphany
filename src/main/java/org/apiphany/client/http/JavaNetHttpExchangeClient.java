@@ -212,7 +212,7 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 		ResolvedContentType contentType = ResolvedContentType.parseHeader(contentTypes);
 
 		if (httpStatus.isError()) {
-			throw new HttpException(httpStatus, StringHttpContentConverter.instance().from(httpResponse.body(), contentType, String.class));
+			throw new HttpException(httpStatus, StringHttpContentConverter.from(httpResponse.body(), contentType));
 		}
 		U body = convertBody(apiRequest, contentType, headers, httpResponse.body());
 
