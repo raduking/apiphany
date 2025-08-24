@@ -103,7 +103,7 @@ public record ResolvedContentType(ContentType contentType, Charset charset) {
 	/**
 	 * Returns a new resolved content type given the content type and the encoding.
 	 *
-	 * @param contentType the content type
+	 * @param type the content type
 	 * @param encoding the character set
 	 * @return a new resolved content type
 	 */
