@@ -101,5 +101,4 @@ public class MapHeaderValues extends HeaderValues {
 		}
 		return false;
 	}
-
 }

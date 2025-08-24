@@ -11,6 +11,7 @@ import java.util.Map;
 import org.apiphany.ApiClient;
 import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
+import org.apiphany.header.MapHeaderValues;
 import org.apiphany.http.ContentType;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
@@ -82,10 +83,10 @@ class JavaNetHttpExchangeClientTest {
 	void shouldReturnOptions() {
 		Map<String, List<String>> headers = API_CLIENT.options();
 
-		assertThat(headers.get(HttpHeader.ALLOW.value()), equalTo(List.of(KeyValueHttpServer.ALLOW_HEADER_VALUE)));
-		assertThat(headers.get(HttpHeader.ACCESS_CONTROL_ALLOW_ORIGIN.value()), equalTo(List.of("*")));
-		assertThat(headers.get(HttpHeader.ACCESS_CONTROL_ALLOW_METHODS.value()), equalTo(List.of(KeyValueHttpServer.ALLOW_HEADER_VALUE)));
-		assertThat(headers.get(HttpHeader.ACCESS_CONTROL_ALLOW_HEADERS.value()), equalTo(List.of(HttpHeader.CONTENT_TYPE.value())));
+		assertThat(MapHeaderValues.get(HttpHeader.ALLOW, headers), equalTo(List.of(KeyValueHttpServer.ALLOW_HEADER_VALUE)));
+		assertThat(MapHeaderValues.get(HttpHeader.ACCESS_CONTROL_ALLOW_ORIGIN, headers), equalTo(List.of("*")));
+		assertThat(MapHeaderValues.get(HttpHeader.ACCESS_CONTROL_ALLOW_METHODS, headers), equalTo(List.of(KeyValueHttpServer.ALLOW_HEADER_VALUE)));
+		assertThat(MapHeaderValues.get(HttpHeader.ACCESS_CONTROL_ALLOW_HEADERS, headers), equalTo(List.of(HttpHeader.CONTENT_TYPE.value())));
 	}
 
 	@Test
@@ -101,6 +102,8 @@ class JavaNetHttpExchangeClientTest {
 
 	static class SimpleApiClient extends ApiClient {
 
+		private static final String KEYS = "keys";
+
 		protected SimpleApiClient(final ClientProperties properties) {
 			super("http://localhost:" + API_SERVER.getPort(),
 					with(JavaNetHttpExchangeClient.class)
@@ -111,7 +114,7 @@ class JavaNetHttpExchangeClientTest {
 			return client()
 					.http()
 					.get()
-					.path(API, "keys", key)
+					.path(API, KEYS, key)
 					.retrieve(String.class)
 					.orNull();
 		}
@@ -120,7 +123,7 @@ class JavaNetHttpExchangeClientTest {
 			return client()
 					.http()
 					.put()
-					.path(API, "keys", key)
+					.path(API, KEYS, key)
 					.body(value)
 					.retrieve(String.class)
 					.orNull();
@@ -130,7 +133,7 @@ class JavaNetHttpExchangeClientTest {
 			return client()
 					.http()
 					.post()
-					.path(API, "keys")
+					.path(API, KEYS)
 					.body(key + ":" + value)
 					.retrieve(String.class)
 					.orNull();
@@ -140,7 +143,7 @@ class JavaNetHttpExchangeClientTest {
 			return client()
 					.http()
 					.delete()
-					.path(API, "keys", key)
+					.path(API, KEYS, key)
 					.retrieve(String.class)
 					.orNull();
 		}
@@ -149,7 +152,7 @@ class JavaNetHttpExchangeClientTest {
 			return client()
 					.http()
 					.patch()
-					.path(API, "keys", key)
+					.path(API, KEYS, key)
 					.body(appended)
 					.retrieve(String.class)
 					.orNull();
@@ -159,7 +162,7 @@ class JavaNetHttpExchangeClientTest {
 			return client()
 					.http()
 					.head()
-					.path(API, "keys", key)
+					.path(API, KEYS, key)
 					.retrieve()
 					.getHeaders();
 		}
@@ -168,7 +171,7 @@ class JavaNetHttpExchangeClientTest {
 			return client()
 					.http()
 					.options()
-					.path(API, "keys")
+					.path(API, KEYS)
 					.retrieve()
 					.getHeaders();
 		}
@@ -177,7 +180,7 @@ class JavaNetHttpExchangeClientTest {
 			return client()
 					.http()
 					.trace()
-					.path(API, "keys")
+					.path(API, KEYS)
 					.retrieve(String.class);
 		}
 	}

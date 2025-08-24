@@ -209,12 +209,12 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 		HttpStatus httpStatus = HttpStatus.from(httpResponse.statusCode());
 		Map<String, List<String>> headers = Nullables.apply(httpResponse.headers(), HttpHeaders::map);
 		List<String> contentTypes = getHeaderValuesChain().get(HttpHeader.CONTENT_TYPE, headers);
-		ResolvedContentType resolvedContentType = ResolvedContentType.parseHeader(contentTypes);
+		ResolvedContentType contentType = ResolvedContentType.parseHeader(contentTypes);
 
 		if (httpStatus.isError()) {
-			throw new HttpException(httpStatus, StringHttpContentConverter.instance().from(httpResponse.body(), resolvedContentType, String.class));
+			throw new HttpException(httpStatus, StringHttpContentConverter.instance().from(httpResponse.body(), contentType, String.class));
 		}
-		U body = convertBody(apiRequest, resolvedContentType, headers, httpResponse.body());
+		U body = convertBody(apiRequest, contentType, headers, httpResponse.body());
 
 		return ApiResponse.create(body)
 				.status(httpStatus)
