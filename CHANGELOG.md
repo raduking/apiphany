@@ -8,6 +8,7 @@ Renamed `ExchangeClient.getRedactedHeaderPredicate` to `ExchangeClient.isRedacte
 Added `ResolvedContentType` for content types resolved from API responses.
 Changed the default body handler for responses in `JavaNetHttpExchangeClient` from `String` to `byte[]`.
 Changed some `ContentConverter` methods to include the `ResolvedContentType`.
+Changed the `JacksonJsonBuilder.fromJson` to accept generic types so it can parse both `String` and `byte[]`.
 
 ---
 

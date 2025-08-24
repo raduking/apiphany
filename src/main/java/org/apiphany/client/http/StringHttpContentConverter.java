@@ -1,5 +1,8 @@
 package org.apiphany.client.http;
 
+import java.io.InputStream;
+import java.nio.charset.Charset;
+
 import org.apiphany.ApiMessage;
 import org.apiphany.client.ContentConverter;
 import org.apiphany.header.HeaderValuesChain;
@@ -69,12 +72,16 @@ public class StringHttpContentConverter implements HttpContentConverter<String> 
 	 * @param resolvedContentType the content type of the given object
 	 * @return converted object to string
 	 */
-	protected static String from(final Object obj, final ResolvedContentType resolvedContentType) {
+	public static String from(final Object obj, final ResolvedContentType resolvedContentType) {
 		if (obj instanceof String string) {
 			return string;
 		}
+		Charset charset = ResolvedContentType.charset(resolvedContentType);
 		if (obj instanceof byte[] bytes) {
-			return new String(bytes, ResolvedContentType.charset(resolvedContentType));
+			return new String(bytes, charset);
+		}
+		if (obj instanceof InputStream is) {
+			return Strings.toString(is, charset);
 		}
 		return Strings.safeToString(obj);
 	}

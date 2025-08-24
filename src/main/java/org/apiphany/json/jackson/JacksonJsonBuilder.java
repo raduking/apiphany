@@ -35,8 +35,8 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
  * class is used to uniformly serialize/de-serialize objects across the entire project.
  * <p>
  * For serialization to {@link String} use {@link #toJson(Object)}.<br/>
- * For de-serialization {@link Object} use {@link #fromJson(String, Class)} or {@link #fromJson(String, GenericClass)}
- * or {@link #fromJson(String, TypeReference)}.
+ * For de-serialization {@link Object} use {@link #fromJson(Object, Class)} or {@link #fromJson(Object, GenericClass)}
+ * or {@link #fromJson(Object, TypeReference)}.
  * <p>
  * To indent the JSON output, use the {@code json-builder.to-json.indent-output} property set to {@code true}.
  * <p>
@@ -51,6 +51,11 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 	 * Logger instance.
 	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(JacksonJsonBuilder.class);
+
+	/**
+	 * The custom serialization module name.
+	 */
+	public static final String APIPHANY_MODULE = "apiphany";
 
 	/**
 	 * Singleton instance holder.
@@ -95,81 +100,57 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 	}
 
 	/**
-	 * Returns an object from the JSON string.
+	 * Returns an object from the JSON input object.
 	 *
-	 * @param <T> type of the object
+	 * @param <O> type of the input object
+	 * @param <T> type of the resulting object
 	 *
-	 * @param json JSON string
-	 * @param cls class of the object
-	 * @return an object from the JSON string
+	 * @param json JSON input object
+	 * @param cls class of the output object
+	 * @return an object from the JSON input object
 	 */
-	public static <T> T fromJson(final String json, final Class<T> cls) {
-		return InstanceHolder.INSTANCE.fromJsonString(json, cls);
+	public static <O, T> T fromJson(final O json, final Class<T> cls) {
+		return switch (json) {
+			case String string -> InstanceHolder.INSTANCE.fromJsonString(string, cls);
+			case byte[] bytes -> InstanceHolder.INSTANCE.fromJsonBytes(bytes, cls);
+			default -> throw unsupportedJsonInputType(json);
+		};
 	}
 
 	/**
-	 * Returns an object from the JSON string.
+	 * Returns an object from the JSON input object.
 	 *
-	 * @param <T> type of the object
+	 * @param <O> type of the input object
+	 * @param <T> type of the resulting object
 	 *
-	 * @param json JSON string
-	 * @param genericClass generic class wrapper for the type of the generic object
-	 * @return an object from the JSON string
+	 * @param json JSON input object
+	 * @param genericClass generic class wrapper for the type of the generic output object
+	 * @return an object from the JSON input object
 	 */
-	public static <T> T fromJson(final String json, final GenericClass<T> genericClass) {
-		return InstanceHolder.INSTANCE.fromJsonString(json, genericClass);
+	public static <O, T> T fromJson(final O json, final GenericClass<T> genericClass) {
+		return switch (json) {
+			case String string -> InstanceHolder.INSTANCE.fromJsonString(string, genericClass);
+			case byte[] bytes -> InstanceHolder.INSTANCE.fromJsonBytes(bytes, genericClass);
+			default -> throw unsupportedJsonInputType(json);
+		};
 	}
 
 	/**
-	 * Returns an object from the JSON string.
+	 * Returns an object from the JSON input object.
 	 *
-	 * @param <T> type of the object
+	 * @param <O> type of the input object
+	 * @param <T> type of the resulting object
 	 *
-	 * @param json JSON string
-	 * @param typeReference type of the object
-	 * @return an object from the JSON string
+	 * @param json JSON input object
+	 * @param typeReference type of the output object
+	 * @return an object from the JSON input object
 	 */
-	public static <T> T fromJson(final String json, final TypeReference<T> typeReference) {
-		return InstanceHolder.INSTANCE.fromJsonString(json, typeReference);
-	}
-
-	/**
-	 * Returns an object from the JSON byte array.
-	 *
-	 * @param <T> type of the object
-	 *
-	 * @param json JSON byte array
-	 * @param cls class of the object
-	 * @return an object from the JSON byte array
-	 */
-	public static <T> T fromJson(final byte[] json, final Class<T> cls) {
-		return InstanceHolder.INSTANCE.fromJsonBytes(json, cls);
-	}
-
-	/**
-	 * Returns an object from the JSON byte array.
-	 *
-	 * @param <T> type of the object
-	 *
-	 * @param json JSON byte array
-	 * @param genericClass generic class wrapper for the type of the generic object
-	 * @return an object from the JSON byte array
-	 */
-	public static <T> T fromJson(final byte[] json, final GenericClass<T> genericClass) {
-		return InstanceHolder.INSTANCE.fromJsonBytes(json, genericClass);
-	}
-
-	/**
-	 * Returns an object from the JSON byte array.
-	 *
-	 * @param <T> type of the object
-	 *
-	 * @param json JSON byte array
-	 * @param typeReference type of the object
-	 * @return an object from the JSON byte array
-	 */
-	public static <T> T fromJson(final byte[] json, final TypeReference<T> typeReference) {
-		return InstanceHolder.INSTANCE.fromJsonBytes(json, typeReference);
+	public static <O, T> T fromJson(final O json, final TypeReference<T> typeReference) {
+		return switch (json) {
+			case String string -> InstanceHolder.INSTANCE.fromJsonString(string, typeReference);
+			case byte[] bytes -> InstanceHolder.INSTANCE.fromJsonBytes(bytes, typeReference);
+			default -> throw unsupportedJsonInputType(json);
+		};
 	}
 
 	/**
@@ -375,7 +356,7 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 	 * @return simple module
 	 */
 	public static SimpleModule customSerializationModule() {
-		return new SimpleModule("apiphany")
+		return new SimpleModule(APIPHANY_MODULE)
 				.addSerializer(RequestMethod.class, new RequestMethodSerializer())
 				.addDeserializer(RequestMethod.class, new RequestMethodDeserializer());
 	}
@@ -392,4 +373,15 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 		indentation.accept(SerializationFeature.INDENT_OUTPUT);
 	}
 
+	/**
+	 * Returns an {@link UnsupportedOperationException} for unsupported JSON input types.
+	 *
+	 * @param <O> JSON input type
+	 *
+	 * @param json JSON input object
+	 * @return the exception to be thrown when the input type is not supported
+	 */
+	protected static <O> UnsupportedOperationException unsupportedJsonInputType(final O json) {
+		return new UnsupportedOperationException("Unsupported JSON input type: " + json.getClass());
+	}
 }
