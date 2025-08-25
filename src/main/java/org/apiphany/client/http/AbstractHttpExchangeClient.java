@@ -118,27 +118,27 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	 * @param <H> the type of response headers
 	 *
 	 * @param apiRequest the API request containing response type information
-	 * @param contentType the HTTP content type
+	 * @param mimeType the content type
 	 * @param headers the response headers used for content type negotiation
 	 * @param body the raw response body to be converted
 	 * @return the converted body of type {@code U}
 	 * @throws UnsupportedOperationException if no compatible content converter is found
 	 */
-	protected <T, U, H> U convertBody(final ApiRequest<T> apiRequest, final ApiMimeType contentType, final H headers, final Object body) {
+	protected <T, U, H> U convertBody(final ApiRequest<T> apiRequest, final ApiMimeType mimeType, final H headers, final Object body) {
 		if (body instanceof byte[] bytes && bytes.length == 0) {
 			return null;
 		}
 		if (String.class.equals(apiRequest.getClassResponseType())) {
-			return JavaObjects.cast(StringHttpContentConverter.instance().from(body, contentType, String.class));
+			return JavaObjects.cast(StringHttpContentConverter.instance().from(body, mimeType, String.class));
 		}
 		for (ContentConverter<?> contentConverter : getContentConverters()) {
-			if (contentConverter.isConvertible(apiRequest, contentType, headers, getHeaderValuesChain())) {
+			if (contentConverter.isConvertible(apiRequest, mimeType, headers, getHeaderValuesChain())) {
 				ContentConverter<U> typeConverter = JavaObjects.cast(contentConverter);
-				return ContentConverter.convertBody(typeConverter, apiRequest, contentType, body);
+				return ContentConverter.convertBody(typeConverter, apiRequest, mimeType, body);
 			}
 		}
 		throw new UnsupportedOperationException("No content converter found to convert response to: " + apiRequest.getResponseType().getTypeName()
-				+ ", for the response content type: " + contentType);
+				+ ", for the response content type: " + mimeType);
 	}
 
 	/**
