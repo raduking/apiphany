@@ -1,19 +1,20 @@
-package org.apiphany.http;
+package org.apiphany.io;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.function.Supplier;
 
+import org.apiphany.ApiMimeType;
 import org.apiphany.lang.Strings;
 import org.morphix.lang.Enums;
 
 /**
- * Represents the values for the {@link HttpHeader#CONTENT_TYPE} header. This enum provides a set of commonly used MIME
- * types and their associated character sets.
+ * This enum provides a set of commonly used MIME types and their associated character sets.
  *
  * @author Radu Sebastian LAZIN
  */
-public enum ContentType {
+public enum ContentType implements ApiMimeType {
 
 	/**
 	 * Atom XML content type.
@@ -186,8 +187,8 @@ public enum ContentType {
 	/**
 	 * Constructs a {@link ContentType} with a MIME type and a character set.
 	 *
-	 * @param value the MIME type value.
-	 * @param charset the character set.
+	 * @param value the MIME type value
+	 * @param charset the character set
 	 */
 	ContentType(final String value, final Charset charset) {
 		this.value = value;
@@ -197,7 +198,7 @@ public enum ContentType {
 	/**
 	 * Constructs a {@link ContentType} with a MIME type and no character set.
 	 *
-	 * @param value the MIME type value.
+	 * @param value the MIME type value
 	 */
 	ContentType(final String value) {
 		this(value, null);
@@ -206,8 +207,9 @@ public enum ContentType {
 	/**
 	 * Returns the MIME type value of this content type.
 	 *
-	 * @return the MIME type value.
+	 * @return the MIME type value
 	 */
+	@Override
 	public String value() {
 		return value;
 	}
@@ -223,20 +225,40 @@ public enum ContentType {
 	/**
 	 * Returns the character set associated with this content type, if applicable.
 	 *
-	 * @return the character set, or null if not specified.
+	 * @return the character set, or null if not specified
 	 */
-	public Charset getCharset() {
+	@Override
+	public Charset charset() {
 		return charset;
+	}
+
+	/**
+	 * @see #contentType()
+	 */
+	@Override
+	public ContentType contentType() {
+		return this;
 	}
 
 	/**
 	 * Returns a {@link ContentType} enum from a string representation of the MIME type.
 	 *
-	 * @param contentType the MIME type as a string.
-	 * @return the corresponding {@link ContentType} enum, or null if no match is found.
+	 * @param contentType the MIME type as a string
+	 * @return the corresponding {@link ContentType} enum, or null if no match is found
 	 */
 	public static ContentType fromString(final String contentType) {
 		return Enums.fromString(contentType, NAME_MAP, values());
+	}
+
+	/**
+	 * Returns a {@link ContentType} enum from a string representation of the MIME type.
+	 *
+	 * @param contentType the MIME type as a string
+	 * @param defaultValueSupplier the default value supplied when content type cannot be parsed
+	 * @return the corresponding {@link ContentType} enum, or null if no match is found
+	 */
+	public static ContentType fromString(final String contentType, final Supplier<ContentType> defaultValueSupplier) {
+		return Enums.from(contentType, NAME_MAP, defaultValueSupplier);
 	}
 
 	/**

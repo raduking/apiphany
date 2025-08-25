@@ -4,10 +4,10 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 
 import org.apiphany.ApiMessage;
+import org.apiphany.ApiMimeType;
 import org.apiphany.client.ContentConverter;
 import org.apiphany.header.HeaderValuesChain;
-import org.apiphany.http.ContentType;
-import org.apiphany.http.ResolvedContentType;
+import org.apiphany.io.ContentType;
 import org.apiphany.lang.Strings;
 import org.morphix.reflection.GenericClass;
 
@@ -38,29 +38,29 @@ public class StringHttpContentConverter implements HttpContentConverter<String> 
 	}
 
 	/**
-	 * @see #from(Object, ResolvedContentType, Class)
+	 * @see #from(Object, ApiMimeType, Class)
 	 */
 	@Override
-	public String from(final Object obj, final ResolvedContentType resolvedContentType, final Class<String> dstClass) {
-		return from(obj, resolvedContentType);
+	public String from(final Object obj, final ApiMimeType mimeType, final Class<String> dstClass) {
+		return from(obj, mimeType);
 	}
 
 	/**
-	 * @see #from(Object, ResolvedContentType, GenericClass)
+	 * @see #from(Object, ApiMimeType, GenericClass)
 	 */
 	@Override
-	public String from(final Object obj, final ResolvedContentType resolvedContentType, final GenericClass<String> genericDstClass) {
+	public String from(final Object obj, final ApiMimeType mimeType, final GenericClass<String> genericDstClass) {
 		return Strings.safeToString(obj);
 	}
 
 	/**
-	 * @see #isConvertible(ApiMessage, ResolvedContentType, Object, HeaderValuesChain)
+	 * @see #isConvertible(ApiMessage, ApiMimeType, Object, HeaderValuesChain)
 	 */
 	@Override
-	public <U, H> boolean isConvertible(final ApiMessage<U> message, final ResolvedContentType resolvedContentType, final H headers,
+	public <U, H> boolean isConvertible(final ApiMessage<U> message, final ApiMimeType mimeType, final H headers,
 			final HeaderValuesChain headerValuesChain) {
-		if (null != resolvedContentType) {
-			return ContentType.TEXT_PLAIN == resolvedContentType.contentType();
+		if (null != mimeType) {
+			return ContentType.TEXT_PLAIN == mimeType.contentType();
 		}
 		return false;
 	}
@@ -69,14 +69,14 @@ public class StringHttpContentConverter implements HttpContentConverter<String> 
 	 * Converts the object to {@link String}.
 	 *
 	 * @param obj the object to convert
-	 * @param resolvedContentType the content type of the given object
+	 * @param mimeType the content type of the given object
 	 * @return converted object to string
 	 */
-	public static String from(final Object obj, final ResolvedContentType resolvedContentType) {
+	public static String from(final Object obj, final ApiMimeType mimeType) {
 		if (obj instanceof String string) {
 			return string;
 		}
-		Charset charset = ResolvedContentType.charset(resolvedContentType);
+		Charset charset = ApiMimeType.charset(mimeType);
 		if (obj instanceof byte[] bytes) {
 			return new String(bytes, charset);
 		}

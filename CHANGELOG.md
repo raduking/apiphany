@@ -4,6 +4,12 @@
 
 `1.0.6`
 
+Added `ApiMimeType` as an interface to represent a mime type.
+Added `ApiMimeType.parseCharset` to parse a `Charset`.
+Moved `ContentType` from `http` package to `io` package.
+Changed `ContentType` to implement `ApiMimeType`.
+Renamed `ResolvedContentType` to `HttpContentType` to better match its purpose.
+
 ---
 
 `1.0.5`
