@@ -9,6 +9,7 @@ import org.apiphany.io.ContentType;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Lists;
 import org.morphix.lang.Nullables;
+import org.morphix.reflection.Constructors;
 
 /**
  * Represents a HTTP content type when the character set differs from the one already defined. This is useful for
@@ -18,6 +19,26 @@ import org.morphix.lang.Nullables;
  * @author Radu Sebastian LAZIN
  */
 public class HttpContentType implements ApiMimeType {
+
+	/**
+	 * Name space for parameter names.
+	 *
+	 * @author Radu Sebastian LAZIN
+	 */
+	public static class Param {
+
+		/**
+		 * Character set parameter name.
+		 */
+		public static final String CHARSET = "charset";
+
+		/**
+		 * Hide constructor.
+		 */
+		private Param() {
+			throw Constructors.unsupportedOperationException();
+		}
+	}
 
 	/**
 	 * The content type.
@@ -92,7 +113,15 @@ public class HttpContentType implements ApiMimeType {
 	 */
 	@Override
 	public String value() {
-		return getContentType().value();
+		StringBuilder sb = new StringBuilder();
+		sb.append(getContentType().toString());
+		if (null != getCharset()) {
+			sb.append("; ")
+					.append(Param.CHARSET)
+					.append("=")
+					.append(getCharset());
+		}
+		return sb.toString();
 	}
 
 	/**
@@ -101,6 +130,14 @@ public class HttpContentType implements ApiMimeType {
 	@Override
 	public ContentType contentType() {
 		return getContentType();
+	}
+
+	/**
+	 * @see #toString()
+	 */
+	@Override
+	public String toString() {
+		return value();
 	}
 
 	/**
@@ -146,7 +183,7 @@ public class HttpContentType implements ApiMimeType {
 		int index = 0;
 		while (null == charset && index++ < parts.length) {
 			String[] param = parts[index].trim().split("=", 2);
-			if (param.length == 2 && "charset".equalsIgnoreCase(param[0])) {
+			if (param.length == 2 && Param.CHARSET.equalsIgnoreCase(param[0])) {
 				charset = ApiMimeType.parseCharset(param[1].trim());
 			}
 		}
