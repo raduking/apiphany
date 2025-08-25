@@ -20,12 +20,12 @@ import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
-import org.apiphany.http.ContentType;
 import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
-import org.apiphany.http.ResolvedContentType;
+import org.apiphany.io.ContentType;
+import org.apiphany.http.HttpContentType;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Maps;
@@ -209,7 +209,7 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 		HttpStatus httpStatus = HttpStatus.from(httpResponse.statusCode());
 		Map<String, List<String>> headers = Nullables.apply(httpResponse.headers(), HttpHeaders::map);
 		List<String> contentTypes = getHeaderValuesChain().get(HttpHeader.CONTENT_TYPE, headers);
-		ResolvedContentType contentType = ResolvedContentType.parseHeader(contentTypes);
+		HttpContentType contentType = HttpContentType.parseHeader(contentTypes);
 
 		if (httpStatus.isError()) {
 			throw new HttpException(httpStatus, StringHttpContentConverter.from(httpResponse.body(), contentType));

@@ -12,11 +12,11 @@ import java.util.Objects;
 import java.util.UUID;
 
 import org.apiphany.RequestParameters;
-import org.apiphany.http.ContentType;
 import org.apiphany.http.HttpAuthScheme;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
+import org.apiphany.io.ContentType;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.security.AuthenticationToken;
