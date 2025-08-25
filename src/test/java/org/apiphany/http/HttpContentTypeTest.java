@@ -30,4 +30,24 @@ class HttpContentTypeTest {
 		assertThat(ct.getContentType(), equalTo(ContentType.APPLICATION_JSON));
 		assertThat(ct.getCharset(), equalTo(StandardCharsets.ISO_8859_1));
 	}
+
+	@Test
+	void shouldTransformToStringAndParseBack() {
+		HttpContentType existing = HttpContentType.of(ContentType.APPLICATION_JSON, StandardCharsets.ISO_8859_1);
+
+		HttpContentType ct = HttpContentType.parseHeaderValue(existing.toString());
+
+		assertThat(ct.getContentType(), equalTo(ContentType.APPLICATION_JSON));
+		assertThat(ct.getCharset(), equalTo(StandardCharsets.ISO_8859_1));
+	}
+
+	@Test
+	void shouldBuildFromStringTransformToStringAndParseBack() {
+		HttpContentType existing = HttpContentType.from("application/json", "iso-8859-1");
+
+		HttpContentType ct = HttpContentType.parseHeaderValue(existing.toString());
+
+		assertThat(ct.getContentType(), equalTo(ContentType.APPLICATION_JSON));
+		assertThat(ct.getCharset(), equalTo(StandardCharsets.ISO_8859_1));
+	}
 }
