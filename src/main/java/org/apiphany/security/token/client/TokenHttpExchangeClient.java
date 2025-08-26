@@ -16,6 +16,7 @@ import org.apiphany.http.HttpHeader;
 import org.apiphany.lang.ScopedResource;
 import org.apiphany.security.AuthenticationException;
 import org.apiphany.security.AuthenticationToken;
+import org.apiphany.security.AuthenticationTokenProvider;
 import org.apiphany.security.AuthenticationType;
 import org.apiphany.security.token.TokenProperties;
 import org.morphix.lang.Nullables;
@@ -27,7 +28,7 @@ import org.morphix.lang.Nullables;
  *
  * @author Radu Sebastian LAZIN
  */
-public class TokenHttpExchangeClient extends AbstractHttpExchangeClient {
+public class TokenHttpExchangeClient extends AbstractHttpExchangeClient implements AuthenticationTokenProvider {
 
 	/**
 	 * Default value for token expiration (request) - 30 minutes.
@@ -129,9 +130,6 @@ public class TokenHttpExchangeClient extends AbstractHttpExchangeClient {
 	@Override
 	public <T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest) {
 		AuthenticationToken token = getAuthenticationToken();
-		if (null == token) {
-			throw new AuthenticationException("Missing authentication token");
-		}
 		String headerValue = HeaderValues.value(getAuthenticationScheme(), token.getAccessToken());
 		Headers.addTo(apiRequest.getHeaders(), HttpHeader.AUTHORIZATION, headerValue);
 		return exchangeClient.unwrap().exchange(apiRequest);
@@ -184,7 +182,11 @@ public class TokenHttpExchangeClient extends AbstractHttpExchangeClient {
 	 *
 	 * @return the authentication token
 	 */
+	@Override
 	public AuthenticationToken getAuthenticationToken() {
+		if (null == authenticationToken) {
+			throw new AuthenticationException("Missing authentication token");
+		}
 		return authenticationToken;
 	}
 

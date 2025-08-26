@@ -9,6 +9,7 @@ Added `ApiMimeType.parseCharset` to parse a `Charset`.
 Moved `ContentType` from `http` package to `io` package.
 Changed `ContentType` to implement `ApiMimeType`.
 Renamed `ResolvedContentType` to `HttpContentType` to better match its purpose.
+Added `AuthenticationTokenProvider` interface to declare authentication token providers.
 
 ---
 
