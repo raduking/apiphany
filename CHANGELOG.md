@@ -10,6 +10,9 @@ Moved `ContentType` from `http` package to `io` package.
 Changed `ContentType` to implement `ApiMimeType`.
 Renamed `ResolvedContentType` to `HttpContentType` to better match its purpose.
 Added `AuthenticationTokenProvider` interface to declare authentication token providers.
+Changed `OAuth2ApiClient` to respect the `AuthenticationTokenProvider` contract to throw `AuthenticationException` when token retrieval fails.
+Added `ApiResponse.orThrow` to throw an exception if the request fails.
+Added `ApiResponse.orRethrow` to re-throw the exception wrapped into another exception via an exception wrapping function.
 
 ---
 

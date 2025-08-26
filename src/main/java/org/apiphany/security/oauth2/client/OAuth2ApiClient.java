@@ -11,6 +11,7 @@ import org.apiphany.client.ExchangeClientBuilder;
 import org.apiphany.http.HttpAuthScheme;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.io.ContentType;
+import org.apiphany.security.AuthenticationException;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationTokenProvider;
 import org.apiphany.security.oauth2.AuthorizationGrantType;
@@ -113,7 +114,7 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 				.header(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_FORM_URLENCODED)
 				.header(HttpHeader.AUTHORIZATION, clientRegistration.getAuthorizationHeaderValue(HttpAuthScheme.BASIC))
 				.retrieve(AuthenticationToken.class)
-				.orNull();
+				.orRethrow(AuthenticationException::new);
 	}
 
 	/**
@@ -134,6 +135,6 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 				.body(RequestParameters.asString(RequestParameters.encode(params)))
 				.header(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_FORM_URLENCODED)
 				.retrieve(AuthenticationToken.class)
-				.orNull();
+				.orRethrow(AuthenticationException::new);
 	}
 }
