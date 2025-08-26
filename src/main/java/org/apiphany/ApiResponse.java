@@ -56,7 +56,9 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	private ApiResponse(final Builder<T> builder) {
 		super(builder.body, builder.headers);
 		this.status = builder.status;
-		this.errorMessage = Nullables.nonNullOrDefault(builder.errorMessagePrefix, "") + builder.errorMessage;
+		this.errorMessage = null != builder.errorMessage
+				? Nullables.nonNullOrDefault(builder.errorMessagePrefix, "") + builder.errorMessage
+				: null;
 		this.exception = builder.exception;
 		this.exchangeClient = builder.exchangeClient;
 	}
@@ -111,7 +113,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	}
 
 	/**
-	 * Returns the response body or the given default if the request wasn't 2xx successful or null otherwise.
+	 * Returns the response body or null if the request wasn't 2xx successful.
 	 *
 	 * @return response body or null
 	 */
@@ -212,12 +214,32 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	}
 
 	/**
+	 * Returns the response body or throws the given {@link Throwable} if the request wasn't 2xx successful.
+	 *
+	 * @param t throwable to throw
+	 * @return response body or throws the given throwable
+	 */
+	public T orThrow(final Throwable t) {
+		return isSuccessful() ? getBody() : Unchecked.reThrow(t);
+	}
+
+	/**
 	 * Re-throws the exception in the response or {@code null} if the response has no exception.
 	 *
 	 * @return null if the response has no errors or re-throws the exception
 	 */
 	public T orRethrow() {
-		return hasException() ? Unchecked.reThrow(getException()) : orNull();
+		return hasException() ? orThrow(getException()) : orNull();
+	}
+
+	/**
+	 * Re-throws the exception in the response or {@code null} if the response has no exception.
+	 *
+	 * @param exceptionWrappingFunction function to wrap the existing exception into a new one
+	 * @return null if the response has no errors or re-throws the exception
+	 */
+	public T orRethrow(final Function<? super Throwable, Throwable> exceptionWrappingFunction) {
+		return hasException() ? orThrow(exceptionWrappingFunction.apply(getException())) : orNull();
 	}
 
 	/**

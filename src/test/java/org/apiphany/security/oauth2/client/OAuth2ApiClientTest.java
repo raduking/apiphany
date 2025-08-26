@@ -1,20 +1,31 @@
 package org.apiphany.security.oauth2.client;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 
 import java.time.Duration;
 
 import org.apiphany.ApiClient;
 import org.apiphany.client.ExchangeClient;
+import org.apiphany.client.http.HttpExchangeClient;
 import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.header.HeaderValues;
 import org.apiphany.http.HttpAuthScheme;
+import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
+import org.apiphany.http.HttpStatus;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.net.Sockets;
+import org.apiphany.security.AuthenticationException;
 import org.apiphany.security.AuthenticationToken;
+import org.apiphany.security.AuthenticationType;
 import org.apiphany.security.JwtTokenValidator;
 import org.apiphany.security.JwtTokenValidator.TokenValidationException;
 import org.apiphany.security.oauth2.ClientAuthenticationMethod;
@@ -59,10 +70,12 @@ class OAuth2ApiClientTest {
 
 	@BeforeEach
 	void setUp() {
-		clientRegistration = JsonBuilder.fromJson(Strings.fromFile("/security/oauth2/oauth2-client-registration.json"), OAuth2ClientRegistration.class);
-		providerDetails = JsonBuilder.fromJson(Strings.fromFile("/security/oauth2/oauth2-provider-details.json"), OAuth2ProviderDetails.class);
+		String clientRegistrationJson = Strings.fromFile("/security/oauth2/oauth2-client-registration.json");
+		clientRegistration = JsonBuilder.fromJson(clientRegistrationJson, OAuth2ClientRegistration.class);
+
+		String providerDetailsJson = Strings.fromFile("/security/oauth2/oauth2-provider-details.json");
+		providerDetails = JsonBuilder.fromJson(providerDetailsJson, OAuth2ProviderDetails.class);
 		providerDetails.setTokenUri(OAUTH2_SERVER.getUrl() + "/token");
-		oAuth2ApiClient = new OAuth2ApiClient(clientRegistration, providerDetails, exchangeClient);
 	}
 
 	@AfterEach
@@ -80,6 +93,8 @@ class OAuth2ApiClientTest {
 
 	@Test
 	void shouldReturnValidAuthenticationTokenWithSimpleOAuth2Server() throws TokenValidationException {
+		oAuth2ApiClient = new OAuth2ApiClient(clientRegistration, providerDetails, exchangeClient);
+
 		AuthenticationToken token = oAuth2ApiClient.getAuthenticationToken(ClientAuthenticationMethod.CLIENT_SECRET_POST);
 
 		assertThat(token, notNullValue());
@@ -91,11 +106,29 @@ class OAuth2ApiClientTest {
 
 	@Test
 	void shouldAuthorizeRequestWithValidToken() {
+		oAuth2ApiClient = new OAuth2ApiClient(clientRegistration, providerDetails, exchangeClient);
+
 		AuthenticationToken token = oAuth2ApiClient.getAuthenticationToken(ClientAuthenticationMethod.CLIENT_SECRET_POST);
 
 		String result = simpleApiClient.getName(token);
 
 		assertThat(result, notNullValue());
+	}
+
+	@SuppressWarnings("resource")
+	@Test
+	void shouldThrowExceptionIfExchangeClientThrowsWhileRetrievingToken() {
+		HttpExchangeClient exchangeClientMock = mock(HttpExchangeClient.class);
+		doReturn(AuthenticationType.OAUTH2).when(exchangeClientMock).getAuthenticationType();
+		HttpException exception = new HttpException(HttpStatus.INTERNAL_SERVER_ERROR, "Server error");
+		doThrow(exception).when(exchangeClientMock).exchange(any());
+
+		oAuth2ApiClient = new OAuth2ApiClient(clientRegistration, providerDetails, exchangeClientMock);
+
+		AuthenticationException e = assertThrows(AuthenticationException.class,
+				() -> oAuth2ApiClient.getAuthenticationToken(ClientAuthenticationMethod.CLIENT_SECRET_BASIC));
+
+		assertThat(e.getCause(), equalTo(exception));
 	}
 
 	static class SimpleApiClient extends ApiClient {
