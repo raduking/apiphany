@@ -2,6 +2,9 @@ package org.apiphany.security.token.client;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
 
 import java.time.Instant;
@@ -14,13 +17,17 @@ import org.apiphany.client.ExchangeClient;
 import org.apiphany.header.HeaderValues;
 import org.apiphany.header.MapHeaderValues;
 import org.apiphany.http.HttpAuthScheme;
+import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
+import org.apiphany.http.HttpStatus;
 import org.apiphany.lang.Strings;
+import org.apiphany.security.AuthenticationException;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationType;
 import org.apiphany.security.JwtTokenValidator;
 import org.apiphany.security.JwtTokenValidator.TokenValidationException;
 import org.apiphany.security.token.TokenProperties;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,15 +57,23 @@ class TokenHttpExchangeClientTest {
 	private ClientProperties clientProperties = new ClientProperties();
 
 	@BeforeEach
-	@SuppressWarnings("resource")
 	void setUp() {
-		doReturn(clientProperties).when(exchangeClient).getClientProperties();
-		client = new TokenHttpExchangeClient(exchangeClient);
-		client.setDefaultTokenExpirationSupplier(() -> DEFAULT_EXPIRATION);
+		// empty
+	}
+
+	@AfterEach
+	void tearDown() throws Exception {
+		if (null != client) {
+			client.close();
+		}
 	}
 
 	@Test
 	void shouldReturnTokenDefaultExpirationWhenTokenIsNull() {
+		exchangeClientSetup(clientProperties);
+		client = new TokenHttpExchangeClient(exchangeClient);
+		client.setDefaultTokenExpirationSupplier(() -> DEFAULT_EXPIRATION);
+
 		Instant expiration = client.getTokenExpiration();
 
 		assertThat(expiration, equalTo(DEFAULT_EXPIRATION));
@@ -66,6 +81,10 @@ class TokenHttpExchangeClientTest {
 
 	@Test
 	void shouldReturnTokenDefaultExpirationWhenTokenExpirationIsNull() {
+		exchangeClientSetup(clientProperties);
+		client = new TokenHttpExchangeClient(exchangeClient);
+		client.setDefaultTokenExpirationSupplier(() -> DEFAULT_EXPIRATION);
+
 		client.setAuthenticationToken(new AuthenticationToken());
 
 		Instant expiration = client.getTokenExpiration();
@@ -83,6 +102,10 @@ class TokenHttpExchangeClientTest {
 		authenticationToken.setExpiresIn(EXPIRES_IN);
 		authenticationToken.setExpiration(DEFAULT_EXPIRATION.plusSeconds(EXPIRES_IN));
 
+		exchangeClientSetup(clientProperties);
+		client = new TokenHttpExchangeClient(exchangeClient);
+		client.setDefaultTokenExpirationSupplier(() -> DEFAULT_EXPIRATION);
+
 		client.setAuthenticationToken(authenticationToken);
 
 		Instant expiration = client.getTokenExpiration();
@@ -92,6 +115,10 @@ class TokenHttpExchangeClientTest {
 
 	@Test
 	void shouldHaveTheTokenAuthenticationType() {
+		exchangeClientSetup(clientProperties);
+		client = new TokenHttpExchangeClient(exchangeClient);
+		client.setDefaultTokenExpirationSupplier(() -> DEFAULT_EXPIRATION);
+
 		AuthenticationType authenticationType = client.getAuthenticationType();
 
 		assertThat(authenticationType, equalTo(AuthenticationType.TOKEN));
@@ -99,6 +126,10 @@ class TokenHttpExchangeClientTest {
 
 	@Test
 	void shouldAddTheAuthorizationHeaderToTheRequest() {
+		exchangeClientSetup(clientProperties);
+		client = new TokenHttpExchangeClient(exchangeClient);
+		client.setDefaultTokenExpirationSupplier(() -> DEFAULT_EXPIRATION);
+
 		AuthenticationToken authenticationToken = new AuthenticationToken();
 		authenticationToken.setAccessToken(TOKEN);
 		client.setAuthenticationToken(authenticationToken);
@@ -120,6 +151,7 @@ class TokenHttpExchangeClientTest {
 		tokenProperties.setValue(TOKEN);
 		clientProperties.setCustomProperties(tokenProperties);
 
+		exchangeClientSetup(clientProperties);
 		client = new TokenHttpExchangeClient(exchangeClient);
 
 		ApiRequest<Object> apiRequest = new ApiRequest<>();
@@ -139,6 +171,7 @@ class TokenHttpExchangeClientTest {
 		tokenProperties.setAuthenticationScheme(HttpAuthScheme.BASIC.value());
 		clientProperties.setCustomProperties(tokenProperties);
 
+		exchangeClientSetup(clientProperties);
 		client = new TokenHttpExchangeClient(exchangeClient);
 
 		ApiRequest<Object> apiRequest = new ApiRequest<>();
@@ -149,5 +182,46 @@ class TokenHttpExchangeClientTest {
 		String authorizationHeader = MapHeaderValues.get(HttpHeader.AUTHORIZATION, headers).getFirst();
 
 		assertThat(authorizationHeader, equalTo(HeaderValues.value(HttpAuthScheme.BASIC, TOKEN)));
+	}
+
+	@Test
+	void shouldThrowExceptionWhenRequestingTokenIfTokenWasNotInitialized() {
+		exchangeClientSetup(null);
+
+		client = new TokenHttpExchangeClient(exchangeClient);
+
+		ApiRequest<Object> apiRequest = new ApiRequest<>();
+
+		AuthenticationException e = assertThrows(AuthenticationException.class, () -> client.exchange(apiRequest));
+
+		String expectedMessage = HttpException.exceptionMessage(HttpStatus.UNAUTHORIZED, "Missing authentication token");
+		assertThat(e.getMessage(), equalTo(expectedMessage));
+	}
+
+	@Test
+	void shouldReturnNullAuthenticationTokenIfTokenWasNotInitialized() {
+		exchangeClientSetup(null);
+
+		client = new TokenHttpExchangeClient(exchangeClient);
+
+		AuthenticationToken token = client.getAuthenticationToken();
+
+		assertNull(token);
+	}
+
+	@Test
+	void shouldRequireNewAuthenticationTokenIfTokenWasNotInitialized() {
+		exchangeClientSetup(null);
+
+		client = new TokenHttpExchangeClient(exchangeClient);
+
+		boolean newTokenNeeded = client.isNewTokenNeeded();
+
+		assertTrue(newTokenNeeded);
+	}
+
+	@SuppressWarnings("resource")
+	private void exchangeClientSetup(final ClientProperties clientProperties) {
+		doReturn(clientProperties).when(exchangeClient).getClientProperties();
 	}
 }

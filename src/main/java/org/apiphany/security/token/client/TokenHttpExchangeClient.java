@@ -92,7 +92,7 @@ public class TokenHttpExchangeClient extends AbstractHttpExchangeClient {
 	}
 
 	/**
-	 * Initializes the client. We don't care if we have private methods with the same name the base class.
+	 * Initializes the client. We don't care if we have private methods with the same name in the base class.
 	 */
 	private void initialize() { // NOSONAR
 		ClientProperties clientProperties = getClientProperties();
