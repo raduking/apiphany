@@ -125,4 +125,15 @@ public class HttpException extends RuntimeException {
 	public static String statusMessage(final HttpStatus status) {
 		return "[" + status.value() + " " + status.getMessage() + "]";
 	}
+
+	/**
+	 * Return the exception message string based on the HTTP status and the message.
+	 *
+	 * @param status HTTP status
+	 * @param message the human readable message
+	 * @return the status message string
+	 */
+	public static String exceptionMessage(final HttpStatus status, final String message) {
+		return String.join(" ", statusMessage(status), message);
+	}
 }
