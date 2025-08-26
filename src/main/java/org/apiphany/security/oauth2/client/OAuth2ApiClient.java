@@ -12,6 +12,7 @@ import org.apiphany.http.HttpAuthScheme;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.io.ContentType;
 import org.apiphany.security.AuthenticationToken;
+import org.apiphany.security.AuthenticationTokenProvider;
 import org.apiphany.security.oauth2.AuthorizationGrantType;
 import org.apiphany.security.oauth2.ClientAuthenticationMethod;
 import org.apiphany.security.oauth2.OAuth2ClientRegistration;
@@ -27,7 +28,7 @@ import org.apiphany.security.token.client.TokenHttpExchangeClient;
  *
  * @author Radu Sebastian LAZIN
  */
-public class OAuth2ApiClient extends ApiClient {
+public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenProvider {
 
 	/**
 	 * Configuration for the OAuth2 client registration.
@@ -72,6 +73,7 @@ public class OAuth2ApiClient extends ApiClient {
 	 *
 	 * @return the authentication token, or null if the request fails
 	 */
+	@Override
 	public AuthenticationToken getAuthenticationToken() {
 		return getAuthenticationToken(clientRegistration.getClientAuthenticationMethod());
 	}
