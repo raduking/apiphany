@@ -2,7 +2,6 @@ package org.apiphany.security.token.client;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
@@ -199,14 +198,15 @@ class TokenHttpExchangeClientTest {
 	}
 
 	@Test
-	void shouldReturnNullAuthenticationTokenIfTokenWasNotInitialized() {
+	void shouldThrowExceptionWhenRetrievingAuthenticationTokenIfTokenWasNotInitialized() {
 		exchangeClientSetup(null);
 
 		client = new TokenHttpExchangeClient(exchangeClient);
 
-		AuthenticationToken token = client.getAuthenticationToken();
+		AuthenticationException e = assertThrows(AuthenticationException.class, () -> client.getAuthenticationToken());
 
-		assertNull(token);
+		String expectedMessage = HttpException.exceptionMessage(HttpStatus.UNAUTHORIZED, "Missing authentication token");
+		assertThat(e.getMessage(), equalTo(expectedMessage));
 	}
 
 	@Test
