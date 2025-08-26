@@ -160,7 +160,7 @@ class OAuth2HttpExchangeClientTest {
 		ExchangeClient tokenExchangeClient = spy(new JavaNetHttpExchangeClient());
 
 		try (OAuth2HttpExchangeClient oAuth2ExchangeClient = new OAuth2HttpExchangeClient(exchangeClient, tokenExchangeClient)) {
-			assertThat(oAuth2ExchangeClient.getTokenApiClient(), notNullValue());
+			assertThat(oAuth2ExchangeClient.getTokenClient(), notNullValue());
 		}
 
 		verify(tokenExchangeClient).close();
@@ -173,7 +173,7 @@ class OAuth2HttpExchangeClientTest {
 		ExchangeClient exchangeClient = spy(new JavaNetHttpExchangeClient(clientProperties));
 
 		try (OAuth2HttpExchangeClient oAuth2ExchangeClient = new OAuth2HttpExchangeClient(exchangeClient)) {
-			assertThat(oAuth2ExchangeClient.getTokenApiClient(), notNullValue());
+			assertThat(oAuth2ExchangeClient.getTokenClient(), notNullValue());
 		}
 
 		verify(exchangeClient).close();
@@ -181,7 +181,7 @@ class OAuth2HttpExchangeClientTest {
 
 	@Test
 	void shouldReturnValidAuthenticationTokenWithSimpleApiClientWithOAuth2() throws Exception {
-		try (SimpleApiClientWithOAuth2 simpleApiClientWithOAuth2 = new SimpleApiClientWithOAuth2(clientProperties)) {
+		try (SimpleApiClientWithOAuth2v1 simpleApiClientWithOAuth2 = new SimpleApiClientWithOAuth2v1(clientProperties)) {
 			String result = simpleApiClientWithOAuth2.getName();
 
 			assertThat(result, equalTo(SimpleHttpServer.NAME));
@@ -190,7 +190,7 @@ class OAuth2HttpExchangeClientTest {
 
 	@Test
 	void shouldReturnValidAuthenticationTokenWithSimpleApiClientWithOAuth3() throws Exception {
-		try (SimpleApiClientWithOAuth3 simpleApiClientWithOAuth3 = new SimpleApiClientWithOAuth3(clientProperties)) {
+		try (SimpleApiClientWithOAuth2v2 simpleApiClientWithOAuth3 = new SimpleApiClientWithOAuth2v2(clientProperties)) {
 			String result = simpleApiClientWithOAuth3.getName();
 
 			assertThat(result, equalTo(SimpleHttpServer.NAME));
@@ -245,9 +245,9 @@ class OAuth2HttpExchangeClientTest {
 		}
 	}
 
-	static class SimpleApiClientWithOAuth2 extends ApiClient {
+	static class SimpleApiClientWithOAuth2v1 extends ApiClient {
 
-		protected SimpleApiClientWithOAuth2(final ClientProperties properties) {
+		protected SimpleApiClientWithOAuth2v1(final ClientProperties properties) {
 			super(exchangeClient(JavaNetHttpExchangeClient.class)
 					.properties(properties)
 					.oAuth2());
@@ -264,9 +264,9 @@ class OAuth2HttpExchangeClientTest {
 		}
 	}
 
-	static class SimpleApiClientWithOAuth3 extends ApiClient {
+	static class SimpleApiClientWithOAuth2v2 extends ApiClient {
 
-		protected SimpleApiClientWithOAuth3(final ClientProperties properties) {
+		protected SimpleApiClientWithOAuth2v2(final ClientProperties properties) {
 			super(with(JavaNetHttpExchangeClient.class)
 					.properties(properties)
 					.oAuth2());

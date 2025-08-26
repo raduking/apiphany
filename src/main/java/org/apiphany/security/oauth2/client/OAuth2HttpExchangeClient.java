@@ -17,6 +17,7 @@ import org.apiphany.lang.collections.Maps;
 import org.apiphany.lang.retry.Retry;
 import org.apiphany.lang.retry.WaitCounter;
 import org.apiphany.security.AuthenticationToken;
+import org.apiphany.security.AuthenticationTokenProvider;
 import org.apiphany.security.AuthenticationType;
 import org.apiphany.security.oauth2.OAuth2ClientRegistration;
 import org.apiphany.security.oauth2.OAuth2Properties;
@@ -49,9 +50,9 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	private final ScopedResource<ExchangeClient> tokenExchangeClient;
 
 	/**
-	 * Underlying API client that retrieves the token.
+	 * Underlying client that retrieves the token.
 	 */
-	private OAuth2ApiClient tokenApiClient;
+	private AuthenticationTokenProvider tokenClient;
 
 	/**
 	 * Token retrieval scheduler.
@@ -160,7 +161,7 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 		}
 		setClientRegistrationName(name);
 
-		return null != tokenApiClient;
+		return null != tokenClient;
 	}
 
 	/**
@@ -190,7 +191,7 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 			return false;
 		}
 
-		this.tokenApiClient = new OAuth2ApiClient(clientRegistration, providerDetails, tokenExchangeClient.unwrap());
+		this.tokenClient = new OAuth2ApiClient(clientRegistration, providerDetails, tokenExchangeClient.unwrap());
 		return true;
 	}
 
@@ -202,8 +203,8 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 		super.close();
 		closeTokenRefreshScheduler();
 		tokenExchangeClient.closeIfManaged();
-		if (null != tokenApiClient) {
-			tokenApiClient.close();
+		if (tokenClient instanceof AutoCloseable closeable) {
+			closeable.close();
 		}
 	}
 
@@ -285,7 +286,7 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	private void updateAuthenticationToken() {
 		LOGGER.debug("[{}] Token expired, requesting new token.", getName());
 		Instant expiration = Instant.now();
-		AuthenticationToken token = tokenApiClient.getAuthenticationToken();
+		AuthenticationToken token = tokenClient.getAuthenticationToken();
 		if (null == token) {
 			LOGGER.error("[{}] Error retrieving token, retrieved token was null", getName());
 			return;
@@ -332,11 +333,11 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	}
 
 	/**
-	 * Returns the token API client.
+	 * Returns the token client.
 	 *
-	 * @return the token API client
+	 * @return the token client
 	 */
-	protected OAuth2ApiClient getTokenApiClient() {
-		return tokenApiClient;
+	protected AuthenticationTokenProvider getTokenClient() {
+		return tokenClient;
 	}
 }
