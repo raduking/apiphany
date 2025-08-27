@@ -372,16 +372,4 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 		Consumer<SerializationFeature> indentation = enable ? objectMapper::enable : objectMapper::disable;
 		indentation.accept(SerializationFeature.INDENT_OUTPUT);
 	}
-
-	/**
-	 * Returns an {@link UnsupportedOperationException} for unsupported JSON input types.
-	 *
-	 * @param <O> JSON input type
-	 *
-	 * @param json JSON input object
-	 * @return the exception to be thrown when the input type is not supported
-	 */
-	protected static <O> UnsupportedOperationException unsupportedJsonInputType(final O json) {
-		return new UnsupportedOperationException("Unsupported JSON input type: " + json.getClass());
-	}
 }
