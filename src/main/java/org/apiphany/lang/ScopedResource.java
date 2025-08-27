@@ -56,6 +56,15 @@ public class ScopedResource<T extends AutoCloseable> {
 	}
 
 	/**
+	 * Checks if this wrapper manages the resource's lifecycle.
+	 *
+	 * @return true if the resource is not managed by this wrapper
+	 */
+	public boolean isNotManaged() {
+		return !isManaged();
+	}
+
+	/**
 	 * Closes the resource if it is managed by this wrapper.
 	 *
 	 * @throws Exception if an error occurs while closing the resource

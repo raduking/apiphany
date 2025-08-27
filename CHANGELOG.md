@@ -13,6 +13,8 @@ Added `AuthenticationTokenProvider` interface to declare authentication token pr
 Changed `OAuth2ApiClient` to respect the `AuthenticationTokenProvider` contract to throw `AuthenticationException` when token retrieval fails.
 Added `ApiResponse.orThrow` to throw an exception if the request fails.
 Added `ApiResponse.orRethrow` to re-throw the exception wrapped into another exception via an exception wrapping function.
+Added `ScopedResource.isNotManaged` which returns true if the underlying resource is not managed.
+Changed `OAuth2HttpExchangeClient` to properly handle managed and unmanaged resources.
 
 ---
 

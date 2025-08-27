@@ -81,7 +81,7 @@ public class TokenHttpExchangeClient extends AbstractHttpExchangeClient implemen
 	 * @param exchangeClient actual exchange client making the request
 	 */
 	protected TokenHttpExchangeClient(final ExchangeClient exchangeClient) {
-		this(ScopedResource.managed(exchangeClient));
+		this(ScopedResource.unmanaged(exchangeClient));
 	}
 
 	/**
