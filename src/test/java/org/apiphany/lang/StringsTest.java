@@ -152,4 +152,10 @@ class StringsTest {
 		assertThat(result, equalTo(TEXT_FILE_CONTENT));
 	}
 
+	@Test
+	void shouldEnvelopeStrings() {
+		String result = Strings.envelope(TEST_INTEGER_STRING, TEST_STRING);
+
+		assertThat(result, equalTo(TEST_INTEGER_STRING + TEST_STRING + TEST_INTEGER_STRING));
+	}
 }
