@@ -3,12 +3,18 @@ package org.apiphany.json;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.Objects;
 
 import org.apiphany.lang.Strings;
 import org.junit.jupiter.api.Test;
+import org.morphix.reflection.Constructors;
 import org.morphix.reflection.GenericClass;
+import org.morphix.reflection.MemberAccessor;
 
 /**
  * Test class for {@link JsonBuilder}.
@@ -19,6 +25,7 @@ class JsonBuilderTest {
 
 	private static final String CUSTOMER_ID1 = "cid1";
 	private static final String TENANT_ID1 = "tid1";
+	private static final long TEST_LONG = 42L;
 
 	private JsonBuilder jsonBuilder = new JsonBuilder();
 
@@ -57,28 +64,6 @@ class JsonBuilderTest {
 		assertThat(e.getMessage(), equalTo(JsonBuilder.ErrorMessage.JSON_LIBRARY_NOT_FOUND));
 	}
 
-	@Test
-	void shouldTransformObjectToJsonAndReadItBack() {
-		A a1 = new A(CUSTOMER_ID1, TENANT_ID1);
-
-		Object json1 = Strings.removeAllWhitespace(JsonBuilder.toJson(a1));
-
-		A a2 = JsonBuilder.fromJson(json1, A.class);
-
-		Object json2 = Strings.removeAllWhitespace(JsonBuilder.toJson(a2));
-
-		assertThat(json1, equalTo(json2));
-	}
-
-	@Test
-	void shouldThrowExceptionWhenReadingJsonObjectWithAnUnsupportedType() {
-		Object o = new Object();
-		UnsupportedOperationException e = assertThrows(UnsupportedOperationException.class,
-				() -> JsonBuilder.fromJson(o, A.class));
-
-		assertThat(e.getMessage(), equalTo("Unsupported JSON input type: " + Object.class));
-	}
-
 	static class A {
 
 		private String customerId;
@@ -109,5 +94,88 @@ class JsonBuilderTest {
 		public void setTenantId(final String tenantId) {
 			this.tenantId = tenantId;
 		}
+	}
+
+	@Test
+	void shouldTransformObjectToJsonAndReadItBack() {
+		A a1 = new A(CUSTOMER_ID1, TENANT_ID1);
+
+		Object json1 = Strings.removeAllWhitespace(JsonBuilder.toJson(a1));
+
+		A a2 = JsonBuilder.fromJson(json1, A.class);
+
+		Object json2 = Strings.removeAllWhitespace(JsonBuilder.toJson(a2));
+
+		assertThat(json1, equalTo(json2));
+	}
+
+	@Test
+	void shouldThrowExceptionWhenReadingJsonObjectWithAnUnsupportedType() {
+		Object o = new Object();
+		UnsupportedOperationException e = assertThrows(UnsupportedOperationException.class,
+				() -> JsonBuilder.fromJson(o, A.class));
+
+		assertThat(e.getMessage(), equalTo("Unsupported JSON input type: " + Object.class));
+	}
+
+	@Test
+	void shouldThrowExceptionWhenTryingToInstantiatePropertyNestedClass() throws Exception {
+		Throwable targetException = null;
+		Constructor<JsonBuilder.Property> defaultConstructor = JsonBuilder.Property.class.getDeclaredConstructor();
+		try (MemberAccessor<Constructor<JsonBuilder.Property>> ignored = new MemberAccessor<>(null, defaultConstructor)) {
+			defaultConstructor.newInstance();
+		} catch (InvocationTargetException e) {
+			assertThat(e.getTargetException().getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
+			targetException = e.getTargetException();
+		}
+		assertTrue(targetException instanceof UnsupportedOperationException);
+	}
+
+	@Test
+	void shouldThrowExceptionWhenTryingToInstantiateErrorMessageNestedClass() throws Exception {
+		Throwable targetException = null;
+		Constructor<JsonBuilder.ErrorMessage> defaultConstructor = JsonBuilder.ErrorMessage.class.getDeclaredConstructor();
+		try (MemberAccessor<Constructor<JsonBuilder.ErrorMessage>> ignored = new MemberAccessor<>(null, defaultConstructor)) {
+			defaultConstructor.newInstance();
+		} catch (InvocationTargetException e) {
+			assertThat(e.getTargetException().getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
+			targetException = e.getTargetException();
+		}
+		assertTrue(targetException instanceof UnsupportedOperationException);
+	}
+
+	static class B {
+		String id;
+
+		public B(final Long id) {
+			this.id = id.toString();
+		}
+
+		@Override
+		public boolean equals(final Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (this instanceof B that) {
+				return Objects.equals(that, obj);
+			}
+			return false;
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(id);
+		}
+	}
+
+	@Test
+	void shouldReturnTheDebugString() {
+		B b = new B(TEST_LONG);
+
+		String result = JsonBuilder.toDebugString(b);
+
+		String expected = "{ \"type\":\"B\", \"id\":\"" + TEST_LONG + "\", \"hash\":\"" + JsonBuilder.hexHash(b) + "\" }";
+
+		assertThat(result, equalTo(expected));
 	}
 }
