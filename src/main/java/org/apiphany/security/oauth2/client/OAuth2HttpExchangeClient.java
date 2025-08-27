@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
  * OAuth2 exchange client, this class decorates an existing {@link ExchangeClient} with automatic OAuth2 support.
  * <p>
  * TODO: implement refresh token functionality<br/>
- * TODO: implement token exchange client resource management (currently the resource is managed)
  *
  * @author Radu Sebastian LAZIN
  */
@@ -86,10 +85,13 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	 * @param tokenExchangeClient exchange client doing the token refresh
 	 * @param clientRegistrationName the wanted client registration name
 	 */
-	public OAuth2HttpExchangeClient(final ExchangeClient exchangeClient, final ExchangeClient tokenExchangeClient, final String clientRegistrationName) {
+	public OAuth2HttpExchangeClient(
+			final ScopedResource<ExchangeClient> exchangeClient,
+			final ScopedResource<ExchangeClient> tokenExchangeClient,
+			final String clientRegistrationName) {
 		super(exchangeClient);
 
-		this.tokenExchangeClient = ScopedResource.of(tokenExchangeClient, exchangeClient != tokenExchangeClient);
+		this.tokenExchangeClient = checkReference(tokenExchangeClient, exchangeClient);
 		this.tokenRefreshScheduler = Executors.newScheduledThreadPool(0, Thread.ofVirtual().factory());
 
 		this.oAuth2Properties = getClientProperties().getCustomProperties(OAuth2Properties.ROOT, OAuth2Properties.class);
@@ -101,6 +103,50 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 		if (isSchedulerEnabled()) {
 			refreshAuthenticationToken();
 		}
+	}
+
+	/**
+	 * Check the first parameter against the second for the same underlying reference. If the referenced resources are the
+	 * same and they are both managed then we return an unmanaged scoped resource. Only one scoped resource should manage
+	 * the same resource.
+	 *
+	 * @param checkedClient
+	 * @param client
+	 * @return
+	 */
+	@SuppressWarnings("resource")
+	private static ScopedResource<ExchangeClient> checkReference(
+			final ScopedResource<ExchangeClient> checkedClient,
+			final ScopedResource<ExchangeClient> client) {
+		if (checkedClient.isNotManaged() || client.isNotManaged()) {
+			return checkedClient;
+		}
+		ExchangeClient rawCheckedClient = checkedClient.unwrap();
+		return rawCheckedClient == client.unwrap() ? ScopedResource.unmanaged(rawCheckedClient) : checkedClient;
+	}
+
+	/**
+	 * Decorates an exchange client with OAuth2 authentication.
+	 *
+	 * @param exchangeClient decorated exchange client
+	 * @param tokenExchangeClient exchange client doing the token refresh
+	 * @param clientRegistrationName the wanted client registration name
+	 */
+	public OAuth2HttpExchangeClient(
+			final ExchangeClient exchangeClient,
+			final ExchangeClient tokenExchangeClient,
+			final String clientRegistrationName) {
+		this(ScopedResource.unmanaged(exchangeClient), ScopedResource.unmanaged(tokenExchangeClient), clientRegistrationName);
+	}
+
+	/**
+	 * Decorates an exchange client with OAuth2 authentication.
+	 *
+	 * @param exchangeClient decorated exchange client
+	 * @param tokenExchangeClient exchange client doing the token refresh
+	 */
+	public OAuth2HttpExchangeClient(final ScopedResource<ExchangeClient> exchangeClient, final ScopedResource<ExchangeClient> tokenExchangeClient) {
+		this(exchangeClient, tokenExchangeClient, null);
 	}
 
 	/**
@@ -119,8 +165,27 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	 * @param exchangeClient decorated exchange client
 	 * @param clientRegistrationName the wanted client registration name
 	 */
+	public OAuth2HttpExchangeClient(final ScopedResource<ExchangeClient> exchangeClient, final String clientRegistrationName) {
+		this(exchangeClient, exchangeClient, clientRegistrationName);
+	}
+
+	/**
+	 * Decorates an exchange client with OAuth2 authentication. Uses the same exchange client for token requests.
+	 *
+	 * @param exchangeClient decorated exchange client
+	 * @param clientRegistrationName the wanted client registration name
+	 */
 	public OAuth2HttpExchangeClient(final ExchangeClient exchangeClient, final String clientRegistrationName) {
 		this(exchangeClient, exchangeClient, clientRegistrationName);
+	}
+
+	/**
+	 * Decorates an exchange client with OAuth2 authentication. Uses the same exchange client for token requests.
+	 *
+	 * @param exchangeClient decorated exchange client
+	 */
+	public OAuth2HttpExchangeClient(final ScopedResource<ExchangeClient> exchangeClient) {
+		this(exchangeClient, (String) null);
 	}
 
 	/**

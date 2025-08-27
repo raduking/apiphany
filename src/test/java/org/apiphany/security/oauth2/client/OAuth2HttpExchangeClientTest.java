@@ -18,6 +18,7 @@ import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.http.HttpException;
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.lang.ScopedResource;
 import org.apiphany.lang.Strings;
 import org.apiphany.net.Sockets;
 import org.apiphany.security.AuthenticationType;
@@ -159,7 +160,8 @@ class OAuth2HttpExchangeClientTest {
 		ExchangeClient exchangeClient = spy(new JavaNetHttpExchangeClient(clientProperties));
 		ExchangeClient tokenExchangeClient = spy(new JavaNetHttpExchangeClient());
 
-		try (OAuth2HttpExchangeClient oAuth2ExchangeClient = new OAuth2HttpExchangeClient(exchangeClient, tokenExchangeClient)) {
+		try (OAuth2HttpExchangeClient oAuth2ExchangeClient = new OAuth2HttpExchangeClient(
+				ScopedResource.managed(exchangeClient), ScopedResource.managed(tokenExchangeClient))) {
 			assertThat(oAuth2ExchangeClient.getTokenClient(), notNullValue());
 		}
 
@@ -169,10 +171,10 @@ class OAuth2HttpExchangeClientTest {
 
 	@Test
 	@SuppressWarnings("resource")
-	void shouldBuildExchangeClientWithEqualExchangeAndTokenExchangeClientsAndCloseResources() throws Exception {
+	void shouldBuildExchangeClientWithEqualExchangeAndTokenExchangeClientsAndCloseResourcesOnlyOnce() throws Exception {
 		ExchangeClient exchangeClient = spy(new JavaNetHttpExchangeClient(clientProperties));
 
-		try (OAuth2HttpExchangeClient oAuth2ExchangeClient = new OAuth2HttpExchangeClient(exchangeClient)) {
+		try (OAuth2HttpExchangeClient oAuth2ExchangeClient = new OAuth2HttpExchangeClient(ScopedResource.managed(exchangeClient))) {
 			assertThat(oAuth2ExchangeClient.getTokenClient(), notNullValue());
 		}
 
