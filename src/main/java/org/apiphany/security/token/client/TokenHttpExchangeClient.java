@@ -31,11 +31,6 @@ import org.morphix.lang.Nullables;
 public class TokenHttpExchangeClient extends AbstractHttpExchangeClient implements AuthenticationTokenProvider {
 
 	/**
-	 * Default value for token expiration (request) - 30 minutes.
-	 */
-	public static final Duration DEFAULT_EXPIRES_IN = Duration.ofMinutes(30);
-
-	/**
 	 * Duration for error margin when checking token expiration - 1 second.
 	 */
 	protected static final Duration TOKEN_EXPIRATION_ERROR_MARGIN = Duration.ofSeconds(1);
