@@ -1,9 +1,11 @@
 package org.apiphany.security.oauth2;
 
+import java.time.Duration;
 import java.util.Map;
 
 import org.apiphany.lang.Strings;
 import org.morphix.lang.Enums;
+import org.morphix.reflection.Constructors;
 
 /**
  * Enumeration of standard OAuth2 form parameter names. Contains all parameter names used in OAuth2 token requests,
@@ -134,6 +136,26 @@ public enum OAuth2Parameter {
 	 * The interval parameter (RFC 8628 Section 3.2). Specifies the polling interval for Device Authorization Flow.
 	 */
 	INTERVAL("interval");
+
+	/**
+	 * Name space for sensible default values for these parameters.
+	 *
+	 * @author Radu Sebastian LAZIN
+	 */
+	public static class Default {
+
+		/**
+		 * Default value for {@link OAuth2Parameter#EXPIRES_IN} parameter.
+		 */
+		public static final Duration EXPIRES_IN = Duration.ofMinutes(30);
+
+		/**
+		 * Hide constructor.
+		 */
+		private Default() {
+			throw Constructors.unsupportedOperationException();
+		}
+	}
 
 	/**
 	 * Mapping of lowercase string values to enum constants for case-insensitive lookup. Used by {@link #fromString(String)}
