@@ -165,29 +165,37 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	}
 
 	/**
-	 * Returns an object from the JSON string.
+	 * Returns an object from the JSON object.
 	 *
+	 * @param <O> input object type
 	 * @param <T> type of the object
 	 *
-	 * @param json JSON string
+	 * @param json JSON object
 	 * @param cls class of the object
-	 * @return an object from the JSON string
+	 * @return an object from the JSON object
 	 */
-	public static <T> T fromJson(final String json, final Class<T> cls) {
-		return InstanceHolder.INSTANCE.fromJsonString(json, cls);
+	public static <O, T> T fromJson(final O json, final Class<T> cls) {
+		return switch (json) {
+			case String string -> InstanceHolder.INSTANCE.fromJsonString(string, cls);
+			default -> throw unsupportedJsonInputType(json);
+		};
 	}
 
 	/**
-	 * Returns an object from the JSON string.
+	 * Returns an object from the JSON object.
 	 *
+	 * @param <O> input object type
 	 * @param <T> type of the object
 	 *
-	 * @param json JSON string
+	 * @param json JSON object
 	 * @param genericClass generic class wrapper for the type of the generic object
-	 * @return an object from the JSON string
+	 * @return an object from the JSON object
 	 */
-	public static <T> T fromJson(final String json, final GenericClass<T> genericClass) {
-		return InstanceHolder.INSTANCE.fromJsonString(json, genericClass);
+	public static <O, T> T fromJson(final O json, final GenericClass<T> genericClass) {
+		return switch (json) {
+			case String string -> InstanceHolder.INSTANCE.fromJsonString(string, genericClass);
+			default -> throw unsupportedJsonInputType(json);
+		};
 	}
 
 	/**
@@ -413,4 +421,15 @@ public class JsonBuilder { // NOSONAR singleton implementation
 		return obj.getClass().getName() + "@" + Integer.toHexString(obj.hashCode());
 	}
 
+	/**
+	 * Returns an {@link UnsupportedOperationException} for unsupported JSON input types.
+	 *
+	 * @param <O> JSON input type
+	 *
+	 * @param json JSON input object
+	 * @return the exception to be thrown when the input type is not supported
+	 */
+	protected static <O> UnsupportedOperationException unsupportedJsonInputType(final O json) {
+		return new UnsupportedOperationException("Unsupported JSON input type: " + json.getClass());
+	}
 }

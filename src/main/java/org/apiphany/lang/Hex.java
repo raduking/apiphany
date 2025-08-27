@@ -11,7 +11,7 @@ import org.morphix.reflection.Constructors;
  *
  * @author Radu Sebastian LAZIN
  */
-public abstract class Hex {
+public class Hex {
 
 	/**
 	 * Property name to set the verbose flag when calling {@link #dump(byte[])}.

@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
 
+import org.apiphany.lang.Strings;
 import org.junit.jupiter.api.Test;
 import org.morphix.reflection.GenericClass;
 
@@ -15,6 +16,9 @@ import org.morphix.reflection.GenericClass;
  * @author Radu Sebastian LAZIN
  */
 class JsonBuilderTest {
+
+	private static final String CUSTOMER_ID1 = "cid1";
+	private static final String TENANT_ID1 = "tid1";
 
 	private JsonBuilder jsonBuilder = new JsonBuilder();
 
@@ -53,4 +57,57 @@ class JsonBuilderTest {
 		assertThat(e.getMessage(), equalTo(JsonBuilder.ErrorMessage.JSON_LIBRARY_NOT_FOUND));
 	}
 
+	@Test
+	void shouldTransformObjectToJsonAndReadItBack() {
+		A a1 = new A(CUSTOMER_ID1, TENANT_ID1);
+
+		Object json1 = Strings.removeAllWhitespace(JsonBuilder.toJson(a1));
+
+		A a2 = JsonBuilder.fromJson(json1, A.class);
+
+		Object json2 = Strings.removeAllWhitespace(JsonBuilder.toJson(a2));
+
+		assertThat(json1, equalTo(json2));
+	}
+
+	@Test
+	void shouldThrowExceptionWhenReadingJsonObjectWithAnUnsupportedType() {
+		Object o = new Object();
+		UnsupportedOperationException e = assertThrows(UnsupportedOperationException.class,
+				() -> JsonBuilder.fromJson(o, A.class));
+
+		assertThat(e.getMessage(), equalTo("Unsupported JSON input type: " + Object.class));
+	}
+
+	static class A {
+
+		private String customerId;
+
+		private String tenantId;
+
+		public A() {
+			// empty
+		}
+
+		public A(final String customerId, final String tenantId) {
+			this.customerId = customerId;
+			this.tenantId = tenantId;
+		}
+
+		public String getCustomerId() {
+			return customerId;
+		}
+
+		public void setCustomerId(final String customerId) {
+			this.customerId = customerId;
+		}
+
+		public String getTenantId() {
+			return tenantId;
+		}
+
+		public void setTenantId(final String tenantId) {
+			this.tenantId = tenantId;
+		}
+	}
 }
