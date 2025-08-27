@@ -91,7 +91,7 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 			final String clientRegistrationName) {
 		super(exchangeClient);
 
-		this.tokenExchangeClient = checkReference(tokenExchangeClient, exchangeClient);
+		this.tokenExchangeClient = ScopedResource.checked(tokenExchangeClient, exchangeClient);
 		this.tokenRefreshScheduler = Executors.newScheduledThreadPool(0, Thread.ofVirtual().factory());
 
 		this.oAuth2Properties = getClientProperties().getCustomProperties(OAuth2Properties.ROOT, OAuth2Properties.class);
@@ -103,26 +103,6 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 		if (isSchedulerEnabled()) {
 			refreshAuthenticationToken();
 		}
-	}
-
-	/**
-	 * Check the first parameter against the second for the same underlying reference. If the referenced resources are the
-	 * same and they are both managed then we return an unmanaged scoped resource. Only one scoped resource should manage
-	 * the same resource.
-	 *
-	 * @param checkedClient
-	 * @param client
-	 * @return
-	 */
-	@SuppressWarnings("resource")
-	private static ScopedResource<ExchangeClient> checkReference(
-			final ScopedResource<ExchangeClient> checkedClient,
-			final ScopedResource<ExchangeClient> client) {
-		if (checkedClient.isNotManaged() || client.isNotManaged()) {
-			return checkedClient;
-		}
-		ExchangeClient rawCheckedClient = checkedClient.unwrap();
-		return rawCheckedClient == client.unwrap() ? ScopedResource.unmanaged(rawCheckedClient) : checkedClient;
 	}
 
 	/**
