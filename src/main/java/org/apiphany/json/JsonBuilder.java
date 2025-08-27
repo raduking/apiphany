@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
  * {@link #toString()} method.
  * <p>
  * For serialization to {@link String} use {@link #toJson(Object)}.<br/>
- * For de-serialization {@link Object} use {@link #fromJson(String, Class)} or {@link #fromJson(String, GenericClass)}.
+ * For de-serialization {@link Object} use {@link #fromJson(Object, Class)} or {@link #fromJson(Object, GenericClass)}.
  * <p>
  * To indent the JSON output use the {@code json-builder.to-json.indent-output} property set to {@code true}.
  * <p>
