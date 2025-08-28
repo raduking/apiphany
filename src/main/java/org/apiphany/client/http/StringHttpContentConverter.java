@@ -50,7 +50,7 @@ public class StringHttpContentConverter implements HttpContentConverter<String> 
 	 */
 	@Override
 	public String from(final Object obj, final ApiMimeType mimeType, final GenericClass<String> genericDstClass) {
-		return Strings.safeToString(obj);
+		return from(obj, mimeType);
 	}
 
 	/**

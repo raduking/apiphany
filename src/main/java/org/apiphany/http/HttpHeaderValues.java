@@ -36,7 +36,7 @@ public class HttpHeaderValues extends HeaderValues {
 	 *     that subsequent handlers in the chain might process
 	 * @return a list of values for the specified header if headers is an HttpHeaders instance and contains the header,
 	 * otherwise the result from the next handler in the chain
-	 * @throws ClassCastException if headers cannot be properly processed by the next handler in the chain
+	 * @throws IllegalStateException if headers cannot be properly processed by the next handler in the chain
 	 */
 	@Override
 	public <N> List<String> get(final N header, final Object headers) {
