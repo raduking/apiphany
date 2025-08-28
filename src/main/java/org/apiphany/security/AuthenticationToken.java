@@ -1,5 +1,6 @@
 package org.apiphany.security;
 
+import java.time.Duration;
 import java.time.Instant;
 
 import org.apiphany.json.JsonBuilder;
@@ -26,6 +27,11 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "scope"
 })
 public class AuthenticationToken {
+
+	/**
+	 * Duration for error margin when checking token expiration - 1 second.
+	 */
+	public static final Duration EXPIRATION_ERROR_MARGIN = Duration.ofSeconds(1);
 
 	/**
 	 * The access token used for authenticating requests.

@@ -27,12 +27,15 @@ import org.apiphany.security.oauth2.ClientAuthenticationMethod;
 import org.apiphany.security.oauth2.OAuth2ClientRegistration;
 import org.apiphany.security.oauth2.OAuth2Properties;
 import org.apiphany.security.oauth2.OAuth2ProviderDetails;
+import org.apiphany.security.oauth2.OAuth2TokenProvider;
 import org.apiphany.security.oauth2.server.SimpleHttpServer;
 import org.apiphany.security.oauth2.server.SimpleOAuth2Server;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.morphix.lang.JavaObjects;
+import org.morphix.reflection.Fields;
 
 /**
  * Test class for {@link OAuth2HttpExchangeClient}.
@@ -101,12 +104,13 @@ class OAuth2HttpExchangeClientTest {
 		assertThat(result, equalTo(SimpleHttpServer.NAME));
 	}
 
+	@SuppressWarnings("resource")
 	@Test
 	void shouldInitializeTokenRefreshScheduler() throws Exception {
 		try (OAuth2HttpExchangeClient oAuth2HttpExchangeClient =
 				new OAuth2HttpExchangeClient(new JavaNetHttpExchangeClient(clientProperties))) {
-			@SuppressWarnings("resource")
-			ScheduledExecutorService executorService = oAuth2HttpExchangeClient.getTokenRefreshScheduler();
+			OAuth2TokenProvider tokenProvider = JavaObjects.cast(oAuth2HttpExchangeClient.getTokenProvider());
+			ScheduledExecutorService executorService = Fields.IgnoreAccess.get(tokenProvider, "tokenRefreshScheduler");
 
 			assertThat(executorService, notNullValue());
 		}
