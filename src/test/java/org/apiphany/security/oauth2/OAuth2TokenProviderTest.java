@@ -31,6 +31,7 @@ import org.apiphany.security.AuthenticationTokenProvider;
 import org.apiphany.security.JwtTokenValidator;
 import org.apiphany.security.JwtTokenValidator.TokenValidationException;
 import org.apiphany.security.token.client.TokenHttpExchangeClient;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -67,6 +68,13 @@ class OAuth2TokenProviderTest {
 	private OAuth2Properties oAuth2Properties;
 
 	private OAuth2TokenProvider tokenProvider;
+
+	@AfterEach
+	void tearDown() throws Exception {
+		if (null != tokenProvider) {
+			tokenProvider.close();
+		}
+	}
 
 	@Test
 	void shouldReturnTokenDefaultExpirationWhenTokenIsNull() {
