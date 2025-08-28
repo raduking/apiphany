@@ -131,6 +131,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	/**
 	 * Returns an instance based on the available JSON libraries.
 	 *
+	 * @param libraries the libraries information list
 	 * @return a JSON builder
 	 */
 	@SafeVarargs

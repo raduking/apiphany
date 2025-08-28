@@ -1,6 +1,5 @@
 package org.apiphany.security.token.client;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.util.function.Supplier;
 
@@ -31,11 +30,6 @@ import org.morphix.lang.Nullables;
 public class TokenHttpExchangeClient extends AbstractHttpExchangeClient implements AuthenticationTokenProvider {
 
 	/**
-	 * Duration for error margin when checking token expiration - 1 second.
-	 */
-	protected static final Duration TOKEN_EXPIRATION_ERROR_MARGIN = Duration.ofSeconds(1);
-
-	/**
 	 * The actual exchange client doing the request.
 	 */
 	protected final ScopedResource<ExchangeClient> exchangeClient;
@@ -46,12 +40,12 @@ public class TokenHttpExchangeClient extends AbstractHttpExchangeClient implemen
 	private AuthenticationToken authenticationToken;
 
 	/**
-	 * The authentication scheme (Ex: Bearer).
+	 * The authentication scheme, defaults to {@code Bearer} if missing.
 	 */
 	private HttpAuthScheme authenticationScheme;
 
 	/**
-	 * Supplies the default token expiration.
+	 * Supplies the default token expiration (default is {@code null}.
 	 */
 	private Supplier<Instant> defaultExpirationSupplier;
 
@@ -65,7 +59,7 @@ public class TokenHttpExchangeClient extends AbstractHttpExchangeClient implemen
 		super(exchangeClient.unwrap().getClientProperties());
 
 		this.exchangeClient = exchangeClient;
-		this.defaultExpirationSupplier = Instant::now;
+		this.defaultExpirationSupplier = Nullables.supplyNull();
 
 		initialize();
 	}
@@ -103,8 +97,7 @@ public class TokenHttpExchangeClient extends AbstractHttpExchangeClient implemen
 		authToken.setAccessToken(tokenProperties.getValue());
 		setAuthenticationToken(authToken);
 
-		String authScheme = tokenProperties.getAuthenticationScheme();
-		HttpAuthScheme httpAuthScheme = Nullables.notNull(authScheme)
+		HttpAuthScheme httpAuthScheme = Nullables.notNull(tokenProperties.getAuthenticationScheme())
 				.thenYield(HttpAuthScheme::fromString)
 				.orElse(HttpAuthScheme.BEARER);
 		setAuthenticationScheme(httpAuthScheme);
@@ -151,7 +144,10 @@ public class TokenHttpExchangeClient extends AbstractHttpExchangeClient implemen
 			return true;
 		}
 		Instant expiration = getTokenExpiration();
-		return expiration.isBefore(Instant.now().minus(TOKEN_EXPIRATION_ERROR_MARGIN));
+		if (null == expiration) {
+			return false;
+		}
+		return expiration.isBefore(Instant.now().minus(AuthenticationToken.EXPIRATION_ERROR_MARGIN));
 	}
 
 	/**

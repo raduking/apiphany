@@ -1,36 +1,19 @@
 package org.apiphany.security.oauth2.client;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.http.HttpAuthScheme;
 import org.apiphany.lang.ScopedResource;
-import org.apiphany.lang.Strings;
-import org.apiphany.lang.collections.Maps;
-import org.apiphany.lang.retry.Retry;
-import org.apiphany.lang.retry.WaitCounter;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationTokenProvider;
 import org.apiphany.security.AuthenticationType;
-import org.apiphany.security.oauth2.OAuth2ClientRegistration;
 import org.apiphany.security.oauth2.OAuth2Properties;
-import org.apiphany.security.oauth2.OAuth2ProviderDetails;
+import org.apiphany.security.oauth2.OAuth2TokenProvider;
 import org.apiphany.security.token.client.TokenHttpExchangeClient;
-import org.morphix.lang.JavaObjects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * OAuth2 exchange client, this class decorates an existing {@link ExchangeClient} with automatic OAuth2 support.
- * <p>
- * TODO: implement refresh token functionality<br/>
  *
  * @author Radu Sebastian LAZIN
  */
@@ -39,29 +22,9 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	private static final Logger LOGGER = LoggerFactory.getLogger(OAuth2HttpExchangeClient.class);
 
 	/**
-	 * The maximum number of attempts the {@link #close()} method tries to close the scheduled task.
-	 */
-	private static final int MAX_CLOSE_ATTEMPTS = 10;
-
-	/**
 	 * The exchange client doing the token refresh.
 	 */
 	private final ScopedResource<ExchangeClient> tokenExchangeClient;
-
-	/**
-	 * Underlying client that retrieves the token.
-	 */
-	private AuthenticationTokenProvider tokenClient;
-
-	/**
-	 * Token retrieval scheduler.
-	 */
-	private final ScheduledExecutorService tokenRefreshScheduler;
-
-	/**
-	 * Scheduler enabled flag.
-	 */
-	private final AtomicBoolean schedulerEnabled = new AtomicBoolean(false);
 
 	/**
 	 * Client registration name.
@@ -74,9 +37,9 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	private final OAuth2Properties oAuth2Properties;
 
 	/**
-	 * The scheduled future to stop.
+	 * The token provider.
 	 */
-	private ScheduledFuture<?> scheduledFuture;
+	private OAuth2TokenProvider tokenProvider;
 
 	/**
 	 * Decorates an exchange client with OAuth2 authentication.
@@ -92,17 +55,16 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 		super(exchangeClient);
 
 		this.tokenExchangeClient = ScopedResource.checked(tokenExchangeClient, exchangeClient);
-		this.tokenRefreshScheduler = Executors.newScheduledThreadPool(0, Thread.ofVirtual().factory());
 
 		this.oAuth2Properties = getClientProperties().getCustomProperties(OAuth2Properties.ROOT, OAuth2Properties.class);
 		this.clientRegistrationName = clientRegistrationName;
 
-		setAuthenticationScheme(HttpAuthScheme.BEARER);
-
-		setSchedulerEnabled(initialize());
-		if (isSchedulerEnabled()) {
-			refreshAuthenticationToken();
+		if (initialize()) {
+			this.tokenProvider = new OAuth2TokenProvider(oAuth2Properties, clientRegistrationName,
+					(clientRegistration, providerDetails) -> new OAuth2ApiClient(clientRegistration, providerDetails, tokenExchangeClient.unwrap()));
+			this.clientRegistrationName = tokenProvider.getClientRegistrationName();
 		}
+		setAuthenticationScheme(HttpAuthScheme.BEARER);
 	}
 
 	/**
@@ -189,54 +151,6 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 			LOGGER.warn("[{}] OAuth2 client is disabled!", getName());
 			return false;
 		}
-		if (Maps.isEmpty(oAuth2Properties.getRegistration())) {
-			LOGGER.warn("[{}] No OAuth2 client registrations provided in: {}.registration", getName(), OAuth2Properties.ROOT);
-			return false;
-		}
-		if (Maps.isEmpty(oAuth2Properties.getProvider())) {
-			LOGGER.warn("[{}] No OAuth2 providers provided in: {}.provider", getName(), OAuth2Properties.ROOT);
-			return false;
-		}
-		// TODO: implement for multiple registrations
-		String name = Strings.isNotEmpty(clientRegistrationName)
-				? clientRegistrationName
-				: oAuth2Properties.getRegistration().keySet().iterator().next();
-		if (!initialize(name)) {
-			return false;
-		}
-		setClientRegistrationName(name);
-
-		return null != tokenClient;
-	}
-
-	/**
-	 * Try to initialize OAuth2 properties and the OAuth2 API client based on the given client registration name. Returns
-	 * true if the initialization of the properties was successful, false otherwise.
-	 *
-	 * @param clientRegistrationName client registration name
-	 * @return true if the initialization was successful, false otherwise
-	 */
-	@SuppressWarnings("resource")
-	private boolean initialize(final String clientRegistrationName) {
-		OAuth2ClientRegistration clientRegistration = oAuth2Properties.getClientRegistration(clientRegistrationName);
-		if (null == clientRegistration) {
-			LOGGER.warn("[{}] No OAuth2 client provided for client registration in {}.registration.{}",
-					getName(), OAuth2Properties.ROOT, clientRegistrationName);
-			return false;
-		}
-		if (!clientRegistration.hasClientSecret()) {
-			LOGGER.warn("[{}] No OAuth2 client-secret provided in {}.registration.{}",
-					getName(), OAuth2Properties.ROOT, clientRegistrationName);
-			return false;
-		}
-		OAuth2ProviderDetails providerDetails = oAuth2Properties.getProviderDetails(clientRegistration);
-		if (null == providerDetails) {
-			LOGGER.warn("[{}] No OAuth2 provider named '{}' for found in in {}.provider",
-					getName(), clientRegistration.getProvider(), OAuth2Properties.ROOT);
-			return false;
-		}
-
-		this.tokenClient = new OAuth2ApiClient(clientRegistration, providerDetails, tokenExchangeClient.unwrap());
 		return true;
 	}
 
@@ -246,28 +160,10 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	@Override
 	public void close() throws Exception {
 		super.close();
-		closeTokenRefreshScheduler();
-		tokenExchangeClient.closeIfManaged();
-		if (tokenClient instanceof AutoCloseable closeable) {
+		if (tokenProvider instanceof AutoCloseable closeable) {
 			closeable.close();
 		}
-	}
-
-	/**
-	 * Safely closes the token refresh scheduler.
-	 */
-	private void closeTokenRefreshScheduler() {
-		boolean cancelled = true;
-		if (null != scheduledFuture) {
-			Retry retry = Retry.of(WaitCounter.of(MAX_CLOSE_ATTEMPTS, Duration.ofMillis(200)));
-			cancelled = retry.when(() -> scheduledFuture.cancel(false), Boolean::booleanValue);
-		}
-		if (cancelled) {
-			tokenRefreshScheduler.close();
-		} else {
-			List<Runnable> runningTasks = tokenRefreshScheduler.shutdownNow();
-			LOGGER.warn("Still running tasks count: {}", runningTasks.size());
-		}
+		tokenExchangeClient.closeIfManaged();
 	}
 
 	/**
@@ -304,77 +200,10 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	 */
 	@Override
 	public AuthenticationToken getAuthenticationToken() {
-		if (isNewTokenNeeded()) {
-			updateAuthenticationToken();
+		if (null != tokenProvider) {
+			return tokenProvider.getAuthenticationToken();
 		}
 		return super.getAuthenticationToken();
-	}
-
-	/**
-	 * Refreshes the authentication token.
-	 */
-	private void refreshAuthenticationToken() {
-		updateAuthenticationToken();
-		if (isSchedulerDisabled()) {
-			return;
-		}
-		// schedule new token checking
-		Instant expiration = getTokenExpiration().minus(TOKEN_EXPIRATION_ERROR_MARGIN);
-		Instant scheduled = JavaObjects.max(expiration, Instant.now());
-		Duration delay = Duration.between(Instant.now(), scheduled);
-		scheduledFuture = tokenRefreshScheduler.schedule(this::refreshAuthenticationToken, delay.toMillis(), TimeUnit.MILLISECONDS);
-	}
-
-	/**
-	 * Updates the authentication token by retrieving a new one.
-	 */
-	private void updateAuthenticationToken() {
-		LOGGER.debug("[{}] Token expired, requesting new token.", getName());
-		Instant expiration = Instant.now();
-		try {
-			AuthenticationToken token = tokenClient.getAuthenticationToken();
-			token.setExpiration(expiration.plusSeconds(token.getExpiresIn()));
-			setAuthenticationToken(token);
-			LOGGER.debug("[{}] Successfully retrieved new token.", getName());
-		} catch (Exception e) {
-			LOGGER.error("[{}] Error retrieving new token.", getName());
-		}
-	}
-
-	/**
-	 * Returns true if the scheduler is enabled, false otherwise.
-	 *
-	 * @return true if the scheduler is enabled, false otherwise
-	 */
-	public boolean isSchedulerEnabled() {
-		return schedulerEnabled.get();
-	}
-
-	/**
-	 * Returns true if the scheduler is disabled, false otherwise.
-	 *
-	 * @return true if the scheduler is disabled, false otherwise
-	 */
-	public boolean isSchedulerDisabled() {
-		return !isSchedulerEnabled();
-	}
-
-	/**
-	 * Enables/disables the scheduler.
-	 *
-	 * @param schedulerEnabled scheduler enable flag
-	 */
-	public void setSchedulerEnabled(final boolean schedulerEnabled) {
-		this.schedulerEnabled.set(schedulerEnabled);
-	}
-
-	/**
-	 * Returns the refresh scheduler.
-	 *
-	 * @return the refresh scheduler
-	 */
-	protected ScheduledExecutorService getTokenRefreshScheduler() {
-		return tokenRefreshScheduler;
 	}
 
 	/**
@@ -383,6 +212,15 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	 * @return the token client
 	 */
 	protected AuthenticationTokenProvider getTokenClient() {
-		return tokenClient;
+		return tokenProvider.getTokenClient();
+	}
+
+	/**
+	 * Returns the token provider.
+	 *
+	 * @return the token provider
+	 */
+	protected OAuth2TokenProvider getTokenProvider() {
+		return tokenProvider;
 	}
 }
