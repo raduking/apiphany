@@ -5,11 +5,11 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 import org.apiphany.json.jackson.JacksonJsonBuilder;
+import org.apiphany.lang.Pair;
 import org.apiphany.lang.Strings;
 import org.morphix.convert.Converter;
 import org.morphix.reflection.Constructors;
 import org.morphix.reflection.GenericClass;
-import org.morphix.reflection.Reflection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -99,32 +99,9 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	private static class InstanceHolder {
 
 		/**
-		 * Jackson JSON library ObjectMapper class name.
-		 */
-		private static final String JACKSON_OBJECT_MAPPER_CLASS_NAME = "com.fasterxml.jackson.databind.ObjectMapper";
-
-		/**
-		 * Flag that shows if Jackson JSON library is present in the class path.
-		 */
-		private static final boolean JACKSON_PRESENT = null != Reflection.getClass(JACKSON_OBJECT_MAPPER_CLASS_NAME);
-
-		/**
 		 * Singleton instance.
 		 */
-		private static final JsonBuilder INSTANCE = initializeInstance();
-
-		/**
-		 * Initializes the singleton instance.
-		 *
-		 * @return a JSON builder
-		 */
-		private static JsonBuilder initializeInstance() {
-			if (JACKSON_PRESENT) {
-				return Constructors.IgnoreAccess.newInstance(JacksonJsonBuilder.class);
-			}
-			LOGGER.warn("{}, JsonBuilder.toJson will use the objects toString method!", ErrorMessage.JSON_LIBRARY_NOT_FOUND);
-			return new JsonBuilder();
-		}
+		private static final JsonBuilder INSTANCE = initializeInstance(JacksonJsonBuilder.JACKSON_LIBRARY_INFO);
 	}
 
 	/**
@@ -149,6 +126,24 @@ public class JsonBuilder { // NOSONAR singleton implementation
 		this.indentOutput = isPropertyTrue(Property.INDENT_OUTPUT);
 		computeLineSeparator(indentOutput);
 		this.debugString = isPropertyTrue(Property.DEBUG_STRING);
+	}
+
+	/**
+	 * Returns an instance based on the available JSON libraries.
+	 *
+	 * @return a JSON builder
+	 */
+	@SafeVarargs
+	protected static JsonBuilder initializeInstance(final Pair<Boolean, Class<? extends JsonBuilder>>... libraries) {
+		if (null != libraries) {
+			for (Pair<Boolean, Class<? extends JsonBuilder>> libraryInfo : libraries) {
+				if (libraryInfo.left().booleanValue()) {
+					return Constructors.IgnoreAccess.newInstance(libraryInfo.right());
+				}
+			}
+		}
+		LOGGER.warn("{}, JsonBuilder.toJson will use the objects toString method!", ErrorMessage.JSON_LIBRARY_NOT_FOUND);
+		return new JsonBuilder();
 	}
 
 	/**
@@ -244,7 +239,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 * {@link #toString(Object)} otherwise.
 	 */
 	public <T> String toJsonString(final T obj) {
-		return Strings.safeToString(obj);
+		return toString(obj);
 	}
 
 	/**
@@ -371,7 +366,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 * @return true if Jackson library is present in the class path
 	 */
 	public static boolean isJacksonPresent() {
-		return InstanceHolder.JACKSON_PRESENT;
+		return JacksonJsonBuilder.JACKSON_LIBRARY_INFO.left().booleanValue();
 	}
 
 	/**
@@ -383,7 +378,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 * @return JSON String
 	 */
 	protected static <T> String toString(final T obj) {
-		return "{ \"hash\": \"" + hexHash(obj) + "\" }";
+		return "{ \"hash\":\"" + hexHash(obj) + "\" }";
 	}
 
 	/**
@@ -395,6 +390,9 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 * @return JSON String
 	 */
 	protected static <T> String toDebugString(final T obj) {
+		if (null == obj) {
+			return "{ \"type\":null, \"hash\":" + hexHash(obj) + " }";
+		}
 		class FieldExtractor {
 			Long id;
 		}

@@ -10,6 +10,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Objects;
 
+import org.apiphany.lang.Pair;
 import org.apiphany.lang.Strings;
 import org.junit.jupiter.api.Test;
 import org.morphix.reflection.Constructors;
@@ -110,10 +111,37 @@ class JsonBuilderTest {
 	}
 
 	@Test
+	void shouldTransformGenericObjectToJsonAndReadItBack() {
+		List<A> list1 = List.of(new A(CUSTOMER_ID1, TENANT_ID1));
+
+		Object json1 = Strings.removeAllWhitespace(JsonBuilder.toJson(list1));
+
+		List<A> list2 = JsonBuilder.fromJson(json1, new GenericClass<List<A>>() {
+			// empty
+		});
+
+		Object json2 = Strings.removeAllWhitespace(JsonBuilder.toJson(list2));
+
+		assertThat(json1, equalTo(json2));
+	}
+
+	@Test
 	void shouldThrowExceptionWhenReadingJsonObjectWithAnUnsupportedType() {
 		Object o = new Object();
 		UnsupportedOperationException e = assertThrows(UnsupportedOperationException.class,
 				() -> JsonBuilder.fromJson(o, A.class));
+
+		assertThat(e.getMessage(), equalTo("Unsupported JSON input type: " + Object.class));
+	}
+
+	@Test
+	void shouldThrowExceptionWhenReadingGenericJsonObjectWithAnUnsupportedType() {
+		GenericClass<List<A>> type = new GenericClass<>() {
+			// empty
+		};
+		Object o = new Object();
+		UnsupportedOperationException e = assertThrows(UnsupportedOperationException.class,
+				() -> JsonBuilder.fromJson(o, type));
 
 		assertThat(e.getMessage(), equalTo("Unsupported JSON input type: " + Object.class));
 	}
@@ -169,7 +197,7 @@ class JsonBuilderTest {
 	}
 
 	@Test
-	void shouldReturnTheDebugString() {
+	void shouldReturnTheDebugStringForObjectsWithId() {
 		B b = new B(TEST_LONG);
 
 		String result = JsonBuilder.toDebugString(b);
@@ -177,5 +205,52 @@ class JsonBuilderTest {
 		String expected = "{ \"type\":\"B\", \"id\":\"" + TEST_LONG + "\", \"hash\":\"" + JsonBuilder.hexHash(b) + "\" }";
 
 		assertThat(result, equalTo(expected));
+	}
+
+	@Test
+	void shouldReturnTheDebugString() {
+		Object o = new Object();
+
+		String result = JsonBuilder.toDebugString(o);
+
+		String expected = "{ \"type\":\"Object\", \"hash\":\"" + JsonBuilder.hexHash(o) + "\" }";
+
+		assertThat(result, equalTo(expected));
+	}
+
+	@Test
+	void shouldReturnTheDebugStringForNullObjects() {
+		String o = null;
+
+		String result = JsonBuilder.toDebugString(o);
+
+		String expected = "{ \"type\":null, \"hash\":" + JsonBuilder.hexHash(o) + " }";
+
+		assertThat(result, equalTo(expected));
+	}
+
+	@Test
+	void shouldReturnSimilarToDebugStringIfJsonLibraryIsNotPresent() {
+		Object o = new Object();
+
+		String result = jsonBuilder.toJsonString(o);
+
+		String expected = "{ \"hash\":\"" + JsonBuilder.hexHash(o) + "\" }";
+
+		assertThat(result, equalTo(expected));
+	}
+
+	@Test
+	void shouldReturnAJsonBuilderInstanceIfNoLibraryInfoIsProvided() {
+		JsonBuilder instance = JsonBuilder.initializeInstance((Pair<Boolean, Class<? extends JsonBuilder>>[]) null);
+
+		assertThat(instance.getClass(), equalTo(JsonBuilder.class));
+	}
+
+	@Test
+	void shouldReturnAJsonBuilderInstanceIfNoLibraryIsInTheClassPath() {
+		JsonBuilder instance = JsonBuilder.initializeInstance(Pair.of(false, null));
+
+		assertThat(instance.getClass(), equalTo(JsonBuilder.class));
 	}
 }
