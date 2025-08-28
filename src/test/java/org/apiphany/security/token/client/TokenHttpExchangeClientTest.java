@@ -3,7 +3,6 @@ package org.apiphany.security.token.client;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
 
 import java.time.Instant;
@@ -207,17 +206,6 @@ class TokenHttpExchangeClientTest {
 
 		String expectedMessage = HttpException.exceptionMessage(HttpStatus.UNAUTHORIZED, "Missing authentication token");
 		assertThat(e.getMessage(), equalTo(expectedMessage));
-	}
-
-	@Test
-	void shouldRequireNewAuthenticationTokenIfTokenWasNotInitialized() {
-		exchangeClientSetup(null);
-
-		client = new TokenHttpExchangeClient(exchangeClient);
-
-		boolean newTokenNeeded = client.isNewTokenNeeded();
-
-		assertTrue(newTokenNeeded);
 	}
 
 	@SuppressWarnings("resource")

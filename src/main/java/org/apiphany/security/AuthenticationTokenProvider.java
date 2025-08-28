@@ -1,5 +1,7 @@
 package org.apiphany.security;
 
+import org.morphix.lang.Nullables;
+
 /**
  * Provides authentication tokens for security purposes. Implementations of this interface are responsible for
  * generating or retrieving authentication tokens that can be used to authenticate requests or establish secure
@@ -21,4 +23,16 @@ public interface AuthenticationTokenProvider {
 	 */
 	AuthenticationToken getAuthenticationToken();
 
+	/**
+	 * Returns the token if valid (not null), throws {@link AuthenticationException} otherwise.
+	 *
+	 * @param authenticationToken authentication token
+	 * @return the token if valid, exception otherwise
+	 * @throws AuthenticationException if the token is invalid.
+	 */
+	static AuthenticationToken valid(final AuthenticationToken authenticationToken) {
+		return Nullables.nonNullOrDefault(authenticationToken, () -> {
+			throw new AuthenticationException("Missing authentication token");
+		});
+	}
 }

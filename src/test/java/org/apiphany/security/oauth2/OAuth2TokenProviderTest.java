@@ -1,12 +1,15 @@
 package org.apiphany.security.oauth2;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -19,7 +22,10 @@ import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 
+import org.apiphany.http.HttpException;
+import org.apiphany.http.HttpStatus;
 import org.apiphany.lang.Strings;
+import org.apiphany.security.AuthenticationException;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationTokenProvider;
 import org.apiphany.security.JwtTokenValidator;
@@ -187,9 +193,25 @@ class OAuth2TokenProviderTest {
 		assertThat(tokenProvider.getClientRegistrationName(), equalTo(CLIENT_REGISTRATION_NAME));
 	}
 
+	@Test
+	void shouldThrowExceptionWhenGettingTokenIfTokenRetrievalThrowsException() {
+		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
+		doReturn(clientRegistration).when(oAuth2Properties).getClientRegistration(CLIENT_REGISTRATION_NAME);
+		doReturn(true).when(clientRegistration).hasClientSecret();
+		doReturn(Map.of(PROVIDER_NAME, providerDetails)).when(oAuth2Properties).getProvider();
+		doReturn(providerDetails).when(oAuth2Properties).getProviderDetails(clientRegistration);
+
+		doThrow(new RuntimeException("Error getting token")).when(tokenClient).getAuthenticationToken();
+
+		tokenProvider = new OAuth2TokenProvider(oAuth2Properties, CLIENT_REGISTRATION_NAME, (cr, pd) -> tokenClient);
+
+		AuthenticationException e = assertThrows(AuthenticationException.class, tokenProvider::getAuthenticationToken);
+		assertThat(e.getMessage(), equalTo(HttpException.exceptionMessage(HttpStatus.UNAUTHORIZED, "Missing authentication token")));
+	}
+
 	@SuppressWarnings("resource")
 	@Test
-	void shouldCloseTheTokenProviderResource() throws Exception {
+	void shouldGetTokenAndCloseTheTokenProviderResource() throws Exception {
 		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
 		doReturn(clientRegistration).when(oAuth2Properties).getClientRegistration(CLIENT_REGISTRATION_NAME);
 		doReturn(true).when(clientRegistration).hasClientSecret();
@@ -205,11 +227,13 @@ class OAuth2TokenProviderTest {
 		doReturn(true).when(scheduledFuture).cancel(false);
 		doReturn(scheduledFuture).when(scheduledExecutorService).schedule(any(Runnable.class), anyLong(), any());
 
+		AuthenticationToken token = null;
 		try (OAuth2TokenProvider localTokenProvider =
 				new OAuth2TokenProvider(oAuth2Properties, null, scheduledExecutorService, (cr, pd) -> localTokenClient)) {
-			// empty
+			token = localTokenProvider.getAuthenticationToken();
 		}
 
+		assertThat(token, notNullValue());
 		verify(scheduledFuture).cancel(false);
 		verify(scheduledExecutorService).close();
 		verify(localTokenClient).close();
@@ -261,6 +285,25 @@ class OAuth2TokenProviderTest {
 
 		verify(scheduledExecutorService).close();
 		verifyNoMoreInteractions(scheduledExecutorService);
+	}
+
+	@SuppressWarnings("resource")
+	@Test
+	void shouldThrowExceptionOnGettingTokenIfNotInitialized() throws Exception {
+		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
+		doReturn(clientRegistration).when(oAuth2Properties).getClientRegistration(CLIENT_REGISTRATION_NAME);
+		doReturn(true).when(clientRegistration).hasClientSecret();
+		doReturn(Map.of(PROVIDER_NAME, providerDetails)).when(oAuth2Properties).getProvider();
+
+		ScheduledExecutorService scheduledExecutorService = mock(ScheduledExecutorService.class);
+
+		AuthenticationException e = null;
+		try (OAuth2TokenProvider localTokenProvider =
+				new OAuth2TokenProvider(oAuth2Properties, null, scheduledExecutorService, (cr, pd) -> null)) {
+			e = assertThrows(AuthenticationException.class, localTokenProvider::getAuthenticationToken);
+		}
+
+		assertThat(e.getMessage(), equalTo(HttpException.exceptionMessage(HttpStatus.UNAUTHORIZED, "Missing authentication token")));
 	}
 
 	private static AuthenticationToken createToken() {
