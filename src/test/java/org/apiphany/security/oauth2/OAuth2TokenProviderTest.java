@@ -116,7 +116,7 @@ class OAuth2TokenProviderTest {
 		doReturn(Collections.emptyMap()).when(oAuth2Properties).getRegistration();
 		tokenProvider = new OAuth2TokenProvider(oAuth2Properties, null, (cr, pd) -> null);
 
-		assertFalse(tokenProvider.isSchedulerEnabled());
+		assertTrue(tokenProvider.isSchedulerDisabled());
 	}
 
 	@Test
@@ -180,6 +180,11 @@ class OAuth2TokenProviderTest {
 		tokenProvider = new OAuth2TokenProvider(oAuth2Properties, CLIENT_REGISTRATION_NAME, (cr, pd) -> tokenClient);
 
 		assertTrue(tokenProvider.isSchedulerEnabled());
+		assertFalse(tokenProvider.isSchedulerDisabled());
+		assertThat(tokenProvider.getTokenClient(), equalTo(tokenClient));
+		assertThat(tokenProvider.getClientRegistration(), equalTo(clientRegistration));
+		assertThat(tokenProvider.getProviderDetails(), equalTo(providerDetails));
+		assertThat(tokenProvider.getClientRegistrationName(), equalTo(CLIENT_REGISTRATION_NAME));
 	}
 
 	@SuppressWarnings("resource")
