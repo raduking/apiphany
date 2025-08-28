@@ -42,6 +42,11 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	private static final int MAX_CLOSE_ATTEMPTS = 10;
 
 	/**
+	 * The minimum refresh interval when the token could not be retrieved.
+	 */
+	private static final Duration MIN_REFRESH_INTERVAL = Duration.ofMillis(500);
+
+	/**
 	 * The client doing the token refresh.
 	 */
 	private AuthenticationTokenProvider tokenClient;
@@ -91,22 +96,39 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 *
 	 * @param oAuth2Properties the OAuth2 properties
 	 * @param clientRegistrationName the wanted client registration name
+	 * @param tokenRefreshScheduler the token refresh scheduler
 	 * @param tokenClientSupplier the supplier for the client that will make the actual token requests
 	 */
 	public OAuth2TokenProvider(
 			final OAuth2Properties oAuth2Properties,
 			final String clientRegistrationName,
+			final ScheduledExecutorService tokenRefreshScheduler,
 			final BiFunction<OAuth2ClientRegistration, OAuth2ProviderDetails, AuthenticationTokenProvider> tokenClientSupplier) {
-		this.tokenRefreshScheduler = Executors.newScheduledThreadPool(0, Thread.ofVirtual().factory());
-
+		this.tokenRefreshScheduler = tokenRefreshScheduler;
 		this.defaultExpirationSupplier = Instant::now;
 		this.clientRegistrationName = clientRegistrationName;
 
 		setSchedulerEnabled(initialize(oAuth2Properties));
 		if (isSchedulerEnabled()) {
 			this.tokenClient = tokenClientSupplier.apply(clientRegistration, providerDetails);
-			refreshAuthenticationToken();
+			updateAuthenticationToken();
 		}
+	}
+
+	/**
+	 * Creates a new authentication token provider.
+	 *
+	 * @param oAuth2Properties the OAuth2 properties
+	 * @param clientRegistrationName the wanted client registration name
+	 * @param tokenClientSupplier the supplier for the client that will make the actual token requests
+	 */
+	@SuppressWarnings("resource")
+	public OAuth2TokenProvider(
+			final OAuth2Properties oAuth2Properties,
+			final String clientRegistrationName,
+			final BiFunction<OAuth2ClientRegistration, OAuth2ProviderDetails, AuthenticationTokenProvider> tokenClientSupplier) {
+		this(oAuth2Properties, clientRegistrationName,
+				Executors.newScheduledThreadPool(0, Thread.ofVirtual().factory()), tokenClientSupplier);
 	}
 
 	/**
@@ -186,7 +208,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	private void closeTokenRefreshScheduler() {
 		boolean cancelled = null == scheduledFuture;
 		if (!cancelled) {
-			Retry retry = Retry.of(WaitCounter.of(MAX_CLOSE_ATTEMPTS, Duration.ofMillis(200)));
+			Retry retry = Retry.of(WaitCounter.of(getMaxScheduledFutureCloseAttempts(), Duration.ofMillis(200)));
 			cancelled = retry.when(() -> scheduledFuture.cancel(false), Boolean::booleanValue);
 		}
 		if (cancelled) {
@@ -246,28 +268,12 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	}
 
 	/**
-	 * Returns true if a new token is needed, false otherwise.
-	 *
-	 * @return true if a new token is needed, false otherwise
-	 */
-	protected boolean isNewTokenNeeded() {
-		if (null == authenticationToken) {
-			return true;
-		}
-		Instant expiration = getTokenExpiration();
-		return expiration.isBefore(Instant.now().minus(AuthenticationToken.EXPIRATION_ERROR_MARGIN));
-	}
-
-	/**
 	 * Returns the authentication token. If the current token is expired, it tries to retrieve a new one.
 	 *
 	 * @return the authentication token
 	 */
 	@Override
 	public AuthenticationToken getAuthenticationToken() {
-		if (isNewTokenNeeded()) {
-			updateAuthenticationToken();
-		}
 		return authenticationToken;
 	}
 
@@ -281,22 +287,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	}
 
 	/**
-	 * Refreshes the authentication token.
-	 */
-	private void refreshAuthenticationToken() {
-		updateAuthenticationToken();
-		if (isSchedulerDisabled()) {
-			return;
-		}
-		// schedule new token checking
-		Instant expiration = getTokenExpiration().minus(AuthenticationToken.EXPIRATION_ERROR_MARGIN);
-		Instant scheduled = JavaObjects.max(expiration, Instant.now());
-		Duration delay = Duration.between(Instant.now(), scheduled);
-		scheduledFuture = tokenRefreshScheduler.schedule(this::refreshAuthenticationToken, delay.toMillis(), TimeUnit.MILLISECONDS);
-	}
-
-	/**
-	 * Updates the authentication token by retrieving a new one.
+	 * Updates the authentication token.
 	 */
 	private void updateAuthenticationToken() {
 		LOGGER.debug("[{}] Token expired, requesting new token.", getName());
@@ -309,6 +300,18 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 		} catch (Exception e) {
 			LOGGER.error("[{}] Error retrieving new token.", getName());
 		}
+		scheduleTokenUpdate();
+	}
+
+	/**
+	 * Schedules the token update.
+	 */
+	private void scheduleTokenUpdate() {
+		Instant expiration = getTokenExpiration().minus(AuthenticationToken.EXPIRATION_ERROR_MARGIN);
+		Instant scheduled = JavaObjects.max(expiration, Instant.now());
+		Duration delay = Duration.between(Instant.now(), scheduled);
+		delay = JavaObjects.max(delay, MIN_REFRESH_INTERVAL);
+		scheduledFuture = tokenRefreshScheduler.schedule(this::updateAuthenticationToken, delay.toMillis(), TimeUnit.MILLISECONDS);
 	}
 
 	/**
@@ -336,15 +339,6 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 */
 	public void setSchedulerEnabled(final boolean schedulerEnabled) {
 		this.schedulerEnabled.set(schedulerEnabled);
-	}
-
-	/**
-	 * Returns the refresh scheduler.
-	 *
-	 * @return the refresh scheduler
-	 */
-	protected ScheduledExecutorService getTokenRefreshScheduler() {
-		return tokenRefreshScheduler;
 	}
 
 	/**
@@ -381,5 +375,14 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 */
 	public OAuth2ProviderDetails getProviderDetails() {
 		return providerDetails;
+	}
+
+	/**
+	 * Returns the maximum attempts that the scheduled future cancel will be called.
+	 *
+	 * @return the maximum attempts that the scheduled future cancel will be called
+	 */
+	protected int getMaxScheduledFutureCloseAttempts() {
+		return MAX_CLOSE_ATTEMPTS;
 	}
 }

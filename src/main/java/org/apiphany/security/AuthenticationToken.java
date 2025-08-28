@@ -29,9 +29,9 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 public class AuthenticationToken {
 
 	/**
-	 * Duration for error margin when checking token expiration - 1 second.
+	 * Duration for error margin when checking token expiration - 5 seconds.
 	 */
-	public static final Duration EXPIRATION_ERROR_MARGIN = Duration.ofSeconds(1);
+	public static final Duration EXPIRATION_ERROR_MARGIN = Duration.ofSeconds(5);
 
 	/**
 	 * The access token used for authenticating requests.
