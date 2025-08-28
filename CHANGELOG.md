@@ -16,6 +16,8 @@ Added `ApiResponse.orRethrow` to re-throw the exception wrapped into another exc
 Added `ScopedResource.isNotManaged` method which returns true if the underlying resource is not managed.
 Added `ScopedResource.checked` method to check for the same resource being managed twice.
 Changed `OAuth2HttpExchangeClient` to properly handle managed and unmanaged resources.
+Added `OAuth2TokenProvider` to handle OAuth2 tokens.
+Added `AuthenticationToken.EXPIRATION_ERROR_MARGIN` for token expiration checking.
 
 ---
 
