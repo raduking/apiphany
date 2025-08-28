@@ -13,7 +13,6 @@ import org.apiphany.header.Headers;
 import org.apiphany.http.HttpAuthScheme;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.lang.ScopedResource;
-import org.apiphany.security.AuthenticationException;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationTokenProvider;
 import org.apiphany.security.AuthenticationType;
@@ -45,7 +44,7 @@ public class TokenHttpExchangeClient extends AbstractHttpExchangeClient implemen
 	private HttpAuthScheme authenticationScheme;
 
 	/**
-	 * Supplies the default token expiration (default is {@code null}.
+	 * Supplies the default token expiration.
 	 */
 	private Supplier<Instant> defaultExpirationSupplier;
 
@@ -59,7 +58,7 @@ public class TokenHttpExchangeClient extends AbstractHttpExchangeClient implemen
 		super(exchangeClient.unwrap().getClientProperties());
 
 		this.exchangeClient = exchangeClient;
-		this.defaultExpirationSupplier = Nullables.supplyNull();
+		this.defaultExpirationSupplier = Instant::now;
 
 		initialize();
 	}
@@ -135,22 +134,6 @@ public class TokenHttpExchangeClient extends AbstractHttpExchangeClient implemen
 	}
 
 	/**
-	 * Returns true if a new token is needed, false otherwise.
-	 *
-	 * @return true if a new token is needed, false otherwise
-	 */
-	public boolean isNewTokenNeeded() {
-		if (null == authenticationToken) {
-			return true;
-		}
-		Instant expiration = getTokenExpiration();
-		if (null == expiration) {
-			return false;
-		}
-		return expiration.isBefore(Instant.now().minus(AuthenticationToken.EXPIRATION_ERROR_MARGIN));
-	}
-
-	/**
 	 * Returns the default token expiration date.
 	 *
 	 * @return the default token expiration date
@@ -175,10 +158,7 @@ public class TokenHttpExchangeClient extends AbstractHttpExchangeClient implemen
 	 */
 	@Override
 	public AuthenticationToken getAuthenticationToken() {
-		if (null == authenticationToken) {
-			throw new AuthenticationException("Missing authentication token");
-		}
-		return authenticationToken;
+		return AuthenticationTokenProvider.valid(authenticationToken);
 	}
 
 	/**

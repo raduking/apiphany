@@ -274,7 +274,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 */
 	@Override
 	public AuthenticationToken getAuthenticationToken() {
-		return authenticationToken;
+		return AuthenticationTokenProvider.valid(authenticationToken);
 	}
 
 	/**
