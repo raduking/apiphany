@@ -19,11 +19,13 @@ import javax.crypto.KeyAgreement;
 
 import org.apiphany.io.BytesOrder;
 import org.apiphany.lang.Bytes;
+import org.apiphany.security.KeyExchangeHandler;
 
-public class X25519Keys implements TLSKeysHandler {
+public class X25519Keys implements KeyExchangeHandler {
 
 	public static final String ALGORITHM = "XDH";
-	private static final int BYTES = 32;
+
+	private static final int PUBLIC_KEY_SIZE = 32;
 
 	private String algorithm;
 	private KeyFactory keyFactory;
@@ -56,7 +58,7 @@ public class X25519Keys implements TLSKeysHandler {
 	}
 
 	@Override
-	public PublicKey from(final byte[] publicKeyBytes, final BytesOrder bytesOrder) {
+	public PublicKey publicKeyFrom(final byte[] publicKeyBytes, final BytesOrder bytesOrder) {
 		try {
 			return switch (bytesOrder) {
 			case LITTLE_ENDIAN -> fromLittleEndian(publicKeyBytes);
@@ -73,7 +75,7 @@ public class X25519Keys implements TLSKeysHandler {
 	}
 
 	public PublicKey fromBigEndian(final byte[] publicKeyBytes) throws InvalidKeySpecException {
-		BigInteger u = new BigInteger(1, publicKeyBytes); // '1' for positive number
+		BigInteger u = new BigInteger(1, publicKeyBytes);
 		XECPublicKeySpec pubKeySpec = new XECPublicKeySpec(NamedParameterSpec.X25519, u);
 		return keyFactory.generatePublic(pubKeySpec);
 	}
@@ -103,16 +105,16 @@ public class X25519Keys implements TLSKeysHandler {
 		BigInteger u = ((XECPublicKey) publicKey).getU();
 		byte[] bigEndian = u.toByteArray();
 
-		byte[] beNormalized = new byte[BYTES];
-		if (bigEndian.length > BYTES) {
+		byte[] beNormalized = new byte[PUBLIC_KEY_SIZE];
+		if (bigEndian.length > PUBLIC_KEY_SIZE) {
 			// Strip sign byte if present
-			if (bigEndian.length == BYTES + 1 && bigEndian[0] == 0x00) {
-				System.arraycopy(bigEndian, 1, beNormalized, 0, BYTES);
+			if (bigEndian.length == PUBLIC_KEY_SIZE + 1 && bigEndian[0] == 0x00) {
+				System.arraycopy(bigEndian, 1, beNormalized, 0, PUBLIC_KEY_SIZE);
 			} else {
 				throw new IllegalArgumentException("BigInteger too large: " + bigEndian.length);
 			}
 		} else {
-			System.arraycopy(bigEndian, 0, beNormalized, BYTES - bigEndian.length, bigEndian.length);
+			System.arraycopy(bigEndian, 0, beNormalized, PUBLIC_KEY_SIZE - bigEndian.length, bigEndian.length);
 		}
 		return beNormalized;
 	}
