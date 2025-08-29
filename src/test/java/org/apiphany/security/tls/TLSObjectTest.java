@@ -22,7 +22,6 @@ import org.apiphany.security.ssl.SSLProperties;
 import org.apiphany.security.ssl.SSLProtocol;
 import org.apiphany.security.ssl.server.SimpleHttpsServer;
 import org.apiphany.security.tls.client.MinimalTLSClient;
-import org.apiphany.security.tls.client.PseudoRandomFunction;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -202,7 +201,7 @@ class TLSObjectTest {
 		Arrays.fill(secret, (byte) 0x0b);
 
 		byte[] seedBytes = seed.getBytes(StandardCharsets.US_ASCII);
-		byte[] output = PseudoRandomFunction.apply(secret, label, seedBytes, length, HMAC_SHA384);
+		byte[] output = PRF.apply(secret, label, seedBytes, length, HMAC_SHA384);
 
 		String hexOutput = Hex.string(output).toLowerCase().trim();
 

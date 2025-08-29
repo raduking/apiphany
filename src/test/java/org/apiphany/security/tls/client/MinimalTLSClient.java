@@ -32,6 +32,7 @@ import org.apiphany.io.UInt64;
 import org.apiphany.lang.Bytes;
 import org.apiphany.lang.Hex;
 import org.apiphany.lang.Strings;
+import org.apiphany.security.KeyExchangeHandler;
 import org.apiphany.security.MessageDigestAlgorithm;
 import org.apiphany.security.ssl.SSLProtocol;
 import org.apiphany.security.tls.AdditionalAuthenticatedData;
@@ -53,6 +54,7 @@ import org.apiphany.security.tls.Finished;
 import org.apiphany.security.tls.Handshake;
 import org.apiphany.security.tls.KeyExchangeAlgorithm;
 import org.apiphany.security.tls.NamedCurve;
+import org.apiphany.security.tls.PRF;
 import org.apiphany.security.tls.PRFLabel;
 import org.apiphany.security.tls.RSAEncryptedPreMaster;
 import org.apiphany.security.tls.Record;
@@ -240,10 +242,10 @@ public class MinimalTLSClient implements AutoCloseable {
 		accumulateHandshakes(clientKeyExchangeRecord.getFragments(Handshake.class));
 
 		// 5. Derive Master Secret and Keys
-		byte[] masterSecret = PseudoRandomFunction.apply(preMasterSecret, PRFLabel.MASTER_SECRET,
+		byte[] masterSecret = PRF.apply(preMasterSecret, PRFLabel.MASTER_SECRET,
 				Bytes.concatenate(clientRandom, serverRandom), 48, prfAlgorithm);
 		LOGGER.debug("Master secret:\n{}", Hex.dump(masterSecret));
-		byte[] keyBlock = PseudoRandomFunction.apply(masterSecret, PRFLabel.KEY_EXPANSION,
+		byte[] keyBlock = PRF.apply(masterSecret, PRFLabel.KEY_EXPANSION,
 				Bytes.concatenate(serverRandom, clientRandom), (ExchangeKeys.KEY_LENGTH + ExchangeKeys.IV_LENGTH) * 2, prfAlgorithm);
 		// Extract keys
 		exchangeKeys = ExchangeKeys.from(keyBlock, ExchangeKeys.Type.AEAD);
@@ -260,7 +262,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		byte[] handshakeHash = messageDigest.digest(handshakeBytes);
 		LOGGER.debug("Handshake hash:\n{}", Hex.dump(handshakeHash));
 
-		byte[] clientVerifyData = PseudoRandomFunction.apply(masterSecret, PRFLabel.CLIENT_FINISHED, handshakeHash, 12, prfAlgorithm);
+		byte[] clientVerifyData = PRF.apply(masterSecret, PRFLabel.CLIENT_FINISHED, handshakeHash, 12, prfAlgorithm);
 		LOGGER.debug("Computed Client verify data:\n{}", Hex.dump(clientVerifyData));
 		Handshake clientFinishedHandshake = new Handshake(new Finished(clientVerifyData));
 
@@ -277,6 +279,7 @@ public class MinimalTLSClient implements AutoCloseable {
 
 		// 10. Decrypt finished
 		byte[] decrypted = decrypt(serverFinishedRecord, exchangeKeys);
+		@SuppressWarnings("resource")
 		Handshake serverFinishedHandshake = Handshake.from(ByteBufferInputStream.of(decrypted));
 		LOGGER.debug("Received Server Finished (decrypted):{}", serverFinishedHandshake);
 		Finished serverFinished = serverFinishedHandshake.get(Finished.class);
@@ -287,7 +290,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		handshakeHash = messageDigest.digest(handshakeBytes);
 		LOGGER.debug("Handshake hash:\n{}", Hex.dump(handshakeHash));
 
-		byte[] computedVerifyData = PseudoRandomFunction.apply(masterSecret, PRFLabel.SERVER_FINISHED, handshakeHash, 12, prfAlgorithm);
+		byte[] computedVerifyData = PRF.apply(masterSecret, PRFLabel.SERVER_FINISHED, handshakeHash, 12, prfAlgorithm);
 		LOGGER.debug("Computed Server verify data:\n{}", Hex.dump(computedVerifyData));
 		byte[] serverVerifyData = serverFinished.getVerifyData().toByteArray();
 		LOGGER.debug("Received Server verify data:\n{}", Hex.dump(serverVerifyData));
@@ -399,9 +402,9 @@ public class MinimalTLSClient implements AutoCloseable {
 		return decrypted;
 	}
 
-	public byte[] getClientPublicBytes(final ServerKeyExchange ske, final TLSKeysHandler keys) {
+	public byte[] getClientPublicBytes(final ServerKeyExchange ske, final KeyExchangeHandler keys) {
 		byte[] serverPubBytes = ske.getPublicKey().getValue().toByteArray();
-		this.serverPublicKey = keys.from(serverPubBytes, BytesOrder.LITTLE_ENDIAN);
+		this.serverPublicKey = keys.publicKeyFrom(serverPubBytes, BytesOrder.LITTLE_ENDIAN);
 		if (null == clientKeyPair) {
 			this.clientKeyPair = keys.generateKeyPair();
 		}
