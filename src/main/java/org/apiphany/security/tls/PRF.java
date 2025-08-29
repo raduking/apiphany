@@ -25,7 +25,7 @@ public interface PRF {
 	 * @param length the desired output length
 	 * @param algorithm the HMAC algorithm to use (e.g., "HmacSHA256")
 	 * @return the generated pseudo-random bytes
-	 * @throws Exception if cryptographic operations fail
+	 * @throws GeneralSecurityException if cryptographic operations fail
 	 */
 	static byte[] apply(final byte[] secret, final String label, final byte[] seed,
 			final int length, final String algorithm) throws GeneralSecurityException {
