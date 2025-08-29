@@ -28,12 +28,16 @@ class HeadersTest {
 	private static final String V3 = "v3";
 	private static final String V4 = "v4";
 
-	Map<String, List<String>> headers = new HashMap<>() {{
-		put(N1, new ArrayList<>() {{
-			add(V1);
-			add(V2);
-		}});
-	}};
+	Map<String, List<String>> headers = new HashMap<>() {
+		{
+			put(N1, new ArrayList<>() {
+				{
+					add(V1);
+					add(V2);
+				}
+			});
+		}
+	};
 
 	@Test
 	void shouldAddHeadersToExistingHeaders() {
@@ -43,40 +47,41 @@ class HeadersTest {
 
 		var expected = Map.of(
 				N1, List.of(V1, V2),
-				N2, List.of(V3, V4)
-		);
+				N2, List.of(V3, V4));
 
 		assertThat(headers, equalTo(expected));
 	}
 
 	@Test
 	void shouldNotAddNullHeader() {
-		var headersToAdd = Map.of(N2, new ArrayList<>() {{
-			add(null);
-			add(null);
-		}});
+		var headersToAdd = Map.of(N2, new ArrayList<>() {
+			{
+				add(null);
+				add(null);
+			}
+		});
 
 		Headers.addTo(headers, headersToAdd);
 
 		var expected = Map.of(
 				N1, List.of(V1, V2),
-				N2, List.of()
-		);
+				N2, List.of());
 
 		assertThat(headers, equalTo(expected));
 	}
 
 	@Test
 	void shouldNotAddAnythingIfHeaderNameIsNull() {
-		var headersToAdd = new HashMap<String, List<String>>() {{
-			put(null, List.of());
-		}};
+		var headersToAdd = new HashMap<String, List<String>>() {
+			{
+				put(null, List.of());
+			}
+		};
 
 		Headers.addTo(headers, headersToAdd);
 
 		var expected = Map.of(
-				N1, List.of(V1, V2)
-		);
+				N1, List.of(V1, V2));
 
 		assertThat(headers, equalTo(expected));
 	}
