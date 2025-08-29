@@ -57,14 +57,12 @@ class ClientHelloTest {
 				CipherSuite.TLS_RSA_WITH_AES_128_CBC_SHA,
 				CipherSuite.TLS_RSA_WITH_AES_256_CBC_SHA,
 				CipherSuite.TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA,
-				CipherSuite.TLS_RSA_WITH_3DES_EDE_CBC_SHA
-		);
+				CipherSuite.TLS_RSA_WITH_3DES_EDE_CBC_SHA);
 		final List<NamedCurve> namedCurves = List.of(
 				NamedCurve.X25519,
 				NamedCurve.SECP256R1,
 				NamedCurve.SECP384R1,
-				NamedCurve.SECP521R1
-		);
+				NamedCurve.SECP521R1);
 		@SuppressWarnings("deprecation")
 		final List<SignatureAlgorithm> signatureAlgorithms = List.of(
 				SignatureAlgorithm.RSA_PKCS1_SHA256,
@@ -74,8 +72,7 @@ class ClientHelloTest {
 				SignatureAlgorithm.RSA_PKCS1_SHA512,
 				SignatureAlgorithm.ECDSA_SECP521R1_SHA512,
 				SignatureAlgorithm.RSA_PKCS1_SHA1,
-				SignatureAlgorithm.ECDSA_SHA1
-		);
+				SignatureAlgorithm.ECDSA_SHA1);
 
 		Record clientHello = new Record(SSLProtocol.TLS_1_0,
 				new ClientHello(new DeterministicSecureRandom(), cypherSuites, List.of("example.ulfheim.net"), namedCurves, signatureAlgorithms));
