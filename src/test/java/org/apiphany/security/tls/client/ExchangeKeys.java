@@ -10,8 +10,8 @@ public class ExchangeKeys {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ExchangeKeys.class);
 
-    public static final int KEY_LENGTH = 32; // 256-bit AES
-    public static final int IV_LENGTH = 4;
+	public static final int KEY_LENGTH = 32; // 256-bit AES
+	public static final int IV_LENGTH = 4;
 
 	public enum Type {
 		AEAD

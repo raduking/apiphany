@@ -512,7 +512,7 @@ public enum HttpStatus implements Status {
 	/**
 	 * Alias for {@link #value}.
 	 *
-	 * @return  the numeric value of this status code
+	 * @return the numeric value of this status code
 	 */
 	@Override
 	public int getCode() {

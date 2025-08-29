@@ -315,20 +315,20 @@ public class MinimalTLSClient implements AutoCloseable {
 	}
 
 	public String get(final String path) throws Exception {
-	    String request =
-	            "GET " + path + " HTTP/1.1\r\n" +
-	                    "Host: " + host + "\r\n" +
-	                    "Connection: close\r\n\r\n";
+		String request =
+				"GET " + path + " HTTP/1.1\r\n" +
+						"Host: " + host + "\r\n" +
+						"Connection: close\r\n\r\n";
 
-	    sendApplicationData(request);
+		sendApplicationData(request);
 
-	    String response = receiveApplicationData();
-	    HttpResponseParser parser = new HttpResponseParser(response);
-	    while (!parser.isComplete()) {
-	    	response = receiveApplicationData();
-	        parser.appendData(response);
-	    }
-	    return parser.getBody();
+		String response = receiveApplicationData();
+		HttpResponseParser parser = new HttpResponseParser(response);
+		while (!parser.isComplete()) {
+			response = receiveApplicationData();
+			parser.appendData(response);
+		}
+		return parser.getBody();
 	}
 
 	private void sendApplicationData(final String request) throws Exception {

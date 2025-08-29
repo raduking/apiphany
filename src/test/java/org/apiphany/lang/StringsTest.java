@@ -112,10 +112,10 @@ class StringsTest {
 		};
 		@SuppressWarnings("resource")
 		InputStream throwingStream = new InputStream() {
-		    @Override
-		    public int read() throws IOException {
-		        throw new IOException(SIMULATED_ERROR);
-		    }
+			@Override
+			public int read() throws IOException {
+				throw new IOException(SIMULATED_ERROR);
+			}
 		};
 
 		String result = Strings.toString(throwingStream, StandardCharsets.UTF_8, 10, onError);
