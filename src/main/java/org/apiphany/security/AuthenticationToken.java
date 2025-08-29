@@ -18,13 +18,13 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * @author Radu Sebastian LAZIN
  */
 @JsonPropertyOrder({
-    "access_token",
-    "refresh_token",
-    "expires_in",
-    "token_type",
-    "refresh_expires_in",
-    "not-before-policy",
-    "scope"
+		"access_token",
+		"refresh_token",
+		"expires_in",
+		"token_type",
+		"refresh_expires_in",
+		"not-before-policy",
+		"scope"
 })
 public class AuthenticationToken {
 

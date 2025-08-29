@@ -108,7 +108,11 @@ class ListsTest {
 
 	@Test
 	void shouldBuildListFromArray() {
-		String[] array = new String[] { "mumu", "bubu", "cucu" };
+		String[] array = new String[] {
+				"mumu",
+				"bubu",
+				"cucu"
+		};
 
 		List<String> list = Lists.asList(array);
 

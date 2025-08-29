@@ -54,7 +54,10 @@ class ProtocolOverridingSSLSocketFactoryTest {
 	private static final String CYPHER_1 = "TLS_RSA_WITH_AES_256_CBC_SHA";
 	private static final String CYPHER_2 = "TLS_RSA_WITH_AES_128_CBC_SHA";
 
-	private static final String[] ENABLED_PROTOCOLS = { "TLSv1.2", "TLSv1.3" };
+	private static final String[] ENABLED_PROTOCOLS = {
+			"TLSv1.2",
+			"TLSv1.3"
+	};
 
 	@Mock
 	private SSLSocketFactory mockDelegateFactory;
@@ -89,7 +92,9 @@ class ProtocolOverridingSSLSocketFactoryTest {
 
 	@Test
 	void shouldReturnDelegateDefaultCipherSuites() {
-		String[] expectedSuites = { CYPHER_2 };
+		String[] expectedSuites = {
+				CYPHER_2
+		};
 		when(mockDelegateFactory.getDefaultCipherSuites()).thenReturn(expectedSuites);
 
 		String[] result = factory.getDefaultCipherSuites();
@@ -100,7 +105,10 @@ class ProtocolOverridingSSLSocketFactoryTest {
 
 	@Test
 	void shouldReturnDelegateSupportedCipherSuites() {
-		String[] expectedSuites = { CYPHER_2, CYPHER_1 };
+		String[] expectedSuites = {
+				CYPHER_2,
+				CYPHER_1
+		};
 		when(mockDelegateFactory.getSupportedCipherSuites()).thenReturn(expectedSuites);
 
 		String[] result = factory.getSupportedCipherSuites();
