@@ -2,6 +2,10 @@
 
 ---
 
+`1.0.7`
+
+---
+
 `1.0.6`
 
 Added `ApiMimeType` as an interface to represent a mime type.
