@@ -31,8 +31,7 @@ class HeaderValuesChainTest {
 		return Stream.of(
 				Arguments.of(Map.of(HEADER_NAME1, List.of(HEADER_VALUE1))),
 				Arguments.of(new Object()),
-				Arguments.of(Collections.emptyMap())
-		);
+				Arguments.of(Collections.emptyMap()));
 	}
 
 	@ParameterizedTest
@@ -76,8 +75,7 @@ class HeaderValuesChainTest {
 		var headerValues = List.of(HEADER_VALUE1, HEADER_VALUE2);
 		var headers = Map.of(
 				HEADER_NAME1, headerValues,
-				"headerName2", List.of("v3", "v4")
-		);
+				"headerName2", List.of("v3", "v4"));
 
 		List<String> values = chain.get(HEADER_NAME1, headers);
 
