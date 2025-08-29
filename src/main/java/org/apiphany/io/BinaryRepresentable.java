@@ -41,7 +41,7 @@ public interface BinaryRepresentable {
 	 *
 	 * <pre>
 	 * public byte[] toByteArray() {
-	 *     return Arrays.copyOf(internalByteArray, internalByteArray.length);
+	 * 	return Arrays.copyOf(internalByteArray, internalByteArray.length);
 	 * }
 	 * </pre>
 	 *

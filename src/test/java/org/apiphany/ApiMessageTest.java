@@ -25,12 +25,16 @@ class ApiMessageTest {
 	private static final String V1 = "v1";
 	private static final String V2 = "v2";
 
-	Map<String, List<String>> headers = new HashMap<>() {{
-		put(N1, new ArrayList<>() {{
-			add(V1);
-			add(V2);
-		}});
-	}};
+	Map<String, List<String>> headers = new HashMap<>() {
+		{
+			put(N1, new ArrayList<>() {
+				{
+					add(V1);
+					add(V2);
+				}
+			});
+		}
+	};
 
 	@Test
 	void shouldReturnTrueWhenCheckingWithEmptyStringHeaderValueOnContains() {

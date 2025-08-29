@@ -139,9 +139,7 @@ public class ApiClient implements AutoCloseable {
 						Function.identity(),
 						v -> managed,
 						(existing, replacement) -> existing,
-						() -> new LinkedHashMap<>()
-				)
-		));
+						() -> new LinkedHashMap<>())));
 	}
 
 	/**
@@ -491,8 +489,8 @@ public class ApiClient implements AutoCloseable {
 	}
 
 	/**
-	 * Returns the exchange client by authentication type. The caller should not close the returned exchange client.
-	 * The {@link ApiClient} class handles the correct closing of all the associated exchange clients.
+	 * Returns the exchange client by authentication type. The caller should not close the returned exchange client. The
+	 * {@link ApiClient} class handles the correct closing of all the associated exchange clients.
 	 *
 	 * @param authenticationType authentication type
 	 * @return an exchange client
