@@ -298,7 +298,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 			setAuthenticationToken(token);
 			LOGGER.debug("[{}] Successfully retrieved new token.", getName());
 		} catch (Exception e) {
-			LOGGER.error("[{}] Error retrieving new token.", getName());
+			LOGGER.error("[{}] Error retrieving new token.", getName(), e);
 		}
 		scheduleTokenUpdate();
 	}
