@@ -61,8 +61,8 @@ public class X25519Keys implements KeyExchangeHandler {
 	public PublicKey publicKeyFrom(final byte[] publicKeyBytes, final BytesOrder bytesOrder) {
 		try {
 			return switch (bytesOrder) {
-			case LITTLE_ENDIAN -> fromLittleEndian(publicKeyBytes);
-			case BIG_ENDIAN -> fromBigEndian(publicKeyBytes);
+				case LITTLE_ENDIAN -> fromLittleEndian(publicKeyBytes);
+				case BIG_ENDIAN -> fromBigEndian(publicKeyBytes);
 			};
 		} catch (InvalidKeySpecException e) {
 			throw new SecurityException(e);
@@ -96,8 +96,8 @@ public class X25519Keys implements KeyExchangeHandler {
 	@Override
 	public byte[] toByteArray(final PublicKey publicKey, final BytesOrder bytesOrder) {
 		return switch (bytesOrder) {
-		case LITTLE_ENDIAN -> toByteArrayLittleEndian(publicKey);
-		case BIG_ENDIAN -> toByteArrayBigEndian(publicKey);
+			case LITTLE_ENDIAN -> toByteArrayLittleEndian(publicKey);
+			case BIG_ENDIAN -> toByteArrayBigEndian(publicKey);
 		};
 	}
 
@@ -126,8 +126,8 @@ public class X25519Keys implements KeyExchangeHandler {
 	@Override
 	public byte[] toByteArray(final PrivateKey privateKey, final BytesOrder bytesOrder) {
 		return switch (bytesOrder) {
-		case LITTLE_ENDIAN -> toByteArrayLittleEndian(privateKey);
-		case BIG_ENDIAN -> toByteArrayBigEndian(privateKey);
+			case LITTLE_ENDIAN -> toByteArrayLittleEndian(privateKey);
+			case BIG_ENDIAN -> toByteArrayBigEndian(privateKey);
 		};
 	}
 
