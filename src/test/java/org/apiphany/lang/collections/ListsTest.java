@@ -130,13 +130,13 @@ class ListsTest {
 	@Test
 	void shouldMerge2SortedLists() {
 		List<Integer> l1 = IntStream.rangeClosed(1, 21)
-                .filter(n -> n % 2 != 0)
-                .boxed()
-                .toList();
+				.filter(n -> n % 2 != 0)
+				.boxed()
+				.toList();
 		List<Integer> l2 = IntStream.rangeClosed(1, 21)
-                .filter(n -> n % 2 == 0)
-                .boxed()
-                .toList();
+				.filter(n -> n % 2 == 0)
+				.boxed()
+				.toList();
 
 		List<Integer> expected = IntStream.rangeClosed(1, 21)
 				.boxed()
@@ -154,9 +154,9 @@ class ListsTest {
 	@Test
 	void shouldSkipNullOrEmptyListAndReturnTheOtherOnMerge() {
 		List<Integer> l1 = IntStream.rangeClosed(1, 21)
-                .filter(n -> n % 2 != 0)
-                .boxed()
-                .toList();
+				.filter(n -> n % 2 != 0)
+				.boxed()
+				.toList();
 
 		List<Integer> result = Lists.merge(l1, null);
 		assertThat(result, equalTo(l1));

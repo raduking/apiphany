@@ -56,30 +56,30 @@ class ApiRequestTest {
 		@SuppressWarnings("unchecked")
 		ApiRequest<String> apiRequest = JsonBuilder.fromJson(
 				"""
-				{
-				  "body" : {
-				    "id" : "666",
-				    "count" : 13
-				  },
-				  "method" : "GET",
-				  "headers" : { },
-				  "url" : "http://localhost:666/api",
-				  "urlEncoded" : false,
-				  "classResponseType" : "java.lang.String",
-				  "charset" : "UTF-8",
-				  "stream" : false,
-				  "authenticationType" : "NONE"
-				}
-				""",
-		ApiRequest.class);
+						{
+						  "body" : {
+						    "id" : "666",
+						    "count" : 13
+						  },
+						  "method" : "GET",
+						  "headers" : { },
+						  "url" : "http://localhost:666/api",
+						  "urlEncoded" : false,
+						  "classResponseType" : "java.lang.String",
+						  "charset" : "UTF-8",
+						  "stream" : false,
+						  "authenticationType" : "NONE"
+						}
+						""",
+				ApiRequest.class);
 
 		String expected = apiRequest.toString();
 
 		String json = adapter.toString();
 
-	    List<Character> chars1 = expected.chars().mapToObj(c -> (char) c).toList();
-	    List<Character> chars2 = json.chars().mapToObj(c -> (char) c).toList();
-	    assertThat(chars1, containsInAnyOrder(chars2.toArray(Character[]::new)));
+		List<Character> chars1 = expected.chars().mapToObj(c -> (char) c).toList();
+		List<Character> chars2 = json.chars().mapToObj(c -> (char) c).toList();
+		assertThat(chars1, containsInAnyOrder(chars2.toArray(Character[]::new)));
 	}
 
 }

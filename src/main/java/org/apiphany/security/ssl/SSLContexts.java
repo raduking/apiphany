@@ -60,7 +60,7 @@ public final class SSLContexts {
 	 * @throws GeneralSecurityException when the SSL context cannot be initialized
 	 */
 	public static void initialize(final SSLContext sslContext, final KeyManager[] keyManagers, final TrustManager[] trustManagers,
-								  final SecureRandom random) throws GeneralSecurityException {
+			final SecureRandom random) throws GeneralSecurityException {
 		Objects.requireNonNull(keyManagers, "keyManagers array cannot be null");
 		Objects.requireNonNull(keyManagers, "trustManagers array cannot be null");
 		KeyManager[] actualKeyManagers = keyManagers.length == 0 ? null : keyManagers;
@@ -114,7 +114,8 @@ public final class SSLContexts {
 	 * @return key managers
 	 * @throws GeneralSecurityException when it can't create a factory instance
 	 */
-	public static KeyManager[] getKeyManagers(final KeyStore keyStore, final char[] password, final String algorithm) throws GeneralSecurityException {
+	public static KeyManager[] getKeyManagers(final KeyStore keyStore, final char[] password, final String algorithm)
+			throws GeneralSecurityException {
 		KeyManager[] result = null;
 		if (null != keyStore) {
 			String alg = Nullables.nonNullOrDefault(algorithm, KeyManagerFactory::getDefaultAlgorithm);

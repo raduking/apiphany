@@ -70,8 +70,8 @@ public interface Strings {
 	}
 
 	/**
-	 * Transforms a string from Lower Camel case to Kebab case. The Lower Camel case is the Java convention for naming methods.
-	 * Example: <code>"someCoolName"</code> will be <code>"some-cool-name"</code>.
+	 * Transforms a string from Lower Camel case to Kebab case. The Lower Camel case is the Java convention for naming
+	 * methods. Example: <code>"someCoolName"</code> will be <code>"some-cool-name"</code>.
 	 *
 	 * @param str string to transform
 	 * @return kebab case string
@@ -182,6 +182,7 @@ public interface Strings {
 	 * Envelopes a string with the given envelope.
 	 * <p>
 	 * Example:
+	 *
 	 * <pre>
 	 * Strings.envelope("==", "example"); // will return: "==example=="
 	 * </pre>

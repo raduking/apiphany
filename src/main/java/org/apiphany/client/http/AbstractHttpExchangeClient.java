@@ -154,11 +154,11 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	 */
 	public static void addTracingHeaders(final Map<String, List<String>> headers) {
 		String traceId = MDC.get("traceId");
-        if (Strings.isNotEmpty(traceId)) {
-        	String spanId = MDC.get("spanId");
-        	Headers.addTo(headers, TracingHeader.B3_TRACE_ID, traceId);
-        	Headers.addTo(headers, TracingHeader.B3_SPAN_ID, spanId);
-        }
+		if (Strings.isNotEmpty(traceId)) {
+			String spanId = MDC.get("spanId");
+			Headers.addTo(headers, TracingHeader.B3_TRACE_ID, traceId);
+			Headers.addTo(headers, TracingHeader.B3_SPAN_ID, spanId);
+		}
 	}
 
 	/**

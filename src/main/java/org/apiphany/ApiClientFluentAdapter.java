@@ -291,8 +291,8 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	}
 
 	/**
-	 * Sets the request parameters. If the input request parameters is {@code null} then the request
-	 * parameters will be set to an empty map.
+	 * Sets the request parameters. If the input request parameters is {@code null} then the request parameters will be set
+	 * to an empty map.
 	 *
 	 * @param requestParams request parameters
 	 * @return this

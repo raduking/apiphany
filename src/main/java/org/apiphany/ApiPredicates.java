@@ -58,8 +58,7 @@ public class ApiPredicates {
 	}
 
 	/**
-	 * Predicate to be used only when the response is a {@link ApiPage}. The pagination content must have the given
-	 * size
+	 * Predicate to be used only when the response is a {@link ApiPage}. The pagination content must have the given size
 	 *
 	 * @param <T> type of object to test
 	 *
