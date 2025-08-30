@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -89,14 +90,25 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 	private final ObjectMapper objectMapper = new ObjectMapper();
 
 	/**
+	 * The default annotation introspector.
+	 */
+	private final AnnotationIntrospector defaultAnnotationIntrospector;
+
+	/**
 	 * Hide constructor.
 	 */
 	JacksonJsonBuilder() {
-		objectMapper.registerModule(newJavaTimeModule(DateTimeFormatter.ISO_DATE_TIME));
-		objectMapper.registerModule(customSerializationModule());
+		this.objectMapper.registerModule(newJavaTimeModule(DateTimeFormatter.ISO_DATE_TIME));
+		this.objectMapper.registerModule(customSerializationModule());
 		indentOutput(isIndentOutput());
-		objectMapper.setSerializationInclusion(Include.NON_NULL);
-		objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+		this.objectMapper.setSerializationInclusion(Include.NON_NULL);
+		this.objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+
+		this.defaultAnnotationIntrospector = objectMapper.getSerializationConfig().getAnnotationIntrospector();
+		this.objectMapper.setAnnotationIntrospector(
+				AnnotationIntrospector.pair(
+						SensitiveAnnotationIntrospector.hideSensitive(),
+						defaultAnnotationIntrospector));
 	}
 
 	/**
@@ -337,14 +349,17 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 	 * @param onError on error exception consumer
 	 * @return properties map
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public <T> Map<String, Object> toPropertiesMap(final T properties, final Consumer<Exception> onError) {
 		final ObjectMapper propertiesObjectMapper = objectMapper.copy()
-				.setPropertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
+				.setPropertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE)
+				.setAnnotationIntrospector(
+						AnnotationIntrospector.pair(
+								SensitiveAnnotationIntrospector.allowSensitive(),
+								defaultAnnotationIntrospector));
 		try {
-			return propertiesObjectMapper.convertValue(properties, new TypeReference<>() {
-				// empty
-			});
+			return propertiesObjectMapper.convertValue(properties, Map.class);
 		} catch (Exception e) {
 			onError.accept(e);
 			return Collections.emptyMap();
