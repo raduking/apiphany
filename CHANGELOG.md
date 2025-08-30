@@ -2,6 +2,15 @@
 
 ---
 
+`1.0.7`
+
+Added `PRF` with utility method to a apply pseudo-random function in TLS environments.
+Added `KeyExchangeHandler` interface to be implemented in key exchanges.
+Added `Sensitive` annotation to mark sensitive fields.
+Changed `JacksonJsonBuilder` to read sensitive but not write `Sensitive` fields.
+
+---
+
 `1.0.6`
 
 Added `ApiMimeType` as an interface to represent a mime type.

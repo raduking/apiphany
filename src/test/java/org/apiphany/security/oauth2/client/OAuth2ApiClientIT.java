@@ -70,12 +70,12 @@ class OAuth2ApiClientIT {
 		JsonNode x5cs = key.get("x5c");
 
 		String x5c = x5cs.get(0).asText();
-        byte[] der = Base64.getDecoder().decode(x5c);
+		byte[] der = Base64.getDecoder().decode(x5c);
 
-        CertificateFactory cf = CertificateFactory.getInstance("X.509");
-        X509Certificate cert = (X509Certificate) cf.generateCertificate(ByteBufferInputStream.of(der));
-        PublicKey publicKey = cert.getPublicKey();
-        String base64PublicKey = Base64.getEncoder().encodeToString(publicKey.getEncoded());
+		CertificateFactory cf = CertificateFactory.getInstance("X.509");
+		X509Certificate cert = (X509Certificate) cf.generateCertificate(ByteBufferInputStream.of(der));
+		PublicKey publicKey = cert.getPublicKey();
+		String base64PublicKey = Base64.getEncoder().encodeToString(publicKey.getEncoded());
 
 		LOGGER.info("Keycloak certificate (PEM public key):\n{}", convertToPem(base64PublicKey));
 	}

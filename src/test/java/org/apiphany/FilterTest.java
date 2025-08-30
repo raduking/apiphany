@@ -34,8 +34,7 @@ class FilterTest {
 		Filter filter =
 				Filter.allOf(
 						Filter.of("cover", Operator.EQ, "HARD"),
-						Filter.anyOf("field", Operator.EQ, fields)
-				);
+						Filter.anyOf("field", Operator.EQ, fields));
 
 		String result = filter.toString();
 
@@ -49,8 +48,7 @@ class FilterTest {
 		Filter filter =
 				Filter.anyOf(
 						Filter.of("cover", Operator.EQ, "HARD"),
-						Filter.allOf("field", Operator.NE, fields)
-				);
+						Filter.allOf("field", Operator.NE, fields));
 
 		String result = filter.toString();
 
@@ -64,8 +62,7 @@ class FilterTest {
 		Filter filter =
 				Filter.allOf(
 						Filter.of("cover", "=eq=", "HARD"),
-						Filter.anyOf("field", "=eq=", fields)
-				);
+						Filter.anyOf("field", "=eq=", fields));
 
 		String result = filter.toString();
 
@@ -79,8 +76,7 @@ class FilterTest {
 		Filter filter =
 				Filter.anyOf(
 						Filter.of("cover", "=eq=", "HARD"),
-						Filter.allOf("ext", "=ne=", fields)
-				);
+						Filter.allOf("ext", "=ne=", fields));
 
 		String result = filter.toString();
 
@@ -149,11 +145,8 @@ class FilterTest {
 						Filter.of("mimeType", Operator.EQ, "audio/mpeg"),
 						Filter.anyOf(
 								Filter.of("artist", Operator.EQ, "ssc"),
-								Filter.of("songId", Operator.EQ, "iv")
-						)
-				),
-				Filter.of("type", Operator.EQ, "idea")
-		);
+								Filter.of("songId", Operator.EQ, "iv"))),
+				Filter.of("type", Operator.EQ, "idea"));
 
 		String result = filter.toString();
 
@@ -168,11 +161,8 @@ class FilterTest {
 						Filter.of("mimeType", Operator.EQ, "audio/mpeg"),
 						Filter.anyOf(
 								Filter.of("artist", Operator.EQ, "ssc"),
-								Filter.of("songId", Operator.EQ, "iv")
-						)
-				),
-				Filter.of("type", Operator.EQ, "idea")
-		);
+								Filter.of("songId", Operator.EQ, "iv"))),
+				Filter.of("type", Operator.EQ, "idea"));
 
 		String result = filter.toString();
 

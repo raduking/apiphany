@@ -20,7 +20,8 @@ class ExchangeLoggerTest {
 
 	@Test
 	void shouldThrowExceptionOnCallingConstructor() {
-		ReflectionException reflectionException = assertThrows(ReflectionException.class, () -> Constructors.IgnoreAccess.newInstance(ExchangeLogger.class));
+		ReflectionException reflectionException =
+				assertThrows(ReflectionException.class, () -> Constructors.IgnoreAccess.newInstance(ExchangeLogger.class));
 		InvocationTargetException invocationTargetException = JavaObjects.cast(reflectionException.getCause());
 		UnsupportedOperationException unsupportedOperationException = JavaObjects.cast(invocationTargetException.getCause());
 		assertThat(unsupportedOperationException.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));

@@ -2,6 +2,9 @@ package org.apiphany.security.ssl;
 
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
+import org.apiphany.security.Sensitive;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Certificate store information class to configure Java key/trust stores. This class holds information about
@@ -36,6 +39,7 @@ public class StoreInfo {
 	/**
 	 * The password to access the certificate store.
 	 */
+	@Sensitive
 	private char[] password;
 
 	/**
@@ -93,6 +97,7 @@ public class StoreInfo {
 	 *
 	 * @return the display location string
 	 */
+	@JsonIgnore
 	public String getDisplayLocation() {
 		return Strings.isNotEmpty(getLocation()) ? getLocation() : UNKNOWN_LOCATION;
 	}

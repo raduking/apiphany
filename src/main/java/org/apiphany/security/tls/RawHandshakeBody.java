@@ -89,21 +89,21 @@ public class RawHandshakeBody implements TLSHandshakeBody {
 		return buffer.array();
 	}
 
-    /**
-     * Returns the type of this handshake message.
-     *
-     * @return the handshake message type
-     */
+	/**
+	 * Returns the type of this handshake message.
+	 *
+	 * @return the handshake message type
+	 */
 	@Override
 	public HandshakeType getType() {
 		return type;
 	}
 
-    /**
-     * Returns the raw bytes of this handshake message body.
-     *
-     * @return the bytes wrapper containing the raw message data
-     */
+	/**
+	 * Returns the raw bytes of this handshake message body.
+	 *
+	 * @return the bytes wrapper containing the raw message data
+	 */
 	public BytesWrapper getBytes() {
 		return bytes;
 	}

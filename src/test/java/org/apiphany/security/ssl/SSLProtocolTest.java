@@ -34,8 +34,7 @@ class SSLProtocolTest {
 				Arguments.of(SSLProtocol.TLS_1_0, Short.valueOf((short) 0x0301)),
 				Arguments.of(SSLProtocol.TLS_1_1, Short.valueOf((short) 0x0302)),
 				Arguments.of(SSLProtocol.TLS_1_2, Short.valueOf((short) 0x0303)),
-				Arguments.of(SSLProtocol.TLS_1_3, Short.valueOf((short) 0x0304))
-		);
+				Arguments.of(SSLProtocol.TLS_1_3, Short.valueOf((short) 0x0304)));
 	}
 
 	@ParameterizedTest

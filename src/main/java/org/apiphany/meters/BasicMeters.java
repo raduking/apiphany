@@ -77,7 +77,7 @@ public record BasicMeters(MeterRegistry meterRegistry, Timer latency, Counter re
 	private static final int OF_METHOD_CALLER_DEPTH = 3;
 
 	/**
-	 * The meters cache to avoid recreation of the same meters multiple times.
+	 * The meters cache to avoid recreation of the same meters multiple times.<br/>
 	 * TODO: implement LRU Cache (Least Recently Used Cache)
 	 */
 	private static final ConcurrentMap<String, BasicMeters> METERS_CACHE = new ConcurrentHashMap<>();
@@ -122,13 +122,13 @@ public record BasicMeters(MeterRegistry meterRegistry, Timer latency, Counter re
 	 * @return true if the tags object is empty, false otherwise
 	 */
 	public static boolean isEmpty(final Tags tags) {
-	    if (tags == Tags.empty()) {
-	        return true;
-	    }
-	    if (tags == null) {
-	        return true;
-	    }
-	    return !tags.iterator().hasNext();
+		if (tags == Tags.empty()) {
+			return true;
+		}
+		if (tags == null) {
+			return true;
+		}
+		return !tags.iterator().hasNext();
 	}
 
 	/**
@@ -525,7 +525,8 @@ public record BasicMeters(MeterRegistry meterRegistry, Timer latency, Counter re
 	 * @param onErrorSupplier the supplier for the fallback value in case of an error.
 	 * @return the result of the supplier on success, or the fallback value on failure.
 	 */
-	public static <T> T wrapAndSwallow(final MeterRegistry meterRegistry, final String prefix, final Tags tags, final Supplier<T> supplier, final Supplier<T> onErrorSupplier) {
+	public static <T> T wrapAndSwallow(final MeterRegistry meterRegistry, final String prefix, final Tags tags, final Supplier<T> supplier,
+			final Supplier<T> onErrorSupplier) {
 		return wrap(meterRegistry, prefix, tags, supplier, e -> onErrorSupplier.get());
 	}
 

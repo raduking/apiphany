@@ -157,18 +157,18 @@ public class WaitTimeout implements Wait {
 	 */
 	@Override
 	public boolean equals(final Object that) {
-	    if (this == that) {
-	        return true;
-	    }
-	    if (null == that || that.getClass() != getClass()) {
-	    	return false;
-	    }
-	    WaitTimeout thatWait = (WaitTimeout) that;
-	    return Objects.equals(timeout, thatWait.timeout)
-	    		&& Objects.equals(timeoutTimeUnit, thatWait.timeoutTimeUnit)
-	    		&& Objects.equals(interval, thatWait.interval)
-	    		&& Objects.equals(intervalTimeUnit, thatWait.intervalTimeUnit)
-	    		&& Objects.equals(start, thatWait.start);
+		if (this == that) {
+			return true;
+		}
+		if (null == that || that.getClass() != getClass()) {
+			return false;
+		}
+		WaitTimeout thatWait = (WaitTimeout) that;
+		return Objects.equals(timeout, thatWait.timeout)
+				&& Objects.equals(timeoutTimeUnit, thatWait.timeoutTimeUnit)
+				&& Objects.equals(interval, thatWait.interval)
+				&& Objects.equals(intervalTimeUnit, thatWait.intervalTimeUnit)
+				&& Objects.equals(start, thatWait.start);
 	}
 
 	/**

@@ -69,7 +69,8 @@ class OAuth2HttpExchangeClientTest {
 
 	@BeforeEach
 	void setUp() {
-		clientRegistration = JsonBuilder.fromJson(Strings.fromFile("/security/oauth2/oauth2-client-registration.json"), OAuth2ClientRegistration.class);
+		String clientRegistrationJson = Strings.fromFile("/security/oauth2/oauth2-client-registration.json");
+		clientRegistration = JsonBuilder.fromJson(clientRegistrationJson, OAuth2ClientRegistration.class);
 		clientRegistration.setProvider(PROVIDER_NAME);
 		clientRegistration.setClientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST);
 

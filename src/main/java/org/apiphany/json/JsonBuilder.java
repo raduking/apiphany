@@ -383,7 +383,8 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	}
 
 	/**
-	 * Returns the {@link Object#toString()} in a JSON format. If the input object has a field name called {@code id} then it adds it to the JSON.
+	 * Returns the {@link Object#toString()} in a JSON format. If the input object has a field name called {@code id} then
+	 * it adds it to the JSON.
 	 *
 	 * @param <T> type of the object
 	 *

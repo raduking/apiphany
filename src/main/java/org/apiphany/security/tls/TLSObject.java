@@ -37,8 +37,8 @@ public interface TLSObject extends ByteSizeable, BinaryRepresentable {
 	 */
 	static String serialize(final TLSObject tlsObject) {
 		return switch (FORMAT) {
-		case HEX -> Strings.EOL + Hex.dump(tlsObject);
-		case JSON -> JsonBuilder.toJson(tlsObject);
+			case HEX -> Strings.EOL + Hex.dump(tlsObject);
+			case JSON -> JsonBuilder.toJson(tlsObject);
 		};
 	}
 

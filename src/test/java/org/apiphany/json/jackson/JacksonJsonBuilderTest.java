@@ -34,9 +34,7 @@ class JacksonJsonBuilderTest {
 		Map<String, Object> props = Map.of(
 				"elements", Map.of(
 						"customer-one", Map.of("customer-id", CUSTOMER_ID1, "tenant-id", TENANT_ID1),
-						"customer-two", Map.of("customer-id", CUSTOMER_ID2, "tenant-id", TENANT_ID2)
-				)
-		);
+						"customer-two", Map.of("customer-id", CUSTOMER_ID2, "tenant-id", TENANT_ID2)));
 
 		A result = jsonBuilder.fromPropertiesMap(props, A.class, Consumers.noConsumer());
 
@@ -51,9 +49,7 @@ class JacksonJsonBuilderTest {
 		Map<String, Object> props = Map.of(
 				"elements", Map.of(
 						CUSTOMER_ONE, Map.of("customer-id", CUSTOMER_ID1, "tenant-id", TENANT_ID1),
-						CUSTOMER_TWO, Map.of("customer-id", CUSTOMER_ID2, "tenant-id", TENANT_ID2)
-				)
-		);
+						CUSTOMER_TWO, Map.of("customer-id", CUSTOMER_ID2, "tenant-id", TENANT_ID2)));
 
 		A result = jsonBuilder.fromPropertiesMap(props, A.class, Consumers.noConsumer());
 

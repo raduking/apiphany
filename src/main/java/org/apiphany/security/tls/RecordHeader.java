@@ -88,8 +88,8 @@ public class RecordHeader implements TLSObject {
 	}
 
 	/**
-	 * Parses a RecordHeader from an input stream. If the parsed record header is not of the given record content type then an
-	 * {@link IOException} is thrown.
+	 * Parses a RecordHeader from an input stream. If the parsed record header is not of the given record content type then
+	 * an {@link IOException} is thrown.
 	 *
 	 * @param is the input stream containing header data
 	 * @param recordContentType the expected record content type

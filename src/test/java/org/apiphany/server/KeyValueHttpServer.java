@@ -42,8 +42,7 @@ public class KeyValueHttpServer implements AutoCloseable {
 			HttpMethod.DELETE,
 			HttpMethod.PATCH,
 			HttpMethod.HEAD,
-			HttpMethod.OPTIONS
-	);
+			HttpMethod.OPTIONS);
 	public static final String ALLOW_HEADER_VALUE = String.join(", ", ALLOW.stream().map(HttpMethod::toString).toList());
 
 	private static final int NO_BODY = -1;

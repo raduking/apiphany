@@ -25,7 +25,8 @@ class RequestParametersTest {
 
 	@Test
 	void shouldThrowExceptionOnCallingConstructor() {
-		ReflectionException reflectionException = assertThrows(ReflectionException.class, () -> Constructors.IgnoreAccess.newInstance(RequestParameters.class));
+		ReflectionException reflectionException =
+				assertThrows(ReflectionException.class, () -> Constructors.IgnoreAccess.newInstance(RequestParameters.class));
 		InvocationTargetException invocationTargetException = JavaObjects.cast(reflectionException.getCause());
 		UnsupportedOperationException unsupportedOperationException = JavaObjects.cast(invocationTargetException.getCause());
 		assertThat(unsupportedOperationException.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));

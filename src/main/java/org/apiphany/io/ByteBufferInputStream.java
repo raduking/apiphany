@@ -29,8 +29,8 @@ public class ByteBufferInputStream extends InputStream {
 	private final ByteBuffer buf;
 
 	/**
-	 * Creates a new ByteBufferInputStream that reads from the specified byte buffer. The stream will read from the beginning
-	 * of the buffer.
+	 * Creates a new ByteBufferInputStream that reads from the specified byte buffer. The stream will read from the
+	 * beginning of the buffer.
 	 *
 	 * @param buffer the byte buffer to read from
 	 * @throws NullPointerException if the input byte buffer is null
@@ -63,8 +63,8 @@ public class ByteBufferInputStream extends InputStream {
 	}
 
 	/**
-	 * Creates a new ByteBufferInputStream that reads from the specified byte buffer. The stream will read from the beginning
-	 * of the buffer.
+	 * Creates a new ByteBufferInputStream that reads from the specified byte buffer. The stream will read from the
+	 * beginning of the buffer.
 	 *
 	 * @param buffer the byte buffer to read from
 	 * @return a new byte buffer input stream

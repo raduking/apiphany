@@ -15,6 +15,7 @@ import org.morphix.lang.Enums;
  * <li><b>AWS X-Ray</b> (used by Amazon Web Services)</li>
  * </ul>
  * Example usage:
+ *
  * <pre>{@code
  * String traceIdHeader = TracingHeaders.B3_TRACE_ID.getHeaderName();
  * }</pre>
@@ -76,8 +77,7 @@ public enum TracingHeader {
 	 * <p>
 	 * Format: {@code X-Amzn-Trace-Id}
 	 * </p>
-	 * Example:
-	 * {@code Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1}
+	 * Example: {@code Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1}
 	 */
 	AWS_XRAY_TRACE_ID("X-Amzn-Trace-Id");
 
