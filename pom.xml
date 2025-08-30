@@ -370,7 +370,7 @@
 				<configuration>
 					<java>
 						<eclipse>
-							<file>${project.basedir}/formatter/raduking-java.xml</file>
+							<file>${project.basedir}/formatter/java-formatter.xml</file>
 							<version>4.35</version>
 						</eclipse>
 						<removeUnusedImports/>
