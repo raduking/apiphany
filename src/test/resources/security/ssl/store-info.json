@@ -1,0 +1,7 @@
+{
+	"location": "security/ssl/keystore.jks",
+	"type": "JKS",
+	"algorithm": "SunX509",
+	"password": "keystorepassword123",
+	"external": false
+}
