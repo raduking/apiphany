@@ -9,8 +9,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 /**
  * Certificate store information class to configure Java key/trust stores. This class holds information about
  * certificate store location, type, password, and loading configuration.
- * <p>
- * TODO: remove the password from toString
  *
  * @author Radu Sebastian LAZIN
  */
