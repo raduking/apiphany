@@ -99,12 +99,14 @@
 			<groupId>com.fasterxml.jackson.datatype</groupId>
 			<artifactId>jackson-datatype-jsr310</artifactId>
 			<scope>provided</scope>
+			<optional>true</optional>
 		</dependency>
 
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
 			<artifactId>jackson-dataformat-xml</artifactId>
 			<scope>provided</scope>
+			<optional>true</optional>
 		</dependency>
 
 		<!-- Testing -->
