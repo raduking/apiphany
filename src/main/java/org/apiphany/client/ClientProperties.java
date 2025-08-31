@@ -9,13 +9,12 @@ import java.util.function.Supplier;
 
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
+import org.apiphany.lang.annotation.Ignored;
 import org.apiphany.lang.collections.Maps;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.function.Consumers;
 import org.morphix.reflection.Constructors;
 import org.morphix.reflection.Fields;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Base class for client properties, it can also be used as a stand-alone class to import common properties for clients.
@@ -101,7 +100,7 @@ public class ClientProperties {
 	 *
 	 * @return true if the client is disabled, false otherwise.
 	 */
-	@JsonIgnore
+	@Ignored
 	public boolean isDisabled() {
 		return !isEnabled();
 	}

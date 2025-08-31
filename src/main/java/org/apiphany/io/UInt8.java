@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.lang.annotation.AsValue;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -115,11 +116,11 @@ public class UInt8 implements ByteSizeable, BinaryRepresentable {
 	/**
 	 * Returns the wrapped byte value.
 	 * <p>
-	 * Annotated with {@code @JsonValue} for direct JSON serialization.
+	 * Annotated with {@code @AsValue} for direct serialization.
 	 *
 	 * @return the wrapped byte value
 	 */
-	@JsonValue
+	@AsValue
 	public byte getValue() {
 		return value;
 	}

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.lang.annotation.AsValue;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -120,11 +121,11 @@ public class UInt16 implements ByteSizeable, BinaryRepresentable {
 	/**
 	 * Returns the wrapped 16-bit value.
 	 * <p>
-	 * Annotated with {@code @JsonValue} for direct JSON serialization.
+	 * Annotated with {@code @AsValue} for direct serialization.
 	 *
 	 * @return the wrapped short value
 	 */
-	@JsonValue
+	@AsValue
 	public short getValue() {
 		return value;
 	}

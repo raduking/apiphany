@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.lang.annotation.AsValue;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -126,11 +127,11 @@ public class UInt24 implements ByteSizeable, BinaryRepresentable {
 	 * <p>
 	 * Note: The value is always in the range 0-16,777,215 (0xFFFFFF).
 	 * <p>
-	 * Annotated with {@code @JsonValue} for direct JSON serialization.
+	 * Annotated with {@code @AsValue} for direct serialization.
 	 *
 	 * @return the wrapped value (unsigned 24-bit as int)
 	 */
-	@JsonValue
+	@AsValue
 	public int getValue() {
 		return value;
 	}

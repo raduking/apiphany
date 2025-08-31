@@ -13,12 +13,11 @@ import java.util.function.BiFunction;
 import org.apiphany.io.ByteSizeable;
 import org.apiphany.io.IO;
 import org.apiphany.io.UInt16;
+import org.apiphany.lang.annotation.Ignored;
 import org.apiphany.lang.collections.Lists;
 import org.apiphany.security.ssl.SSLProtocol;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.function.ThrowingBiFunction;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Represents a TLS Record Layer protocol message containing one or more fragments.
@@ -335,7 +334,7 @@ public class Record implements TLSObject {
 	 * @throws IndexOutOfBoundsException If there are no fragments
 	 * @throws ClassCastException If the first fragment is not a Handshake
 	 */
-	@JsonIgnore
+	@Ignored
 	public Handshake getFirstHandshake() {
 		return getHandshake(0);
 	}
@@ -398,7 +397,7 @@ public class Record implements TLSObject {
 	 *
 	 * @return an array of strings with all fragment names contained in this record
 	 */
-	@JsonIgnore
+	@Ignored
 	public String[] getFragmentNames() {
 		return getFragments().stream()
 				.map(f -> (f instanceof Handshake handshake ? handshake.getBody() : f).getClass().getSimpleName())

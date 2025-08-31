@@ -4,9 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apiphany.io.UInt16;
+import org.apiphany.lang.annotation.AsValue;
 import org.apiphany.security.ssl.SSLProtocol;
-
-import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
  * Represents a TLS protocol version in both its wire format and semantic version.
@@ -107,11 +106,11 @@ public class Version implements TLSObject {
 	/**
 	 * Returns the string representation of this protocol version.
 	 * <p>
-	 * This method is marked with {@code @JsonValue} for proper JSON serialization.
+	 * This method is marked with {@code @AsValue} for proper serialization.
 	 *
 	 * @return the string name of the protocol version (e.g., "TLSv1.2")
 	 */
-	@JsonValue
+	@AsValue
 	public String getProtocolString() {
 		return protocol.value();
 	}
