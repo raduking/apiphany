@@ -99,14 +99,12 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 	 */
 	JacksonJsonBuilder() {
 		this.objectMapper.registerModule(newJavaTimeModule(DateTimeFormatter.ISO_DATE_TIME));
-		this.objectMapper.registerModule(customSerializationModule());
+		this.objectMapper.registerModule(apiphanySerializationModule());
 		indentOutput(isIndentOutput());
 		this.objectMapper.setSerializationInclusion(Include.NON_NULL);
 		this.objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 
-		this.defaultAnnotationIntrospector = AnnotationIntrospector.pair(
-				ApiphanyAnnotationIntrospector.getInstance(),
-				objectMapper.getSerializationConfig().getAnnotationIntrospector());
+		this.defaultAnnotationIntrospector = objectMapper.getSerializationConfig().getAnnotationIntrospector();
 		this.objectMapper.setAnnotationIntrospector(
 				AnnotationIntrospector.pair(
 						SensitiveAnnotationIntrospector.hideSensitive(),
@@ -381,14 +379,22 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 	}
 
 	/**
-	 * Creates a new SimpleModule with custom serializers/deserializers.
+	 * Creates a new {@link SimpleModule} with custom serializers/deserializers named {@link #APIPHANY_MODULE}.
 	 *
 	 * @return simple module
 	 */
-	public static SimpleModule customSerializationModule() {
-		return new SimpleModule(APIPHANY_MODULE)
+	public static SimpleModule apiphanySerializationModule() {
+		SimpleModule apiphanyModule = new SimpleModule(APIPHANY_MODULE) {
+			@Override
+			public void setupModule(final SetupContext context) {
+				super.setupModule(context);
+				context.insertAnnotationIntrospector(ApiphanyAnnotationIntrospector.getInstance());
+			}
+		};
+		return apiphanyModule
 				.addSerializer(RequestMethod.class, new RequestMethodSerializer())
 				.addDeserializer(RequestMethod.class, new RequestMethodDeserializer());
+
 	}
 
 	/**
