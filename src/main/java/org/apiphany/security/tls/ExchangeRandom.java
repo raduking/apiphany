@@ -5,8 +5,7 @@ import java.io.InputStream;
 import java.security.SecureRandom;
 
 import org.apiphany.io.BytesWrapper;
-
-import com.fasterxml.jackson.annotation.JsonValue;
+import org.apiphany.lang.annotation.AsValue;
 
 /**
  * Represents the random values exchanged during TLS handshake initialization.
@@ -75,7 +74,7 @@ public class ExchangeRandom extends BytesWrapper implements TLSObject {
 	 * @return a hex-encoded string of the random bytes
 	 */
 	@Override
-	@JsonValue
+	@AsValue
 	public String toHexString() {
 		return super.toHexString();
 	}

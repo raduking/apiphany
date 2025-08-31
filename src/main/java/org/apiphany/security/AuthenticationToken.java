@@ -4,10 +4,9 @@ import java.time.Duration;
 import java.time.Instant;
 
 import org.apiphany.json.JsonBuilder;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import org.apiphany.lang.annotation.FieldName;
+import org.apiphany.lang.annotation.FieldOrder;
+import org.apiphany.lang.annotation.Ignored;
 
 /**
  * Represents an authentication token used for accessing secured resources. This class encapsulates the access token,
@@ -17,7 +16,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  *
  * @author Radu Sebastian LAZIN
  */
-@JsonPropertyOrder({
+@FieldOrder({
 		"access_token",
 		"refresh_token",
 		"expires_in",
@@ -36,31 +35,31 @@ public class AuthenticationToken {
 	/**
 	 * The access token used for authenticating requests.
 	 */
-	@JsonProperty("access_token")
+	@FieldName("access_token")
 	private String accessToken;
 
 	/**
 	 * The refresh token used to obtain a new access token when the current one expires.
 	 */
-	@JsonProperty("refresh_token")
+	@FieldName("refresh_token")
 	private String refreshToken;
 
 	/**
 	 * The time in seconds until the access token expires.
 	 */
-	@JsonProperty("expires_in")
+	@FieldName("expires_in")
 	private long expiresIn;
 
 	/**
 	 * The type of the token (e.g., "Bearer").
 	 */
-	@JsonProperty("token_type")
+	@FieldName("token_type")
 	private String tokenType;
 
 	/**
 	 * The time in seconds until the access token expires.
 	 */
-	@JsonProperty("refresh_expires_in")
+	@FieldName("refresh_expires_in")
 	private long refreshExpiresIn;
 
 	/**
@@ -75,7 +74,7 @@ public class AuthenticationToken {
 	 * @see <a href="https://www.keycloak.org/docs/latest/securing_apps/index.html#token-timeouts">Keycloak Token
 	 * Timeouts</a>
 	 */
-	@JsonProperty("not-before-policy")
+	@FieldName("not-before-policy")
 	private int notBeforePolicy;
 
 	/**
@@ -195,7 +194,7 @@ public class AuthenticationToken {
 	 *
 	 * @return true if the token has expired, false otherwise.
 	 */
-	@JsonIgnore
+	@Ignored
 	public boolean isExpired() {
 		return null != expiration && expiration.isBefore(Instant.now());
 	}

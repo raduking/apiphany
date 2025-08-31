@@ -55,9 +55,9 @@ To make a simple HTTP GET request to `http://my.awesome.domain/api/info`:
 import org.apiphany.ApiClient;
 import org.apiphany.client.JavaNetHttpExchangeClient;
 
-public class MyCustomerClient extends ApiClient {
+public class MyAwesomeClient extends ApiClient {
 
-    public MyCustomerClient() {
+    public MyAwesomeClient() {
         super("http://my.awesome.domain", with(JavaNetHttpExchangeClient.class));
     }
 
@@ -74,7 +74,7 @@ public class MyCustomerClient extends ApiClient {
 
 ```java
 void main() {
-    MyCustomerClient client = new MyCustomerClient();
+    MyAwesomeClient client = new MyAwesomeClient();
 
     String info = client.getInfo();
 

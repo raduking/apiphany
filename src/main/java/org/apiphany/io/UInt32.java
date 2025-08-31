@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.lang.annotation.AsValue;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -122,11 +123,11 @@ public class UInt32 implements ByteSizeable, BinaryRepresentable {
 	/**
 	 * Returns the wrapped 32-bit value.
 	 * <p>
-	 * Annotated with {@code @JsonValue} for direct JSON serialization.
+	 * Annotated with {@code @AsValue} for direct serialization.
 	 *
 	 * @return the wrapped int value
 	 */
-	@JsonValue
+	@AsValue
 	public long getValue() {
 		return value;
 	}

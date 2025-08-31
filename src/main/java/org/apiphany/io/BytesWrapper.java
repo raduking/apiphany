@@ -9,8 +9,7 @@ import java.util.Arrays;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Bytes;
 import org.apiphany.lang.Hex;
-
-import com.fasterxml.jackson.annotation.JsonValue;
+import org.apiphany.lang.annotation.AsValue;
 
 /**
  * Immutable container for raw byte data with serialization capabilities.
@@ -141,7 +140,7 @@ public class BytesWrapper implements ByteSizeable, BinaryRepresentable {
 	 *
 	 * @return hex string without separators
 	 */
-	@JsonValue
+	@AsValue
 	public String toHexString() {
 		return Hex.string(bytes, "");
 	}

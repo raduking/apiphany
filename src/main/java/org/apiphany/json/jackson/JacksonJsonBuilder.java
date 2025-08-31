@@ -104,7 +104,9 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 		this.objectMapper.setSerializationInclusion(Include.NON_NULL);
 		this.objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 
-		this.defaultAnnotationIntrospector = objectMapper.getSerializationConfig().getAnnotationIntrospector();
+		this.defaultAnnotationIntrospector = AnnotationIntrospector.pair(
+				ApiphanyAnnotationIntrospector.getInstance(),
+				objectMapper.getSerializationConfig().getAnnotationIntrospector());
 		this.objectMapper.setAnnotationIntrospector(
 				AnnotationIntrospector.pair(
 						SensitiveAnnotationIntrospector.hideSensitive(),
