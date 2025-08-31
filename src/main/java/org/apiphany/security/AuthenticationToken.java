@@ -11,8 +11,6 @@ import org.apiphany.lang.annotation.Ignored;
 /**
  * Represents an authentication token used for accessing secured resources. This class encapsulates the access token,
  * refresh token, token type, and expiration details.
- * <p>
- * TODO: create a serializer/deserializer so that it is JSON library agnostic
  *
  * @author Radu Sebastian LAZIN
  */

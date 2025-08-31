@@ -1,5 +1,7 @@
 package org.apiphany.json.jackson;
 
+import java.io.Serializable;
+
 import org.apiphany.lang.annotation.AsValue;
 import org.apiphany.lang.annotation.FieldName;
 import org.apiphany.lang.annotation.FieldOrder;
@@ -21,6 +23,9 @@ import com.fasterxml.jackson.databind.introspect.NopAnnotationIntrospector;
  */
 public class ApiphanyAnnotationIntrospector extends NopAnnotationIntrospector { // NOSONAR - singleton needed
 
+	/**
+	 * Serial version UID needed for {@link Serializable} objects.
+	 */
 	private static final long serialVersionUID = -7229112614741239569L;
 
 	/**
@@ -34,6 +39,13 @@ public class ApiphanyAnnotationIntrospector extends NopAnnotationIntrospector { 
 		 * Singleton instance configured to hide sensitive fields.
 		 */
 		private static final ApiphanyAnnotationIntrospector INSTANCE = new ApiphanyAnnotationIntrospector();
+	}
+
+	/**
+	 * Hide constructor.
+	 */
+	protected ApiphanyAnnotationIntrospector() {
+		// empty
 	}
 
 	/**

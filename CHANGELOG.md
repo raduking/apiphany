@@ -8,6 +8,13 @@ Added `PRF` with utility method to a apply pseudo-random function in TLS environ
 Added `KeyExchangeHandler` interface to be implemented in key exchanges.
 Added `Sensitive` annotation to mark sensitive fields.
 Changed `JacksonJsonBuilder` to read sensitive but not write `Sensitive` fields.
+Added `@Ignored` annotation which is replacing Jackson's `@JsonIgnore` and is JSON library agnostic.
+Added `@FieldName` annotation which is replacing Jackson's `@JsonProperty` and is JSON library agnostic.
+Added `@FieldOrder` annotation which is replacing Jackson's `@JsonPropertyOrder` and is JSON library agnostic.
+Added `@AsValue` annotation which is replacing Jackson's `@JsonValue` and is JSON library agnostic.
+Added `ApiphanyAnnotationIntrospector` which handles the newly added annotations when Jackson is present in the class path so that the JSON library is abstracted away.
+Added `@Sensitive` annotation for sensitive fields that will deserialized but not serialized for security.
+Added `SensitiveAnnotationIntrospector` that handles the `@Sensitive` annotation.
 
 ---
 
