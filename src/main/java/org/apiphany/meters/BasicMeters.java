@@ -7,26 +7,23 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.apiphany.lang.Pair;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.builder.PropertyNameBuilder;
+import org.apiphany.meters.micrometer.MicrometerFactory;
 import org.morphix.lang.Nullables;
 import org.morphix.lang.Unchecked;
 import org.morphix.lang.function.Runnables;
+import org.morphix.reflection.Constructors;
 import org.morphix.reflection.Methods;
 
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.Tags;
-import io.micrometer.core.instrument.Timer;
 
 /**
- * A record class for managing basic metrics such as latency, requests, retries, and errors. This class provides methods
- * to wrap code with metrics and record common metrics for a given prefix.
- * <p>
- * TODO: abstract away micrometer to only be used when present in the class path
+ * A record for managing basic metrics such as latency, requests, retries, and errors. This class provides methods to
+ * wrap code with metrics and record common metrics for a given prefix.
  *
- * @param meterRegistry the meter registry these metrics will be added to
+ * @param meterFactory the meter factory to construct the meters.
  * @param latency the timer for measuring operation latency.
  * @param requests the counter for tracking the number of requests.
  * @param retries the counter for tracking the number of retries.
@@ -34,7 +31,12 @@ import io.micrometer.core.instrument.Timer;
  *
  * @author Radu Sebastian LAZIN
  */
-public record BasicMeters(MeterRegistry meterRegistry, Timer latency, Counter requests, Counter retries, Counter errors) {
+public record BasicMeters(
+		MeterFactory meterFactory,
+		MeterTimer latency,
+		MeterCounter requests,
+		MeterCounter retries,
+		MeterCounter errors) {
 
 	/**
 	 * The separator used for building metric names.
@@ -83,15 +85,94 @@ public record BasicMeters(MeterRegistry meterRegistry, Timer latency, Counter re
 	private static final ConcurrentMap<String, BasicMeters> METERS_CACHE = new ConcurrentHashMap<>();
 
 	/**
-	 * Constructor, which uses the global registry to publish metrics.
+	 * The instance holder nested class.
+	 *
+	 * @author Radu Sebastian LAZIN
+	 */
+	private static class InstanceHolder {
+
+		/**
+		 * The meter factory.
+		 */
+		private static final MeterFactory METER_FACTORY = initializeInstance(MicrometerFactory.MICROMETER_LIBRARY_INFO);
+	}
+
+	/**
+	 * Returns an instance based on the available meter libraries.
+	 *
+	 * @param libraries the libraries information list
+	 * @return a meter factory
+	 */
+	@SafeVarargs
+	protected static MeterFactory initializeInstance(final Pair<Boolean, Class<? extends MeterFactory>>... libraries) {
+		if (null != libraries) {
+			for (Pair<Boolean, Class<? extends MeterFactory>> libraryInfo : libraries) {
+				if (libraryInfo.left().booleanValue()) {
+					return Constructors.IgnoreAccess.newInstance(libraryInfo.right());
+				}
+			}
+		}
+		return new MeterFactory();
+	}
+
+	/**
+	 * Constructor.
 	 *
 	 * @param latency the timer for measuring operation latency.
 	 * @param requests the counter for tracking the number of requests.
 	 * @param retries the counter for tracking the number of retries.
 	 * @param errors the counter for tracking the number of errors.
 	 */
-	public BasicMeters(final Timer latency, final Counter requests, final Counter retries, final Counter errors) {
-		this(Metrics.globalRegistry, latency, requests, retries, errors);
+	public BasicMeters(
+			final MeterTimer latency,
+			final MeterCounter requests,
+			final MeterCounter retries,
+			final MeterCounter errors) {
+		this(InstanceHolder.METER_FACTORY, latency, requests, retries, errors);
+	}
+
+	/**
+	 * Returns the underlying latency timer object which must have the given type.
+	 *
+	 * @param <T> type of the underlying timer object
+	 * @param cls class of the underlying timer object
+	 * @return the underlying latency timer object which must have the given type
+	 */
+	public <T> T latency(final Class<T> cls) {
+		return latency().unwrap(cls);
+	}
+
+	/**
+	 * Returns the underlying requests counter object which must have the given type.
+	 *
+	 * @param <T> type of the underlying counter object
+	 * @param cls class of the underlying counter object
+	 * @return the underlying requests counter object which must have the given type
+	 */
+	public <T> T requests(final Class<T> cls) {
+		return requests().unwrap(cls);
+	}
+
+	/**
+	 * Returns the underlying retries counter object which must have the given type.
+	 *
+	 * @param <T> type of the underlying counter object
+	 * @param cls class of the underlying counter object
+	 * @return the underlying retries counter object which must have the given type
+	 */
+	public <T> T retries(final Class<T> cls) {
+		return retries().unwrap(cls);
+	}
+
+	/**
+	 * Returns the underlying errors counter object which must have the given type.
+	 *
+	 * @param <T> type of the underlying counter object
+	 * @param cls class of the underlying counter object
+	 * @return the underlying errors counter object which must have the given type
+	 */
+	public <T> T errors(final Class<T> cls) {
+		return errors().unwrap(cls);
 	}
 
 	/**
@@ -139,25 +220,24 @@ public record BasicMeters(MeterRegistry meterRegistry, Timer latency, Counter re
 	 * @return a {@link BasicMeters} instance.
 	 */
 	public static BasicMeters of(final String prefix, final Tags tags) {
-		return of(Metrics.globalRegistry, prefix, tags);
+		return of(InstanceHolder.METER_FACTORY, prefix, tags);
 	}
 
 	/**
 	 * Constructs a {@link BasicMeters} object with all meters having the given prefix and tags.
 	 *
-	 * @param meterRegistry the meter registry
+	 * @param meterFactory the meter factory
 	 * @param prefix the prefix for the metrics.
 	 * @param tags the tags for the metrics.
 	 * @return a {@link BasicMeters} instance.
 	 */
-	public static BasicMeters of(final MeterRegistry meterRegistry, final String prefix, final Tags tags) {
-		MeterRegistry registry = Nullables.nonNullOrDefault(meterRegistry, Metrics.globalRegistry);
+	public static BasicMeters of(final MeterFactory meterFactory, final String prefix, final Tags tags) {
+		MeterFactory factory = Nullables.nonNullOrDefault(meterFactory, InstanceHolder.METER_FACTORY);
 		Supplier<BasicMeters> basicMetersInstantiator = () -> new BasicMeters(
-				registry,
-				registry.timer(String.join(SEPARATOR, prefix, LATENCY_METRIC), tags),
-				registry.counter(String.join(SEPARATOR, prefix, REQUEST_METRIC), tags),
-				registry.counter(String.join(SEPARATOR, prefix, RETRY_METRIC), tags),
-				registry.counter(String.join(SEPARATOR, prefix, ERROR_METRIC), tags));
+				factory.timer(String.join(SEPARATOR, prefix, LATENCY_METRIC), tags),
+				factory.counter(String.join(SEPARATOR, prefix, REQUEST_METRIC), tags),
+				factory.counter(String.join(SEPARATOR, prefix, RETRY_METRIC), tags),
+				factory.counter(String.join(SEPARATOR, prefix, ERROR_METRIC), tags));
 		if (isEmpty(tags)) {
 			return METERS_CACHE.computeIfAbsent(prefix, key -> basicMetersInstantiator.get());
 		}
@@ -177,12 +257,12 @@ public record BasicMeters(MeterRegistry meterRegistry, Timer latency, Counter re
 	/**
 	 * Constructs a {@link BasicMeters} object with all meters having the given prefix and no tags.
 	 *
-	 * @param meterRegistry the meter registry
+	 * @param meterFactory the meter factory
 	 * @param prefix the prefix for the metrics.
 	 * @return a {@link BasicMeters} instance.
 	 */
-	public static BasicMeters of(final MeterRegistry meterRegistry, final String prefix) {
-		return of(meterRegistry, prefix, Tags.empty());
+	public static BasicMeters of(final MeterFactory meterFactory, final String prefix) {
+		return of(meterFactory, prefix, Tags.empty());
 	}
 
 	/**
@@ -200,12 +280,12 @@ public record BasicMeters(MeterRegistry meterRegistry, Timer latency, Counter re
 	 * Constructs a {@link BasicMeters} object with all meters having the prefix built by the provided
 	 * {@link PropertyNameBuilder}.
 	 *
-	 * @param meterRegistry the meter registry
+	 * @param meterFactory the meter factory
 	 * @param prefixBuilder the builder for the metric prefix.
 	 * @return a {@link BasicMeters} instance.
 	 */
-	public static BasicMeters of(final MeterRegistry meterRegistry, final PropertyNameBuilder prefixBuilder) {
-		return of(meterRegistry, prefixBuilder.build());
+	public static BasicMeters of(final MeterFactory meterFactory, final PropertyNameBuilder prefixBuilder) {
+		return of(meterFactory, prefixBuilder.build());
 	}
 
 	/**
@@ -221,12 +301,12 @@ public record BasicMeters(MeterRegistry meterRegistry, Timer latency, Counter re
 	/**
 	 * Constructs a {@link BasicMeters} object with all meters having the prefix based on the current method name.
 	 *
-	 * @param meterRegistry the meter registry
+	 * @param meterFactory the meter factory
 	 * @param prefix the prefix for the metrics.
 	 * @return a {@link BasicMeters} instance.
 	 */
-	public static BasicMeters onMethod(final MeterRegistry meterRegistry, final String prefix) {
-		return of(meterRegistry, buildPrefixWithMethod(prefix, OF_METHOD_CALLER_DEPTH));
+	public static BasicMeters onMethod(final MeterFactory meterFactory, final String prefix) {
+		return of(meterFactory, buildPrefixWithMethod(prefix, OF_METHOD_CALLER_DEPTH));
 	}
 
 	/**
@@ -245,13 +325,13 @@ public record BasicMeters(MeterRegistry meterRegistry, Timer latency, Counter re
 	 * Constructs a {@link BasicMeters} object with all meters having the prefix based on the current method name and the
 	 * provided tags.
 	 *
-	 * @param meterRegistry the meter registry
+	 * @param meterFactory the meter factory
 	 * @param prefix the prefix for the metrics.
 	 * @param tags the tags for the metrics.
 	 * @return a {@link BasicMeters} instance.
 	 */
-	public static BasicMeters onMethod(final MeterRegistry meterRegistry, final String prefix, final Tags tags) {
-		return of(meterRegistry, buildPrefixWithMethod(prefix, OF_METHOD_CALLER_DEPTH), tags);
+	public static BasicMeters onMethod(final MeterFactory meterFactory, final String prefix, final Tags tags) {
+		return of(meterFactory, buildPrefixWithMethod(prefix, OF_METHOD_CALLER_DEPTH), tags);
 	}
 
 	/**
@@ -270,13 +350,13 @@ public record BasicMeters(MeterRegistry meterRegistry, Timer latency, Counter re
 	 * Constructs a {@link BasicMeters} object with all meters having the prefix based on the method name at the specified
 	 * depth.
 	 *
-	 * @param meterRegistry the meter registry
+	 * @param meterFactory the meter factory
 	 * @param prefix the prefix for the metrics.
 	 * @param depth the depth in the call stack to determine the method name.
 	 * @return a {@link BasicMeters} instance.
 	 */
-	public static BasicMeters onMethod(final MeterRegistry meterRegistry, final String prefix, final int depth) {
-		return of(meterRegistry, buildPrefixWithMethod(prefix, depth));
+	public static BasicMeters onMethod(final MeterFactory meterFactory, final String prefix, final int depth) {
+		return of(meterFactory, buildPrefixWithMethod(prefix, depth));
 	}
 
 	/**
@@ -296,14 +376,14 @@ public record BasicMeters(MeterRegistry meterRegistry, Timer latency, Counter re
 	 * Constructs a {@link BasicMeters} object with all meters having the prefix based on the method name at the specified
 	 * depth and the provided tags.
 	 *
-	 * @param meterRegistry the meter registry
+	 * @param meterFactory the meter factory
 	 * @param prefix the prefix for the metrics.
 	 * @param tags the tags for the metrics.
 	 * @param depth the depth in the call stack to determine the method name.
 	 * @return a {@link BasicMeters} instance.
 	 */
-	public static BasicMeters onMethod(final MeterRegistry meterRegistry, final String prefix, final Tags tags, final int depth) {
-		return of(meterRegistry, buildPrefixWithMethod(prefix, depth), tags);
+	public static BasicMeters onMethod(final MeterFactory meterFactory, final String prefix, final Tags tags, final int depth) {
+		return of(meterFactory, buildPrefixWithMethod(prefix, depth), tags);
 	}
 
 	/**
@@ -319,12 +399,12 @@ public record BasicMeters(MeterRegistry meterRegistry, Timer latency, Counter re
 	/**
 	 * Constructs a {@link BasicMeters} object with all meters having the prefix based on the caller method name.
 	 *
-	 * @param meterRegistry the meter registry
+	 * @param meterFactory the meter factory
 	 * @param prefix the prefix for the metrics.
 	 * @return a {@link BasicMeters} instance.
 	 */
-	public static BasicMeters onCallerMethod(final MeterRegistry meterRegistry, final String prefix) {
-		return of(meterRegistry, buildPrefixWithMethod(prefix, OF_METHOD_CALLER_DEPTH + 1));
+	public static BasicMeters onCallerMethod(final MeterFactory meterFactory, final String prefix) {
+		return of(meterFactory, buildPrefixWithMethod(prefix, OF_METHOD_CALLER_DEPTH + 1));
 	}
 
 	/**
@@ -343,13 +423,13 @@ public record BasicMeters(MeterRegistry meterRegistry, Timer latency, Counter re
 	 * Constructs a {@link BasicMeters} object with all meters having the prefix based on the caller method name and the
 	 * provided tags.
 	 *
-	 * @param meterRegistry the meter registry
+	 * @param meterFactory the meter factory
 	 * @param prefix the prefix for the metrics.
 	 * @param tags the tags for the metrics.
 	 * @return a {@link BasicMeters} instance.
 	 */
-	public static BasicMeters onCallerMethod(final MeterRegistry meterRegistry, final String prefix, final Tags tags) {
-		return of(meterRegistry, buildPrefixWithMethod(prefix, OF_METHOD_CALLER_DEPTH + 1), tags);
+	public static BasicMeters onCallerMethod(final MeterFactory meterFactory, final String prefix, final Tags tags) {
+		return of(meterFactory, buildPrefixWithMethod(prefix, OF_METHOD_CALLER_DEPTH + 1), tags);
 	}
 
 	/**
@@ -389,16 +469,16 @@ public record BasicMeters(MeterRegistry meterRegistry, Timer latency, Counter re
 	 * Wraps the supplier code with metrics, recording latency, requests, and errors.
 	 *
 	 * @param <T> the return type of the supplier.
-	 * @param meterRegistry the meter registry
+	 * @param meterFactory the meter factory
 	 * @param prefix the metric prefix.
 	 * @param tags the metric tags.
 	 * @param supplier the code to wrap with metrics.
 	 * @param onError the function to handle errors and provide a fallback value.
 	 * @return the result of the supplier on success, or the result of the error handler on failure.
 	 */
-	public static <T> T wrap(final MeterRegistry meterRegistry, final String prefix, final Tags tags, final Supplier<T> supplier,
+	public static <T> T wrap(final MeterFactory meterFactory, final String prefix, final Tags tags, final Supplier<T> supplier,
 			final Function<? super Exception, T> onError) {
-		return BasicMeters.of(meterRegistry, prefix, tags)
+		return BasicMeters.of(meterFactory, prefix, tags)
 				.wrap(supplier, onError);
 	}
 
@@ -419,14 +499,14 @@ public record BasicMeters(MeterRegistry meterRegistry, Timer latency, Counter re
 	 * Wraps the supplier code with metrics, recording latency, requests, and errors. Re-throws any exceptions.
 	 *
 	 * @param <T> the return type of the supplier.
-	 * @param meterRegistry the meter registry
+	 * @param meterFactory the meter factory
 	 * @param prefix the metric prefix.
 	 * @param tags the metric tags.
 	 * @param supplier the code to wrap with metrics.
 	 * @return the result of the supplier.
 	 */
-	public static <T> T wrap(final MeterRegistry meterRegistry, final String prefix, final Tags tags, final Supplier<T> supplier) {
-		return wrap(meterRegistry, prefix, tags, supplier, Unchecked.Undeclared::reThrow);
+	public static <T> T wrap(final MeterFactory meterFactory, final String prefix, final Tags tags, final Supplier<T> supplier) {
+		return wrap(meterFactory, prefix, tags, supplier, Unchecked.Undeclared::reThrow);
 	}
 
 	/**
@@ -445,13 +525,13 @@ public record BasicMeters(MeterRegistry meterRegistry, Timer latency, Counter re
 	 * Wraps the supplier code with metrics, recording latency, requests, and errors. Uses no tags.
 	 *
 	 * @param <T> the return type of the supplier.
-	 * @param meterRegistry the meter registry
+	 * @param meterFactory the meter factory
 	 * @param prefix the metric prefix.
 	 * @param supplier the code to wrap with metrics.
 	 * @return the result of the supplier.
 	 */
-	public static <T> T wrap(final MeterRegistry meterRegistry, final String prefix, final Supplier<T> supplier) {
-		return wrap(meterRegistry, prefix, Tags.empty(), supplier);
+	public static <T> T wrap(final MeterFactory meterFactory, final String prefix, final Supplier<T> supplier) {
+		return wrap(meterFactory, prefix, Tags.empty(), supplier);
 	}
 
 	/**
@@ -468,13 +548,13 @@ public record BasicMeters(MeterRegistry meterRegistry, Timer latency, Counter re
 	/**
 	 * Wraps the runnable code with metrics, recording latency, requests, and errors.
 	 *
-	 * @param meterRegistry the meter registry
+	 * @param meterFactory the meter factory
 	 * @param prefix the metric prefix.
 	 * @param tags the metric tags.
 	 * @param runnable the code to wrap with metrics.
 	 */
-	public static void wrap(final MeterRegistry meterRegistry, final String prefix, final Tags tags, final Runnable runnable) {
-		wrap(meterRegistry, prefix, tags, Runnables.toSupplier(runnable));
+	public static void wrap(final MeterFactory meterFactory, final String prefix, final Tags tags, final Runnable runnable) {
+		wrap(meterFactory, prefix, tags, Runnables.toSupplier(runnable));
 	}
 
 	/**
@@ -490,12 +570,12 @@ public record BasicMeters(MeterRegistry meterRegistry, Timer latency, Counter re
 	/**
 	 * Wraps the runnable code with metrics, recording latency, requests, and errors. Uses no tags.
 	 *
-	 * @param meterRegistry the meter registry
+	 * @param meterFactory the meter factory
 	 * @param prefix the metric prefix.
 	 * @param runnable the code to wrap with metrics.
 	 */
-	public static void wrap(final MeterRegistry meterRegistry, final String prefix, final Runnable runnable) {
-		wrap(meterRegistry, prefix, Tags.empty(), runnable);
+	public static void wrap(final MeterFactory meterFactory, final String prefix, final Runnable runnable) {
+		wrap(meterFactory, prefix, Tags.empty(), runnable);
 	}
 
 	/**
@@ -518,16 +598,16 @@ public record BasicMeters(MeterRegistry meterRegistry, Timer latency, Counter re
 	 * fallback value.
 	 *
 	 * @param <T> the return type of the supplier.
-	 * @param meterRegistry the meter registry
+	 * @param meterFactory the meter factory
 	 * @param prefix the metric prefix.
 	 * @param tags the metric tags.
 	 * @param supplier the code to wrap with metrics.
 	 * @param onErrorSupplier the supplier for the fallback value in case of an error.
 	 * @return the result of the supplier on success, or the fallback value on failure.
 	 */
-	public static <T> T wrapAndSwallow(final MeterRegistry meterRegistry, final String prefix, final Tags tags, final Supplier<T> supplier,
+	public static <T> T wrapAndSwallow(final MeterFactory meterFactory, final String prefix, final Tags tags, final Supplier<T> supplier,
 			final Supplier<T> onErrorSupplier) {
-		return wrap(meterRegistry, prefix, tags, supplier, e -> onErrorSupplier.get());
+		return wrap(meterFactory, prefix, tags, supplier, e -> onErrorSupplier.get());
 	}
 
 	/**
@@ -548,13 +628,13 @@ public record BasicMeters(MeterRegistry meterRegistry, Timer latency, Counter re
 	 * on failure.
 	 *
 	 * @param <T> the return type of the supplier.
-	 * @param meterRegistry the meter registry
+	 * @param meterFactory the meter factory
 	 * @param prefix the metric prefix.
 	 * @param supplier the code to wrap with metrics.
 	 * @return the result of the supplier on success, or null on failure.
 	 */
-	public static <T> T wrapAndSwallow(final MeterRegistry meterRegistry, final String prefix, final Supplier<T> supplier) {
-		return wrapAndSwallow(meterRegistry, prefix, Tags.empty(), supplier, Nullables.supplyNull());
+	public static <T> T wrapAndSwallow(final MeterFactory meterFactory, final String prefix, final Supplier<T> supplier) {
+		return wrapAndSwallow(meterFactory, prefix, Tags.empty(), supplier, Nullables.supplyNull());
 	}
 
 	/**
@@ -571,13 +651,13 @@ public record BasicMeters(MeterRegistry meterRegistry, Timer latency, Counter re
 	/**
 	 * Wraps the runnable code with metrics, recording latency, requests, and errors. The method swallows exceptions.
 	 *
-	 * @param meterRegistry the meter registry
+	 * @param meterFactory the meter factory
 	 * @param prefix the metric prefix.
 	 * @param tags the metric tags.
 	 * @param runnable the code to wrap with metrics.
 	 */
-	public static void wrapAndSwallow(final MeterRegistry meterRegistry, final String prefix, final Tags tags, final Runnable runnable) {
-		wrapAndSwallow(meterRegistry, prefix, tags, Runnables.toSupplier(runnable), Nullables.supplyNull());
+	public static void wrapAndSwallow(final MeterFactory meterFactory, final String prefix, final Tags tags, final Runnable runnable) {
+		wrapAndSwallow(meterFactory, prefix, tags, Runnables.toSupplier(runnable), Nullables.supplyNull());
 	}
 
 	/**
@@ -595,12 +675,12 @@ public record BasicMeters(MeterRegistry meterRegistry, Timer latency, Counter re
 	 * Wraps the runnable code with metrics, recording latency, requests, and errors. The method swallows exceptions. Uses
 	 * no tags.
 	 *
-	 * @param meterRegistry the meter registry
+	 * @param meterFactory the meter factory
 	 * @param prefix the metric prefix.
 	 * @param runnable the code to wrap with metrics.
 	 */
-	public static void wrapAndSwallow(final MeterRegistry meterRegistry, final String prefix, final Runnable runnable) {
-		wrapAndSwallow(meterRegistry, prefix, Tags.empty(), runnable);
+	public static void wrapAndSwallow(final MeterFactory meterFactory, final String prefix, final Runnable runnable) {
+		wrapAndSwallow(meterFactory, prefix, Tags.empty(), runnable);
 	}
 
 	/**

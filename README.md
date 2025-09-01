@@ -12,7 +12,6 @@ Simple fluent style Java API to make API calls.
 
 <p>
 	<a href="https://www.java.com" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/java/java-original.svg" alt="java" width="40" height="40"/></a>
-	<a href="https://micrometer.io" target="_blank" rel="noreferrer"><img src="https://micrometer.io/img/logo-no-title.svg" alt="micrometer" width="40" height="40"/></a>
 </p>
 
 ### Why APIphany?

@@ -1,15 +1,9 @@
 package org.apiphany.meters;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
+import java.time.Duration;
+import java.util.Objects;
 
-import org.morphix.lang.Nullables;
-import org.morphix.lang.function.ThrowingSupplier;
-
-import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.Timer;
-import io.micrometer.core.instrument.distribution.HistogramSnapshot;
 
 /**
  * A basic timer implementation that does not send values to any metrics service. This is useful when metrics need to be
@@ -19,23 +13,18 @@ import io.micrometer.core.instrument.distribution.HistogramSnapshot;
  *
  * @author Radu Sebastian LAZIN
  */
-public class BasicTimer implements Timer {
+public class BasicTimer extends BasicMeter implements MeterTimer {
 
 	/**
-	 * The identifier for this timer, containing name and metadata.
+	 * The recorded duration.
 	 */
-	private Id id;
-
-	/**
-	 * The recorded time amount stored in the timer's base time unit (milliseconds).
-	 */
-	private long amount;
+	private Duration duration;
 
 	/**
 	 * Private constructor to enforce use of factory method.
 	 */
-	private BasicTimer() {
-		// empty
+	private BasicTimer(final String name) {
+		super(name);
 	}
 
 	/**
@@ -46,89 +35,24 @@ public class BasicTimer implements Timer {
 	 * @throws NullPointerException if name is null
 	 */
 	public static BasicTimer of(final String name) {
-		BasicTimer timer = new BasicTimer();
-		timer.id = new Id(name, Tags.empty(), null, null, Type.TIMER);
-		return timer;
+		Objects.requireNonNull(name);
+		return new BasicTimer(name);
 	}
 
 	/**
-	 * @see Timer#getId()
+	 * @see Timer#record(Duration)
 	 */
 	@Override
-	public Id getId() {
-		return id;
+	public void record(final Duration duration) {
+		this.duration = duration;
 	}
 
 	/**
-	 * @see Timer#takeSnapshot()
+	 * Returns the last duration recorded.
+	 *
+	 * @return the last duration recorded
 	 */
-	@Override
-	public HistogramSnapshot takeSnapshot() {
-		return HistogramSnapshot.empty(1, amount, amount);
+	public Duration getDuration() {
+		return duration;
 	}
-
-	/**
-	 * @see Timer#record(long, TimeUnit)
-	 */
-	@Override
-	public void record(final long amount, final TimeUnit unit) {
-		this.amount = unit.convert(amount, baseTimeUnit());
-	}
-
-	/**
-	 * @see Timer#record(Supplier)
-	 */
-	@Override
-	public <T> T record(final Supplier<T> f) {
-		return Nullables.whenNotNull(f, f);
-	}
-
-	/**
-	 * @see Timer#recordCallable(Callable)
-	 */
-	@Override
-	public <T> T recordCallable(final Callable<T> f) {
-		return Nullables.whenNotNull(f, ThrowingSupplier.unchecked(f::call));
-	}
-
-	/**
-	 * @see Timer#record(Runnable)
-	 */
-	@Override
-	public void record(final Runnable f) {
-		Nullables.whenNotNull(f, f);
-	}
-
-	/**
-	 * @see Timer#count()
-	 */
-	@Override
-	public long count() {
-		return 1;
-	}
-
-	/**
-	 * @see Timer#totalTime(TimeUnit)
-	 */
-	@Override
-	public double totalTime(final TimeUnit unit) {
-		return baseTimeUnit().convert(amount, unit);
-	}
-
-	/**
-	 * @see Timer#max(TimeUnit)
-	 */
-	@Override
-	public double max(final TimeUnit unit) {
-		return baseTimeUnit().convert(amount, unit);
-	}
-
-	/**
-	 * @see Timer#baseTimeUnit()
-	 */
-	@Override
-	public TimeUnit baseTimeUnit() {
-		return TimeUnit.MILLISECONDS;
-	}
-
 }
