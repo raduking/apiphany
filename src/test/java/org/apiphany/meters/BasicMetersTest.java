@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.morphix.reflection.Methods;
 
 import io.micrometer.core.instrument.Tags;
+import io.micrometer.core.instrument.Timer;
 
 /**
  * Test class for {@link BasicMeters}.
@@ -25,7 +26,7 @@ class BasicMetersTest {
 	void shouldSetMetricsToThisMethod() {
 		BasicMeters meters = BasicMeters.onMethod(METRICS_PREFIX);
 
-		assertThat(meters.latency().getId().getName(),
+		assertThat(meters.latency(Timer.class).getId().getName(),
 				equalTo(METRICS_PREFIX + ".should-set-metrics-to-this-method." + BasicMeters.LATENCY_METRIC));
 	}
 
@@ -33,7 +34,7 @@ class BasicMetersTest {
 	void shouldSetMetricsToCallerMethod() {
 		BasicMeters meters = myUtilityMethod(METRICS_PREFIX);
 
-		assertThat(meters.latency().getId().getName(),
+		assertThat(meters.latency(Timer.class).getId().getName(),
 				equalTo(METRICS_PREFIX + ".should-set-metrics-to-caller-method." + BasicMeters.LATENCY_METRIC));
 	}
 
@@ -41,7 +42,7 @@ class BasicMetersTest {
 	void shouldSetMetricsToThisMethodWithTags() {
 		BasicMeters meters = BasicMeters.onMethod(METRICS_PREFIX, Tags.empty());
 
-		assertThat(meters.latency().getId().getName(),
+		assertThat(meters.latency(Timer.class).getId().getName(),
 				equalTo(METRICS_PREFIX + ".should-set-metrics-to-this-method-with-tags." + BasicMeters.LATENCY_METRIC));
 	}
 
@@ -49,7 +50,7 @@ class BasicMetersTest {
 	void shouldSetMetricsToCallerMethodWithTags() {
 		BasicMeters meters = myUtilityMethod(METRICS_PREFIX, Tags.empty());
 
-		assertThat(meters.latency().getId().getName(),
+		assertThat(meters.latency(Timer.class).getId().getName(),
 				equalTo(METRICS_PREFIX + ".should-set-metrics-to-caller-method-with-tags." + BasicMeters.LATENCY_METRIC));
 	}
 
@@ -57,7 +58,7 @@ class BasicMetersTest {
 	void shouldSetMetricsToOfMethodWhenDepthIsTwo() {
 		BasicMeters meters = BasicMeters.onMethod(METRICS_PREFIX, 2);
 
-		assertThat(meters.latency().getId().getName(),
+		assertThat(meters.latency(Timer.class).getId().getName(),
 				equalTo(METRICS_PREFIX + ".on-method." + BasicMeters.LATENCY_METRIC));
 	}
 
@@ -66,10 +67,10 @@ class BasicMetersTest {
 		BasicMeters metersDepth3 = BasicMeters.onMethod(METRICS_PREFIX);
 		BasicMeters metersDepth4 = BasicMeters.onMethod(METRICS_PREFIX, 4);
 
-		assertThat(metersDepth3.latency().getId().getName(),
+		assertThat(metersDepth3.latency(Timer.class).getId().getName(),
 				equalTo(METRICS_PREFIX + ".should-not-set-metrics-to-this-method-when-depth-is-four." + BasicMeters.LATENCY_METRIC));
-		assertThat(metersDepth4.latency().getId().getName(),
-				not(equalTo(metersDepth3.latency().getId().getName())));
+		assertThat(metersDepth4.latency(Timer.class).getId().getName(),
+				not(equalTo(metersDepth3.latency(Timer.class).getId().getName())));
 	}
 
 	@Test

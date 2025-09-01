@@ -25,6 +25,7 @@ import org.apiphany.lang.Strings;
 import org.apiphany.lang.accumulator.DurationAccumulator;
 import org.apiphany.lang.retry.Retry;
 import org.apiphany.meters.BasicMeters;
+import org.apiphany.meters.MeterFactory;
 import org.apiphany.security.AuthenticationType;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Nullables;
@@ -35,8 +36,6 @@ import org.morphix.reflection.GenericClass;
 import org.morphix.reflection.predicates.MemberPredicates;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import io.micrometer.core.instrument.MeterRegistry;
 
 /**
  * Generic client for API calls.
@@ -94,9 +93,9 @@ public class ApiClient implements AutoCloseable {
 	private BasicMeters meters = BasicMeters.DEFAULT;
 
 	/**
-	 * The meter registry.
+	 * The meter factory.
 	 */
-	private MeterRegistry meterRegistry;
+	private MeterFactory meterFactory;
 
 	/**
 	 * Exchange clients map based on the authentication type and a pair of exchange client and managed flag that tells the
@@ -556,20 +555,20 @@ public class ApiClient implements AutoCloseable {
 	}
 
 	/**
-	 * Returns the meter registry.
+	 * Returns the meter factory.
 	 *
-	 * @return the meter registry
+	 * @return the meter factory
 	 */
-	public MeterRegistry getMeterRegistry() {
-		return meterRegistry;
+	public MeterFactory getMeterFactory() {
+		return meterFactory;
 	}
 
 	/**
-	 * Sets the meter registry.
+	 * Sets the meter factory.
 	 *
-	 * @param meterRegistry meter registry to set
+	 * @param meterFactory meter factory to set
 	 */
-	public void setMeterRegistry(final MeterRegistry meterRegistry) {
-		this.meterRegistry = meterRegistry;
+	public void setMeterFactory(final MeterFactory meterFactory) {
+		this.meterFactory = meterFactory;
 	}
 }

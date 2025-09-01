@@ -1,20 +1,12 @@
 package org.apiphany.meters;
 
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.Tags;
-
 /**
  * A basic counter implementation that does not send values to any metrics service. This is useful when metrics need to
  * be disabled or not available.
  *
  * @author Radu Sebastian LAZIN
  */
-public class BasicCounter implements Counter {
-
-	/**
-	 * The counter ID.
-	 */
-	private Id id;
+public class BasicCounter extends BasicMeter implements MeterCounter {
 
 	/**
 	 * The counter value.
@@ -24,8 +16,8 @@ public class BasicCounter implements Counter {
 	/**
 	 * Hidden constructor.
 	 */
-	private BasicCounter() {
-		// empty
+	private BasicCounter(final String name) {
+		super(name);
 	}
 
 	/**
@@ -35,21 +27,11 @@ public class BasicCounter implements Counter {
 	 * @return a new basic counter with the given name
 	 */
 	public static BasicCounter of(final String name) {
-		BasicCounter counter = new BasicCounter();
-		counter.id = new Id(name, Tags.empty(), null, null, Type.COUNTER);
-		return counter;
+		return new BasicCounter(name);
 	}
 
 	/**
-	 * @see Counter#getId()
-	 */
-	@Override
-	public Id getId() {
-		return id;
-	}
-
-	/**
-	 * @see Counter#increment()
+	 * @see #increment(double)
 	 */
 	@Override
 	public void increment(final double amount) {
@@ -57,11 +39,10 @@ public class BasicCounter implements Counter {
 	}
 
 	/**
-	 * @see Counter#count()
+	 * @see #count()
 	 */
 	@Override
 	public double count() {
 		return value;
 	}
-
 }

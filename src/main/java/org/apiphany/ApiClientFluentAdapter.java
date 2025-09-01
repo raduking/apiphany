@@ -424,7 +424,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @return this
 	 */
 	public ApiClientFluentAdapter meters(final String prefix) {
-		return meters(BasicMeters.of(apiClient.getMeterRegistry(), prefix));
+		return meters(BasicMeters.of(apiClient.getMeterFactory(), prefix));
 	}
 
 	/**
@@ -435,7 +435,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @return this
 	 */
 	public ApiClientFluentAdapter meters(final String prefix, final Tags tags) {
-		return meters(BasicMeters.of(apiClient.getMeterRegistry(), prefix, tags));
+		return meters(BasicMeters.of(apiClient.getMeterFactory(), prefix, tags));
 	}
 
 	/**
@@ -445,7 +445,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @return this
 	 */
 	public ApiClientFluentAdapter metersOnMethod(final String prefix) {
-		return meters(BasicMeters.onCallerMethod(apiClient.getMeterRegistry(), prefix));
+		return meters(BasicMeters.onCallerMethod(apiClient.getMeterFactory(), prefix));
 	}
 
 	/**
@@ -456,7 +456,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @return this
 	 */
 	public ApiClientFluentAdapter metersOnMethod(final String prefix, final Tags tags) {
-		return meters(BasicMeters.onCallerMethod(apiClient.getMeterRegistry(), prefix, tags));
+		return meters(BasicMeters.onCallerMethod(apiClient.getMeterFactory(), prefix, tags));
 	}
 
 	/**
