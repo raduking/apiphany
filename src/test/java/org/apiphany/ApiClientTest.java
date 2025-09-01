@@ -358,10 +358,10 @@ class ApiClientTest {
 
 		String metricStart = METRICS_PREFIX + ".should-set-metrics-to-this-method.";
 
-		assertThat(adapter.getMeters().latency().getName(), equalTo(metricStart + BasicMeters.LATENCY_METRIC));
-		assertThat(adapter.getMeters().requests().getName(), equalTo(metricStart + BasicMeters.REQUEST_METRIC));
-		assertThat(adapter.getMeters().errors().getName(), equalTo(metricStart + BasicMeters.ERROR_METRIC));
-		assertThat(adapter.getMeters().latency().getName(), equalTo(metricStart + BasicMeters.LATENCY_METRIC));
+		assertThat(adapter.getMeters().latency().getName(), equalTo(metricStart + BasicMeters.Name.LATENCY));
+		assertThat(adapter.getMeters().requests().getName(), equalTo(metricStart + BasicMeters.Name.REQUEST));
+		assertThat(adapter.getMeters().errors().getName(), equalTo(metricStart + BasicMeters.Name.ERROR));
+		assertThat(adapter.getMeters().latency().getName(), equalTo(metricStart + BasicMeters.Name.LATENCY));
 	}
 
 	@SuppressWarnings("resource")
@@ -381,10 +381,10 @@ class ApiClientTest {
 
 		String metricStart = METRICS_PREFIX + ".should-set-metrics-to-this-method-with-tags.";
 
-		assertThat(adapter.getMeters().latency().getName(), equalTo(metricStart + BasicMeters.LATENCY_METRIC));
-		assertThat(adapter.getMeters().requests().getName(), equalTo(metricStart + BasicMeters.REQUEST_METRIC));
-		assertThat(adapter.getMeters().errors().getName(), equalTo(metricStart + BasicMeters.ERROR_METRIC));
-		assertThat(adapter.getMeters().latency().getName(), equalTo(metricStart + BasicMeters.LATENCY_METRIC));
+		assertThat(adapter.getMeters().latency().getName(), equalTo(metricStart + BasicMeters.Name.LATENCY));
+		assertThat(adapter.getMeters().requests().getName(), equalTo(metricStart + BasicMeters.Name.REQUEST));
+		assertThat(adapter.getMeters().errors().getName(), equalTo(metricStart + BasicMeters.Name.ERROR));
+		assertThat(adapter.getMeters().latency().getName(), equalTo(metricStart + BasicMeters.Name.LATENCY));
 	}
 
 	@SuppressWarnings("resource")
@@ -404,10 +404,10 @@ class ApiClientTest {
 
 		String metricStart = METRICS_PREFIX + ".";
 
-		assertThat(adapter.getMeters().latency().getName(), equalTo(metricStart + BasicMeters.LATENCY_METRIC));
-		assertThat(adapter.getMeters().requests().getName(), equalTo(metricStart + BasicMeters.REQUEST_METRIC));
-		assertThat(adapter.getMeters().errors().getName(), equalTo(metricStart + BasicMeters.ERROR_METRIC));
-		assertThat(adapter.getMeters().latency().getName(), equalTo(metricStart + BasicMeters.LATENCY_METRIC));
+		assertThat(adapter.getMeters().latency().getName(), equalTo(metricStart + BasicMeters.Name.LATENCY));
+		assertThat(adapter.getMeters().requests().getName(), equalTo(metricStart + BasicMeters.Name.REQUEST));
+		assertThat(adapter.getMeters().errors().getName(), equalTo(metricStart + BasicMeters.Name.ERROR));
+		assertThat(adapter.getMeters().latency().getName(), equalTo(metricStart + BasicMeters.Name.LATENCY));
 	}
 
 	@SuppressWarnings("resource")
@@ -427,10 +427,10 @@ class ApiClientTest {
 
 		assertThat(adapter.getMeters(), nullValue());
 
-		assertThat(api.getActiveMeters(adapter).latency().getName(), equalTo(BasicMeters.LATENCY_METRIC));
-		assertThat(api.getActiveMeters(adapter).requests().getName(), equalTo(BasicMeters.REQUEST_METRIC));
-		assertThat(api.getActiveMeters(adapter).errors().getName(), equalTo(BasicMeters.ERROR_METRIC));
-		assertThat(api.getActiveMeters(adapter).latency().getName(), equalTo(BasicMeters.LATENCY_METRIC));
+		assertThat(api.getActiveMeters(adapter).latency().getName(), equalTo(BasicMeters.Name.LATENCY));
+		assertThat(api.getActiveMeters(adapter).requests().getName(), equalTo(BasicMeters.Name.REQUEST));
+		assertThat(api.getActiveMeters(adapter).errors().getName(), equalTo(BasicMeters.Name.ERROR));
+		assertThat(api.getActiveMeters(adapter).latency().getName(), equalTo(BasicMeters.Name.LATENCY));
 	}
 
 	@SuppressWarnings("resource")
@@ -451,15 +451,15 @@ class ApiClientTest {
 
 		String metricStart = METRICS_PREFIX + ".";
 
-		assertThat(adapter.getMeters().latency().getName(), equalTo(metricStart + BasicMeters.LATENCY_METRIC));
-		assertThat(adapter.getMeters().requests().getName(), equalTo(metricStart + BasicMeters.REQUEST_METRIC));
-		assertThat(adapter.getMeters().errors().getName(), equalTo(metricStart + BasicMeters.ERROR_METRIC));
-		assertThat(adapter.getMeters().latency().getName(), equalTo(metricStart + BasicMeters.LATENCY_METRIC));
+		assertThat(adapter.getMeters().latency().getName(), equalTo(metricStart + BasicMeters.Name.LATENCY));
+		assertThat(adapter.getMeters().requests().getName(), equalTo(metricStart + BasicMeters.Name.REQUEST));
+		assertThat(adapter.getMeters().errors().getName(), equalTo(metricStart + BasicMeters.Name.ERROR));
+		assertThat(adapter.getMeters().latency().getName(), equalTo(metricStart + BasicMeters.Name.LATENCY));
 
-		assertThat(api.getActiveMeters(adapter).latency().getName(), equalTo(BasicMeters.LATENCY_METRIC));
-		assertThat(api.getActiveMeters(adapter).requests().getName(), equalTo(BasicMeters.REQUEST_METRIC));
-		assertThat(api.getActiveMeters(adapter).errors().getName(), equalTo(BasicMeters.ERROR_METRIC));
-		assertThat(api.getActiveMeters(adapter).latency().getName(), equalTo(BasicMeters.LATENCY_METRIC));
+		assertThat(api.getActiveMeters(adapter).latency().getName(), equalTo(BasicMeters.Name.LATENCY));
+		assertThat(api.getActiveMeters(adapter).requests().getName(), equalTo(BasicMeters.Name.REQUEST));
+		assertThat(api.getActiveMeters(adapter).errors().getName(), equalTo(BasicMeters.Name.ERROR));
+		assertThat(api.getActiveMeters(adapter).latency().getName(), equalTo(BasicMeters.Name.LATENCY));
 	}
 
 	@SuppressWarnings("resource")
