@@ -8,8 +8,6 @@ import java.nio.ByteBuffer;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.annotation.AsValue;
 
-import com.fasterxml.jackson.annotation.JsonValue;
-
 /**
  * Immutable wrapper for a 64-bit unsigned integer with binary serialization capabilities.
  * <p>
@@ -18,7 +16,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * <li>Type-safe representation of 64-bit integers</li>
  * <li>Big-endian binary serialization/deserialization</li>
  * <li>Network byte order (MSB-first) support</li>
- * <li>JSON integration via {@link JsonValue}</li>
  * <li>Constant-time size operations</li>
  * </ul>
  *

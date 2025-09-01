@@ -24,6 +24,7 @@ Added Micrometer implementation which will only be used if Micrometer library is
 Added `MicrometerTimer` which wraps a Micrometer `Timer`.
 Added `MicrometerCounter` which wraps a Micrometer `Counter`.
 Added `MicrometerFactory` which creates a Micrometer meters (only if Micrometer library is present in the classpath).
+Removed the Micrometer library from the build.
 
 ---
 

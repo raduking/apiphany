@@ -7,8 +7,6 @@ import java.io.InputStream;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.annotation.AsValue;
 
-import com.fasterxml.jackson.annotation.JsonValue;
-
 /**
  * Immutable wrapper for a 16-bit unsigned integer (short) with binary serialization capabilities.
  * <p>
@@ -17,7 +15,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * <li>Type-safe representation of 16-bit values</li>
  * <li>Big-endian binary serialization/deserialization</li>
  * <li>Network byte order support</li>
- * <li>JSON integration via {@link JsonValue}</li>
  * <li>Constant-time size operations</li>
  * </ul>
  *
