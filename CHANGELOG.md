@@ -7,7 +7,7 @@
 Added `PRF` with utility method to a apply pseudo-random function in TLS environments.
 Added `KeyExchangeHandler` interface to be implemented in key exchanges.
 Added `Sensitive` annotation to mark sensitive fields.
-Changed `JacksonJsonBuilder` to read sensitive but not write `Sensitive` fields.
+Changed `JacksonJsonBuilder` to read sensitive but not write `Sensitive` fields this is useful for passwords fields.
 Added `@Ignored` annotation which is replacing Jackson's `@JsonIgnore` and is JSON library agnostic.
 Added `@FieldName` annotation which is replacing Jackson's `@JsonProperty` and is JSON library agnostic.
 Added `@FieldOrder` annotation which is replacing Jackson's `@JsonPropertyOrder` and is JSON library agnostic.
@@ -15,6 +15,15 @@ Added `@AsValue` annotation which is replacing Jackson's `@JsonValue` and is JSO
 Added `ApiphanyAnnotationIntrospector` which handles the newly added annotations when Jackson is present in the class path so that the JSON library is abstracted away.
 Added `@Sensitive` annotation for sensitive fields that will deserialized but not serialized for security.
 Added `SensitiveAnnotationIntrospector` that handles the `@Sensitive` annotation.
+Changed `BasicMeters` class so that is metric library agnostic.
+Added `Meter` base interface for meters.
+Added `MeterTimer` interface for timer meters.
+Added `MeterCounter` interface for counter meters.
+Added `MeterFactory` which will create meter library agnostic meters.
+Added Micrometer implementation which will only be used if Micrometer library is present in the classpath.
+Added `MicrometerTimer` which wraps a Micrometer `Timer`.
+Added `MicrometerCounter` which wraps a Micrometer `Counter`.
+Added `MicrometerFactory` which creates a Micrometer meters (only if Micrometer library is present in the classpath).
 
 ---
 

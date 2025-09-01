@@ -37,9 +37,6 @@ public interface Meter {
 
 	/**
 	 * Attempts to cast this meter to the given concrete type.
-	 * <p>
-	 * This is useful when working with meters in a polymorphic way and a specific subtype (such as {@link MeterCounter} or
-	 * {@link MeterTimer}) is needed.
 	 *
 	 * @param cls the expected meter subtype
 	 * @param <T> the type of meter to unwrap to
@@ -47,7 +44,7 @@ public interface Meter {
 	 * @throws IllegalArgumentException if this meter is not assignable to {@code cls}
 	 */
 	default <T> T unwrap(final Class<T> cls) {
-		if (this.getClass().isAssignableFrom(cls)) {
+		if (cls.isAssignableFrom(this.getClass())) {
 			return JavaObjects.cast(this);
 		}
 		throw new IllegalArgumentException("The meter class " + this.getClass() + " is not of type " + cls);

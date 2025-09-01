@@ -1,6 +1,12 @@
 package org.apiphany.meters;
 
+import java.util.Collections;
 import java.util.List;
+
+import org.apiphany.lang.Pair;
+import org.apiphany.lang.builder.PropertyNameBuilder;
+import org.apiphany.meters.micrometer.MicrometerFactory;
+import org.morphix.reflection.Constructors;
 
 /**
  * Factory for creating {@link MeterCounter} and {@link MeterTimer} instances with optional tags.
@@ -17,10 +23,50 @@ import java.util.List;
 public class MeterFactory {
 
 	/**
+	 * The instance holder nested class.
+	 *
+	 * @author Radu Sebastian LAZIN
+	 */
+	private static class InstanceHolder {
+
+		/**
+		 * The meter factory.
+		 */
+		private static final MeterFactory METER_FACTORY = initializeInstance(MicrometerFactory.MICROMETER_LIBRARY_INFO);
+	}
+
+	/**
+	 * Returns an instance based on the available meter libraries.
+	 *
+	 * @param libraries the libraries information list
+	 * @return a meter factory
+	 */
+	@SafeVarargs
+	protected static MeterFactory initializeInstance(final Pair<Boolean, Class<? extends MeterFactory>>... libraries) {
+		if (null != libraries) {
+			for (Pair<Boolean, Class<? extends MeterFactory>> libraryInfo : libraries) {
+				if (libraryInfo.left().booleanValue()) {
+					return Constructors.IgnoreAccess.newInstance(libraryInfo.right());
+				}
+			}
+		}
+		return new MeterFactory();
+	}
+
+	/**
 	 * Default constructor.
 	 */
-	public MeterFactory() {
+	protected MeterFactory() {
 		// empty
+	}
+
+	/**
+	 * Returns a singleton instance.
+	 *
+	 * @return a singleton instance
+	 */
+	public static MeterFactory instance() {
+		return InstanceHolder.METER_FACTORY;
 	}
 
 	/**
@@ -40,6 +86,23 @@ public class MeterFactory {
 	}
 
 	/**
+	 * Creates a new {@link MeterTimer} with the given {@code prefix}, {@code name} and {@code tags}.
+	 * <p>
+	 * Tags are accepted as a generic {@link Iterable}, but may be ignored by the underlying implementation.
+	 *
+	 * @param <T> the tag element type
+	 * @param <U> an iterable of tags
+	 *
+	 * @param prefix the prefix for the meter name
+	 * @param name the meter name (must not be {@code null})
+	 * @param tags the tags to associate with the meter (may be ignored)
+	 * @return a new timer instance
+	 */
+	public <T, U extends Iterable<T>> MeterTimer timer(final String prefix, final String name, final U tags) {
+		return timer(String.join(PropertyNameBuilder.DELIMITER, prefix, name), tags);
+	}
+
+	/**
 	 * Creates a new {@link MeterCounter} with the given {@code name} and {@code tags}.
 	 * <p>
 	 * Tags are accepted as a generic {@link Iterable}, but may be ignored by the underlying implementation.
@@ -56,13 +119,31 @@ public class MeterFactory {
 	}
 
 	/**
+	 * Creates a new {@link MeterCounter} with the given {@code prefix}, {@code name} and {@code tags}.
+	 * <p>
+	 * Tags are accepted as a generic {@link Iterable}, but may be ignored by the underlying implementation.
+	 *
+	 * @param <T> the tag element type
+	 * @param <U> an iterable of tags
+	 *
+	 * @param prefix the prefix for the meter name
+	 * @param name the meter name (must not be {@code null})
+	 * @param tags the tags to associate with the meter (may be ignored)
+	 * @return a new counter instance
+	 */
+	public <T, U extends Iterable<T>> MeterCounter counter(final String prefix, final String name, final U tags) {
+		return counter(String.join(PropertyNameBuilder.DELIMITER, prefix, name), tags);
+	}
+
+	/**
 	 * Creates a new {@link MeterTimer} with the given {@code name} and {@code tags}.
 	 * <p>
 	 * Tags are accepted as varargs for convenience, and internally converted to a {@link List}.
 	 *
+	 * @param <T> the tag element type
+	 *
 	 * @param name the meter name (must not be {@code null})
 	 * @param tags the tags to associate with the meter (may be ignored)
-	 * @param <T> the tag element type
 	 * @return a new timer instance
 	 */
 	@SuppressWarnings("unchecked")
@@ -75,13 +156,33 @@ public class MeterFactory {
 	 * <p>
 	 * Tags are accepted as varargs for convenience, and internally converted to a {@link List}.
 	 *
+	 * @param <T> the tag element type
+	 *
 	 * @param name the meter name (must not be {@code null})
 	 * @param tags the tags to associate with the meter (may be ignored)
-	 * @param <T> the tag element type
 	 * @return a new counter instance
 	 */
 	@SuppressWarnings("unchecked")
 	public <T> MeterCounter counter(final String name, final T... tags) {
 		return counter(name, List.of(tags));
+	}
+
+	/**
+	 * Returns true if the tags object is empty, false otherwise.
+	 *
+	 * @param <T> the tag element type
+	 * @param <U> an iterable of tags
+	 *
+	 * @param tags the tags to check
+	 * @return true if the tags object is empty, false otherwise
+	 */
+	public <T, U extends Iterable<T>> boolean isEmpty(final U tags) {
+		if (tags == null) {
+			return true;
+		}
+		if (tags == Collections.emptyList()) {
+			return true;
+		}
+		return !tags.iterator().hasNext();
 	}
 }

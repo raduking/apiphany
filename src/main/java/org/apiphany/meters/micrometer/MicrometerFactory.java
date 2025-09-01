@@ -1,9 +1,12 @@
 package org.apiphany.meters.micrometer;
 
+import java.util.Collections;
+
 import org.apiphany.lang.Pair;
 import org.apiphany.meters.MeterCounter;
 import org.apiphany.meters.MeterFactory;
 import org.apiphany.meters.MeterTimer;
+import org.morphix.lang.JavaObjects;
 import org.morphix.reflection.Reflection;
 
 import io.micrometer.core.instrument.Counter;
@@ -22,6 +25,13 @@ import io.micrometer.core.instrument.Timer;
  * By default, the factory uses the global Micrometer registry ({@link Metrics#globalRegistry}), but a custom
  * {@link MeterRegistry} may be provided via the constructor.
  *
+ * <h2>Tags support</h2> Currently, the {@code timer} and {@code counter} methods require that the {@code tags}
+ * parameter be a Micrometer {@link Tags} instance. Passing any other {@link Iterable} type will result in a
+ * {@link ClassCastException}.
+ * <p>
+ * In the future, this factory may be extended to automatically convert generic {@link Iterable} tag representations
+ * (e.g., key/value pairs) into Micrometer {@link Tags}.
+ *
  * <h2>Library presence detection</h2> The static field {@link #MICROMETER_LIBRARY_INFO} can be used to detect at
  * runtime whether the Micrometer library is present on the classpath. This allows code to conditionally enable
  * Micrometer-backed metrics without a hard dependency.
@@ -36,7 +46,10 @@ public class MicrometerFactory extends MeterFactory {
 	private static final String MICROMETER_METER_CLASS_NAME = "io.micrometer.core.instrument.Meter";
 
 	/**
-	 * Pair that shows if Micrometer library is present in the class path and the {@link MeterFactory} specific class.
+	 * A {@link Pair} indicating whether the Micrometer library is present on the classpath, along with the
+	 * {@link MeterFactory} implementation class to use if it is available.
+	 * <p>
+	 * The {@code Boolean} value is {@code true} if Micrometer is detected, {@code false} otherwise.
 	 */
 	public static final Pair<Boolean, Class<? extends MeterFactory>> MICROMETER_LIBRARY_INFO =
 			Pair.of(null != Reflection.getClass(MICROMETER_METER_CLASS_NAME), MicrometerFactory.class);
@@ -67,10 +80,14 @@ public class MicrometerFactory extends MeterFactory {
 	 * <p>
 	 * Creates a Micrometer-backed {@link MeterTimer} by delegating to {@link MeterRegistry#timer(String, String...)} using
 	 * the provided name and tags.
+	 * <p>
+	 * <b>Note:</b> the {@code tags} parameter must currently be an instance of Micrometer {@link Tags}. Passing any other
+	 * type will result in a {@link ClassCastException}. Future versions may support generic {@link Iterable} tag
+	 * representations.
 	 */
 	@Override
 	public <T, U extends Iterable<T>> MeterTimer timer(final String name, final U tags) {
-		Timer timer = meterRegistry.timer(name, (Tags) tags);
+		Timer timer = meterRegistry.timer(name, toTags(tags));
 		return MicrometerTimer.of(timer);
 	}
 
@@ -79,10 +96,63 @@ public class MicrometerFactory extends MeterFactory {
 	 * <p>
 	 * Creates a Micrometer-backed {@link MeterCounter} by delegating to {@link MeterRegistry#counter(String, String...)}
 	 * using the provided name and tags.
+	 * <p>
+	 * <b>Note:</b> the {@code tags} parameter must currently be an instance of Micrometer {@link Tags}. Passing any other
+	 * type will result in a {@link ClassCastException}. Future versions may support generic {@link Iterable} tag
+	 * representations.
 	 */
 	@Override
 	public <T, U extends Iterable<T>> MeterCounter counter(final String name, final U tags) {
-		Counter counter = meterRegistry.counter(name, (Tags) tags);
+		Counter counter = meterRegistry.counter(name, toTags(tags));
 		return MicrometerCounter.of(counter);
+	}
+
+	/**
+	 * @see #isEmpty(Iterable)
+	 */
+	@Override
+	public <T, U extends Iterable<T>> boolean isEmpty(final U tags) {
+		if (tags instanceof Tags micrometerTags) {
+			return isEmpty(micrometerTags);
+		}
+		return super.isEmpty(tags);
+	}
+
+	/**
+	 * Returns true if the tags object is empty, false otherwise.
+	 *
+	 * @param tags the tags to check
+	 * @return true if the tags object is empty, false otherwise
+	 */
+	public static boolean isEmpty(final Tags tags) {
+		if (tags == Tags.empty()) {
+			return true;
+		}
+		if (tags == null) {
+			return true;
+		}
+		return !tags.iterator().hasNext();
+	}
+
+	/**
+	 * Transforms the given tags to micrometer tags if possible.
+	 *
+	 * @param <T> the tag element type
+	 * @param <U> an iterable of tags
+	 *
+	 * @param tags generic tags
+	 * @return micrometer tags object
+	 */
+	public static <T, U extends Iterable<T>> Tags toTags(final U tags) {
+		if (null == tags) {
+			return null;
+		}
+		if (Collections.emptyList() == tags) {
+			return Tags.empty();
+		}
+		if (tags instanceof Tags micrometerTags) {
+			return JavaObjects.cast(micrometerTags);
+		}
+		throw new UnsupportedOperationException("Tags class " + tags.getClass() + " is not supported");
 	}
 }
