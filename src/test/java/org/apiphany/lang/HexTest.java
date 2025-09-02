@@ -8,6 +8,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 
 import org.apiphany.io.BytesWrapper;
 import org.junit.jupiter.api.Test;
@@ -63,7 +64,7 @@ class HexTest {
 	}
 
 	@Test
-	void shouldConvertBytesToHexDump() {
+	void shouldConvertBytesToHexDumpWith16BytesAlignment() {
 		String expected = HEX;
 		String result = Hex.dump(BYTES);
 
@@ -71,7 +72,20 @@ class HexTest {
 	}
 
 	@Test
-	void shouldConvertBytesToHexDumpWithoutVerbosity() {
+	void shouldConvertBytesToHexDump() {
+		byte[] bytes = Arrays.copyOf(BYTES, 28);
+
+		String expected = """
+				01 02 03 04 01 02 03 04  01 02 03 04 01 02 03 04
+				01 02 03 04 01 02 03 04  01 02 03 04
+				""";
+		String result = Hex.dump(bytes, false);
+
+		assertThat(result, equalTo(expected));
+	}
+
+	@Test
+	void shouldConvertBytesToHexDumpWithVerbosityWith16ByteAlignment() {
 		String expected = """
 				0000: 01 02 03 04 01 02 03 04   01 02 03 04 01 02 03 04  ................
 				0010: 01 02 03 04 01 02 03 04   01 02 03 04 01 02 03 04  ................
@@ -79,6 +93,29 @@ class HexTest {
 		String result = Hex.dump(BYTES, true);
 
 		assertThat(result, equalTo(expected));
+	}
+
+	@Test
+	void shouldConvertBytesToHexDumpWithVerbosity() {
+		byte[] bytes = Arrays.copyOf(BYTES, 28);
+		bytes[0] = 0x41;
+		bytes[bytes.length - 4] = 0x61;
+		bytes[bytes.length - 1] = (byte) 0x80;
+
+		String expected = """
+				0000: 41 02 03 04 01 02 03 04   01 02 03 04 01 02 03 04  A...............
+				0010: 01 02 03 04 01 02 03 04   61 02 03 80              ........a...
+				""";
+		String result = Hex.dump(bytes, true);
+
+		assertThat(result, equalTo(expected));
+	}
+
+	@Test
+	void shouldReturnNullForEmptyNullBytes() {
+		String result = Hex.dump((byte[]) null);
+
+		assertThat(result, equalTo("null"));
 	}
 
 	@Test

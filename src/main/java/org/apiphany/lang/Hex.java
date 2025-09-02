@@ -56,16 +56,6 @@ public class Hex {
 	}
 
 	/**
-	 * Converts a single byte to a hexadecimal string representation with default space separator.
-	 *
-	 * @param b the byte to convert
-	 * @return hexadecimal string representation of the byte
-	 */
-	public static String string(final byte b) {
-		return string(b, " ");
-	}
-
-	/**
 	 * Converts a single byte to a hexadecimal string representation with custom separator.
 	 *
 	 * @param b the byte to convert
@@ -101,7 +91,7 @@ public class Hex {
 			}
 			for (int j = 0; j < width; ++j) {
 				if (i + j < bytes.length) {
-					boolean addSeparator = verbose || j < width - 1;
+					boolean addSeparator = verbose || (j < width - 1 && i + j < bytes.length - 1);
 					sb.append(string(bytes[i + j], addSeparator ? " " : ""));
 				} else {
 					if (verbose) {
