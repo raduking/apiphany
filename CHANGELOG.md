@@ -2,6 +2,10 @@
 
 ---
 
+`1.0.8`
+
+---
+
 `1.0.7`
 
 Added `PRF` with utility method to a apply pseudo-random function in TLS environments.
