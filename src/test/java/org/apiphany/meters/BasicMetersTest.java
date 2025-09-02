@@ -2,14 +2,24 @@ package org.apiphany.meters;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Supplier;
 
 import org.apiphany.lang.builder.PropertyNameBuilder;
 import org.junit.jupiter.api.Test;
 import org.morphix.reflection.Methods;
 
+import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.Timer;
 
@@ -21,6 +31,9 @@ import io.micrometer.core.instrument.Timer;
 class BasicMetersTest {
 
 	private static final String METRICS_PREFIX = "test.basic.metrics";
+	private static final String TAG_KEY = "tagKey1";
+	private static final String TAG_VALUE = "tagValue1";
+	private static final String TEST_EXCEPTION_MESSAGE = "metrics test exception";
 
 	@Test
 	void shouldSetMetricsToThisMethod() {
@@ -116,4 +129,93 @@ class BasicMetersTest {
 						.build())
 				.orElseThrow();
 	}
+
+	@Test
+	void shouldWrapAndSwallowExceptionButSendMetricsWithTagsForGivenMeterFactory() {
+		Tags tags = Tags.of(TAG_KEY, TAG_VALUE);
+
+		MeterFactory factory = mock(MeterFactory.class);
+
+		MeterTimer latency = mock(MeterTimer.class);
+		doReturn(latency).when(factory).timer(METRICS_PREFIX, BasicMeters.Name.LATENCY, tags);
+		MeterCounter requests = mock(MeterCounter.class);
+		doReturn(requests).when(factory).counter(METRICS_PREFIX, BasicMeters.Name.REQUEST, tags);
+		MeterCounter errors = mock(MeterCounter.class);
+		doReturn(errors).when(factory).counter(METRICS_PREFIX, BasicMeters.Name.ERROR, tags);
+
+		BasicMeters.wrapAndSwallow(factory, METRICS_PREFIX, tags, () -> {
+			throw new RuntimeException(TEST_EXCEPTION_MESSAGE);
+		});
+
+		verify(requests).increment();
+		verify(errors).increment();
+		verify(latency).record(any());
+	}
+
+	@Test
+	void shouldWrapAndSwallowExceptionButSendMetricsWithoutTagsForGivenMeterFactory() {
+		List<?> tags = Collections.emptyList();
+
+		MeterFactory factory = mock(MeterFactory.class);
+
+		MeterTimer latency = mock(MeterTimer.class);
+		doReturn(latency).when(factory).timer(METRICS_PREFIX, BasicMeters.Name.LATENCY, tags);
+		MeterCounter requests = mock(MeterCounter.class);
+		doReturn(requests).when(factory).counter(METRICS_PREFIX, BasicMeters.Name.REQUEST, tags);
+		MeterCounter errors = mock(MeterCounter.class);
+		doReturn(errors).when(factory).counter(METRICS_PREFIX, BasicMeters.Name.ERROR, tags);
+
+		BasicMeters.wrapAndSwallow(factory, METRICS_PREFIX, (Runnable) () -> {
+			throw new RuntimeException(TEST_EXCEPTION_MESSAGE);
+		});
+
+		verify(requests).increment();
+		verify(errors).increment();
+		verify(latency).record(any());
+	}
+
+	@Test
+	void shouldWrapAndSwallowExceptionButSendMetricsWithoutTagsForGivenMeterFactoryAndNotReturnSuppliedValue() {
+		List<?> tags = Collections.emptyList();
+
+		MeterFactory factory = mock(MeterFactory.class);
+
+		MeterTimer latency = mock(MeterTimer.class);
+		doReturn(latency).when(factory).timer(METRICS_PREFIX, BasicMeters.Name.LATENCY, tags);
+		MeterCounter requests = mock(MeterCounter.class);
+		doReturn(requests).when(factory).counter(METRICS_PREFIX, BasicMeters.Name.REQUEST, tags);
+		MeterCounter errors = mock(MeterCounter.class);
+		doReturn(errors).when(factory).counter(METRICS_PREFIX, BasicMeters.Name.ERROR, tags);
+
+		String result = BasicMeters.wrapAndSwallow(factory, METRICS_PREFIX, (Supplier<String>) () -> {
+			throw new RuntimeException(TEST_EXCEPTION_MESSAGE);
+		});
+
+		assertThat(result, nullValue());
+
+		verify(requests).increment();
+		verify(errors).increment();
+		verify(latency).record(any());
+	}
+
+	@Test
+	void shouldWrapAndSwallowExceptionButSendMetricsWithTagsAndDefaultMeterFactory() {
+		String prefix = METRICS_PREFIX + "." + "some-random-string";
+		BasicMeters.wrapAndSwallow(prefix, (Runnable) () -> {
+			throw new RuntimeException(TEST_EXCEPTION_MESSAGE);
+		});
+
+		Collection<?> search = Metrics.globalRegistry.get(prefix + "." + BasicMeters.Name.LATENCY).meters();
+		assertThat(search, hasSize(1));
+
+		search = Metrics.globalRegistry.get(prefix + "." + BasicMeters.Name.REQUEST).meters();
+		assertThat(search, hasSize(1));
+
+		search = Metrics.globalRegistry.get(prefix + "." + BasicMeters.Name.ERROR).meters();
+		assertThat(search, hasSize(1));
+
+		search = Metrics.globalRegistry.get(prefix + "." + BasicMeters.Name.RETRY).meters();
+		assertThat(search, hasSize(1));
+	}
+
 }
