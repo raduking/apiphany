@@ -2,6 +2,10 @@
 
 ---
 
+`1.0.9`
+
+---
+
 `1.0.8`
 
 Changed `AuthenticationException` to extend `SecurityException`.

@@ -24,7 +24,7 @@ This is a simple wrapper over the `java.net.http` library to be able to use a fl
 
 ### Releases
 
-Current release `1.0.8`
+Current release `1.0.9`
 
 ### Getting Started
 
@@ -42,7 +42,7 @@ Maven: add this dependency to your `pom.xml`
 <dependency>
     <groupId>io.github.raduking</groupId>
     <artifactId>apiphany</artifactId>
-    <version>1.0.8</version>
+    <version>1.0.9</version>
 </dependency>
 ```
 
