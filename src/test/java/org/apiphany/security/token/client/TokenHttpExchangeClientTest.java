@@ -15,9 +15,7 @@ import org.apiphany.client.ExchangeClient;
 import org.apiphany.header.HeaderValues;
 import org.apiphany.header.MapHeaderValues;
 import org.apiphany.http.HttpAuthScheme;
-import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
-import org.apiphany.http.HttpStatus;
 import org.apiphany.lang.Strings;
 import org.apiphany.security.AuthenticationException;
 import org.apiphany.security.AuthenticationToken;
@@ -192,7 +190,7 @@ class TokenHttpExchangeClientTest {
 
 		AuthenticationException e = assertThrows(AuthenticationException.class, () -> client.exchange(apiRequest));
 
-		String expectedMessage = HttpException.exceptionMessage(HttpStatus.UNAUTHORIZED, "Missing authentication token");
+		String expectedMessage = "Missing authentication token";
 		assertThat(e.getMessage(), equalTo(expectedMessage));
 	}
 
@@ -204,7 +202,7 @@ class TokenHttpExchangeClientTest {
 
 		AuthenticationException e = assertThrows(AuthenticationException.class, () -> client.getAuthenticationToken());
 
-		String expectedMessage = HttpException.exceptionMessage(HttpStatus.UNAUTHORIZED, "Missing authentication token");
+		String expectedMessage = "Missing authentication token";
 		assertThat(e.getMessage(), equalTo(expectedMessage));
 	}
 

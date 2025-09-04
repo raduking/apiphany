@@ -2,7 +2,6 @@ package org.apiphany.security;
 
 import java.io.Serial;
 
-import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpStatus;
 
 /**
@@ -10,7 +9,7 @@ import org.apiphany.http.HttpStatus;
  *
  * @author Radu Sebastian LAZIN
  */
-public class AuthenticationException extends HttpException {
+public class AuthenticationException extends SecurityException {
 
 	/**
 	 * Serial version UID.
@@ -24,7 +23,7 @@ public class AuthenticationException extends HttpException {
 	 * @param message the exception message
 	 */
 	public AuthenticationException(final String message) {
-		super(HttpStatus.UNAUTHORIZED, message);
+		super(message);
 	}
 
 	/**
@@ -33,7 +32,7 @@ public class AuthenticationException extends HttpException {
 	 * @param cause the cause of the exception
 	 */
 	public AuthenticationException(final Throwable cause) {
-		super(HttpStatus.UNAUTHORIZED, null, cause);
+		super(null, cause);
 	}
 
 	/**
@@ -43,48 +42,6 @@ public class AuthenticationException extends HttpException {
 	 * @param cause cause of the exception
 	 */
 	public AuthenticationException(final String message, final Throwable cause) {
-		super(HttpStatus.UNAUTHORIZED, message, cause);
-	}
-
-	/**
-	 * Constructor with HTTP status and exception message.
-	 *
-	 * @param httpStatus the HTTP status
-	 * @param message the exception message
-	 */
-	public AuthenticationException(final HttpStatus httpStatus, final String message) {
-		super(httpStatus, message);
-	}
-
-	/**
-	 * Constructor with HTTP status, exception message and cause.
-	 *
-	 * @param httpStatus the HTTP status
-	 * @param message the exception message
-	 * @param cause cause of the exception
-	 */
-	public AuthenticationException(final HttpStatus httpStatus, final String message, final Throwable cause) {
-		super(httpStatus, message, cause);
-	}
-
-	/**
-	 * Constructor with HTTP status and exception message.
-	 *
-	 * @param httpStatus the HTTP status as an integer value
-	 * @param message the exception message
-	 */
-	public AuthenticationException(final int httpStatus, final String message) {
-		super(httpStatus, message);
-	}
-
-	/**
-	 * Constructor with HTTP status, exception message and cause.
-	 *
-	 * @param httpStatus the HTTP status as an integer value
-	 * @param message the exception message
-	 * @param cause cause of the exception
-	 */
-	public AuthenticationException(final int httpStatus, final String message, final Throwable cause) {
-		super(httpStatus, message, cause);
+		super(message, cause);
 	}
 }

@@ -22,8 +22,6 @@ import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 
-import org.apiphany.http.HttpException;
-import org.apiphany.http.HttpStatus;
 import org.apiphany.lang.Strings;
 import org.apiphany.security.AuthenticationException;
 import org.apiphany.security.AuthenticationToken;
@@ -214,7 +212,7 @@ class OAuth2TokenProviderTest {
 		tokenProvider = new OAuth2TokenProvider(oAuth2Properties, CLIENT_REGISTRATION_NAME, (cr, pd) -> tokenClient);
 
 		AuthenticationException e = assertThrows(AuthenticationException.class, tokenProvider::getAuthenticationToken);
-		assertThat(e.getMessage(), equalTo(HttpException.exceptionMessage(HttpStatus.UNAUTHORIZED, "Missing authentication token")));
+		assertThat(e.getMessage(), equalTo("Missing authentication token"));
 	}
 
 	@SuppressWarnings("resource")
@@ -311,7 +309,7 @@ class OAuth2TokenProviderTest {
 			e = assertThrows(AuthenticationException.class, localTokenProvider::getAuthenticationToken);
 		}
 
-		assertThat(e.getMessage(), equalTo(HttpException.exceptionMessage(HttpStatus.UNAUTHORIZED, "Missing authentication token")));
+		assertThat(e.getMessage(), equalTo("Missing authentication token"));
 	}
 
 	private static AuthenticationToken createToken() {
