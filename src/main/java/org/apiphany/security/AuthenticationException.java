@@ -2,8 +2,6 @@ package org.apiphany.security;
 
 import java.io.Serial;
 
-import org.apiphany.http.HttpStatus;
-
 /**
  * Authentication exception.
  *
@@ -18,7 +16,7 @@ public class AuthenticationException extends SecurityException {
 	private static final long serialVersionUID = 591403103621076702L;
 
 	/**
-	 * Constructor with an exception message. The HTTP status will default to {@link HttpStatus#UNAUTHORIZED}.
+	 * Constructor with an exception message.
 	 *
 	 * @param message the exception message
 	 */
@@ -27,7 +25,7 @@ public class AuthenticationException extends SecurityException {
 	}
 
 	/**
-	 * Constructor with an exception message. The HTTP status will default to {@link HttpStatus#UNAUTHORIZED}.
+	 * Constructor with an exception message.
 	 *
 	 * @param cause the cause of the exception
 	 */
@@ -36,7 +34,7 @@ public class AuthenticationException extends SecurityException {
 	}
 
 	/**
-	 * Constructor with exception message and cause. The HTTP status will default to {@link HttpStatus#UNAUTHORIZED}.
+	 * Constructor with exception message and cause.
 	 *
 	 * @param message the exception message
 	 * @param cause cause of the exception
