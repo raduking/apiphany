@@ -4,7 +4,6 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.annotation.AsValue;
 
 /**
@@ -106,13 +105,13 @@ public class UInt16 implements ByteSizeable, BinaryRepresentable {
 	}
 
 	/**
-	 * Returns a JSON representation of this object.
+	 * Returns a string representation of this object.
 	 *
-	 * @return JSON string representation
+	 * @return string representation
 	 */
 	@Override
 	public String toString() {
-		return JsonBuilder.toJson(this);
+		return String.valueOf(value);
 	}
 
 	/**

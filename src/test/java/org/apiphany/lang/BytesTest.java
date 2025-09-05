@@ -65,10 +65,10 @@ class BytesTest {
 	}
 
 	public static byte[] generateByteArray(final int n) {
-	    byte[] result = new byte[n];
-	    for (int i = 0; i < n; i++) {
-	        result[i] = (byte) (i + 1);
-	    }
-	    return result;
+		byte[] result = new byte[n];
+		for (int i = 0; i < n; i++) {
+			result[i] = (byte) (i + 1);
+		}
+		return result;
 	}
 }

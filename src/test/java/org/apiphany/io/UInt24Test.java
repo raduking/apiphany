@@ -29,4 +29,15 @@ class UInt24Test {
 		assertThat(result.getValue(), equalTo(uInt24.getValue()));
 	}
 
+	@Test
+	void shouldReturnAsStringTheInternalValue() {
+		int value = 666;
+		UInt24 uInt24 = UInt24.of(value);
+
+		String expected = String.valueOf(value);
+		String result = uInt24.toString();
+
+		assertThat(result, equalTo(expected));
+	}
+
 }
