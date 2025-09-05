@@ -211,7 +211,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	@Override
 	public void close() throws Exception {
 		closeTokenRefreshScheduler();
-		if (tokenClient instanceof AutoCloseable closeable) {
+		if (getTokenClient() instanceof AutoCloseable closeable) {
 			closeable.close();
 		}
 	}
@@ -222,7 +222,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	private void closeTokenRefreshScheduler() {
 		boolean cancelled = null == scheduledFuture;
 		if (!cancelled) {
-			Retry retry = Retry.of(WaitCounter.of(configuration.getMaxTaskCloseAttempts(), Duration.ofMillis(200)));
+			Retry retry = Retry.of(WaitCounter.of(getConfiguration().getMaxTaskCloseAttempts(), Duration.ofMillis(200)));
 			cancelled = retry.when(() -> scheduledFuture.cancel(false), Boolean::booleanValue);
 		}
 		if (cancelled) {
@@ -307,7 +307,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 		LOGGER.debug("[{}] Token expired, requesting new token.", getName());
 		Instant expiration = Instant.now();
 		try {
-			AuthenticationToken token = tokenClient.getAuthenticationToken();
+			AuthenticationToken token = getTokenClient().getAuthenticationToken();
 			token.setExpiration(expiration.plusSeconds(token.getExpiresIn()));
 			setAuthenticationToken(token);
 			LOGGER.debug("[{}] Successfully retrieved new token.", getName());
