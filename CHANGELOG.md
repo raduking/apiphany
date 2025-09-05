@@ -9,6 +9,8 @@ Added `OAuth2TokenProviderConfiguration.Default` with the default values used wh
 Added `OAuth2TokenProviderConfiguration.defaults` method to create an instance with default values.
 Added constructor with `OAuth2TokenProviderConfiguration` to `OAuth2TokenProvider`.
 Added `OAuth2TokenProvider.getConfiguration` method to be able to change the configuration dynamically.
+Removed `BytesWrapper.toHexString` method and moved the implementation to `toString` method since JSON doesn't make sense here.
+Removed `ExchangeRandom.toHexString` method and moved the implementation to `toString` method since JSON doesn't make sense here.
 
 ---
 
