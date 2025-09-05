@@ -38,7 +38,7 @@ Maven: add this dependency to your `pom.xml`
 </dependency>
 ```
 
-Project being in development, you can also use the latest development build but you need to build it yourself.
+You can also use the latest development build but you need to build it yourself.
 
 ```
 git clone git@github.com:raduking/apiphany.git

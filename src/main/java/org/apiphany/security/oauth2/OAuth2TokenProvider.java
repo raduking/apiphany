@@ -37,16 +37,6 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	private static final Logger LOGGER = LoggerFactory.getLogger(OAuth2TokenProvider.class);
 
 	/**
-	 * The maximum number of attempts the {@link #close()} method tries to close the scheduled task.
-	 */
-	private static final int MAX_CLOSE_ATTEMPTS = 10;
-
-	/**
-	 * The minimum refresh interval when the token could not be retrieved.
-	 */
-	private static final Duration MIN_REFRESH_INTERVAL = Duration.ofMillis(500);
-
-	/**
 	 * The client doing the token refresh.
 	 */
 	private AuthenticationTokenProvider tokenClient;
@@ -92,18 +82,26 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	private Supplier<Instant> defaultExpirationSupplier;
 
 	/**
+	 * The configuration.
+	 */
+	private final OAuth2TokenProviderConfiguration configuration;
+
+	/**
 	 * Creates a new authentication token provider.
 	 *
+	 * @param configuration the OAuth2 token provider configuration
 	 * @param oAuth2Properties the OAuth2 properties
 	 * @param clientRegistrationName the wanted client registration name
 	 * @param tokenRefreshScheduler the token refresh scheduler
 	 * @param tokenClientSupplier the supplier for the client that will make the actual token requests
 	 */
 	public OAuth2TokenProvider(
+			final OAuth2TokenProviderConfiguration configuration,
 			final OAuth2Properties oAuth2Properties,
 			final String clientRegistrationName,
 			final ScheduledExecutorService tokenRefreshScheduler,
 			final BiFunction<OAuth2ClientRegistration, OAuth2ProviderDetails, AuthenticationTokenProvider> tokenClientSupplier) {
+		this.configuration = configuration;
 		this.tokenRefreshScheduler = tokenRefreshScheduler;
 		this.defaultExpirationSupplier = Instant::now;
 		this.clientRegistrationName = clientRegistrationName;
@@ -117,6 +115,22 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 
 	/**
 	 * Creates a new authentication token provider.
+	 *
+	 * @param oAuth2Properties the OAuth2 properties
+	 * @param clientRegistrationName the wanted client registration name
+	 * @param tokenRefreshScheduler the token refresh scheduler
+	 * @param tokenClientSupplier the supplier for the client that will make the actual token requests
+	 */
+	public OAuth2TokenProvider(
+			final OAuth2Properties oAuth2Properties,
+			final String clientRegistrationName,
+			final ScheduledExecutorService tokenRefreshScheduler,
+			final BiFunction<OAuth2ClientRegistration, OAuth2ProviderDetails, AuthenticationTokenProvider> tokenClientSupplier) {
+		this(OAuth2TokenProviderConfiguration.defaults(), oAuth2Properties, clientRegistrationName, tokenRefreshScheduler, tokenClientSupplier);
+	}
+
+	/**
+	 * Creates a new authentication token provider. The scheduler will use virtual threads for the scheduled tasks.
 	 *
 	 * @param oAuth2Properties the OAuth2 properties
 	 * @param clientRegistrationName the wanted client registration name
@@ -208,7 +222,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	private void closeTokenRefreshScheduler() {
 		boolean cancelled = null == scheduledFuture;
 		if (!cancelled) {
-			Retry retry = Retry.of(WaitCounter.of(getMaxScheduledFutureCloseAttempts(), Duration.ofMillis(200)));
+			Retry retry = Retry.of(WaitCounter.of(configuration.getMaxTaskCloseAttempts(), Duration.ofMillis(200)));
 			cancelled = retry.when(() -> scheduledFuture.cancel(false), Boolean::booleanValue);
 		}
 		if (cancelled) {
@@ -307,10 +321,10 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 * Schedules the token update.
 	 */
 	private void scheduleTokenUpdate() {
-		Instant expiration = getTokenExpiration().minus(AuthenticationToken.EXPIRATION_ERROR_MARGIN);
+		Instant expiration = getTokenExpiration().minus(getConfiguration().getExpirationErrorMargin());
 		Instant scheduled = JavaObjects.max(expiration, Instant.now());
 		Duration delay = Duration.between(Instant.now(), scheduled);
-		delay = JavaObjects.max(delay, MIN_REFRESH_INTERVAL);
+		delay = JavaObjects.max(delay, getConfiguration().getMinRefreshInterval());
 		scheduledFuture = tokenRefreshScheduler.schedule(this::updateAuthenticationToken, delay.toMillis(), TimeUnit.MILLISECONDS);
 	}
 
@@ -378,11 +392,11 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	}
 
 	/**
-	 * Returns the maximum attempts that the scheduled future cancel will be called.
+	 * Returns the configuration object to be able to change the configuration properties dynamically.
 	 *
-	 * @return the maximum attempts that the scheduled future cancel will be called
+	 * @return the configuration
 	 */
-	protected int getMaxScheduledFutureCloseAttempts() {
-		return MAX_CLOSE_ATTEMPTS;
+	public OAuth2TokenProviderConfiguration getConfiguration() {
+		return configuration;
 	}
 }

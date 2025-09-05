@@ -4,6 +4,12 @@
 
 `1.0.9`
 
+Added `OAuth2TokenProviderConfiguration` with configurable properties for `OAuth2TokenProvider`.
+Added `OAuth2TokenProviderConfiguration.Default` with the default values used when instantiating the configuration.
+Added `OAuth2TokenProviderConfiguration.defaults` method to create an instance with default values.
+Added constructor with `OAuth2TokenProviderConfiguration` to `OAuth2TokenProvider`.
+Added `OAuth2TokenProvider.getConfiguration` method to be able to change the configuration dynamically.
+
 ---
 
 `1.0.8`
