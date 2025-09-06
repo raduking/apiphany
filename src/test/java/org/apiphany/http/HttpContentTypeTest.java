@@ -2,10 +2,13 @@ package org.apiphany.http;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Objects;
 
 import org.apiphany.io.ContentType;
 import org.apiphany.utils.Tests;
@@ -71,6 +74,13 @@ class HttpContentTypeTest {
 	}
 
 	@Test
+	void shouldReturnNullWhenHeaderValuesIsNull() {
+		HttpContentType ct = HttpContentType.parseHeaderValue(null);
+
+		assertNull(ct);
+	}
+
+	@Test
 	void shouldThrowExceptionOnCallingParamConstructor() {
 		UnsupportedOperationException unsupportedOperationException = Tests.verifyDefaultConstructorThrows(HttpContentType.Param.class);
 		assertThat(unsupportedOperationException.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
@@ -79,5 +89,54 @@ class HttpContentTypeTest {
 	@Test
 	void shouldHaveTheCorectCharsetParam() {
 		assertThat(HttpContentType.Param.CHARSET, equalTo(CHARSET));
+	}
+
+	@Test
+	void shouldBeEqualToSelf() {
+		HttpContentType ct = HttpContentType.parseHeaderValue(APPLICATION_JSON_CHARSET_ISO_8859_1);
+
+		boolean equals = ct.equals(ct);
+
+		assertTrue(equals);
+	}
+
+	@Test
+	void shouldNotBeEqualIfCharsetsDiffer() {
+		HttpContentType ct1 = HttpContentType.parseHeaderValue(APPLICATION_JSON_CHARSET_ISO_8859_1);
+		HttpContentType ct2 = HttpContentType.parseHeaderValue("application/json; charset=utf-8");
+
+		boolean equals = ct1.equals(ct2);
+
+		assertFalse(equals);
+	}
+
+	@Test
+	void shouldNotBeEqualIfContentTypeDiffer() {
+		HttpContentType ct1 = HttpContentType.parseHeaderValue(APPLICATION_JSON_CHARSET_ISO_8859_1);
+		HttpContentType ct2 = HttpContentType.parseHeaderValue("text/plain; charset=ISO-8859-1");
+
+		boolean equals = ct1.equals(ct2);
+
+		assertFalse(equals);
+	}
+
+	@Test
+	void shouldNotBeEqualToAnotherObject() {
+		HttpContentType ct = HttpContentType.parseHeaderValue(APPLICATION_JSON_CHARSET_ISO_8859_1);
+
+		@SuppressWarnings("unlikely-arg-type")
+		boolean equals = ct.equals("bubu");
+
+		assertFalse(equals);
+	}
+
+	@Test
+	void shouldBuildHashCodeFromAllParams() {
+		HttpContentType ct = HttpContentType.parseHeaderValue(APPLICATION_JSON_CHARSET_ISO_8859_1);
+
+		int expected = Objects.hash(ct.getContentType(), ct.getCharset());
+		int hash = ct.hashCode();
+
+		assertThat(hash, equalTo(expected));
 	}
 }
