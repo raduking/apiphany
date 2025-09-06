@@ -122,7 +122,7 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	 * @param <H> the type of response headers
 	 *
 	 * @param apiRequest the API request containing response type information
-	 * @param mimeType the content type
+	 * @param mimeType the response content type
 	 * @param headers the response headers used for content type negotiation
 	 * @param body the raw response body to be converted
 	 * @return the converted body of type {@code U}
