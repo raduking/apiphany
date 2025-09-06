@@ -9,6 +9,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -16,9 +17,12 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import org.apiphany.lang.builder.PropertyNameBuilder;
+import org.apiphany.utils.Tests;
 import org.junit.jupiter.api.Test;
+import org.morphix.reflection.Constructors;
 import org.morphix.reflection.Methods;
 
+import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.Timer;
@@ -34,6 +38,13 @@ class BasicMetersTest {
 	private static final String TAG_KEY = "tagKey1";
 	private static final String TAG_VALUE = "tagValue1";
 	private static final String TEST_EXCEPTION_MESSAGE = "metrics test exception";
+	private static final String SOME_STRING = "someString";
+
+	@Test
+	void shouldThrowExceptionOnCallingNameConstructor() {
+		UnsupportedOperationException unsupportedOperationException = Tests.verifyDefaultConstructorThrows(BasicMeters.Name.class);
+		assertThat(unsupportedOperationException.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
+	}
 
 	@Test
 	void shouldSetMetricsToThisMethod() {
@@ -73,6 +84,12 @@ class BasicMetersTest {
 
 		assertThat(meters.latency(Timer.class).getId().getName(),
 				equalTo(METRICS_PREFIX + ".on-method." + BasicMeters.Name.LATENCY));
+		assertThat(meters.requests(Counter.class).getId().getName(),
+				equalTo(METRICS_PREFIX + ".on-method." + BasicMeters.Name.REQUEST));
+		assertThat(meters.errors(Counter.class).getId().getName(),
+				equalTo(METRICS_PREFIX + ".on-method." + BasicMeters.Name.ERROR));
+		assertThat(meters.retries(Counter.class).getId().getName(),
+				equalTo(METRICS_PREFIX + ".on-method." + BasicMeters.Name.RETRY));
 	}
 
 	@Test
@@ -218,4 +235,67 @@ class BasicMetersTest {
 		assertThat(search, hasSize(1));
 	}
 
+	@Test
+	void shouldWrapSendMetricsWithoutTagsForGivenMeterFactoryAndRunnable() {
+		List<?> tags = Collections.emptyList();
+
+		MeterFactory factory = mock(MeterFactory.class);
+
+		MeterTimer latency = mock(MeterTimer.class);
+		doReturn(latency).when(factory).timer(METRICS_PREFIX, BasicMeters.Name.LATENCY, tags);
+		MeterCounter requests = mock(MeterCounter.class);
+		doReturn(requests).when(factory).counter(METRICS_PREFIX, BasicMeters.Name.REQUEST, tags);
+		MeterCounter errors = mock(MeterCounter.class);
+		doReturn(errors).when(factory).counter(METRICS_PREFIX, BasicMeters.Name.ERROR, tags);
+
+		BasicMeters.wrap(factory, METRICS_PREFIX, (Runnable) () -> {
+			// empty
+		});
+
+		verify(requests).increment();
+		verifyNoInteractions(errors);
+		verify(latency).record(any());
+	}
+
+	@Test
+	void shouldWrapSendMetricsWithoutTagsForGivenMeterFactoryAndSupplier() {
+		List<?> tags = Collections.emptyList();
+
+		MeterFactory factory = mock(MeterFactory.class);
+
+		MeterTimer latency = mock(MeterTimer.class);
+		doReturn(latency).when(factory).timer(METRICS_PREFIX, BasicMeters.Name.LATENCY, tags);
+		MeterCounter requests = mock(MeterCounter.class);
+		doReturn(requests).when(factory).counter(METRICS_PREFIX, BasicMeters.Name.REQUEST, tags);
+		MeterCounter errors = mock(MeterCounter.class);
+		doReturn(errors).when(factory).counter(METRICS_PREFIX, BasicMeters.Name.ERROR, tags);
+
+		String result = BasicMeters.wrap(factory, METRICS_PREFIX, () -> SOME_STRING);
+
+		assertThat(result, equalTo(SOME_STRING));
+
+		verify(requests).increment();
+		verifyNoInteractions(errors);
+		verify(latency).record(any());
+	}
+
+	@Test
+	void shouldWrapButSendMetricsWithTagsWithDefaultMeterFactory() {
+		String prefix = METRICS_PREFIX + "." + "some-random-string";
+		BasicMeters.wrap(prefix, (Runnable) () -> {
+			// empty
+		});
+
+		Collection<?> search = Metrics.globalRegistry.get(prefix + "." + BasicMeters.Name.LATENCY).meters();
+		assertThat(search, hasSize(1));
+
+		search = Metrics.globalRegistry.get(prefix + "." + BasicMeters.Name.REQUEST).meters();
+		assertThat(search, hasSize(1));
+
+		search = Metrics.globalRegistry.get(prefix + "." + BasicMeters.Name.ERROR).meters();
+		assertThat(search, hasSize(1));
+
+		search = Metrics.globalRegistry.get(prefix + "." + BasicMeters.Name.RETRY).meters();
+		assertThat(search, hasSize(1));
+	}
 }
