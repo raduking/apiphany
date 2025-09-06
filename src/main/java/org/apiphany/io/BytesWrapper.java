@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Bytes;
 import org.apiphany.lang.Hex;
 import org.apiphany.lang.annotation.AsValue;
@@ -126,22 +125,13 @@ public class BytesWrapper implements ByteSizeable, BinaryRepresentable {
 	}
 
 	/**
-	 * Returns a JSON representation of this object.
+	 * Returns a hexadecimal string representation of the wrapped bytes.
 	 *
 	 * @return JSON string representation
 	 */
+	@AsValue
 	@Override
 	public String toString() {
-		return JsonBuilder.toJson(this);
-	}
-
-	/**
-	 * Returns a hexadecimal string representation of the wrapped bytes.
-	 *
-	 * @return hex string without separators
-	 */
-	@AsValue
-	public String toHexString() {
 		return Hex.string(bytes, "");
 	}
 

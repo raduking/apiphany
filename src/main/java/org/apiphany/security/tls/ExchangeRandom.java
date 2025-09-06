@@ -75,8 +75,8 @@ public class ExchangeRandom extends BytesWrapper implements TLSObject {
 	 */
 	@Override
 	@AsValue
-	public String toHexString() {
-		return super.toHexString();
+	public String toString() {
+		return super.toString();
 	}
 
 	/**

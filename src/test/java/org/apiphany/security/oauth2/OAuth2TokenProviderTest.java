@@ -8,19 +8,21 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.apiphany.lang.Strings;
 import org.apiphany.security.AuthenticationException;
@@ -199,6 +201,67 @@ class OAuth2TokenProviderTest {
 		assertThat(tokenProvider.getClientRegistrationName(), equalTo(CLIENT_REGISTRATION_NAME));
 	}
 
+	@SuppressWarnings("resource")
+	@Test
+	void shouldInitializeSchedulerAndScheduleNewTokenRetrievalWithDefaultErrorMarginAndMinRefreshInterval() {
+		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
+		doReturn(clientRegistration).when(oAuth2Properties).getClientRegistration(CLIENT_REGISTRATION_NAME);
+		doReturn(true).when(clientRegistration).hasClientSecret();
+		doReturn(Map.of(PROVIDER_NAME, providerDetails)).when(oAuth2Properties).getProvider();
+		doReturn(providerDetails).when(oAuth2Properties).getProviderDetails(clientRegistration);
+
+		AuthenticationToken authenticationToken = mock(AuthenticationToken.class);
+		Instant expiration = mock(Instant.class);
+		doReturn(expiration).when(authenticationToken).getExpiration();
+		doReturn(authenticationToken).when(tokenClient).getAuthenticationToken();
+
+		ScheduledExecutorService scheduledExecutorService = mock(ScheduledExecutorService.class);
+		ScheduledFuture<?> scheduledFuture = mock(ScheduledFuture.class);
+		doReturn(true).when(scheduledFuture).cancel(false);
+		doReturn(scheduledFuture).when(scheduledExecutorService).schedule(any(Runnable.class), anyLong(), any());
+
+		tokenProvider = new OAuth2TokenProvider(oAuth2Properties, CLIENT_REGISTRATION_NAME, scheduledExecutorService, (cr, pd) -> tokenClient);
+
+		assertTrue(tokenProvider.isSchedulerEnabled());
+		verify(expiration).minus(AuthenticationToken.EXPIRATION_ERROR_MARGIN);
+		verify(scheduledExecutorService).schedule(any(Runnable.class),
+				eq(OAuth2TokenProviderConfiguration.Default.MIN_REFRESH_INTERVAL.toMillis()), eq(TimeUnit.MILLISECONDS));
+	}
+
+	@SuppressWarnings("resource")
+	@Test
+	void shouldInitializeSchedulerAndScheduleNewTokenRetrievalWithConfiguredErrorMarginAndMinRefreshInterval() {
+		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
+		doReturn(clientRegistration).when(oAuth2Properties).getClientRegistration(CLIENT_REGISTRATION_NAME);
+		doReturn(true).when(clientRegistration).hasClientSecret();
+		doReturn(Map.of(PROVIDER_NAME, providerDetails)).when(oAuth2Properties).getProvider();
+		doReturn(providerDetails).when(oAuth2Properties).getProviderDetails(clientRegistration);
+
+		AuthenticationToken authenticationToken = mock(AuthenticationToken.class);
+		Instant expiration = mock(Instant.class);
+		doReturn(expiration).when(authenticationToken).getExpiration();
+		doReturn(authenticationToken).when(tokenClient).getAuthenticationToken();
+
+		ScheduledExecutorService scheduledExecutorService = mock(ScheduledExecutorService.class);
+		ScheduledFuture<?> scheduledFuture = mock(ScheduledFuture.class);
+		doReturn(true).when(scheduledFuture).cancel(false);
+		doReturn(scheduledFuture).when(scheduledExecutorService).schedule(any(Runnable.class), anyLong(), any());
+
+		Duration expirationErrorMargin = AuthenticationToken.EXPIRATION_ERROR_MARGIN.plusSeconds(1);
+		Duration minRefreshInterval = OAuth2TokenProviderConfiguration.Default.MIN_REFRESH_INTERVAL.plusMillis(66);
+
+		OAuth2TokenProviderConfiguration configuration = new OAuth2TokenProviderConfiguration();
+		configuration.setExpirationErrorMargin(expirationErrorMargin);
+		configuration.setMinRefreshInterval(minRefreshInterval);
+
+		tokenProvider = new OAuth2TokenProvider(configuration, oAuth2Properties, CLIENT_REGISTRATION_NAME,
+				scheduledExecutorService, (cr, pd) -> tokenClient);
+
+		assertTrue(tokenProvider.isSchedulerEnabled());
+		verify(expiration).minus(expirationErrorMargin);
+		verify(scheduledExecutorService).schedule(any(Runnable.class), eq(minRefreshInterval.toMillis()), eq(TimeUnit.MILLISECONDS));
+	}
+
 	@Test
 	void shouldThrowExceptionWhenGettingTokenIfTokenRetrievalThrowsException() {
 		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
@@ -264,9 +327,12 @@ class OAuth2TokenProviderTest {
 		doReturn(scheduledFuture).when(scheduledExecutorService).schedule(any(Runnable.class), anyLong(), any());
 
 		int maxAttempts = 2;
+		OAuth2TokenProviderConfiguration configuration = OAuth2TokenProviderConfiguration.defaults();
+		configuration.setMaxTaskCloseAttempts(maxAttempts);
+
 		try (OAuth2TokenProvider localTokenProvider =
-				spy(new OAuth2TokenProvider(oAuth2Properties, null, scheduledExecutorService, (cr, pd) -> localTokenClient))) {
-			doReturn(maxAttempts).when(localTokenProvider).getMaxScheduledFutureCloseAttempts();
+				new OAuth2TokenProvider(configuration, oAuth2Properties, null, scheduledExecutorService, (cr, pd) -> localTokenClient)) {
+			// empty
 		}
 
 		verify(scheduledFuture, times(maxAttempts)).cancel(false);

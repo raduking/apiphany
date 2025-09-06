@@ -29,4 +29,14 @@ class UInt64Test {
 		assertThat(result.getValue(), equalTo(uInt64.getValue()));
 	}
 
+	@Test
+	void shouldReturnAsStringTheInternalValue() {
+		long value = 666_666_666;
+		UInt64 uInt64 = UInt64.of(value);
+
+		String expected = String.valueOf(value);
+		String result = uInt64.toString();
+
+		assertThat(result, equalTo(expected));
+	}
 }

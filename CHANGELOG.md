@@ -2,6 +2,18 @@
 
 ---
 
+`1.0.9`
+
+Added `OAuth2TokenProviderConfiguration` with configurable properties for `OAuth2TokenProvider`.
+Added `OAuth2TokenProviderConfiguration.Default` with the default values used when instantiating the configuration.
+Added `OAuth2TokenProviderConfiguration.defaults` method to create an instance with default values.
+Added constructor with `OAuth2TokenProviderConfiguration` to `OAuth2TokenProvider`.
+Added `OAuth2TokenProvider.getConfiguration` method to be able to change the configuration dynamically.
+Removed `BytesWrapper.toHexString` method and moved the implementation to `toString` method since JSON doesn't make sense here.
+Removed `ExchangeRandom.toHexString` method and moved the implementation to `toString` method since JSON doesn't make sense here.
+
+---
+
 `1.0.8`
 
 Changed `AuthenticationException` to extend `SecurityException`.
