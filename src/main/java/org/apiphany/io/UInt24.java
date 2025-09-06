@@ -35,6 +35,11 @@ public class UInt24 implements ByteSizeable, BinaryRepresentable {
 	public static final int BYTES = 3;
 
 	/**
+	 * The maximum value that fits in 24 bits.
+	 */
+	public static final int MAX_VALUE = 0xFFFFFF;
+
+	/**
 	 * Predefined instance representing zero (0x000000).
 	 */
 	public static final UInt24 ZERO = of(0x00_00_00);
