@@ -113,7 +113,17 @@ public class UInt32 implements ByteSizeable, BinaryRepresentable {
 	 */
 	@Override
 	public String toString() {
-		return String.valueOf(value);
+		return String.valueOf(toUnsignedLong());
+	}
+
+	/**
+	 * Returns the wrapped value as an unsigned long.
+	 *
+	 * @return the unsigned 32-bit value as a long
+	 */
+	@AsValue
+	public long toUnsignedLong() {
+		return Integer.toUnsignedLong(getValue());
 	}
 
 	/**
@@ -123,8 +133,7 @@ public class UInt32 implements ByteSizeable, BinaryRepresentable {
 	 *
 	 * @return the wrapped int value
 	 */
-	@AsValue
-	public long getValue() {
+	public int getValue() {
 		return value;
 	}
 
@@ -134,5 +143,27 @@ public class UInt32 implements ByteSizeable, BinaryRepresentable {
 	@Override
 	public int sizeOf() {
 		return BYTES;
+	}
+
+	/**
+	 * @see #equals(Object)
+	 */
+	@Override
+	public boolean equals(final Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o instanceof UInt32 other) {
+			return this.toUnsignedLong() == other.toUnsignedLong();
+		}
+		return false;
+	}
+
+	/**
+	 * @see #hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return Long.hashCode(toUnsignedLong());
 	}
 }
