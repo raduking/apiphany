@@ -128,6 +128,7 @@ public class UInt24 implements ByteSizeable, BinaryRepresentable {
 	 *
 	 * @return an unsigned integer
 	 */
+	@AsValue
 	public int toUnsignedInt() {
 		return getValue();
 	}
@@ -141,7 +142,6 @@ public class UInt24 implements ByteSizeable, BinaryRepresentable {
 	 *
 	 * @return the wrapped value (unsigned 24-bit as int)
 	 */
-	@AsValue
 	public int getValue() {
 		return value;
 	}

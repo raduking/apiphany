@@ -119,6 +119,7 @@ public class UInt16 implements ByteSizeable, BinaryRepresentable {
 	 *
 	 * @return an unsigned integer
 	 */
+	@AsValue
 	public int toUnsignedInt() {
 		return value & 0xFF_FF;
 	}
@@ -130,7 +131,6 @@ public class UInt16 implements ByteSizeable, BinaryRepresentable {
 	 *
 	 * @return the wrapped short value
 	 */
-	@AsValue
 	public short getValue() {
 		return value;
 	}

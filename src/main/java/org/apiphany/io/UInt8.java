@@ -114,6 +114,7 @@ public class UInt8 implements ByteSizeable, BinaryRepresentable {
 	 *
 	 * @return an unsigned integer
 	 */
+	@AsValue
 	public int toUnsignedInt() {
 		return value & 0xFF;
 	}
@@ -125,7 +126,6 @@ public class UInt8 implements ByteSizeable, BinaryRepresentable {
 	 *
 	 * @return the wrapped byte value
 	 */
-	@AsValue
 	public byte getValue() {
 		return value;
 	}
