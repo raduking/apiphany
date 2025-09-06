@@ -78,9 +78,9 @@ public class UInt16 implements ByteSizeable, BinaryRepresentable {
 		if (BYTES != bytesRead) {
 			throw new EOFException("Error reading " + BYTES + " bytes");
 		}
-		short int16 = (short) (((short) ((buffer[0] & 0xFF) << 8)) |
-				((short) (buffer[1] & 0xFF)));
-		return UInt16.of(int16);
+		int unsigned = ((buffer[0] & 0xFF) << 8) |
+				(buffer[1] & 0xFF);
+		return UInt16.of((short) unsigned);
 	}
 
 	/**
@@ -111,7 +111,16 @@ public class UInt16 implements ByteSizeable, BinaryRepresentable {
 	 */
 	@Override
 	public String toString() {
-		return String.valueOf(value);
+		return String.valueOf(toUnsignedInt());
+	}
+
+	/**
+	 * Returns an unsigned integer.
+	 *
+	 * @return an unsigned integer
+	 */
+	public int toUnsignedInt() {
+		return value & 0xFFFF;
 	}
 
 	/**
@@ -132,5 +141,27 @@ public class UInt16 implements ByteSizeable, BinaryRepresentable {
 	@Override
 	public int sizeOf() {
 		return BYTES;
+	}
+
+	/**
+	 * @see #equals(Object)
+	 */
+	@Override
+	public boolean equals(final Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o instanceof UInt16 other) {
+			return this.toUnsignedInt() == other.toUnsignedInt();
+		}
+		return false;
+	}
+
+	/**
+	 * @see #hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return Integer.hashCode(toUnsignedInt());
 	}
 }
