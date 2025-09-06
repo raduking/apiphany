@@ -64,21 +64,6 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	}
 
 	/**
-	 * Returns the body as an input stream. The caller is responsible for closing the input stream.
-	 *
-	 * @return the body as an input stream
-	 */
-	public InputStream inputStream() {
-		if (hasNoBody()) {
-			throw new IllegalStateException("Cannot transform null body to input stream.");
-		}
-		if (body instanceof InputStream inputStream) {
-			return inputStream;
-		}
-		return new ByteArrayInputStream(Strings.safe(body.toString()).getBytes());
-	}
-
-	/**
 	 * Returns the response body or the given default if the request wasn't 2xx successful.
 	 *
 	 * @param defaultBody default value to be returned
@@ -125,13 +110,13 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * Returns a part / field from the response body by giving a function or the given default if the request wasn't 2xx
 	 * successful.
 	 *
-	 * @param <U> return type
+	 * @param <R> return type
 	 *
 	 * @param bodyFunction function that sends the body as parameter
 	 * @param defaultValue default value to be returned
 	 * @return body part / field
 	 */
-	public <U> U fromOrDefault(final Function<T, U> bodyFunction, final U defaultValue) {
+	public <R> R fromOrDefault(final Function<T, R> bodyFunction, final R defaultValue) {
 		return isSuccessful() ? bodyFunction.apply(getBody()) : defaultValue;
 	}
 
@@ -139,63 +124,67 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * Returns a part / field from the response body by giving a function or the given default if the request wasn't 2xx
 	 * successful.
 	 *
-	 * @param <U> return type
+	 * @param <A> the argument type of the body function
+	 * @param <R> return type
 	 *
 	 * @param bodyFunction function that sends the body as parameter
+	 * @param arg the argument of the body function
 	 * @param defaultValue default value to be returned
 	 * @return body part / field
 	 */
-	public <U> U fromOrDefault(final BiFunction<T, U, U> bodyFunction, final U defaultValue) {
-		return isSuccessful() ? bodyFunction.apply(getBody(), defaultValue) : defaultValue;
+	public <A, R> R fromOrDefault(final BiFunction<T, A, R> bodyFunction, final A arg, final R defaultValue) {
+		return isSuccessful() ? bodyFunction.apply(getBody(), arg) : defaultValue;
 	}
 
 	/**
 	 * Returns a list from the response body when the body is an array or the given default list if the request wasn't 2xx
 	 * successful.
 	 *
-	 * @param <U> return list component type
+	 * @param <E> return list component type
 	 *
 	 * @param defaultList default list to be returned
 	 * @return response body list
 	 */
-	public <U> List<U> asListOrDefault(final List<U> defaultList) {
-		return isSuccessful() ? JavaObjects.cast(getBody()) : defaultList;
+	public <E> List<E> asListOrDefault(final List<E> defaultList) {
+		return asListFromOrDefault((Function<E[], List<E>>) List::of, defaultList);
 	}
 
 	/**
 	 * Returns a list from the response body when the body is an array, or an empty list if the request wasn't 2xx
 	 * successful.
 	 *
-	 * @param <U> return list component type
+	 * @param <E> return list component type
 	 *
 	 * @return response body list
 	 */
-	public <U> List<U> asList() {
+	public <E> List<E> asList() {
 		return asListOrDefault(Collections.emptyList());
 	}
 
 	/**
 	 * Returns a list from the response body or the given default list if the request wasn't 2xx successful.
 	 *
-	 * @param <U> return list component type
+	 * @param <U> the actual body type
+	 * @param <E> return list component type
 	 *
 	 * @param bodyListFunction function to be used on the body to retrieve the wanted list
 	 * @param defaultList default list to be returned
 	 * @return response body list
 	 */
-	public <U> List<U> asListFromOrDefault(final Function<T, List<U>> bodyListFunction, final List<U> defaultList) {
+	public <U, E> List<E> asListFromOrDefault(final Function<U, List<E>> bodyListFunction, final List<E> defaultList) {
 		return isSuccessful() ? bodyListFunction.apply(JavaObjects.cast(getBody())) : defaultList;
 	}
 
 	/**
 	 * Returns a list from the response body or empty list if the request wasn't 2xx successful.
 	 *
-	 * @param <U> return list component type
+	 * @param <U> the actual body type
+	 * @param <E> return list component type
 	 *
 	 * @param bodyListFunction function to be used on the body to retrieve the wanted list
 	 * @return response body list or empty list if the body doesn't exist
 	 */
-	public <U> List<U> asListFromOrEmpty(final Function<T, List<U>> bodyListFunction) {
+	public <U, E> List<E> asListFromOrEmpty(final Function<U, List<E>> bodyListFunction) {
 		return asListFromOrDefault(bodyListFunction, Collections.emptyList());
 	}
 
@@ -203,13 +192,14 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * Returns the first element from a list in the response body defined by the list function or default value if the
 	 * request wasn't 2xx successful or the list is empty.
 	 *
-	 * @param <U> return list component type
+	 * @param <U> the actual body type
+	 * @param <E> return list component type
 	 *
 	 * @param bodyListFunction function to be used on the body to retrieve the wanted list
 	 * @param defaultValue value returned when the request was unsuccessful or the list is empty
 	 * @return Returns the first element from a list from the response body
 	 */
-	public <U> U firstFromOrDefault(final Function<T, List<U>> bodyListFunction, final U defaultValue) {
+	public <U, E> E firstFromOrDefault(final Function<U, List<E>> bodyListFunction, final E defaultValue) {
 		return Lists.first(asListFromOrDefault(bodyListFunction, Collections.emptyList()), defaultValue);
 	}
 
@@ -229,7 +219,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @return null if the response has no errors or re-throws the exception
 	 */
 	public T orRethrow() {
-		return hasException() ? orThrow(getException()) : orNull();
+		return hasException() ? orThrow(getException()) : getBody();
 	}
 
 	/**
@@ -239,7 +229,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @return null if the response has no errors or re-throws the exception
 	 */
 	public T orRethrow(final Function<? super Throwable, Throwable> exceptionWrappingFunction) {
-		return hasException() ? orThrow(exceptionWrappingFunction.apply(getException())) : orNull();
+		return orThrow(exceptionWrappingFunction.apply(getException()));
 	}
 
 	/**
@@ -250,6 +240,49 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 */
 	public T orHandleError(final Function<? super Exception, T> onError) {
 		return onError.apply(getException());
+	}
+
+	/**
+	 * Returns the body as an input stream. The caller is responsible for closing the input stream.
+	 *
+	 * @return the body as an input stream
+	 */
+	public InputStream inputStream() {
+		return inputStream(ApiResponse::defaultInputStreamConverter);
+	}
+
+	/**
+	 * Returns the body as an input stream. The caller must provide a conversion from the response type to
+	 * {@link InputStream} and for closing the input stream.
+	 *
+	 * @param inputStreamConverter input stream converter
+	 * @return the body as an input stream
+	 */
+	public InputStream inputStream(final Function<T, InputStream> inputStreamConverter) {
+		if (hasNoBody()) {
+			throw new IllegalStateException("Cannot transform null body to input stream.");
+		}
+		return inputStreamConverter.apply(getBody());
+	}
+
+	/**
+	 * The default body to {@link InputStream} converter.
+	 *
+	 * @param body body to convert
+	 * @return the input stream
+	 */
+	private static <T> InputStream defaultInputStreamConverter(final T body) {
+		if (body instanceof InputStream is) {
+			return is;
+		}
+		if (body instanceof byte[] bytes) {
+			return new ByteArrayInputStream(bytes);
+		}
+		if (body instanceof CharSequence cs) {
+			return new ByteArrayInputStream(cs.toString().getBytes());
+		}
+		// Fallback to toString()
+		return new ByteArrayInputStream(Strings.safe(body.toString()).getBytes());
 	}
 
 	/**
