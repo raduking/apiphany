@@ -35,9 +35,9 @@ public class UInt24 implements ByteSizeable, BinaryRepresentable {
 	public static final int BYTES = 3;
 
 	/**
-	 * The maximum value that fits in 24 bits.
+	 * The maximum value that fits in 24 bits (16,777,215).
 	 */
-	public static final int MAX_VALUE = 0xFFFFFF;
+	public static final int MAX_VALUE = 0xFF_FF_FF;
 
 	/**
 	 * Predefined instance representing zero (0x000000).
@@ -56,7 +56,7 @@ public class UInt24 implements ByteSizeable, BinaryRepresentable {
 	 * @throws IllegalArgumentException if value exceeds 24-bit unsigned range
 	 */
 	protected UInt24(final int value) {
-		this.value = value;
+		this.value = value & MAX_VALUE;
 	}
 
 	/**
@@ -120,7 +120,16 @@ public class UInt24 implements ByteSizeable, BinaryRepresentable {
 	 */
 	@Override
 	public String toString() {
-		return String.valueOf(value);
+		return String.valueOf(toUnsignedInt());
+	}
+
+	/**
+	 * Returns an unsigned integer.
+	 *
+	 * @return an unsigned integer
+	 */
+	public int toUnsignedInt() {
+		return getValue();
 	}
 
 	/**
@@ -143,5 +152,27 @@ public class UInt24 implements ByteSizeable, BinaryRepresentable {
 	@Override
 	public int sizeOf() {
 		return BYTES;
+	}
+
+	/**
+	 * @see #equals(Object)
+	 */
+	@Override
+	public boolean equals(final Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o instanceof UInt24 other) {
+			return this.toUnsignedInt() == other.toUnsignedInt();
+		}
+		return false;
+	}
+
+	/**
+	 * @see #hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return Integer.hashCode(toUnsignedInt());
 	}
 }

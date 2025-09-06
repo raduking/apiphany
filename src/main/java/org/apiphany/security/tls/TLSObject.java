@@ -36,10 +36,21 @@ public interface TLSObject extends ByteSizeable, BinaryRepresentable {
 	 * @throws NullPointerException if tlsObject is null
 	 */
 	static String serialize(final TLSObject tlsObject) {
-		return switch (FORMAT) {
+		return serialize(tlsObject, FORMAT);
+	}
+
+	/**
+	 * Serializes the TLS object according to the given format.
+	 *
+	 * @param tlsObject the TLS object to serialize
+	 * @param loggingFormat the logging format
+	 * @return the serialized representation as either HEX dump or JSON string
+	 * @throws NullPointerException if tlsObject is null
+	 */
+	static String serialize(final TLSObject tlsObject, final LoggingFormat loggingFormat) {
+		return switch (loggingFormat) {
 			case HEX -> Strings.EOL + Hex.dump(tlsObject);
 			case JSON -> JsonBuilder.toJson(tlsObject);
 		};
 	}
-
 }

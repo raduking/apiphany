@@ -106,7 +106,16 @@ public class UInt8 implements ByteSizeable, BinaryRepresentable {
 	 */
 	@Override
 	public String toString() {
-		return String.valueOf(value);
+		return String.valueOf(toUnsignedInt());
+	}
+
+	/**
+	 * Returns an unsigned integer.
+	 *
+	 * @return an unsigned integer
+	 */
+	public int toUnsignedInt() {
+		return value & 0xFF;
 	}
 
 	/**
@@ -138,5 +147,27 @@ public class UInt8 implements ByteSizeable, BinaryRepresentable {
 	 */
 	public boolean isZero() {
 		return this == ZERO || 0 == value;
+	}
+
+	/**
+	 * @see #equals(Object)
+	 */
+	@Override
+	public boolean equals(final Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o instanceof UInt8 other) {
+			return this.toUnsignedInt() == other.toUnsignedInt();
+		}
+		return false;
+	}
+
+	/**
+	 * @see #hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return Integer.hashCode(toUnsignedInt());
 	}
 }

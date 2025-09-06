@@ -1,5 +1,6 @@
 package org.apiphany.security.ssl;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -15,6 +16,8 @@ import org.junit.jupiter.api.Test;
  */
 class StoreInfoTest {
 
+	private static final String LOCATION = "keystore.jks";
+
 	@Test
 	void shouldReadButNotWritePassword() {
 		String jsonRead = Strings.fromFile("/security/ssl/store-info.json");
@@ -27,4 +30,22 @@ class StoreInfoTest {
 		assertThat(keystoreWrite.getPassword(), nullValue());
 	}
 
+	@Test
+	void shouldReturnDisplayLocation() {
+		StoreInfo storeInfo = new StoreInfo();
+		storeInfo.setLocation(LOCATION);
+
+		String result = storeInfo.getDisplayLocation();
+
+		assertThat(result, equalTo(LOCATION));
+	}
+
+	@Test
+	void shouldReturnUnknownDisplayLocationWhenLocationIsMissing() {
+		StoreInfo storeInfo = new StoreInfo();
+
+		String result = storeInfo.getDisplayLocation();
+
+		assertThat(result, equalTo(StoreInfo.UNKNOWN_LOCATION));
+	}
 }

@@ -15,6 +15,7 @@ import org.apiphany.ApiClient;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Hex;
+import org.apiphany.lang.LoggingFormat;
 import org.apiphany.lang.Strings;
 import org.apiphany.net.Sockets;
 import org.apiphany.security.ssl.Keys;
@@ -209,6 +210,16 @@ class TLSObjectTest {
 		LOGGER.info("PRF Expect: {}", expected);
 
 		assertThat(hexOutput, equalTo(expected));
+	}
+
+	@Test
+	void shouldFormatWithHexLoggingFormat() {
+		HandshakeType type = HandshakeType.CERTIFICATE;
+
+		String expected = Strings.EOL + "0B" + Strings.EOL;
+		String result = TLSObject.serialize(type, LoggingFormat.HEX);
+
+		assertThat(result, equalTo(expected));
 	}
 
 	private static Stream<Arguments> providePRFArguments() {
