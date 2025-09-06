@@ -3,8 +3,11 @@ package org.apiphany.io;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -54,5 +57,39 @@ class IOTest {
 
 		EOFException e = assertThrows(EOFException.class, () -> IO.readChunk(bis, SIZE));
 		assertThat(e.getMessage(), equalTo("Stream closed; need " + SIZE + " more bytes"));
+	}
+
+	@Test
+	void shouldThrowExceptionWhenInputStreamHasLessElementsOnReadFully() {
+		ByteArrayInputStream bis = new ByteArrayInputStream(new byte[] { 0x12 });
+
+		int size = 10;
+		byte[] buffer = new byte[size];
+		EOFException expected = IO.bytesNeededEOFException(size - 1);
+
+		EOFException e = assertThrows(EOFException.class, () -> IO.readFully(bis, buffer, 0, size));
+		assertThat(e.getMessage(), equalTo(expected.getMessage()));
+	}
+
+	@Test
+	void shouldThrowExceptionWhenInputStreamHasLessElementsOnCopy() {
+		ByteArrayInputStream bis = new ByteArrayInputStream(new byte[] { 0x12 });
+
+		int size = 10;
+		ByteArrayOutputStream bos = new ByteArrayOutputStream(size);
+		EOFException expected = IO.bytesNeededEOFException(size - 1);
+
+		EOFException e = assertThrows(EOFException.class, () -> IO.copy(bis, bos, size));
+		assertThat(e.getMessage(), equalTo(expected.getMessage()));
+	}
+
+	@Test
+	void shouldNotDoAnythingIfSizeIsZeroOnCopy() throws IOException {
+		ByteArrayInputStream bis = mock(ByteArrayInputStream.class);
+		ByteArrayOutputStream bos = mock(ByteArrayOutputStream.class);
+
+		IO.copy(bis, bos, 0);
+
+		verifyNoInteractions(bis, bos);
 	}
 }

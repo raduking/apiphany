@@ -11,6 +11,7 @@ Added constructor with `OAuth2TokenProviderConfiguration` to `OAuth2TokenProvide
 Added `OAuth2TokenProvider.getConfiguration` method to be able to change the configuration dynamically.
 Removed `BytesWrapper.toHexString` method and moved the implementation to `toString` method since JSON doesn't make sense here.
 Removed `ExchangeRandom.toHexString` method and moved the implementation to `toString` method since JSON doesn't make sense here.
+Added `IO.bytesNeededEOFException` to uniformly build exceptions for the `IO` utility class.
 
 ---
 
