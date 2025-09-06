@@ -7,11 +7,14 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Objects;
 
 import org.apiphany.http.HttpStatus;
 import org.junit.jupiter.api.Test;
+import org.morphix.lang.JavaObjects;
 
 /**
  * Test class for {@link ApiResponse}.
@@ -185,6 +188,92 @@ class ApiResponseTest {
 		assertThat(result, equalTo(MUMU));
 	}
 
+	@Test
+	void shouldReturnBodyAsInputStreamWhenBodyIsInputStream() {
+		ByteArrayInputStream bis = new ByteArrayInputStream(new byte[] { 0x01 });
+		ApiResponse<Object> response = ApiResponse.create((Object) bis)
+				.status(HttpStatus.OK)
+				.build();
+
+		@SuppressWarnings("resource")
+		InputStream is = response.inputStream();
+
+		assertThat(is, equalTo(bis));
+	}
+
+	@Test
+	void shouldReturnBodyAsInputStreamWhenBodyIsByteArray() {
+		byte[] bytes = new byte[] { 0x01, 0x02, 0x03 };
+		ApiResponse<Object> response = ApiResponse.create((Object) bytes)
+				.status(HttpStatus.OK)
+				.build();
+
+		@SuppressWarnings("resource")
+		InputStream is = response.inputStream();
+		ByteArrayInputStream result = JavaObjects.cast(is);
+
+		assertThat(result.readAllBytes(), equalTo(bytes));
+	}
+
+	@Test
+	void shouldReturnBodyAsInputStreamWhenBodyIsCharSequence() {
+		ApiResponse<String> response = ApiResponse.create(MUMU)
+				.status(HttpStatus.OK)
+				.build();
+
+		@SuppressWarnings("resource")
+		InputStream is = response.inputStream();
+		ByteArrayInputStream result = JavaObjects.cast(is);
+
+		assertThat(result.readAllBytes(), equalTo(MUMU.getBytes()));
+	}
+
+	@Test
+	void shouldReturnBodyToStringAsInputStreamWhenBodyIsObject() {
+		A a = new A(MUMU);
+		ApiResponse<A> response = ApiResponse.create(a)
+				.status(HttpStatus.OK)
+				.build();
+
+		@SuppressWarnings("resource")
+		InputStream is = response.inputStream();
+		ByteArrayInputStream result = JavaObjects.cast(is);
+
+		assertThat(result.readAllBytes(), equalTo(MUMU.getBytes()));
+	}
+
+	@Test
+	void shouldReturnStatus() {
+		ApiResponse<Object> response = ApiResponse.create((Object) null)
+				.status(HttpStatus.OK)
+				.build();
+
+		HttpStatus status = response.getStatus();
+
+		assertThat(status, equalTo(HttpStatus.OK));
+	}
+
+	@Test
+	void shouldReturnStatusCode() {
+		ApiResponse<Object> response = ApiResponse.create((Object) null)
+				.status(HttpStatus.OK)
+				.build();
+
+		int statusCode = response.getStatusCode();
+
+		assertThat(statusCode, equalTo(HttpStatus.OK.getCode()));
+	}
+
+	@Test
+	void shouldReturnUnknownStatusCodeWhenStatusCodeIsMissing() {
+		ApiResponse<Object> response = ApiResponse.create((Object) null)
+				.build();
+
+		int statusCode = response.getStatusCode();
+
+		assertThat(statusCode, equalTo(Status.UNKNOWN));
+	}
+
 	static class A {
 
 		private String s;
@@ -211,6 +300,11 @@ class ApiResponseTest {
 
 		public List<String> getResults() {
 			return List.of(s);
+		}
+
+		@Override
+		public String toString() {
+			return getS();
 		}
 
 		@Override
