@@ -95,7 +95,7 @@ public class UInt8 implements ByteSizeable, BinaryRepresentable {
 	 */
 	public static byte[] toByteArray(final byte value) {
 		return new byte[] {
-				(byte) (value & 0xFF)
+				value
 		};
 	}
 
@@ -134,9 +134,9 @@ public class UInt8 implements ByteSizeable, BinaryRepresentable {
 	/**
 	 * Checks if this value is equal to zero.
 	 *
-	 * @return true if this value equals {@link #ZERO}
+	 * @return true if this value equals zero
 	 */
 	public boolean isZero() {
-		return 0 == value;
+		return this == ZERO || 0 == value;
 	}
 }
