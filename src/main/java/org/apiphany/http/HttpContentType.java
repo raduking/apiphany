@@ -191,6 +191,16 @@ public class HttpContentType implements ApiMimeType {
 	}
 
 	/**
+	 * Returns a HTTP content type from the given header value. This is an alias for {@link #parseHeaderValue(String)}.
+	 *
+	 * @param headerValue the header value
+	 * @return a HTTP content type from the given header value
+	 */
+	public static HttpContentType parseHeader(final String headerValue) {
+		return parseHeaderValue(headerValue);
+	}
+
+	/**
 	 * Returns a new HTTP content type given the content type and the encoding.
 	 *
 	 * @param type the content type
@@ -201,5 +211,28 @@ public class HttpContentType implements ApiMimeType {
 		ContentType contentType = ContentType.fromString(type);
 		Charset charset = ApiMimeType.parseCharset(encoding);
 		return HttpContentType.of(contentType, charset);
+	}
+
+	/**
+	 * @see #equals(Object)
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof HttpContentType that) {
+			return Objects.equals(contentType, that.contentType)
+					&& Objects.equals(charset, that.charset);
+		}
+		return false;
+	}
+
+	/**
+	 * @see #hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hash(contentType, charset);
 	}
 }

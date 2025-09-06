@@ -2,11 +2,15 @@ package org.apiphany.http;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertNull;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import org.apiphany.io.ContentType;
+import org.apiphany.utils.Tests;
 import org.junit.jupiter.api.Test;
+import org.morphix.reflection.Constructors;
 
 /**
  * Test class for {@link HttpContentType}.
@@ -15,20 +19,28 @@ import org.junit.jupiter.api.Test;
  */
 class HttpContentTypeTest {
 
+	private static final String CHARSET = "charset";
+	private static final String APPLICATION_JSON_CHARSET_ISO_8859_1 = "application/json; charset=ISO-8859-1";
+
 	@Test
 	void shouldResolveContentTypeAndCharset() {
-		HttpContentType ct = HttpContentType.parseHeaderValue("application/json; charset=ISO-8859-1");
+		HttpContentType ct1 = HttpContentType.parseHeaderValue(APPLICATION_JSON_CHARSET_ISO_8859_1);
+		HttpContentType ct2 = HttpContentType.parseHeader(APPLICATION_JSON_CHARSET_ISO_8859_1);
 
-		assertThat(ct.getContentType(), equalTo(ContentType.APPLICATION_JSON));
-		assertThat(ct.getCharset(), equalTo(StandardCharsets.ISO_8859_1));
+		assertThat(ct1.getContentType(), equalTo(ContentType.APPLICATION_JSON));
+		assertThat(ct1.getCharset(), equalTo(StandardCharsets.ISO_8859_1));
+		assertThat(ct1, equalTo(ct2));
 	}
 
 	@Test
 	void shouldResolveContentTypeAndCharsetInLowerCase() {
-		HttpContentType ct = HttpContentType.parseHeaderValue("application/json; charset=iso-8859-1");
+		String lowerCaseValue = APPLICATION_JSON_CHARSET_ISO_8859_1.toLowerCase();
+		HttpContentType ct1 = HttpContentType.parseHeaderValue(lowerCaseValue);
+		HttpContentType ct2 = HttpContentType.parseHeader(lowerCaseValue);
 
-		assertThat(ct.getContentType(), equalTo(ContentType.APPLICATION_JSON));
-		assertThat(ct.getCharset(), equalTo(StandardCharsets.ISO_8859_1));
+		assertThat(ct1.getContentType(), equalTo(ContentType.APPLICATION_JSON));
+		assertThat(ct1.getCharset(), equalTo(StandardCharsets.ISO_8859_1));
+		assertThat(ct1, equalTo(ct2));
 	}
 
 	@Test
@@ -49,5 +61,23 @@ class HttpContentTypeTest {
 
 		assertThat(ct.getContentType(), equalTo(ContentType.APPLICATION_JSON));
 		assertThat(ct.getCharset(), equalTo(StandardCharsets.ISO_8859_1));
+	}
+
+	@Test
+	void shouldReturnNullWhenHeaderValuesDoesNotHaveAContentType() {
+		HttpContentType ct = HttpContentType.parseHeader(List.of("someheadervalue1", "someheadervalue2"));
+
+		assertNull(ct);
+	}
+
+	@Test
+	void shouldThrowExceptionOnCallingParamConstructor() {
+		UnsupportedOperationException unsupportedOperationException = Tests.verifyDefaultConstructorThrows(HttpContentType.Param.class);
+		assertThat(unsupportedOperationException.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
+	}
+
+	@Test
+	void shouldHaveTheCorectCharsetParam() {
+		assertThat(HttpContentType.Param.CHARSET, equalTo(CHARSET));
 	}
 }

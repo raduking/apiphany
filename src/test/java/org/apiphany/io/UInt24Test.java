@@ -2,10 +2,13 @@ package org.apiphany.io;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayInputStream;
+import java.io.EOFException;
 import java.io.IOException;
 
+import org.apiphany.lang.Bytes;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -31,13 +34,27 @@ class UInt24Test {
 
 	@Test
 	void shouldReturnAsStringTheInternalValue() {
-		int value = 666;
-		UInt24 uInt24 = UInt24.of(value);
+		UInt24 uInt24 = UInt24.of(TEST_INT);
 
-		String expected = String.valueOf(value);
+		String expected = String.valueOf(TEST_INT);
 		String result = uInt24.toString();
 
 		assertThat(result, equalTo(expected));
 	}
 
+	@Test
+	void shouldThrowExceptionWhenInputStreamIsEmpty() {
+		ByteArrayInputStream bis = new ByteArrayInputStream(Bytes.EMPTY);
+
+		EOFException e = assertThrows(EOFException.class, () -> UInt24.from(bis));
+		assertThat(e.getMessage(), equalTo("Error reading " + UInt24.BYTES + " bytes"));
+	}
+
+	@Test
+	void shouldThrowExceptionWhenInputStreamHasLessElements() {
+		ByteArrayInputStream bis = new ByteArrayInputStream(new byte[] { 0x12, 0x13 });
+
+		EOFException e = assertThrows(EOFException.class, () -> UInt24.from(bis));
+		assertThat(e.getMessage(), equalTo("Error reading " + UInt24.BYTES + " bytes"));
+	}
 }
