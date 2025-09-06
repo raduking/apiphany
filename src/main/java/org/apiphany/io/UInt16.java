@@ -120,7 +120,7 @@ public class UInt16 implements ByteSizeable, BinaryRepresentable {
 	 * @return an unsigned integer
 	 */
 	public int toUnsignedInt() {
-		return value & 0xFFFF;
+		return value & 0xFF_FF;
 	}
 
 	/**

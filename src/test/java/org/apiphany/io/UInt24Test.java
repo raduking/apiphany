@@ -2,6 +2,8 @@ package org.apiphany.io;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayInputStream;
@@ -18,11 +20,12 @@ import org.junit.jupiter.api.Test;
  */
 class UInt24Test {
 
-	private static final int TEST_INT = 666;
+	private static final int INT_42 = 42;
+	private static final int INT_666 = 666;
 
 	@Test
 	void shouldWriteAndReadUInt24() throws IOException {
-		UInt24 uInt24 = UInt24.of(TEST_INT);
+		UInt24 uInt24 = UInt24.of(INT_666);
 
 		byte[] bytes = uInt24.toByteArray();
 		ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
@@ -34,9 +37,9 @@ class UInt24Test {
 
 	@Test
 	void shouldReturnAsStringTheInternalValue() {
-		UInt24 uInt24 = UInt24.of(TEST_INT);
+		UInt24 uInt24 = UInt24.of(INT_666);
 
-		String expected = String.valueOf(TEST_INT);
+		String expected = String.valueOf(INT_666);
 		String result = uInt24.toString();
 
 		assertThat(result, equalTo(expected));
@@ -56,5 +59,66 @@ class UInt24Test {
 
 		EOFException e = assertThrows(EOFException.class, () -> UInt24.from(bis));
 		assertThat(e.getMessage(), equalTo("Error reading " + UInt24.BYTES + " bytes"));
+	}
+
+	@Test
+	void shouldBeEqualWhenSameInstance() {
+		UInt24 value = UInt24.of(123456);
+
+		assertThat(value.equals(value), is(true));
+		assertThat(value.hashCode(), equalTo(value.hashCode()));
+	}
+
+	@Test
+	void shouldBeEqualWhenValuesMatch() {
+		UInt24 a = UInt24.of(0x00FF_FF); // 65535
+		UInt24 b = UInt24.of(65535);
+
+		assertThat(a.equals(b), is(true));
+		assertThat(a.hashCode(), equalTo(b.hashCode()));
+	}
+
+	@Test
+	void shouldNotBeEqualWhenValuesDiffer() {
+		UInt24 a = UInt24.of(0);
+		UInt24 b = UInt24.of(1);
+
+		assertThat(a.equals(b), is(false));
+		assertThat(a.hashCode(), not(equalTo(b.hashCode())));
+	}
+
+	@Test
+	void shouldNotBeEqualToNull() {
+		UInt24 value = UInt24.of(INT_42);
+
+		assertThat(value.equals(null), is(false));
+	}
+
+	@SuppressWarnings("unlikely-arg-type")
+	@Test
+	void shouldNotBeEqualToDifferentType() {
+		UInt24 value = UInt24.of(INT_42);
+
+		assertThat(value.equals("42"), is(false));
+	}
+
+	@Test
+	void shouldHaveConsistentHashCodeForEqualValues() {
+		UInt24 a = UInt24.of(INT_666);
+		UInt24 b = UInt24.of(INT_666);
+
+		assertThat(a.equals(b), is(true));
+		assertThat(a.hashCode(), equalTo(b.hashCode()));
+	}
+
+	@Test
+	void shouldHandleBoundaryValuesCorrectly() {
+		UInt24 min = UInt24.of(0);
+		UInt24 max = UInt24.of(UInt24.MAX_VALUE);
+
+		assertThat(min.toUnsignedInt(), equalTo(0));
+		assertThat(max.toUnsignedInt(), equalTo(16_777_215));
+
+		assertThat(min.equals(max), is(false));
 	}
 }
