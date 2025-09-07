@@ -2,6 +2,10 @@
 
 ---
 
+`1.0.10`
+
+---
+
 `1.0.9`
 
 Added `OAuth2TokenProviderConfiguration` with configurable properties for `OAuth2TokenProvider`.
