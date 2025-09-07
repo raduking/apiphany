@@ -1,6 +1,7 @@
 package org.apiphany.meters.micrometer;
 
 import java.time.Duration;
+import java.util.Objects;
 
 import org.apiphany.meters.MeterTimer;
 import org.morphix.lang.JavaObjects;
@@ -28,7 +29,7 @@ public class MicrometerTimer implements MeterTimer {
 	 * @param timer the underlying Micrometer timer (must not be {@code null})
 	 */
 	private MicrometerTimer(final Timer timer) {
-		this.timer = timer;
+		this.timer = Objects.requireNonNull(timer);
 	}
 
 	/**

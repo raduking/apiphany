@@ -1,5 +1,7 @@
 package org.apiphany.meters.micrometer;
 
+import java.util.Objects;
+
 import org.apiphany.meters.MeterCounter;
 import org.morphix.lang.JavaObjects;
 
@@ -27,7 +29,7 @@ public class MicrometerCounter implements MeterCounter {
 	 * @param counter the underlying Micrometer counter (must not be {@code null})
 	 */
 	public MicrometerCounter(final Counter counter) {
-		this.counter = counter;
+		this.counter = Objects.requireNonNull(counter);
 	}
 
 	/**
