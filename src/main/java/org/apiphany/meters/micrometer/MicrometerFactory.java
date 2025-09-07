@@ -126,10 +126,10 @@ public class MicrometerFactory extends MeterFactory {
 	 * @return true if the tags object is empty, false otherwise
 	 */
 	public static boolean isEmpty(final Tags tags) {
-		if (tags == Tags.empty()) {
+		if (null == tags) {
 			return true;
 		}
-		if (tags == null) {
+		if (Tags.empty() == tags) {
 			return true;
 		}
 		return !tags.iterator().hasNext();
