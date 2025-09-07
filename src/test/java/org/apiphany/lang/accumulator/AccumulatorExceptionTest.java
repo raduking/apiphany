@@ -33,9 +33,13 @@ class AccumulatorExceptionTest {
 	void shouldBuildToStringWithAccumulatorValue() {
 		Accumulator<Exception> accumulator = ExceptionsAccumulator.of(Set.of(RuntimeException.class, IllegalArgumentException.class));
 		RuntimeException e1 = new RuntimeException();
-		accumulator.accumulate(() -> { throw e1; });
+		accumulator.accumulate(() -> {
+			throw e1;
+		});
 		IllegalArgumentException e2 = new IllegalArgumentException();
-		accumulator.accumulate(() -> { throw e2; });
+		accumulator.accumulate(() -> {
+			throw e2;
+		});
 
 		Throwable cause = new IllegalStateException();
 		AccumulatorException e = new AccumulatorException(SOME_EXCEPTION_MESSAGE, cause, accumulator);
