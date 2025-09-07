@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 
 import java.util.Iterator;
 import java.util.List;
@@ -13,6 +15,7 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
+import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Tags;
 
 /**
@@ -41,6 +44,19 @@ class MicrometerFactoryTest {
 		boolean empty = MicrometerFactory.isEmpty(Tags.of("some.tag.name", "value"));
 
 		assertFalse(empty);
+	}
+
+	@Test
+	void shouldReturnTrueOnEmptyMicrometerTagsWithHasNext() {
+		Tags tags = mock(Tags.class);
+		@SuppressWarnings("unchecked")
+		Iterator<Tag> iterator = mock(Iterator.class);
+		doReturn(iterator).when(tags).iterator();
+		doReturn(false).when(iterator).hasNext();
+
+		boolean empty = MicrometerFactory.isEmpty(tags);
+
+		assertTrue(empty);
 	}
 
 	@Test
