@@ -4,6 +4,8 @@
 
 `1.0.10`
 
+Changed `AccumulatorException.toString` to be simpler.
+
 ---
 
 `1.0.9`
