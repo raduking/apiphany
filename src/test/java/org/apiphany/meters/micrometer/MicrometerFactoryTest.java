@@ -1,0 +1,82 @@
+package org.apiphany.meters.micrometer;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+import org.junit.jupiter.api.Test;
+
+import io.micrometer.core.instrument.Tags;
+
+/**
+ * Test class for {@link MicrometerFactory}.
+ *
+ * @author Radu Sebastian LAZIN
+ */
+class MicrometerFactoryTest {
+
+	@Test
+	void shouldReturnTrueOnEmptyMicrometerTags() {
+		boolean empty = MicrometerFactory.isEmpty(Tags.empty());
+
+		assertTrue(empty);
+	}
+
+	@Test
+	void shouldReturnTrueOnNullMicrometerTags() {
+		boolean empty = MicrometerFactory.isEmpty(null);
+
+		assertTrue(empty);
+	}
+
+	@Test
+	void shouldReturnFalseOnNonEmptyMicrometerTags() {
+		boolean empty = MicrometerFactory.isEmpty(Tags.of("some.tag.name", "value"));
+
+		assertFalse(empty);
+	}
+
+	@Test
+	void shouldReturnNullOnToTagsIfInputIsNull() {
+		Tags tags = MicrometerFactory.toTags(null);
+
+		assertNull(tags);
+	}
+
+	@Test
+	void shouldThrowExceptionOnToTagsIfInputCollectionCannotBeConvertedToTags() {
+		List<Object> list = List.of(new Object());
+		UnsupportedOperationException e = assertThrows(UnsupportedOperationException.class, () -> MicrometerFactory.toTags(list));
+
+		assertThat(e.getMessage(), equalTo("Tags class " + list.getClass() + " is not supported"));
+	}
+
+	@Test
+	void shouldThrowExceptionOnToTagsIfInputIterableCannotBeConvertedToTags() {
+		Iterable<Object> iterable = new Iterable<>() {
+			@Override
+			public Iterator<Object> iterator() {
+				return null;
+			}
+		};
+		UnsupportedOperationException e = assertThrows(UnsupportedOperationException.class, () -> MicrometerFactory.toTags(iterable));
+
+		assertThat(e.getMessage(), equalTo("Tags class " + iterable.getClass() + " is not supported"));
+	}
+
+	@Test
+	void shouldReturnEmptyOnToTagsWIthEmptyCollection() {
+		Set<Object> set = Set.of();
+
+		Tags tags = MicrometerFactory.toTags(set);
+
+		assertThat(tags, equalTo(Tags.empty()));
+	}
+}

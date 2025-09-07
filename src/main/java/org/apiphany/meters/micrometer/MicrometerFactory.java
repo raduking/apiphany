@@ -1,5 +1,6 @@
 package org.apiphany.meters.micrometer;
 
+import java.util.Collection;
 import java.util.Collections;
 
 import org.apiphany.lang.Pair;
@@ -52,7 +53,7 @@ public class MicrometerFactory extends MeterFactory {
 	 * The {@code Boolean} value is {@code true} if Micrometer is detected, {@code false} otherwise.
 	 */
 	public static final Pair<Boolean, Class<? extends MeterFactory>> MICROMETER_LIBRARY_INFO =
-			Pair.of(null != Reflection.getClass(MICROMETER_METER_CLASS_NAME), MicrometerFactory.class);
+			Pair.of(Reflection.isClassPresent(MICROMETER_METER_CLASS_NAME), MicrometerFactory.class);
 
 	/**
 	 * The Micrometer meter registry.
@@ -152,6 +153,9 @@ public class MicrometerFactory extends MeterFactory {
 		}
 		if (tags instanceof Tags micrometerTags) {
 			return JavaObjects.cast(micrometerTags);
+		}
+		if (tags instanceof Collection<?> collection && collection.isEmpty()) {
+			return Tags.empty();
 		}
 		throw new UnsupportedOperationException("Tags class " + tags.getClass() + " is not supported");
 	}

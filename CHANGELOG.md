@@ -12,6 +12,7 @@ Added `OAuth2TokenProvider.getConfiguration` method to be able to change the con
 Removed `BytesWrapper.toHexString` method and moved the implementation to `toString` method since JSON doesn't make sense here.
 Removed `ExchangeRandom.toHexString` method and moved the implementation to `toString` method since JSON doesn't make sense here.
 Added `IO.bytesNeededEOFException` to uniformly build exceptions for the `IO` utility class.
+Updated to MorphiX to `v1.0.8`.
 
 ---
 

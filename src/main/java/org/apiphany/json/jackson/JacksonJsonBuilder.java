@@ -69,7 +69,7 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 	 * Pair that shows if Jackson JSON library is present in the class path and the {@link JsonBuilder} specific class.
 	 */
 	public static final Pair<Boolean, Class<? extends JsonBuilder>> JACKSON_LIBRARY_INFO =
-			Pair.of(null != Reflection.getClass(JACKSON_OBJECT_MAPPER_CLASS_NAME), JacksonJsonBuilder.class);
+			Pair.of(Reflection.isClassPresent(JACKSON_OBJECT_MAPPER_CLASS_NAME), JacksonJsonBuilder.class);
 
 	/**
 	 * Singleton instance holder.
