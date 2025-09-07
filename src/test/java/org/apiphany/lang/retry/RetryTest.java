@@ -3,7 +3,9 @@ package org.apiphany.lang.retry;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -285,6 +287,35 @@ class RetryTest {
 				i -> retry.when(() -> inSupplier.foo(), Objects::nonNull), ExecutionType.PARALLEL);
 
 		verify(inSupplier, times(threadCount * retryCount)).foo();
+	}
+
+	@Test
+	void shouldReturnFalseOnEqualsIfParameterIsNull() {
+		boolean equals = Retry.defaultRetry().equals(null);
+
+		assertFalse(equals);
+	}
+
+	@Test
+	void shouldReturnTrueOnEqualsForEqualRetries() {
+		Wait wait = WaitCounter.of(RETRY_COUNT, Duration.ofMillis(1));
+		Retry retry1 = Retry.of(wait);
+		Retry retry2 = Retry.of(wait);
+
+		boolean equals = retry1.equals(retry2);
+
+		assertTrue(equals);
+	}
+
+	@Test
+	void shouldBuildHashCodeBasedOnWait() {
+		Wait wait = WaitCounter.of(RETRY_COUNT, Duration.ofMillis(1));
+		Retry retry = Retry.of(wait);
+
+		int expected = Objects.hash(wait);
+		int result = retry.hashCode();
+
+		assertThat(result, equalTo(expected));
 	}
 
 	public static class Foo {
