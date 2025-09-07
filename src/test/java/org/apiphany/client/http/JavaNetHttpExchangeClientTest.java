@@ -3,6 +3,7 @@ package org.apiphany.client.http;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.notNullValue;
 
 import java.time.Duration;
 import java.util.List;
@@ -19,6 +20,7 @@ import org.apiphany.net.Sockets;
 import org.apiphany.server.KeyValueHttpServer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
+import org.morphix.reflection.GenericClass;
 
 /**
  * Test class for {@link JavaNetHttpExchangeClient}.
@@ -90,6 +92,13 @@ class JavaNetHttpExchangeClientTest {
 	}
 
 	@Test
+	void shouldReturnMapWhenGettingAllValues() {
+		Map<String, String> values = API_CLIENT.getAll();
+
+		assertThat(values, notNullValue());
+	}
+
+	@Test
 	void shouldReturnTrace() {
 		ApiResponse<String> response = API_CLIENT.trace();
 
@@ -104,6 +113,8 @@ class JavaNetHttpExchangeClientTest {
 
 		private static final String KEYS = "keys";
 
+		private static final GenericClass<Map<String, String>> MAP_TYPE = typeObject();
+
 		protected SimpleApiClient(final ClientProperties properties) {
 			super("http://localhost:" + API_SERVER.getPort(),
 					with(JavaNetHttpExchangeClient.class)
@@ -116,6 +127,15 @@ class JavaNetHttpExchangeClientTest {
 					.get()
 					.path(API, KEYS, key)
 					.retrieve(String.class)
+					.orNull();
+		}
+
+		public Map<String, String> getAll() {
+			return client()
+					.http()
+					.get()
+					.path(API, KEYS)
+					.retrieve(MAP_TYPE)
 					.orNull();
 		}
 
