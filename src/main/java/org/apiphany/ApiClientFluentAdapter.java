@@ -523,6 +523,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * Returns the required exchange class.
 	 *
 	 * @param <T> exchange client class type
+	 *
 	 * @param exchangeClientClass exchange client class
 	 * @return the required exchange class
 	 */
