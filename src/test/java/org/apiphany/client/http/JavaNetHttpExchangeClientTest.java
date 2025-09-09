@@ -4,12 +4,20 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.net.http.HttpRequest.BodyPublisher;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.apiphany.ApiClient;
+import org.apiphany.ApiClientFluentAdapter;
 import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.header.Headers;
@@ -40,6 +48,8 @@ class JavaNetHttpExchangeClientTest {
 	private static final String NEW_KEY = "Bubu";
 	private static final String NEW_VALUE_1 = "Juju";
 	private static final String NEW_VALUE_2 = "Pupu";
+
+	private static final byte[] BYTES = new byte[] { 0x01, 0x02, 0x03 };
 
 	@AfterAll
 	static void cleanup() throws Exception {
@@ -107,6 +117,79 @@ class JavaNetHttpExchangeClientTest {
 
 		String body = response.getBody();
 		assertThat(body, startsWith(HttpMethod.TRACE.value()));
+	}
+
+	@Test
+	void shouldConvertByteArrayToByteArrayBodyPublisher() {
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(API_CLIENT)
+				.body(BYTES);
+
+		BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+
+		assertThat(bodyPublisher.contentLength(), equalTo((long) BYTES.length));
+
+		TestBodySubscriber subscriber = new TestBodySubscriber();
+		bodyPublisher.subscribe(subscriber);
+		subscriber.awaitCompletion();
+
+		assertTrue(subscriber.isCompleted());
+		assertNull(subscriber.getError());
+		assertThat(BYTES, equalTo(subscriber.getReceivedBytes()));
+	}
+
+	@Test
+	void shouldConvertInputStreamToInputStreamBodyPublisher() {
+		ByteArrayInputStream bis = new ByteArrayInputStream(BYTES);
+
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(API_CLIENT)
+				.body(bis);
+
+		BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+
+		TestBodySubscriber subscriber = new TestBodySubscriber();
+		bodyPublisher.subscribe(subscriber);
+		subscriber.awaitCompletion();
+
+		assertTrue(subscriber.isCompleted());
+		assertNull(subscriber.getError());
+		assertThat(BYTES, equalTo(subscriber.getReceivedBytes()));
+	}
+
+	@Test
+	void shouldConvertInputStreamSupplierToInputStreamBodyPublisher() {
+		ByteArrayInputStream bis = new ByteArrayInputStream(BYTES);
+		Supplier<? extends InputStream> supplier = () -> bis;
+
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(API_CLIENT)
+				.body(supplier);
+
+		BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+
+		TestBodySubscriber subscriber = new TestBodySubscriber();
+		bodyPublisher.subscribe(subscriber);
+		subscriber.awaitCompletion();
+
+		assertTrue(subscriber.isCompleted());
+		assertNull(subscriber.getError());
+		assertThat(BYTES, equalTo(subscriber.getReceivedBytes()));
+	}
+
+	@Test
+	void shouldConvertStringToStringBodyPublisher() {
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(API_CLIENT)
+				.body(NEW_VALUE_1);
+
+		BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+
+		assertThat(bodyPublisher.contentLength(), equalTo((long) NEW_VALUE_1.length()));
+
+		TestBodySubscriber subscriber = new TestBodySubscriber();
+		bodyPublisher.subscribe(subscriber);
+		subscriber.awaitCompletion();
+
+		assertTrue(subscriber.isCompleted());
+		assertNull(subscriber.getError());
+		assertThat(NEW_VALUE_1.getBytes(StandardCharsets.UTF_8), equalTo(subscriber.getReceivedBytes()));
 	}
 
 	static class SimpleApiClient extends ApiClient {
