@@ -2,6 +2,12 @@
 
 ---
 
+`1.0.10`
+
+Changed `AccumulatorException.toString` to be simpler.
+
+---
+
 `1.0.9`
 
 Added `OAuth2TokenProviderConfiguration` with configurable properties for `OAuth2TokenProvider`.

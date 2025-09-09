@@ -267,15 +267,14 @@ public class Retry {
 	 * Equals method that also verifies that objects are of the same class.
 	 */
 	@Override
-	public boolean equals(final Object that) {
-		if (this == that) {
+	public boolean equals(final Object obj) {
+		if (this == obj) {
 			return true;
 		}
-		if (null == that || that.getClass() != getClass()) {
-			return false;
+		if (obj instanceof Retry that) {
+			return Objects.equals(waitPrototype, that.waitPrototype);
 		}
-		Retry thatRetry = (Retry) that;
-		return Objects.equals(waitPrototype, thatRetry.waitPrototype);
+		return false;
 	}
 
 	/**

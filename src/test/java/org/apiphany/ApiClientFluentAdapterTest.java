@@ -1,5 +1,6 @@
 package org.apiphany;
 
+import static org.apiphany.ParameterFunction.parameter;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -9,6 +10,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
@@ -21,6 +23,9 @@ import org.apiphany.lang.retry.WaitCounter;
 import org.apiphany.meters.BasicMeters;
 import org.apiphany.security.AuthenticationType;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.morphix.reflection.GenericClass;
 
 /**
@@ -28,20 +33,23 @@ import org.morphix.reflection.GenericClass;
  *
  * @author Radu Sebastian LAZIN
  */
+@ExtendWith(MockitoExtension.class)
 class ApiClientFluentAdapterTest {
 
 	private static final String URL = "http://localhost";
-	private static final Map<String, String> PARAMS = RequestParameters.of(ParameterFunction.parameter("name", "value"));
+	private static final Map<String, String> PARAMS = RequestParameters.of(parameter("name", "value"));
 	private static final Map<String, List<String>> HEADERS = Map.of("headerName", List.of("headerValue"));
 	private static final String BODY = "SomeBody";
 	private static final BasicMeters METERS = BasicMeters.of("some.meters");
 	private static final Retry RETRY = Retry.of(WaitCounter.of(2, Duration.ofMillis(1)));
+	private static final String API = "api";
+	private static final String USERS = "users";
+
+	@Mock
+	private ApiClient apiClient;
 
 	@Test
 	void shouldPopulateAllApiRequestFieldsWhenBuildingWithAnApiRequest() {
-		@SuppressWarnings("resource")
-		ApiClient apiClient = mock(ApiClient.class);
-
 		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
 				.url(URL)
 				.method(HttpMethod.OPTIONS)
@@ -72,7 +80,6 @@ class ApiClientFluentAdapterTest {
 	@Test
 	@SuppressWarnings("resource")
 	void shouldSetTheExchangeClientIfMissingWhenSettingAuthenticationType() {
-		ApiClient apiClient = mock(ApiClient.class);
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
 		doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
 
@@ -85,7 +92,6 @@ class ApiClientFluentAdapterTest {
 	@Test
 	@SuppressWarnings("resource")
 	void shouldCallApiClientExchangeOnRetrieve() {
-		ApiClient apiClient = mock(ApiClient.class);
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
 		doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
 
@@ -100,11 +106,10 @@ class ApiClientFluentAdapterTest {
 	@Test
 	@SuppressWarnings("resource")
 	void shouldEncodeParamsOnRetrieveWhenEncodingIsEnabled() {
-		ApiClient apiClient = mock(ApiClient.class);
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
 		doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
 
-		var params = RequestParameters.of(ParameterFunction.parameter("sum", "1+2+3"));
+		var params = RequestParameters.of(parameter("sum", "1+2+3"));
 
 		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
 				.authenticationType(AuthenticationType.SESSION)
@@ -114,7 +119,26 @@ class ApiClientFluentAdapterTest {
 
 		request.retrieve();
 
-		var expected = RequestParameters.of(ParameterFunction.parameter("sum", "1%2B2%2B3"));
+		var expected = RequestParameters.of(parameter("sum", "1%2B2%2B3"));
+
+		assertThat(request.getParams(), equalTo(expected));
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldEncodeParamsOnRetrieveWhenEncodingIsEnabledWithDirectParameterFunction() {
+		ExchangeClient exchangeClient = mock(ExchangeClient.class);
+		doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
+
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+				.authenticationType(AuthenticationType.SESSION)
+				.url(URL)
+				.params(parameter("sum", "1+2+3"))
+				.urlEncoded();
+
+		request.retrieve();
+
+		var expected = RequestParameters.of(parameter("sum", "1%2B2%2B3"));
 
 		assertThat(request.getParams(), equalTo(expected));
 	}
@@ -122,7 +146,6 @@ class ApiClientFluentAdapterTest {
 	@Test
 	@SuppressWarnings("resource")
 	void shouldSetTheResponseTypeOnRetrieveWithClass() {
-		ApiClient apiClient = mock(ApiClient.class);
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
 		doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
 
@@ -138,7 +161,6 @@ class ApiClientFluentAdapterTest {
 	@Test
 	@SuppressWarnings("resource")
 	void shouldSetTheResponseTypeOnRetrieveWithGenericClass() {
-		ApiClient apiClient = mock(ApiClient.class);
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
 		doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
 
@@ -157,7 +179,6 @@ class ApiClientFluentAdapterTest {
 	@Test
 	@SuppressWarnings("resource")
 	void shouldSetTheStreamToTrueTypeOnDownload() {
-		ApiClient apiClient = mock(ApiClient.class);
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
 		doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
 
@@ -171,4 +192,37 @@ class ApiClientFluentAdapterTest {
 		assertTrue(request.isStream());
 	}
 
+	@Test
+	void shouldPopulateBodyOnWhenSettingThePayload() {
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+				.payload(BODY);
+
+		assertThat(request.getBody(), equalTo(BODY));
+	}
+
+	@Test
+	void shouldPopulateDefaultRetryOnWhenSettingDefaultRetry() {
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+				.defaultRetry();
+
+		assertThat(request.getRetry(), equalTo(Retry.defaultRetry()));
+	}
+
+	@Test
+	void shouldPopulateUrlOnWhenSettingUri() {
+		URI uri = URI.create(URL);
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+				.uri(uri);
+
+		assertThat(request.getUrl(), equalTo(URL));
+	}
+
+	@Test
+	void shouldPopulateUrlOnWhenSettingUriWithPathSegments() {
+		URI uri = URI.create(URL);
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+				.uri(uri, API, USERS);
+
+		assertThat(request.getUrl(), equalTo(URL + "/" + API + "/" + USERS));
+	}
 }

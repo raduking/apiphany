@@ -2,7 +2,6 @@ package org.apiphany.lang.accumulator;
 
 import java.io.Serial;
 
-import org.apiphany.lang.Strings;
 import org.morphix.lang.JavaObjects;
 
 /**
@@ -58,15 +57,11 @@ public class AccumulatorException extends RuntimeException {
 	 */
 	@Override
 	public String toString() {
-		if (accumulator.isEmpty()) {
-			return "";
-		}
 		StringBuilder result = new StringBuilder();
-		for (Object object : accumulator.getInformationList()) {
-			result.append("Accumulated exception: ")
-					.append(Strings.safeToString(object))
-					.append(System.lineSeparator());
-		}
+		result.append(super.toString())
+				.append(" ")
+				.append("Accumulated exceptions: ")
+				.append(accumulator.getInformationList());
 		return result.toString();
 	}
 }

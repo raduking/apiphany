@@ -13,6 +13,7 @@ import java.util.concurrent.Executors;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
+import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -118,7 +119,11 @@ public class KeyValueHttpServer implements AutoCloseable {
 
 		private void handleGet(HttpExchange exchange) throws IOException {
 			String key = getKeyFromPath(exchange);
-			if (server.map.containsKey(key)) {
+			if (null == key) {
+				String json = JsonBuilder.toJson(server.map);
+				exchange.getResponseHeaders().set(HttpHeader.CONTENT_TYPE.value(), "application/json; charset=utf-8");
+				sendResponse(exchange, HttpStatus.OK, json);
+			} else if (server.map.containsKey(key)) {
 				sendResponse(exchange, HttpStatus.OK, server.map.get(key));
 			} else {
 				exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.value(), -1);
@@ -205,6 +210,9 @@ public class KeyValueHttpServer implements AutoCloseable {
 
 		private static String getKeyFromPath(HttpExchange exchange) {
 			String fullPath = exchange.getRequestURI().getPath();
+			if (ROUTE_API_KEYS.equals(fullPath)) {
+				return null;
+			}
 			return fullPath.substring((ROUTE_API_KEYS + "/").length());
 		}
 
