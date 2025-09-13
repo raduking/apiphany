@@ -120,7 +120,7 @@ class OAuth2TokenProviderTest {
 
 	@Test
 	void shouldNotInitializeSchedulerIfTheRegistrationsMapIsNull() {
-		tokenProvider = new OAuth2TokenProvider(oAuth2Properties, null, (cr, pd) -> null);
+		tokenProvider = new OAuth2TokenProvider(oAuth2Properties, (cr, pd) -> null);
 
 		assertFalse(tokenProvider.isSchedulerEnabled());
 	}
@@ -128,7 +128,7 @@ class OAuth2TokenProviderTest {
 	@Test
 	void shouldNotInitializeSchedulerIfTheRegistrationsMapIsEmpty() {
 		doReturn(Collections.emptyMap()).when(oAuth2Properties).getRegistration();
-		tokenProvider = new OAuth2TokenProvider(oAuth2Properties, null, (cr, pd) -> null);
+		tokenProvider = new OAuth2TokenProvider(oAuth2Properties, (cr, pd) -> null);
 
 		assertTrue(tokenProvider.isSchedulerDisabled());
 	}
@@ -151,7 +151,7 @@ class OAuth2TokenProviderTest {
 	}
 
 	@Test
-	void shouldNotInitializeSchedulerIfTheRegistrationsIsMissingTheRequiredRegistrationMapIsEmpty() {
+	void shouldNotInitializeSchedulerIfTheRegistrationIsMissingTheRequiredRegistrationMapIsEmpty() {
 		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
 		doReturn(Map.of(PROVIDER_NAME, providerDetails)).when(oAuth2Properties).getProvider();
 		tokenProvider = new OAuth2TokenProvider(oAuth2Properties, "missing-registration", (cr, pd) -> null);
@@ -160,7 +160,7 @@ class OAuth2TokenProviderTest {
 	}
 
 	@Test
-	void shouldNotInitializeSchedulerIfTheRegistrationsIsMissingClientSecret() {
+	void shouldNotInitializeSchedulerIfTheRegistrationIsMissingTheClientId() {
 		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
 		doReturn(clientRegistration).when(oAuth2Properties).getClientRegistration(CLIENT_REGISTRATION_NAME);
 		doReturn(Map.of(PROVIDER_NAME, providerDetails)).when(oAuth2Properties).getProvider();
@@ -170,9 +170,21 @@ class OAuth2TokenProviderTest {
 	}
 
 	@Test
-	void shouldNotInitializeSchedulerIfTheRegistrationsIsMissingProviderDetails() {
+	void shouldNotInitializeSchedulerIfTheRegistrationIsMissingTheClientSecret() {
 		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
 		doReturn(clientRegistration).when(oAuth2Properties).getClientRegistration(CLIENT_REGISTRATION_NAME);
+		doReturn(true).when(clientRegistration).hasClientId();
+		doReturn(Map.of(PROVIDER_NAME, providerDetails)).when(oAuth2Properties).getProvider();
+		tokenProvider = new OAuth2TokenProvider(oAuth2Properties, CLIENT_REGISTRATION_NAME, (cr, pd) -> null);
+
+		assertFalse(tokenProvider.isSchedulerEnabled());
+	}
+
+	@Test
+	void shouldNotInitializeSchedulerIfTheRegistrationIsMissingProviderDetails() {
+		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
+		doReturn(clientRegistration).when(oAuth2Properties).getClientRegistration(CLIENT_REGISTRATION_NAME);
+		doReturn(true).when(clientRegistration).hasClientId();
 		doReturn(true).when(clientRegistration).hasClientSecret();
 		doReturn(Map.of(PROVIDER_NAME, providerDetails)).when(oAuth2Properties).getProvider();
 		tokenProvider = new OAuth2TokenProvider(oAuth2Properties, CLIENT_REGISTRATION_NAME, (cr, pd) -> tokenClient);
@@ -181,9 +193,22 @@ class OAuth2TokenProviderTest {
 	}
 
 	@Test
+	void shouldNotInitializeSchedulerIfThereAreMultipleRegistrationsAndClientRegistrationNameIsNotProvidedInConstructor() {
+		OAuth2ClientRegistration clientRegistration2 = mock(OAuth2ClientRegistration.class);
+		Map<String, OAuth2ClientRegistration> registration = Map.of(
+				CLIENT_REGISTRATION_NAME, clientRegistration,
+				"clientRegistrationName2", clientRegistration2);
+		doReturn(registration).when(oAuth2Properties).getRegistration();
+		tokenProvider = new OAuth2TokenProvider(oAuth2Properties, (cr, pd) -> null);
+
+		assertFalse(tokenProvider.isSchedulerEnabled());
+	}
+
+	@Test
 	void shouldInitializeSchedulerIfOAuth2PropertiesContainsRelevantData() {
 		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
 		doReturn(clientRegistration).when(oAuth2Properties).getClientRegistration(CLIENT_REGISTRATION_NAME);
+		doReturn(true).when(clientRegistration).hasClientId();
 		doReturn(true).when(clientRegistration).hasClientSecret();
 		doReturn(Map.of(PROVIDER_NAME, providerDetails)).when(oAuth2Properties).getProvider();
 		doReturn(providerDetails).when(oAuth2Properties).getProviderDetails(clientRegistration);
@@ -206,6 +231,7 @@ class OAuth2TokenProviderTest {
 	void shouldInitializeSchedulerAndScheduleNewTokenRetrievalWithDefaultErrorMarginAndMinRefreshInterval() {
 		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
 		doReturn(clientRegistration).when(oAuth2Properties).getClientRegistration(CLIENT_REGISTRATION_NAME);
+		doReturn(true).when(clientRegistration).hasClientId();
 		doReturn(true).when(clientRegistration).hasClientSecret();
 		doReturn(Map.of(PROVIDER_NAME, providerDetails)).when(oAuth2Properties).getProvider();
 		doReturn(providerDetails).when(oAuth2Properties).getProviderDetails(clientRegistration);
@@ -233,6 +259,7 @@ class OAuth2TokenProviderTest {
 	void shouldInitializeSchedulerAndScheduleNewTokenRetrievalWithConfiguredErrorMarginAndMinRefreshInterval() {
 		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
 		doReturn(clientRegistration).when(oAuth2Properties).getClientRegistration(CLIENT_REGISTRATION_NAME);
+		doReturn(true).when(clientRegistration).hasClientId();
 		doReturn(true).when(clientRegistration).hasClientSecret();
 		doReturn(Map.of(PROVIDER_NAME, providerDetails)).when(oAuth2Properties).getProvider();
 		doReturn(providerDetails).when(oAuth2Properties).getProviderDetails(clientRegistration);
@@ -266,6 +293,7 @@ class OAuth2TokenProviderTest {
 	void shouldThrowExceptionWhenGettingTokenIfTokenRetrievalThrowsException() {
 		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
 		doReturn(clientRegistration).when(oAuth2Properties).getClientRegistration(CLIENT_REGISTRATION_NAME);
+		doReturn(true).when(clientRegistration).hasClientId();
 		doReturn(true).when(clientRegistration).hasClientSecret();
 		doReturn(Map.of(PROVIDER_NAME, providerDetails)).when(oAuth2Properties).getProvider();
 		doReturn(providerDetails).when(oAuth2Properties).getProviderDetails(clientRegistration);
@@ -283,6 +311,7 @@ class OAuth2TokenProviderTest {
 	void shouldGetTokenAndCloseTheTokenProviderResource() throws Exception {
 		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
 		doReturn(clientRegistration).when(oAuth2Properties).getClientRegistration(CLIENT_REGISTRATION_NAME);
+		doReturn(true).when(clientRegistration).hasClientId();
 		doReturn(true).when(clientRegistration).hasClientSecret();
 		doReturn(Map.of(PROVIDER_NAME, providerDetails)).when(oAuth2Properties).getProvider();
 		doReturn(providerDetails).when(oAuth2Properties).getProviderDetails(clientRegistration);
@@ -313,6 +342,7 @@ class OAuth2TokenProviderTest {
 	void shouldCallShutdownOnSchedulerExecutorWhenScheduledTaskCannotBeClosed() throws Exception {
 		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
 		doReturn(clientRegistration).when(oAuth2Properties).getClientRegistration(CLIENT_REGISTRATION_NAME);
+		doReturn(true).when(clientRegistration).hasClientId();
 		doReturn(true).when(clientRegistration).hasClientSecret();
 		doReturn(Map.of(PROVIDER_NAME, providerDetails)).when(oAuth2Properties).getProvider();
 		doReturn(providerDetails).when(oAuth2Properties).getProviderDetails(clientRegistration);
@@ -345,6 +375,7 @@ class OAuth2TokenProviderTest {
 	void shouldNotCloseTheScheduledFutureIfNotInitialized() throws Exception {
 		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
 		doReturn(clientRegistration).when(oAuth2Properties).getClientRegistration(CLIENT_REGISTRATION_NAME);
+		doReturn(true).when(clientRegistration).hasClientId();
 		doReturn(true).when(clientRegistration).hasClientSecret();
 		doReturn(Map.of(PROVIDER_NAME, providerDetails)).when(oAuth2Properties).getProvider();
 
@@ -364,6 +395,7 @@ class OAuth2TokenProviderTest {
 	void shouldThrowExceptionOnGettingTokenIfNotInitialized() throws Exception {
 		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
 		doReturn(clientRegistration).when(oAuth2Properties).getClientRegistration(CLIENT_REGISTRATION_NAME);
+		doReturn(true).when(clientRegistration).hasClientId();
 		doReturn(true).when(clientRegistration).hasClientSecret();
 		doReturn(Map.of(PROVIDER_NAME, providerDetails)).when(oAuth2Properties).getProvider();
 

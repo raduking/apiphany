@@ -5,6 +5,8 @@
 `1.0.10`
 
 Changed `AccumulatorException.toString` to be simpler.
+Added warning if multiple registrations are present in `OAuth2Properties` when creating an `OAuth2TokenProvider`.
+Added `OAuth2TokenProvider` constructor without client registration name.
 
 ---
 

@@ -267,6 +267,15 @@ public class OAuth2ClientRegistration {
 	}
 
 	/**
+	 * Checks if this client registration has a client id configured.
+	 *
+	 * @return true if a client id is present, false otherwise
+	 */
+	public boolean hasClientId() {
+		return Strings.isNotEmpty(clientSecret);
+	}
+
+	/**
 	 * Checks if this client registration has a client secret configured.
 	 *
 	 * @return true if a client secret is present, false otherwise

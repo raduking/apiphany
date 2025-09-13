@@ -3,6 +3,7 @@ package org.apiphany.security.oauth2;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -146,6 +147,19 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	}
 
 	/**
+	 * Creates a new authentication token provider. The scheduler will use virtual threads for the scheduled tasks. This
+	 * will initialize the provider only if there is only one registration defined in OAuth2 properties.
+	 *
+	 * @param oAuth2Properties the OAuth2 properties
+	 * @param tokenClientSupplier the supplier for the client that will make the actual token requests
+	 */
+	public OAuth2TokenProvider(
+			final OAuth2Properties oAuth2Properties,
+			final BiFunction<OAuth2ClientRegistration, OAuth2ProviderDetails, AuthenticationTokenProvider> tokenClientSupplier) {
+		this(oAuth2Properties, null, tokenClientSupplier);
+	}
+
+	/**
 	 * Try to get an authentication token at startup. Returns true if the initialization of the properties was successful,
 	 * false otherwise.
 	 *
@@ -161,14 +175,23 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 			LOGGER.warn("[{}] No OAuth2 client registrations provided in: {}.registration", getName(), OAuth2Properties.ROOT);
 			return false;
 		}
+		String name = clientRegistrationName;
+		if (Strings.isEmpty(name)) {
+			Set<String> clientRegistrationNames = properties.getRegistration().keySet();
+			if (clientRegistrationNames.size() > 1) {
+				LOGGER.warn("[{}] Multiple OAuth2 client registrations provided in: {}.registration and the client registration name "
+						+ "was not given to the provider.", getName(), OAuth2Properties.ROOT);
+			} else {
+				name = clientRegistrationNames.iterator().next();
+			}
+		}
+		if (Strings.isEmpty(name)) {
+			return false;
+		}
 		if (Maps.isEmpty(properties.getProvider())) {
 			LOGGER.warn("[{}] No OAuth2 providers provided in: {}.provider", getName(), OAuth2Properties.ROOT);
 			return false;
 		}
-		// TODO: implement for multiple registrations
-		String name = Strings.isEmpty(clientRegistrationName)
-				? properties.getRegistration().keySet().iterator().next()
-				: clientRegistrationName;
 		if (!initialize(properties, name)) {
 			return false;
 		}
@@ -188,6 +211,11 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 		this.clientRegistration = properties.getClientRegistration(clientRegistrationName);
 		if (null == clientRegistration) {
 			LOGGER.warn("[{}] No OAuth2 client provided for client registration in {}.registration.{}",
+					getName(), OAuth2Properties.ROOT, clientRegistrationName);
+			return false;
+		}
+		if (!clientRegistration.hasClientId()) {
+			LOGGER.warn("[{}] No OAuth2 client-id provided in {}.registration.{}",
 					getName(), OAuth2Properties.ROOT, clientRegistrationName);
 			return false;
 		}
