@@ -46,6 +46,7 @@ public interface Temporals {
 	 * <p>
 	 * Returns "N/A" if the value is equal to {@link Double#NaN}.
 	 *
+	 * @param duration duration in seconds as double
 	 * @return the duration formatted to seconds.
 	 */
 	static String formatToSeconds(final double duration) {
