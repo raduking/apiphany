@@ -9,6 +9,8 @@ Added warning if multiple registrations are present in `OAuth2Properties` when c
 Added `OAuth2TokenProvider` constructor without client registration name.
 Added `Temporals.formatToSeconds` to format a `double` to seconds as `String`.
 Changed `DurationAccumulator` to be faster and consume less memory.
+Changed `Headers.contains` with name, value and get values function to use `String.equalIgnoreCase` instead of `String.contains`.
+Added `Headers.contains` with value comparing `BiPredicate`.
 
 ---
 

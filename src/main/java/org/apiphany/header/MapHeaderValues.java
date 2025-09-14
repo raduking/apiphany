@@ -81,16 +81,15 @@ public class MapHeaderValues extends HeaderValues {
 	 *
 	 * @param <N> header name type
 	 *
-	 * @param header header name
+	 * @param headerName header name
 	 * @param headers existing headers
 	 * @return true if the headers contain the given header, false otherwise
 	 */
-	public static <N> boolean contains(final N header, final Map<String, List<String>> headers) {
+	public static <N> boolean contains(final N headerName, final Map<String, List<String>> headers) {
 		if (Maps.isEmpty(headers)) {
 			return false;
 		}
-		String headerKey = Strings.safeToString(header);
-
+		String headerKey = Strings.safeToString(headerName);
 		if (headers.containsKey(headerKey)) {
 			return true;
 		}
