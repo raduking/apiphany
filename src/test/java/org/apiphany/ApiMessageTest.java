@@ -53,6 +53,14 @@ class ApiMessageTest {
 	}
 
 	@Test
+	void shouldReturnFalseWhenCheckingPartialExistingStringHeaderValueOnContains() {
+		ApiMessage<String> message = new ApiMessage<>(DUMMY_BODY, headers);
+		boolean result = message.containsHeader(N1, V1.substring(0, 1));
+
+		assertFalse(result);
+	}
+
+	@Test
 	void shouldReturnFalseWhenCheckingNonExistingStringHeaderValueOnContains() {
 		ApiMessage<String> message = new ApiMessage<>(DUMMY_BODY, headers);
 		boolean result = message.containsHeader(N1, "non-existing");

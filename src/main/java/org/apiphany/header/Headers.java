@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 
 import org.apiphany.lang.Strings;
@@ -77,11 +78,13 @@ public interface Headers {
 	 *
 	 * @param headerName header name
 	 * @param headerValue header value
-	 * @param headerValuesFunction a function that returns the header values for the given header name
+	 * @param getValuesFunction a function that returns the header values for the given header name
+	 * @param valueCompareFunction the function that compares the header values
 	 * @return true if the given headers contain the given header with the given value, false otherwise
 	 */
-	static <N, V> boolean contains(final N headerName, final V headerValue, final Function<N, List<String>> headerValuesFunction) {
-		List<String> headerValues = headerValuesFunction.apply(headerName);
+	static <N, V> boolean contains(final N headerName, final V headerValue, final Function<N, List<String>> getValuesFunction,
+			final BiPredicate<String, String> valueCompareFunction) {
+		List<String> headerValues = getValuesFunction.apply(headerName);
 		if (Lists.isEmpty(headerValues)) {
 			return false;
 		}
@@ -90,11 +93,27 @@ public interface Headers {
 			return true;
 		}
 		for (String value : headerValues) {
-			if (value.contains(stringValue)) {
+			if (valueCompareFunction.test(value, stringValue)) {
 				return true;
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Returns true if the headers returned by the given header values function contain the given header with the given
+	 * value, false otherwise.
+	 *
+	 * @param <N> header name type
+	 * @param <V> header value type
+	 *
+	 * @param headerName header name
+	 * @param headerValue header value
+	 * @param getValuesFunction a function that returns the header values for the given header name
+	 * @return true if the given headers contain the given header with the given value, false otherwise
+	 */
+	static <N, V> boolean contains(final N headerName, final V headerValue, final Function<N, List<String>> getValuesFunction) {
+		return contains(headerName, headerValue, getValuesFunction, String::equalsIgnoreCase);
 	}
 
 	/**
@@ -109,10 +128,7 @@ public interface Headers {
 	 * @return true if the given headers contain the given header with the given value, false otherwise
 	 */
 	static <N, V> boolean contains(final N headerName, final V headerValue, final Map<String, List<String>> headers) {
-		if (Maps.isEmpty(headers)) {
-			return false;
-		}
-		return contains(headerName, headerValue, hn -> MapHeaderValues.get(hn, headers));
+		return Maps.isNotEmpty(headers) && contains(headerName, headerValue, hn -> MapHeaderValues.get(hn, headers));
 	}
 
 	/**
@@ -137,7 +153,7 @@ public interface Headers {
 	 * @param headers the map of headers, where each key is a header name and the value is a list of header values.
 	 * @return a list of values for the specified header. If the header is not found, an empty list is returned.
 	 */
-	public static <N> List<String> get(final N header, final Map<String, List<String>> headers) {
+	static <N> List<String> get(final N header, final Map<String, List<String>> headers) {
 		return MapHeaderValues.get(header, headers);
 	}
 }
