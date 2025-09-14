@@ -2,8 +2,11 @@ package org.apiphany.lang.accumulator;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
+import java.util.stream.DoubleStream;
 
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.Temporals;
@@ -21,9 +24,9 @@ import org.morphix.lang.Unchecked;
 public class DurationAccumulator extends Accumulator<Duration> {
 
 	/**
-	 * Default percentile value used when no durations are available.
+	 * Default value used when no durations are available.
 	 */
-	private static final Double DEFAULT_PERCENTILE = 0.0;
+	private static final double DEFAULT_VALUE = Double.NaN;
 
 	/**
 	 * Statistics object for storing calculated metrics.
@@ -40,7 +43,7 @@ public class DurationAccumulator extends Accumulator<Duration> {
 	/**
 	 * Creates a new instance of {@link DurationAccumulator}.
 	 *
-	 * @return a new {@link DurationAccumulator} instance.
+	 * @return a new {@link DurationAccumulator} instance
 	 */
 	public static DurationAccumulator of() {
 		return new DurationAccumulator();
@@ -50,7 +53,7 @@ public class DurationAccumulator extends Accumulator<Duration> {
 	 * Accumulates the duration of the provided {@link Runnable} operation. The duration is measured from the start of the
 	 * operation until its completion.
 	 *
-	 * @param runnable the operation to measure.
+	 * @param runnable the operation to measure
 	 */
 	@Override
 	public void accumulate(final Runnable runnable) {
@@ -68,10 +71,11 @@ public class DurationAccumulator extends Accumulator<Duration> {
 	 * Accumulates the duration of the provided {@link Supplier} operation and returns its result. The duration is measured
 	 * from the start of the operation until its completion.
 	 *
-	 * @param <U> the type of the result.
-	 * @param supplier the operation to measure.
-	 * @param defaultReturn the default value to return if the operation fails.
-	 * @return the result of the operation or the default value if an exception occurs.
+	 * @param <U> the type of the result
+	 *
+	 * @param supplier the operation to measure
+	 * @param defaultReturn the default value to return if the operation fails
+	 * @return the result of the operation or the default value if an exception occurs
 	 */
 	@Override
 	public <U> U accumulate(final Supplier<U> supplier, final U defaultReturn) {
@@ -99,38 +103,64 @@ public class DurationAccumulator extends Accumulator<Duration> {
 	/**
 	 * Converts the accumulated durations to a list of doubles representing seconds.
 	 *
-	 * @return a list of durations in seconds.
+	 * @return a list of durations in seconds
 	 */
 	public List<Double> durationsAsDouble() {
-		return getInformationList().stream()
-				.map(Temporals::toSeconds)
+		return durationsAsDoubleStream()
+				.boxed()
 				.toList();
 	}
 
 	/**
 	 * Calculates the average duration of the accumulated operations in seconds.
 	 *
-	 * @return the average duration in seconds.
+	 * @return the average duration in seconds
 	 */
-	public Double average() {
-		return Math.round(durationsAsDouble()
-				.stream()
-				.mapToDouble(a -> a)
+	public double average() {
+		return durationsAsDoubleStream()
 				.average()
-				.orElse(0) * 1000) / 1000.0;
+				.orElse(DEFAULT_VALUE);
 	}
 
 	/**
 	 * Finds the maximum duration of the accumulated operations in seconds.
 	 *
-	 * @return the maximum duration in seconds.
+	 * @return the maximum duration in seconds
 	 */
-	public Double max() {
-		return durationsAsDouble()
-				.stream()
-				.mapToDouble(a -> a)
+	public double max() {
+		return durationsAsDoubleStream()
 				.max()
-				.orElse(0);
+				.orElse(DEFAULT_VALUE);
+	}
+
+	/**
+	 * Finds the minimum duration of the accumulated operations in seconds.
+	 *
+	 * @return the minimum duration in seconds
+	 */
+	public double min() {
+		return durationsAsDoubleStream()
+				.min()
+				.orElse(DEFAULT_VALUE);
+	}
+
+	/**
+	 * Returns the median duration of the accumulated operations in seconds.
+	 *
+	 * @return the median duration in seconds
+	 */
+	public double median() {
+	    return percentile(50.0);
+	}
+
+	/**
+	 * Returns a stream with durations as {@link Double}.
+	 *
+	 * @return a stream with durations as double
+	 */
+	private DoubleStream durationsAsDoubleStream() {
+		return getInformationList().stream()
+				.mapToDouble(Temporals::toSeconds);
 	}
 
 	/**
@@ -140,12 +170,15 @@ public class DurationAccumulator extends Accumulator<Duration> {
 	 * @param percentile the percentile to calculate (e.g., 95.0 for the 95th percentile).
 	 * @return the percentile value in seconds.
 	 */
-	public static Double percentile(final List<Double> durations, final double percentile) {
+	public static double percentile(final List<Double> durations, final double percentile) {
 		if (durations.isEmpty()) {
-			return DEFAULT_PERCENTILE;
+			return DEFAULT_VALUE;
 		}
-		List<Double> sortedDurations = durations.stream().sorted().toList();
+		List<Double> sortedDurations = new ArrayList<>(durations);
+		Collections.sort(sortedDurations);
+
 		int index = (int) Math.ceil(percentile / 100.0 * durations.size());
+		index = Math.clamp(index, 1, durations.size());
 		return sortedDurations.get(index - 1);
 	}
 
@@ -155,7 +188,7 @@ public class DurationAccumulator extends Accumulator<Duration> {
 	 * @param p the percentile to calculate (e.g., 95.0 for the 95th percentile).
 	 * @return the percentile value in seconds.
 	 */
-	public Double percentile(final double p) {
+	public double percentile(final double p) {
 		return percentile(durationsAsDouble(), p);
 	}
 
@@ -211,27 +244,27 @@ public class DurationAccumulator extends Accumulator<Duration> {
 		/**
 		 * The average request time in seconds.
 		 */
-		private final Double avgRequestTime;
+		private final double avgRequestTime;
 
 		/**
 		 * The maximum request time in seconds.
 		 */
-		private final Double maxRequestTime;
+		private final double maxRequestTime;
 
 		/**
 		 * The 95th percentile request time in seconds.
 		 */
-		private final Double p95RequestTime;
+		private final double p95RequestTime;
 
 		/**
 		 * The 90th percentile request time in seconds.
 		 */
-		private final Double p90RequestTime;
+		private final double p90RequestTime;
 
 		/**
 		 * Constructs a new {@link Statistics} instance using the data from a {@link DurationAccumulator}.
 		 *
-		 * @param durationAccumulator the accumulator containing the durations to analyze.
+		 * @param durationAccumulator the accumulator containing the durations to analyze
 		 */
 		public Statistics(final DurationAccumulator durationAccumulator) {
 			requestCount = durationAccumulator.size();
@@ -244,22 +277,22 @@ public class DurationAccumulator extends Accumulator<Duration> {
 		/**
 		 * Returns a string representation of the statistics.
 		 *
-		 * @return a formatted string containing the statistics.
+		 * @return a formatted string containing the statistics
 		 */
 		@Override
 		public String toString() {
 			return "Statistics" + Strings.EOL
 					+ "Count: " + requestCount + Strings.EOL
-					+ "Avg time: " + avgRequestTime + "s" + Strings.EOL
-					+ "p95 time: " + p95RequestTime + "s" + Strings.EOL
-					+ "p90 time: " + p90RequestTime + "s" + Strings.EOL
-					+ "Max time: " + maxRequestTime + "s";
+					+ "Avg time: " + Temporals.formatToSeconds(avgRequestTime) + "s" + Strings.EOL
+					+ "p95 time: " + Temporals.formatToSeconds(p95RequestTime) + "s" + Strings.EOL
+					+ "p90 time: " + Temporals.formatToSeconds(p90RequestTime) + "s" + Strings.EOL
+					+ "Max time: " + Temporals.formatToSeconds(maxRequestTime) + "s";
 		}
 
 		/**
 		 * Returns the total number of requests measured.
 		 *
-		 * @return the request count.
+		 * @return the request count
 		 */
 		public int getRequestCount() {
 			return requestCount;
@@ -268,36 +301,36 @@ public class DurationAccumulator extends Accumulator<Duration> {
 		/**
 		 * Returns the average request time in seconds.
 		 *
-		 * @return the average request time.
+		 * @return the average request time
 		 */
-		public Double getAvgRequestTime() {
+		public double getAvgRequestTime() {
 			return avgRequestTime;
 		}
 
 		/**
 		 * Returns the maximum request time in seconds.
 		 *
-		 * @return the maximum request time.
+		 * @return the maximum request time
 		 */
-		public Double getMaxRequestTime() {
+		public double getMaxRequestTime() {
 			return maxRequestTime;
 		}
 
 		/**
 		 * Returns the 95th percentile request time in seconds.
 		 *
-		 * @return the 95th percentile request time.
+		 * @return the 95th percentile request time
 		 */
-		public Double getP95RequestTime() {
+		public double getP95RequestTime() {
 			return p95RequestTime;
 		}
 
 		/**
 		 * Returns the 90th percentile request time in seconds.
 		 *
-		 * @return the 90th percentile request time.
+		 * @return the 90th percentile request time
 		 */
-		public Double getP90RequestTime() {
+		public double getP90RequestTime() {
 			return p90RequestTime;
 		}
 	}

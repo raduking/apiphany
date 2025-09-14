@@ -3,7 +3,6 @@ package org.apiphany;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -77,7 +76,7 @@ public class RequestParameters {
 
 	/**
 	 * Transforms the request parameters string into a request parameters {@link Map}. If the string is empty, an empty
-	 * immutable map is returned. It assumes the body character encoding is {@link StandardCharsets#UTF_8}.
+	 * immutable map is returned. It assumes the body character encoding is {@link Strings#DEFAULT_CHARSET}.
 	 *
 	 * @param body the request parameters string
 	 * @return a {@link Map} representation of the parameters

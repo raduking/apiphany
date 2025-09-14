@@ -40,4 +40,18 @@ public interface Temporals {
 	static double toSeconds(final Duration duration) {
 		return toSeconds(duration.toMillis());
 	}
+
+	/**
+	 * Formats a double duration in seconds with 3 decimals.
+	 * <p>
+	 * Returns "N/A" if the value is equal to {@link Double#NaN}.
+	 *
+	 * @return the duration formatted to seconds.
+	 */
+	static String formatToSeconds(final double duration) {
+		if (Double.isNaN(duration)) {
+			return "N/A";
+		}
+		return String.format("%.3fs", duration);
+	}
 }
