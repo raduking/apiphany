@@ -35,8 +35,7 @@ class HttpMessagesTest {
 	private static Stream<Arguments> provideJavaNetHttpVersions() {
 		return Stream.of(
 				Arguments.of("HTTP/1.1", Version.HTTP_1_1),
-				Arguments.of("HTTP/2", Version.HTTP_2)
-		);
+				Arguments.of("HTTP/2", Version.HTTP_2));
 	}
 
 	@ParameterizedTest

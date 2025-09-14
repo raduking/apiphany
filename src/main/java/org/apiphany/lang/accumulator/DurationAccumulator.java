@@ -150,7 +150,7 @@ public class DurationAccumulator extends Accumulator<Duration> {
 	 * @return the median duration in seconds
 	 */
 	public double median() {
-	    return percentile(50.0);
+		return percentile(50.0);
 	}
 
 	/**
