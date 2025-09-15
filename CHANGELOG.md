@@ -7,10 +7,13 @@
 Changed `AccumulatorException.toString` to be simpler.
 Added warning if multiple registrations are present in `OAuth2Properties` when creating an `OAuth2TokenProvider`.
 Added `OAuth2TokenProvider` constructor without client registration name.
+Added `OAuth2ResolvedRegistration` which holds a complete OAuth2 registration.
+Added `OAuth2Registry` to build a registry from an `OAuth2Properties` with all registrations configured into all `OAuth2ResolvedRegistration`s.
 Added `Temporals.formatToSeconds` to format a `double` to seconds as `String`.
 Changed `DurationAccumulator` to be faster and consume less memory.
 Changed `Headers.contains` with name, value and get values function to use `String.equalIgnoreCase` instead of `String.contains`.
 Added `Headers.contains` with value comparing `BiPredicate`.
+Added `Strings.fromKebabToLowerCamelCase` to convert a Kebab string to a lower camel case string.
 
 ---
 

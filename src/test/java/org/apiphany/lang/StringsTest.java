@@ -158,4 +158,13 @@ class StringsTest {
 
 		assertThat(result, equalTo(TEST_INTEGER_STRING + TEST_STRING + TEST_INTEGER_STRING));
 	}
+
+	@Test
+	void shouldTransformKebabCaseToLowerCamelWhenTheStringIsKebabCase() {
+		String text = "some-cool-name";
+
+		String result = Strings.fromKebabToLowerCamelCase(text);
+
+		assertThat(result, equalTo("someCoolName"));
+	}
 }

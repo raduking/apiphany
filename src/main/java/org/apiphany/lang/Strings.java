@@ -83,6 +83,27 @@ public interface Strings {
 	}
 
 	/**
+	 * Transforms a string from Kebab case to Lower Camel case. Example: <code>"some-cool-name"</code> will become
+	 * <code>"someCoolName"</code>.
+	 *
+	 * @param str string to transform
+	 * @return lower camel case string
+	 */
+	static String fromKebabToLowerCamelCase(final String str) {
+		StringBuilder result = new StringBuilder();
+		boolean upperNext = false;
+		for (char c : str.toCharArray()) {
+			if (c == '-') {
+				upperNext = true;
+			} else {
+				result.append(upperNext ? Character.toUpperCase(c) : c);
+				upperNext = false;
+			}
+		}
+		return result.toString();
+	}
+
+	/**
 	 * Transforms an input stream to a string. If the input stream cannot be converted to string with the given parameters,
 	 * the result will be null.
 	 *
