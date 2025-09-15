@@ -46,7 +46,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class OAuth2TokenProviderTest {
 
 	private static final int EXPIRES_IN = 300;
-
 	private static final Instant DEFAULT_EXPIRATION = Instant.now();
 
 	private static final String SECRET = "a-string-secret-at-least-256-bits-long";
