@@ -3,7 +3,6 @@ package org.apiphany.security.oauth2;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -12,8 +11,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
-import org.apiphany.lang.Strings;
-import org.apiphany.lang.collections.Maps;
 import org.apiphany.lang.retry.Retry;
 import org.apiphany.lang.retry.WaitCounter;
 import org.apiphany.security.AuthenticationToken;
@@ -53,19 +50,9 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	private final AtomicBoolean schedulerEnabled = new AtomicBoolean(false);
 
 	/**
-	 * Client registration name.
+	 * The OAuth2 resolved registration for this provider.
 	 */
-	private String clientRegistrationName;
-
-	/**
-	 * Configuration for the OAuth2 client registration.
-	 */
-	private OAuth2ClientRegistration clientRegistration;
-
-	/**
-	 * Configuration details for the OAuth2 provider.
-	 */
-	private OAuth2ProviderDetails providerDetails;
+	private final OAuth2ResolvedRegistration registration;
 
 	/**
 	 * The scheduled future to stop.
@@ -91,6 +78,31 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 * Creates a new authentication token provider.
 	 *
 	 * @param configuration the OAuth2 token provider configuration
+	 * @param registration the OAuth2 resolved registration for this provider
+	 * @param tokenRefreshScheduler the token refresh scheduler
+	 * @param tokenClientSupplier the supplier for the client that will make the actual token requests
+	 */
+	public OAuth2TokenProvider(
+			final OAuth2TokenProviderConfiguration configuration,
+			final OAuth2ResolvedRegistration registration,
+			final ScheduledExecutorService tokenRefreshScheduler,
+			final BiFunction<OAuth2ClientRegistration, OAuth2ProviderDetails, AuthenticationTokenProvider> tokenClientSupplier) {
+		this.configuration = configuration;
+		this.tokenRefreshScheduler = tokenRefreshScheduler;
+		this.defaultExpirationSupplier = Instant::now;
+		this.registration = registration;
+
+		if (null != registration) {
+			setSchedulerEnabled(true);
+			this.tokenClient = tokenClientSupplier.apply(registration.getClientRegistration(), registration.getProviderDetails());
+			updateAuthenticationToken();
+		}
+	}
+
+	/**
+	 * Creates a new authentication token provider.
+	 *
+	 * @param configuration the OAuth2 token provider configuration
 	 * @param oAuth2Properties the OAuth2 properties
 	 * @param clientRegistrationName the wanted client registration name
 	 * @param tokenRefreshScheduler the token refresh scheduler
@@ -102,16 +114,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 			final String clientRegistrationName,
 			final ScheduledExecutorService tokenRefreshScheduler,
 			final BiFunction<OAuth2ClientRegistration, OAuth2ProviderDetails, AuthenticationTokenProvider> tokenClientSupplier) {
-		this.configuration = configuration;
-		this.tokenRefreshScheduler = tokenRefreshScheduler;
-		this.defaultExpirationSupplier = Instant::now;
-		this.clientRegistrationName = clientRegistrationName;
-
-		setSchedulerEnabled(initialize(oAuth2Properties));
-		if (isSchedulerEnabled()) {
-			this.tokenClient = tokenClientSupplier.apply(clientRegistration, providerDetails);
-			updateAuthenticationToken();
-		}
+		this(configuration, OAuth2ResolvedRegistration.of(oAuth2Properties, clientRegistrationName), tokenRefreshScheduler, tokenClientSupplier);
 	}
 
 	/**
@@ -160,80 +163,6 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	}
 
 	/**
-	 * Try to get an authentication token at startup. Returns true if the initialization of the properties was successful,
-	 * false otherwise.
-	 *
-	 * @param properties the OAuth2 properties
-	 * @return true if the initialization was successful, false otherwise
-	 */
-	private boolean initialize(final OAuth2Properties properties) {
-		if (null == properties) {
-			LOGGER.error("[{}] No OAuth2 properties provided in: {}", getName(), OAuth2Properties.ROOT);
-			return false;
-		}
-		if (Maps.isEmpty(properties.getRegistration())) {
-			LOGGER.warn("[{}] No OAuth2 client registrations provided in: {}.registration", getName(), OAuth2Properties.ROOT);
-			return false;
-		}
-		String name = clientRegistrationName;
-		if (Strings.isEmpty(name)) {
-			Set<String> clientRegistrationNames = properties.getRegistration().keySet();
-			if (clientRegistrationNames.size() > 1) {
-				LOGGER.warn("[{}] Multiple OAuth2 client registrations provided in: {}.registration and the client registration name "
-						+ "was not given to the provider.", getName(), OAuth2Properties.ROOT);
-			} else {
-				name = clientRegistrationNames.iterator().next();
-			}
-		}
-		if (Strings.isEmpty(name)) {
-			return false;
-		}
-		if (Maps.isEmpty(properties.getProvider())) {
-			LOGGER.warn("[{}] No OAuth2 providers provided in: {}.provider", getName(), OAuth2Properties.ROOT);
-			return false;
-		}
-		if (!initialize(properties, name)) {
-			return false;
-		}
-		setClientRegistrationName(name);
-		return true;
-	}
-
-	/**
-	 * Try to initialize OAuth2 properties and the OAuth2 API client based on the given client registration name. Returns
-	 * true if the initialization of the properties was successful, false otherwise.
-	 *
-	 * @param properties the OAuth2 properties
-	 * @param clientRegistrationName client registration name
-	 * @return true if the initialization was successful, false otherwise
-	 */
-	private boolean initialize(final OAuth2Properties properties, final String clientRegistrationName) {
-		this.clientRegistration = properties.getClientRegistration(clientRegistrationName);
-		if (null == clientRegistration) {
-			LOGGER.warn("[{}] No OAuth2 client provided for client registration in {}.registration.{}",
-					getName(), OAuth2Properties.ROOT, clientRegistrationName);
-			return false;
-		}
-		if (!clientRegistration.hasClientId()) {
-			LOGGER.warn("[{}] No OAuth2 client-id provided in {}.registration.{}",
-					getName(), OAuth2Properties.ROOT, clientRegistrationName);
-			return false;
-		}
-		if (!clientRegistration.hasClientSecret()) {
-			LOGGER.warn("[{}] No OAuth2 client-secret provided in {}.registration.{}",
-					getName(), OAuth2Properties.ROOT, clientRegistrationName);
-			return false;
-		}
-		this.providerDetails = properties.getProviderDetails(clientRegistration);
-		if (null == providerDetails) {
-			LOGGER.warn("[{}] No OAuth2 provider named '{}' for found in in {}.provider",
-					getName(), clientRegistration.getProvider(), OAuth2Properties.ROOT);
-			return false;
-		}
-		return true;
-	}
-
-	/**
 	 * @see #close()
 	 */
 	@Override
@@ -267,17 +196,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 * @return client registration name
 	 */
 	public String getClientRegistrationName() {
-		return clientRegistrationName;
-	}
-
-	/**
-	 * Sets the client registration name which selects which OAuth2 settings will be used for this client, by default if
-	 * only one is provided this property doesn't need to be set.
-	 *
-	 * @param clientRegistrationName client registration name
-	 */
-	protected void setClientRegistrationName(final String clientRegistrationName) {
-		this.clientRegistrationName = clientRegistrationName;
+		return registration.getClientRegistrationName();
 	}
 
 	/**
@@ -332,15 +251,15 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 * Updates the authentication token.
 	 */
 	private void updateAuthenticationToken() {
-		LOGGER.debug("[{}] Token expired, requesting new token.", getName());
+		LOGGER.debug("[{}] Token expired, requesting new token.", getClientRegistrationName());
 		Instant expiration = Instant.now();
 		try {
 			AuthenticationToken token = getTokenClient().getAuthenticationToken();
 			token.setExpiration(expiration.plusSeconds(token.getExpiresIn()));
 			setAuthenticationToken(token);
-			LOGGER.debug("[{}] Successfully retrieved new token.", getName());
+			LOGGER.debug("[{}] Successfully retrieved new token.", getClientRegistrationName());
 		} catch (Exception e) {
-			LOGGER.error("[{}] Error retrieving new token.", getName(), e);
+			LOGGER.error("[{}] Error retrieving new token.", getClientRegistrationName(), e);
 		}
 		scheduleTokenUpdate();
 	}
@@ -393,21 +312,12 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	}
 
 	/**
-	 * Returns the name of the token provider.
-	 *
-	 * @return the name of the token provider
-	 */
-	private String getName() {
-		return getClass().getSimpleName();
-	}
-
-	/**
 	 * Returns the client registration.
 	 *
 	 * @return the client registration
 	 */
 	public OAuth2ClientRegistration getClientRegistration() {
-		return clientRegistration;
+		return registration.getClientRegistration();
 	}
 
 	/**
@@ -416,7 +326,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 * @return the provider details
 	 */
 	public OAuth2ProviderDetails getProviderDetails() {
-		return providerDetails;
+		return registration.getProviderDetails();
 	}
 
 	/**

@@ -19,17 +19,15 @@ import org.slf4j.LoggerFactory;
  */
 public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 
+	/**
+	 * The class logger.
+	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(OAuth2HttpExchangeClient.class);
 
 	/**
 	 * The exchange client doing the token refresh.
 	 */
 	private final ScopedResource<ExchangeClient> tokenExchangeClient;
-
-	/**
-	 * Client registration name.
-	 */
-	private String clientRegistrationName;
 
 	/**
 	 * All OAuth2 properties.
@@ -55,14 +53,11 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 		super(exchangeClient);
 
 		this.tokenExchangeClient = ScopedResource.checked(tokenExchangeClient, exchangeClient);
-
 		this.oAuth2Properties = getClientProperties().getCustomProperties(OAuth2Properties.ROOT, OAuth2Properties.class);
-		this.clientRegistrationName = clientRegistrationName;
 
 		if (initialize()) {
 			this.tokenProvider = new OAuth2TokenProvider(oAuth2Properties, clientRegistrationName,
 					(clientRegistration, providerDetails) -> new OAuth2ApiClient(clientRegistration, providerDetails, tokenExchangeClient.unwrap()));
-			this.clientRegistrationName = tokenProvider.getClientRegistrationName();
 		}
 		setAuthenticationScheme(HttpAuthScheme.BEARER);
 	}
@@ -172,25 +167,6 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	@Override
 	public AuthenticationType getAuthenticationType() {
 		return AuthenticationType.OAUTH2;
-	}
-
-	/**
-	 * Returns the client registration name.
-	 *
-	 * @return client registration name
-	 */
-	public String getClientRegistrationName() {
-		return clientRegistrationName;
-	}
-
-	/**
-	 * Sets the client registration name which selects which OAuth2 settings will be used for this client, by default if
-	 * only one is provided this property doesn't need to be set.
-	 *
-	 * @param clientRegistrationName client registration name
-	 */
-	protected void setClientRegistrationName(final String clientRegistrationName) {
-		this.clientRegistrationName = clientRegistrationName;
 	}
 
 	/**
