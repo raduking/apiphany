@@ -11,6 +11,8 @@ import java.util.function.BiFunction;
 
 import org.apiphany.lang.collections.Maps;
 import org.apiphany.security.AuthenticationTokenProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * OAuth2 registry which holds all the registrations and providers defined by {@link OAuth2Properties}.
@@ -18,6 +20,11 @@ import org.apiphany.security.AuthenticationTokenProvider;
  * @author Radu Sebastian LAZIN
  */
 public class OAuth2Registry {
+
+	/**
+	 * The class logger.
+	 */
+	private static final Logger LOGGER = LoggerFactory.getLogger(OAuth2Registry.class);
 
 	/**
 	 * Resolved registrations entries map.
@@ -57,7 +64,12 @@ public class OAuth2Registry {
 	 * @return a resolved registration based on the given client registration name
 	 */
 	public OAuth2ResolvedRegistration get(final String clientRegistrationName) {
-		return entries.get(clientRegistrationName);
+		OAuth2ResolvedRegistration registration = entries.get(clientRegistrationName);
+		if (null == registration) {
+			LOGGER.warn("[{}] No OAuth2 client provided for client registration in {}.registration.{}",
+					clientRegistrationName, OAuth2Properties.ROOT, clientRegistrationName);
+		}
+		return registration;
 	}
 
 	/**
