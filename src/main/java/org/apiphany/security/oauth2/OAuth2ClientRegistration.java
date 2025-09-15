@@ -272,7 +272,7 @@ public class OAuth2ClientRegistration {
 	 * @return true if a client id is present, false otherwise
 	 */
 	public boolean hasClientId() {
-		return Strings.isNotEmpty(clientSecret);
+		return Strings.isNotEmpty(clientId);
 	}
 
 	/**
