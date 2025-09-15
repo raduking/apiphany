@@ -4,6 +4,10 @@
 
 `1.0.11`
 
+Updated `testcontainers-keycloak` to `3.8.0`.
+Updated `nimbus-jose-jwt` to `10.5`.
+Updated `oauth2-oidc-sdk` to `11.28`.
+
 ---
 
 `1.0.10`

@@ -52,9 +52,9 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<!-- Testing dependencies versions -->
-		<testcontainers.keycloak.version>3.7.0</testcontainers.keycloak.version>
-		<nimbus.jose.jwt.version>10.3</nimbus.jose.jwt.version>
-		<nimbus.oauth2.oidc.sdk.version>11.25</nimbus.oauth2.oidc.sdk.version>
+		<testcontainers.keycloak.version>3.8.0</testcontainers.keycloak.version>
+		<nimbus.jose.jwt.version>10.5</nimbus.jose.jwt.version>
+		<nimbus.oauth2.oidc.sdk.version>11.28</nimbus.oauth2.oidc.sdk.version>
 		<pitest.plugin.version>1.19.4</pitest.plugin.version>
 		<pitest.plugin.junit5.version>1.2.3</pitest.plugin.junit5.version>
 		<jacoco.plugin.version>0.8.13</jacoco.plugin.version>
