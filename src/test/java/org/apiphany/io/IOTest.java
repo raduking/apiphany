@@ -65,7 +65,7 @@ class IOTest {
 
 		int size = 10;
 		byte[] buffer = new byte[size];
-		EOFException expected = IO.bytesNeededEOFException(size - 1);
+		EOFException expected = IO.eofExceptionBytesNeeded(size - 1);
 
 		EOFException e = assertThrows(EOFException.class, () -> IO.readFully(bis, buffer, 0, size));
 		assertThat(e.getMessage(), equalTo(expected.getMessage()));
@@ -77,7 +77,7 @@ class IOTest {
 
 		int size = 10;
 		ByteArrayOutputStream bos = new ByteArrayOutputStream(size);
-		EOFException expected = IO.bytesNeededEOFException(size - 1);
+		EOFException expected = IO.eofExceptionBytesNeeded(size - 1);
 
 		EOFException e = assertThrows(EOFException.class, () -> IO.copy(bis, bos, size));
 		assertThat(e.getMessage(), equalTo(expected.getMessage()));
