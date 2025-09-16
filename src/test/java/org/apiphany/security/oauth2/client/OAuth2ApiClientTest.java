@@ -13,6 +13,7 @@ import java.time.Duration;
 
 import org.apiphany.ApiClient;
 import org.apiphany.client.ExchangeClient;
+import org.apiphany.client.ExchangeClientBuilder;
 import org.apiphany.client.http.HttpExchangeClient;
 import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.header.HeaderValues;
@@ -107,6 +108,18 @@ class OAuth2ApiClientTest {
 	@Test
 	void shouldAuthorizeRequestWithValidToken() {
 		oAuth2ApiClient = new OAuth2ApiClient(clientRegistration, providerDetails, exchangeClient);
+
+		AuthenticationToken token = oAuth2ApiClient.getAuthenticationToken(ClientAuthenticationMethod.CLIENT_SECRET_POST);
+
+		String result = simpleApiClient.getName(token);
+
+		assertThat(result, notNullValue());
+	}
+
+	@Test
+	void shouldAuthorizeRequestWithValidTokenWithClientBuilderConstructor() {
+		oAuth2ApiClient = new OAuth2ApiClient(clientRegistration, providerDetails,
+				ExchangeClientBuilder.create().client(JavaNetHttpExchangeClient.class));
 
 		AuthenticationToken token = oAuth2ApiClient.getAuthenticationToken(ClientAuthenticationMethod.CLIENT_SECRET_POST);
 
