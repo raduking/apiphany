@@ -187,8 +187,8 @@ class OAuth2HttpExchangeClientTest {
 	}
 
 	@Test
-	void shouldReturnValidAuthenticationTokenWithSimpleApiClientWithOAuth2() throws Exception {
-		try (SimpleApiClientWithOAuth2v1 simpleApiClientWithOAuth2 = new SimpleApiClientWithOAuth2v1(clientProperties)) {
+	void shouldReturnValidAuthenticationTokenWithSimpleApiClientWithOAuth2v1() throws Exception {
+		try (ApiClientManagedWithOAuth2v1 simpleApiClientWithOAuth2 = new ApiClientManagedWithOAuth2v1(clientProperties)) {
 			String result = simpleApiClientWithOAuth2.getName();
 
 			assertThat(result, equalTo(SimpleHttpServer.NAME));
@@ -196,14 +196,26 @@ class OAuth2HttpExchangeClientTest {
 	}
 
 	@Test
-	void shouldReturnValidAuthenticationTokenWithSimpleApiClientWithOAuth3() throws Exception {
-		try (SimpleApiClientWithOAuth2v2 simpleApiClientWithOAuth3 = new SimpleApiClientWithOAuth2v2(clientProperties)) {
+	void shouldReturnValidAuthenticationTokenWithSimpleApiClientWithOAuth2v2() throws Exception {
+		try (ApiClientManagedWithOAuth2v2 simpleApiClientWithOAuth3 = new ApiClientManagedWithOAuth2v2(clientProperties)) {
 			String result = simpleApiClientWithOAuth3.getName();
 
 			assertThat(result, equalTo(SimpleHttpServer.NAME));
 		}
 	}
 
+	@Test
+	void shouldReturnValidAuthenticationTokenWithSimpleApiClientWithOAuth2v3() throws Exception {
+		try (ApiClientManagedWithOAuth2v3 simpleApiClientWithOAuth3 = new ApiClientManagedWithOAuth2v3(clientProperties)) {
+			String result = simpleApiClientWithOAuth3.getName();
+
+			assertThat(result, equalTo(SimpleHttpServer.NAME));
+		}
+	}
+
+	/**
+	 * This client manages the client resources.
+	 */
 	static class ManagedApiClientWithOAuth2 extends ApiClient {
 
 		@SuppressWarnings("resource")
@@ -228,6 +240,9 @@ class OAuth2HttpExchangeClientTest {
 		}
 	}
 
+	/**
+	 * This client manages the client resources.
+	 */
 	static class ManagedApiClient extends ApiClient {
 
 		@SuppressWarnings("resource")
@@ -252,9 +267,12 @@ class OAuth2HttpExchangeClientTest {
 		}
 	}
 
-	static class SimpleApiClientWithOAuth2v1 extends ApiClient {
+	/**
+	 * In this client the {@link ApiClient} manages the resources, no need for {@link #close()}.
+	 */
+	static class ApiClientManagedWithOAuth2v1 extends ApiClient {
 
-		protected SimpleApiClientWithOAuth2v1(final ClientProperties properties) {
+		protected ApiClientManagedWithOAuth2v1(final ClientProperties properties) {
 			super(exchangeClient(JavaNetHttpExchangeClient.class)
 					.properties(properties)
 					.oAuth2());
@@ -271,9 +289,12 @@ class OAuth2HttpExchangeClientTest {
 		}
 	}
 
-	static class SimpleApiClientWithOAuth2v2 extends ApiClient {
+	/**
+	 * In this client the {@link ApiClient} manages the resources, no need for {@link #close()}.
+	 */
+	static class ApiClientManagedWithOAuth2v2 extends ApiClient {
 
-		protected SimpleApiClientWithOAuth2v2(final ClientProperties properties) {
+		protected ApiClientManagedWithOAuth2v2(final ClientProperties properties) {
 			super(with(JavaNetHttpExchangeClient.class)
 					.properties(properties)
 					.oAuth2());
@@ -290,6 +311,31 @@ class OAuth2HttpExchangeClientTest {
 		}
 	}
 
+	/**
+	 * In this client the {@link ApiClient} manages the resources, no need for {@link #close()}.
+	 */
+	static class ApiClientManagedWithOAuth2v3 extends ApiClient {
+
+		protected ApiClientManagedWithOAuth2v3(final ClientProperties properties) {
+			super(with(JavaNetHttpExchangeClient.class)
+					.properties(properties)
+					.oAuth2(oauth2 -> oauth2.tokenClient(JavaNetHttpExchangeClient.class)));
+		}
+
+		public String getName() {
+			return client()
+					.http()
+					.get()
+					.url("http://localhost:" + API_SERVER_PORT)
+					.path(API, "name")
+					.retrieve(String.class)
+					.orNull();
+		}
+	}
+
+	/**
+	 * In this client the {@link ApiClient} manages the resources, no need for {@link #close()}.
+	 */
 	static class SimpleApiClient extends ApiClient {
 
 		protected SimpleApiClient(final ClientProperties properties) {
