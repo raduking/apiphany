@@ -6,6 +6,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -14,6 +15,7 @@ import static org.mockito.Mockito.verify;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -47,6 +49,8 @@ class ApiClientFluentAdapterTest {
 	private static final Map<String, String> PARAMS = RequestParameters.of(parameter("name", "value"));
 	private static final Map<String, List<String>> HEADERS = Map.of("headerName", List.of("headerValue"));
 	private static final String BODY = "SomeBody";
+	private static final String HEADER_NAME = "header-name";
+	private static final String HEADER_VALUE = "header-value";
 	private static final String SOME_METERS_PREFIX = "some.meters";
 	private static final BasicMeters METERS = BasicMeters.of(SOME_METERS_PREFIX);
 	private static final Retry RETRY = Retry.of(WaitCounter.of(2, Duration.ofMillis(1)));
@@ -235,6 +239,40 @@ class ApiClientFluentAdapterTest {
 	}
 
 	@Test
+	void shouldPopulateUrlOnWhenSettingUriWithPathSegmentsContainingSlashes() {
+		URI uri = URI.create(URL);
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+				.uri(uri, API + "/", USERS, "/" + API);
+
+		assertThat(request.getUrl(), equalTo(URL + "/" + API + "/" + USERS + "/" + API));
+	}
+
+	@Test
+	void shouldPopulateUrlOnWhenSettingUrlWithPathSegmentsAndUrlContainingMultipleSlashes() {
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+				.url(URL + "//", API + "//", USERS, "//" + API, "//" + USERS + "//");
+
+		assertThat(request.getUrl(), equalTo(URL + "/" + API + "/" + USERS + "/" + API + "/" + USERS));
+	}
+
+	@Test
+	void shouldPopulateUrlOnWhenSettingUriWithPathSegmentsEvenIfPathSegmentsAreEmpty() {
+		URI uri = URI.create(URL);
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+				.uri(uri, API, "", "//", "/", USERS);
+
+		assertThat(request.getUrl(), equalTo(URL + "/" + API + "/" + USERS));
+	}
+
+	@Test
+	void shouldThrowExceptionIfUrlIsEmptyWhenUsingPathSegments() {
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient);
+		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> request.url("", API));
+
+		assertThat(e.getMessage(), equalTo("url cannot be null or empty"));
+	}
+
+	@Test
 	void shouldAddMetersWithTags() {
 		List<String> tagsList = List.of("some.tag.name", "some.tag.value");
 		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
@@ -264,5 +302,37 @@ class ApiClientFluentAdapterTest {
 			assertThat(tag.getKey(), equalTo(tagsList.get(0)));
 			assertThat(tag.getValue(), equalTo(tagsList.get(1)));
 		}
+	}
+
+	@Test
+	void shouldPopulateHeaderOnHeaderWhenIfConditionIsTrue() {
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+				.headerWhen(true, HEADER_NAME, HEADER_VALUE);
+
+		assertThat(request.getHeaders(), equalTo(Map.of(HEADER_NAME, List.of(HEADER_VALUE))));
+	}
+
+	@Test
+	void shouldNotPopulateHeaderOnHeaderWhenIfConditionIsFalse() {
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+				.headerWhen(false, HEADER_NAME, HEADER_VALUE);
+
+		assertThat(request.getHeaders(), equalTo(Collections.emptyMap()));
+	}
+
+	@Test
+	void shouldPopulateHeadersOnHeadersWhenIfConditionIsTrue() {
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+				.headersWhen(true, () -> Map.of(HEADER_NAME, List.of(HEADER_VALUE)));
+
+		assertThat(request.getHeaders(), equalTo(Map.of(HEADER_NAME, List.of(HEADER_VALUE))));
+	}
+
+	@Test
+	void shouldNotPopulateHeadersOnHeadersWhenIfConditionIsFalse() {
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+				.headersWhen(false, () -> Map.of(HEADER_NAME, List.of(HEADER_VALUE)));
+
+		assertThat(request.getHeaders(), equalTo(Collections.emptyMap()));
 	}
 }
