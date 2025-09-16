@@ -62,7 +62,7 @@ public class HttpException extends RuntimeException {
 	 * @param cause the cause of the exception (can be null).
 	 */
 	public HttpException(final HttpStatus status, final String message, final Throwable cause) {
-		super(exceptionMessage(status, message), cause);
+		super(message(status, message), cause);
 		this.status = status;
 	}
 
@@ -122,7 +122,7 @@ public class HttpException extends RuntimeException {
 	 * @param status HTTP status
 	 * @return the status message string
 	 */
-	public static String statusMessage(final HttpStatus status) {
+	public static String message(final HttpStatus status) {
 		return "[" + status.value() + " " + status.getMessage() + "]";
 	}
 
@@ -133,9 +133,9 @@ public class HttpException extends RuntimeException {
 	 * @param message the human readable message
 	 * @return the status message string
 	 */
-	public static String exceptionMessage(final HttpStatus status, final String message) {
+	public static String message(final HttpStatus status, final String message) {
 		return null != message
-				? String.join(" ", statusMessage(status), message)
-				: statusMessage(status);
+				? String.join(" ", message(status), message)
+				: message(status);
 	}
 }
