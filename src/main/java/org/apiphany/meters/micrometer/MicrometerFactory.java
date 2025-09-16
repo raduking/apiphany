@@ -2,6 +2,7 @@ package org.apiphany.meters.micrometer;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.stream.StreamSupport;
 
 import org.apiphany.lang.Pair;
 import org.apiphany.meters.MeterCounter;
@@ -154,8 +155,14 @@ public class MicrometerFactory extends MeterFactory {
 		if (tags instanceof Tags micrometerTags) {
 			return JavaObjects.cast(micrometerTags);
 		}
-		if (tags instanceof Collection<?> collection && collection.isEmpty()) {
-			return Tags.empty();
+		if (tags instanceof Collection<?> collection) {
+			if (collection.isEmpty()) {
+				return Tags.empty();
+			}
+			String[] strings = StreamSupport.stream(tags.spliterator(), false)
+			        .map(Object::toString)
+			        .toArray(String[]::new);
+			return Tags.of(strings);
 		}
 		throw new UnsupportedOperationException("Tags class " + tags.getClass() + " is not supported");
 	}
