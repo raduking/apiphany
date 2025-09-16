@@ -11,7 +11,12 @@ Renamed `HttpException.statusMessage` static method to `HttpException.message`.
 Renamed `HttpException.exceptionMessage` static method to `HttpException.message`.
 Renamed `IO.bytesNeededEOFException` static method to `IO.eofExceptionBytesNeeded`.
 Added missing `equals` and `hashCode` to `UInt64` class.
+Added `UItn64.toUnsignedBigInteger` to get the 64 bit unsigned value.
+Renamed `UInt64.getValue` method to `UInt64.getSignedValue`.
 Added `Strings.stripChar` method that strips the given `String` by the given `char` from the beginning and the end.
+Removed references to Micrometer `Tags` in `ApiClientFluentAdapter`.
+Changed the `ApiClientFluentAdapter.url(String, String...)` method to correctly handle extra `/` characters in path segments.
+Added support for `MicrometerFactory.toTags` to convert `Collection` of objects to Micrometer `Tags`.
 
 ---
 
