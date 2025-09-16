@@ -7,8 +7,10 @@
 Updated `testcontainers-keycloak` to `3.8.0`.
 Updated `nimbus-jose-jwt` to `10.5`.
 Updated `oauth2-oidc-sdk` to `11.28`.
-Renamed `HttpException.statusMessage` to `HttpException.message`.
-Renamed `HttpException.exceptionMessage` to `HttpException.message`.
+Renamed `HttpException.statusMessage` static method to `HttpException.message`.
+Renamed `HttpException.exceptionMessage` static method to `HttpException.message`.
+Renamed `IO.bytesNeededEOFException` static method to `IO.eofExceptionBytesNeeded`.
+Added missing `equals` and `hashCode` to `UInt64` class.
 
 ---
 

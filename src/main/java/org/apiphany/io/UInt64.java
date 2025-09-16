@@ -3,6 +3,7 @@ package org.apiphany.io;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 
 import org.apiphany.lang.annotation.AsValue;
@@ -114,18 +115,17 @@ public class UInt64 implements ByteSizeable, BinaryRepresentable {
 	 */
 	@Override
 	public String toString() {
-		return String.valueOf(value);
+		return Long.toUnsignedString(value);
 	}
 
 	/**
-	 * Returns the wrapped 64-bit value.
+	 * Returns the wrapped 64-bit signed long value.
 	 * <p>
 	 * Annotated with {@code @AsValue} for direct serialization.
 	 *
 	 * @return the wrapped long value
 	 */
-	@AsValue
-	public long getValue() {
+	public long getSignedValue() {
 		return value;
 	}
 
@@ -135,5 +135,38 @@ public class UInt64 implements ByteSizeable, BinaryRepresentable {
 	@Override
 	public int sizeOf() {
 		return BYTES;
+	}
+
+	/**
+	 * Returns this value as an unsigned {@link BigInteger}.
+	 *
+	 * @return the unsigned value as BigInteger
+	 */
+	@AsValue
+	public BigInteger toUnsignedBigInteger() {
+		return BigInteger.valueOf(value).and(
+				new BigInteger("FFFFFFFFFFFFFFFF", 16));
+	}
+
+	/**
+	 * @see #equals(Object)
+	 */
+	@Override
+	public boolean equals(final Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o instanceof UInt64 other) {
+			return this.getSignedValue() == other.getSignedValue();
+		}
+		return false;
+	}
+
+	/**
+	 * @see #hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return Long.hashCode(getSignedValue());
 	}
 }

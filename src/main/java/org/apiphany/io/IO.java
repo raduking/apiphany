@@ -13,7 +13,7 @@ import java.io.OutputStream;
 public interface IO {
 
 	/**
-	 * Default buffer size when working with buffers and streams (4096 bytes).
+	 * Default buffer size when working with buffers and streams (8192 bytes).
 	 */
 	int DEFAULT_BUFFER_SIZE = 2 << 12;
 
@@ -29,7 +29,7 @@ public interface IO {
 		byte[] result = new byte[bytesToRead];
 		int bytesRead = is.readNBytes(result, 0, bytesToRead);
 		if (bytesRead != bytesToRead) {
-			throw bytesNeededEOFException(bytesToRead - bytesRead);
+			throw eofExceptionBytesNeeded(bytesToRead - bytesRead);
 		}
 		return result;
 	}
@@ -49,7 +49,7 @@ public interface IO {
 		while (remainingBytes > 0) {
 			int bytesRead = is.read(buffer, currentOffset, remainingBytes);
 			if (bytesRead < 0) {
-				throw bytesNeededEOFException(remainingBytes);
+				throw eofExceptionBytesNeeded(remainingBytes);
 			}
 			currentOffset += bytesRead;
 			remainingBytes -= bytesRead;
@@ -74,7 +74,7 @@ public interface IO {
 			int bytesToRead = Math.min(buffer.length, remainingBytes);
 			int bytesRead = is.read(buffer, 0, bytesToRead);
 			if (bytesRead < 0) {
-				throw bytesNeededEOFException(remainingBytes);
+				throw eofExceptionBytesNeeded(remainingBytes);
 			}
 			os.write(buffer, 0, bytesRead);
 			remainingBytes -= bytesRead;
@@ -87,7 +87,7 @@ public interface IO {
 	 * @param remainingBytes the needed bytes.
 	 * @return a new {@link EOFException}
 	 */
-	static EOFException bytesNeededEOFException(final int remainingBytes) {
+	static EOFException eofExceptionBytesNeeded(final int remainingBytes) {
 		return new EOFException("Stream closed; need " + remainingBytes + " more bytes");
 	}
 }
