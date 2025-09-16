@@ -17,6 +17,7 @@ Added `Strings.stripChar` method that strips the given `String` by the given `ch
 Removed references to Micrometer `Tags` in `ApiClientFluentAdapter`.
 Changed the `ApiClientFluentAdapter.url(String, String...)` method to correctly handle extra `/` characters in path segments.
 Added support for `MicrometerFactory.toTags` to convert `Collection` of objects to Micrometer `Tags`.
+Fixed `BytesWrapper` constructor to properly handle `Bytes.EMPTY`.
 
 ---
 
