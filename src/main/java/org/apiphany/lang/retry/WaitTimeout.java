@@ -109,7 +109,16 @@ public class WaitTimeout implements Wait {
 	 */
 	@Override
 	public void start() {
-		this.start = Instant.now();
+		start(Instant.now());
+	}
+
+	/**
+	 * Sets the start time.
+	 *
+	 * @param start time to set
+	 */
+	protected void start(final Instant start) {
+		this.start = start;
 	}
 
 	/**
@@ -154,6 +163,9 @@ public class WaitTimeout implements Wait {
 
 	/**
 	 * Equals method that also verifies that objects are of the same class.
+	 *
+	 * @param that object to test equality with
+	 * @return true if objects are equal, false otherwise
 	 */
 	@Override
 	public boolean equals(final Object that) {
@@ -173,19 +185,11 @@ public class WaitTimeout implements Wait {
 
 	/**
 	 * Hash code implementation.
+	 *
+	 * @return hash code
 	 */
 	@Override
 	public int hashCode() {
 		return Objects.hash(timeout, timeoutTimeUnit, interval, intervalTimeUnit, start);
 	}
-
-	/**
-	 * Sets the start time.
-	 *
-	 * @param start time to set
-	 */
-	protected void setStart(final Instant start) {
-		this.start = start;
-	}
-
 }
