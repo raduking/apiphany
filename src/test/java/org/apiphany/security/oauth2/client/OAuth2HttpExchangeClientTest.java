@@ -4,8 +4,10 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.time.Duration;
@@ -21,6 +23,7 @@ import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.ScopedResource;
 import org.apiphany.lang.Strings;
 import org.apiphany.net.Sockets;
+import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationType;
 import org.apiphany.security.JwtTokenValidator;
 import org.apiphany.security.oauth2.ClientAuthenticationMethod;
@@ -179,37 +182,68 @@ class OAuth2HttpExchangeClientTest {
 	void shouldBuildExchangeClientWithEqualExchangeAndTokenExchangeClientsAndCloseResourcesOnlyOnce() throws Exception {
 		ExchangeClient exchangeClient = spy(new JavaNetHttpExchangeClient(clientProperties));
 
-		try (OAuth2HttpExchangeClient oAuth2ExchangeClient = new OAuth2HttpExchangeClient(ScopedResource.managed(exchangeClient))) {
-			assertThat(oAuth2ExchangeClient.getTokenClient(), notNullValue());
+		try (OAuth2HttpExchangeClient client = new OAuth2HttpExchangeClient(ScopedResource.managed(exchangeClient))) {
+			assertThat(client.getTokenClient(), notNullValue());
 		}
 
 		verify(exchangeClient).close();
 	}
 
 	@Test
-	void shouldReturnValidAuthenticationTokenWithSimpleApiClientWithOAuth2v1() throws Exception {
-		try (ApiClientManagedWithOAuth2v1 simpleApiClientWithOAuth2 = new ApiClientManagedWithOAuth2v1(clientProperties)) {
-			String result = simpleApiClientWithOAuth2.getName();
+	void shouldReturnValidAuthenticationTokenWithApiClientManagedWithOAuth2v1() throws Exception {
+		try (ApiClientManagedWithOAuth2v1 client = new ApiClientManagedWithOAuth2v1(clientProperties)) {
+			String result = client.getName();
 
 			assertThat(result, equalTo(SimpleHttpServer.NAME));
 		}
 	}
 
 	@Test
-	void shouldReturnValidAuthenticationTokenWithSimpleApiClientWithOAuth2v2() throws Exception {
-		try (ApiClientManagedWithOAuth2v2 simpleApiClientWithOAuth3 = new ApiClientManagedWithOAuth2v2(clientProperties)) {
-			String result = simpleApiClientWithOAuth3.getName();
+	void shouldReturnValidAuthenticationTokenWithApiClientManagedWithOAuth2v2() throws Exception {
+		try (ApiClientManagedWithOAuth2v2 client = new ApiClientManagedWithOAuth2v2(clientProperties)) {
+			String result = client.getName();
 
 			assertThat(result, equalTo(SimpleHttpServer.NAME));
 		}
 	}
 
 	@Test
-	void shouldReturnValidAuthenticationTokenWithSimpleApiClientWithOAuth2v3() throws Exception {
+	void shouldReturnValidAuthenticationTokenWithApiClientManagedWithOAuth2v3() throws Exception {
 		try (ApiClientManagedWithOAuth2v3 simpleApiClientWithOAuth3 = new ApiClientManagedWithOAuth2v3(clientProperties)) {
 			String result = simpleApiClientWithOAuth3.getName();
 
 			assertThat(result, equalTo(SimpleHttpServer.NAME));
+		}
+	}
+
+	@SuppressWarnings("resource")
+	@Test
+	void shouldReturnValidAuthenticationTokenWithManagedApiClientManagedWithOAuth2() throws Exception {
+		try (JavaNetHttpExchangeClient tokenClient = spy(new JavaNetHttpExchangeClient())) {
+			try (ManagedApiClientManagedWithOAuth2 client = new ManagedApiClientManagedWithOAuth2(clientProperties, tokenClient)) {
+				String result = client.getName();
+
+				assertThat(result, equalTo(SimpleHttpServer.NAME));
+			}
+
+			verify(tokenClient, times(0)).close();
+		}
+	}
+
+	@Test
+	void shouldNotReturnValidAuthenticationTokenWithApiClientManagedWithOAuth2v1IfClientIsDisabled() throws Exception {
+		clientProperties.setEnabled(false);
+		try (ManagedApiClientWithOAuth2 client = new ManagedApiClientWithOAuth2(clientProperties)) {
+			String result = client.getName();
+
+			@SuppressWarnings("resource")
+			OAuth2HttpExchangeClient oAuth2HttpExchangeClient = JavaObjects.cast(client.getExchangeClient(AuthenticationType.OAUTH2));
+			AuthenticationToken token = new AuthenticationToken();
+			oAuth2HttpExchangeClient.setAuthenticationToken(token);
+			AuthenticationToken resultToken = oAuth2HttpExchangeClient.getAuthenticationToken();
+
+			assertThat(result, nullValue());
+			assertSame(token, resultToken);
 		}
 	}
 
@@ -227,6 +261,11 @@ class OAuth2HttpExchangeClientTest {
 		public void close() throws Exception {
 			super.close();
 			getExchangeClient(AuthenticationType.OAUTH2).close();
+		}
+
+		@Override
+		public ExchangeClient getExchangeClient(final AuthenticationType authenticationType) {
+			return super.getExchangeClient(authenticationType);
 		}
 
 		public String getName() {
@@ -320,6 +359,28 @@ class OAuth2HttpExchangeClientTest {
 			super(with(JavaNetHttpExchangeClient.class)
 					.properties(properties)
 					.oAuth2(oauth2 -> oauth2.tokenClient(JavaNetHttpExchangeClient.class)));
+		}
+
+		public String getName() {
+			return client()
+					.http()
+					.get()
+					.url("http://localhost:" + API_SERVER_PORT)
+					.path(API, "name")
+					.retrieve(String.class)
+					.orNull();
+		}
+	}
+
+	/**
+	 * In this client the {@link ApiClient} manages the resources except for the token retrieve client.
+	 */
+	static class ManagedApiClientManagedWithOAuth2 extends ApiClient {
+
+		protected ManagedApiClientManagedWithOAuth2(final ClientProperties properties, final ExchangeClient tokenClient) {
+			super(with(JavaNetHttpExchangeClient.class)
+					.properties(properties)
+					.oAuth2(oauth2 -> oauth2.tokenClient(tokenClient)));
 		}
 
 		public String getName() {

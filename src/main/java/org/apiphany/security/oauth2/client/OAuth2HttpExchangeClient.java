@@ -57,7 +57,7 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 
 		if (initialize()) {
 			this.tokenProvider = new OAuth2TokenProvider(oAuth2Properties, clientRegistrationName,
-					(clientRegistration, providerDetails) -> new OAuth2ApiClient(clientRegistration, providerDetails, tokenExchangeClient.unwrap()));
+					(cr, pd) -> new OAuth2ApiClient(cr, pd, tokenExchangeClient.unwrap()));
 		}
 		setAuthenticationScheme(HttpAuthScheme.BEARER);
 	}
@@ -155,8 +155,8 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	@Override
 	public void close() throws Exception {
 		super.close();
-		if (tokenProvider instanceof AutoCloseable closeable) {
-			closeable.close();
+		if (null != tokenProvider) {
+			tokenProvider.close();
 		}
 		tokenExchangeClient.closeIfManaged();
 	}
