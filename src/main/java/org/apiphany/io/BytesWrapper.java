@@ -50,7 +50,11 @@ public class BytesWrapper implements ByteSizeable, BinaryRepresentable {
 	 * @param bytes the byte array to wrap (may be {@code null}, which is treated as empty)
 	 */
 	public BytesWrapper(final byte[] bytes) {
-		this.bytes = null != bytes ? Arrays.copyOf(bytes, bytes.length) : Bytes.EMPTY;
+		if (bytes == Bytes.EMPTY || null == bytes || 0 == bytes.length) {
+			this.bytes = Bytes.EMPTY;
+		} else {
+			this.bytes = Arrays.copyOf(bytes, bytes.length);
+		}
 	}
 
 	/**
