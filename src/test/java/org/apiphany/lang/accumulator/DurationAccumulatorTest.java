@@ -86,13 +86,12 @@ class DurationAccumulatorTest {
 
 	@Test
 	void shouldReturnCorrectAverageForAccumulatedDurations() {
-		accumulator.accumulate(() -> Threads.safeSleep(Duration.ofMillis(10)));
-		accumulator.accumulate(() -> Threads.safeSleep(Duration.ofMillis(20)));
-		accumulator.accumulate(() -> Threads.safeSleep(Duration.ofMillis(30)));
+		accumulator.getInformationList().add(Duration.ofMillis(10));
+		accumulator.getInformationList().add(Duration.ofMillis(20));
+		accumulator.getInformationList().add(Duration.ofMillis(30));
 
 		double avg = accumulator.average();
-		// average ~20ms = 0.02s, allow 0.01s tolerance
-		assertThat(avg, closeTo(0.02, 0.01));
+		assertThat(avg, equalTo(0.02));
 	}
 
 	@Test
@@ -103,13 +102,12 @@ class DurationAccumulatorTest {
 
 	@Test
 	void shouldReturnCorrectMaxForAccumulatedDurations() {
-		accumulator.accumulate(() -> Threads.safeSleep(Duration.ofMillis(10)));
-		accumulator.accumulate(() -> Threads.safeSleep(Duration.ofMillis(25)));
-		accumulator.accumulate(() -> Threads.safeSleep(Duration.ofMillis(15)));
+		accumulator.getInformationList().add(Duration.ofMillis(10));
+		accumulator.getInformationList().add(Duration.ofMillis(25));
+		accumulator.getInformationList().add(Duration.ofMillis(15));
 
 		double max = accumulator.max();
-		// max ~25ms = 0.025s, allow 0.01s tolerance
-		assertThat(max, closeTo(0.025, 0.01));
+		assertThat(max, equalTo(0.025));
 	}
 
 	@Test
@@ -120,13 +118,12 @@ class DurationAccumulatorTest {
 
 	@Test
 	void shouldReturnCorrectMinForAccumulatedDurations() {
-		accumulator.accumulate(() -> Threads.safeSleep(Duration.ofMillis(15)));
-		accumulator.accumulate(() -> Threads.safeSleep(Duration.ofMillis(35)));
-		accumulator.accumulate(() -> Threads.safeSleep(Duration.ofMillis(25)));
+		accumulator.getInformationList().add(Duration.ofMillis(15));
+		accumulator.getInformationList().add(Duration.ofMillis(35));
+		accumulator.getInformationList().add(Duration.ofMillis(25));
 
 		double min = accumulator.min();
-		// min ~15ms = 0.015s, allow 0.01s tolerance
-		assertThat(min, closeTo(0.015, 0.01));
+		assertThat(min, equalTo(0.015));
 	}
 
 	@Test
@@ -186,23 +183,23 @@ class DurationAccumulatorTest {
 
 	@Test
 	void shouldReturnCorrectMedianForAccumulatedDurations() {
-		accumulator.accumulate(() -> Threads.safeSleep(Duration.ofMillis(10)));
-		accumulator.accumulate(() -> Threads.safeSleep(Duration.ofMillis(20)));
-		accumulator.accumulate(() -> Threads.safeSleep(Duration.ofMillis(30)));
-		accumulator.accumulate(() -> Threads.safeSleep(Duration.ofMillis(40)));
+		accumulator.getInformationList().add(Duration.ofMillis(10));
+		accumulator.getInformationList().add(Duration.ofMillis(20));
+		accumulator.getInformationList().add(Duration.ofMillis(30));
+		accumulator.getInformationList().add(Duration.ofMillis(40));
 
 		double median = accumulator.median();
-		assertThat(median, closeTo(0.025, 0.01)); // ~25ms
+		assertThat(median, equalTo(0.02));
 	}
 
 	@Test
 	void shouldReturnCorrectMedianForOddNumberOfDurations() {
-		accumulator.accumulate(() -> Threads.safeSleep(Duration.ofMillis(10)));
-		accumulator.accumulate(() -> Threads.safeSleep(Duration.ofMillis(20)));
-		accumulator.accumulate(() -> Threads.safeSleep(Duration.ofMillis(30)));
+		accumulator.getInformationList().add(Duration.ofMillis(50));
+		accumulator.getInformationList().add(Duration.ofMillis(60));
+		accumulator.getInformationList().add(Duration.ofMillis(70));
 
 		double median = accumulator.median();
-		assertThat(median, closeTo(0.02, 0.01)); // ~20ms
+		assertThat(median, equalTo(0.06));
 	}
 
 	@Test
@@ -273,8 +270,8 @@ class DurationAccumulatorTest {
 
 	@Test
 	void shouldReturnFormattedDurationsOnStatisticsToString() {
-		accumulator.accumulate(() -> Threads.safeSleep(Duration.ofMillis(10)));
-		accumulator.accumulate(() -> Threads.safeSleep(Duration.ofMillis(20)));
+		accumulator.getInformationList().add(Duration.ofMillis(10));
+		accumulator.getInformationList().add(Duration.ofMillis(20));
 
 		DurationAccumulator.Statistics stats = accumulator.buildStatistics();
 		String output = stats.toString();
@@ -288,8 +285,8 @@ class DurationAccumulatorTest {
 
 	@Test
 	void shouldReturnFormattedDurationsOnAccumulatorToString() {
-		accumulator.accumulate(() -> Threads.safeSleep(Duration.ofMillis(10)));
-		accumulator.accumulate(() -> Threads.safeSleep(Duration.ofMillis(20)));
+		accumulator.getInformationList().add(Duration.ofMillis(10));
+		accumulator.getInformationList().add(Duration.ofMillis(20));
 
 		accumulator.buildStatistics();
 		String output = accumulator.toString();
