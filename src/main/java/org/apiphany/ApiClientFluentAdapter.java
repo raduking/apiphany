@@ -168,8 +168,8 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 			if (Strings.isEmpty(sanitized)) {
 				continue;
 			}
-			String encoded = isUrlEncoded() ? URLEncoder.encode(sanitized, charset) : sanitized;
-			sb.append('/').append(encoded);
+			String segment = isUrlEncoded() ? URLEncoder.encode(sanitized, charset) : sanitized;
+			sb.append('/').append(segment);
 		}
 		return url(sb.toString());
 	}

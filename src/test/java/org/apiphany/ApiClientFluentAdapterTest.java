@@ -239,6 +239,46 @@ class ApiClientFluentAdapterTest {
 	}
 
 	@Test
+	void shouldPopulateUrlOnWhenSettingUriWithPathSegmentsEvenIfEncodingIsTrueButNoEncodingNecessary() {
+		URI uri = URI.create(URL);
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+				.urlEncoded()
+				.uri(uri, API, USERS);
+
+		assertThat(request.getUrl(), equalTo(URL + "/" + API + "/" + USERS));
+	}
+
+	@Test
+	void shouldPopulateUrlOnWhenSettingUriWithPathSegmentsEvenIfEncodingIsTrue() {
+		URI uri = URI.create(URL);
+		String segmentWithSpace = "hello world";
+		String segmentWithSpecial = "name@example.com";
+
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+				.urlEncoded()
+				.uri(uri, API, segmentWithSpace, segmentWithSpecial);
+
+		String expected = URL + "/" + API + "/hello+world/name%40example.com";
+
+		assertThat(request.getUrl(), equalTo(expected));
+	}
+
+	@SuppressWarnings("resource")
+	@Test
+	void shouldPopulateUrlOnWhenSettingPathSegmentsEvenIfEncodingIsTrue() {
+		doReturn(URL).when(apiClient).getBaseUrl();
+		String segmentWithSpace = "hello world";
+		String segmentWithSpecial = "name@example.com";
+
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+				.pathEncoded(API, segmentWithSpace, segmentWithSpecial);
+
+		String expected = URL + "/" + API + "/hello+world/name%40example.com";
+
+		assertThat(request.getUrl(), equalTo(expected));
+	}
+
+	@Test
 	void shouldPopulateUrlOnWhenSettingUriWithPathSegmentsContainingSlashes() {
 		URI uri = URI.create(URL);
 		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)

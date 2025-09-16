@@ -241,10 +241,10 @@ public interface Strings {
 		int start = 0;
 		int end = input.length();
 		while (start < end && input.charAt(start) == ch) {
-			start++;
+			++start;
 		}
 		while (end > start && input.charAt(end - 1) == ch) {
-			end--;
+			--end;
 		}
 		return input.substring(start, end);
 	}
