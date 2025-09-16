@@ -161,13 +161,15 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 		if (Strings.isEmpty(url)) {
 			throw new IllegalArgumentException("url cannot be null or empty");
 		}
-		StringBuilder sb = new StringBuilder(url);
+		String base = Strings.stripChar(url, '/');
+		StringBuilder sb = new StringBuilder(base);
 		for (String pathSegment : pathSegments) {
-			if (!sb.isEmpty() && sb.charAt(sb.length() - 1) != '/') {
-				sb.append('/');
+			String sanitized = Strings.stripChar(pathSegment, '/');
+			if (Strings.isEmpty(sanitized)) {
+				continue;
 			}
-			String segment = isUrlEncoded() ? URLEncoder.encode(pathSegment, charset) : pathSegment;
-			sb.append(segment);
+			String encoded = isUrlEncoded() ? URLEncoder.encode(sanitized, charset) : sanitized;
+			sb.append('/').append(encoded);
 		}
 		return url(sb.toString());
 	}

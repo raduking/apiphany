@@ -225,4 +225,27 @@ public interface Strings {
 	static String removeAllWhitespace(final String s) {
 		return s.replaceAll("\\s", "");
 	}
+
+	/**
+	 * Strips the given character from the start and end of the input string. If the string is null, returns null. If empty,
+	 * returns empty.
+	 *
+	 * @param input the input string to strip
+	 * @param ch the character to strip
+	 * @return stripped string from the start end end if it contains the given character
+	 */
+	public static String stripChar(final String input, final char ch) {
+		if (isEmpty(input)) {
+			return input;
+		}
+		int start = 0;
+		int end = input.length();
+		while (start < end && input.charAt(start) == ch) {
+			start++;
+		}
+		while (end > start && input.charAt(end - 1) == ch) {
+			end--;
+		}
+		return input.substring(start, end);
+	}
 }

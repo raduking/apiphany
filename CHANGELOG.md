@@ -11,6 +11,7 @@ Renamed `HttpException.statusMessage` static method to `HttpException.message`.
 Renamed `HttpException.exceptionMessage` static method to `HttpException.message`.
 Renamed `IO.bytesNeededEOFException` static method to `IO.eofExceptionBytesNeeded`.
 Added missing `equals` and `hashCode` to `UInt64` class.
+Added `Strings.stripChar` method that strips the given `String` by the given `char` from the beginning and the end.
 
 ---
 

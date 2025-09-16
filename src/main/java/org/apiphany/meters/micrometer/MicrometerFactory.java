@@ -160,8 +160,8 @@ public class MicrometerFactory extends MeterFactory {
 				return Tags.empty();
 			}
 			String[] strings = StreamSupport.stream(tags.spliterator(), false)
-			        .map(Object::toString)
-			        .toArray(String[]::new);
+					.map(Object::toString)
+					.toArray(String[]::new);
 			return Tags.of(strings);
 		}
 		throw new UnsupportedOperationException("Tags class " + tags.getClass() + " is not supported");
