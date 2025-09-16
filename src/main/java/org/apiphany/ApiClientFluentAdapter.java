@@ -19,8 +19,6 @@ import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Nullables;
 import org.morphix.reflection.GenericClass;
 
-import io.micrometer.core.instrument.Tags;
-
 /**
  * Adapter for fluent style syntax. This class functions similar to a builder.
  *
@@ -430,11 +428,14 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	/**
 	 * Adds meters with the given prefix and tags.
 	 *
+	 * @param <T> the tag element type
+	 * @param <U> an iterable of tags
+	 *
 	 * @param prefix meters prefix
 	 * @param tags meters tags
 	 * @return this
 	 */
-	public ApiClientFluentAdapter meters(final String prefix, final Tags tags) {
+	public <T, U extends Iterable<T>> ApiClientFluentAdapter meters(final String prefix, final U tags) {
 		return meters(BasicMeters.of(apiClient.getMeterFactory(), prefix, tags));
 	}
 
@@ -451,11 +452,14 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	/**
 	 * Sets meters on the method that called one of the {@code retrieve} methods with the given prefix or tags.
 	 *
+	 * @param <T> the tag element type
+	 * @param <U> an iterable of tags
+	 *
 	 * @param prefix meters prefix
 	 * @param tags meters tags
 	 * @return this
 	 */
-	public ApiClientFluentAdapter metersOnMethod(final String prefix, final Tags tags) {
+	public <T, U extends Iterable<T>> ApiClientFluentAdapter metersOnMethod(final String prefix, final U tags) {
 		return meters(BasicMeters.onCallerMethod(apiClient.getMeterFactory(), prefix, tags));
 	}
 
