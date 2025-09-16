@@ -133,7 +133,7 @@ class OAuth2HttpExchangeClientTest {
 
 			HttpException httpException = assertThrows(HttpException.class, simpleApiClient::getName);
 
-			assertThat(httpException.getMessage(), equalTo(HttpException.statusMessage(httpException.getStatus())
+			assertThat(httpException.getMessage(), equalTo(HttpException.message(httpException.getStatus())
 					+ " Missing Authorization header."));
 		}
 	}
@@ -154,7 +154,7 @@ class OAuth2HttpExchangeClientTest {
 
 			HttpException httpException = assertThrows(HttpException.class, simpleApiClient::getName);
 
-			assertThat(httpException.getMessage(), equalTo(HttpException.statusMessage(httpException.getStatus())
+			assertThat(httpException.getMessage(), equalTo(HttpException.message(httpException.getStatus())
 					+ " Missing Authorization header."));
 		}
 	}
