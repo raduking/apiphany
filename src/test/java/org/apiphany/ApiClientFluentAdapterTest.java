@@ -1,9 +1,10 @@
 package org.apiphany;
 
 import static org.apiphany.ParameterFunction.parameter;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
@@ -15,18 +16,24 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.lang.retry.Retry;
 import org.apiphany.lang.retry.WaitCounter;
 import org.apiphany.meters.BasicMeters;
+import org.apiphany.meters.MeterCounter;
 import org.apiphany.security.AuthenticationType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.morphix.reflection.GenericClass;
+
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.Timer;
 
 /**
  * Test class for {@link ApiClientFluentAdapter}.
@@ -40,7 +47,8 @@ class ApiClientFluentAdapterTest {
 	private static final Map<String, String> PARAMS = RequestParameters.of(parameter("name", "value"));
 	private static final Map<String, List<String>> HEADERS = Map.of("headerName", List.of("headerValue"));
 	private static final String BODY = "SomeBody";
-	private static final BasicMeters METERS = BasicMeters.of("some.meters");
+	private static final String SOME_METERS_PREFIX = "some.meters";
+	private static final BasicMeters METERS = BasicMeters.of(SOME_METERS_PREFIX);
 	private static final Retry RETRY = Retry.of(WaitCounter.of(2, Duration.ofMillis(1)));
 	private static final String API = "api";
 	private static final String USERS = "users";
@@ -224,5 +232,37 @@ class ApiClientFluentAdapterTest {
 				.uri(uri, API, USERS);
 
 		assertThat(request.getUrl(), equalTo(URL + "/" + API + "/" + USERS));
+	}
+
+	@Test
+	void shouldAddMetersWithTags() {
+		List<String> tagsList = List.of("some.tag.name", "some.tag.value");
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+				.meters(SOME_METERS_PREFIX, tagsList);
+
+		BasicMeters meters = request.getMeters();
+
+		assertThat(meters.requests().getName(), equalTo(SOME_METERS_PREFIX + "." + BasicMeters.Name.REQUEST));
+		assertThat(meters.latency().getName(), equalTo(SOME_METERS_PREFIX + "." + BasicMeters.Name.LATENCY));
+		assertThat(meters.errors().getName(), equalTo(SOME_METERS_PREFIX + "." + BasicMeters.Name.ERROR));
+		assertThat(meters.retries().getName(), equalTo(SOME_METERS_PREFIX + "." + BasicMeters.Name.RETRY));
+
+		List<Tag> tags = meters.latency().unwrap(Timer.class).getId().getTags();
+
+		Tag tag = tags.getFirst();
+
+		assertThat(tags, hasSize(1));
+		assertThat(tag.getKey(), equalTo(tagsList.get(0)));
+		assertThat(tag.getValue(), equalTo(tagsList.get(1)));
+
+		List<Supplier<MeterCounter>> counters = List.of(meters::requests, meters::errors, meters::retries);
+		for (Supplier<MeterCounter> counterSupplier : counters) {
+			tags = counterSupplier.get().unwrap(Counter.class).getId().getTags();
+			tag = tags.getFirst();
+
+			assertThat(tags, hasSize(1));
+			assertThat(tag.getKey(), equalTo(tagsList.get(0)));
+			assertThat(tag.getValue(), equalTo(tagsList.get(1)));
+		}
 	}
 }

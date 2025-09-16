@@ -67,11 +67,11 @@ class MicrometerFactoryTest {
 	}
 
 	@Test
-	void shouldThrowExceptionOnToTagsIfInputCollectionCannotBeConvertedToTags() {
+	void shouldThrowExceptionOnToTagsIfInputCollectionCannotBeConvertedToTagsBecauseOfSize() {
 		List<Object> list = List.of(new Object());
-		UnsupportedOperationException e = assertThrows(UnsupportedOperationException.class, () -> MicrometerFactory.toTags(list));
+		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> MicrometerFactory.toTags(list));
 
-		assertThat(e.getMessage(), equalTo("Tags class " + list.getClass() + " is not supported"));
+		assertThat(e.getMessage(), equalTo("size must be even, it is a set of key=value pairs"));
 	}
 
 	@Test
@@ -94,5 +94,19 @@ class MicrometerFactoryTest {
 		Tags tags = MicrometerFactory.toTags(set);
 
 		assertThat(tags, equalTo(Tags.empty()));
+	}
+
+	@Test
+	void shouldConvertTagsCollectionToTags() {
+		List<Integer> list = List.of(1, 2);
+
+		Tags tags = MicrometerFactory.toTags(list);
+
+		Iterator<Tag> tagsIterator = tags.iterator();
+		Tag tag = tagsIterator.next();
+
+		assertThat(tag.getKey(), equalTo(list.get(0).toString()));
+		assertThat(tag.getValue(), equalTo(list.get(1).toString()));
+		assertFalse(tagsIterator.hasNext());
 	}
 }
