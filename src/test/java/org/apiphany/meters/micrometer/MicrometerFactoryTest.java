@@ -97,7 +97,7 @@ class MicrometerFactoryTest {
 	}
 
 	@Test
-	void shouldConvertTagsCollectionToTags() {
+	void shouldConvertEvenObjectCollectionToTags() {
 		List<Integer> list = List.of(1, 2);
 
 		Tags tags = MicrometerFactory.toTags(list);

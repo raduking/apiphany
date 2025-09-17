@@ -40,7 +40,7 @@ class WaitTimeoutTest {
 	}
 
 	@Test
-	void shouldReturnTrueOnCopied() {
+	void shouldReturnTrueOnEqualsForCopied() {
 		WaitTimeout waitTimeout1 = WaitTimeout.of(TIMEOUT, INTERVAL);
 		waitTimeout1.start(START);
 
