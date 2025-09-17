@@ -385,6 +385,9 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 	 */
 	public static SimpleModule apiphanySerializationModule() {
 		SimpleModule apiphanyModule = new SimpleModule(APIPHANY_MODULE) {
+
+			private static final long serialVersionUID = -1205949335841515195L;
+
 			@Override
 			public void setupModule(final SetupContext context) {
 				super.setupModule(context);
