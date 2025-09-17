@@ -28,6 +28,7 @@ class HeadersTest {
 	private static final String V3 = "v3";
 	private static final String V4 = "v4";
 
+	@SuppressWarnings("serial")
 	Map<String, List<String>> headers = new HashMap<>() {
 		{
 			put(N1, new ArrayList<>() {
@@ -54,6 +55,7 @@ class HeadersTest {
 
 	@Test
 	void shouldNotAddNullHeader() {
+		@SuppressWarnings("serial")
 		var headersToAdd = Map.of(N2, new ArrayList<>() {
 			{
 				add(null);
@@ -72,6 +74,7 @@ class HeadersTest {
 
 	@Test
 	void shouldNotAddAnythingIfHeaderNameIsNull() {
+		@SuppressWarnings("serial")
 		var headersToAdd = new HashMap<String, List<String>>() {
 			{
 				put(null, List.of());
