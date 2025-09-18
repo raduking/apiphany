@@ -28,7 +28,7 @@ public class MicrometerCounter implements MeterCounter {
 	 *
 	 * @param counter the underlying Micrometer counter (must not be {@code null})
 	 */
-	public MicrometerCounter(final Counter counter) {
+	protected MicrometerCounter(final Counter counter) {
 		this.counter = Objects.requireNonNull(counter);
 	}
 
