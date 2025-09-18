@@ -36,7 +36,7 @@ public class ServerHelloDone implements TLSHandshakeBody {
 	 * @param is the input stream (unused)
 	 * @return a new ServerHelloDone instance
 	 */
-	public static ServerHelloDone from(final InputStream is) {
+	public static ServerHelloDone from(final InputStream is) { // NOSONAR
 		return new ServerHelloDone();
 	}
 

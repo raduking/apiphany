@@ -46,7 +46,7 @@ public class MicrometerTimer implements MeterTimer {
 	 * @see #record(Duration)
 	 */
 	@Override
-	public void record(final Duration duration) {
+	public void record(final Duration duration) { // NOSONAR
 		timer.record(duration);
 	}
 
