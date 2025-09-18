@@ -28,7 +28,7 @@ public class MicrometerTimer implements MeterTimer {
 	 *
 	 * @param timer the underlying Micrometer timer (must not be {@code null})
 	 */
-	private MicrometerTimer(final Timer timer) {
+	protected MicrometerTimer(final Timer timer) {
 		this.timer = Objects.requireNonNull(timer);
 	}
 

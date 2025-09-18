@@ -4,6 +4,8 @@
 
 `1.0.12`
 
+Fixed `MicrometerCounter` and `MicrometerTimer` `unwrap` methods to properly validate the wanted class.
+
 ---
 
 `1.0.11`
