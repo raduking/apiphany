@@ -15,7 +15,7 @@ import org.apiphany.lang.retry.Retry;
 import org.apiphany.lang.retry.WaitCounter;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationTokenProvider;
-import org.morphix.lang.JavaObjects;
+import org.morphix.lang.Comparables;
 import org.morphix.lang.Nullables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -269,9 +269,9 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 */
 	private void scheduleTokenUpdate() {
 		Instant expiration = getTokenExpiration().minus(getConfiguration().getExpirationErrorMargin());
-		Instant scheduled = JavaObjects.max(expiration, Instant.now());
+		Instant scheduled = Comparables.max(expiration, Instant.now());
 		Duration delay = Duration.between(Instant.now(), scheduled);
-		delay = JavaObjects.max(delay, getConfiguration().getMinRefreshInterval());
+		delay = Comparables.max(delay, getConfiguration().getMinRefreshInterval());
 		scheduledFuture = tokenRefreshScheduler.schedule(this::updateAuthenticationToken, delay.toMillis(), TimeUnit.MILLISECONDS);
 	}
 
