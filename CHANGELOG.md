@@ -2,6 +2,10 @@
 
 ---
 
+`1.0.12`
+
+---
+
 `1.0.11`
 
 Updated `testcontainers-keycloak` to `3.8.0`.
