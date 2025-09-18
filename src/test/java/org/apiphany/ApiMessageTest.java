@@ -26,8 +26,10 @@ class ApiMessageTest {
 	private static final String V2 = "v2";
 
 	Map<String, List<String>> headers = new HashMap<>() {
+		private static final long serialVersionUID = 1L;
 		{
 			put(N1, new ArrayList<>() {
+				private static final long serialVersionUID = 1L;
 				{
 					add(V1);
 					add(V2);
