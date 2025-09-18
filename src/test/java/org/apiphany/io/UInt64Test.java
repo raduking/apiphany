@@ -4,15 +4,18 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayInputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.math.BigInteger;
 
+import org.apiphany.lang.Bytes;
 import org.junit.jupiter.api.Test;
 
 /**
- * Test class for {@link UInt32}.
+ * Test class for {@link UInt64}.
  *
  * @author Radu Sebastian LAZIN
  */
@@ -159,4 +162,21 @@ class UInt64Test {
 
 		assertThat(u.toUnsignedBigInteger(), is(new BigInteger("9223372036854775808")));
 	}
+
+	@Test
+	void shouldThrowExceptionWhenInputStreamIsEmpty() {
+		ByteArrayInputStream bis = new ByteArrayInputStream(Bytes.EMPTY);
+
+		EOFException e = assertThrows(EOFException.class, () -> UInt64.from(bis));
+		assertThat(e.getMessage(), equalTo("Error reading " + UInt64.BYTES + " bytes"));
+	}
+
+	@Test
+	void shouldThrowExceptionWhenInputStreamHasLessElements() {
+		ByteArrayInputStream bis = new ByteArrayInputStream(new byte[] { 0x12, 0x13, 0x14 });
+
+		EOFException e = assertThrows(EOFException.class, () -> UInt64.from(bis));
+		assertThat(e.getMessage(), equalTo("Error reading " + UInt64.BYTES + " bytes"));
+	}
+
 }
