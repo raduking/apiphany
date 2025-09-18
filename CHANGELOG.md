@@ -7,6 +7,7 @@
 Updated `testcontainers-keycloak` to `3.8.0`.
 Updated `nimbus-jose-jwt` to `10.5`.
 Updated `oauth2-oidc-sdk` to `11.28`.
+Updated MorphiX to `1.0.9`.
 Renamed `HttpException.statusMessage` static method to `HttpException.message`.
 Renamed `HttpException.exceptionMessage` static method to `HttpException.message`.
 Renamed `IO.bytesNeededEOFException` static method to `IO.eofExceptionBytesNeeded`.
