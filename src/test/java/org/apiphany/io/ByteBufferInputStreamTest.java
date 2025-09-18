@@ -98,7 +98,7 @@ class ByteBufferInputStreamTest {
 	@Test
 	void shouldSkipAheadByteBufferOnSkip() throws IOException {
 		try (ByteBufferInputStream bis = ByteBufferInputStream.of(BYTES)) {
-			bis.skip(1);
+			long result = bis.skip(1);
 
 			ByteBuffer buffer = bis.getByteBuffer();
 
@@ -106,7 +106,40 @@ class ByteBufferInputStreamTest {
 
 			assertThat(remaining, equalTo(BYTES.length - 1));
 			assertThat(bis.available(), equalTo(remaining));
+			assertThat(result, equalTo(1L));
 		}
 	}
 
+	@Test
+	void shouldReturnNegativeOneWhenStreamReachesTheEnd() {
+		@SuppressWarnings("resource")
+		ByteBufferInputStream bis = ByteBufferInputStream.of(BYTES);
+
+		byte[] bytes = new byte[BYTES.length];
+		bis.read(bytes, 0, BYTES.length);
+
+		int result = bis.read();
+
+		assertThat(result, equalTo(-1));
+	}
+
+	@Test
+	void shouldReturnZeroOnSkipIfInputIsZero() {
+		@SuppressWarnings("resource")
+		ByteBufferInputStream bis = ByteBufferInputStream.of(BYTES);
+
+		long result = bis.skip(0);
+
+		assertThat(result, equalTo(0L));
+	}
+
+	@Test
+	void shouldReturnZeroOnSkipIfInputIsNegative() {
+		@SuppressWarnings("resource")
+		ByteBufferInputStream bis = ByteBufferInputStream.of(BYTES);
+
+		long result = bis.skip(-42);
+
+		assertThat(result, equalTo(0L));
+	}
 }
