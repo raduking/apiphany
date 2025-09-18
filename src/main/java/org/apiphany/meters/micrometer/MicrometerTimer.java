@@ -72,7 +72,7 @@ public class MicrometerTimer implements MeterTimer {
 	 */
 	@Override
 	public <T> T unwrap(final Class<T> cls) {
-		if (cls.isAssignableFrom(Timer.class)) {
+		if (Timer.class.isAssignableFrom(cls)) {
 			return JavaObjects.cast(timer);
 		}
 		throw new IllegalArgumentException("The meter class " + timer.getClass() + " is not of type " + cls);
