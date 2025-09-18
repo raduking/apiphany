@@ -29,8 +29,10 @@ class HeadersTest {
 	private static final String V4 = "v4";
 
 	Map<String, List<String>> headers = new HashMap<>() {
+		private static final long serialVersionUID = 1L;
 		{
 			put(N1, new ArrayList<>() {
+				private static final long serialVersionUID = 1L;
 				{
 					add(V1);
 					add(V2);
@@ -55,6 +57,7 @@ class HeadersTest {
 	@Test
 	void shouldNotAddNullHeader() {
 		var headersToAdd = Map.of(N2, new ArrayList<>() {
+			private static final long serialVersionUID = 1L;
 			{
 				add(null);
 				add(null);
@@ -73,6 +76,7 @@ class HeadersTest {
 	@Test
 	void shouldNotAddAnythingIfHeaderNameIsNull() {
 		var headersToAdd = new HashMap<String, List<String>>() {
+			private static final long serialVersionUID = 1L;
 			{
 				put(null, List.of());
 			}
