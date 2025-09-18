@@ -28,7 +28,7 @@ class WaitTest {
 		public boolean keepWaiting() {
 			return false;
 		}
-	};
+	}
 
 	@Test
 	void shouldHaveNoSideEffectsOnCallingDefaultMethods() {

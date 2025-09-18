@@ -80,7 +80,7 @@ public class MicrometerCounter implements MeterCounter {
 	 */
 	@Override
 	public <T> T unwrap(final Class<T> cls) {
-		if (cls.isAssignableFrom(Counter.class)) {
+		if (Counter.class.isAssignableFrom(cls)) {
 			return JavaObjects.cast(counter);
 		}
 		throw new IllegalArgumentException("The meter class " + counter.getClass() + " is not of type " + cls);
