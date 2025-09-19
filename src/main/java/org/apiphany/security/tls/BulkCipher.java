@@ -8,6 +8,7 @@ import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.apiphany.lang.Bytes;
 import org.apiphany.security.MessageDigestAlgorithm;
 
 /**
@@ -284,18 +285,22 @@ public enum BulkCipher {
 	 *
 	 * @param mode the cipher mode {@link Cipher#ENCRYPT_MODE} or {@link Cipher#DECRYPT_MODE}
 	 * @param key the cipher key
-	 * @param spec the algorithm parameter spec
+	 * @param spec the algorithm parameter specification
 	 * @return a new cipher
 	 */
-	public Cipher cipher(final int mode, final byte[] key, final AlgorithmParameterSpec spec) throws GeneralSecurityException {
-		SecretKeySpec secret = new SecretKeySpec(key, algorithm());
-		Cipher cipher = Cipher.getInstance(type().transformation());
-		if (spec != null) {
-			cipher.init(mode, secret, spec);
-		} else {
-			cipher.init(mode, secret);
+	public Cipher cipher(final int mode, final byte[] key, final AlgorithmParameterSpec spec) {
+		try {
+			SecretKeySpec secret = new SecretKeySpec(key, algorithm());
+			Cipher cipher = Cipher.getInstance(type().transformation());
+			if (null != spec) {
+				cipher.init(mode, secret, spec);
+			} else {
+				cipher.init(mode, secret);
+			}
+			return cipher;
+		} catch (GeneralSecurityException e) {
+			throw new SecurityException("Error building cipher from: " + this, e);
 		}
-		return cipher;
 	}
 
 	/**
@@ -308,11 +313,25 @@ public enum BulkCipher {
 	}
 
 	/**
-	 * Returns true if this AEAD cipher uses an explicit per-record nonce.
+	 * Returns the full IV for AEAD, or the IV for BLOCK/STREAM.
 	 *
-	 * @return true if explicit nonce is used
+	 * @param keyIV fixed IV from ExchangeKeys (or null if not used)
+	 * @param explicitNonce explicit per-record nonce (or null if not applicable)
+	 * @return full IV to pass to Cipher
 	 */
-	public boolean hasExplicitNonce() {
-		return explicitNonceLength > 0;
+	public byte[] fullIV(final byte[] keyIV, final byte[] explicitNonce) {
+		switch (type()) {
+			case AEAD:
+				if (explicitNonceLength <= 0) {
+					return Bytes.isNotEmpty(keyIV) ? keyIV.clone() : new byte[fixedIvLength()];
+				}
+				byte[] iv = new byte[fixedIvLength() + explicitNonceLength()];
+				System.arraycopy(keyIV, 0, iv, 0, fixedIvLength());
+				System.arraycopy(explicitNonce, 0, iv, fixedIvLength(), explicitNonceLength());
+				return iv;
+			case BLOCK, STREAM, NO_ENCRYPTION:
+			default:
+				return Bytes.isNotEmpty(keyIV) ? keyIV.clone() : Bytes.EMPTY;
+		}
 	}
 }
