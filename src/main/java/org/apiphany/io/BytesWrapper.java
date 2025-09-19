@@ -48,13 +48,30 @@ public class BytesWrapper implements ByteSizeable, BinaryRepresentable {
 	 * Creates a new instance containing a copy of the specified bytes.
 	 *
 	 * @param bytes the byte array to wrap (may be {@code null}, which is treated as empty)
+	 * @param offset the offset from where to create the wrapper
+	 * @param size the size in bytes of the buffer
+	 */
+	public BytesWrapper(final byte[] bytes, final int offset, final int size) {
+		if (Bytes.isNotEmpty(bytes)) {
+			if (size == bytes.length) {
+				this.bytes = bytes;
+			} else {
+				byte[] buffer = new byte[size];
+				System.arraycopy(bytes, Math.max(0, offset), buffer, 0, size);
+				this.bytes = buffer;
+			}
+		} else {
+			this.bytes = Bytes.EMPTY;
+		}
+	}
+
+	/**
+	 * Creates a new instance containing a copy of the specified bytes.
+	 *
+	 * @param bytes the byte array to wrap (may be {@code null}, which is treated as empty)
 	 */
 	public BytesWrapper(final byte[] bytes) {
-		if (bytes == Bytes.EMPTY || null == bytes || 0 == bytes.length) {
-			this.bytes = Bytes.EMPTY;
-		} else {
-			this.bytes = Arrays.copyOf(bytes, bytes.length);
-		}
+		this(bytes, 0, bytes.length);
 	}
 
 	/**
@@ -89,7 +106,7 @@ public class BytesWrapper implements ByteSizeable, BinaryRepresentable {
 			throw new IllegalArgumentException("Size cannot be negative: " + size);
 		}
 		if (0 == size) {
-			return EMPTY;
+			return empty();
 		}
 		byte[] bytes = new byte[size];
 		int bytesRead = is.read(bytes);
@@ -98,6 +115,26 @@ public class BytesWrapper implements ByteSizeable, BinaryRepresentable {
 		}
 
 		return new BytesWrapper(bytes);
+	}
+
+	/**
+	 * Returns an empty wrapper.
+	 *
+	 * @return an empty wrapper
+	 */
+	public static BytesWrapper empty() {
+		return EMPTY;
+	}
+
+	/**
+	 * Returns a {@link BytesWrapper} object which represents a slice.
+	 *
+	 * @param offset the start offset
+	 * @param size the size of the slice
+	 * @return the slice
+	 */
+	public BytesWrapper slice(final int offset, final int size) {
+		return new BytesWrapper(bytes, offset, size);
 	}
 
 	/**

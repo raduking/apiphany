@@ -16,7 +16,7 @@ class MessageDigestAlgorithmTest {
 	@ParameterizedTest
 	@EnumSource(MessageDigestAlgorithm.class)
 	void shouldBuildWithFromStringWithValidValue(final MessageDigestAlgorithm algorithm) {
-		String stringValue = algorithm.getValue();
+		String stringValue = algorithm.value();
 		MessageDigestAlgorithm result = MessageDigestAlgorithm.fromValue(stringValue);
 		assertThat(result, equalTo(algorithm));
 	}

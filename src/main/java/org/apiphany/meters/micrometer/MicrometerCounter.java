@@ -28,7 +28,7 @@ public class MicrometerCounter implements MeterCounter {
 	 *
 	 * @param counter the underlying Micrometer counter (must not be {@code null})
 	 */
-	public MicrometerCounter(final Counter counter) {
+	protected MicrometerCounter(final Counter counter) {
 		this.counter = Objects.requireNonNull(counter);
 	}
 
@@ -80,7 +80,7 @@ public class MicrometerCounter implements MeterCounter {
 	 */
 	@Override
 	public <T> T unwrap(final Class<T> cls) {
-		if (cls.isAssignableFrom(Counter.class)) {
+		if (Counter.class.isAssignableFrom(cls)) {
 			return JavaObjects.cast(counter);
 		}
 		throw new IllegalArgumentException("The meter class " + counter.getClass() + " is not of type " + cls);

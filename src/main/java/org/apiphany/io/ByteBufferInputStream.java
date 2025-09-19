@@ -26,7 +26,17 @@ public class ByteBufferInputStream extends InputStream {
 	/**
 	 * The backing ByteBuffer for this input stream
 	 */
-	private final ByteBuffer buf;
+	private final ByteBuffer byteBuffer;
+
+	/**
+	 * Main constructor called by other constructors.
+	 *
+	 * @param buffer non-null byte buffer
+	 * @param duplicate flag to make a duplicate of the byte buffer
+	 */
+	protected ByteBufferInputStream(final ByteBuffer buffer, final boolean duplicate) {
+		this.byteBuffer = duplicate ? buffer.duplicate() : buffer;
+	}
 
 	/**
 	 * Creates a new ByteBufferInputStream that reads from the specified byte buffer. The stream will read from the
@@ -36,7 +46,7 @@ public class ByteBufferInputStream extends InputStream {
 	 * @throws NullPointerException if the input byte buffer is null
 	 */
 	public ByteBufferInputStream(final ByteBuffer buffer) {
-		this.buf = Objects.requireNonNull(buffer, "Input byte buffer cannot be null");
+		this(Objects.requireNonNull(buffer, "Input byte buffer cannot be null"), true);
 	}
 
 	/**
@@ -47,7 +57,7 @@ public class ByteBufferInputStream extends InputStream {
 	 * @throws NullPointerException if the input byte array is null
 	 */
 	public ByteBufferInputStream(final byte[] bytes) {
-		this(ByteBuffer.wrap(Objects.requireNonNull(bytes, "Input byte array cannot be null")));
+		this(ByteBuffer.wrap(Objects.requireNonNull(bytes, "Input byte array cannot be null")), false);
 	}
 
 	/**
@@ -79,10 +89,10 @@ public class ByteBufferInputStream extends InputStream {
 	 */
 	@Override
 	public int read() {
-		if (!buf.hasRemaining()) {
+		if (!byteBuffer.hasRemaining()) {
 			return -1;
 		}
-		return buf.get() & 0xFF; // Convert to unsigned byte
+		return byteBuffer.get() & 0xFF; // Convert to unsigned byte
 	}
 
 	/**
@@ -93,12 +103,20 @@ public class ByteBufferInputStream extends InputStream {
 		if (off < 0 || len < 0 || len > Objects.requireNonNull(bytes, "Byte array cannot be null").length - off) {
 			throw new IndexOutOfBoundsException();
 		}
-		if (!buf.hasRemaining()) {
+		if (!byteBuffer.hasRemaining()) {
 			return -1;
 		}
-		int l = Math.min(len, buf.remaining());
-		buf.get(bytes, off, l);
+		int l = Math.min(len, byteBuffer.remaining());
+		byteBuffer.get(bytes, off, l);
 		return l;
+	}
+
+	/**
+	 * @see #read(byte[])
+	 */
+	@Override
+	public int read(final byte[] bytes) {
+		return read(bytes, 0, bytes.length);
 	}
 
 	/**
@@ -106,7 +124,7 @@ public class ByteBufferInputStream extends InputStream {
 	 */
 	@Override
 	public int available() {
-		return buf.remaining();
+		return byteBuffer.remaining();
 	}
 
 	/**
@@ -117,8 +135,8 @@ public class ByteBufferInputStream extends InputStream {
 		if (n <= 0) {
 			return 0;
 		}
-		int skip = Math.toIntExact(Math.min(n, buf.remaining()));
-		buf.position(buf.position() + skip);
+		int skip = Math.toIntExact(Math.min(n, byteBuffer.remaining()));
+		byteBuffer.position(byteBuffer.position() + skip);
 		return skip;
 	}
 
@@ -127,7 +145,7 @@ public class ByteBufferInputStream extends InputStream {
 	 */
 	@Override
 	public void mark(final int readlimit) {
-		buf.mark();
+		byteBuffer.mark();
 	}
 
 	/**
@@ -135,7 +153,7 @@ public class ByteBufferInputStream extends InputStream {
 	 */
 	@Override
 	public void reset() {
-		buf.reset();
+		byteBuffer.reset();
 	}
 
 	/**
@@ -153,5 +171,14 @@ public class ByteBufferInputStream extends InputStream {
 	@Override
 	public void close() throws IOException {
 		// empty
+	}
+
+	/**
+	 * Returns the internal byte buffer.
+	 *
+	 * @return the internal byte buffer
+	 */
+	protected ByteBuffer getByteBuffer() {
+		return byteBuffer;
 	}
 }

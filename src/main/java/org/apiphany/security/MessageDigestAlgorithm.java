@@ -20,73 +20,73 @@ public enum MessageDigestAlgorithm {
 	/**
 	 * SHA-1 algorithm (FIPS 180-4). Note: Considered weak for most security purposes.
 	 */
-	SHA1("SHA-1"),
+	SHA1("SHA-1", 20),
 
 	/**
 	 * SHA-256 algorithm (FIPS 180-4). Part of the SHA-2 family.
 	 */
-	SHA256("SHA-256"),
+	SHA256("SHA-256", 32),
 
 	/**
 	 * SHA-384 algorithm (FIPS 180-4). Part of the SHA-2 family.
 	 */
-	SHA384("SHA-384"),
+	SHA384("SHA-384", 48),
 
 	/**
 	 * SHA-512 algorithm (FIPS 180-4). Part of the SHA-2 family.
 	 */
-	SHA512("SHA-512"),
+	SHA512("SHA-512", 64),
 
 	/**
 	 * SHA-224 algorithm (FIPS 180-4). Part of the SHA-2 family.
 	 */
-	SHA224("SHA-224"),
+	SHA224("SHA-224", 28),
 
 	/**
 	 * SHA-512/224 algorithm (FIPS 180-4). Part of the SHA-2 family.
 	 */
-	SHA512_224("SHA-512/224"),
+	SHA512_224("SHA-512/224", 28),
 
 	/**
 	 * SHA-512/256 algorithm (FIPS 180-4). Part of the SHA-2 family.
 	 */
-	SHA512_256("SHA-512/256"),
+	SHA512_256("SHA-512/256", 32),
 
 	/**
 	 * GOST R 34.11-94 hash algorithm.
 	 */
-	GOST3411("GOST3411"),
+	GOST3411("GOST3411", 32),
 
 	/**
 	 * GOST R 34.11-2012 Streebog 256-bit hash algorithm.
 	 */
-	GOST3411_2012_256("GOST3411-2012-256"),
+	GOST3411_2012_256("GOST3411-2012-256", 32),
 
 	/**
 	 * GOST R 34.11-2012 Streebog 512-bit hash algorithm.
 	 */
-	GOST3411_2012_512("GOST3411-2012-512"),
+	GOST3411_2012_512("GOST3411-2012-512", 64),
 
 	/**
 	 * SM3 cryptographic hash algorithm (OSCCA GM/T 0004-2012).
 	 */
-	SM3("SM3"),
+	SM3("SM3", 32),
 
 	/**
 	 * MD2 algorithm (RFC 1319). Note: Considered insecure and deprecated.
 	 */
 	@Deprecated
-	MD2("MD2"),
+	MD2("MD2", 16),
 
 	/**
 	 * MD5 algorithm (RFC 1321). Note: Considered cryptographically broken.
 	 */
-	MD5("MD5"),
+	MD5("MD5", 16),
 
 	/**
 	 * Indicates no message digest algorithm is used.
 	 */
-	NONE("NONE");
+	NONE("NONE", 0);
 
 	/**
 	 * The name map for easy {@link #fromValue(String)} implementation.
@@ -99,12 +99,18 @@ public enum MessageDigestAlgorithm {
 	private final String value;
 
 	/**
+	 * Digest length in bytes.
+	 */
+	private final int digestLength;
+
+	/**
 	 * Constructs a new MessageDigestAlgorithm enum constant.
 	 *
 	 * @param algorithm the standard algorithm name
 	 */
-	MessageDigestAlgorithm(final String algorithm) {
+	MessageDigestAlgorithm(final String algorithm, final int digestLength) {
 		this.value = algorithm;
+		this.digestLength = digestLength;
 	}
 
 	/**
@@ -118,7 +124,7 @@ public enum MessageDigestAlgorithm {
 			throw new UnsupportedOperationException("Digest algorithm '" + this + "' does not support digesting.");
 		}
 		try {
-			MessageDigest digest = MessageDigest.getInstance(getValue());
+			MessageDigest digest = MessageDigest.getInstance(value());
 			return digest.digest(input);
 		} catch (NoSuchAlgorithmException e) {
 			throw new SecurityException("Error digesting input", e);
@@ -140,7 +146,7 @@ public enum MessageDigestAlgorithm {
 	 */
 	@Override
 	public String toString() {
-		return getValue();
+		return value();
 	}
 
 	/**
@@ -152,7 +158,7 @@ public enum MessageDigestAlgorithm {
 		if (NONE == this || MD2 == this || MD5 == this) { // NOSONAR
 			throw new UnsupportedOperationException("Invalid digest algorithm for HMAC PRF: " + this);
 		}
-		return "Hmac" + getValue().replace("-", "");
+		return "Hmac" + value().replace("-", "");
 	}
 
 	/**
@@ -160,8 +166,17 @@ public enum MessageDigestAlgorithm {
 	 *
 	 * @return the algorithm name as recognized by security providers
 	 */
-	public String getValue() {
+	public String value() {
 		return value;
+	}
+
+	/**
+	 * Returns the digest length in bytes.
+	 *
+	 * @return digest length in bytes
+	 */
+	public int digestLength() {
+		return digestLength;
 	}
 
 	/**

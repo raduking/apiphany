@@ -18,8 +18,6 @@ import java.util.List;
 import java.util.Objects;
 
 import javax.crypto.Cipher;
-import javax.crypto.spec.GCMParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 import javax.net.ssl.SSLException;
 
 import org.apiphany.http.HttpResponseParser;
@@ -40,15 +38,18 @@ import org.apiphany.security.tls.Alert;
 import org.apiphany.security.tls.AlertDescription;
 import org.apiphany.security.tls.AlertLevel;
 import org.apiphany.security.tls.ApplicationData;
+import org.apiphany.security.tls.BulkCipher;
 import org.apiphany.security.tls.Certificates;
 import org.apiphany.security.tls.ChangeCipherSpec;
 import org.apiphany.security.tls.CipherSuite;
+import org.apiphany.security.tls.CipherType;
 import org.apiphany.security.tls.ClientHello;
 import org.apiphany.security.tls.ClientKeyExchange;
 import org.apiphany.security.tls.ECDHEPublicKey;
 import org.apiphany.security.tls.Encrypted;
 import org.apiphany.security.tls.EncryptedAlert;
 import org.apiphany.security.tls.EncryptedHandshake;
+import org.apiphany.security.tls.ExchangeKeys;
 import org.apiphany.security.tls.ExchangeRandom;
 import org.apiphany.security.tls.Finished;
 import org.apiphany.security.tls.Handshake;
@@ -108,6 +109,7 @@ public class MinimalTLSClient implements AutoCloseable {
 	private KeyPair clientKeyPair;
 	private PublicKey serverPublicKey;
 
+	private CipherSuite serverCipherSuite;
 	private ExchangeKeys exchangeKeys;
 
 	private final List<Handshake> handshakeMessages = new ArrayList<>();
@@ -180,8 +182,8 @@ public class MinimalTLSClient implements AutoCloseable {
 		ServerHello serverHello = tlsRecord.getHandshake(ServerHello.class);
 		byte[] serverRandom = serverHello.getServerRandom().toByteArray();
 		LOGGER.debug("Server random:\n{}", Hex.dump(serverRandom));
-		CipherSuite serverCipherSuite = serverHello.getCipherSuite();
-		MessageDigestAlgorithm messageDigest = serverCipherSuite.getMessageDigest();
+		this.serverCipherSuite = serverHello.getCipherSuite();
+		MessageDigestAlgorithm messageDigest = serverCipherSuite.messageDigest();
 		String prfAlgorithm = messageDigest.hmacName();
 
 		// 2b. Server Certificates
@@ -243,12 +245,14 @@ public class MinimalTLSClient implements AutoCloseable {
 
 		// 5. Derive Master Secret and Keys
 		byte[] masterSecret = PRF.apply(preMasterSecret, PRFLabel.MASTER_SECRET,
-				Bytes.concatenate(clientRandom, serverRandom), 48, prfAlgorithm);
+				Bytes.concatenate(clientRandom, serverRandom), SSLProtocol.TLS_1_2_MASTER_SECRET_LENGTH, prfAlgorithm);
 		LOGGER.debug("Master secret:\n{}", Hex.dump(masterSecret));
+		// Derive key block length dynamically based on server cipher suite
+		int keyBlockLength = serverCipherSuite.totalKeyBlockLength();
 		byte[] keyBlock = PRF.apply(masterSecret, PRFLabel.KEY_EXPANSION,
-				Bytes.concatenate(serverRandom, clientRandom), (ExchangeKeys.KEY_LENGTH + ExchangeKeys.IV_LENGTH) * 2, prfAlgorithm);
+				Bytes.concatenate(serverRandom, clientRandom), keyBlockLength, prfAlgorithm);
 		// Extract keys
-		exchangeKeys = ExchangeKeys.from(keyBlock, ExchangeKeys.Type.AEAD);
+		exchangeKeys = ExchangeKeys.from(keyBlock, serverCipherSuite);
 
 		// 6. Send Client Change Cipher Spec
 		Record changeCypherSpecRecord = new Record(sslProtocol, new ChangeCipherSpec());
@@ -352,54 +356,69 @@ public class MinimalTLSClient implements AutoCloseable {
 		byte[] plaintext = tlsObject.toByteArray();
 		LOGGER.debug("Plaintext:\n{}", Hex.dump(plaintext));
 
-		long seq = this.clientSequenceNumber++;
-		byte[] explicitNonce = UInt64.toByteArray(seq); // 8 bytes
+		BulkCipher bulkCipher = serverCipherSuite.bulkCipher();
+		CipherType cipherType = bulkCipher.type();
 
-		byte[] fixedIV = keys.getClientIV(); // 4 bytes
-		byte[] fullIV = new byte[12];
-		System.arraycopy(fixedIV, 0, fullIV, 0, 4);
-		System.arraycopy(explicitNonce, 0, fullIV, 4, 8);
+		long sequence = this.clientSequenceNumber++;
+		byte[] explicitNonce = UInt64.toByteArray(sequence);
 
-		short aadLength = (short) plaintext.length;
-		AdditionalAuthenticatedData aad = new AdditionalAuthenticatedData(seq, type, sslProtocol, aadLength);
-		LOGGER.debug("Encrypt AAD:{}", aad);
+		return switch (cipherType) {
+			case AEAD -> {
+				short aadLength = (short) plaintext.length;
+				AdditionalAuthenticatedData aad = new AdditionalAuthenticatedData(sequence, type, sslProtocol, aadLength);
+				LOGGER.debug("Encrypt AAD: {}", aad);
 
-		Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-		GCMParameterSpec spec = new GCMParameterSpec(128, fullIV);
-		cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(keys.getClientWriteKey(), "AES"), spec);
-		cipher.updateAAD(aad.toByteArray());
+				byte[] fullIV = bulkCipher.fullIV(keys.getClientIV(), explicitNonce);
+				Cipher cipher = bulkCipher.cipher(Cipher.ENCRYPT_MODE, keys.getClientWriteKey(), bulkCipher.spec(fullIV));
+				cipher.updateAAD(aad.toByteArray());
 
-		byte[] encrypted = cipher.doFinal(plaintext);
-		LOGGER.debug("Encrypted (ciphertext + tag):\n{}", Hex.dump(encrypted));
-
-		return new Encrypted(explicitNonce, encrypted);
+				byte[] encrypted = cipher.doFinal(plaintext);
+				LOGGER.debug("Encrypted (ciphertext + tag):\n{}", Hex.dump(encrypted));
+				yield new Encrypted(explicitNonce, encrypted);
+			}
+			case BLOCK, STREAM -> {
+				byte[] iv = bulkCipher.fullIV(null, keys.getClientIV());
+				Cipher cipher = bulkCipher.cipher(Cipher.ENCRYPT_MODE, keys.getClientWriteKey(), bulkCipher.spec(iv));
+				yield new Encrypted(cipher.doFinal(plaintext));
+			}
+			case NO_ENCRYPTION -> {
+				yield new Encrypted(plaintext);
+			}
+		};
 	}
 
 	public byte[] decrypt(final Record tlsRecord, final ExchangeKeys keys) throws Exception {
+		BulkCipher bulkCipher = serverCipherSuite.bulkCipher();
+		CipherType cipherType = bulkCipher.type();
+
+		long sequence = this.serverSequenceNumber++;
 		RecordContentType type = tlsRecord.getHeader().getType();
 		Encrypted encrypted = tlsRecord.getFragment(TLSEncryptedObject.class).getEncrypted();
 
-		long seq = this.serverSequenceNumber++;
-		byte[] explicitNonce = encrypted.getNonce().toByteArray();
+		return switch (cipherType) {
+			case AEAD -> {
+				short aadLength = (short) (encrypted.getEncryptedData(bulkCipher).toByteArray().length - bulkCipher.tagLength());
+				AdditionalAuthenticatedData aad = new AdditionalAuthenticatedData(sequence, type, sslProtocol, aadLength);
+				LOGGER.debug("Decrypt AAD: {}", aad);
 
-		byte[] fixedIV = keys.getServerIV(); // 4 bytes
-		byte[] fullIV = new byte[12];
-		System.arraycopy(fixedIV, 0, fullIV, 0, 4);
-		System.arraycopy(explicitNonce, 0, fullIV, 4, 8);
+				byte[] explicitNonce = encrypted.getNonce(bulkCipher).toByteArray();
+				byte[] fullIV = bulkCipher.fullIV(keys.getServerIV(), explicitNonce);
+				Cipher cipher = bulkCipher.cipher(Cipher.DECRYPT_MODE, keys.getServerWriteKey(), bulkCipher.spec(fullIV));
+				cipher.updateAAD(aad.toByteArray());
 
-		short aadLength = (short) (encrypted.getEncryptedData().toByteArray().length - 16);
-		AdditionalAuthenticatedData aad = new AdditionalAuthenticatedData(seq, type, sslProtocol, aadLength);
-		LOGGER.debug("Decrypt AAD:{}", aad);
-
-		Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-		GCMParameterSpec spec = new GCMParameterSpec(128, fullIV);
-		cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(keys.getServerWriteKey(), "AES"), spec);
-		cipher.updateAAD(aad.toByteArray());
-
-		byte[] decrypted = cipher.doFinal(encrypted.getEncryptedData().toByteArray());
-		LOGGER.debug("Decrypted:\n{}", Hex.dump(decrypted));
-
-		return decrypted;
+				byte[] decrypted = cipher.doFinal(encrypted.getEncryptedData(bulkCipher).toByteArray());
+				LOGGER.debug("Decrypted:\n{}", Hex.dump(decrypted));
+				yield decrypted;
+			}
+			case BLOCK, STREAM -> {
+				byte[] iv = bulkCipher.fullIV(null, keys.getServerIV());
+				Cipher cipher = bulkCipher.cipher(Cipher.DECRYPT_MODE, keys.getServerWriteKey(), bulkCipher.spec(iv));
+				yield cipher.doFinal(encrypted.getEncryptedData(bulkCipher).toByteArray());
+			}
+			case NO_ENCRYPTION -> {
+				yield encrypted.getEncryptedData(bulkCipher).toByteArray();
+			}
+		};
 	}
 
 	public byte[] getClientPublicBytes(final ServerKeyExchange ske, final KeyExchangeHandler keys) {

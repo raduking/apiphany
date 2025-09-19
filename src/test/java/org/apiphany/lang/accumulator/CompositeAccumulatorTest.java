@@ -46,7 +46,7 @@ class CompositeAccumulatorTest {
 	}
 
 	@Test
-	void shouldAccumulateWithEachAccumulatorInCompositeIncludingExceptions() throws Exception {
+	void shouldAccumulateWithEachAccumulatorInCompositeIncludingExceptions() {
 		DurationAccumulator da1 = DurationAccumulator.of();
 		ExceptionsAccumulator ea1 = ExceptionsAccumulator.of(false, false);
 

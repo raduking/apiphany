@@ -226,16 +226,16 @@ class DurationAccumulatorTest {
 
 	@Test
 	void shouldReturnCorrectPercentilesForEvenNumberOfDurations() {
-		accumulator.accumulate(() -> Threads.safeSleep(Duration.ofMillis(10)));
-		accumulator.accumulate(() -> Threads.safeSleep(Duration.ofMillis(20)));
-		accumulator.accumulate(() -> Threads.safeSleep(Duration.ofMillis(30)));
-		accumulator.accumulate(() -> Threads.safeSleep(Duration.ofMillis(40)));
+		accumulator.getInformationList().add(Duration.ofMillis(10));
+		accumulator.getInformationList().add(Duration.ofMillis(20));
+		accumulator.getInformationList().add(Duration.ofMillis(30));
+		accumulator.getInformationList().add(Duration.ofMillis(40));
 
 		double p50 = accumulator.percentile(50.0); // median
 		double p90 = accumulator.percentile(90.0);
 
-		assertThat(p50, closeTo(0.03, 0.01)); // median is the 3rd value
-		assertThat(p90, closeTo(0.04, 0.01)); // 90th percentile ~40ms
+		assertThat(p50, equalTo(0.02)); // median is the 2nd value for even numbers
+		assertThat(p90, equalTo(0.04)); // 90th percentile 40ms
 	}
 
 	@Test

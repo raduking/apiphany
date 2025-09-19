@@ -151,7 +151,7 @@ class ExceptionsAccumulatorTest {
 				throw new RuntimeException(String.valueOf(n));
 			});
 		}
-		RuntimeException result = assertThrows(RuntimeException.class, () -> ea.rest());
+		RuntimeException result = assertThrows(RuntimeException.class, ea::rest);
 
 		assertThat(ea.getExceptions(), hasSize(COUNT));
 		assertThat(result.getMessage(), equalTo(String.valueOf(COUNT - 1)));
@@ -166,7 +166,7 @@ class ExceptionsAccumulatorTest {
 				throw new RuntimeException(String.valueOf(n));
 			});
 		}
-		AccumulatorException result = assertThrows(AccumulatorException.class, () -> ea.rest());
+		AccumulatorException result = assertThrows(AccumulatorException.class, ea::rest);
 
 		assertThat(ea.getExceptions(), hasSize(COUNT));
 		assertThat(result.getCause().getMessage(), equalTo(String.valueOf(COUNT - 1)));

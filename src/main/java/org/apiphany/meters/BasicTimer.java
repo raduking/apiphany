@@ -43,7 +43,7 @@ public class BasicTimer extends BasicMeter implements MeterTimer {
 	 * @see Timer#record(Duration)
 	 */
 	@Override
-	public void record(final Duration duration) {
+	public void record(final Duration duration) { // NOSONAR
 		this.duration = duration;
 	}
 
