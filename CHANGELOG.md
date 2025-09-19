@@ -13,6 +13,8 @@ Added `CipherType` to represent the ciper types like AEAD, BLOCK, etc.
 Added `ExchangeKeys` which represents the set of keys derived from the TLS key block for a given cipher suite.
 Added `SSLProtocol.TLS_1_2_MASTER_SECRET_LENGTH` constant with the TLS 1.2 master secret length in bytes (48).
 Added `maven_deploy.sh` shell script to deploy to Maven Central which uses all the test parameters.
+Added `Bytes.isEmpty` to check if a byte array is empty.
+Added `Bytes.isNotEmpty` to check if a byte array is not empty.
 
 ---
 

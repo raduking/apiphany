@@ -102,7 +102,7 @@ public final class Bytes {
 	 * @return true if the given byte array is empty, false otherwise
 	 */
 	public static boolean isEmpty(final byte[] bytes) {
-		return null == bytes || EMPTY == bytes;
+		return null == bytes || EMPTY == bytes || 0 == bytes.length;
 	}
 
 	/**
