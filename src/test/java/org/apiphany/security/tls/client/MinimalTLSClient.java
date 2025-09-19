@@ -18,8 +18,6 @@ import java.util.List;
 import java.util.Objects;
 
 import javax.crypto.Cipher;
-import javax.crypto.spec.GCMParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 import javax.net.ssl.SSLException;
 
 import org.apiphany.http.HttpResponseParser;
@@ -40,9 +38,11 @@ import org.apiphany.security.tls.Alert;
 import org.apiphany.security.tls.AlertDescription;
 import org.apiphany.security.tls.AlertLevel;
 import org.apiphany.security.tls.ApplicationData;
+import org.apiphany.security.tls.BulkCipher;
 import org.apiphany.security.tls.Certificates;
 import org.apiphany.security.tls.ChangeCipherSpec;
 import org.apiphany.security.tls.CipherSuite;
+import org.apiphany.security.tls.CipherType;
 import org.apiphany.security.tls.ClientHello;
 import org.apiphany.security.tls.ClientKeyExchange;
 import org.apiphany.security.tls.ECDHEPublicKey;
@@ -109,6 +109,7 @@ public class MinimalTLSClient implements AutoCloseable {
 	private KeyPair clientKeyPair;
 	private PublicKey serverPublicKey;
 
+	private CipherSuite serverCipherSuite;
 	private ExchangeKeys exchangeKeys;
 
 	private final List<Handshake> handshakeMessages = new ArrayList<>();
@@ -181,7 +182,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		ServerHello serverHello = tlsRecord.getHandshake(ServerHello.class);
 		byte[] serverRandom = serverHello.getServerRandom().toByteArray();
 		LOGGER.debug("Server random:\n{}", Hex.dump(serverRandom));
-		CipherSuite serverCipherSuite = serverHello.getCipherSuite();
+		this.serverCipherSuite = serverHello.getCipherSuite();
 		MessageDigestAlgorithm messageDigest = serverCipherSuite.messageDigest();
 		String prfAlgorithm = messageDigest.hmacName();
 
@@ -351,58 +352,94 @@ public class MinimalTLSClient implements AutoCloseable {
 		return content;
 	}
 
+	private static byte[] buildFullIV(final byte[] fixedIV, final byte[] explicitNonce, final BulkCipher bulkCipher) {
+		if (bulkCipher.hasExplicitNonce()) {
+			byte[] iv = new byte[bulkCipher.fullIVLength()];
+			System.arraycopy(fixedIV, 0, iv, 0, bulkCipher.fixedIvLength());
+			System.arraycopy(explicitNonce, 0, iv, bulkCipher.fixedIvLength(), bulkCipher.explicitNonceLength());
+			return iv;
+		}
+		// No explicit nonce — the fixedIV (or a derived nonce) is the full IV.
+		return fixedIV != null ? fixedIV.clone() : new byte[bulkCipher.fullIVLength()];
+	}
+
 	public Encrypted encrypt(final BinaryRepresentable tlsObject, final RecordContentType type, final ExchangeKeys keys) throws Exception {
 		byte[] plaintext = tlsObject.toByteArray();
 		LOGGER.debug("Plaintext:\n{}", Hex.dump(plaintext));
 
+		BulkCipher bulkCipher = serverCipherSuite.bulkCipher();
+		CipherType cipherType = bulkCipher.type();
+
 		long seq = this.clientSequenceNumber++;
-		byte[] explicitNonce = UInt64.toByteArray(seq); // 8 bytes
+		byte[] explicitNonce = UInt64.toByteArray(seq);
 
-		byte[] fixedIV = keys.getClientIV(); // 4 bytes
-		byte[] fullIV = new byte[12];
-		System.arraycopy(fixedIV, 0, fullIV, 0, 4);
-		System.arraycopy(explicitNonce, 0, fullIV, 4, 8);
+		switch (cipherType) {
+			case AEAD -> {
+				byte[] fullIV = buildFullIV(keys.getClientIV(), explicitNonce, bulkCipher);
 
-		short aadLength = (short) plaintext.length;
-		AdditionalAuthenticatedData aad = new AdditionalAuthenticatedData(seq, type, sslProtocol, aadLength);
-		LOGGER.debug("Encrypt AAD:{}", aad);
+				short aadLength = (short) plaintext.length;
+				AdditionalAuthenticatedData aad = new AdditionalAuthenticatedData(seq, type, sslProtocol, aadLength);
+				LOGGER.debug("Encrypt AAD: {}", aad);
 
-		Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-		GCMParameterSpec spec = new GCMParameterSpec(128, fullIV);
-		cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(keys.getClientWriteKey(), "AES"), spec);
-		cipher.updateAAD(aad.toByteArray());
+				Cipher cipher = bulkCipher.cipher(Cipher.ENCRYPT_MODE, keys.getClientWriteKey(), bulkCipher.spec(fullIV));
+				cipher.updateAAD(aad.toByteArray());
 
-		byte[] encrypted = cipher.doFinal(plaintext);
-		LOGGER.debug("Encrypted (ciphertext + tag):\n{}", Hex.dump(encrypted));
-
-		return new Encrypted(explicitNonce, encrypted);
+				byte[] encrypted = cipher.doFinal(plaintext);
+				LOGGER.debug("Encrypted (ciphertext + tag):\n{}", Hex.dump(encrypted));
+				return new Encrypted(explicitNonce, encrypted);
+			}
+			case BLOCK -> {
+				Cipher cipher = bulkCipher.cipher(Cipher.ENCRYPT_MODE, keys.getClientWriteKey(), bulkCipher.spec(keys.getClientIV()));
+				return new Encrypted(Bytes.EMPTY, cipher.doFinal(plaintext));
+			}
+			case STREAM -> {
+				Cipher cipher = bulkCipher.cipher(Cipher.ENCRYPT_MODE, keys.getClientWriteKey(), bulkCipher.spec(Bytes.EMPTY));
+				return new Encrypted(Bytes.EMPTY, cipher.doFinal(plaintext));
+			}
+			case NO_ENCRYPTION -> {
+				return new Encrypted(Bytes.EMPTY, plaintext);
+			}
+			default -> throw new IllegalStateException("Unknown cipher type: " + cipherType);
+		}
 	}
 
 	public byte[] decrypt(final Record tlsRecord, final ExchangeKeys keys) throws Exception {
+		BulkCipher bulkCipher = serverCipherSuite.bulkCipher();
+		CipherType cipherType = bulkCipher.type();
+
+		long seq = this.serverSequenceNumber++;
 		RecordContentType type = tlsRecord.getHeader().getType();
 		Encrypted encrypted = tlsRecord.getFragment(TLSEncryptedObject.class).getEncrypted();
 
-		long seq = this.serverSequenceNumber++;
-		byte[] explicitNonce = encrypted.getNonce().toByteArray();
+		switch (cipherType) {
+			case AEAD -> {
+				byte[] explicitNonce = encrypted.getNonce().toByteArray();
+				byte[] fullIV = buildFullIV(keys.getServerIV(), explicitNonce, bulkCipher);
 
-		byte[] fixedIV = keys.getServerIV(); // 4 bytes
-		byte[] fullIV = new byte[12];
-		System.arraycopy(fixedIV, 0, fullIV, 0, 4);
-		System.arraycopy(explicitNonce, 0, fullIV, 4, 8);
+				short aadLength = (short) (encrypted.getEncryptedData().toByteArray().length - bulkCipher.tagLength());
+				AdditionalAuthenticatedData aad = new AdditionalAuthenticatedData(seq, type, sslProtocol, aadLength);
+				LOGGER.debug("Decrypt AAD: {}", aad);
 
-		short aadLength = (short) (encrypted.getEncryptedData().toByteArray().length - 16);
-		AdditionalAuthenticatedData aad = new AdditionalAuthenticatedData(seq, type, sslProtocol, aadLength);
-		LOGGER.debug("Decrypt AAD:{}", aad);
+				Cipher cipher = bulkCipher.cipher(Cipher.DECRYPT_MODE, keys.getServerWriteKey(), bulkCipher.spec(fullIV));
+				cipher.updateAAD(aad.toByteArray());
 
-		Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-		GCMParameterSpec spec = new GCMParameterSpec(128, fullIV);
-		cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(keys.getServerWriteKey(), "AES"), spec);
-		cipher.updateAAD(aad.toByteArray());
-
-		byte[] decrypted = cipher.doFinal(encrypted.getEncryptedData().toByteArray());
-		LOGGER.debug("Decrypted:\n{}", Hex.dump(decrypted));
-
-		return decrypted;
+				byte[] decrypted = cipher.doFinal(encrypted.getEncryptedData().toByteArray());
+				LOGGER.debug("Decrypted:\n{}", Hex.dump(decrypted));
+				return decrypted;
+			}
+			case BLOCK -> {
+				Cipher cipher = bulkCipher.cipher(Cipher.DECRYPT_MODE, keys.getServerWriteKey(), bulkCipher.spec(keys.getServerIV()));
+				return cipher.doFinal(encrypted.getEncryptedData().toByteArray());
+			}
+			case STREAM -> {
+				Cipher cipher = bulkCipher.cipher(Cipher.DECRYPT_MODE, keys.getServerWriteKey(), bulkCipher.spec(Bytes.EMPTY));
+				return cipher.doFinal(encrypted.getEncryptedData().toByteArray());
+			}
+			case NO_ENCRYPTION -> {
+				return encrypted.getEncryptedData().toByteArray();
+			}
+			default -> throw new IllegalStateException("Unknown cipher type: " + cipherType);
+		}
 	}
 
 	public byte[] getClientPublicBytes(final ServerKeyExchange ske, final KeyExchangeHandler keys) {
