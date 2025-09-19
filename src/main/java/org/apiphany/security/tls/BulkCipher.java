@@ -183,15 +183,6 @@ public enum BulkCipher {
 	}
 
 	/**
-	 * Returns true for AEAD ciphers (AES-GCM, ChaCha20-Poly1305, CCM).
-	 *
-	 * @return true for AEAD ciphers, false otherwise
-	 */
-	public boolean isAEAD() {
-		return CipherType.AEAD == type();
-	}
-
-	/**
 	 * Returns the MAC key length in bytes. If this cipher uses a MAC whose size depends on the negotiated hash (HMAC-SHA256
 	 * -> 32 bytes), this method should be called with the negotiated {@link MessageDigestAlgorithm}.
 	 *
