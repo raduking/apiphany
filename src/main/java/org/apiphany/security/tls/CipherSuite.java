@@ -373,14 +373,10 @@ public enum CipherSuite implements TLSObject {
 	 */
 	public int totalKeyBlockLength() {
 		CipherType type = bulkCipher().type();
-		int macLen = messageDigest().digestLength();
-		int keyLen = bulkCipher().keyLength();
-		int ivLen = bulkCipher().isAEAD() ? bulkCipher().fixedIvLength() : bulkCipher().blockSize();
-
 		return switch (type) {
-			case AEAD -> 2 * (keyLen + ivLen);
-			case BLOCK -> 2 * (macLen + keyLen + ivLen);
-			case STREAM -> 2 * (macLen + keyLen);
+			case AEAD -> 2 * (bulkCipher().keyLength() + bulkCipher().fixedIvLength());
+			case BLOCK -> 2 * (messageDigest().digestLength() + bulkCipher().keyLength() + bulkCipher().blockSize());
+			case STREAM -> 2 * (messageDigest().digestLength() + bulkCipher().keyLength());
 			case NO_ENCRYPTION -> 0;
 		};
 	}
