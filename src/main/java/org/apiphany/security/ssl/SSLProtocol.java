@@ -89,6 +89,11 @@ public enum SSLProtocol {
 	SSL_2_0("SSLv2Hello", (byte) 0x02, (byte) 0x00);
 
 	/**
+	 * The master secret length in bytes for TLS 1.2 (value: 48).
+	 */
+	public static final int TLS_1_2_MASTER_SECRET_LENGTH = 48;
+
+	/**
 	 * The name map for easy from string implementation.
 	 */
 	private static final Map<String, SSLProtocol> NAME_MAP = Enums.buildNameMap(values());
