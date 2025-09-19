@@ -120,7 +120,7 @@ public enum SSLProtocol {
 	 */
 	SSLProtocol(final String value, final byte handshakeVersionMajor, final byte handshakeVersionMinor) {
 		this.value = value;
-		this.handshakeVersion = (short) (((short) (handshakeVersionMajor << 8)) + handshakeVersionMinor);
+		this.handshakeVersion = (short) (((short) (handshakeVersionMajor << 8)) + (handshakeVersionMinor & 0xFF));
 	}
 
 	/**
