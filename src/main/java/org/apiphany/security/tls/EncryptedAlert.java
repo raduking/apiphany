@@ -30,8 +30,7 @@ public class EncryptedAlert extends TLSEncryptedObject {
 	 * @throws IOException if an I/O error occurs
 	 */
 	public static EncryptedAlert from(final InputStream is, final int length) throws IOException {
-		// TODO: 8 sized nonce is specific to AES/GCM/NoPadding make it configurable
-		Encrypted payload = Encrypted.from(is, length, 8);
+		Encrypted payload = Encrypted.from(is, length);
 		return new EncryptedAlert(payload);
 	}
 }

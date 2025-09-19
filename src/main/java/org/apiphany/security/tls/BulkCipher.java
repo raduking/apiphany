@@ -304,15 +304,6 @@ public enum BulkCipher {
 	}
 
 	/**
-	 * Returns the total IV length for AEAD ciphers (fixed IV + explicit nonce).
-	 *
-	 * @return total IV length in bytes
-	 */
-	public int fullIVLength() {
-		return fixedIvLength + explicitNonceLength;
-	}
-
-	/**
 	 * Returns the full IV for AEAD, or the IV for BLOCK/STREAM.
 	 *
 	 * @param keyIV fixed IV from ExchangeKeys (or null if not used)

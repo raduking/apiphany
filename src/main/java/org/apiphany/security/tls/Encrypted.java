@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 import org.apiphany.io.BytesWrapper;
+import org.apiphany.lang.Bytes;
 
 /**
  * Represents encrypted data in TLS protocol messages.
@@ -16,24 +17,26 @@ import org.apiphany.io.BytesWrapper;
 public class Encrypted implements TLSObject {
 
 	/**
-	 * The nonce or initialization vector used for encryption.
+	 * The encrypted data, for AEAD the bytes in the beginning can be nonce or initialization vector used for encryption.
 	 */
-	private final BytesWrapper nonce;
-
-	/**
-	 * The encrypted payload data.
-	 */
-	private final BytesWrapper encryptedData;
+	private final BytesWrapper data;
 
 	/**
 	 * Constructs an Encrypted message with wrapped data.
 	 *
-	 * @param nonce the nonce/IV bytes wrapper
-	 * @param encryptedData the encrypted data wrapper
+	 * @param data the encrypted data wrapper
 	 */
-	public Encrypted(final BytesWrapper nonce, final BytesWrapper encryptedData) {
-		this.nonce = nonce;
-		this.encryptedData = encryptedData;
+	public Encrypted(final BytesWrapper data) {
+		this.data = data;
+	}
+
+	/**
+	 * Constructs an Encrypted message with raw byte arrays.
+	 *
+	 * @param data the encrypted data wrapper
+	 */
+	public Encrypted(final byte[] data) {
+		this(new BytesWrapper(data));
 	}
 
 	/**
@@ -43,7 +46,7 @@ public class Encrypted implements TLSObject {
 	 * @param encryptedData the encrypted data bytes
 	 */
 	public Encrypted(final byte[] nonce, final byte[] encryptedData) {
-		this(new BytesWrapper(nonce), new BytesWrapper(encryptedData));
+		this(Bytes.concatenate(nonce, encryptedData));
 	}
 
 	/**
@@ -51,14 +54,12 @@ public class Encrypted implements TLSObject {
 	 *
 	 * @param is the input stream containing the encrypted data
 	 * @param totalLength the total length of encrypted message
-	 * @param nonceLength the length of the nonce/IV
 	 * @return the parsed Encrypted object
 	 * @throws IOException if an I/O error occurs
 	 */
-	public static Encrypted from(final InputStream is, final int totalLength, final int nonceLength) throws IOException {
-		BytesWrapper nonce = BytesWrapper.from(is, nonceLength);
-		BytesWrapper payload = BytesWrapper.from(is, totalLength - nonceLength);
-		return new Encrypted(nonce, payload);
+	public static Encrypted from(final InputStream is, final int totalLength) throws IOException {
+		BytesWrapper data = BytesWrapper.from(is, totalLength);
+		return new Encrypted(data);
 	}
 
 	/**
@@ -69,8 +70,7 @@ public class Encrypted implements TLSObject {
 	@Override
 	public byte[] toByteArray() {
 		ByteBuffer buffer = ByteBuffer.allocate(sizeOf());
-		buffer.put(nonce.toByteArray());
-		buffer.put(encryptedData.toByteArray());
+		buffer.put(data.toByteArray());
 		return buffer.array();
 	}
 
@@ -87,11 +87,20 @@ public class Encrypted implements TLSObject {
 	/**
 	 * Returns the total size when serialized.
 	 *
-	 * @return size in bytes of nonce plus encrypted data
+	 * @return size in bytes of encrypted data
 	 */
 	@Override
 	public int sizeOf() {
-		return nonce.sizeOf() + encryptedData.sizeOf();
+		return data.sizeOf();
+	}
+
+	/**
+	 * Returns the encrypted data wrapper.
+	 *
+	 * @return the encrypted data wrapper
+	 */
+	public BytesWrapper getData() {
+		return data;
 	}
 
 	/**
@@ -99,8 +108,12 @@ public class Encrypted implements TLSObject {
 	 *
 	 * @return the BytesWrapper containing nonce bytes
 	 */
-	public BytesWrapper getNonce() {
-		return nonce;
+	public BytesWrapper getNonce(final BulkCipher cipher) {
+		if (cipher.type() == CipherType.AEAD) {
+			int nonceLength = cipher.explicitNonceLength();
+			return new BytesWrapper(getData().toByteArray(), 0, nonceLength);
+		}
+		return BytesWrapper.empty();
 	}
 
 	/**
@@ -108,7 +121,11 @@ public class Encrypted implements TLSObject {
 	 *
 	 * @return the BytesWrapper containing encrypted bytes
 	 */
-	public BytesWrapper getEncryptedData() {
-		return encryptedData;
-	}
+    public BytesWrapper getEncryptedData(final BulkCipher cipher) {
+        if (cipher.type() == CipherType.AEAD) {
+            int nonceLength = cipher.explicitNonceLength();
+            return new BytesWrapper(getData().toByteArray(), nonceLength, sizeOf() - nonceLength);
+        }
+        return getData();
+    }
 }
