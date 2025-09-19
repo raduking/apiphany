@@ -19,21 +19,43 @@ public enum CipherType {
 	/**
 	 * Authenticated encryption (AES-GCM, ChaCha20).
 	 */
-	AEAD,
+	AEAD("AES/GCM/NoPadding"),
 
 	/**
 	 * Block cipher (AES-CBC).
 	 */
-	BLOCK,
+	BLOCK("AES/CBC/PKCS5Padding"),
 
 	/**
 	 * Stream cipher (RC4).
 	 */
-	STREAM,
+	STREAM("RC4"),
 
 	/**
 	 * No encryption.
 	 */
-	NO_ENCRYPTION
+	NO_ENCRYPTION("");
 
+	/**
+	 * The default transformation.
+	 */
+	private final String defaultTransformation;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param defaultTransformation the default transformation.
+	 */
+	CipherType(final String defaultTransformation) {
+		this.defaultTransformation = defaultTransformation;
+	}
+
+	/**
+	 * Returns the default transformation.
+	 *
+	 * @return the default transformation
+	 */
+	public String transformation() {
+		return defaultTransformation;
+	}
 }
