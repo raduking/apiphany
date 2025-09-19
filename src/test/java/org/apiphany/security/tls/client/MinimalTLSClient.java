@@ -379,10 +379,10 @@ public class MinimalTLSClient implements AutoCloseable {
 			case BLOCK, STREAM -> {
 				byte[] iv = bulkCipher.fullIV(null, keys.getClientIV());
 				Cipher cipher = bulkCipher.cipher(Cipher.ENCRYPT_MODE, keys.getClientWriteKey(), bulkCipher.spec(iv));
-				yield new Encrypted(Bytes.EMPTY, cipher.doFinal(plaintext));
+				yield new Encrypted(cipher.doFinal(plaintext));
 			}
 			case NO_ENCRYPTION -> {
-				yield new Encrypted(Bytes.EMPTY, plaintext);
+				yield new Encrypted(plaintext);
 			}
 		};
 	}
@@ -397,26 +397,26 @@ public class MinimalTLSClient implements AutoCloseable {
 
 		return switch (cipherType) {
 			case AEAD -> {
-				short aadLength = (short) (encrypted.getEncryptedData().toByteArray().length - bulkCipher.tagLength());
+				short aadLength = (short) (encrypted.getEncryptedData(bulkCipher).toByteArray().length - bulkCipher.tagLength());
 				AdditionalAuthenticatedData aad = new AdditionalAuthenticatedData(sequence, type, sslProtocol, aadLength);
 				LOGGER.debug("Decrypt AAD: {}", aad);
 
-				byte[] explicitNonce = encrypted.getNonce().toByteArray();
+				byte[] explicitNonce = encrypted.getNonce(bulkCipher).toByteArray();
 				byte[] fullIV = bulkCipher.fullIV(keys.getServerIV(), explicitNonce);
 				Cipher cipher = bulkCipher.cipher(Cipher.DECRYPT_MODE, keys.getServerWriteKey(), bulkCipher.spec(fullIV));
 				cipher.updateAAD(aad.toByteArray());
 
-				byte[] decrypted = cipher.doFinal(encrypted.getEncryptedData().toByteArray());
+				byte[] decrypted = cipher.doFinal(encrypted.getEncryptedData(bulkCipher).toByteArray());
 				LOGGER.debug("Decrypted:\n{}", Hex.dump(decrypted));
 				yield decrypted;
 			}
 			case BLOCK, STREAM -> {
 				byte[] iv = bulkCipher.fullIV(null, keys.getServerIV());
 				Cipher cipher = bulkCipher.cipher(Cipher.DECRYPT_MODE, keys.getServerWriteKey(), bulkCipher.spec(iv));
-				yield cipher.doFinal(encrypted.getEncryptedData().toByteArray());
+				yield cipher.doFinal(encrypted.getEncryptedData(bulkCipher).toByteArray());
 			}
 			case NO_ENCRYPTION -> {
-				yield encrypted.getEncryptedData().toByteArray();
+				yield encrypted.getEncryptedData(bulkCipher).toByteArray();
 			}
 		};
 	}

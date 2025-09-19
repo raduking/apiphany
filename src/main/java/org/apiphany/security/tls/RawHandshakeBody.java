@@ -20,12 +20,12 @@ public class RawHandshakeBody implements TLSHandshakeBody {
 	/**
 	 * The type of TLS handshake message
 	 */
-	private HandshakeType type;
+	private final HandshakeType type;
 
 	/**
 	 * The raw bytes of the handshake message body.
 	 */
-	private BytesWrapper bytes;
+	private final BytesWrapper bytes;
 
 	/**
 	 * Constructs a new raw handshake body with the specified type and data.

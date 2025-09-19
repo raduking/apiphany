@@ -183,7 +183,7 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	 * @return the body handler based on the request
 	 */
 	public static <T, U> BodyHandler<U> getBodyHandler(final ApiRequest<T> apiRequest) {
-		BodyHandler<?> bodyHandler = null;
+		BodyHandler<?> bodyHandler;
 		if (apiRequest.isStream()) {
 			bodyHandler = BodyHandlers.ofInputStream();
 		} else {
