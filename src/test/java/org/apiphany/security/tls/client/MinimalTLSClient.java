@@ -362,7 +362,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		long sequence = this.clientSequenceNumber++;
 		byte[] explicitNonce = UInt64.toByteArray(sequence);
 
-		switch (cipherType) {
+		return switch (cipherType) {
 			case AEAD -> {
 				short aadLength = (short) plaintext.length;
 				AdditionalAuthenticatedData aad = new AdditionalAuthenticatedData(sequence, type, sslProtocol, aadLength);
@@ -374,21 +374,17 @@ public class MinimalTLSClient implements AutoCloseable {
 
 				byte[] encrypted = cipher.doFinal(plaintext);
 				LOGGER.debug("Encrypted (ciphertext + tag):\n{}", Hex.dump(encrypted));
-				return new Encrypted(explicitNonce, encrypted);
+				yield new Encrypted(explicitNonce, encrypted);
 			}
-			case BLOCK -> {
-				Cipher cipher = bulkCipher.cipher(Cipher.ENCRYPT_MODE, keys.getClientWriteKey(), bulkCipher.spec(keys.getClientIV()));
-				return new Encrypted(Bytes.EMPTY, cipher.doFinal(plaintext));
-			}
-			case STREAM -> {
-				Cipher cipher = bulkCipher.cipher(Cipher.ENCRYPT_MODE, keys.getClientWriteKey(), bulkCipher.spec(Bytes.EMPTY));
-				return new Encrypted(Bytes.EMPTY, cipher.doFinal(plaintext));
+			case BLOCK, STREAM -> {
+				byte[] iv = bulkCipher.fullIV(null, keys.getClientIV());
+				Cipher cipher = bulkCipher.cipher(Cipher.ENCRYPT_MODE, keys.getClientWriteKey(), bulkCipher.spec(iv));
+				yield new Encrypted(Bytes.EMPTY, cipher.doFinal(plaintext));
 			}
 			case NO_ENCRYPTION -> {
-				return new Encrypted(Bytes.EMPTY, plaintext);
+				yield new Encrypted(Bytes.EMPTY, plaintext);
 			}
-			default -> throw new IllegalStateException("Unknown cipher type: " + cipherType);
-		}
+		};
 	}
 
 	public byte[] decrypt(final Record tlsRecord, final ExchangeKeys keys) throws Exception {
@@ -399,7 +395,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		RecordContentType type = tlsRecord.getHeader().getType();
 		Encrypted encrypted = tlsRecord.getFragment(TLSEncryptedObject.class).getEncrypted();
 
-		switch (cipherType) {
+		return switch (cipherType) {
 			case AEAD -> {
 				short aadLength = (short) (encrypted.getEncryptedData().toByteArray().length - bulkCipher.tagLength());
 				AdditionalAuthenticatedData aad = new AdditionalAuthenticatedData(sequence, type, sslProtocol, aadLength);
@@ -412,21 +408,17 @@ public class MinimalTLSClient implements AutoCloseable {
 
 				byte[] decrypted = cipher.doFinal(encrypted.getEncryptedData().toByteArray());
 				LOGGER.debug("Decrypted:\n{}", Hex.dump(decrypted));
-				return decrypted;
+				yield decrypted;
 			}
-			case BLOCK -> {
-				Cipher cipher = bulkCipher.cipher(Cipher.DECRYPT_MODE, keys.getServerWriteKey(), bulkCipher.spec(keys.getServerIV()));
-				return cipher.doFinal(encrypted.getEncryptedData().toByteArray());
-			}
-			case STREAM -> {
-				Cipher cipher = bulkCipher.cipher(Cipher.DECRYPT_MODE, keys.getServerWriteKey(), bulkCipher.spec(Bytes.EMPTY));
-				return cipher.doFinal(encrypted.getEncryptedData().toByteArray());
+			case BLOCK, STREAM -> {
+				byte[] iv = bulkCipher.fullIV(null, keys.getServerIV());
+				Cipher cipher = bulkCipher.cipher(Cipher.DECRYPT_MODE, keys.getServerWriteKey(), bulkCipher.spec(iv));
+				yield cipher.doFinal(encrypted.getEncryptedData().toByteArray());
 			}
 			case NO_ENCRYPTION -> {
-				return encrypted.getEncryptedData().toByteArray();
+				yield encrypted.getEncryptedData().toByteArray();
 			}
-			default -> throw new IllegalStateException("Unknown cipher type: " + cipherType);
-		}
+		};
 	}
 
 	public byte[] getClientPublicBytes(final ServerKeyExchange ske, final KeyExchangeHandler keys) {
