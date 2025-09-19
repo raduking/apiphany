@@ -96,6 +96,26 @@ public final class Bytes {
 	}
 
 	/**
+	 * Returns true if the given byte array is empty, false otherwise.
+	 *
+	 * @param bytes the byte array to check
+	 * @return true if the given byte array is empty, false otherwise
+	 */
+	public static boolean isEmpty(final byte[] bytes) {
+		return null == bytes || EMPTY == bytes;
+	}
+
+	/**
+	 * Returns true if the given byte array is not empty, false otherwise.
+	 *
+	 * @param bytes the byte array to check
+	 * @return true if the given byte array is not empty, false otherwise
+	 */
+	public static boolean isNotEmpty(final byte[] bytes) {
+		return !isEmpty(bytes);
+	}
+
+	/**
 	 * Private constructor to prevent instantiation.
 	 *
 	 * @throws UnsupportedOperationException if called via reflection
