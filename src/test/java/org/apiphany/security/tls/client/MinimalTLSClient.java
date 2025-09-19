@@ -49,6 +49,7 @@ import org.apiphany.security.tls.ECDHEPublicKey;
 import org.apiphany.security.tls.Encrypted;
 import org.apiphany.security.tls.EncryptedAlert;
 import org.apiphany.security.tls.EncryptedHandshake;
+import org.apiphany.security.tls.ExchangeKeys;
 import org.apiphany.security.tls.ExchangeRandom;
 import org.apiphany.security.tls.Finished;
 import org.apiphany.security.tls.Handshake;
@@ -181,7 +182,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		byte[] serverRandom = serverHello.getServerRandom().toByteArray();
 		LOGGER.debug("Server random:\n{}", Hex.dump(serverRandom));
 		CipherSuite serverCipherSuite = serverHello.getCipherSuite();
-		MessageDigestAlgorithm messageDigest = serverCipherSuite.getMessageDigest();
+		MessageDigestAlgorithm messageDigest = serverCipherSuite.messageDigest();
 		String prfAlgorithm = messageDigest.hmacName();
 
 		// 2b. Server Certificates
@@ -243,12 +244,14 @@ public class MinimalTLSClient implements AutoCloseable {
 
 		// 5. Derive Master Secret and Keys
 		byte[] masterSecret = PRF.apply(preMasterSecret, PRFLabel.MASTER_SECRET,
-				Bytes.concatenate(clientRandom, serverRandom), 48, prfAlgorithm);
+				Bytes.concatenate(clientRandom, serverRandom), SSLProtocol.TLS_1_2_MASTER_SECRET_LENGTH, prfAlgorithm);
 		LOGGER.debug("Master secret:\n{}", Hex.dump(masterSecret));
+		// Derive key block length dynamically based on server cipher suite
+		int keyBlockLength = serverCipherSuite.totalKeyBlockLength();
 		byte[] keyBlock = PRF.apply(masterSecret, PRFLabel.KEY_EXPANSION,
-				Bytes.concatenate(serverRandom, clientRandom), (ExchangeKeys.KEY_LENGTH + ExchangeKeys.IV_LENGTH) * 2, prfAlgorithm);
+				Bytes.concatenate(serverRandom, clientRandom), keyBlockLength, prfAlgorithm);
 		// Extract keys
-		exchangeKeys = ExchangeKeys.from(keyBlock, ExchangeKeys.Type.AEAD);
+		exchangeKeys = ExchangeKeys.from(keyBlock, serverCipherSuite);
 
 		// 6. Send Client Change Cipher Spec
 		Record changeCypherSpecRecord = new Record(sslProtocol, new ChangeCipherSpec());

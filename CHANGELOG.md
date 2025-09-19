@@ -5,6 +5,13 @@
 `1.0.12`
 
 Fixed `MicrometerCounter` and `MicrometerTimer` `unwrap` methods to properly validate the wanted class.
+Renamed `CipherSuite.getMessageDigest` method to `messageDigest` to match other method names in the enumeration.
+Added `MessageDigestAlgorithm.digestLength` that returns the digest length in bytes.
+Added `BulkCipher` that represents the bulk (symmetric) encryption algorithm used in a TLS cipher suite.
+Added `CipherSuite.bulkCipher` to associate the `BulkCipher` with a `CipherSuite`.
+Added `CipherType` to represent the ciper types like AEAD, BLOCK, etc.
+Added `ExchangeKeys` which represents the set of keys derived from the TLS key block for a given cipher suite.
+Addes `SSLProtocol.TLS_1_2_MASTER_SECRET_LENGTH` constant with the TLS 1.2 master secret length in bytes (48).
 
 ---
 
