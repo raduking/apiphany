@@ -109,11 +109,10 @@ public class Encrypted implements TLSObject {
 	 * @return the BytesWrapper containing nonce bytes
 	 */
 	public BytesWrapper getNonce(final BulkCipher cipher) {
-		if (cipher.type() == CipherType.AEAD) {
-			int nonceLength = cipher.explicitNonceLength();
-			return new BytesWrapper(getData().toByteArray(), 0, nonceLength);
-		}
-		return BytesWrapper.empty();
+		return switch (cipher.type()) {
+			case AEAD -> getData().slice(0, cipher.explicitNonceLength());
+			case BLOCK, STREAM, NO_ENCRYPTION -> BytesWrapper.empty();
+		};
 	}
 
 	/**
@@ -121,11 +120,13 @@ public class Encrypted implements TLSObject {
 	 *
 	 * @return the BytesWrapper containing encrypted bytes
 	 */
-    public BytesWrapper getEncryptedData(final BulkCipher cipher) {
-        if (cipher.type() == CipherType.AEAD) {
-            int nonceLength = cipher.explicitNonceLength();
-            return new BytesWrapper(getData().toByteArray(), nonceLength, sizeOf() - nonceLength);
-        }
-        return getData();
-    }
+	public BytesWrapper getEncryptedData(final BulkCipher cipher) {
+		return switch (cipher.type()) {
+			case AEAD -> {
+				int nonceLength = cipher.explicitNonceLength();
+				yield getData().slice(nonceLength, sizeOf() - nonceLength);
+			}
+			case BLOCK, STREAM, NO_ENCRYPTION -> getData();
+		};
+	}
 }

@@ -7,14 +7,17 @@
 Fixed `MicrometerCounter` and `MicrometerTimer` `unwrap` methods to properly validate the wanted class.
 Renamed `CipherSuite.getMessageDigest` method to `messageDigest` to match other method names in the enumeration.
 Added `MessageDigestAlgorithm.digestLength` that returns the digest length in bytes.
-Added `BulkCipher` that represents the bulk (symmetric) encryption algorithm used in a TLS cipher suite.
+Added `BulkCipher` enumeration that represents the bulk (symmetric) encryption algorithm used in a TLS cipher suite.
+Added `BulkCipherInfo` record that holds all the information needed to properly construct a `BulkCipher`.
 Added `CipherSuite.bulkCipher` to associate the `BulkCipher` with a `CipherSuite`.
-Added `CipherType` to represent the ciper types like AEAD, BLOCK, etc.
+Added `CipherType` to represent the cipher types like AEAD, BLOCK, etc.
 Added `ExchangeKeys` which represents the set of keys derived from the TLS key block for a given cipher suite.
 Added `SSLProtocol.TLS_1_2_MASTER_SECRET_LENGTH` constant with the TLS 1.2 master secret length in bytes (48).
 Added `maven_deploy.sh` shell script to deploy to Maven Central which uses all the test parameters.
 Added `Bytes.isEmpty` to check if a byte array is empty.
 Added `Bytes.isNotEmpty` to check if a byte array is not empty.
+Added `BytesWrapper(byte[], int, int)` constructor to construct a wrapper over a slice of the byte array.
+Removed the nonce from `Encrypted` and changed the getters to get the nonce depending on the `BulkCipher`.
 
 ---
 

@@ -127,6 +127,17 @@ public class BytesWrapper implements ByteSizeable, BinaryRepresentable {
 	}
 
 	/**
+	 * Returns a {@link BytesWrapper} object which represents a slice.
+	 *
+	 * @param offset the start offset
+	 * @param size the size of the slice
+	 * @return the slice
+	 */
+	public BytesWrapper slice(final int offset, final int size) {
+		return new BytesWrapper(bytes, offset, size);
+	}
+
+	/**
 	 * Returns a copy of the wrapped byte array.
 	 *
 	 * @return a new byte array containing the wrapped data (or empty array if empty)

@@ -42,153 +42,95 @@ public enum BulkCipher {
 	/**
 	 * AES-128 in GCM (AEAD) mode. Tag length: 16. Nonce = 4-byte fixed IV + 8-byte explicit per-record IV.
 	 */
-	AES_128_GCM("AES", 16, 16, 4, 8, CipherType.AEAD, -1, 16),
+	AES_128_GCM(BulkCipherInfo.of("AES", 16, 16, 4, 8, CipherType.AEAD, -1, 16)),
 
 	/**
 	 * AES-256 in GCM (AEAD) mode. Tag length: 16. Nonce = 4-byte fixed IV + 8-byte explicit per-record IV.
 	 */
-	AES_256_GCM("AES", 32, 16, 4, 8, CipherType.AEAD, -1, 16),
+	AES_256_GCM(BulkCipherInfo.of("AES", 32, 16, 4, 8, CipherType.AEAD, -1, 16)),
 
 	/**
 	 * ChaCha20-Poly1305 AEAD. Nonce = 12-byte fixed IV, no explicit nonce. Tag length: 16.
 	 */
-	CHACHA20_POLY1305("ChaCha20-Poly1305", 32, 0, 12, 0, CipherType.AEAD, -1, 16),
+	CHACHA20_POLY1305(BulkCipherInfo.of("ChaCha20-Poly1305", 32, 0, 12, 0, CipherType.AEAD, -1, 16)),
 
 	/**
 	 * AES-128 in CCM (AEAD) mode. Tag length: 16. Nonce = 4-byte fixed IV + 8-byte explicit per-record IV.
 	 */
-	AES_128_CCM("AES", 16, 16, 4, 8, CipherType.AEAD, -1, 16),
+	AES_128_CCM(BulkCipherInfo.of("AES", 16, 16, 4, 8, CipherType.AEAD, -1, 16)),
 
 	/**
 	 * AES-256 in CCM (AEAD) mode. Tag length: 16.
 	 */
-	AES_256_CCM("AES", 32, 16, 4, 8, CipherType.AEAD, -1, 16),
+	AES_256_CCM(BulkCipherInfo.of("AES", 32, 16, 4, 8, CipherType.AEAD, -1, 16)),
 
 	/**
 	 * AES-128 in CCM with 8-byte tag (RFC 6655).
 	 */
-	AES_128_CCM_8("AES", 16, 16, 4, 8, CipherType.AEAD, -1, 8),
+	AES_128_CCM_8(BulkCipherInfo.of("AES", 16, 16, 4, 8, CipherType.AEAD, -1, 8)),
 
 	/**
 	 * AES-256 in CCM with 8-byte tag.
 	 */
-	AES_256_CCM_8("AES", 32, 16, 4, 8, CipherType.AEAD, -1, 8),
+	AES_256_CCM_8(BulkCipherInfo.of("AES", 32, 16, 4, 8, CipherType.AEAD, -1, 8)),
 
 	/**
 	 * AES-128 in CBC mode (non-AEAD). IV length: 16.
 	 */
-	AES_128_CBC("AES", 16, 16, 16, 0, CipherType.BLOCK, -1, 0),
+	AES_128_CBC(BulkCipherInfo.of("AES", 16, 16, 16, 0, CipherType.BLOCK, -1, 0)),
 
 	/**
 	 * AES-256 in CBC mode (non-AEAD). IV length: 16.
 	 */
-	AES_256_CBC("AES", 32, 16, 16, 0, CipherType.BLOCK, -1, 0),
+	AES_256_CBC(BulkCipherInfo.of("AES", 32, 16, 16, 0, CipherType.BLOCK, -1, 0)),
 
 	/**
 	 * Triple-DES (3DES) in CBC mode (legacy). IV length: 8.
 	 */
-	_3DES_EDE_CBC("DESede", 24, 8, 8, 0, CipherType.BLOCK, -1, 0),
+	_3DES_EDE_CBC(BulkCipherInfo.of("DESede", 24, 8, 8, 0, CipherType.BLOCK, -1, 0)),
 
 	/**
 	 * GOST R 34.12-2015 (Kuznyechik) in CTR mode. IV length: 16.
 	 */
-	KUZNYECHIK_CTR("Kuznyechik", 32, 16, 16, 0, CipherType.BLOCK, -1, 0),
+	KUZNYECHIK_CTR(BulkCipherInfo.of("Kuznyechik", 32, 16, 16, 0, CipherType.BLOCK, -1, 0)),
 
 	/**
 	 * GOST 28147-89 in CTR mode. IV length: 8.
 	 */
-	MAGMA_CTR("GOST28147", 32, 8, 8, 0, CipherType.BLOCK, -1, 0),
+	MAGMA_CTR(BulkCipherInfo.of("GOST28147", 32, 8, 8, 0, CipherType.BLOCK, -1, 0)),
 
 	/**
 	 * GOST 28147 CNT variant. IV length: 8.
 	 */
-	GOST_28147_CNT("GOST28147", 32, 8, 8, 0, CipherType.BLOCK, -1, 0),
+	GOST_28147_CNT(BulkCipherInfo.of("GOST28147", 32, 8, 8, 0, CipherType.BLOCK, -1, 0)),
 
 	/**
 	 * RC4 with 128-bit key (legacy, insecure). No IV.
 	 */
-	RC4_128("RC4", 16, 0, 0, 0, CipherType.STREAM, -1, 0),
+	RC4_128(BulkCipherInfo.of("RC4", 16, 0, 0, 0, CipherType.STREAM, -1, 0)),
 
 	/**
 	 * RC4 with 56-bit key (export legacy). No IV.
 	 */
-	RC4_56("RC4", 7, 0, 0, 0, CipherType.STREAM, -1, 0),
+	RC4_56(BulkCipherInfo.of("RC4", 7, 0, 0, 0, CipherType.STREAM, -1, 0)),
 
 	/**
 	 * Un-encrypted cipher (NULL cipher). No key, no IV, no tag.
 	 */
-	UNENCRYPTED("NONE", 0, 0, 0, 0, CipherType.NO_ENCRYPTION, 0, 0);
+	UNENCRYPTED(BulkCipherInfo.of("NONE", 0, 0, 0, 0, CipherType.NO_ENCRYPTION, 0, 0));
 
 	/**
-	 * The algorithm.
+	 * The information about this bulk cipher.
 	 */
-	private final String algorithm;
-
-	/**
-	 * The symmetric key length in bytes.
-	 */
-	private final int keyLength;
-
-	/**
-	 * The block size in bytes, or 0 for stream ciphers.
-	 */
-	private final int blockSize;
-
-	/**
-	 * The fixed IV length in bytes (0 if not applicable).
-	 */
-	private final int fixedIvLength;
-
-	/**
-	 * The explicit per-record nonce length in bytes (sent with each record).
-	 */
-	private final int explicitNonceLength;
-
-	/**
-	 * The bulk cipher type.
-	 */
-	private final CipherType type;
-
-	/**
-	 * If the MAC key length is -1 it means "depends on negotiated hash"; use {@link #macKeyLength(MessageDigestAlgorithm)}
-	 * to obtain the final value.
-	 */
-	private final int macKeyLength;
-
-	/**
-	 * The AEAD authentication tag length in bytes (0 for non-AEAD ciphers).
-	 */
-	private final int tagLength;
+	private final BulkCipherInfo info;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param algorithm the algorithm
-	 * @param keyLength the symmetric key length in bytes
-	 * @param blockSize the block size in bytes, or 0 for stream ciphers
-	 * @param fixedIvLength the fixed IV length in bytes (0 if not applicable)
-	 * @param explicitNonceLength the explicit per-record nonce length in bytes (sent with each record)
-	 * @param cipherType the cipher type
-	 * @param macKeyLength the MAC key length
-	 * @param tagLength AEAD authentication tag length in bytes (0 for non-AEAD ciphers)
+	 * @param info the information
 	 */
-	BulkCipher(
-			final String algorithm,
-			final int keyLength,
-			final int blockSize,
-			final int fixedIvLength,
-			final int explicitNonceLength,
-			final CipherType cipherType,
-			final int macKeyLength,
-			final int tagLength) {
-		this.algorithm = algorithm;
-		this.keyLength = keyLength;
-		this.blockSize = blockSize;
-		this.fixedIvLength = fixedIvLength;
-		this.explicitNonceLength = explicitNonceLength;
-		this.type = cipherType;
-		this.macKeyLength = macKeyLength;
-		this.tagLength = tagLength;
+	BulkCipher(final BulkCipherInfo info) {
+		this.info = info;
 	}
 
 	/**
@@ -197,7 +139,7 @@ public enum BulkCipher {
 	 * @return the algorithm
 	 */
 	public String algorithm() {
-		return algorithm;
+		return info.algorithm();
 	}
 
 	/**
@@ -206,7 +148,7 @@ public enum BulkCipher {
 	 * @return the symmetric key length in bytes
 	 */
 	public int keyLength() {
-		return keyLength;
+		return info.keyLength();
 	}
 
 	/**
@@ -215,7 +157,7 @@ public enum BulkCipher {
 	 * @return the block size in bytes
 	 */
 	public int blockSize() {
-		return blockSize;
+		return info.blockSize();
 	}
 
 	/**
@@ -224,7 +166,7 @@ public enum BulkCipher {
 	 * @return the fixed IV length in bytes
 	 */
 	public int fixedIvLength() {
-		return fixedIvLength;
+		return info.fixedIvLength();
 	}
 
 	/**
@@ -233,7 +175,7 @@ public enum BulkCipher {
 	 * @return the explicit per-record nonce length in bytes (sent with each record)
 	 */
 	public int explicitNonceLength() {
-		return explicitNonceLength;
+		return info.explicitNonceLength();
 	}
 
 	/**
@@ -242,7 +184,7 @@ public enum BulkCipher {
 	 * @return the cipher type
 	 */
 	public CipherType type() {
-		return type;
+		return info.type();
 	}
 
 	/**
@@ -253,7 +195,7 @@ public enum BulkCipher {
 	 * @return MAC key length in bytes
 	 */
 	public int macKeyLength(final MessageDigestAlgorithm mac) {
-		return macKeyLength == -1 ? mac.digestLength() : macKeyLength;
+		return info.macKeyLength() == -1 ? mac.digestLength() : info.macKeyLength();
 	}
 
 	/**
@@ -262,7 +204,7 @@ public enum BulkCipher {
 	 * @return the tag length
 	 */
 	public int tagLength() {
-		return tagLength;
+		return info.tagLength();
 	}
 
 	/**
@@ -273,7 +215,7 @@ public enum BulkCipher {
 	 * @return the AlgorithmParameterSpec, or null if not required
 	 */
 	public AlgorithmParameterSpec spec(final byte[] fullIV) {
-		return switch (type) {
+		return switch (type()) {
 			case AEAD -> new GCMParameterSpec(tagLength() * 8, fullIV);
 			case BLOCK -> new IvParameterSpec(fullIV);
 			case STREAM, NO_ENCRYPTION -> null;
@@ -313,7 +255,7 @@ public enum BulkCipher {
 	public byte[] fullIV(final byte[] keyIV, final byte[] explicitNonce) {
 		switch (type()) {
 			case AEAD:
-				if (explicitNonceLength <= 0) {
+				if (explicitNonceLength() == 0) {
 					return Bytes.isNotEmpty(keyIV) ? keyIV.clone() : new byte[fixedIvLength()];
 				}
 				byte[] iv = new byte[fixedIvLength() + explicitNonceLength()];
