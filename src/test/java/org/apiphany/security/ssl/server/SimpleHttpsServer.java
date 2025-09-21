@@ -12,9 +12,10 @@ import javax.net.ssl.SSLContext;
 
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
+import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
-import org.apiphany.security.ssl.SSLContexts;
 import org.apiphany.security.ssl.SSLContextAdapter;
+import org.apiphany.security.ssl.SSLContexts;
 import org.apiphany.security.ssl.SSLProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpsConfigurator;
+import com.sun.net.httpserver.HttpsParameters;
 import com.sun.net.httpserver.HttpsServer;
 
 /**
@@ -77,10 +79,23 @@ public class SimpleHttpsServer implements AutoCloseable {
 	private static HttpsServer createHttpsServer(final int port, final SSLContext sslContext) {
 		try {
 			HttpsServer httpsServer = HttpsServer.create(new InetSocketAddress(port), 0);
-			httpsServer.setHttpsConfigurator(new HttpsConfigurator(sslContext));
+			httpsServer.setHttpsConfigurator(new HttpsConfigurator(sslContext) {
+				@Override
+				public void configure(HttpsParameters params) {
+					super.configure(params);
+				}
+			});
 			return httpsServer;
 		} catch (IOException e) {
 			throw new IllegalStateException("Server cannot be created on port: " + port);
+		}
+	}
+
+	public static void log(HttpsParameters params) {
+		try {
+			LOGGER.debug("HTTPS parameters: {}", JsonBuilder.toJson(params));
+		} catch (Exception e) {
+			LOGGER.debug("Module not open. Add --add-opens jdk.httpserver/sun.net.httpserver=ALL-UNNAMED", e);
 		}
 	}
 

@@ -80,8 +80,8 @@ public class ExchangeKeys {
 	 * @return a new {@link ExchangeKeys} instance
 	 */
 	public static ExchangeKeys from(final byte[] keyBlock, final CipherSuite suite) {
-		LOGGER.debug("Key block length: {}", keyBlock.length);
-		LOGGER.debug("Key block:\n{}", Hex.dump(keyBlock));
+		LOGGER.debug("keyBlock: {}", Hex.string(keyBlock, ""));
+		LOGGER.debug("keyBlock length: {}", keyBlock.length);
 
 		BulkCipher bulkCipher = suite.bulkCipher();
 		CipherType type = bulkCipher.type();
@@ -125,6 +125,12 @@ public class ExchangeKeys {
 				// empty
 			}
 		}
+		LOGGER.debug("clientMacKey: {}", Hex.string(exchangeKeys.clientMacKey, ""));
+		LOGGER.debug("serverMacKey: {}", Hex.string(exchangeKeys.serverMacKey, ""));
+		LOGGER.debug("clientWriteKey: {}", Hex.string(exchangeKeys.clientWriteKey, ""));
+		LOGGER.debug("serverWriteKey: {}", Hex.string(exchangeKeys.serverWriteKey, ""));
+		LOGGER.debug("clientIV: {}", Hex.string(exchangeKeys.clientIV, ""));
+		LOGGER.debug("serverIV: {}", Hex.string(exchangeKeys.serverIV, ""));
 		return exchangeKeys;
 	}
 

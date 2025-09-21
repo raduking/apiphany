@@ -7,6 +7,8 @@
 Fixed `MicrometerCounter` and `MicrometerTimer` `unwrap` methods to properly validate the wanted class.
 Renamed `CipherSuite.getMessageDigest` method to `messageDigest` to match other method names in the enumeration.
 Added `MessageDigestAlgorithm.digestLength` that returns the digest length in bytes.
+Added `MessageDigestAlgorithm.hmac` to compute the HMAC for a given key and data.
+Added `MessageDigestAlgorithm.prfAlgorithmName` to retrieve the correct TLS 1.2 PRF algorithm for the algorithm.
 Added `BulkCipher` enumeration that represents the bulk (symmetric) encryption algorithm used in a TLS cipher suite.
 Added `BulkCipherInfo` record that holds all the information needed to properly construct a `BulkCipher`.
 Added `CipherSuite.bulkCipher` to associate the `BulkCipher` with a `CipherSuite`.

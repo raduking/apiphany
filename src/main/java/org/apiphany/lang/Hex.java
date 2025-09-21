@@ -48,6 +48,9 @@ public class Hex {
 	 * @return hexadecimal string representation of the byte array
 	 */
 	public static String string(final byte[] bytes, final String separator) {
+		if (bytes == null) {
+			return "null";
+		}
 		StringBuilder sb = new StringBuilder();
 		for (byte b : bytes) {
 			sb.append(string(b, separator));

@@ -262,7 +262,9 @@ public enum BulkCipher {
 				System.arraycopy(keyIV, 0, iv, 0, fixedIvLength());
 				System.arraycopy(explicitNonce, 0, iv, fixedIvLength(), explicitNonceLength());
 				return iv;
-			case BLOCK, STREAM, NO_ENCRYPTION:
+			case BLOCK:
+				return Bytes.isNotEmpty(keyIV) ? keyIV.clone() : new byte[blockSize()];
+			case STREAM, NO_ENCRYPTION:
 			default:
 				return Bytes.isNotEmpty(keyIV) ? keyIV.clone() : Bytes.EMPTY;
 		}

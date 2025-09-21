@@ -106,6 +106,7 @@ public class Encrypted implements TLSObject {
 	/**
 	 * Returns the nonce/initialization vector.
 	 *
+	 * @param cipher the bulk cipher
 	 * @return the BytesWrapper containing nonce bytes
 	 */
 	public BytesWrapper getNonce(final BulkCipher cipher) {
@@ -118,6 +119,7 @@ public class Encrypted implements TLSObject {
 	/**
 	 * Returns the encrypted data.
 	 *
+	 * @param cipher the bulk cipher
 	 * @return the BytesWrapper containing encrypted bytes
 	 */
 	public BytesWrapper getEncryptedData(final BulkCipher cipher) {
