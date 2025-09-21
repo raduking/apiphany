@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
@@ -22,8 +23,10 @@ import org.apiphany.security.ssl.Keys;
 import org.apiphany.security.ssl.SSLProperties;
 import org.apiphany.security.ssl.SSLProtocol;
 import org.apiphany.security.ssl.server.SimpleHttpsServer;
+import org.apiphany.security.ssl.server.TLSLoggingProvider;
 import org.apiphany.security.tls.client.MinimalTLSClient;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -72,10 +75,42 @@ class TLSObjectTest {
 		byte[] serverFinished = null;
 		try (MinimalTLSClient client = new MinimalTLSClient(LOCALHOST, port, CLIENT_KEY_PAIR, CIPHER_SUITES)) {
 			serverFinished = client.performHandshake();
-		} catch (Exception e) {
-			LOGGER.error("Error performing SSL handshake", e);
 		} finally {
 			server.close();
+		}
+		assertNotNull(serverFinished);
+	}
+
+	@Disabled("BLOCK Not working yet in MinimalTLSClient")
+	@Test
+	void shouldPerformTLS12HandshakeWithAES128CBC() throws Exception {
+		int port = Sockets.findAvailableTcpPort();
+		SSLProperties sslProperties = JsonBuilder.fromJson(SSL_PROPERTIES_JSON, SSLProperties.class);
+		sslProperties.setProtocol(SSLProtocol.TLS_1_2);
+
+		TLSLoggingProvider.install();
+
+		SimpleHttpsServer server = new SimpleHttpsServer(port, sslProperties);
+
+		byte[] serverFinished = null;
+		List<CipherSuite> cipherSuites = List.of(CipherSuite.TLS_RSA_WITH_AES_128_CBC_SHA);
+		try (MinimalTLSClient client = new MinimalTLSClient(LOCALHOST, port, Duration.ofSeconds(1), CLIENT_KEY_PAIR, cipherSuites)) {
+			serverFinished = client.performHandshake();
+		} finally {
+			server.close();
+		}
+		assertNotNull(serverFinished);
+	}
+
+	@Test
+	void shouldPerformTLS12HandshakeWithAES128CBCWithOpenSSL() throws Exception {
+		int port = 4433;
+		assumeTrue(Sockets.canConnectTo(LOCALHOST, port), LOCALHOST + ":" + port + " is unreachable, skipping test.");
+
+		byte[] serverFinished = null;
+		List<CipherSuite> cipherSuites = List.of(CipherSuite.TLS_RSA_WITH_AES_128_CBC_SHA);
+		try (MinimalTLSClient client = new MinimalTLSClient(LOCALHOST, port, CLIENT_KEY_PAIR, cipherSuites)) {
+			serverFinished = client.performHandshake();
 		}
 		assertNotNull(serverFinished);
 	}
@@ -92,8 +127,6 @@ class TLSObjectTest {
 		List<CipherSuite> cipherSuites = List.of(cipherSuite);
 		try (MinimalTLSClient client = new MinimalTLSClient(LOCALHOST, port, CLIENT_KEY_PAIR, cipherSuites)) {
 			serverFinished = client.performHandshake();
-		} catch (Exception e) {
-			LOGGER.error("Error performing SSL handshake", e);
 		} finally {
 			server.close();
 		}

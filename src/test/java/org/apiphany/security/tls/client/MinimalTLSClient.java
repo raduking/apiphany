@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Objects;
 
 import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import javax.net.ssl.SSLException;
 
 import org.apiphany.http.HttpResponseParser;
@@ -60,6 +62,7 @@ import org.apiphany.security.tls.PRFLabel;
 import org.apiphany.security.tls.RSAEncryptedPreMaster;
 import org.apiphany.security.tls.Record;
 import org.apiphany.security.tls.RecordContentType;
+import org.apiphany.security.tls.RecordHeader;
 import org.apiphany.security.tls.ServerHello;
 import org.apiphany.security.tls.ServerHelloDone;
 import org.apiphany.security.tls.ServerKeyExchange;
@@ -90,11 +93,13 @@ public class MinimalTLSClient implements AutoCloseable {
 
 	public static final List<CipherSuite> SUPPORTED_CIPHER_SUITES = List.of(
 			CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-			CipherSuite.TLS_RSA_WITH_AES_256_GCM_SHA384);
+			CipherSuite.TLS_RSA_WITH_AES_256_GCM_SHA384,
+			CipherSuite.TLS_RSA_WITH_AES_128_CBC_SHA);
 
 	private final String host;
 	private final int port;
-	private final Duration socketTimeout = DEFAULT_SOCKET_TIMEOUT;
+	private final Duration socketTimeout;
+
 	private final SSLProtocol sslProtocol = SSLProtocol.TLS_1_2;
 
 	private Socket tcpSocket;
@@ -114,9 +119,11 @@ public class MinimalTLSClient implements AutoCloseable {
 
 	private final List<Handshake> handshakeMessages = new ArrayList<>();
 
-	public MinimalTLSClient(final String host, final int port, final KeyPair clientKeyPair, final List<CipherSuite> cipherSuites) {
+	public MinimalTLSClient(final String host, final int port, final Duration socketTimeout, final KeyPair clientKeyPair,
+			final List<CipherSuite> cipherSuites) {
 		this.host = host;
 		this.port = port;
+		this.socketTimeout = socketTimeout;
 		this.clientKeyPair = clientKeyPair;
 		for (CipherSuite cipherSuite : cipherSuites) {
 			if (!SUPPORTED_CIPHER_SUITES.contains(cipherSuite)) {
@@ -124,6 +131,10 @@ public class MinimalTLSClient implements AutoCloseable {
 			}
 		}
 		this.cipherSuites = cipherSuites;
+	}
+
+	public MinimalTLSClient(final String host, final int port, final KeyPair clientKeyPair, final List<CipherSuite> cipherSuites) {
+		this(host, port, DEFAULT_SOCKET_TIMEOUT, clientKeyPair, cipherSuites);
 	}
 
 	@Override
@@ -150,6 +161,7 @@ public class MinimalTLSClient implements AutoCloseable {
 
 	public void sendRecord(final Record tlsRecord) throws IOException {
 		byte[] bytes = tlsRecord.toByteArray();
+		LOGGER.debug("Sending TLS Record:\n{}", Hex.dump(bytes));
 		out.write(bytes);
 		out.flush();
 		LOGGER.debug("Sent TLS Record {}:{}", String.join(",", tlsRecord.getFragmentNames()), tlsRecord);
@@ -158,6 +170,10 @@ public class MinimalTLSClient implements AutoCloseable {
 	public Record receiveRecord() throws IOException {
 		Record tlsRecord = Record.from(in);
 		LOGGER.debug("Received TLS Record {}:{}", String.join(",", tlsRecord.getFragmentNames()), tlsRecord);
+		if (tlsRecord.getHeader().getType() == RecordContentType.ALERT) {
+			Alert alert = tlsRecord.getFragment(Alert.class);
+			LOGGER.debug("Received alert: level={}, description={}", alert.getLevel(), alert.getDescription());
+		}
 		return tlsRecord;
 	}
 
@@ -172,7 +188,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		accumulateHandshakes(clientHelloRecord.getFragments(Handshake.class));
 
 		byte[] clientRandom = clientHello.getClientRandom().getRandom();
-		LOGGER.debug("Client random:\n{}", Hex.dump(clientRandom));
+		LOGGER.debug("Client random: {}", Hex.string(clientRandom, ""));
 
 		// 2. Receive Server Hello
 		Record tlsRecord = receiveRecord();
@@ -181,10 +197,10 @@ public class MinimalTLSClient implements AutoCloseable {
 		// 2a. Server Hello
 		ServerHello serverHello = tlsRecord.getHandshake(ServerHello.class);
 		byte[] serverRandom = serverHello.getServerRandom().toByteArray();
-		LOGGER.debug("Server random:\n{}", Hex.dump(serverRandom));
+		LOGGER.debug("Server random: {}", Hex.string(serverRandom, ""));
 		this.serverCipherSuite = serverHello.getCipherSuite();
 		MessageDigestAlgorithm messageDigest = serverCipherSuite.messageDigest();
-		String prfAlgorithm = messageDigest.hmacName();
+		String prfAlgorithm = messageDigest.prfAlgorithmName();
 
 		// 2b. Server Certificates
 		if (tlsRecord.hasNoHandshake(Certificates.class)) {
@@ -236,7 +252,7 @@ public class MinimalTLSClient implements AutoCloseable {
 			}
 			default -> throw new SSLException("Unsupported cipher suite: " + serverCipherSuite);
 		}
-		LOGGER.debug("Pre Master Secret:\n{}", Hex.dump(preMasterSecret));
+		LOGGER.debug("Pre Master Secret: {}", Hex.string(preMasterSecret, ""));
 
 		// 4. Send Client Key Exchange
 		Record clientKeyExchangeRecord = new Record(sslProtocol, new ClientKeyExchange(tlsKeyExchange));
@@ -246,7 +262,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		// 5. Derive Master Secret and Keys
 		byte[] masterSecret = PRF.apply(preMasterSecret, PRFLabel.MASTER_SECRET,
 				Bytes.concatenate(clientRandom, serverRandom), SSLProtocol.TLS_1_2_MASTER_SECRET_LENGTH, prfAlgorithm);
-		LOGGER.debug("Master secret:\n{}", Hex.dump(masterSecret));
+		LOGGER.debug("Master secret: {}", Hex.string(masterSecret, ""));
 		// Derive key block length dynamically based on server cipher suite
 		int keyBlockLength = serverCipherSuite.totalKeyBlockLength();
 		byte[] keyBlock = PRF.apply(masterSecret, PRFLabel.KEY_EXPANSION,
@@ -360,7 +376,6 @@ public class MinimalTLSClient implements AutoCloseable {
 		CipherType cipherType = bulkCipher.type();
 
 		long sequence = this.clientSequenceNumber++;
-		byte[] explicitNonce = UInt64.toByteArray(sequence);
 
 		return switch (cipherType) {
 			case AEAD -> {
@@ -368,6 +383,7 @@ public class MinimalTLSClient implements AutoCloseable {
 				AdditionalAuthenticatedData aad = new AdditionalAuthenticatedData(sequence, type, sslProtocol, aadLength);
 				LOGGER.debug("Encrypt AAD: {}", aad);
 
+				byte[] explicitNonce = UInt64.toByteArray(sequence);
 				byte[] fullIV = bulkCipher.fullIV(keys.getClientIV(), explicitNonce);
 				Cipher cipher = bulkCipher.cipher(Cipher.ENCRYPT_MODE, keys.getClientWriteKey(), bulkCipher.spec(fullIV));
 				cipher.updateAAD(aad.toByteArray());
@@ -376,7 +392,61 @@ public class MinimalTLSClient implements AutoCloseable {
 				LOGGER.debug("Encrypted (ciphertext + tag):\n{}", Hex.dump(encrypted));
 				yield new Encrypted(explicitNonce, encrypted);
 			}
-			case BLOCK, STREAM -> {
+			case BLOCK -> {
+				MessageDigestAlgorithm messageDigest = serverCipherSuite.messageDigest();
+				String macAlgorithm = messageDigest.hmacAlgorithmName();
+				LOGGER.debug("HMAC Algorithm: {}", macAlgorithm);
+				byte[] seqBytes = UInt64.toByteArray(sequence);
+				LOGGER.debug("Sequence number (hex): {}", Hex.string(seqBytes, ""));
+
+				byte[] handshakeFragment = ((Handshake) tlsObject).getBody().toByteArray();
+				RecordHeader macHeader = new RecordHeader(RecordContentType.HANDSHAKE, sslProtocol, (short) handshakeFragment.length);
+				byte[] headerBytes = macHeader.toByteArray();
+				LOGGER.debug("Record header (hex): {}", Hex.string(headerBytes, ""));
+
+				byte[] macInput = Bytes.concatenate(seqBytes, headerBytes, handshakeFragment);
+				LOGGER.debug("MAC input (hex): {}", Hex.string(macInput, ""));
+				byte[] mac = messageDigest.hmac(keys.getClientMacKey(), macInput);
+				LOGGER.debug("HMAC (hex): {}", Hex.string(mac, ""));
+
+				byte[] plaintextMac = Bytes.concatenate(handshakeFragment, mac);
+				LOGGER.debug("Plaintext + MAC (hex): {}", Hex.string(plaintextMac, ""));
+				LOGGER.debug("Plaintext + MAC length: {}", plaintextMac.length);
+
+				byte[] explicitIV = new byte[bulkCipher.blockSize()];
+				new SecureRandom().nextBytes(explicitIV);
+				LOGGER.debug("Explicit IV (random): {}", Hex.string(explicitIV, ""));
+
+				Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding", "SunJCE");
+				LOGGER.debug("Cipher provider: {}", cipher.getProvider().getName());
+				LOGGER.debug("Client write key length: {}", keys.getClientWriteKey().length);
+				LOGGER.debug("Explicit IV length: {}", explicitIV.length);
+				cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(keys.getClientWriteKey(), "AES"), new IvParameterSpec(explicitIV));
+				LOGGER.debug("Plaintext + MAC before encryption: {}", Hex.string(plaintextMac, ""));
+				byte[] ciphertext = cipher.doFinal(plaintextMac);
+				LOGGER.debug("Ciphertext length: {}", ciphertext.length);
+				LOGGER.debug("Ciphertext (hex): {}", Hex.string(ciphertext, ""));
+				if (ciphertext.length != 48) {
+					throw new IllegalStateException("Ciphertext length (" + ciphertext.length + ") does not match expected length (48)");
+				}
+
+				byte[] encrypted = Bytes.concatenate(explicitIV, ciphertext);
+				LOGGER.debug("Encrypted length: {}", encrypted.length);
+				LOGGER.debug("Encrypted (explicitIV + ciphertext):\n{}", Hex.dump(encrypted));
+				if (encrypted.length != explicitIV.length + ciphertext.length) {
+					throw new IllegalStateException("Encrypted length mismatch");
+				}
+
+				byte[] clientWriteKey = keys.getClientWriteKey();
+				cipher = Cipher.getInstance("AES/CBC/PKCS5Padding", "SunJCE");
+				cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(clientWriteKey, "AES"), new IvParameterSpec(explicitIV));
+				byte[] decrypted = cipher.doFinal(ciphertext);
+				LOGGER.debug("Decrypted length: {}", decrypted.length);
+				LOGGER.debug("Decrypted (hex): {}", Hex.string(decrypted, ""));
+
+				yield new Encrypted(encrypted);
+			}
+			case STREAM -> {
 				byte[] iv = bulkCipher.fullIV(null, keys.getClientIV());
 				Cipher cipher = bulkCipher.cipher(Cipher.ENCRYPT_MODE, keys.getClientWriteKey(), bulkCipher.spec(iv));
 				yield new Encrypted(cipher.doFinal(plaintext));
@@ -410,7 +480,12 @@ public class MinimalTLSClient implements AutoCloseable {
 				LOGGER.debug("Decrypted:\n{}", Hex.dump(decrypted));
 				yield decrypted;
 			}
-			case BLOCK, STREAM -> {
+			case BLOCK -> {
+				byte[] iv = bulkCipher.fullIV(null, keys.getServerIV());
+				Cipher cipher = bulkCipher.cipher(Cipher.DECRYPT_MODE, keys.getServerWriteKey(), bulkCipher.spec(iv));
+				yield cipher.doFinal(encrypted.getEncryptedData(bulkCipher).toByteArray());
+			}
+			case STREAM -> {
 				byte[] iv = bulkCipher.fullIV(null, keys.getServerIV());
 				Cipher cipher = bulkCipher.cipher(Cipher.DECRYPT_MODE, keys.getServerWriteKey(), bulkCipher.spec(iv));
 				yield cipher.doFinal(encrypted.getEncryptedData(bulkCipher).toByteArray());

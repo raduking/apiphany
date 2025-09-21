@@ -1,7 +1,5 @@
 package org.apiphany.security.tls;
 
-import org.apiphany.security.MessageDigestAlgorithm;
-
 /**
  * Immutable record holding algorithm parameters for a TLS bulk cipher.
  * <p>
@@ -10,9 +8,6 @@ import org.apiphany.security.MessageDigestAlgorithm;
  * cipher.
  * <p>
  * Unlike {@code BulkCipher}, this record contains no behavior; it is purely descriptive.
- * <p>
- * Note: If the MAC key length is -1 it means "depends on negotiated hash"; use
- * {@link #macKeyLength(MessageDigestAlgorithm)} to obtain the final value.
  *
  * @param algorithm the base algorithm name (e.g., "AES", "CHACHA20")
  * @param keyLength the length of the encryption key in bytes

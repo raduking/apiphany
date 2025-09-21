@@ -5,6 +5,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+
 import org.morphix.lang.Enums;
 
 /**
@@ -154,11 +157,43 @@ public enum MessageDigestAlgorithm {
 	 *
 	 * @return the HMAC string value associated with this message digest algorithm
 	 */
-	public String hmacName() {
+	public String hmacAlgorithmName() {
 		if (NONE == this || MD2 == this || MD5 == this) { // NOSONAR
 			throw new UnsupportedOperationException("Invalid digest algorithm for HMAC PRF: " + this);
 		}
 		return "Hmac" + value().replace("-", "");
+	}
+
+	/**
+	 * Returns the PRF algorithm name (for TLS 1.2 it can only be HMAC-SHA256 or HMAC-SHA384, if it is not one of those it
+	 * defaults to HMAC-SHA256).
+	 *
+	 * @return the PRF algorithm name
+	 */
+	public String prfAlgorithmName() {
+		if (SHA256 == this || SHA384 == this) {
+			return hmacAlgorithmName();
+		}
+		return SHA256.hmacAlgorithmName();
+	}
+
+	/**
+	 * Computes the HMAC given a key and data.
+	 *
+	 * @param key the key
+	 * @param data the data
+	 * @return the HMAC
+	 * @throws Exception on any error
+	 */
+	public byte[] hmac(final byte[] key, final byte[] data) {
+		String algorithm = hmacAlgorithmName();
+		try {
+			Mac mac = Mac.getInstance(algorithm);
+			mac.init(new SecretKeySpec(key, algorithm));
+			return mac.doFinal(data);
+		} catch (Exception e) {
+			throw new SecurityException("Error computing HMAC", e);
+		}
 	}
 
 	/**
