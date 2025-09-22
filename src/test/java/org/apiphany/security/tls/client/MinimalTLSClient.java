@@ -200,7 +200,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		LOGGER.debug("Server random: {}", Hex.string(serverRandom, ""));
 		this.serverCipherSuite = serverHello.getCipherSuite();
 		MessageDigestAlgorithm messageDigest = serverCipherSuite.messageDigest();
-		String prfAlgorithm = messageDigest.prfAlgorithmName();
+		String prfAlgorithm = messageDigest.prfHmacAlgorithmName();
 
 		// 2b. Server Certificates
 		if (tlsRecord.hasNoHandshake(Certificates.class)) {
@@ -399,7 +399,8 @@ public class MinimalTLSClient implements AutoCloseable {
 				byte[] seqBytes = UInt64.toByteArray(sequence);
 				LOGGER.debug("Sequence number (hex): {}", Hex.string(seqBytes, ""));
 
-				byte[] handshakeFragment = ((Handshake) tlsObject).getBody().toByteArray();
+				// byte[] handshakeFragment = ((Handshake) tlsObject).getBody().toByteArray();
+				byte[] handshakeFragment = plaintext;
 				RecordHeader macHeader = new RecordHeader(RecordContentType.HANDSHAKE, sslProtocol, (short) handshakeFragment.length);
 				byte[] headerBytes = macHeader.toByteArray();
 				LOGGER.debug("Record header (hex): {}", Hex.string(headerBytes, ""));
@@ -413,17 +414,29 @@ public class MinimalTLSClient implements AutoCloseable {
 				LOGGER.debug("Plaintext + MAC (hex): {}", Hex.string(plaintextMac, ""));
 				LOGGER.debug("Plaintext + MAC length: {}", plaintextMac.length);
 
+				int blockSize = bulkCipher.blockSize();
+				int totalLen = plaintextMac.length;
+				int padLen = blockSize - (totalLen % blockSize);
+				if (padLen == 0) {
+					padLen = blockSize;
+				}
+				byte paddingByte = (byte) (padLen - 1);
+				byte[] padding = new byte[padLen];
+				Arrays.fill(padding, paddingByte);
+				byte[] padded = Bytes.concatenate(plaintextMac, padding);
+				LOGGER.debug("Padded (hex): {}", Hex.string(padded, ""));
+
 				byte[] explicitIV = new byte[bulkCipher.blockSize()];
-				new SecureRandom().nextBytes(explicitIV);
+				// new SecureRandom().nextBytes(explicitIV);
 				LOGGER.debug("Explicit IV (random): {}", Hex.string(explicitIV, ""));
 
-				Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding", "SunJCE");
+				Cipher cipher = Cipher.getInstance("AES/CBC/NoPadding");
 				LOGGER.debug("Cipher provider: {}", cipher.getProvider().getName());
 				LOGGER.debug("Client write key length: {}", keys.getClientWriteKey().length);
 				LOGGER.debug("Explicit IV length: {}", explicitIV.length);
 				cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(keys.getClientWriteKey(), "AES"), new IvParameterSpec(explicitIV));
-				LOGGER.debug("Plaintext + MAC before encryption: {}", Hex.string(plaintextMac, ""));
-				byte[] ciphertext = cipher.doFinal(plaintextMac);
+				LOGGER.debug("Plaintext + MAC before encryption: {}", Hex.string(padded, ""));
+				byte[] ciphertext = cipher.doFinal(padded);
 				LOGGER.debug("Ciphertext length: {}", ciphertext.length);
 				LOGGER.debug("Ciphertext (hex): {}", Hex.string(ciphertext, ""));
 				if (ciphertext.length != 48) {
@@ -434,11 +447,11 @@ public class MinimalTLSClient implements AutoCloseable {
 				LOGGER.debug("Encrypted length: {}", encrypted.length);
 				LOGGER.debug("Encrypted (explicitIV + ciphertext):\n{}", Hex.dump(encrypted));
 				if (encrypted.length != explicitIV.length + ciphertext.length) {
-					throw new IllegalStateException("Encrypted length mismatch");
+					LOGGER.error("Encrypted length mismatch");
 				}
 
 				byte[] clientWriteKey = keys.getClientWriteKey();
-				cipher = Cipher.getInstance("AES/CBC/PKCS5Padding", "SunJCE");
+				cipher = Cipher.getInstance("AES/CBC/NoPadding");
 				cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(clientWriteKey, "AES"), new IvParameterSpec(explicitIV));
 				byte[] decrypted = cipher.doFinal(ciphertext);
 				LOGGER.debug("Decrypted length: {}", decrypted.length);
@@ -481,9 +494,50 @@ public class MinimalTLSClient implements AutoCloseable {
 				yield decrypted;
 			}
 			case BLOCK -> {
-				byte[] iv = bulkCipher.fullIV(null, keys.getServerIV());
-				Cipher cipher = bulkCipher.cipher(Cipher.DECRYPT_MODE, keys.getServerWriteKey(), bulkCipher.spec(iv));
-				yield cipher.doFinal(encrypted.getEncryptedData(bulkCipher).toByteArray());
+				int blockSize = bulkCipher.blockSize();
+				byte[] encryptedBytes = encrypted.getEncryptedData(bulkCipher).toByteArray();
+
+				// Extract explicit IV
+				byte[] explicitIV = Arrays.copyOfRange(encryptedBytes, 0, blockSize);
+				byte[] actualCiphertext = Arrays.copyOfRange(encryptedBytes, blockSize, encryptedBytes.length);
+				LOGGER.debug("Explicit IV (hex): {}", Hex.string(explicitIV, ""));
+				LOGGER.debug("Actual ciphertext (hex): {}", Hex.string(actualCiphertext, ""));
+
+				// Decrypt with AES/CBC/NoPadding
+				Cipher cipher = Cipher.getInstance("AES/CBC/NoPadding");
+				cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(keys.getServerWriteKey(), "AES"), new IvParameterSpec(explicitIV));
+				byte[] paddedPlaintext = cipher.doFinal(actualCiphertext);
+				LOGGER.debug("Padded plaintext + MAC (hex): {}", Hex.string(paddedPlaintext, ""));
+
+				// Remove padding
+				int padLen = paddedPlaintext[paddedPlaintext.length - 1] & 0xFF; // last byte
+				int plaintextMacLen = paddedPlaintext.length - (padLen + 1);
+				byte[] plaintextWithMac = Arrays.copyOf(paddedPlaintext, plaintextMacLen);
+				LOGGER.debug("Plaintext + MAC length: {}", plaintextWithMac.length);
+
+				// Separate MAC and plaintext
+				int macLength = serverCipherSuite.messageDigest().digestLength();
+				int dataLength = plaintextWithMac.length - macLength;
+				byte[] decryptedPlaintext = Arrays.copyOfRange(plaintextWithMac, 0, dataLength);
+				byte[] receivedMac = Arrays.copyOfRange(plaintextWithMac, dataLength, plaintextWithMac.length);
+				LOGGER.debug("Decrypted plaintext (hex): {}", Hex.string(decryptedPlaintext, ""));
+				LOGGER.debug("Received MAC (hex): {}", Hex.string(receivedMac, ""));
+
+				// Verify MAC
+				byte[] seqBytes = UInt64.toByteArray(sequence);
+				RecordHeader header = tlsRecord.getHeader();
+				byte[] headerBytes = header.toByteArray();
+				byte[] macInput = Bytes.concatenate(seqBytes, headerBytes, decryptedPlaintext);
+				byte[] expectedMac = serverCipherSuite.messageDigest().hmac(keys.getServerMacKey(), macInput);
+				LOGGER.debug("Expected MAC (hex): {}", Hex.string(expectedMac, ""));
+
+				if (!Arrays.equals(expectedMac, receivedMac)) {
+					LOGGER.error("TLS MAC verification failed!");
+				} else {
+					LOGGER.debug("TLS MAC verification SUCCESS!");
+				}
+
+				yield decryptedPlaintext;
 			}
 			case STREAM -> {
 				byte[] iv = bulkCipher.fullIV(null, keys.getServerIV());

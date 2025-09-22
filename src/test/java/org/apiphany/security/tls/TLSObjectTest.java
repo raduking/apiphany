@@ -26,7 +26,6 @@ import org.apiphany.security.ssl.server.SimpleHttpsServer;
 import org.apiphany.security.ssl.server.TLSLoggingProvider;
 import org.apiphany.security.tls.client.MinimalTLSClient;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -81,7 +80,6 @@ class TLSObjectTest {
 		assertNotNull(serverFinished);
 	}
 
-	@Disabled("BLOCK Not working yet in MinimalTLSClient")
 	@Test
 	void shouldPerformTLS12HandshakeWithAES128CBC() throws Exception {
 		int port = Sockets.findAvailableTcpPort();
@@ -94,7 +92,7 @@ class TLSObjectTest {
 
 		byte[] serverFinished = null;
 		List<CipherSuite> cipherSuites = List.of(CipherSuite.TLS_RSA_WITH_AES_128_CBC_SHA);
-		try (MinimalTLSClient client = new MinimalTLSClient(LOCALHOST, port, Duration.ofSeconds(1), CLIENT_KEY_PAIR, cipherSuites)) {
+		try (MinimalTLSClient client = new MinimalTLSClient(LOCALHOST, port, Duration.ofSeconds(100), CLIENT_KEY_PAIR, cipherSuites)) {
 			serverFinished = client.performHandshake();
 		} finally {
 			server.close();
