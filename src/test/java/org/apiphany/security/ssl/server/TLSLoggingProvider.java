@@ -85,6 +85,9 @@ public final class TLSLoggingProvider extends Provider {
 		}
 		Constructor<?> constructor = Constructors.getDeclaredConstructor(weakIdentityWrapperClass, Provider.class, ReferenceQueue.class);
 		Object wrapperInstance = Constructors.IgnoreAccess.newInstance(constructor, provider, queue);
+		if (verificationResults.containsKey(wrapperInstance)) {
+			LOGGER.warn("Provider wrapper already present in verification results.");
+		}
 		Object providerVerified = Fields.IgnoreAccess.get(jceSecurityClass, "PROVIDER_VERIFIED");
 		verificationResults.put(wrapperInstance, providerVerified);
 	}
