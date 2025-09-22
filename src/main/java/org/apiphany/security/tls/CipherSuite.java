@@ -304,6 +304,12 @@ public enum CipherSuite implements TLSObject {
 			KeyExchangeAlgorithm.RSA, BulkCipher.RC4_56, MessageDigestAlgorithm.SHA1),
 
 	/**
+	 * RSA with RC4-128 legacy cipher suite.
+	 */
+	TLS_RSA_WITH_RC4_128_SHA((short) 0x0005,
+			KeyExchangeAlgorithm.RSA, BulkCipher.RC4_128, MessageDigestAlgorithm.SHA1),
+
+	/**
 	 * Empty renegotiation info signaling cipher suite.
 	 */
 	TLS_EMPTY_RENEGOTIATION_INFO_SCSV((short) 0x00FF,
