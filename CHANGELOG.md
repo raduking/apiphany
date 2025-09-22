@@ -4,74 +4,74 @@
 
 `1.0.12`
 
-Fixed `MicrometerCounter` and `MicrometerTimer` `unwrap` methods to properly validate the wanted class.
-Renamed `CipherSuite.getMessageDigest` method to `messageDigest` to match other method names in the enumeration.
-Added `MessageDigestAlgorithm.digestLength` that returns the digest length in bytes.
-Added `MessageDigestAlgorithm.hmac` to compute the HMAC for a given key and data.
-Added `MessageDigestAlgorithm.prfHmacAlgorithmName` to retrieve the correct TLS 1.2 PRF algorithm for the algorithm.
-Added `MessageDigestAlgorithm.digest(byte[], String)` static method to compute the hash for a given data and a given hash algorithm.
-Added `MessageDigestAlgorithm.sanitizedValue` method to sanitize the hashing algorithm name since Java handles `SHA-1` as `SHA-256` for example.
-Added `MessageDigestAlgorithm.sanitizedDigest` to compute the hash with the sanitized hash algorithm.
-Added `BulkCipher` enumeration that represents the bulk (symmetric) encryption algorithm used in a TLS cipher suite.
-Added `BulkCipherInfo` record that holds all the information needed to properly construct a `BulkCipher`.
-Added `CipherSuite.bulkCipher` to associate the `BulkCipher` with a `CipherSuite`.
-Added `CipherType` to represent the cipher types like AEAD, BLOCK, etc.
-Added `ExchangeKeys` which represents the set of keys derived from the TLS key block for a given cipher suite.
-Added `SSLProtocol.TLS_1_2_MASTER_SECRET_LENGTH` constant with the TLS 1.2 master secret length in bytes (48).
-Added `maven_deploy.sh` shell script to deploy to Maven Central which uses all the test parameters.
-Added `Bytes.isEmpty` to check if a byte array is empty.
-Added `Bytes.isNotEmpty` to check if a byte array is not empty.
-Added `BytesWrapper(byte[], int, int)` constructor to construct a wrapper over a slice of the byte array.
-Removed the nonce from `Encrypted` and changed the getters to get the nonce depending on the `BulkCipher`.
+- Fixed `MicrometerCounter` and `MicrometerTimer` `unwrap` methods to properly validate the wanted class.
+- Renamed `CipherSuite.getMessageDigest` method to `messageDigest` to match other method names in the enumeration.
+- Added `MessageDigestAlgorithm.digestLength` that returns the digest length in bytes.
+- Added `MessageDigestAlgorithm.hmac` to compute the HMAC for a given key and data.
+- Added `MessageDigestAlgorithm.prfHmacAlgorithmName` to retrieve the correct TLS 1.2 PRF algorithm for the algorithm.
+- Added `MessageDigestAlgorithm.digest(byte[], String)` static method to compute the hash for a given data and a given hash algorithm.
+- Added `MessageDigestAlgorithm.sanitizedValue` method to sanitize the hashing algorithm name since Java handles `SHA-1` as `SHA-256` for example.
+- Added `MessageDigestAlgorithm.sanitizedDigest` to compute the hash with the sanitized hash algorithm.
+- Added `BulkCipher` enumeration that represents the bulk (symmetric) encryption algorithm used in a TLS cipher suite.
+- Added `BulkCipherInfo` record that holds all the information needed to properly construct a `BulkCipher`.
+- Added `CipherSuite.bulkCipher` to associate the `BulkCipher` with a `CipherSuite`.
+- Added `CipherType` to represent the cipher types like AEAD, BLOCK, etc.
+- Added `ExchangeKeys` which represents the set of keys derived from the TLS key block for a given cipher suite.
+- Added `SSLProtocol.TLS_1_2_MASTER_SECRET_LENGTH` constant with the TLS 1.2 master secret length in bytes (48).
+- Added `maven_deploy.sh` shell script to deploy to Maven Central which uses all the test parameters.
+- Added `Bytes.isEmpty` to check if a byte array is empty.
+- Added `Bytes.isNotEmpty` to check if a byte array is not empty.
+- Added `BytesWrapper(byte[], int, int)` constructor to construct a wrapper over a slice of the byte array.
+- Removed the nonce from `Encrypted` and changed the getters to get the nonce depending on the `BulkCipher`.
 
 ---
 
 `1.0.11`
 
-Updated `testcontainers-keycloak` to `3.8.0`.
-Updated `nimbus-jose-jwt` to `10.5`.
-Updated `oauth2-oidc-sdk` to `11.28`.
-Updated MorphiX to `1.0.9`.
-Renamed `HttpException.statusMessage` static method to `HttpException.message`.
-Renamed `HttpException.exceptionMessage` static method to `HttpException.message`.
-Renamed `IO.bytesNeededEOFException` static method to `IO.eofExceptionBytesNeeded`.
-Added missing `equals` and `hashCode` to `UInt64` class.
-Added `UItn64.toUnsignedBigInteger` to get the 64 bit unsigned value.
-Renamed `UInt64.getValue` method to `UInt64.getSignedValue`.
-Added `Strings.stripChar` method that strips the given `String` by the given `char` from the beginning and the end.
-Removed references to Micrometer `Tags` in `ApiClientFluentAdapter`.
-Changed the `ApiClientFluentAdapter.url(String, String...)` method to correctly handle extra `/` characters in path segments.
-Added support for `MicrometerFactory.toTags` to convert `Collection` of objects to Micrometer `Tags`.
-Fixed `BytesWrapper` constructor to properly handle `Bytes.EMPTY`.
+- Updated `testcontainers-keycloak` to `3.8.0`.
+- Updated `nimbus-jose-jwt` to `10.5`.
+- Updated `oauth2-oidc-sdk` to `11.28`.
+- Updated MorphiX to `1.0.9`.
+- Renamed `HttpException.statusMessage` static method to `HttpException.message`.
+- Renamed `HttpException.exceptionMessage` static method to `HttpException.message`.
+- Renamed `IO.bytesNeededEOFException` static method to `IO.eofExceptionBytesNeeded`.
+- Added missing `equals` and `hashCode` to `UInt64` class.
+- Added `UItn64.toUnsignedBigInteger` to get the 64 bit unsigned value.
+- Renamed `UInt64.getValue` method to `UInt64.getSignedValue`.
+- Added `Strings.stripChar` method that strips the given `String` by the given `char` from the beginning and the end.
+- Removed references to Micrometer `Tags` in `ApiClientFluentAdapter`.
+- Changed the `ApiClientFluentAdapter.url(String, String...)` method to correctly handle extra `/` characters in path segments.
+- Added support for `MicrometerFactory.toTags` to convert `Collection` of objects to Micrometer `Tags`.
+- Fixed `BytesWrapper` constructor to properly handle `Bytes.EMPTY`.
 
 ---
 
 `1.0.10`
 
-Changed `AccumulatorException.toString` to be simpler.
-Added warning if multiple registrations are present in `OAuth2Properties` when creating an `OAuth2TokenProvider`.
-Added `OAuth2TokenProvider` constructor without client registration name.
-Added `OAuth2ResolvedRegistration` which holds a complete OAuth2 registration.
-Added `OAuth2Registry` to build a registry from an `OAuth2Properties` with all registrations configured into all `OAuth2ResolvedRegistration`s.
-Added `Temporals.formatToSeconds` to format a `double` to seconds as `String`.
-Changed `DurationAccumulator` to be faster and consume less memory.
-Changed `Headers.contains` with name, value and get values function to use `String.equalsIgnoreCase` instead of `String.contains`.
-Added `Headers.contains` with value comparing `BiPredicate`.
-Added `Strings.fromKebabToLowerCamelCase` to convert a Kebab string to a lower camel case string.
+- Changed `AccumulatorException.toString` to be simpler.
+- Added warning if multiple registrations are present in `OAuth2Properties` when creating an `OAuth2TokenProvider`.
+- Added `OAuth2TokenProvider` constructor without client registration name.
+- Added `OAuth2ResolvedRegistration` which holds a complete OAuth2 registration.
+- Added `OAuth2Registry` to build a registry from an `OAuth2Properties` with all registrations configured into all `OAuth2ResolvedRegistration`s.
+- Added `Temporals.formatToSeconds` to format a `double` to seconds as `String`.
+- Changed `DurationAccumulator` to be faster and consume less memory.
+- Changed `Headers.contains` with name, value and get values function to use `String.equalsIgnoreCase` instead of `String.contains`.
+- Added `Headers.contains` with value comparing `BiPredicate`.
+- Added `Strings.fromKebabToLowerCamelCase` to convert a Kebab string to a lower camel case string.
 
 ---
 
 `1.0.9`
 
-Added `OAuth2TokenProviderConfiguration` with configurable properties for `OAuth2TokenProvider`.
-Added `OAuth2TokenProviderConfiguration.Default` with the default values used when instantiating the configuration.
-Added `OAuth2TokenProviderConfiguration.defaults` method to create an instance with default values.
-Added constructor with `OAuth2TokenProviderConfiguration` to `OAuth2TokenProvider`.
-Added `OAuth2TokenProvider.getConfiguration` method to be able to change the configuration dynamically.
-Removed `BytesWrapper.toHexString` method and moved the implementation to `toString` method since JSON doesn't make sense here.
-Removed `ExchangeRandom.toHexString` method and moved the implementation to `toString` method since JSON doesn't make sense here.
-Added `IO.bytesNeededEOFException` to uniformly build exceptions for the `IO` utility class.
-Updated to MorphiX to `v1.0.8`.
+- Added `OAuth2TokenProviderConfiguration` with configurable properties for `OAuth2TokenProvider`.
+- Added `OAuth2TokenProviderConfiguration.Default` with the default values used when instantiating the configuration.
+- Added `OAuth2TokenProviderConfiguration.defaults` method to create an instance with default values.
+- Added constructor with `OAuth2TokenProviderConfiguration` to `OAuth2TokenProvider`.
+- Added `OAuth2TokenProvider.getConfiguration` method to be able to change the configuration dynamically.
+- Removed `BytesWrapper.toHexString` method and moved the implementation to `toString` method since JSON doesn't make sense here.
+- Removed `ExchangeRandom.toHexString` method and moved the implementation to `toString` method since JSON doesn't make sense here.
+- Added `IO.bytesNeededEOFException` to uniformly build exceptions for the `IO` utility class.
+- Updated to MorphiX to `v1.0.8`.
 
 ---
 
@@ -83,81 +83,81 @@ Changed `AuthenticationException` to extend `SecurityException`.
 
 `1.0.7`
 
-Added `PRF` with utility methods to a apply pseudo-random function in TLS environments.
-Added `KeyExchangeHandler` interface to be implemented in key exchanges.
-Added `Sensitive` annotation to mark sensitive fields.
-Changed `JacksonJsonBuilder` to read sensitive but not write `Sensitive` fields this is useful for passwords fields.
-Added `@Ignored` annotation which is replacing Jackson's `@JsonIgnore` and is JSON library agnostic.
-Added `@FieldName` annotation which is replacing Jackson's `@JsonProperty` and is JSON library agnostic.
-Added `@FieldOrder` annotation which is replacing Jackson's `@JsonPropertyOrder` and is JSON library agnostic.
-Added `@AsValue` annotation which is replacing Jackson's `@JsonValue` and is JSON library agnostic.
-Added `ApiphanyAnnotationIntrospector` which handles the newly added annotations when Jackson is present in the class path so that the JSON library is abstracted away.
-Added `@Sensitive` annotation for sensitive fields that will deserialized but not serialized for security.
-Added `SensitiveAnnotationIntrospector` that handles the `@Sensitive` annotation.
-Changed `BasicMeters` class so that is metric library agnostic.
-Added `Meter` base interface for meters.
-Added `MeterTimer` interface for timer meters.
-Added `MeterCounter` interface for counter meters.
-Added `MeterFactory` which will create meter library agnostic meters.
-Added Micrometer implementation which will only be used if Micrometer library is present in the classpath.
-Added `MicrometerTimer` which wraps a Micrometer `Timer`.
-Added `MicrometerCounter` which wraps a Micrometer `Counter`.
-Added `MicrometerFactory` which creates a Micrometer meters (only if Micrometer library is present in the classpath).
-Removed the Micrometer library from the build.
+- Added `PRF` with utility methods to a apply pseudo-random function in TLS environments.
+- Added `KeyExchangeHandler` interface to be implemented in key exchanges.
+- Added `Sensitive` annotation to mark sensitive fields.
+- Changed `JacksonJsonBuilder` to read sensitive but not write `Sensitive` fields this is useful for passwords fields.
+- Added `@Ignored` annotation which is replacing Jackson's `@JsonIgnore` and is JSON library agnostic.
+- Added `@FieldName` annotation which is replacing Jackson's `@JsonProperty` and is JSON library agnostic.
+- Added `@FieldOrder` annotation which is replacing Jackson's `@JsonPropertyOrder` and is JSON library agnostic.
+- Added `@AsValue` annotation which is replacing Jackson's `@JsonValue` and is JSON library agnostic.
+- Added `ApiphanyAnnotationIntrospector` which handles the newly added annotations when Jackson is present in the class path so that the JSON library is abstracted away.
+- Added `@Sensitive` annotation for sensitive fields that will deserialized but not serialized for security.
+- Added `SensitiveAnnotationIntrospector` that handles the `@Sensitive` annotation.
+- Changed `BasicMeters` class so that is metric library agnostic.
+- Added `Meter` base interface for meters.
+- Added `MeterTimer` interface for timer meters.
+- Added `MeterCounter` interface for counter meters.
+- Added `MeterFactory` which will create meter library agnostic meters.
+- Added Micrometer implementation which will only be used if Micrometer library is present in the classpath.
+- Added `MicrometerTimer` which wraps a Micrometer `Timer`.
+- Added `MicrometerCounter` which wraps a Micrometer `Counter`.
+- Added `MicrometerFactory` which creates a Micrometer meters (only if Micrometer library is present in the classpath).
+- Removed the Micrometer library from the build.
 
 ---
 
 `1.0.6`
 
-Added `ApiMimeType` as an interface to represent a mime type.
-Added `ApiMimeType.parseCharset` to parse a `Charset`.
-Moved `ContentType` from `http` package to `io` package.
-Changed `ContentType` to implement `ApiMimeType`.
-Renamed `ResolvedContentType` to `HttpContentType` to better match its purpose.
-Added `AuthenticationTokenProvider` interface to declare authentication token providers.
-Changed `OAuth2ApiClient` to respect the `AuthenticationTokenProvider` contract to throw `AuthenticationException` when token retrieval fails.
-Added `ApiResponse.orThrow` to throw an exception if the request fails.
-Added `ApiResponse.orRethrow` to re-throw the exception wrapped into another exception via an exception wrapping function.
-Added `ScopedResource.isNotManaged` method which returns true if the underlying resource is not managed.
-Added `ScopedResource.checked` method to check for the same resource being managed twice.
-Changed `OAuth2HttpExchangeClient` to properly handle managed and unmanaged resources.
-Added `OAuth2TokenProvider` to handle OAuth2 tokens.
-Added `AuthenticationToken.EXPIRATION_ERROR_MARGIN` for token expiration checking.
+- Added `ApiMimeType` as an interface to represent a mime type.
+- Added `ApiMimeType.parseCharset` to parse a `Charset`.
+- Moved `ContentType` from `http` package to `io` package.
+- Changed `ContentType` to implement `ApiMimeType`.
+- Renamed `ResolvedContentType` to `HttpContentType` to better match its purpose.
+- Added `AuthenticationTokenProvider` interface to declare authentication token providers.
+- Changed `OAuth2ApiClient` to respect the `AuthenticationTokenProvider` contract to throw `AuthenticationException` when token retrieval fails.
+- Added `ApiResponse.orThrow` to throw an exception if the request fails.
+- Added `ApiResponse.orRethrow` to re-throw the exception wrapped into another exception via an exception wrapping function.
+- Added `ScopedResource.isNotManaged` method which returns true if the underlying resource is not managed.
+- Added `ScopedResource.checked` method to check for the same resource being managed twice.
+- Changed `OAuth2HttpExchangeClient` to properly handle managed and unmanaged resources.
+- Added `OAuth2TokenProvider` to handle OAuth2 tokens.
+- Added `AuthenticationToken.EXPIRATION_ERROR_MARGIN` for token expiration checking.
 
 ---
 
 `1.0.5`
 
-Fixed `HttpExchangeClient.head` method.
-Renamed `ExchangeClient.getRedactedHeaderPredicate` to `ExchangeClient.isRedactedHeader`.
-Added `ResolvedContentType` for content types resolved from API responses.
-Changed the default body handler for responses in `JavaNetHttpExchangeClient` from `String` to `byte[]`.
-Changed some `ContentConverter` methods to include the `ResolvedContentType`.
-Changed the `JacksonJsonBuilder.fromJson` to accept generic types so it can parse both `String` and `byte[]`.
-Added methods for working with headers as maps to `Headers` class.
+- Fixed `HttpExchangeClient.head` method.
+- Renamed `ExchangeClient.getRedactedHeaderPredicate` to `ExchangeClient.isRedactedHeader`.
+- Added `ResolvedContentType` for content types resolved from API responses.
+- Changed the default body handler for responses in `JavaNetHttpExchangeClient` from `String` to `byte[]`.
+- Changed some `ContentConverter` methods to include the `ResolvedContentType`.
+- Changed the `JacksonJsonBuilder.fromJson` to accept generic types so it can parse both `String` and `byte[]`.
+- Added methods for working with headers as maps to `Headers` class.
 
 ---
 
 `1.0.4`
 
-Added `PRFLabel` enum representing labels used in TLS Pseudo-random Function (PRF) operations.
-Added `MessageDigestAlgorithm` representing supported message digest algorithms for cryptographic operations.
-Added the message digest algorithm to each `CipherSuite` enum value.
-Added `Record.hasNoHandshake` method to check of a TLS record doesn't have the handshake message type specified as a parameter.
-Moved `ByteSizeable` and `BinaryRepresentable` to `io` package.
-Added `BytesOrder` enum and streamlined key handling.
-Added `Sockets.DEFAULT_TIMEOUT` set to 2 seconds.
-Added methods without timeout specifier to `Sockets` which use the `Sockets.DEFAULT_TIMEOUT`.
-Added `ScopedResource` class for managed/unmanaged resource handling.
-Added `LoggingFormat` enum to specify logging format configurations.
-Added `TLSObject.serialize` to serialize any TLS object to string depending on configuration.
-Added `TLSObject.FORMAT` as the logging format configurable with `apiphany.logging.format.tls` property.
-Moved all OAuth2 model classes to the same package `oauth2` since they can be used by both the server or the client despite their names.
-Added support for TLS fragmented handshake records.
-Added `RawHandshakeBody` to be able to build/read raw handshake messages.
-Added `TLSEncryptedObject` abstract class and derived TLS classes to denote any TLS message that is encrypted.
-Added `IO` class with input/output stream operations.
-Moved `DEFAULT_BUFFER_SIZE` constant from `Strings` to `IO`.
+- Added `PRFLabel` enum representing labels used in TLS Pseudo-random Function (PRF) operations.
+- Added `MessageDigestAlgorithm` representing supported message digest algorithms for cryptographic operations.
+- Added the message digest algorithm to each `CipherSuite` enum value.
+- Added `Record.hasNoHandshake` method to check of a TLS record doesn't have the handshake message type specified as a parameter.
+- Moved `ByteSizeable` and `BinaryRepresentable` to `io` package.
+- Added `BytesOrder` enum and streamlined key handling.
+- Added `Sockets.DEFAULT_TIMEOUT` set to 2 seconds.
+- Added methods without timeout specifier to `Sockets` which use the `Sockets.DEFAULT_TIMEOUT`.
+- Added `ScopedResource` class for managed/unmanaged resource handling.
+- Added `LoggingFormat` enum to specify logging format configurations.
+- Added `TLSObject.serialize` to serialize any TLS object to string depending on configuration.
+- Added `TLSObject.FORMAT` as the logging format configurable with `apiphany.logging.format.tls` property.
+- Moved all OAuth2 model classes to the same package `oauth2` since they can be used by both the server or the client despite their names.
+- Added support for TLS fragmented handshake records.
+- Added `RawHandshakeBody` to be able to build/read raw handshake messages.
+- Added `TLSEncryptedObject` abstract class and derived TLS classes to denote any TLS message that is encrypted.
+- Added `IO` class with input/output stream operations.
+- Moved `DEFAULT_BUFFER_SIZE` constant from `Strings` to `IO`.
 
 ---
 
