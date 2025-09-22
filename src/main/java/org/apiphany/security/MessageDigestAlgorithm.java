@@ -126,6 +126,21 @@ public enum MessageDigestAlgorithm {
 		if (this == NONE) {
 			throw new UnsupportedOperationException("Digest algorithm '" + this + "' does not support digesting.");
 		}
+		return digest(input, value());
+	}
+
+	/**
+	 * Applies the algorithm on the given input using the {@link #sanitizedValue()} as the algorithm.
+	 * <p>
+	 * In Java TLS 1.2 for example instead of {@link #SHA1} it defaults to {@link #SHA256}.
+	 *
+	 * @param input the input to digest
+	 * @return the digested input
+	 */
+	public byte[] sanitizedDigest(final byte[] input) {
+		if (this == NONE) {
+			throw new UnsupportedOperationException("Digest algorithm '" + this + "' does not support digesting.");
+		}
 		return digest(input, sanitizedValue());
 	}
 
@@ -196,7 +211,7 @@ public enum MessageDigestAlgorithm {
 	public String sanitizedValue() {
 		return switch (this) {
 			case SHA1 -> SHA256.value();
-			case SHA256, SHA384 -> value();
+			case SHA256, SHA384, SHA512 -> value();
 			default -> throw new UnsupportedOperationException("Unsupported digest algorithm: " + this);
 		};
 	}

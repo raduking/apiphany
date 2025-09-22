@@ -24,7 +24,7 @@ public enum CipherType {
 	/**
 	 * Block cipher (AES-CBC).
 	 */
-	BLOCK("AES/CBC/PKCS5Padding"),
+	BLOCK("AES/CBC/NoPadding"),
 
 	/**
 	 * Stream cipher (RC4).
