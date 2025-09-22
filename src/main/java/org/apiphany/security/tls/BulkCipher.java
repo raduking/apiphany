@@ -223,6 +223,18 @@ public enum BulkCipher {
 	}
 
 	/**
+	 * Returns a new cipher with the given parameters.
+	 *
+	 * @param mode the cipher mode {@link Cipher#ENCRYPT_MODE} or {@link Cipher#DECRYPT_MODE}
+	 * @param key the cipher key
+	 * @param fullIV the iv used for algorithm parameter specification
+	 * @return a new cipher
+	 */
+	public Cipher cipher(final int mode, final byte[] key, final byte[] fullIV) {
+		return cipher(mode, key, spec(fullIV));
+	}
+
+	/**
 	 * Returns a new cipher.
 	 *
 	 * @param mode the cipher mode {@link Cipher#ENCRYPT_MODE} or {@link Cipher#DECRYPT_MODE}

@@ -11,6 +11,7 @@ Added `MessageDigestAlgorithm.hmac` to compute the HMAC for a given key and data
 Added `MessageDigestAlgorithm.prfHmacAlgorithmName` to retrieve the correct TLS 1.2 PRF algorithm for the algorithm.
 Added `MessageDigestAlgorithm.digest(byte[], String)` static method to compute the hash for a given data and a given hash algorithm.
 Added `MessageDigestAlgorithm.sanitizedValue` method to sanitize the hashing algorithm name since Java handles `SHA-1` as `SHA-256` for example.
+Added `MessageDigestAlgorithm.sanitizedDigest` to compute the hash with the sanitized hash algorithm.
 Added `BulkCipher` enumeration that represents the bulk (symmetric) encryption algorithm used in a TLS cipher suite.
 Added `BulkCipherInfo` record that holds all the information needed to properly construct a `BulkCipher`.
 Added `CipherSuite.bulkCipher` to associate the `BulkCipher` with a `CipherSuite`.
