@@ -126,8 +126,19 @@ public enum MessageDigestAlgorithm {
 		if (this == NONE) {
 			throw new UnsupportedOperationException("Digest algorithm '" + this + "' does not support digesting.");
 		}
+		return digest(input, sanitizedValue());
+	}
+
+	/**
+	 * Applies the algorithm on the given input.
+	 *
+	 * @param input the input to digest
+	 * @param algorithm digest algorithm
+	 * @return the digested input
+	 */
+	public static byte[] digest(final byte[] input, final String algorithm) {
 		try {
-			MessageDigest digest = MessageDigest.getInstance(value());
+			MessageDigest digest = MessageDigest.getInstance(algorithm);
 			return digest.digest(input);
 		} catch (NoSuchAlgorithmException e) {
 			throw new SecurityException("Error digesting input", e);
@@ -170,11 +181,24 @@ public enum MessageDigestAlgorithm {
 	 *
 	 * @return the PRF algorithm name
 	 */
-	public String prfAlgorithmName() {
+	public String prfHmacAlgorithmName() {
 		if (SHA256 == this || SHA384 == this) {
 			return hmacAlgorithmName();
 		}
 		return SHA256.hmacAlgorithmName();
+	}
+
+	/**
+	 * Returns the sanitized digest algorithm name.
+	 *
+	 * @return the sanitized digest algorithm name
+	 */
+	public String sanitizedValue() {
+		return switch (this) {
+			case SHA1 -> SHA256.value();
+			case SHA256, SHA384 -> value();
+			default -> throw new UnsupportedOperationException("Unsupported digest algorithm: " + this);
+		};
 	}
 
 	/**
