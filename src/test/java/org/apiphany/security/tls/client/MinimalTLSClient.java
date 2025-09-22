@@ -93,7 +93,8 @@ public class MinimalTLSClient implements AutoCloseable {
 	public static final List<CipherSuite> SUPPORTED_CIPHER_SUITES = List.of(
 			CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
 			CipherSuite.TLS_RSA_WITH_AES_256_GCM_SHA384,
-			CipherSuite.TLS_RSA_WITH_AES_128_CBC_SHA);
+			CipherSuite.TLS_RSA_WITH_AES_128_CBC_SHA,
+			CipherSuite.TLS_RSA_WITH_AES_128_CBC_SHA256);
 
 	private final String host;
 	private final int port;
@@ -171,7 +172,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		LOGGER.debug("Received TLS Record {}:{}", String.join(",", tlsRecord.getFragmentNames()), tlsRecord);
 		if (tlsRecord.getHeader().getType() == RecordContentType.ALERT) {
 			Alert alert = tlsRecord.getFragment(Alert.class);
-			LOGGER.debug("Received alert: level={}, description={}", alert.getLevel(), alert.getDescription());
+			LOGGER.error("Received alert: level={}, description={}", alert.getLevel(), alert.getDescription());
 		}
 		return tlsRecord;
 	}
@@ -439,9 +440,7 @@ public class MinimalTLSClient implements AutoCloseable {
 				yield new Encrypted(encrypted);
 			}
 			case STREAM -> {
-				byte[] iv = bulkCipher.fullIV(null, keys.getClientIV());
-				Cipher cipher = bulkCipher.cipher(Cipher.ENCRYPT_MODE, keys.getClientWriteKey(), bulkCipher.spec(iv));
-				yield new Encrypted(cipher.doFinal(plaintext));
+				throw new UnsupportedOperationException("Unsupported cipher type: " + CipherType.STREAM);
 			}
 			case NO_ENCRYPTION -> {
 				yield new Encrypted(plaintext);
@@ -513,9 +512,7 @@ public class MinimalTLSClient implements AutoCloseable {
 				yield decryptedPlaintext;
 			}
 			case STREAM -> {
-				byte[] iv = bulkCipher.fullIV(null, keys.getServerIV());
-				Cipher cipher = bulkCipher.cipher(Cipher.DECRYPT_MODE, keys.getServerWriteKey(), bulkCipher.spec(iv));
-				yield cipher.doFinal(encrypted.getEncryptedData(bulkCipher).toByteArray());
+				throw new UnsupportedOperationException("Unsupported cipher type: " + CipherType.STREAM);
 			}
 			case NO_ENCRYPTION -> {
 				yield encrypted.getEncryptedData(bulkCipher).toByteArray();

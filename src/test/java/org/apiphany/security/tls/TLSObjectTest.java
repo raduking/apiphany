@@ -70,7 +70,8 @@ class TLSObjectTest {
 		return Stream.of(
 				Arguments.of(CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384),
 				Arguments.of(CipherSuite.TLS_RSA_WITH_AES_256_GCM_SHA384),
-				Arguments.of(CipherSuite.TLS_RSA_WITH_AES_128_CBC_SHA));
+				Arguments.of(CipherSuite.TLS_RSA_WITH_AES_128_CBC_SHA),
+				Arguments.of(CipherSuite.TLS_RSA_WITH_AES_128_CBC_SHA256));
 	}
 
 	@ParameterizedTest
@@ -229,10 +230,11 @@ class TLSObjectTest {
 
 		String hexOutput = Hex.string(output).toLowerCase().trim();
 
+		String expectedSingleLine = expected.replace("\n", " ").trim();
 		LOGGER.info("PRF Output: {}", hexOutput);
-		LOGGER.info("PRF Expect: {}", expected);
+		LOGGER.info("PRF Expect: {}", expectedSingleLine);
 
-		assertThat(hexOutput, equalTo(expected));
+		assertThat(hexOutput, equalTo(expectedSingleLine));
 	}
 
 	@Test
@@ -250,24 +252,27 @@ class TLSObjectTest {
 				Arguments.of(
 						"test label",
 						"test seed",
-						32,
-						"cc 3a 20 27 3a 70 78 6a 85 65 6d 30 c0 ad 0c 7b "
-								+ "e2 0b fd 51 d5 d1 5c 43 82 25 d8 fb 6a 94 82 f1"),
+						32, """
+						cc 3a 20 27 3a 70 78 6a 85 65 6d 30 c0 ad 0c 7b
+						e2 0b fd 51 d5 d1 5c 43 82 25 d8 fb 6a 94 82 f1
+						"""),
 				Arguments.of(
 						"another label",
 						"different seed",
-						48,
-						"e1 1d fa 82 07 7c 04 77 2f b6 4a 1a 1a e5 40 59 "
-								+ "cc 3b 19 9d f6 4b 50 23 28 50 08 7f ee 74 b8 68 "
-								+ "63 90 53 de bf 4e 6f ce a8 a8 a3 34 7e f2 9d 7b"),
+						48, """
+						e1 1d fa 82 07 7c 04 77 2f b6 4a 1a 1a e5 40 59
+						cc 3b 19 9d f6 4b 50 23 28 50 08 7f ee 74 b8 68
+						63 90 53 de bf 4e 6f ce a8 a8 a3 34 7e f2 9d 7b
+						"""),
 				Arguments.of(
 						"label3",
 						"seed3",
-						64,
-						"91 56 02 f6 ba 3f 29 ae 16 6c d7 26 e9 aa e5 16 "
-								+ "ec 6b e9 01 29 e5 a9 11 2f ed f3 f1 bd 09 b2 a2 "
-								+ "67 a1 ee 35 f5 ab da 72 97 4e 6d 41 87 ca d1 84 "
-								+ "c5 c7 73 75 4f 8e 03 61 83 1e 26 c3 09 5c f9 2a"),
+						64, """
+						91 56 02 f6 ba 3f 29 ae 16 6c d7 26 e9 aa e5 16
+						ec 6b e9 01 29 e5 a9 11 2f ed f3 f1 bd 09 b2 a2
+						67 a1 ee 35 f5 ab da 72 97 4e 6d 41 87 ca d1 84
+						c5 c7 73 75 4f 8e 03 61 83 1e 26 c3 09 5c f9 2a
+						"""),
 				Arguments.of(
 						"test label",
 						"test seed",
