@@ -183,7 +183,6 @@ public enum MessageDigestAlgorithm {
 	 * @param key the key
 	 * @param data the data
 	 * @return the HMAC
-	 * @throws Exception on any error
 	 */
 	public byte[] hmac(final byte[] key, final byte[] data) {
 		String algorithm = hmacAlgorithmName();
