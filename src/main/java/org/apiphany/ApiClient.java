@@ -136,7 +136,7 @@ public class ApiClient implements AutoCloseable {
 		this(baseUrl, exchangeClients.stream().collect(
 				Collectors.toMap(
 						Function.identity(),
-						v -> managed,
+						value -> managed,
 						(existing, replacement) -> existing,
 						() -> new LinkedHashMap<>())));
 	}
@@ -194,7 +194,7 @@ public class ApiClient implements AutoCloseable {
 	 */
 	@Override
 	public void close() throws Exception {
-		exchangeClientsMap.forEach(ThrowingBiConsumer.unchecked((k, v) -> v.closeIfManaged()));
+		exchangeClientsMap.forEach(ThrowingBiConsumer.unchecked((key, value) -> value.closeIfManaged()));
 	}
 
 	/**

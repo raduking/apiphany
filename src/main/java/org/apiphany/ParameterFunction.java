@@ -160,7 +160,7 @@ public interface ParameterFunction extends Consumer<Map<String, String>> {
 	 * @return a {@link ParameterFunction} that inserts all entries from the map
 	 */
 	static ParameterFunction parameters(final Map<String, String> map) {
-		return m -> m.putAll(map);
+		return existingMap -> existingMap.putAll(map);
 	}
 
 	/**

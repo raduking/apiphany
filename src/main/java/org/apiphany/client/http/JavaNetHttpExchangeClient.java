@@ -230,6 +230,6 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	 * @param headers map of headers to add to the request builder
 	 */
 	public static void addHeaders(final HttpRequest.Builder httpRequestBuilder, final Map<String, List<String>> headers) {
-		Maps.safe(headers).forEach((k, v) -> v.forEach(h -> httpRequestBuilder.header(k, h)));
+		Maps.safe(headers).forEach((key, value) -> value.forEach(header -> httpRequestBuilder.header(key, header)));
 	}
 }

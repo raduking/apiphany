@@ -87,7 +87,7 @@ public enum ContentEncoding {
 	/**
 	 * The name map for easy from string implementation.
 	 */
-	private static final Map<String, ContentEncoding> NAME_MAP = Enums.buildNameMap(values(), h -> h.toString().toLowerCase());
+	private static final Map<String, ContentEncoding> NAME_MAP = Enums.buildNameMap(values(), encoding -> encoding.toString().toLowerCase());
 
 	/**
 	 * Content encoding value.

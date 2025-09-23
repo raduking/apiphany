@@ -84,7 +84,7 @@ public enum TracingHeader {
 	/**
 	 * The name map for easy from string implementation.
 	 */
-	private static final Map<String, TracingHeader> NAME_MAP = Enums.buildNameMap(values(), h -> h.toString().toLowerCase());
+	private static final Map<String, TracingHeader> NAME_MAP = Enums.buildNameMap(values(), header -> header.toString().toLowerCase());
 
 	/**
 	 * The string representation of the header.

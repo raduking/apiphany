@@ -88,7 +88,7 @@ public class CompositeAccumulator extends Accumulator<Object> {
 	@Override
 	public List<Object> getInformationList() {
 		return JavaObjects.cast(accumulators.stream()
-				.flatMap(a -> a.getInformationList().stream())
+				.flatMap(accumulator -> accumulator.getInformationList().stream())
 				.toList());
 	}
 
