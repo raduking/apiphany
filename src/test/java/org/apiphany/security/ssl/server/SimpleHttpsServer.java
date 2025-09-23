@@ -83,6 +83,7 @@ public class SimpleHttpsServer implements AutoCloseable {
 				@Override
 				public void configure(HttpsParameters params) {
 					super.configure(params);
+					log(params);
 				}
 			});
 			return httpsServer;

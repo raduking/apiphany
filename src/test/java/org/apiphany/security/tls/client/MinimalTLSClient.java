@@ -314,9 +314,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		LOGGER.debug("Computed Server verify data:\n{}", Hex.dump(computedVerifyData));
 		byte[] serverVerifyData = serverFinished.getVerifyData().toByteArray();
 		LOGGER.debug("Received Server verify data:\n{}", Hex.dump(serverVerifyData));
-		if (MessageDigest.isEqual(computedVerifyData, serverVerifyData)) {
-			LOGGER.debug("Server Finished verification SUCCESS!");
-		} else {
+		if (!MessageDigest.isEqual(computedVerifyData, serverVerifyData)) {
 			throw new SecurityException("Server Finished verification FAILED!");
 		}
 
@@ -492,24 +490,20 @@ public class MinimalTLSClient implements AutoCloseable {
 
 				int macLength = serverCipherSuite.messageDigest().digestLength();
 				int dataLength = plaintextWithMac.length - macLength;
-				byte[] decryptedPlaintext = Arrays.copyOfRange(plaintextWithMac, 0, dataLength);
-				LOGGER.debug("Decrypted plaintext (hex): {}", Hex.string(decryptedPlaintext, ""));
+				byte[] decrypted = Arrays.copyOfRange(plaintextWithMac, 0, dataLength);
+				LOGGER.debug("Decrypted plaintext (hex): {}", Hex.string(decrypted, ""));
 
 				byte[] receivedMac = Arrays.copyOfRange(plaintextWithMac, dataLength, plaintextWithMac.length);
 				LOGGER.debug("Received MAC (hex): {}", Hex.string(receivedMac, ""));
 				byte[] seqBytes = UInt64.toByteArray(sequence);
-				RecordHeader header = tlsRecord.getHeader();
-				RecordHeader macHeader = new RecordHeader(header.getType(), sslProtocol, (short) decryptedPlaintext.length);
-				byte[] macInput = Bytes.concatenate(seqBytes, macHeader.toByteArray(), decryptedPlaintext);
+				RecordHeader macHeader = new RecordHeader(tlsRecord.getHeader().getType(), sslProtocol, (short) decrypted.length);
+				byte[] macInput = Bytes.concatenate(seqBytes, macHeader.toByteArray(), decrypted);
 				byte[] expectedMac = serverCipherSuite.messageDigest().hmac(keys.getServerMacKey(), macInput);
 				LOGGER.debug("Expected MAC (hex): {}", Hex.string(expectedMac, ""));
-
 				if (!MessageDigest.isEqual(expectedMac, receivedMac)) {
-					LOGGER.error("TLS MAC verification failed!");
-				} else {
-					LOGGER.debug("TLS MAC verification SUCCESS!");
+					throw new SecurityException("TLS MAC verification failed!");
 				}
-				yield decryptedPlaintext;
+				yield decrypted;
 			}
 			case STREAM -> {
 				throw new UnsupportedOperationException("Unsupported cipher type: " + CipherType.STREAM);
