@@ -69,7 +69,7 @@ public class RequestParameters {
 			return "";
 		}
 		String[] paramsArray = params.entrySet().stream()
-				.map(e -> String.join("=", e.getKey(), e.getValue()))
+				.map(entry -> String.join("=", entry.getKey(), entry.getValue()))
 				.toArray(String[]::new);
 		return String.join(SEPARATOR, paramsArray);
 	}
@@ -130,10 +130,10 @@ public class RequestParameters {
 	 */
 	public static Map<String, String> encode(final Map<String, String> requestParameters, final Charset encoding) {
 		Map<String, String> encodedParams = HashMap.newHashMap(requestParameters.size());
-		requestParameters.forEach((k, v) -> {
-			String name = URLEncoder.encode(k, encoding);
-			String value = URLEncoder.encode(v, encoding);
-			encodedParams.put(name, value);
+		requestParameters.forEach((key, value) -> {
+			String encodedName = URLEncoder.encode(key, encoding);
+			String encodedValue = URLEncoder.encode(value, encoding);
+			encodedParams.put(encodedName, encodedValue);
 		});
 		return encodedParams;
 	}

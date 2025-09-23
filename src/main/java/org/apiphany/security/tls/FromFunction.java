@@ -19,13 +19,13 @@ public interface FromFunction<T extends TLSObject> {
 	/**
 	 * Reads and parses a {@link TLSObject} of a given size in bytes from the provided input stream.
 	 *
-	 * @param is the input stream to read from
+	 * @param inputStream the input stream to read from
 	 * @param size the number of bytes available for reading (may be ignored by some implementations)
 	 * @return the parsed TLSObject
 	 * @throws IOException If an I/O error occurs while reading from the stream
 	 * @throws IllegalArgumentException If the input data is malformed or invalid
 	 */
-	T from(InputStream is, int size) throws IOException;
+	T from(InputStream inputStream, int size) throws IOException;
 
 	/**
 	 * A variant of {@link FromFunction} that doesn't require a size parameter.
@@ -41,12 +41,12 @@ public interface FromFunction<T extends TLSObject> {
 		/**
 		 * Reads and parses a {@link TLSObject} from the provided input stream.
 		 *
-		 * @param is The input stream to read from
+		 * @param inputStream The input stream to read from
 		 * @return the parsed TLSObject
 		 * @throws IOException If an I/O error occurs while reading from the stream
 		 * @throws IllegalArgumentException If the input data is malformed or invalid
 		 */
-		T from(InputStream is) throws IOException;
+		T from(InputStream inputStream) throws IOException;
 	}
 
 	/**
@@ -58,6 +58,6 @@ public interface FromFunction<T extends TLSObject> {
 	 * @return a new FromFunction that wraps the provided NoSize function
 	 */
 	static <T extends TLSObject> FromFunction<T> ignoreSize(final NoSize<T> noSize) {
-		return (is, size) -> noSize.from(is);
+		return (inputStream, size) -> noSize.from(inputStream);
 	}
 }

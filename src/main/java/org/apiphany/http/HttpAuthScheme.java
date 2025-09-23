@@ -96,7 +96,7 @@ public enum HttpAuthScheme {
 	/**
 	 * The name map for easy from string implementation.
 	 */
-	private static final Map<String, HttpAuthScheme> NAME_MAP = Enums.buildNameMap(values(), h -> h.toString().toLowerCase());
+	private static final Map<String, HttpAuthScheme> NAME_MAP = Enums.buildNameMap(values(), scheme -> scheme.toString().toLowerCase());
 
 	/**
 	 * The scheme string representation.

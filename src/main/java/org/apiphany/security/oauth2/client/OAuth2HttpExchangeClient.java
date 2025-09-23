@@ -57,7 +57,7 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 
 		if (initialize()) {
 			this.tokenProvider = new OAuth2TokenProvider(oAuth2Properties, clientRegistrationName,
-					(cr, pd) -> new OAuth2ApiClient(cr, pd, tokenExchangeClient.unwrap()));
+					(clientRegistration, providerDetails) -> new OAuth2ApiClient(clientRegistration, providerDetails, tokenExchangeClient.unwrap()));
 		}
 		setAuthenticationScheme(HttpAuthScheme.BEARER);
 	}
