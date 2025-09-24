@@ -5,16 +5,13 @@ import static org.apiphany.ParameterFunction.withCondition;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apiphany.utils.Tests;
 import org.junit.jupiter.api.Test;
-import org.morphix.lang.JavaObjects;
 import org.morphix.reflection.Constructors;
-import org.morphix.reflection.ReflectionException;
 
 /**
  * Test class for {@link RequestParameters}.
@@ -25,10 +22,7 @@ class RequestParametersTest {
 
 	@Test
 	void shouldThrowExceptionOnCallingConstructor() {
-		ReflectionException reflectionException =
-				assertThrows(ReflectionException.class, () -> Constructors.IgnoreAccess.newInstance(RequestParameters.class));
-		InvocationTargetException invocationTargetException = JavaObjects.cast(reflectionException.getCause());
-		UnsupportedOperationException unsupportedOperationException = JavaObjects.cast(invocationTargetException.getCause());
+		UnsupportedOperationException unsupportedOperationException = Tests.verifyDefaultConstructorThrows(RequestParameters.class);
 		assertThat(unsupportedOperationException.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
 	}
 
