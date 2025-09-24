@@ -675,7 +675,7 @@ class ApiClientTest {
 	}
 
 	@Test
-	void shouldReturnNonNullTypeFieldInGenericTypeReference() {
+	void shouldReturnNonNullTypeFieldInGenericClass() {
 		Field field = Fields.getOneDeclaredInHierarchy(GenericClass.class, "type");
 
 		assertThat(field, notNullValue());

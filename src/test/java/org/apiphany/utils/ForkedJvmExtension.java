@@ -1,8 +1,10 @@
 package org.apiphany.utils;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,7 +43,7 @@ public class ForkedJvmExtension implements InvocationInterceptor {
 
 		boolean showCommand = "true".equals(System.getProperty("process.show.command"));
 		if (showCommand) {
-			System.out.println("[forked] command $ " + String.join(" \\\n", cmd));
+			System.out.println("[FORKED] command $ " + String.join(" \\\n", cmd));
 			System.out.println("");
 		}
 
@@ -50,14 +52,19 @@ public class ForkedJvmExtension implements InvocationInterceptor {
 				.redirectErrorStream(true);
 		Process process = pb.start();
 
-		try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-			String line;
-			while ((line = reader.readLine()) != null) {
-				System.out.println("[forked] " + line);
+		Thread outputThread = Thread.ofPlatform().start(() -> {
+			try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+				String line;
+				while ((line = reader.readLine()) != null) {
+					System.out.println("[FORKED] " + line);
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
-		}
+		});
 
 		int exit = process.waitFor();
+		outputThread.join(Duration.ofSeconds(3));
 		if (exit != 0) {
 			throw new AssertionError("Forked JVM test failed: " + className + "#" + methodName);
 		}
