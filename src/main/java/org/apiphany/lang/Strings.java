@@ -83,6 +83,16 @@ public interface Strings {
 	}
 
 	/**
+	 * Alias for {@link #fromLowerCamelToKebabCase(String)}.
+	 *
+	 * @param str string to transform
+	 * @return kebab case string
+	 */
+	static String fromCamelToKebabCase(final String str) {
+		return fromLowerCamelToKebabCase(str);
+	}
+
+	/**
 	 * Transforms a string from Kebab case to Lower Camel case. Example: <code>"some-cool-name"</code> will become
 	 * <code>"someCoolName"</code>.
 	 *
@@ -101,6 +111,16 @@ public interface Strings {
 			}
 		}
 		return result.toString();
+	}
+
+	/**
+	 * Alias for {@link #fromKebabToLowerCamelCase(String)}.
+	 *
+	 * @param str string to transform
+	 * @return lower camel case string
+	 */
+	static String fromKebabToCamelCase(final String str) {
+		return fromKebabToLowerCamelCase(str);
 	}
 
 	/**
