@@ -36,11 +36,13 @@ class TLSObjectLegacyCipherTest {
 	@Test
 	@ForkedJvmTest(
 		jvmArgs = {
+				"-Xshare:off",
 				"-Xmx64m",
 				"-Xms64m",
 				"-XX:+UseSerialGC",
 				"-XX:+TieredCompilation",
 				"-XX:TieredStopAtLevel=1",
+				"-Djava.security.egd=file:/dev/urandom",
 				"--add-opens", "java.base/javax.net.ssl=ALL-UNNAMED",
 				"--add-opens", "java.base/javax.crypto=ALL-UNNAMED",
 				"--add-opens", "java.base/sun.security.internal.spec=ALL-UNNAMED",
