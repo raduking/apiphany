@@ -4,6 +4,9 @@
 
 `1.0.13`
 
+- Added `Strings.fromCamelToKebabCase` as an alias for `Strings.fromLowerCamelToKebabCase`.
+- Added `Strings.fromKebabToCamelCase` as an alias for `Strings.fromKebabToLowerCamelCase`.
+
 ---
 
 `1.0.12`

@@ -29,6 +29,9 @@ class StringsTest {
 	private static final Integer TEST_INTEGER = 10;
 	private static final String TEST_INTEGER_STRING = TEST_INTEGER.toString();
 
+	private static final String CAMEL_SOME_COOL_NAME = "someCoolName";
+	private static final String KEBAB_SOME_COOL_NAME = "some-cool-name";
+
 	private static final String TEXT_FILE_CONTENT = """
 			This is line one
 			and this is line two""";
@@ -160,11 +163,38 @@ class StringsTest {
 	}
 
 	@Test
-	void shouldTransformKebabCaseToLowerCamelWhenTheStringIsKebabCase() {
-		String text = "some-cool-name";
+	void shouldTransformKebabToLowerCamelCaseWhenTheStringIsKebabCase() {
+		String text = KEBAB_SOME_COOL_NAME;
 
 		String result = Strings.fromKebabToLowerCamelCase(text);
 
-		assertThat(result, equalTo("someCoolName"));
+		assertThat(result, equalTo(CAMEL_SOME_COOL_NAME));
+	}
+
+	@Test
+	void shouldTransformKebabToCamelCaseWhenTheStringIsKebabCase() {
+		String text = KEBAB_SOME_COOL_NAME;
+
+		String result = Strings.fromKebabToCamelCase(text);
+
+		assertThat(result, equalTo(CAMEL_SOME_COOL_NAME));
+	}
+
+	@Test
+	void shouldTransformLowerCamelToKebabCaseWhenTheStringIsKebabCase() {
+		String text = CAMEL_SOME_COOL_NAME;
+
+		String result = Strings.fromLowerCamelToKebabCase(text);
+
+		assertThat(result, equalTo(KEBAB_SOME_COOL_NAME));
+	}
+
+	@Test
+	void shouldTransformCamelToKebabCaseWhenTheStringIsKebabCase() {
+		String text = CAMEL_SOME_COOL_NAME;
+
+		String result = Strings.fromCamelToKebabCase(text);
+
+		assertThat(result, equalTo(KEBAB_SOME_COOL_NAME));
 	}
 }
