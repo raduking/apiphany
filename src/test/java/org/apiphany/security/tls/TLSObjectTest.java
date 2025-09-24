@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.apiphany.ApiClient;
-import org.apiphany.client.ClientProperties;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Hex;
 import org.apiphany.lang.LoggingFormat;
@@ -23,9 +22,7 @@ import org.apiphany.security.ssl.Keys;
 import org.apiphany.security.ssl.SSLProperties;
 import org.apiphany.security.ssl.SSLProtocol;
 import org.apiphany.security.ssl.server.SimpleHttpsServer;
-import org.apiphany.security.ssl.server.TLSLoggingProvider;
 import org.apiphany.security.tls.client.MinimalTLSClient;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -43,28 +40,14 @@ class TLSObjectTest {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(TLSObjectTest.class);
 
-	private static final String SSL = "ssl";
 	private static final String HMAC_SHA384 = "HmacSHA384";
 
 	private static final String LOCALHOST = "localhost";
-	private static final int SERVER_PORT = Sockets.findAvailableTcpPort();
 	private static final Duration DEBUG_SOCKET_TIMEOUT = Duration.ofMinutes(3);
 
 	private static final KeyPair CLIENT_KEY_PAIR = Keys.loadKeyPairFromResources();
 	private static final String SSL_PROPERTIES_JSON = Strings.fromFile("/security/ssl/ssl-properties.json");
-	private static final SSLProperties SSL_PROPERTIES = JsonBuilder.fromJson(SSL_PROPERTIES_JSON, SSLProperties.class);
-	private static final ClientProperties CLIENT_PROPERTIES = new ClientProperties();
-	static {
-		CLIENT_PROPERTIES.setCustomProperties(SSL, SSL_PROPERTIES);
-	}
 	private static final List<CipherSuite> CIPHER_SUITES = List.of(CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384);
-
-	private static final SimpleHttpsServer SERVER = new SimpleHttpsServer(SERVER_PORT, SSL_PROPERTIES);
-
-	@AfterAll
-	static void tearDownAll() throws Exception {
-		SERVER.close();
-	}
 
 	private static Stream<Arguments> provideSupportedCipherSuites() {
 		return Stream.of(

@@ -94,7 +94,8 @@ public class MinimalTLSClient implements AutoCloseable {
 			CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
 			CipherSuite.TLS_RSA_WITH_AES_256_GCM_SHA384,
 			CipherSuite.TLS_RSA_WITH_AES_128_CBC_SHA,
-			CipherSuite.TLS_RSA_WITH_AES_128_CBC_SHA256);
+			CipherSuite.TLS_RSA_WITH_AES_128_CBC_SHA256,
+			CipherSuite.TLS_RSA_WITH_RC4_128_SHA);
 
 	private final String host;
 	private final int port;
@@ -374,6 +375,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		CipherType cipherType = bulkCipher.type();
 
 		long sequence = this.clientSequenceNumber++;
+		byte[] seqBytes = UInt64.toByteArray(sequence);
 
 		return switch (cipherType) {
 			case AEAD -> {
@@ -381,17 +383,15 @@ public class MinimalTLSClient implements AutoCloseable {
 				AdditionalAuthenticatedData aad = new AdditionalAuthenticatedData(sequence, type, sslProtocol, aadLength);
 				LOGGER.debug("Encrypt AAD: {}", aad);
 
-				byte[] explicitNonce = UInt64.toByteArray(sequence);
-				byte[] fullIV = bulkCipher.fullIV(keys.getClientIV(), explicitNonce);
+				byte[] fullIV = bulkCipher.fullIV(keys.getClientIV(), seqBytes);
 				Cipher cipher = bulkCipher.cipher(Cipher.ENCRYPT_MODE, keys.getClientWriteKey(), fullIV);
 				cipher.updateAAD(aad.toByteArray());
 
 				byte[] encrypted = cipher.doFinal(plaintext);
 				LOGGER.debug("Encrypted (ciphertext + tag):\n{}", Hex.dump(encrypted));
-				yield new Encrypted(explicitNonce, encrypted);
+				yield new Encrypted(seqBytes, encrypted);
 			}
 			case BLOCK -> {
-				byte[] seqBytes = UInt64.toByteArray(sequence);
 				LOGGER.debug("Sequence number (hex): {}", Hex.string(seqBytes, ""));
 
 				RecordHeader macHeader = new RecordHeader(type, sslProtocol, (short) plaintext.length);
@@ -438,7 +438,16 @@ public class MinimalTLSClient implements AutoCloseable {
 				yield new Encrypted(encrypted);
 			}
 			case STREAM -> {
-				throw new UnsupportedOperationException("Unsupported cipher type: " + CipherType.STREAM);
+				RecordHeader macHeader = new RecordHeader(type, sslProtocol, (short) plaintext.length);
+				byte[] macInput = Bytes.concatenate(seqBytes, macHeader.toByteArray(), plaintext);
+
+				byte[] mac = serverCipherSuite.messageDigest().hmac(keys.getClientMacKey(), macInput);
+				byte[] plaintextMac = Bytes.concatenate(plaintext, mac);
+
+				Cipher cipher = bulkCipher.cipher(Cipher.ENCRYPT_MODE, keys.getClientWriteKey(), (byte[]) null);
+				byte[] encrypted = cipher.doFinal(plaintextMac);
+
+				yield new Encrypted(encrypted);
 			}
 			case NO_ENCRYPTION -> {
 				yield new Encrypted(plaintext);
@@ -453,10 +462,11 @@ public class MinimalTLSClient implements AutoCloseable {
 		long sequence = this.serverSequenceNumber++;
 		RecordContentType type = tlsRecord.getHeader().getType();
 		Encrypted encrypted = tlsRecord.getFragment(TLSEncryptedObject.class).getEncrypted();
+		byte[] encryptedBytes = encrypted.getEncryptedData(bulkCipher).toByteArray();
 
 		return switch (cipherType) {
 			case AEAD -> {
-				short aadLength = (short) (encrypted.getEncryptedData(bulkCipher).toByteArray().length - bulkCipher.tagLength());
+				short aadLength = (short) (encryptedBytes.length - bulkCipher.tagLength());
 				AdditionalAuthenticatedData aad = new AdditionalAuthenticatedData(sequence, type, sslProtocol, aadLength);
 				LOGGER.debug("Decrypt AAD: {}", aad);
 
@@ -465,13 +475,12 @@ public class MinimalTLSClient implements AutoCloseable {
 				Cipher cipher = bulkCipher.cipher(Cipher.DECRYPT_MODE, keys.getServerWriteKey(), fullIV);
 				cipher.updateAAD(aad.toByteArray());
 
-				byte[] decrypted = cipher.doFinal(encrypted.getEncryptedData(bulkCipher).toByteArray());
+				byte[] decrypted = cipher.doFinal(encryptedBytes);
 				LOGGER.debug("Decrypted:\n{}", Hex.dump(decrypted));
 				yield decrypted;
 			}
 			case BLOCK -> {
 				int blockSize = bulkCipher.blockSize();
-				byte[] encryptedBytes = encrypted.getEncryptedData(bulkCipher).toByteArray();
 
 				byte[] explicitIV = Arrays.copyOfRange(encryptedBytes, 0, blockSize);
 				byte[] actualCiphertext = Arrays.copyOfRange(encryptedBytes, blockSize, encryptedBytes.length);
@@ -506,7 +515,25 @@ public class MinimalTLSClient implements AutoCloseable {
 				yield decrypted;
 			}
 			case STREAM -> {
-				throw new UnsupportedOperationException("Unsupported cipher type: " + CipherType.STREAM);
+				Cipher cipher = bulkCipher.cipher(Cipher.DECRYPT_MODE, keys.getServerWriteKey(), (byte[]) null);
+				byte[] plaintextMac = cipher.doFinal(encryptedBytes);
+
+				int macLength = serverCipherSuite.messageDigest().digestLength();
+				int dataLength = plaintextMac.length - macLength;
+
+				byte[] decrypted = Arrays.copyOfRange(plaintextMac, 0, dataLength);
+				byte[] receivedMac = Arrays.copyOfRange(plaintextMac, dataLength, plaintextMac.length);
+
+				byte[] seqBytes = UInt64.toByteArray(sequence);
+				RecordHeader header = tlsRecord.getHeader();
+				RecordHeader macHeader = new RecordHeader(header.getType(), sslProtocol, (short) decrypted.length);
+				byte[] macInput = Bytes.concatenate(seqBytes, macHeader.toByteArray(), decrypted);
+				byte[] expectedMac = serverCipherSuite.messageDigest().hmac(keys.getServerMacKey(), macInput);
+
+				if (!MessageDigest.isEqual(receivedMac, expectedMac)) {
+					throw new SecurityException("TLS MAC verification failed!");
+				}
+				yield decrypted;
 			}
 			case NO_ENCRYPTION -> {
 				yield encrypted.getEncryptedData(bulkCipher).toByteArray();

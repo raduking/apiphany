@@ -1,4 +1,4 @@
-package org.apiphany.security.ssl.server;
+package org.apiphany.security.tls;
 
 import java.io.Serial;
 import java.lang.ref.ReferenceQueue;
