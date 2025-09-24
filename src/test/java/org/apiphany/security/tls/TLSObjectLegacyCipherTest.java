@@ -30,9 +30,6 @@ class TLSObjectLegacyCipherTest {
 	private static final String LOCALHOST = "localhost";
 	private static final Duration DEBUG_SOCKET_TIMEOUT = Duration.ofMinutes(3);
 
-	private static final KeyPair CLIENT_KEY_PAIR = Keys.loadKeyPairFromResources();
-	private static final String SSL_PROPERTIES_JSON = Strings.fromFile("/security/ssl/ssl-properties.json");
-
 	@Test
 	@ForkedJvmTest(
 		jvmArgs = {
@@ -51,7 +48,11 @@ class TLSObjectLegacyCipherTest {
 				"--add-opens", "java.base/sun.security.ssl=ALL-UNNAMED" })
 	void shouldPerformTLS12HandshakeWithRC4128SHA() throws Exception {
 		int port = Sockets.findAvailableTcpPort();
-		SSLProperties sslProperties = JsonBuilder.fromJson(SSL_PROPERTIES_JSON, SSLProperties.class);
+
+		KeyPair clientKeyPair = Keys.loadKeyPairFromResources();
+		String sslPropertiesJson = Strings.fromFile("/security/ssl/ssl-properties.json");
+
+		SSLProperties sslProperties = JsonBuilder.fromJson(sslPropertiesJson, SSLProperties.class);
 		sslProperties.setProtocol(SSLProtocol.TLS_1_2);
 
 		TLSLoggingProvider.install();
@@ -59,7 +60,7 @@ class TLSObjectLegacyCipherTest {
 
 		byte[] serverFinished = null;
 		List<CipherSuite> cipherSuites = List.of(CipherSuite.TLS_RSA_WITH_RC4_128_SHA);
-		try (MinimalTLSClient client = new MinimalTLSClient(LOCALHOST, port, DEBUG_SOCKET_TIMEOUT, CLIENT_KEY_PAIR, cipherSuites)) {
+		try (MinimalTLSClient client = new MinimalTLSClient(LOCALHOST, port, DEBUG_SOCKET_TIMEOUT, clientKeyPair, cipherSuites)) {
 			serverFinished = client.performHandshake();
 		} finally {
 			server.close();
