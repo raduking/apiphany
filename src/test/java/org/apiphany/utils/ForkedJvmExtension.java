@@ -1,18 +1,19 @@
 package org.apiphany.utils;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.InputStream;
 import java.lang.reflect.Method;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.InvocationInterceptor;
 import org.junit.jupiter.api.extension.ReflectiveInvocationContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ForkedJvmExtension implements InvocationInterceptor {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(ForkedJvmRunner.class);
 
 	@Override
 	public void interceptTestMethod(
@@ -43,31 +44,26 @@ public class ForkedJvmExtension implements InvocationInterceptor {
 
 		boolean showCommand = "true".equals(System.getProperty("process.show.command"));
 		if (showCommand) {
-			System.out.println("[FORKED] command $ " + String.join(" \\\n", cmd));
-			System.out.println("");
+			LOGGER.info("[forked] command $ {}\n", String.join(" \\\n", cmd));
 		}
 
 		ProcessBuilder pb = new ProcessBuilder(cmd)
-				.inheritIO()
 				.redirectErrorStream(true);
 		Process process = pb.start();
 
-		Thread outputThread = Thread.ofPlatform().start(() -> {
-			try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-				String line;
-				while ((line = reader.readLine()) != null) {
-					System.out.println("[FORKED] " + line);
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		});
+		InputStream inputStream = null;
+		try {
+			inputStream = process.getInputStream();
+			inputStream.transferTo(System.out);
 
-		int exit = process.waitFor();
-		outputThread.join(Duration.ofSeconds(3));
-		if (exit != 0) {
-			throw new AssertionError("Forked JVM test failed: " + className + "#" + methodName);
+			if (ForkedJvmRunner.SUCCESS != process.waitFor()) {
+				throw new AssertionError("Forked JVM test failed: " + className + "#" + methodName);
+			}
+			invocation.skip();
+		} finally {
+			if (null != inputStream) {
+				inputStream.close();
+			}
 		}
-		invocation.skip();
 	}
 }

@@ -1,38 +1,43 @@
 package org.apiphany.utils;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
 
 import org.morphix.reflection.Constructors;
 import org.morphix.reflection.Methods;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ForkedJvmRunner {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(ForkedJvmRunner.class);
+
+	public static final int SUCCESS = 0;
+	public static final int ERROR_USAGE = 1;
+	public static final int ERROR_TEST = 666;
+
 	public static void main(final String[] args) {
 		if (args.length != 2) {
-			System.err.println("Usage: ForkedJvmRunner <testClass> <testMethod>");
-			System.exit(1);
+			LOGGER.error("Usage: ForkedJvmRunner <testClass> <testMethod>");
+			System.exit(ERROR_USAGE);
 		}
-		System.out.println("Staring test: " + args);
-
 		String className = args[0];
 		String methodName = args[1];
+		LOGGER.info("Starting forked test: {}.{}", className, methodName);
 
 		try {
-			Class<?> testClass = Class.forName(className);
-			Object instance = Constructors.IgnoreAccess.newInstance(testClass);
-
-			Method method = Arrays.stream(testClass.getDeclaredMethods())
-					.filter(m -> m.getName().equals(methodName))
-					.findFirst()
-					.orElseThrow(() -> new NoSuchMethodException(methodName));
-
-			Methods.IgnoreAccess.invoke(method, instance);
+			runTest(className, methodName);
+			LOGGER.info("Finished forked test: {}.{}", className, methodName);
+			System.exit(SUCCESS);
 		} catch (Throwable t) {
-			t.printStackTrace();
-			System.exit(1);
+			LOGGER.error("Failed forked test: {}.{}", className, methodName, t);
+			System.exit(ERROR_TEST);
 		}
+	}
 
-		System.exit(0);
+	private static void runTest(final String className, final String methodName) throws ClassNotFoundException, NoSuchMethodException {
+		Class<?> testClass = Class.forName(className);
+		Object instance = Constructors.IgnoreAccess.newInstance(testClass);
+		Method method = Methods.getOneDeclaredInHierarchy(methodName, testClass);
+		Methods.IgnoreAccess.invoke(method, instance);
 	}
 }
