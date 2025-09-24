@@ -11,7 +11,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLEngine;
 
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
@@ -20,6 +19,8 @@ import org.apiphany.lang.Strings;
 import org.apiphany.security.ssl.SSLContextAdapter;
 import org.apiphany.security.ssl.SSLContexts;
 import org.apiphany.security.ssl.SSLProperties;
+import org.apiphany.security.ssl.SSLProtocol;
+import org.apiphany.security.tls.CipherSuite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +45,7 @@ public class LegacyHttpsServer implements AutoCloseable {
 	public static final String NAME = "Mumu";
 
 	private static final String[] LEGACY_CIPHER_SUITES = {
-			"TLS_RSA_WITH_RC4_128_SHA"
+			CipherSuite.TLS_RSA_WITH_RC4_128_SHA.name()
 	};
 
 	private final HttpsServer httpsServer;
@@ -109,15 +110,10 @@ public class LegacyHttpsServer implements AutoCloseable {
 			httpsServer.setHttpsConfigurator(new HttpsConfigurator(sslContext) {
 				@Override
 				public void configure(HttpsParameters params) {
-					// Override the SSL parameters to allow legacy ciphers
-					SSLContext c = getSSLContext();
-					SSLEngine engine = c.createSSLEngine();
-					engine.setEnabledCipherSuites(LEGACY_CIPHER_SUITES);
 					params.setCipherSuites(LEGACY_CIPHER_SUITES);
-					String[] protocols = new String[] { "TLSv1.2" };
-					params.setProtocols(protocols);
-					// params.setNeedClientAuth(false);
-
+					params.setProtocols(new String[] {
+							SSLProtocol.TLS_1_2.value()
+					});
 					LOGGER.debug("HTTPS parameters: {}", JsonBuilder.toJson(params));
 				}
 			});
