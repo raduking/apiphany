@@ -39,8 +39,11 @@ public class ForkedJvmExtension implements InvocationInterceptor {
 
 		String[] cmd = command.stream().toArray(String[]::new);
 
-		System.out.println("[forked] command $ " + String.join(" \\\n", cmd));
-		System.out.println("");
+		boolean showCommand = "true".equals(System.getProperty("process.show.command"));
+		if (showCommand) {
+			System.out.println("[forked] command $ " + String.join(" \\\n", cmd));
+			System.out.println("");
+		}
 
 		ProcessBuilder pb = new ProcessBuilder(cmd)
 				.inheritIO()
