@@ -28,19 +28,9 @@ public class ForkedJvmExtension implements InvocationInterceptor {
 
 		String className = context.getExecutable().getDeclaringClass().getName();
 		String methodName = context.getExecutable().getName();
-		String classPath = System.getProperty("java.class.path");
 		String[] jvmArgs = annotation.jvmArgs();
 
-		ArrayList<String> command = new ArrayList<>();
-		command.add("java");
-		command.addAll(List.of(jvmArgs));
-		command.add("-cp");
-		command.add(classPath);
-		command.add(ForkedJvmRunner.class.getName());
-		command.add(className);
-		command.add(methodName);
-
-		String[] cmd = command.stream().toArray(String[]::new);
+		String[] cmd = getCommand(className, methodName, jvmArgs);
 
 		boolean showCommand = "true".equals(System.getProperty("process.show.command"));
 		if (showCommand) {
@@ -65,5 +55,18 @@ public class ForkedJvmExtension implements InvocationInterceptor {
 				inputStream.close();
 			}
 		}
+	}
+
+	private static String[] getCommand(final String className, final String methodName, final String[] jvmArgs) {
+		ArrayList<String> command = new ArrayList<>();
+		command.add("java");
+		command.addAll(List.of(jvmArgs));
+		command.add("-cp");
+		command.add(System.getProperty("java.class.path"));
+		command.add(ForkedJvmRunner.class.getName());
+		command.add(className);
+		command.add(methodName);
+
+		return command.stream().toArray(String[]::new);
 	}
 }
