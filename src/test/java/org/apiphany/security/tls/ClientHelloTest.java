@@ -80,8 +80,8 @@ class ClientHelloTest {
 
 		byte[] result = clientHello.toByteArray();
 
-		LOGGER.info("Expected: {}", Hex.string(expected));
-		LOGGER.info("Received: {}", Hex.string(result));
+		LOGGER.info("Expected: {}", Hex.stringSpaced(expected));
+		LOGGER.info("Received: {}", Hex.stringSpaced(result));
 
 		assertThat(result, equalTo(expected));
 	}

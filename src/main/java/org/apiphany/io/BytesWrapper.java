@@ -173,7 +173,7 @@ public class BytesWrapper implements ByteSizeable, BinaryRepresentable {
 	@AsValue
 	@Override
 	public String toString() {
-		return Hex.string(bytes, "");
+		return Hex.string(bytes);
 	}
 
 	/**

@@ -123,9 +123,9 @@ public final class TLSLoggingProvider extends Provider {
 				Object spec = Fields.IgnoreAccess.get(spi, "spec");
 
 				byte[] clientRandom = Fields.IgnoreAccess.get(spec, "clientRandom");
-				LOGGER.debug("Client Random: {}", Hex.string(clientRandom, ""));
+				LOGGER.debug("Client Random: {}", Hex.string(clientRandom));
 				byte[] serverRandom = Fields.IgnoreAccess.get(spec, "serverRandom");
-				LOGGER.debug("Server Random: {}", Hex.string(serverRandom, ""));
+				LOGGER.debug("Server Random: {}", Hex.string(serverRandom));
 
 				logKey(spec, "premasterSecret");
 				logKey(spec, "masterSecret");
@@ -143,8 +143,8 @@ public final class TLSLoggingProvider extends Provider {
 
 					IvParameterSpec clientIV = Fields.IgnoreAccess.get(key, "clientIv");
 					IvParameterSpec serverIV = Fields.IgnoreAccess.get(key, "serverIv");
-					LOGGER.debug("clientIV: {}", null != clientIV ? Hex.string(clientIV.getIV(), "") : "null");
-					LOGGER.debug("serverIV: {}", null != serverIV ? Hex.string(serverIV.getIV(), "") : "null");
+					LOGGER.debug("clientIV: {}", null != clientIV ? Hex.string(clientIV.getIV()) : "null");
+					LOGGER.debug("serverIV: {}", null != serverIV ? Hex.string(serverIV.getIV()) : "null");
 				}
 			} catch (Exception e) {
 				LOGGER.warn("Could not log generated key", e);
@@ -162,7 +162,7 @@ public final class TLSLoggingProvider extends Provider {
 	}
 
 	private static void logKey(final SecretKey key) {
-		LOGGER.debug("Generated {}: {}", key.getAlgorithm(), Hex.string(key.getEncoded(), ""));
+		LOGGER.debug("Generated {}: {}", key.getAlgorithm(), Hex.string(key.getEncoded()));
 	}
 
 	public static final class LoggingTlsKeyMaterialGenerator extends LoggingWrapper {
