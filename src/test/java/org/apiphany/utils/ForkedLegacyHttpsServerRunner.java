@@ -24,10 +24,10 @@ public class ForkedLegacyHttpsServerRunner {
 		String sslPropertiesJsonPath = args[1];
 
 		String json = Strings.fromFile(sslPropertiesJsonPath, e -> LOGGER.error("Error reading file", e));
-
 		SSLProperties sslProperties = JsonBuilder.fromJson(json, SSLProperties.class);
 
 		try (LegacyHttpsServer server = new LegacyHttpsServer(port, sslProperties)) {
+			// block current thread
 			Thread.currentThread().join();
 		} catch (Throwable t) {
 			LOGGER.error("Failed to start server", t);

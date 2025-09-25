@@ -33,6 +33,8 @@ import org.slf4j.LoggerFactory;
 @ExtendWith(ForkedJvmExtension.class)
 class TLSObjectLegacyCipherTest {
 
+	private static final String SSL_PROPERTIES_JSON_FILE = "/security/ssl/ssl-properties.json";
+
 	private static final Logger LOGGER = LoggerFactory.getLogger(TLSObjectLegacyCipherTest.class);
 
 	private static final String LOCALHOST = "localhost";
@@ -58,7 +60,7 @@ class TLSObjectLegacyCipherTest {
 		int port = Sockets.findAvailableTcpPort();
 
 		KeyPair clientKeyPair = Keys.loadKeyPairFromResources();
-		String sslPropertiesJson = Strings.fromFile("/security/ssl/ssl-properties.json");
+		String sslPropertiesJson = Strings.fromFile(SSL_PROPERTIES_JSON_FILE);
 
 		SSLProperties sslProperties = JsonBuilder.fromJson(sslPropertiesJson, SSLProperties.class);
 		sslProperties.setProtocol(SSLProtocol.TLS_1_2);
@@ -87,26 +89,25 @@ class TLSObjectLegacyCipherTest {
 				"-cp", System.getProperty("java.class.path"),
 				ForkedLegacyHttpsServerRunner.class.getName(),
 				String.valueOf(port),
-				"/security/ssl/ssl-properties.json")
+				SSL_PROPERTIES_JSON_FILE)
 						.redirectErrorStream(true)
 						.start();
 
-		byte[] serverFinished = null;
-		Thread logThread = null;
-		try {
-			logThread = Thread.ofVirtual().start(() -> {
-				try (InputStream is = serverProcess.getInputStream()) {
-					is.transferTo(System.out);
-				} catch (Exception e) {
-					LOGGER.error("Error logging", e);
-				}
-			});
-			Retry retry = Retry.of(WaitTimeout.of(DEBUG_SOCKET_TIMEOUT, Duration.ofMillis(200)));
-			boolean canConnect = retry.when(() -> Sockets.canConnectTo(LOCALHOST, port), Boolean::booleanValue);
+		Thread loggingThread = Thread.ofVirtual().start(() -> {
+			try (InputStream is = serverProcess.getInputStream()) {
+				is.transferTo(System.out);
+			} catch (Exception e) {
+				LOGGER.error("Error logging", e);
+			}
+		});
 
+		Retry retry = Retry.of(WaitTimeout.of(DEBUG_SOCKET_TIMEOUT, Duration.ofMillis(200)));
+		boolean canConnect = retry.when(() -> Sockets.canConnectTo(LOCALHOST, port), Boolean::booleanValue);
+
+		byte[] serverFinished = null;
+		try {
 			if (canConnect) {
 				KeyPair clientKeyPair = Keys.loadKeyPairFromResources();
-
 				List<CipherSuite> cipherSuites = List.of(CipherSuite.TLS_RSA_WITH_RC4_128_SHA);
 				try (MinimalTLSClient client = new MinimalTLSClient(LOCALHOST, port, DEBUG_SOCKET_TIMEOUT, clientKeyPair, cipherSuites)) {
 					serverFinished = client.performHandshake();
@@ -116,8 +117,8 @@ class TLSObjectLegacyCipherTest {
 			}
 		} finally {
 			serverProcess.destroy();
-			if (null != logThread) {
-				logThread.join();
+			if (null != loggingThread) {
+				loggingThread.join();
 			}
 		}
 
