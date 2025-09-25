@@ -95,11 +95,11 @@ class TLSObjectLegacyCipherTest {
 		Thread logThread = null;
 		try {
 			logThread = Thread.ofVirtual().start(() -> {
-			    try (InputStream is = serverProcess.getInputStream()) {
-			        is.transferTo(System.out);
-			    } catch (Exception e) {
-			        LOGGER.error("Error logging", e);
-			    }
+				try (InputStream is = serverProcess.getInputStream()) {
+					is.transferTo(System.out);
+				} catch (Exception e) {
+					LOGGER.error("Error logging", e);
+				}
 			});
 			Retry retry = Retry.of(WaitTimeout.of(DEBUG_SOCKET_TIMEOUT, Duration.ofMillis(200)));
 			boolean canConnect = retry.when(() -> Sockets.canConnectTo(LOCALHOST, port), Boolean::booleanValue);
