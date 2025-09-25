@@ -220,6 +220,19 @@ public interface Strings {
 	}
 
 	/**
+	 * Returns a string from a file or {@code null} if any error occurred. It assumes that the encoding in
+	 * {@link StandardCharsets#UTF_8} and uses a default buffer size of 4096 bytes. Use this method only if the file to be
+	 * read respects these conditions.
+	 *
+	 * @param path path to the file
+	 * @param onError on error handler
+	 * @return the file content as string
+	 */
+	static String fromFile(final String path, final Consumer<Exception> onError) {
+		return fromFile(path, DEFAULT_CHARSET, IO.DEFAULT_BUFFER_SIZE, onError);
+	}
+
+	/**
 	 * Envelopes a string with the given envelope.
 	 * <p>
 	 * Example:

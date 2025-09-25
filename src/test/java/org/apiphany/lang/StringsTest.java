@@ -135,7 +135,7 @@ class StringsTest {
 	}
 
 	@Test
-	void shouldDelegateErrorToOnErrorConsumerWhenFromStringThrowsException() {
+	void shouldDelegateErrorToOnErrorConsumerWhenFromStringThrowsExceptionWhenCalledWithNameCharsetSize() {
 		Runnable runnable = mock(Runnable.class);
 		Consumer<Exception> onError = e -> {
 			runnable.run();
@@ -143,6 +143,20 @@ class StringsTest {
 		};
 
 		String result = Strings.fromFile("/unknown-file.txt", StandardCharsets.UTF_8, 10, onError);
+
+		assertThat(result, nullValue());
+		verify(runnable).run();
+	}
+
+	@Test
+	void shouldDelegateErrorToOnErrorConsumerWhenFromStringThrowsExceptionWhenCalledWithName() {
+		Runnable runnable = mock(Runnable.class);
+		Consumer<Exception> onError = e -> {
+			runnable.run();
+			assertThat(e, instanceOf(NullPointerException.class));
+		};
+
+		String result = Strings.fromFile("/unknown-file.txt", onError);
 
 		assertThat(result, nullValue());
 		verify(runnable).run();

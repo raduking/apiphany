@@ -6,6 +6,7 @@
 
 - Added `Strings.fromCamelToKebabCase` as an alias for `Strings.fromLowerCamelToKebabCase`.
 - Added `Strings.fromKebabToCamelCase` as an alias for `Strings.fromKebabToLowerCamelCase`.
+- Added `Strings.fromFile(String, Consumer)` to handle file reading errors.
 
 ---
 

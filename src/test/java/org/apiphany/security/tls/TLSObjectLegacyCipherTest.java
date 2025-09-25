@@ -2,12 +2,15 @@ package org.apiphany.security.tls;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import java.io.InputStream;
 import java.security.KeyPair;
 import java.time.Duration;
 import java.util.List;
 
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
+import org.apiphany.lang.retry.Retry;
+import org.apiphany.lang.retry.WaitTimeout;
 import org.apiphany.net.Sockets;
 import org.apiphany.security.ssl.Keys;
 import org.apiphany.security.ssl.SSLProperties;
@@ -16,8 +19,11 @@ import org.apiphany.security.ssl.server.LegacyHttpsServer;
 import org.apiphany.security.tls.client.MinimalTLSClient;
 import org.apiphany.utils.ForkedJvmExtension;
 import org.apiphany.utils.ForkedJvmTest;
+import org.apiphany.utils.ForkedLegacyHttpsServerRunner;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Test class for {@link TLSObject} hierarchy with legacy cipher suite.
@@ -26,6 +32,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
  */
 @ExtendWith(ForkedJvmExtension.class)
 class TLSObjectLegacyCipherTest {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(TLSObjectLegacyCipherTest.class);
 
 	private static final String LOCALHOST = "localhost";
 	private static final Duration DEBUG_SOCKET_TIMEOUT = Duration.ofMinutes(3);
@@ -65,6 +73,54 @@ class TLSObjectLegacyCipherTest {
 		} finally {
 			server.close();
 		}
+		assertNotNull(serverFinished);
+	}
+
+	@Test
+	void shouldPerformTLS12HandshakeWithRC4128SHAWithResetSSL() throws Exception {
+		int port = Sockets.findAvailableTcpPort();
+
+		Process serverProcess = new ProcessBuilder(
+				"java",
+				"--add-opens", "java.base/sun.security.ssl=ALL-UNNAMED",
+				"--add-opens", "java.base/javax.net.ssl=ALL-UNNAMED",
+				"-cp", System.getProperty("java.class.path"),
+				ForkedLegacyHttpsServerRunner.class.getName(),
+				String.valueOf(port),
+				"/security/ssl/ssl-properties.json")
+						.redirectErrorStream(true)
+						.start();
+
+		byte[] serverFinished = null;
+		Thread logThread = null;
+		try {
+			logThread = Thread.ofVirtual().start(() -> {
+			    try (InputStream is = serverProcess.getInputStream()) {
+			        is.transferTo(System.out);
+			    } catch (Exception e) {
+			        LOGGER.error("Error logging", e);
+			    }
+			});
+			Retry retry = Retry.of(WaitTimeout.of(DEBUG_SOCKET_TIMEOUT, Duration.ofMillis(200)));
+			boolean canConnect = retry.when(() -> Sockets.canConnectTo(LOCALHOST, port), Boolean::booleanValue);
+
+			if (canConnect) {
+				KeyPair clientKeyPair = Keys.loadKeyPairFromResources();
+
+				List<CipherSuite> cipherSuites = List.of(CipherSuite.TLS_RSA_WITH_RC4_128_SHA);
+				try (MinimalTLSClient client = new MinimalTLSClient(LOCALHOST, port, DEBUG_SOCKET_TIMEOUT, clientKeyPair, cipherSuites)) {
+					serverFinished = client.performHandshake();
+				}
+			} else {
+				throw new IllegalStateException("Cannot connect to server: " + LOCALHOST + ":" + port);
+			}
+		} finally {
+			serverProcess.destroy();
+			if (null != logThread) {
+				logThread.join();
+			}
+		}
+
 		assertNotNull(serverFinished);
 	}
 }

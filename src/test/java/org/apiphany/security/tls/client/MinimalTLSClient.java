@@ -140,7 +140,7 @@ public class MinimalTLSClient implements AutoCloseable {
 
 	@Override
 	public void close() throws Exception {
-		for (Closeable closeable : List.of(in, out, tcpSocket)) {
+		for (Closeable closeable : Arrays.asList(in, out, tcpSocket)) {
 			try {
 				Nullables.whenNotNull(closeable, ThrowingConsumer.unchecked(Closeable::close));
 			} catch (Exception e) {
