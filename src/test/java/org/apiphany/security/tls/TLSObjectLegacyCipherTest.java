@@ -42,20 +42,20 @@ class TLSObjectLegacyCipherTest {
 
 	@Test
 	@ForkedJvmTest(
-		jvmArgs = {
-				"-Xshare:off",
-				"-Xmx64m",
-				"-Xms64m",
-				"-XX:+UseSerialGC",
-				"-XX:+TieredCompilation",
-				"-XX:TieredStopAtLevel=1",
-				"-Djava.security.egd=file:/dev/urandom",
-				"--add-opens", "java.base/javax.net.ssl=ALL-UNNAMED",
-				"--add-opens", "java.base/javax.crypto=ALL-UNNAMED",
-				"--add-opens", "java.base/sun.security.internal.spec=ALL-UNNAMED",
-				"--add-opens", "java.base/com.sun.crypto.provider=ALL-UNNAMED",
-				"--add-opens", "jdk.httpserver/sun.net.httpserver=ALL-UNNAMED",
-				"--add-opens", "java.base/sun.security.ssl=ALL-UNNAMED" })
+			jvmArgs = {
+					"-Xshare:off",
+					"-Xmx64m",
+					"-Xms64m",
+					"-XX:+UseSerialGC",
+					"-XX:+TieredCompilation",
+					"-XX:TieredStopAtLevel=1",
+					"-Djava.security.egd=file:/dev/urandom",
+					"--add-opens", "java.base/javax.net.ssl=ALL-UNNAMED",
+					"--add-opens", "java.base/javax.crypto=ALL-UNNAMED",
+					"--add-opens", "java.base/sun.security.internal.spec=ALL-UNNAMED",
+					"--add-opens", "java.base/com.sun.crypto.provider=ALL-UNNAMED",
+					"--add-opens", "jdk.httpserver/sun.net.httpserver=ALL-UNNAMED",
+					"--add-opens", "java.base/sun.security.ssl=ALL-UNNAMED" })
 	void shouldPerformTLS12HandshakeWithRC4128SHA() throws Exception {
 		int port = Sockets.findAvailableTcpPort();
 
@@ -82,16 +82,18 @@ class TLSObjectLegacyCipherTest {
 	void shouldPerformTLS12HandshakeWithRC4128SHAWithResetSSL() throws Exception {
 		int port = Sockets.findAvailableTcpPort();
 
-		Process serverProcess = new ProcessBuilder(
+		String[] cmd = new String[] {
 				"java",
 				"--add-opens", "java.base/sun.security.ssl=ALL-UNNAMED",
 				"--add-opens", "java.base/javax.net.ssl=ALL-UNNAMED",
 				"-cp", System.getProperty("java.class.path"),
 				ForkedLegacyHttpsServerRunner.class.getName(),
 				String.valueOf(port),
-				SSL_PROPERTIES_JSON_FILE)
-						.redirectErrorStream(true)
-						.start();
+				SSL_PROPERTIES_JSON_FILE
+		};
+		Process serverProcess = new ProcessBuilder(cmd)
+				.redirectErrorStream(true)
+				.start();
 
 		Thread loggingThread = Thread.ofVirtual().start(() -> {
 			try (InputStream is = serverProcess.getInputStream()) {
