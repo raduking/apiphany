@@ -189,7 +189,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		accumulateHandshakes(clientHelloRecord.getFragments(Handshake.class));
 
 		byte[] clientRandom = clientHello.getClientRandom().getRandom();
-		LOGGER.debug("Client random: {}", Hex.string(clientRandom, ""));
+		LOGGER.debug("Client random: {}", Hex.string(clientRandom));
 
 		// 2. Receive Server Hello
 		Record tlsRecord = receiveRecord();
@@ -198,7 +198,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		// 2a. Server Hello
 		ServerHello serverHello = tlsRecord.getHandshake(ServerHello.class);
 		byte[] serverRandom = serverHello.getServerRandom().toByteArray();
-		LOGGER.debug("Server random: {}", Hex.string(serverRandom, ""));
+		LOGGER.debug("Server random: {}", Hex.string(serverRandom));
 		this.serverCipherSuite = serverHello.getCipherSuite();
 		MessageDigestAlgorithm messageDigest = serverCipherSuite.messageDigest();
 		String prfAlgorithm = messageDigest.prfHmacAlgorithmName();
@@ -253,7 +253,7 @@ public class MinimalTLSClient implements AutoCloseable {
 			}
 			default -> throw new SSLException("Unsupported cipher suite: " + serverCipherSuite);
 		}
-		LOGGER.debug("Pre Master Secret: {}", Hex.string(preMasterSecret, ""));
+		LOGGER.debug("Pre Master Secret: {}", Hex.string(preMasterSecret));
 
 		// 4. Send Client Key Exchange
 		Record clientKeyExchangeRecord = new Record(sslProtocol, new ClientKeyExchange(tlsKeyExchange));
@@ -263,7 +263,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		// 5. Derive Master Secret and Keys
 		byte[] masterSecret = PRF.apply(preMasterSecret, PRFLabel.MASTER_SECRET,
 				Bytes.concatenate(clientRandom, serverRandom), SSLProtocol.TLS_1_2_MASTER_SECRET_LENGTH, prfAlgorithm);
-		LOGGER.debug("Master secret: {}", Hex.string(masterSecret, ""));
+		LOGGER.debug("Master secret: {}", Hex.string(masterSecret));
 		// Derive key block length dynamically based on server cipher suite
 		int keyBlockLength = serverCipherSuite.totalKeyBlockLength();
 		byte[] keyBlock = PRF.apply(masterSecret, PRFLabel.KEY_EXPANSION,
@@ -392,19 +392,19 @@ public class MinimalTLSClient implements AutoCloseable {
 				yield new Encrypted(seqBytes, encrypted);
 			}
 			case BLOCK -> {
-				LOGGER.debug("Sequence number (hex): {}", Hex.string(seqBytes, ""));
+				LOGGER.debug("Sequence number (hex): {}", Hex.string(seqBytes));
 
 				RecordHeader macHeader = new RecordHeader(type, sslProtocol, (short) plaintext.length);
 				byte[] headerBytes = macHeader.toByteArray();
-				LOGGER.debug("Record header (hex): {}", Hex.string(headerBytes, ""));
+				LOGGER.debug("Record header (hex): {}", Hex.string(headerBytes));
 
 				byte[] macInput = Bytes.concatenate(seqBytes, headerBytes, plaintext);
-				LOGGER.debug("MAC input (hex): {}", Hex.string(macInput, ""));
+				LOGGER.debug("MAC input (hex): {}", Hex.string(macInput));
 				byte[] mac = serverCipherSuite.messageDigest().hmac(keys.getClientMacKey(), macInput);
-				LOGGER.debug("HMAC (hex): {}", Hex.string(mac, ""));
+				LOGGER.debug("HMAC (hex): {}", Hex.string(mac));
 
 				byte[] plaintextMac = Bytes.concatenate(plaintext, mac);
-				LOGGER.debug("Plaintext + MAC (hex): {}", Hex.string(plaintextMac, ""));
+				LOGGER.debug("Plaintext + MAC (hex): {}", Hex.string(plaintextMac));
 				LOGGER.debug("Plaintext + MAC length: {}", plaintextMac.length);
 
 				int blockSize = bulkCipher.blockSize();
@@ -417,19 +417,19 @@ public class MinimalTLSClient implements AutoCloseable {
 				byte[] padding = new byte[padLen];
 				Arrays.fill(padding, paddingByte);
 				byte[] padded = Bytes.concatenate(plaintextMac, padding);
-				LOGGER.debug("Padded (hex): {}", Hex.string(padded, ""));
+				LOGGER.debug("Padded (hex): {}", Hex.string(padded));
 
 				byte[] explicitIV = new byte[bulkCipher.blockSize()];
 				new SecureRandom().nextBytes(explicitIV);
-				LOGGER.debug("Explicit IV (random): {}", Hex.string(explicitIV, ""));
+				LOGGER.debug("Explicit IV (random): {}", Hex.string(explicitIV));
 				LOGGER.debug("Explicit IV length: {}", explicitIV.length);
 				LOGGER.debug("Client write key length: {}", keys.getClientWriteKey().length);
-				LOGGER.debug("Plaintext + MAC before encryption: {}", Hex.string(padded, ""));
+				LOGGER.debug("Plaintext + MAC before encryption: {}", Hex.string(padded));
 
 				Cipher cipher = bulkCipher.cipher(Cipher.ENCRYPT_MODE, keys.getClientWriteKey(), explicitIV);
 				byte[] ciphertext = cipher.doFinal(padded);
 				LOGGER.debug("Ciphertext length (must be 48): {}", ciphertext.length);
-				LOGGER.debug("Ciphertext (hex): {}", Hex.string(ciphertext, ""));
+				LOGGER.debug("Ciphertext (hex): {}", Hex.string(ciphertext));
 
 				byte[] encrypted = Bytes.concatenate(explicitIV, ciphertext);
 				LOGGER.debug("Encrypted length (must be explicitIV + ciphertext): {}", encrypted.length);
@@ -444,7 +444,7 @@ public class MinimalTLSClient implements AutoCloseable {
 				byte[] mac = serverCipherSuite.messageDigest().hmac(keys.getClientMacKey(), macInput);
 				byte[] plaintextMac = Bytes.concatenate(plaintext, mac);
 
-				Cipher cipher = bulkCipher.cipher(Cipher.ENCRYPT_MODE, keys.getClientWriteKey(), (byte[]) null);
+				Cipher cipher = bulkCipher.cipher(Cipher.ENCRYPT_MODE, keys.getClientWriteKey());
 				byte[] encrypted = cipher.doFinal(plaintextMac);
 
 				yield new Encrypted(encrypted);
@@ -484,38 +484,38 @@ public class MinimalTLSClient implements AutoCloseable {
 
 				byte[] explicitIV = Arrays.copyOfRange(encryptedBytes, 0, blockSize);
 				byte[] actualCiphertext = Arrays.copyOfRange(encryptedBytes, blockSize, encryptedBytes.length);
-				LOGGER.debug("Explicit IV (hex): {}", Hex.string(explicitIV, ""));
-				LOGGER.debug("Actual ciphertext (hex): {}", Hex.string(actualCiphertext, ""));
+				LOGGER.debug("Explicit IV (hex): {}", Hex.string(explicitIV));
+				LOGGER.debug("Actual ciphertext (hex): {}", Hex.string(actualCiphertext));
 
 				Cipher cipher = bulkCipher.cipher(Cipher.DECRYPT_MODE, keys.getServerWriteKey(), explicitIV);
 				byte[] paddedPlaintext = cipher.doFinal(actualCiphertext);
-				LOGGER.debug("Padded plaintext + MAC (hex): {}", Hex.string(paddedPlaintext, ""));
+				LOGGER.debug("Padded plaintext + MAC (hex): {}", Hex.string(paddedPlaintext));
 
 				int padLen = paddedPlaintext[paddedPlaintext.length - 1] & 0xFF; // last byte
 				int plaintextMacLen = paddedPlaintext.length - (padLen + 1);
 				byte[] plaintextWithMac = Arrays.copyOf(paddedPlaintext, plaintextMacLen);
 				LOGGER.debug("Plaintext + MAC length: {}", plaintextWithMac.length);
-				LOGGER.debug("Plaintext + MAC (hex): {}", Hex.string(plaintextWithMac, ""));
+				LOGGER.debug("Plaintext + MAC (hex): {}", Hex.string(plaintextWithMac));
 
 				int macLength = serverCipherSuite.messageDigest().digestLength();
 				int dataLength = plaintextWithMac.length - macLength;
 				byte[] decrypted = Arrays.copyOfRange(plaintextWithMac, 0, dataLength);
-				LOGGER.debug("Decrypted plaintext (hex): {}", Hex.string(decrypted, ""));
+				LOGGER.debug("Decrypted plaintext (hex): {}", Hex.string(decrypted));
 
 				byte[] receivedMac = Arrays.copyOfRange(plaintextWithMac, dataLength, plaintextWithMac.length);
-				LOGGER.debug("Received MAC (hex): {}", Hex.string(receivedMac, ""));
+				LOGGER.debug("Received MAC (hex): {}", Hex.string(receivedMac));
 				byte[] seqBytes = UInt64.toByteArray(sequence);
 				RecordHeader macHeader = new RecordHeader(tlsRecord.getHeader().getType(), sslProtocol, (short) decrypted.length);
 				byte[] macInput = Bytes.concatenate(seqBytes, macHeader.toByteArray(), decrypted);
 				byte[] expectedMac = serverCipherSuite.messageDigest().hmac(keys.getServerMacKey(), macInput);
-				LOGGER.debug("Expected MAC (hex): {}", Hex.string(expectedMac, ""));
+				LOGGER.debug("Expected MAC (hex): {}", Hex.string(expectedMac));
 				if (!MessageDigest.isEqual(expectedMac, receivedMac)) {
 					throw new SecurityException("TLS MAC verification failed!");
 				}
 				yield decrypted;
 			}
 			case STREAM -> {
-				Cipher cipher = bulkCipher.cipher(Cipher.DECRYPT_MODE, keys.getServerWriteKey(), (byte[]) null);
+				Cipher cipher = bulkCipher.cipher(Cipher.DECRYPT_MODE, keys.getServerWriteKey());
 				byte[] plaintextMac = cipher.doFinal(encryptedBytes);
 
 				int macLength = serverCipherSuite.messageDigest().digestLength();

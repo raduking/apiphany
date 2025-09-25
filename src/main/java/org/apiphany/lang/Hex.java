@@ -31,12 +31,22 @@ public class Hex {
 	}
 
 	/**
-	 * Converts a byte array to a hexadecimal string representation with the default space separator.
+	 * Converts a byte array to a hexadecimal string representation.
 	 *
 	 * @param bytes the byte array to convert
 	 * @return hexadecimal string representation of the byte array
 	 */
 	public static String string(final byte[] bytes) {
+		return string(bytes, "");
+	}
+
+	/**
+	 * Converts a byte array to a hexadecimal string representation with each value separated by space {@code " "}.
+	 *
+	 * @param bytes the byte array to convert
+	 * @return hexadecimal spaced string representation of the byte array
+	 */
+	public static String stringSpaced(final byte[] bytes) {
 		return string(bytes, " ");
 	}
 

@@ -7,6 +7,8 @@
 - Added `Strings.fromCamelToKebabCase` as an alias for `Strings.fromLowerCamelToKebabCase`.
 - Added `Strings.fromKebabToCamelCase` as an alias for `Strings.fromKebabToLowerCamelCase`.
 - Added `Strings.fromFile(String, Consumer)` to handle file reading errors.
+- Renamed `Hex.string(byte[])` to `Hex.spacedString(byte[])`.
+- Added `Hex.string(byte[])` that converts a byte array to hexadecimal `String`.
 
 ---
 

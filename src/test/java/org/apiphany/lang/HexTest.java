@@ -58,7 +58,7 @@ class HexTest {
 		};
 
 		String expected = "01 02 03 04";
-		String result = Hex.string(bytes);
+		String result = Hex.stringSpaced(bytes);
 
 		assertThat(result, equalTo(expected));
 	}

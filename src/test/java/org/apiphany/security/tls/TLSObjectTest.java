@@ -211,7 +211,7 @@ class TLSObjectTest {
 		byte[] seedBytes = seed.getBytes(StandardCharsets.US_ASCII);
 		byte[] output = PRF.apply(secret, label, seedBytes, length, HMAC_SHA384);
 
-		String hexOutput = Hex.string(output).toLowerCase().trim();
+		String hexOutput = Hex.stringSpaced(output).toLowerCase().trim();
 
 		String expectedSingleLine = expected.replace("\n", " ").trim();
 		LOGGER.info("PRF Output: {}", hexOutput);
