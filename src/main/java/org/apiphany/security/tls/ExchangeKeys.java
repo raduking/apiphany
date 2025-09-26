@@ -80,7 +80,7 @@ public class ExchangeKeys {
 	 * @return a new {@link ExchangeKeys} instance
 	 */
 	public static ExchangeKeys from(final byte[] keyBlock, final CipherSuite suite) {
-		LOGGER.debug("keyBlock: {}", Hex.string(keyBlock));
+		LOGGER.debug("keyBlock: {}", Hex.stringSupplier(keyBlock));
 		LOGGER.debug("keyBlock length: {}", keyBlock.length);
 
 		BulkCipher bulkCipher = suite.bulkCipher();
@@ -125,12 +125,12 @@ public class ExchangeKeys {
 				// empty
 			}
 		}
-		LOGGER.debug("clientMacKey: {}", Hex.string(exchangeKeys.clientMacKey));
-		LOGGER.debug("serverMacKey: {}", Hex.string(exchangeKeys.serverMacKey));
-		LOGGER.debug("clientWriteKey: {}", Hex.string(exchangeKeys.clientWriteKey));
-		LOGGER.debug("serverWriteKey: {}", Hex.string(exchangeKeys.serverWriteKey));
-		LOGGER.debug("clientIV: {}", Hex.string(exchangeKeys.clientIV));
-		LOGGER.debug("serverIV: {}", Hex.string(exchangeKeys.serverIV));
+		LOGGER.debug("clientMacKey: {}", Hex.stringSupplier(exchangeKeys.clientMacKey));
+		LOGGER.debug("serverMacKey: {}", Hex.stringSupplier(exchangeKeys.serverMacKey));
+		LOGGER.debug("clientWriteKey: {}", Hex.stringSupplier(exchangeKeys.clientWriteKey));
+		LOGGER.debug("serverWriteKey: {}", Hex.stringSupplier(exchangeKeys.serverWriteKey));
+		LOGGER.debug("clientIV: {}", Hex.stringSupplier(exchangeKeys.clientIV));
+		LOGGER.debug("serverIV: {}", Hex.stringSupplier(exchangeKeys.serverIV));
 		return exchangeKeys;
 	}
 

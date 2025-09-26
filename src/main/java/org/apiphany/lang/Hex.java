@@ -1,6 +1,7 @@
 package org.apiphany.lang;
 
 import java.util.Objects;
+import java.util.function.Supplier;
 
 import org.apiphany.io.BinaryRepresentable;
 import org.morphix.reflection.Constructors;
@@ -38,6 +39,23 @@ public class Hex {
 	 */
 	public static String string(final byte[] bytes) {
 		return string(bytes, "");
+	}
+
+	/**
+	 * Returns a {@link Supplier} that supplies the hexadecimal string representation of the given byte array. Useful for
+	 * lazy evaluation in SLF4J 2.x logging:
+	 *
+	 * <pre>{@code
+	 * LOGGER.debug("keyBlock: {}", Hex.stringSupplier(bytes));
+	 * }</pre>
+	 *
+	 * The supplier is only evaluated if the log level is enabled.
+	 *
+	 * @param bytes the byte array to convert
+	 * @return a Supplier that lazily converts the byte array to hex
+	 */
+	public static Supplier<String> stringSupplier(final byte[] bytes) {
+		return () -> string(bytes);
 	}
 
 	/**

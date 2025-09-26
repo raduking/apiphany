@@ -9,6 +9,7 @@
 - Added `Strings.fromFile(String, Consumer)` to handle file reading errors.
 - Renamed `Hex.string(byte[])` to `Hex.spacedString(byte[])`.
 - Added `Hex.string(byte[])` that converts a byte array to hexadecimal `String`.
+- Added `Hex.stringSupplier(byte[])` that supplies the hexadecimal string representation of the given byte array.
 
 ---
 
