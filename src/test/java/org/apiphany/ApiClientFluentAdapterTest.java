@@ -12,6 +12,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import java.lang.reflect.ParameterizedType;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -27,6 +28,7 @@ import org.apiphany.lang.retry.WaitCounter;
 import org.apiphany.meters.BasicMeters;
 import org.apiphany.meters.MeterCounter;
 import org.apiphany.security.AuthenticationType;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -184,8 +186,9 @@ class ApiClientFluentAdapterTest {
 		};
 		request.retrieve(genericClass);
 
-		assertThat(request.getGenericResponseType(), equalTo(genericClass));
 		assertTrue(request.hasGenericType());
+		assertThat(request.getGenericResponseType(), equalTo(genericClass));
+		assertThat(request.getResponseType(), Matchers.instanceOf(ParameterizedType.class));
 	}
 
 	@Test

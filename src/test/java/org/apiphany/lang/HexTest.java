@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
+import java.util.function.Supplier;
 
 import org.apiphany.io.BytesWrapper;
 import org.junit.jupiter.api.Test;
@@ -125,5 +126,14 @@ class HexTest {
 		String result = Hex.dump(bytes);
 
 		assertThat(result, equalTo(expected));
+	}
+
+	@Test
+	void shouldReturnStringNullIfBytesIsNull() {
+		Supplier<String> hexStringSupplier = Hex.stringSupplier(null);
+
+		String result = hexStringSupplier.get();
+
+		assertThat(result, equalTo("null"));
 	}
 }

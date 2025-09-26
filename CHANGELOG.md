@@ -2,6 +2,13 @@
 
 ---
 
+`1.0.14`
+
+- Added overloads for `Sockets.findAvailableTcpPort`.
+- Added `Assert` utility class to be used to check preconditions.
+
+---
+
 `1.0.13`
 
 - Added `Strings.fromCamelToKebabCase` as an alias for `Strings.fromLowerCamelToKebabCase`.

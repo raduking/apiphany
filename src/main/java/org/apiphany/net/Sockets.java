@@ -6,6 +6,7 @@ import java.net.Socket;
 import java.time.Duration;
 import java.util.Random;
 
+import org.apiphany.lang.Assert;
 import org.morphix.reflection.Constructors;
 
 /**
@@ -81,15 +82,41 @@ public final class Sockets {
 	 * @return the available port
 	 */
 	public static int findAvailableTcpPort(final int minPortRange, final int maxPortRange, final int timeout) {
-		checkArgument(minPortRange >= MIN_PORT, "Port minimum value must be greater than %d", MIN_PORT);
-		checkArgument(maxPortRange <= MAX_PORT, "Port maximum value must be less than %d", MAX_PORT);
-		checkArgument(maxPortRange >= minPortRange, "Max port range must be greater than minimum port range");
+		Assert.thatArgument(minPortRange >= MIN_PORT, "Port minimum value must be greater than %d", MIN_PORT);
+		Assert.thatArgument(maxPortRange <= MAX_PORT, "Port maximum value must be less than %d", MAX_PORT);
+		Assert.thatArgument(maxPortRange >= minPortRange, "Max port range must be greater than minimum port range");
 
-		int currentPort = nextPort(minPortRange, maxPortRange);
-		while (!isTcpPortAvailable(currentPort, timeout)) {
-			currentPort = nextPort(minPortRange, maxPortRange);
+		int attempts = maxPortRange - minPortRange + 1;
+		for (int i = 0; i < attempts; ++i) {
+			int currentPort = nextPort(minPortRange, maxPortRange);
+			if (isTcpPortAvailable(currentPort, timeout)) {
+				return currentPort;
+			}
 		}
-		return currentPort;
+		throw new IllegalStateException("No available port in range " + minPortRange + "-" + maxPortRange);
+	}
+
+	/**
+	 * Finds a random available TCP port between the given minimum port and maximum port.
+	 *
+	 * @param minPortRange minimum port
+	 * @param maxPortRange maximum port
+	 * @param timeout the operation timeout
+	 * @return the available port
+	 */
+	public static int findAvailableTcpPort(final int minPortRange, final int maxPortRange, final Duration timeout) {
+		return findAvailableTcpPort(minPortRange, maxPortRange, Math.toIntExact(timeout.toMillis()));
+	}
+
+	/**
+	 * Finds a random available TCP port between the given minimum port and maximum port.
+	 *
+	 * @param minPortRange minimum port
+	 * @param maxPortRange maximum port
+	 * @return the available port
+	 */
+	public static int findAvailableTcpPort(final int minPortRange, final int maxPortRange) {
+		return findAvailableTcpPort(minPortRange, maxPortRange, DEFAULT_TIMEOUT);
 	}
 
 	/**
@@ -154,23 +181,7 @@ public final class Sockets {
 	 * @return a random port in the given range
 	 */
 	private static int nextPort(final int minPortRange, final int maxPortRange) {
-		int seed = maxPortRange - minPortRange;
-		return RANDOM.nextInt(seed) + minPortRange;
+		int bound = maxPortRange - minPortRange + 1;
+		return RANDOM.nextInt(bound) + minPortRange;
 	}
-
-	/**
-	 * Checks the condition is true and throws {@link IllegalArgumentException} if the condition is false.
-	 * <p>
-	 * TODO: maybe put this method in a Preconditions class
-	 *
-	 * @param condition condition to check
-	 * @param errorMessageTemplate error message template
-	 * @param messageArguments error message arguments
-	 */
-	private static void checkArgument(final boolean condition, final String errorMessageTemplate, final Object... messageArguments) {
-		if (!condition) {
-			throw new IllegalArgumentException(String.format(errorMessageTemplate, messageArguments));
-		}
-	}
-
 }
