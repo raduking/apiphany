@@ -2,6 +2,10 @@ package org.apiphany.security;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.time.Instant;
 
 import org.apiphany.lang.Strings;
 import org.junit.jupiter.api.Test;
@@ -39,4 +43,22 @@ class AuthenticationTokenTest {
 		assertThat(result, equalTo(expected));
 	}
 
+	@Test
+	void shouldReturnTrueOnIsExpiredForExpiredToken() {
+		AuthenticationToken token = new AuthenticationToken();
+		token.setExpiration(Instant.now().minusSeconds(1));
+
+		boolean result = token.isExpired();
+
+		assertTrue(result);
+	}
+
+	@Test
+	void shouldReturnFalseOnIsExpiredIfTokenHasNoExpirationSet() {
+		AuthenticationToken token = new AuthenticationToken();
+
+		boolean result = token.isExpired();
+
+		assertFalse(result);
+	}
 }
