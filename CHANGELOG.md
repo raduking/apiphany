@@ -4,6 +4,8 @@
 
 `1.0.14`
 
+- Added overloads for `Sockets.findAvailableTcpPort`.
+
 ---
 
 `1.0.13`

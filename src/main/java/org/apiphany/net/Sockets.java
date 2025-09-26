@@ -85,11 +85,37 @@ public final class Sockets {
 		checkArgument(maxPortRange <= MAX_PORT, "Port maximum value must be less than %d", MAX_PORT);
 		checkArgument(maxPortRange >= minPortRange, "Max port range must be greater than minimum port range");
 
-		int currentPort = nextPort(minPortRange, maxPortRange);
-		while (!isTcpPortAvailable(currentPort, timeout)) {
-			currentPort = nextPort(minPortRange, maxPortRange);
-		}
-		return currentPort;
+	    int attempts = maxPortRange - minPortRange + 1;
+	    for (int i = 0; i < attempts; ++i) {
+	        int currentPort = nextPort(minPortRange, maxPortRange);
+	        if (isTcpPortAvailable(currentPort, timeout)) {
+	            return currentPort;
+	        }
+	    }
+	    throw new IllegalStateException("No available port in range " + minPortRange + "-" + maxPortRange);
+	}
+
+	/**
+	 * Finds a random available TCP port between the given minimum port and maximum port.
+	 *
+	 * @param minPortRange minimum port
+	 * @param maxPortRange maximum port
+	 * @param timeout the operation timeout
+	 * @return the available port
+	 */
+	public static int findAvailableTcpPort(final int minPortRange, final int maxPortRange, final Duration timeout) {
+		return findAvailableTcpPort(minPortRange, maxPortRange, Math.toIntExact(timeout.toMillis()));
+	}
+
+	/**
+	 * Finds a random available TCP port between the given minimum port and maximum port.
+	 *
+	 * @param minPortRange minimum port
+	 * @param maxPortRange maximum port
+	 * @return the available port
+	 */
+	public static int findAvailableTcpPort(final int minPortRange, final int maxPortRange) {
+		return findAvailableTcpPort(minPortRange, maxPortRange, DEFAULT_TIMEOUT);
 	}
 
 	/**
@@ -154,8 +180,8 @@ public final class Sockets {
 	 * @return a random port in the given range
 	 */
 	private static int nextPort(final int minPortRange, final int maxPortRange) {
-		int seed = maxPortRange - minPortRange;
-		return RANDOM.nextInt(seed) + minPortRange;
+		int bound = maxPortRange - minPortRange + 1;
+		return RANDOM.nextInt(bound) + minPortRange;
 	}
 
 	/**
