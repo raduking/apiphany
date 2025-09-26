@@ -10,7 +10,7 @@ import java.lang.reflect.Array;
 public interface Arrays {
 
 	/**
-	 * Variation of the above method for arrays.
+	 * Returns the array given as parameter or an array if the parameter is {@code null}.
 	 *
 	 * @param array a provided array
 	 * @param componentType due to type erasure this information is needed to create an empty array
