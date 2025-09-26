@@ -14,7 +14,8 @@ import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.net.Sockets;
 import org.apiphany.security.ssl.SSLProperties;
-import org.apiphany.security.ssl.server.SimpleHttpsServer;
+import org.apiphany.security.ssl.server.BasicHttpsServer;
+import org.apiphany.security.ssl.server.NameHandler;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 
@@ -39,7 +40,7 @@ class SSLClientTest {
 		CLIENT_PROPERTIES.setCustomProperties(SSL, SSL_PROPERTIES);
 	}
 
-	private static final SimpleHttpsServer SERVER = new SimpleHttpsServer(SERVER_PORT, SSL_PROPERTIES);
+	private static final BasicHttpsServer SERVER = new BasicHttpsServer(SERVER_PORT, SSL_PROPERTIES);
 
 	@AfterAll
 	static void tearDownAll() throws Exception {
@@ -51,14 +52,14 @@ class SSLClientTest {
 		try (SimpleSSLApiClient api = new SimpleSSLApiClient()) {
 			String name = api.getName();
 
-			assertThat(name, equalTo(SimpleHttpsServer.NAME));
+			assertThat(name, equalTo(NameHandler.NAME));
 		}
 	}
 
 	@Test
 	void shouldNotGetNameIfSSLIsNotInitialized() throws Exception {
 		int port = Sockets.findAvailableTcpPort();
-		SimpleHttpsServer server = new SimpleHttpsServer(port, new SSLProperties());
+		BasicHttpsServer server = new BasicHttpsServer(port, new SSLProperties());
 
 		Exception exception = null;
 		try (SimpleApiClient api = new SimpleApiClient("https://localhost:" + port)) {

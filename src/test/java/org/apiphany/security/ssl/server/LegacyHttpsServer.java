@@ -1,9 +1,7 @@
 package org.apiphany.security.ssl.server;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.InetSocketAddress;
-import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.security.Security;
 import java.util.Arrays;
@@ -12,10 +10,7 @@ import java.util.concurrent.Executors;
 
 import javax.net.ssl.SSLContext;
 
-import org.apiphany.http.HttpMethod;
-import org.apiphany.http.HttpStatus;
 import org.apiphany.json.JsonBuilder;
-import org.apiphany.lang.Strings;
 import org.apiphany.security.ssl.SSLContextAdapter;
 import org.apiphany.security.ssl.SSLContexts;
 import org.apiphany.security.ssl.SSLProperties;
@@ -24,8 +19,6 @@ import org.apiphany.security.tls.CipherSuite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpsConfigurator;
 import com.sun.net.httpserver.HttpsParameters;
 import com.sun.net.httpserver.HttpsServer;
@@ -42,6 +35,7 @@ public class LegacyHttpsServer implements AutoCloseable {
 	private static final Logger LOGGER = LoggerFactory.getLogger(LegacyHttpsServer.class);
 
 	public static final String ROUTE_API_NAME = "/api/name";
+
 	public static final String NAME = "Mumu";
 
 	private static final String[] LEGACY_CIPHER_SUITES = {
@@ -72,7 +66,7 @@ public class LegacyHttpsServer implements AutoCloseable {
 		this.sslContext.setSecureRandom(secureRandom);
 
 		this.httpsServer = createHttpsServer(port, sslContext);
-		this.httpsServer.createContext(ROUTE_API_NAME, new NameHandler(this));
+		this.httpsServer.createContext(ROUTE_API_NAME, new NameHandler<>(this));
 		this.httpsServer.setExecutor(executor);
 		this.httpsServer.start();
 
@@ -120,33 +114,6 @@ public class LegacyHttpsServer implements AutoCloseable {
 			return httpsServer;
 		} catch (IOException e) {
 			throw new IllegalStateException("Server cannot be created on port: " + port, e);
-		}
-	}
-
-	static class NameHandler implements HttpHandler {
-
-		@SuppressWarnings("unused")
-		private final LegacyHttpsServer server;
-
-		public NameHandler(final LegacyHttpsServer server) {
-			this.server = server;
-		}
-
-		@Override
-		public void handle(final HttpExchange exchange) throws IOException {
-			if (HttpMethod.GET.matches(exchange.getRequestMethod())) {
-				sendResponse(exchange, HttpStatus.OK, LegacyHttpsServer.NAME);
-			} else {
-				exchange.sendResponseHeaders(HttpStatus.METHOD_NOT_ALLOWED.value(), -1);
-			}
-		}
-
-		private static <T> void sendResponse(final HttpExchange exchange, final HttpStatus status, final T response) throws IOException {
-			String responseString = Strings.safeToString(response);
-			exchange.sendResponseHeaders(status.getCode(), responseString.length());
-			try (OutputStream os = exchange.getResponseBody()) {
-				os.write(responseString.getBytes(StandardCharsets.UTF_8));
-			}
 		}
 	}
 }
