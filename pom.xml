@@ -54,15 +54,15 @@
 		<!-- Testing dependencies versions -->
 		<testcontainers.keycloak.version>3.8.0</testcontainers.keycloak.version>
 		<nimbus.jose.jwt.version>10.5</nimbus.jose.jwt.version>
-		<nimbus.oauth2.oidc.sdk.version>11.28</nimbus.oauth2.oidc.sdk.version>
-		<pitest.plugin.version>1.19.4</pitest.plugin.version>
+		<nimbus.oauth2.oidc.sdk.version>11.29.1</nimbus.oauth2.oidc.sdk.version>
+		<pitest.plugin.version>1.20.3</pitest.plugin.version>
 		<pitest.plugin.junit5.version>1.2.3</pitest.plugin.junit5.version>
 		<jacoco.plugin.version>0.8.13</jacoco.plugin.version>
 		<project.info.reports.plugin.version>3.9.0</project.info.reports.plugin.version>
 
 		<!-- Publishing dependencies versions -->
-		<gpg.plugin.version>3.2.7</gpg.plugin.version>
-		<central.publishing.plugin.version>0.7.0</central.publishing.plugin.version>
+		<gpg.plugin.version>3.2.8</gpg.plugin.version>
+		<central.publishing.plugin.version>0.9.0</central.publishing.plugin.version>
 
 		<integration.tests.pattern>**/*IT.java</integration.tests.pattern>
 		<!-- Initialize the Jacoco arguments as empty by default -->
