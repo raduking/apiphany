@@ -57,7 +57,7 @@ class SocketsTest {
 
 	@Test
 	void shouldReturnNextAvailablePort() throws Exception {
-		int port = onOccupiedPort(PORT, () -> Sockets.findAvailableTcpPort(PORT, PORT + 66));
+		int port = onOccupiedPort(PORT, () -> Sockets.findAvailableTcpPort(PORT, PORT + 666));
 
 		assertThat(port, not(equalTo(PORT)));
 	}
@@ -68,6 +68,30 @@ class SocketsTest {
 		boolean canConnect = onOccupiedPort(port, () -> Sockets.canConnectTo("localhost", port));
 
 		assertThat(canConnect, equalTo(true));
+	}
+
+	@Test
+	void shouldThrowExceptionIfMinPortRangeIsLowerThanMinPort() {
+		IllegalArgumentException e =
+				assertThrows(IllegalArgumentException.class, () -> Sockets.findAvailableTcpPort(Sockets.MIN_PORT - 1, Sockets.MAX_PORT));
+
+		assertThat(e.getMessage(), equalTo("Port minimum value must be greater than " + Sockets.MIN_PORT));
+	}
+
+	@Test
+	void shouldThrowExceptionIfMaxPortRangeIsBiggerThanMaxPort() {
+		IllegalArgumentException e =
+				assertThrows(IllegalArgumentException.class, () -> Sockets.findAvailableTcpPort(Sockets.MIN_PORT, Sockets.MAX_PORT + 1));
+
+		assertThat(e.getMessage(), equalTo("Port maximum value must be less than " + Sockets.MAX_PORT));
+	}
+
+	@Test
+	void shouldThrowExceptionIfMaxPortRangeIsLessThanMinPort() {
+		IllegalArgumentException e =
+				assertThrows(IllegalArgumentException.class, () -> Sockets.findAvailableTcpPort(Sockets.MAX_PORT, Sockets.MIN_PORT));
+
+		assertThat(e.getMessage(), equalTo("Max port range must be greater than minimum port range"));
 	}
 
 	private static <T> T onOccupiedPort(final int port, final Supplier<T> resultSupplier) throws Exception {
