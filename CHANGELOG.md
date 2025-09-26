@@ -10,6 +10,11 @@
 - Renamed `Hex.string(byte[])` to `Hex.spacedString(byte[])`.
 - Added `Hex.string(byte[])` that converts a byte array to hexadecimal `String`.
 - Added `Hex.stringSupplier(byte[])` that supplies the hexadecimal string representation of the given byte array.
+- Fixed `RequestParameters.from` to properly decode the key and value.
+- Upgraded `pitest-maven` to `1.20.3`.
+- Upgraded `maven-gpg-plugin` to `3.2.8`.
+- Upgraded `central-publishing-maven-plugin` to `0.9.0`.
+- Upgraded `oauth2-oidc-sdk` to `11.29.1`.
 
 ---
 
