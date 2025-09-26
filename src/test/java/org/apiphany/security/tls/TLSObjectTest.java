@@ -21,7 +21,8 @@ import org.apiphany.net.Sockets;
 import org.apiphany.security.ssl.Keys;
 import org.apiphany.security.ssl.SSLProperties;
 import org.apiphany.security.ssl.SSLProtocol;
-import org.apiphany.security.ssl.server.SimpleHttpsServer;
+import org.apiphany.security.ssl.server.BasicHttpsServer;
+import org.apiphany.security.ssl.server.NameHandler;
 import org.apiphany.security.tls.client.MinimalTLSClient;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -63,7 +64,7 @@ class TLSObjectTest {
 		int port = Sockets.findAvailableTcpPort();
 		SSLProperties sslProperties = JsonBuilder.fromJson(SSL_PROPERTIES_JSON, SSLProperties.class);
 		sslProperties.setProtocol(SSLProtocol.TLS_1_2);
-		SimpleHttpsServer server = new SimpleHttpsServer(port, sslProperties);
+		BasicHttpsServer server = new BasicHttpsServer(port, sslProperties);
 
 		String response = null;
 		List<CipherSuite> cipherSuites = List.of(cipherSuite);
@@ -76,7 +77,7 @@ class TLSObjectTest {
 		} finally {
 			server.close();
 		}
-		assertThat(response, equalTo(SimpleHttpsServer.NAME));
+		assertThat(response, equalTo(NameHandler.NAME));
 	}
 
 	@Disabled("This test is here to debug errors the same is tested in shouldPerformTLS12HandshakeWithParameterizedCipherSuites")
@@ -85,7 +86,7 @@ class TLSObjectTest {
 		int port = Sockets.findAvailableTcpPort();
 		SSLProperties sslProperties = JsonBuilder.fromJson(SSL_PROPERTIES_JSON, SSLProperties.class);
 		sslProperties.setProtocol(SSLProtocol.TLS_1_2);
-		SimpleHttpsServer server = new SimpleHttpsServer(port, sslProperties);
+		BasicHttpsServer server = new BasicHttpsServer(port, sslProperties);
 
 		byte[] serverFinished = null;
 		List<CipherSuite> cipherSuites = List.of(CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384);
@@ -105,7 +106,7 @@ class TLSObjectTest {
 		sslProperties.setProtocol(SSLProtocol.TLS_1_2);
 
 		TLSLoggingProvider.install();
-		SimpleHttpsServer server = new SimpleHttpsServer(port, sslProperties);
+		BasicHttpsServer server = new BasicHttpsServer(port, sslProperties);
 
 		byte[] serverFinished = null;
 		List<CipherSuite> cipherSuites = List.of(CipherSuite.TLS_RSA_WITH_AES_128_CBC_SHA);
@@ -122,7 +123,7 @@ class TLSObjectTest {
 		int port = Sockets.findAvailableTcpPort();
 		SSLProperties sslProperties = JsonBuilder.fromJson(SSL_PROPERTIES_JSON, SSLProperties.class);
 		sslProperties.setProtocol(SSLProtocol.TLS_1_2);
-		SimpleHttpsServer server = new SimpleHttpsServer(port, sslProperties);
+		BasicHttpsServer server = new BasicHttpsServer(port, sslProperties);
 
 		byte[] closeNotify = null;
 		try (MinimalTLSClient client = new MinimalTLSClient(LOCALHOST, port, CLIENT_KEY_PAIR, CIPHER_SUITES)) {
