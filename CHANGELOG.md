@@ -5,6 +5,7 @@
 `1.0.14`
 
 - Added overloads for `Sockets.findAvailableTcpPort`.
+- Added `Assert` utility class to be used to check preconditions.
 
 ---
 

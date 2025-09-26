@@ -6,6 +6,7 @@ import java.net.Socket;
 import java.time.Duration;
 import java.util.Random;
 
+import org.apiphany.lang.Assert;
 import org.morphix.reflection.Constructors;
 
 /**
@@ -81,9 +82,9 @@ public final class Sockets {
 	 * @return the available port
 	 */
 	public static int findAvailableTcpPort(final int minPortRange, final int maxPortRange, final int timeout) {
-		checkArgument(minPortRange >= MIN_PORT, "Port minimum value must be greater than %d", MIN_PORT);
-		checkArgument(maxPortRange <= MAX_PORT, "Port maximum value must be less than %d", MAX_PORT);
-		checkArgument(maxPortRange >= minPortRange, "Max port range must be greater than minimum port range");
+		Assert.thatArgument(minPortRange >= MIN_PORT, "Port minimum value must be greater than %d", MIN_PORT);
+		Assert.thatArgument(maxPortRange <= MAX_PORT, "Port maximum value must be less than %d", MAX_PORT);
+		Assert.thatArgument(maxPortRange >= minPortRange, "Max port range must be greater than minimum port range");
 
 	    int attempts = maxPortRange - minPortRange + 1;
 	    for (int i = 0; i < attempts; ++i) {
@@ -183,20 +184,4 @@ public final class Sockets {
 		int bound = maxPortRange - minPortRange + 1;
 		return RANDOM.nextInt(bound) + minPortRange;
 	}
-
-	/**
-	 * Checks the condition is true and throws {@link IllegalArgumentException} if the condition is false.
-	 * <p>
-	 * TODO: maybe put this method in a Preconditions class
-	 *
-	 * @param condition condition to check
-	 * @param errorMessageTemplate error message template
-	 * @param messageArguments error message arguments
-	 */
-	private static void checkArgument(final boolean condition, final String errorMessageTemplate, final Object... messageArguments) {
-		if (!condition) {
-			throw new IllegalArgumentException(String.format(errorMessageTemplate, messageArguments));
-		}
-	}
-
 }
