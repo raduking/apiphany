@@ -67,4 +67,20 @@ class RequestParametersTest {
 
 		assertThat(params.entrySet(), hasSize(0));
 	}
+
+	@Test
+	void shouldDecodeParametersCorrectly() {
+		Map<String, String> params = RequestParameters.from("user%20name=John%20Doe");
+
+		assertThat(params.entrySet(), hasSize(1));
+		assertThat(params.get("user name"), equalTo("John Doe"));
+	}
+
+	@Test
+	void shouldReadParametersWithoutEquals() {
+		Map<String, String> params = RequestParameters.from("user");
+
+		assertThat(params.entrySet(), hasSize(1));
+		assertThat(params.get("user"), equalTo(""));
+	}
 }

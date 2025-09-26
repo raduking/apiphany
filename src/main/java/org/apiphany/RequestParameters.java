@@ -101,11 +101,21 @@ public class RequestParameters {
 		Map<String, String> paramsMap = new HashMap<>();
 
 		for (String param : params) {
-			String[] pair = param.split("=");
-			if (pair.length == 2) {
-				String value = URLDecoder.decode(pair[1], encoding);
-				paramsMap.put(pair[0], value);
+			int idx = param.indexOf('=');
+			final String key;
+			final String value;
+
+			if (idx >= 0) {
+				key = param.substring(0, idx);
+				value = param.substring(idx + 1);
+			} else {
+				// no '=' means key with empty value
+				key = param;
+				value = "";
 			}
+			String decodedKey = URLDecoder.decode(key, encoding);
+			String decodedValue = URLDecoder.decode(value, encoding);
+			paramsMap.put(decodedKey, decodedValue);
 		}
 		return paramsMap;
 	}

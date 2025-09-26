@@ -64,6 +64,8 @@
 		<gpg.plugin.version>3.2.7</gpg.plugin.version>
 		<central.publishing.plugin.version>0.7.0</central.publishing.plugin.version>
 
+		<!-- Initialize the Jacoco arguments as empty by default -->
+		<jacocoArgLine />
 		<!--
 			The apiphanyArgLine property is only used during the build process of the library 
 			and does not affect projects that consume your jar as a dependency. 
