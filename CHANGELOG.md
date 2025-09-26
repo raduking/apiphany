@@ -2,6 +2,10 @@
 
 ---
 
+`1.0.14`
+
+---
+
 `1.0.13`
 
 - Added `Strings.fromCamelToKebabCase` as an alias for `Strings.fromLowerCamelToKebabCase`.
