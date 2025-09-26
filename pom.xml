@@ -64,6 +64,7 @@
 		<gpg.plugin.version>3.2.7</gpg.plugin.version>
 		<central.publishing.plugin.version>0.7.0</central.publishing.plugin.version>
 
+		<integration.tests.pattern>**/*IT.java</integration.tests.pattern>
 		<!-- Initialize the Jacoco arguments as empty by default -->
 		<jacocoArgLine />
 		<!--
@@ -262,7 +263,7 @@
 				<configuration>
 					<argLine>${jacocoArgLine} ${apiphanyArgLine}</argLine>
 					<excludes>
-						<exclude>**/*IT.java</exclude>
+						<exclude>${integration.tests.pattern}</exclude>
 					</excludes>
 				</configuration>
 			</plugin>
@@ -281,7 +282,7 @@
 				<configuration>
 					<argLine>${jacocoArgLine} ${apiphanyArgLine}</argLine>
 					<includes>
-						<include>**/*IT.java</include>
+						<include>${integration.tests.pattern}</include>
 					</includes>
 				</configuration>
 			</plugin>
