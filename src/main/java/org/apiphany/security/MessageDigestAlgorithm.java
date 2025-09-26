@@ -124,7 +124,7 @@ public enum MessageDigestAlgorithm {
 	 */
 	public byte[] digest(final byte[] input) {
 		if (this == NONE) {
-			throw new UnsupportedOperationException("Digest algorithm '" + this + "' does not support digesting.");
+			throw new SecurityException("Digest algorithm '" + this + "' does not support digesting.");
 		}
 		return digest(input, value());
 	}
@@ -139,7 +139,7 @@ public enum MessageDigestAlgorithm {
 	 */
 	public byte[] sanitizedDigest(final byte[] input) {
 		if (this == NONE) {
-			throw new UnsupportedOperationException("Digest algorithm '" + this + "' does not support digesting.");
+			throw new SecurityException("Digest algorithm '" + this + "' does not support digesting.");
 		}
 		return digest(input, sanitizedValue());
 	}
@@ -185,7 +185,7 @@ public enum MessageDigestAlgorithm {
 	 */
 	public String hmacAlgorithmName() {
 		if (NONE == this || MD2 == this || MD5 == this) { // NOSONAR
-			throw new UnsupportedOperationException("Invalid digest algorithm for HMAC PRF: " + this);
+			throw new SecurityException("Invalid digest algorithm for HMAC PRF: " + this);
 		}
 		return "Hmac" + value().replace("-", "");
 	}
@@ -212,7 +212,7 @@ public enum MessageDigestAlgorithm {
 		return switch (this) {
 			case SHA1 -> SHA256.value();
 			case SHA256, SHA384, SHA512 -> value();
-			default -> throw new UnsupportedOperationException("Unsupported digest algorithm: " + this);
+			default -> throw new SecurityException("Unsupported digest algorithm: " + this);
 		};
 	}
 
