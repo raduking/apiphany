@@ -86,14 +86,14 @@ public final class Sockets {
 		Assert.thatArgument(maxPortRange <= MAX_PORT, "Port maximum value must be less than %d", MAX_PORT);
 		Assert.thatArgument(maxPortRange >= minPortRange, "Max port range must be greater than minimum port range");
 
-	    int attempts = maxPortRange - minPortRange + 1;
-	    for (int i = 0; i < attempts; ++i) {
-	        int currentPort = nextPort(minPortRange, maxPortRange);
-	        if (isTcpPortAvailable(currentPort, timeout)) {
-	            return currentPort;
-	        }
-	    }
-	    throw new IllegalStateException("No available port in range " + minPortRange + "-" + maxPortRange);
+		int attempts = maxPortRange - minPortRange + 1;
+		for (int i = 0; i < attempts; ++i) {
+			int currentPort = nextPort(minPortRange, maxPortRange);
+			if (isTcpPortAvailable(currentPort, timeout)) {
+				return currentPort;
+			}
+		}
+		throw new IllegalStateException("No available port in range " + minPortRange + "-" + maxPortRange);
 	}
 
 	/**

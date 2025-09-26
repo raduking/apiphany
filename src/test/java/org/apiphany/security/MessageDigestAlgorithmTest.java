@@ -92,7 +92,7 @@ class MessageDigestAlgorithmTest {
 	}
 
 	@ParameterizedTest
-	@EnumSource(mode = Mode.EXCLUDE, names = {"SHA1", "SHA256", "SHA384", "SHA512"})
+	@EnumSource(mode = Mode.EXCLUDE, names = { "SHA1", "SHA256", "SHA384", "SHA512" })
 	void shouldThrowExceptionOnSanitizedValueForInvalidAlgorithm(final MessageDigestAlgorithm mda) {
 		SecurityException e = assertThrows(SecurityException.class, mda::sanitizedValue);
 

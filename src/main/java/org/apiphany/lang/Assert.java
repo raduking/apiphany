@@ -8,16 +8,13 @@ import org.morphix.reflection.Constructors;
  * Provides static methods to check conditions and throw exceptions with formatted messages. This is a lightweight
  * alternative to Guava's {@code Preconditions}.
  * </p>
- * <p>
  * Usage example:
  *
  * <pre>
  * Asserts.checkArgument(value > 0, "Value must be positive but was %d", value);
  * </pre>
- * </p>
- * <p>
+ *
  * This class cannot be instantiated.
- * </p>
  *
  * @author Radu Sebastian LAZIN
  */
