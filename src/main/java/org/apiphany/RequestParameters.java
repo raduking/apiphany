@@ -101,15 +101,14 @@ public class RequestParameters {
 		Map<String, String> paramsMap = new HashMap<>();
 
 		for (String param : params) {
-			int idx = param.indexOf('=');
+			int index = param.indexOf('=');
 			final String key;
 			final String value;
 
-			if (idx >= 0) {
-				key = param.substring(0, idx);
-				value = param.substring(idx + 1);
+			if (index >= 0) {
+				key = param.substring(0, index);
+				value = param.substring(index + 1);
 			} else {
-				// no '=' means key with empty value
 				key = param;
 				value = "";
 			}
