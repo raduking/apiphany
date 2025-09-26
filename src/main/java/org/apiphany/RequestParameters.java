@@ -102,18 +102,16 @@ public class RequestParameters {
 
 		for (String param : params) {
 			int index = param.indexOf('=');
-			final String key;
-			final String value;
+			final String decodedKey;
+			final String decodedValue;
 
 			if (index >= 0) {
-				key = param.substring(0, index);
-				value = param.substring(index + 1);
+				decodedKey = URLDecoder.decode(param.substring(0, index), encoding);
+				decodedValue = URLDecoder.decode(param.substring(index + 1), encoding);
 			} else {
-				key = param;
-				value = "";
+				decodedKey = URLDecoder.decode(param, encoding);
+				decodedValue = "";
 			}
-			String decodedKey = URLDecoder.decode(key, encoding);
-			String decodedValue = URLDecoder.decode(value, encoding);
 			paramsMap.put(decodedKey, decodedValue);
 		}
 		return paramsMap;
