@@ -22,7 +22,7 @@ public final class Bytes {
 	/**
 	 * Empty byte array constant.
 	 */
-	public static final byte[] EMPTY = new byte[] {};
+	public static final byte[] EMPTY = new byte[] { };
 
 	/**
 	 * Concatenates multiple byte arrays into a single array.

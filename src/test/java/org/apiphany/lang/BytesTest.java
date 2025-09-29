@@ -64,7 +64,8 @@ class BytesTest {
 
 	@Test
 	void shouldThrowExceptionOnPadRightIfBlockSizeIsLessThanZero() {
-		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> Bytes.padRightToBlockSize(Bytes.EMPTY, -66, BYTE_ZERO, false));
+		IllegalArgumentException e =
+				assertThrows(IllegalArgumentException.class, () -> Bytes.padRightToBlockSize(Bytes.EMPTY, -66, BYTE_ZERO, false));
 
 		assertThat(e.getMessage(), equalTo("Block size must be greater than zero"));
 	}
