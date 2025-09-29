@@ -2,8 +2,8 @@ package org.apiphany.meters;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
@@ -52,9 +52,14 @@ class BasicMetersTest {
 		PropertyNameBuilder prefixBuilder = PropertyNameBuilder.builder()
 				.path(METRICS_PREFIX);
 
-		BasicMeters.of(prefixBuilder);
+		BasicMeters meters = BasicMeters.of(prefixBuilder);
 
 		String prefix = prefixBuilder.build();
+
+		assertThat(meters.latency(Timer.class).getId().getName(), equalTo(METRICS_PREFIX + "." + BasicMeters.Name.LATENCY));
+		assertThat(meters.requests(Counter.class).getId().getName(), equalTo(METRICS_PREFIX + "." + BasicMeters.Name.REQUEST));
+		assertThat(meters.errors(Counter.class).getId().getName(), equalTo(METRICS_PREFIX + "." + BasicMeters.Name.ERROR));
+		assertThat(meters.retries(Counter.class).getId().getName(), equalTo(METRICS_PREFIX + "." + BasicMeters.Name.RETRY));
 
 		Collection<?> search = Metrics.globalRegistry.get(prefix + "." + BasicMeters.Name.LATENCY).meters();
 		assertThat(search, hasSize(1));
@@ -86,10 +91,10 @@ class BasicMetersTest {
 
 		BasicMeters meters = BasicMeters.of(factory, METRICS_PREFIX, tags);
 
-		assertThat(meters.latency(), notNullValue());
-		assertThat(meters.requests(), notNullValue());
-		assertThat(meters.errors(), notNullValue());
-		assertThat(meters.retries(), notNullValue());
+		assertThat(meters.latency(), sameInstance(latency));
+		assertThat(meters.requests(), sameInstance(requests));
+		assertThat(meters.errors(), sameInstance(errors));
+		assertThat(meters.retries(), sameInstance(retries));
 	}
 
 	@Test
@@ -110,10 +115,10 @@ class BasicMetersTest {
 
 		BasicMeters meters = BasicMeters.of(factory, prefixBuilder);
 
-		assertThat(meters.latency(), notNullValue());
-		assertThat(meters.requests(), notNullValue());
-		assertThat(meters.errors(), notNullValue());
-		assertThat(meters.retries(), notNullValue());
+		assertThat(meters.latency(), sameInstance(latency));
+		assertThat(meters.requests(), sameInstance(requests));
+		assertThat(meters.errors(), sameInstance(errors));
+		assertThat(meters.retries(), sameInstance(retries));
 	}
 
 	@Test
@@ -234,10 +239,58 @@ class BasicMetersTest {
 
 		BasicMeters meters = BasicMeters.onMethod(factory, METRICS_PREFIX, tags, 2);
 
-		assertThat(meters.latency(), notNullValue());
-		assertThat(meters.requests(), notNullValue());
-		assertThat(meters.errors(), notNullValue());
-		assertThat(meters.retries(), notNullValue());
+		assertThat(meters.latency(), sameInstance(latency));
+		assertThat(meters.requests(), sameInstance(requests));
+		assertThat(meters.errors(), sameInstance(errors));
+		assertThat(meters.retries(), sameInstance(retries));
+	}
+
+	@Test
+	void shouldSetMetricsToOfMethodWithPrefixAndMeterFactory() {
+		MeterFactory factory = mock(MeterFactory.class);
+
+		String methodName = ".should-set-metrics-to-of-method-with-prefix-and-meter-factory";
+
+		MeterTimer latency = mock(MeterTimer.class);
+		doReturn(latency).when(factory).timer(METRICS_PREFIX + methodName, BasicMeters.Name.LATENCY, Collections.emptyList());
+		MeterCounter requests = mock(MeterCounter.class);
+		doReturn(requests).when(factory).counter(METRICS_PREFIX + methodName, BasicMeters.Name.REQUEST, Collections.emptyList());
+		MeterCounter errors = mock(MeterCounter.class);
+		doReturn(errors).when(factory).counter(METRICS_PREFIX + methodName, BasicMeters.Name.ERROR, Collections.emptyList());
+		MeterCounter retries = mock(MeterCounter.class);
+		doReturn(retries).when(factory).counter(METRICS_PREFIX + methodName, BasicMeters.Name.RETRY, Collections.emptyList());
+
+		BasicMeters meters = BasicMeters.onMethod(factory, METRICS_PREFIX);
+
+		assertThat(meters.latency(), sameInstance(latency));
+		assertThat(meters.requests(), sameInstance(requests));
+		assertThat(meters.errors(), sameInstance(errors));
+		assertThat(meters.retries(), sameInstance(retries));
+	}
+
+	@Test
+	void shouldSetMetricsToOfMethodWithPrefixTagsAndMeterFactory() {
+		Tags tags = Tags.of(TAG_KEY, TAG_VALUE);
+
+		MeterFactory factory = mock(MeterFactory.class);
+
+		String methodName = ".should-set-metrics-to-of-method-with-prefix-tags-and-meter-factory";
+
+		MeterTimer latency = mock(MeterTimer.class);
+		doReturn(latency).when(factory).timer(METRICS_PREFIX + methodName, BasicMeters.Name.LATENCY, tags);
+		MeterCounter requests = mock(MeterCounter.class);
+		doReturn(requests).when(factory).counter(METRICS_PREFIX + methodName, BasicMeters.Name.REQUEST, tags);
+		MeterCounter errors = mock(MeterCounter.class);
+		doReturn(errors).when(factory).counter(METRICS_PREFIX + methodName, BasicMeters.Name.ERROR, tags);
+		MeterCounter retries = mock(MeterCounter.class);
+		doReturn(retries).when(factory).counter(METRICS_PREFIX + methodName, BasicMeters.Name.RETRY, tags);
+
+		BasicMeters meters = BasicMeters.onMethod(factory, METRICS_PREFIX, tags);
+
+		assertThat(meters.latency(), sameInstance(latency));
+		assertThat(meters.requests(), sameInstance(requests));
+		assertThat(meters.errors(), sameInstance(errors));
+		assertThat(meters.retries(), sameInstance(retries));
 	}
 
 	@Test
