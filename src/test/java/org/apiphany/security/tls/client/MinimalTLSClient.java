@@ -10,7 +10,6 @@ import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.security.MessageDigest;
 import java.security.PublicKey;
-import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -182,8 +181,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		connect();
 
 		// 1. Send Client Hello
-		ClientHello clientHello =
-				new ClientHello(new SecureRandom(), cipherSuites, List.of(host), SUPPORTED_NAMED_CURVES, SignatureAlgorithm.STRONG_ALGORITHMS);
+		ClientHello clientHello = new ClientHello(cipherSuites, List.of(host), SUPPORTED_NAMED_CURVES, SignatureAlgorithm.STRONG_ALGORITHMS);
 		Record clientHelloRecord = new Record(SSLProtocol.TLS_1_0, clientHello);
 		sendRecord(clientHelloRecord);
 		accumulateHandshakes(clientHelloRecord.getFragments(Handshake.class));
@@ -376,6 +374,8 @@ public class MinimalTLSClient implements AutoCloseable {
 
 		long sequence = this.clientSequenceNumber++;
 		byte[] seqBytes = UInt64.toByteArray(sequence);
+		LOGGER.debug("Sequence number (hex): {}", Hex.string(seqBytes));
+		byte[] iv = bulkCipher.fullIV(keys.getClientIV(), seqBytes);
 
 		return switch (cipherType) {
 			case AEAD -> {
@@ -383,16 +383,17 @@ public class MinimalTLSClient implements AutoCloseable {
 				AdditionalAuthenticatedData aad = new AdditionalAuthenticatedData(sequence, type, sslProtocol, aadLength);
 				LOGGER.debug("Encrypt AAD: {}", aad);
 
-				byte[] fullIV = bulkCipher.fullIV(keys.getClientIV(), seqBytes);
-				Cipher cipher = bulkCipher.cipher(Cipher.ENCRYPT_MODE, keys.getClientWriteKey(), fullIV);
+				Cipher cipher = bulkCipher.cipher(Cipher.ENCRYPT_MODE, keys.getClientWriteKey(), iv);
 				cipher.updateAAD(aad.toByteArray());
 
-				byte[] encrypted = cipher.doFinal(plaintext);
-				LOGGER.debug("Encrypted (ciphertext + tag):\n{}", Hex.dump(encrypted));
-				yield new Encrypted(seqBytes, encrypted);
+				byte[] encryptedPlaintext = cipher.doFinal(plaintext);
+				LOGGER.debug("Encrypted (ciphertext + tag):\n{}", Hex.dump(encryptedPlaintext));
+				byte[] encrypted = Bytes.concatenate(seqBytes, encryptedPlaintext);
+
+				yield new Encrypted(encrypted);
 			}
 			case BLOCK -> {
-				LOGGER.debug("Sequence number (hex): {}", Hex.string(seqBytes));
+				int blockSize = bulkCipher.blockSize();
 
 				RecordHeader macHeader = new RecordHeader(type, sslProtocol, (short) plaintext.length);
 				byte[] headerBytes = macHeader.toByteArray();
@@ -407,31 +408,19 @@ public class MinimalTLSClient implements AutoCloseable {
 				LOGGER.debug("Plaintext + MAC (hex): {}", Hex.string(plaintextMac));
 				LOGGER.debug("Plaintext + MAC length: {}", plaintextMac.length);
 
-				int blockSize = bulkCipher.blockSize();
-				int totalLen = plaintextMac.length;
-				int padLen = blockSize - (totalLen % blockSize);
-				if (padLen == 0) {
-					padLen = blockSize;
-				}
-				byte paddingByte = (byte) (padLen - 1);
-				byte[] padding = new byte[padLen];
-				Arrays.fill(padding, paddingByte);
-				byte[] padded = Bytes.concatenate(plaintextMac, padding);
+				byte[] padded = Bytes.padPKCS7(plaintextMac, blockSize);
 				LOGGER.debug("Padded (hex): {}", Hex.string(padded));
-
-				byte[] explicitIV = new byte[bulkCipher.blockSize()];
-				new SecureRandom().nextBytes(explicitIV);
-				LOGGER.debug("Explicit IV (random): {}", Hex.string(explicitIV));
-				LOGGER.debug("Explicit IV length: {}", explicitIV.length);
+				LOGGER.debug("Explicit IV (random): {}", Hex.string(iv));
+				LOGGER.debug("Explicit IV length: {}", iv.length);
 				LOGGER.debug("Client write key length: {}", keys.getClientWriteKey().length);
 				LOGGER.debug("Plaintext + MAC before encryption: {}", Hex.string(padded));
 
-				Cipher cipher = bulkCipher.cipher(Cipher.ENCRYPT_MODE, keys.getClientWriteKey(), explicitIV);
+				Cipher cipher = bulkCipher.cipher(Cipher.ENCRYPT_MODE, keys.getClientWriteKey(), iv);
 				byte[] ciphertext = cipher.doFinal(padded);
 				LOGGER.debug("Ciphertext length (must be 48): {}", ciphertext.length);
 				LOGGER.debug("Ciphertext (hex): {}", Hex.string(ciphertext));
 
-				byte[] encrypted = Bytes.concatenate(explicitIV, ciphertext);
+				byte[] encrypted = Bytes.concatenate(iv, ciphertext);
 				LOGGER.debug("Encrypted length (must be explicitIV + ciphertext): {}", encrypted.length);
 				LOGGER.debug("Encrypted (explicitIV + ciphertext):\n{}", Hex.dump(encrypted));
 
@@ -491,7 +480,8 @@ public class MinimalTLSClient implements AutoCloseable {
 				byte[] paddedPlaintext = cipher.doFinal(actualCiphertext);
 				LOGGER.debug("Padded plaintext + MAC (hex): {}", Hex.string(paddedPlaintext));
 
-				int padLen = paddedPlaintext[paddedPlaintext.length - 1] & 0xFF; // last byte
+				// pad length is the last byte
+				int padLen = paddedPlaintext[paddedPlaintext.length - 1] & 0xFF;
 				int plaintextMacLen = paddedPlaintext.length - (padLen + 1);
 				byte[] plaintextWithMac = Arrays.copyOf(paddedPlaintext, plaintextMacLen);
 				LOGGER.debug("Plaintext + MAC length: {}", plaintextWithMac.length);
