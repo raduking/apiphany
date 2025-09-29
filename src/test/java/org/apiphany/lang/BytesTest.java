@@ -16,6 +16,9 @@ import org.morphix.reflection.Constructors;
  */
 class BytesTest {
 
+	private static final byte BYTE_ZERO = (byte) 0;
+	private static final byte BYTE_ONE = (byte) 1;
+
 	@Test
 	void shouldThrowExceptionOnCallingConstructor() {
 		UnsupportedOperationException unsupportedOperationException = Tests.verifyDefaultConstructorThrows(Bytes.class);
@@ -57,6 +60,58 @@ class BytesTest {
 		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> Bytes.fromHex("AA B"));
 
 		assertThat(e.getMessage(), equalTo("Hex string must have an even number of characters (after whitespace removal)"));
+	}
+
+	@Test
+	void shouldThrowExceptionOnPadRightIfBlockSizeIsLessThanZero() {
+		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> Bytes.padRightToBlockSize(Bytes.EMPTY, -66, BYTE_ZERO, false));
+
+		assertThat(e.getMessage(), equalTo("Block size must be greater than zero"));
+	}
+
+	@Test
+	void shouldThrowExceptionOnPadRightIfBlockSizeIsEqualToZero() {
+		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> Bytes.padRightToBlockSize(Bytes.EMPTY, 0, BYTE_ZERO, false));
+
+		assertThat(e.getMessage(), equalTo("Block size must be greater than zero"));
+	}
+
+	@Test
+	void shouldNotPadOnPadRightIfBlockIsAlignedAndExtendIsFalse() {
+		int n = 10;
+		byte[] a = generateByteArray(n);
+
+		byte[] result = Bytes.padRightToBlockSize(a, n, BYTE_ZERO);
+
+		assertThat(a, equalTo(result));
+	}
+
+	@Test
+	void shouldPadOnPadRightToBlockSizeMultipleWithGivenByte() {
+		int n = 10;
+		int blockSize = 4;
+		byte[] a = generateByteArray(n);
+
+		byte[] result = Bytes.padRightToBlockSize(a, blockSize, BYTE_ONE);
+
+		assertThat(result.length, equalTo(n + blockSize - (n % blockSize)));
+		for (int i = n; i < result.length; ++i) {
+			assertThat(result[i], equalTo(BYTE_ONE));
+		}
+	}
+
+	@Test
+	void shouldPadOnPadRightToBlockSizeMultipleWithZero() {
+		int n = 10;
+		int blockSize = 4;
+		byte[] a = generateByteArray(n);
+
+		byte[] result = Bytes.padRightToBlockSize(a, blockSize, BYTE_ZERO);
+
+		assertThat(result.length, equalTo(n + blockSize - (n % blockSize)));
+		for (int i = n; i < result.length; ++i) {
+			assertThat(result[i], equalTo(BYTE_ZERO));
+		}
 	}
 
 	public static byte[] generateByteArray(final int n) {

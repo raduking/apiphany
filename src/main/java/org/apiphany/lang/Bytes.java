@@ -1,5 +1,6 @@
 package org.apiphany.lang;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 import org.morphix.reflection.Constructors;
@@ -21,7 +22,7 @@ public final class Bytes {
 	/**
 	 * Empty byte array constant.
 	 */
-	public static final byte[] EMPTY = new byte[] { };
+	public static final byte[] EMPTY = new byte[] {};
 
 	/**
 	 * Concatenates multiple byte arrays into a single array.
@@ -113,6 +114,66 @@ public final class Bytes {
 	 */
 	public static boolean isNotEmpty(final byte[] bytes) {
 		return !isEmpty(bytes);
+	}
+
+	/**
+	 * Pads the given byte array on the right with the specified padding byte until its length becomes a multiple of the
+	 * given block size. If already aligned, the original array reference is returned if the extend flag is false, otherwise
+	 * a new block is added padded with the given padding byte.
+	 *
+	 * @param bytes the byte array to pad (may be null)
+	 * @param blockSize the block size (must be > 0)
+	 * @param paddingByte the byte to use for padding
+	 * @param extendIfAligned true if new padding block should be added if input is already aligned, false otherwise
+	 * @return a new byte array padded to a block-size multiple, or the original if already aligned
+	 */
+	public static byte[] padRightToBlockSize(final byte[] bytes, final int blockSize, final byte paddingByte, final boolean extendIfAligned) {
+		Objects.requireNonNull(bytes, "Byte array cannot be null");
+		Assert.thatArgument(blockSize > 0, "Block size must be greater than zero");
+
+		final int remainder = bytes.length % blockSize;
+		if (0 == remainder && !extendIfAligned) {
+			return bytes;
+		}
+		final int targetLength = bytes.length + blockSize - remainder;
+
+		byte[] result = new byte[targetLength];
+		System.arraycopy(bytes, 0, result, 0, bytes.length);
+		if (paddingByte != 0) {
+			Arrays.fill(result, bytes.length, targetLength, paddingByte);
+		}
+		return result;
+	}
+
+	/**
+	 * Pads the given byte array on the right with the specified padding byte until its length becomes a multiple of the
+	 * given block size. If already aligned, the original array reference is returned.
+	 *
+	 * @param bytes the byte array to pad (may be null)
+	 * @param blockSize the block size (must be > 0)
+	 * @param paddingByte the byte to use for padding
+	 * @return a new byte array padded to a block-size multiple, or the original if already aligned
+	 */
+	public static byte[] padRightToBlockSize(final byte[] bytes, final int blockSize, final byte paddingByte) {
+		return padRightToBlockSize(bytes, blockSize, paddingByte, false);
+	}
+
+	/**
+	 * Pads the given byte array on the right using {@code PKCS#7}-style padding. The padding byte value equals the number
+	 * of padding bytes added (always in the range {@code 1..blockSize}).
+	 * <p>
+	 * If the input is already aligned to the block size, a full block of padding is added.
+	 *
+	 * @param bytes the byte array to pad (must not be null)
+	 * @param blockSize the block size (must be > 0)
+	 * @return a new byte array padded with {@code PKCS#7} padding
+	 */
+	public static byte[] padPKCS7(final byte[] bytes, final int blockSize) {
+		final int remainder = bytes.length % blockSize;
+		final int paddingLength = blockSize - remainder;
+		final byte paddingByte = (byte) (paddingLength - 1);
+
+		return padRightToBlockSize(bytes, blockSize, paddingByte, true);
 	}
 
 	/**
