@@ -416,6 +416,13 @@ class BasicMetersTest {
 	}
 
 	@Test
+	void shouldConvertToFullMethodNameWhenClassNameHasNoPackage() {
+		String methodName = BasicMeters.toFullMethodName("ClassName", "methodName");
+
+		assertThat(methodName, equalTo("ClassName.methodName"));
+	}
+
+	@Test
 	void shouldWrapAndSwallowExceptionButSendMetricsWithTagsForGivenMeterFactory() {
 		Tags tags = Tags.of(TAG_KEY, TAG_VALUE);
 
