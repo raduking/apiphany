@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -12,14 +13,19 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 import org.apiphany.lang.builder.PropertyNameBuilder;
 import org.apiphany.utils.Tests;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.morphix.lang.JavaObjects;
+import org.morphix.lang.thread.Threads;
 import org.morphix.reflection.Constructors;
 import org.morphix.reflection.Methods;
 
@@ -27,6 +33,7 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.Timer;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 
 /**
  * Test class for {@link BasicMeters}.
@@ -40,6 +47,13 @@ class BasicMetersTest {
 	private static final String TAG_VALUE = "tagValue1";
 	private static final String TEST_EXCEPTION_MESSAGE = "metrics test exception";
 	private static final String SOME_STRING = "someString";
+	private static final String SOME_RANDOM_KEBAB_STRING = "some-random-string";
+
+    @BeforeEach
+    void setup() {
+        Metrics.globalRegistry.getRegistries().forEach(Metrics.globalRegistry::remove);
+        Metrics.globalRegistry.add(new SimpleMeterRegistry());
+    }
 
 	@Test
 	void shouldThrowExceptionOnCallingNameConstructor() {
@@ -220,6 +234,27 @@ class BasicMetersTest {
 				equalTo(METRICS_PREFIX + ".should-not-set-metrics-to-this-method-when-depth-is-four." + BasicMeters.Name.LATENCY));
 		assertThat(metersDepth4.latency(Timer.class).getId().getName(),
 				not(equalTo(metersDepth3.latency(Timer.class).getId().getName())));
+	}
+
+	@Test
+	void shouldSetMetricsToOfMethodWhenDepthIsTwoWithMeterFactory() {
+		MeterFactory factory = mock(MeterFactory.class);
+
+		MeterTimer latency = mock(MeterTimer.class);
+		doReturn(latency).when(factory).timer(METRICS_PREFIX + ".on-method", BasicMeters.Name.LATENCY, Collections.emptyList());
+		MeterCounter requests = mock(MeterCounter.class);
+		doReturn(requests).when(factory).counter(METRICS_PREFIX + ".on-method", BasicMeters.Name.REQUEST, Collections.emptyList());
+		MeterCounter errors = mock(MeterCounter.class);
+		doReturn(errors).when(factory).counter(METRICS_PREFIX + ".on-method", BasicMeters.Name.ERROR, Collections.emptyList());
+		MeterCounter retries = mock(MeterCounter.class);
+		doReturn(retries).when(factory).counter(METRICS_PREFIX + ".on-method", BasicMeters.Name.RETRY, Collections.emptyList());
+
+		BasicMeters meters = BasicMeters.onMethod(factory, METRICS_PREFIX, 2);
+
+		assertThat(meters.latency(), sameInstance(latency));
+		assertThat(meters.requests(), sameInstance(requests));
+		assertThat(meters.errors(), sameInstance(errors));
+		assertThat(meters.retries(), sameInstance(retries));
 	}
 
 	@Test
@@ -407,7 +442,7 @@ class BasicMetersTest {
 
 	@Test
 	void shouldWrapAndSwallowExceptionButSendMetricsWithTagsAndDefaultMeterFactory() {
-		String prefix = METRICS_PREFIX + "." + "some-random-string";
+		String prefix = METRICS_PREFIX + "." + SOME_RANDOM_KEBAB_STRING;
 		BasicMeters.wrapAndSwallow(prefix, (Runnable) () -> {
 			throw new RuntimeException(TEST_EXCEPTION_MESSAGE);
 		});
@@ -420,6 +455,8 @@ class BasicMetersTest {
 
 		search = Metrics.globalRegistry.get(prefix + "." + BasicMeters.Name.ERROR).meters();
 		assertThat(search, hasSize(1));
+		Counter errors = JavaObjects.cast(search.iterator().next());
+		assertThat(errors.count(), equalTo(1.0));
 
 		search = Metrics.globalRegistry.get(prefix + "." + BasicMeters.Name.RETRY).meters();
 		assertThat(search, hasSize(1));
@@ -470,22 +507,56 @@ class BasicMetersTest {
 	}
 
 	@Test
-	void shouldWrapButSendMetricsWithTagsWithDefaultMeterFactory() {
-		String prefix = METRICS_PREFIX + "." + "some-random-string";
+	void shouldWrapButSendMetricsWithTagsWithDefaultMeterFactoryAndRunnable() {
+		String prefix = METRICS_PREFIX + "." + SOME_RANDOM_KEBAB_STRING;
 		BasicMeters.wrap(prefix, (Runnable) () -> {
-			// empty
+			Threads.safeSleep(Duration.ofMillis(10));
 		});
 
 		Collection<?> search = Metrics.globalRegistry.get(prefix + "." + BasicMeters.Name.LATENCY).meters();
 		assertThat(search, hasSize(1));
+		Timer latency = JavaObjects.cast(search.iterator().next());
+		assertThat(latency.totalTime(TimeUnit.MILLISECONDS), greaterThan(0.0));
 
 		search = Metrics.globalRegistry.get(prefix + "." + BasicMeters.Name.REQUEST).meters();
 		assertThat(search, hasSize(1));
+		Counter requests = JavaObjects.cast(search.iterator().next());
+		assertThat(requests.count(), equalTo(1.0));
 
 		search = Metrics.globalRegistry.get(prefix + "." + BasicMeters.Name.ERROR).meters();
 		assertThat(search, hasSize(1));
+		Counter errors = JavaObjects.cast(search.iterator().next());
+		assertThat(errors.count(), equalTo(0.0));
 
 		search = Metrics.globalRegistry.get(prefix + "." + BasicMeters.Name.RETRY).meters();
 		assertThat(search, hasSize(1));
+		Counter retries = JavaObjects.cast(search.iterator().next());
+		assertThat(retries.count(), equalTo(0.0));
+	}
+
+	@Test
+	void shouldWrapButSendMetricsWithTagsWithDefaultMeterFactoryAndSupplier() {
+		String prefix = METRICS_PREFIX + "." + SOME_RANDOM_KEBAB_STRING;
+		BasicMeters.wrap(prefix, () -> SOME_STRING);
+
+		Collection<?> search = Metrics.globalRegistry.get(prefix + "." + BasicMeters.Name.LATENCY).meters();
+		assertThat(search, hasSize(1));
+		Timer latency = JavaObjects.cast(search.iterator().next());
+		assertThat(latency.totalTime(TimeUnit.MILLISECONDS), greaterThan(0.0));
+
+		search = Metrics.globalRegistry.get(prefix + "." + BasicMeters.Name.REQUEST).meters();
+		assertThat(search, hasSize(1));
+		Counter requests = JavaObjects.cast(search.iterator().next());
+		assertThat(requests.count(), equalTo(1.0));
+
+		search = Metrics.globalRegistry.get(prefix + "." + BasicMeters.Name.ERROR).meters();
+		assertThat(search, hasSize(1));
+		Counter errors = JavaObjects.cast(search.iterator().next());
+		assertThat(errors.count(), equalTo(0.0));
+
+		search = Metrics.globalRegistry.get(prefix + "." + BasicMeters.Name.RETRY).meters();
+		assertThat(search, hasSize(1));
+		Counter retries = JavaObjects.cast(search.iterator().next());
+		assertThat(retries.count(), equalTo(0.0));
 	}
 }
