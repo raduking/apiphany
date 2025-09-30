@@ -7,6 +7,7 @@ import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.startsWith;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -49,11 +50,11 @@ class BasicMetersTest {
 	private static final String SOME_STRING = "someString";
 	private static final String SOME_RANDOM_KEBAB_STRING = "some-random-string";
 
-    @BeforeEach
-    void setup() {
-        Metrics.globalRegistry.getRegistries().forEach(Metrics.globalRegistry::remove);
-        Metrics.globalRegistry.add(new SimpleMeterRegistry());
-    }
+	@BeforeEach
+	void setup() {
+		Metrics.globalRegistry.getRegistries().forEach(Metrics.globalRegistry::remove);
+		Metrics.globalRegistry.add(new SimpleMeterRegistry());
+	}
 
 	@Test
 	void shouldThrowExceptionOnCallingNameConstructor() {
@@ -156,14 +157,12 @@ class BasicMetersTest {
 		Tags tags = Tags.of(TAG_KEY, TAG_VALUE);
 		BasicMeters meters = BasicMeters.onMethod(METRICS_PREFIX, tags);
 
-		assertThat(meters.latency(Timer.class).getId().getName(),
-				equalTo(METRICS_PREFIX + ".should-set-metrics-to-this-method-with-tags." + BasicMeters.Name.LATENCY));
-		assertThat(meters.requests(Counter.class).getId().getName(),
-				equalTo(METRICS_PREFIX + ".should-set-metrics-to-this-method-with-tags." + BasicMeters.Name.REQUEST));
-		assertThat(meters.errors(Counter.class).getId().getName(),
-				equalTo(METRICS_PREFIX + ".should-set-metrics-to-this-method-with-tags." + BasicMeters.Name.ERROR));
-		assertThat(meters.retries(Counter.class).getId().getName(),
-				equalTo(METRICS_PREFIX + ".should-set-metrics-to-this-method-with-tags." + BasicMeters.Name.RETRY));
+		String methodName = ".should-set-metrics-to-this-method-with-tags.";
+
+		assertThat(meters.latency(Timer.class).getId().getName(), equalTo(METRICS_PREFIX + methodName + BasicMeters.Name.LATENCY));
+		assertThat(meters.requests(Counter.class).getId().getName(), equalTo(METRICS_PREFIX + methodName + BasicMeters.Name.REQUEST));
+		assertThat(meters.errors(Counter.class).getId().getName(), equalTo(METRICS_PREFIX + methodName + BasicMeters.Name.ERROR));
+		assertThat(meters.retries(Counter.class).getId().getName(), equalTo(METRICS_PREFIX + methodName + BasicMeters.Name.RETRY));
 
 		assertThat(meters.latency(Timer.class).getId().getTag(TAG_KEY), equalTo(TAG_VALUE));
 		assertThat(meters.requests(Counter.class).getId().getTag(TAG_KEY), equalTo(TAG_VALUE));
@@ -176,14 +175,12 @@ class BasicMetersTest {
 		Tags tags = Tags.of(TAG_KEY, TAG_VALUE);
 		BasicMeters meters = myUtilityMethod(METRICS_PREFIX, tags);
 
-		assertThat(meters.latency(Timer.class).getId().getName(),
-				equalTo(METRICS_PREFIX + ".should-set-metrics-to-caller-method-with-tags." + BasicMeters.Name.LATENCY));
-		assertThat(meters.requests(Counter.class).getId().getName(),
-				equalTo(METRICS_PREFIX + ".should-set-metrics-to-caller-method-with-tags." + BasicMeters.Name.REQUEST));
-		assertThat(meters.errors(Counter.class).getId().getName(),
-				equalTo(METRICS_PREFIX + ".should-set-metrics-to-caller-method-with-tags." + BasicMeters.Name.ERROR));
-		assertThat(meters.retries(Counter.class).getId().getName(),
-				equalTo(METRICS_PREFIX + ".should-set-metrics-to-caller-method-with-tags." + BasicMeters.Name.RETRY));
+		String methodName = ".should-set-metrics-to-caller-method-with-tags.";
+
+		assertThat(meters.latency(Timer.class).getId().getName(), equalTo(METRICS_PREFIX + methodName + BasicMeters.Name.LATENCY));
+		assertThat(meters.requests(Counter.class).getId().getName(), equalTo(METRICS_PREFIX + methodName + BasicMeters.Name.REQUEST));
+		assertThat(meters.errors(Counter.class).getId().getName(), equalTo(METRICS_PREFIX + methodName + BasicMeters.Name.ERROR));
+		assertThat(meters.retries(Counter.class).getId().getName(), equalTo(METRICS_PREFIX + methodName + BasicMeters.Name.RETRY));
 
 		assertThat(meters.latency(Timer.class).getId().getTag(TAG_KEY), equalTo(TAG_VALUE));
 		assertThat(meters.requests(Counter.class).getId().getTag(TAG_KEY), equalTo(TAG_VALUE));
@@ -192,17 +189,74 @@ class BasicMetersTest {
 	}
 
 	@Test
+	void shouldSetMetricsToCallerMethodWithTagsWithMeterFactory() {
+		Tags tags = Tags.of(TAG_KEY, TAG_VALUE);
+		MeterFactory factory = mock(MeterFactory.class);
+
+		String methodName = ".should-set-metrics-to-caller-method-with-tags-with-meter-factory";
+
+		MeterTimer latency = mock(MeterTimer.class);
+		doReturn(latency).when(factory).timer(METRICS_PREFIX + methodName, BasicMeters.Name.LATENCY, tags);
+		MeterCounter requests = mock(MeterCounter.class);
+		doReturn(requests).when(factory).counter(METRICS_PREFIX + methodName, BasicMeters.Name.REQUEST, tags);
+		MeterCounter errors = mock(MeterCounter.class);
+		doReturn(errors).when(factory).counter(METRICS_PREFIX + methodName, BasicMeters.Name.ERROR, tags);
+		MeterCounter retries = mock(MeterCounter.class);
+		doReturn(retries).when(factory).counter(METRICS_PREFIX + methodName, BasicMeters.Name.RETRY, tags);
+
+		BasicMeters meters = myUtilityMethod(factory, METRICS_PREFIX, tags);
+
+		assertThat(meters.latency(), sameInstance(latency));
+		assertThat(meters.requests(), sameInstance(requests));
+		assertThat(meters.errors(), sameInstance(errors));
+		assertThat(meters.retries(), sameInstance(retries));
+	}
+
+	@Test
+	void shouldSetMetricsToCallerMethodWithMeterFactory() {
+		MeterFactory factory = mock(MeterFactory.class);
+
+		String methodName = ".should-set-metrics-to-caller-method-with-meter-factory";
+
+		MeterTimer latency = mock(MeterTimer.class);
+		doReturn(latency).when(factory).timer(METRICS_PREFIX + methodName, BasicMeters.Name.LATENCY, Collections.emptyList());
+		MeterCounter requests = mock(MeterCounter.class);
+		doReturn(requests).when(factory).counter(METRICS_PREFIX + methodName, BasicMeters.Name.REQUEST, Collections.emptyList());
+		MeterCounter errors = mock(MeterCounter.class);
+		doReturn(errors).when(factory).counter(METRICS_PREFIX + methodName, BasicMeters.Name.ERROR, Collections.emptyList());
+		MeterCounter retries = mock(MeterCounter.class);
+		doReturn(retries).when(factory).counter(METRICS_PREFIX + methodName, BasicMeters.Name.RETRY, Collections.emptyList());
+
+		BasicMeters meters = myUtilityMethod(factory, METRICS_PREFIX);
+
+		assertThat(meters.latency(), sameInstance(latency));
+		assertThat(meters.requests(), sameInstance(requests));
+		assertThat(meters.errors(), sameInstance(errors));
+		assertThat(meters.retries(), sameInstance(retries));
+	}
+
+	@Test
 	void shouldSetMetricsToOfMethodWhenDepthIsTwo() {
 		BasicMeters meters = BasicMeters.onMethod(METRICS_PREFIX, 2);
 
-		assertThat(meters.latency(Timer.class).getId().getName(),
-				equalTo(METRICS_PREFIX + ".on-method." + BasicMeters.Name.LATENCY));
-		assertThat(meters.requests(Counter.class).getId().getName(),
-				equalTo(METRICS_PREFIX + ".on-method." + BasicMeters.Name.REQUEST));
-		assertThat(meters.errors(Counter.class).getId().getName(),
-				equalTo(METRICS_PREFIX + ".on-method." + BasicMeters.Name.ERROR));
-		assertThat(meters.retries(Counter.class).getId().getName(),
-				equalTo(METRICS_PREFIX + ".on-method." + BasicMeters.Name.RETRY));
+		String methodName = ".on-method.";
+
+		assertThat(meters.latency(Timer.class).getId().getName(), equalTo(METRICS_PREFIX + methodName + BasicMeters.Name.LATENCY));
+		assertThat(meters.requests(Counter.class).getId().getName(), equalTo(METRICS_PREFIX + methodName + BasicMeters.Name.REQUEST));
+		assertThat(meters.errors(Counter.class).getId().getName(), equalTo(METRICS_PREFIX + methodName + BasicMeters.Name.ERROR));
+		assertThat(meters.retries(Counter.class).getId().getName(), equalTo(METRICS_PREFIX + methodName + BasicMeters.Name.RETRY));
+	}
+
+	@Test
+	void shouldSetMetricsToOfMethodWhenDepthIsExceedingStackTrace() {
+		BasicMeters meters = BasicMeters.onMethod(METRICS_PREFIX, 100);
+
+		String methodName = ".";
+
+		assertThat(meters.latency(Timer.class).getId().getName(), equalTo(METRICS_PREFIX + methodName + BasicMeters.Name.LATENCY));
+		assertThat(meters.requests(Counter.class).getId().getName(), equalTo(METRICS_PREFIX + methodName + BasicMeters.Name.REQUEST));
+		assertThat(meters.errors(Counter.class).getId().getName(), equalTo(METRICS_PREFIX + methodName + BasicMeters.Name.ERROR));
+		assertThat(meters.retries(Counter.class).getId().getName(), equalTo(METRICS_PREFIX + methodName + BasicMeters.Name.RETRY));
 	}
 
 	@Test
@@ -210,14 +264,12 @@ class BasicMetersTest {
 		Tags tags = Tags.of(TAG_KEY, TAG_VALUE);
 		BasicMeters meters = BasicMeters.onMethod(METRICS_PREFIX, tags, 2);
 
-		assertThat(meters.latency(Timer.class).getId().getName(),
-				equalTo(METRICS_PREFIX + ".on-method." + BasicMeters.Name.LATENCY));
-		assertThat(meters.requests(Counter.class).getId().getName(),
-				equalTo(METRICS_PREFIX + ".on-method." + BasicMeters.Name.REQUEST));
-		assertThat(meters.errors(Counter.class).getId().getName(),
-				equalTo(METRICS_PREFIX + ".on-method." + BasicMeters.Name.ERROR));
-		assertThat(meters.retries(Counter.class).getId().getName(),
-				equalTo(METRICS_PREFIX + ".on-method." + BasicMeters.Name.RETRY));
+		String methodName = ".on-method.";
+
+		assertThat(meters.latency(Timer.class).getId().getName(), equalTo(METRICS_PREFIX + methodName + BasicMeters.Name.LATENCY));
+		assertThat(meters.requests(Counter.class).getId().getName(), equalTo(METRICS_PREFIX + methodName + BasicMeters.Name.REQUEST));
+		assertThat(meters.errors(Counter.class).getId().getName(), equalTo(METRICS_PREFIX + methodName + BasicMeters.Name.ERROR));
+		assertThat(meters.retries(Counter.class).getId().getName(), equalTo(METRICS_PREFIX + methodName + BasicMeters.Name.RETRY));
 
 		assertThat(meters.latency(Timer.class).getId().getTag(TAG_KEY), equalTo(TAG_VALUE));
 		assertThat(meters.requests(Counter.class).getId().getTag(TAG_KEY), equalTo(TAG_VALUE));
@@ -336,40 +388,31 @@ class BasicMetersTest {
 	}
 
 	@Test
+	void shouldReturnCallerMethodNameWithParameters() {
+		String methodName = methodName(() -> foo(10));
+
+		assertThat(methodName, equalTo(".BasicMetersTest.shouldReturnCallerMethodNameWithParameters"));
+	}
+
+	@Test
 	void shouldReturnCallerMethodNameFromSupplier() {
 		String methodName = methodNameSupplier(this::foo).get();
 
 		assertThat(methodName, equalTo(".BasicMetersTest.shouldReturnCallerMethodNameFromSupplier"));
 	}
 
-	private Integer foo() {
-		return 0;
+	@Test
+	void shouldReturnCallerMethodNameWithLambda() {
+		String methodName = methodName(() -> null);
+
+		assertThat(methodName, equalTo(".BasicMetersTest.shouldReturnCallerMethodNameWithLambda"));
 	}
 
-	private static BasicMeters myUtilityMethod(final String prefix) {
-		return BasicMeters.onCallerMethod(prefix);
-	}
+	@Test
+	void shouldReturnCallerMethodNameWithLambdaInsideLambda() {
+		String methodName = ((Supplier<String>) () -> methodName(() -> null)).get();
 
-	private static BasicMeters myUtilityMethod(final String prefix, final Tags tags) {
-		return BasicMeters.onCallerMethod(prefix, tags);
-	}
-
-	private static <T> Supplier<String> methodNameSupplier(final Supplier<T> statements) {
-		return () -> Methods.getCallerMethodName(statements, 2, BasicMeters::toFullMethodName)
-				.map(callerMethodName -> PropertyNameBuilder.builder()
-						.asSuffix()
-						.path(callerMethodName)
-						.build())
-				.orElseThrow();
-	}
-
-	private static <T> String methodName(final Supplier<T> statements) {
-		return Methods.getCallerMethodName(statements, 2, BasicMeters::toFullMethodName)
-				.map(callerMethodName -> PropertyNameBuilder.builder()
-						.asSuffix()
-						.path(callerMethodName)
-						.build())
-				.orElseThrow();
+		assertThat(methodName, startsWith(".BasicMetersTest.lambda"));
 	}
 
 	@Test
@@ -441,9 +484,31 @@ class BasicMetersTest {
 	}
 
 	@Test
-	void shouldWrapAndSwallowExceptionButSendMetricsWithTagsAndDefaultMeterFactory() {
+	void shouldWrapAndSwallowExceptionButSendMetricsWithTagsAndDefaultMeterFactoryWithRunnable() {
 		String prefix = METRICS_PREFIX + "." + SOME_RANDOM_KEBAB_STRING;
 		BasicMeters.wrapAndSwallow(prefix, (Runnable) () -> {
+			throw new RuntimeException(TEST_EXCEPTION_MESSAGE);
+		});
+
+		Collection<?> search = Metrics.globalRegistry.get(prefix + "." + BasicMeters.Name.LATENCY).meters();
+		assertThat(search, hasSize(1));
+
+		search = Metrics.globalRegistry.get(prefix + "." + BasicMeters.Name.REQUEST).meters();
+		assertThat(search, hasSize(1));
+
+		search = Metrics.globalRegistry.get(prefix + "." + BasicMeters.Name.ERROR).meters();
+		assertThat(search, hasSize(1));
+		Counter errors = JavaObjects.cast(search.iterator().next());
+		assertThat(errors.count(), equalTo(1.0));
+
+		search = Metrics.globalRegistry.get(prefix + "." + BasicMeters.Name.RETRY).meters();
+		assertThat(search, hasSize(1));
+	}
+
+	@Test
+	void shouldWrapAndSwallowExceptionButSendMetricsWithTagsAndDefaultMeterFactoryWithSupplier() {
+		String prefix = METRICS_PREFIX + "." + SOME_RANDOM_KEBAB_STRING;
+		BasicMeters.wrapAndSwallow(prefix, () -> {
 			throw new RuntimeException(TEST_EXCEPTION_MESSAGE);
 		});
 
@@ -558,5 +623,48 @@ class BasicMetersTest {
 		assertThat(search, hasSize(1));
 		Counter retries = JavaObjects.cast(search.iterator().next());
 		assertThat(retries.count(), equalTo(0.0));
+	}
+
+	private Integer foo() {
+		return 0;
+	}
+
+	@SuppressWarnings("static-method")
+	private Integer foo(final Integer i) {
+		return i;
+	}
+
+	private static BasicMeters myUtilityMethod(final String prefix) {
+		return BasicMeters.onCallerMethod(prefix);
+	}
+
+	private static BasicMeters myUtilityMethod(final String prefix, final Tags tags) {
+		return BasicMeters.onCallerMethod(prefix, tags);
+	}
+
+	private static BasicMeters myUtilityMethod(final MeterFactory factory, final String prefix) {
+		return BasicMeters.onCallerMethod(factory, prefix);
+	}
+
+	private static BasicMeters myUtilityMethod(final MeterFactory factory, final String prefix, final Tags tags) {
+		return BasicMeters.onCallerMethod(factory, prefix, tags);
+	}
+
+	private static <T> Supplier<String> methodNameSupplier(final Supplier<T> statements) {
+		return () -> Methods.getCallerMethodName(statements, 2, BasicMeters::toFullMethodName)
+				.map(callerMethodName -> PropertyNameBuilder.builder()
+						.asSuffix()
+						.path(callerMethodName)
+						.build())
+				.orElseThrow();
+	}
+
+	private static <T> String methodName(final Supplier<T> statements) {
+		return Methods.getCallerMethodName(statements, 2, BasicMeters::toFullMethodName)
+				.map(callerMethodName -> PropertyNameBuilder.builder()
+						.asSuffix()
+						.path(callerMethodName)
+						.build())
+				.orElseThrow();
 	}
 }
