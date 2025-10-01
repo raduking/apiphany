@@ -70,24 +70,24 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	private Supplier<Instant> defaultExpirationSupplier;
 
 	/**
-	 * The configuration.
+	 * The specific options for this provider.
 	 */
-	private final OAuth2TokenProviderConfiguration configuration;
+	private final OAuth2TokenProviderOptions options;
 
 	/**
 	 * Creates a new authentication token provider.
 	 *
-	 * @param configuration the OAuth2 token provider configuration
+	 * @param options the OAuth2 token provider options
 	 * @param registration the OAuth2 resolved registration for this provider
 	 * @param tokenRefreshScheduler the token refresh scheduler
 	 * @param tokenClientSupplier the supplier for the client that will make the actual token requests
 	 */
 	public OAuth2TokenProvider(
-			final OAuth2TokenProviderConfiguration configuration,
+			final OAuth2TokenProviderOptions options,
 			final OAuth2ResolvedRegistration registration,
 			final ScheduledExecutorService tokenRefreshScheduler,
 			final BiFunction<OAuth2ClientRegistration, OAuth2ProviderDetails, AuthenticationTokenProvider> tokenClientSupplier) {
-		this.configuration = configuration;
+		this.options = options;
 		this.tokenRefreshScheduler = tokenRefreshScheduler;
 		this.defaultExpirationSupplier = Instant::now;
 		this.registration = registration;
@@ -102,19 +102,19 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	/**
 	 * Creates a new authentication token provider.
 	 *
-	 * @param configuration the OAuth2 token provider configuration
+	 * @param options the OAuth2 token provider options
 	 * @param oAuth2Properties the OAuth2 properties
 	 * @param clientRegistrationName the wanted client registration name
 	 * @param tokenRefreshScheduler the token refresh scheduler
 	 * @param tokenClientSupplier the supplier for the client that will make the actual token requests
 	 */
 	public OAuth2TokenProvider(
-			final OAuth2TokenProviderConfiguration configuration,
+			final OAuth2TokenProviderOptions options,
 			final OAuth2Properties oAuth2Properties,
 			final String clientRegistrationName,
 			final ScheduledExecutorService tokenRefreshScheduler,
 			final BiFunction<OAuth2ClientRegistration, OAuth2ProviderDetails, AuthenticationTokenProvider> tokenClientSupplier) {
-		this(configuration, OAuth2ResolvedRegistration.of(oAuth2Properties, clientRegistrationName), tokenRefreshScheduler, tokenClientSupplier);
+		this(options, OAuth2ResolvedRegistration.of(oAuth2Properties, clientRegistrationName), tokenRefreshScheduler, tokenClientSupplier);
 	}
 
 	/**
@@ -130,7 +130,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 			final String clientRegistrationName,
 			final ScheduledExecutorService tokenRefreshScheduler,
 			final BiFunction<OAuth2ClientRegistration, OAuth2ProviderDetails, AuthenticationTokenProvider> tokenClientSupplier) {
-		this(OAuth2TokenProviderConfiguration.defaults(), oAuth2Properties, clientRegistrationName, tokenRefreshScheduler, tokenClientSupplier);
+		this(OAuth2TokenProviderOptions.defaults(), oAuth2Properties, clientRegistrationName, tokenRefreshScheduler, tokenClientSupplier);
 	}
 
 	/**
@@ -179,7 +179,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	private void closeTokenRefreshScheduler() {
 		boolean cancelled = null == scheduledFuture;
 		if (!cancelled) {
-			Retry retry = Retry.of(WaitCounter.of(getConfiguration().getMaxTaskCloseAttempts(), Duration.ofMillis(200)));
+			Retry retry = Retry.of(WaitCounter.of(getOptions().getMaxTaskCloseAttempts(), Duration.ofMillis(200)));
 			cancelled = retry.when(() -> scheduledFuture.cancel(false), Boolean::booleanValue);
 		}
 		if (cancelled) {
@@ -268,10 +268,10 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 * Schedules the token update.
 	 */
 	private void scheduleTokenUpdate() {
-		Instant expiration = getTokenExpiration().minus(getConfiguration().getExpirationErrorMargin());
+		Instant expiration = getTokenExpiration().minus(getOptions().getExpirationErrorMargin());
 		Instant scheduled = Comparables.max(expiration, Instant.now());
 		Duration delay = Duration.between(Instant.now(), scheduled);
-		delay = Comparables.max(delay, getConfiguration().getMinRefreshInterval());
+		delay = Comparables.max(delay, getOptions().getMinRefreshInterval());
 		scheduledFuture = tokenRefreshScheduler.schedule(this::updateAuthenticationToken, delay.toMillis(), TimeUnit.MILLISECONDS);
 	}
 
@@ -330,11 +330,11 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	}
 
 	/**
-	 * Returns the configuration object to be able to change the configuration properties dynamically.
+	 * Returns the options object to be able to change the provider options dynamically.
 	 *
-	 * @return the configuration
+	 * @return the options for this token provider
 	 */
-	public OAuth2TokenProviderConfiguration getConfiguration() {
-		return configuration;
+	public OAuth2TokenProviderOptions getOptions() {
+		return options;
 	}
 }

@@ -10,7 +10,7 @@ import org.morphix.reflection.Constructors;
  *
  * @author Radu Sebastian LAZIN
  */
-public class OAuth2TokenProviderConfiguration {
+public class OAuth2TokenProviderOptions {
 
 	/**
 	 * Defaults name space class.
@@ -64,17 +64,17 @@ public class OAuth2TokenProviderConfiguration {
 	/**
 	 * Default constructor.
 	 */
-	public OAuth2TokenProviderConfiguration() {
+	public OAuth2TokenProviderOptions() {
 		// empty
 	}
 
 	/**
-	 * Returns a configuration object with all the defaults.
+	 * Returns a new options object with all the defaults.
 	 *
-	 * @return a configuration object with all the defaults
+	 * @return a new options object with all the defaults
 	 */
-	public static OAuth2TokenProviderConfiguration defaults() {
-		return new OAuth2TokenProviderConfiguration();
+	public static OAuth2TokenProviderOptions defaults() {
+		return new OAuth2TokenProviderOptions();
 	}
 
 	/**

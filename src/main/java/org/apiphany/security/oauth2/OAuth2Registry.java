@@ -85,18 +85,18 @@ public class OAuth2Registry {
 	 * Returns a new OAuth2 token provider based on the given parameters.
 	 *
 	 * @param clientRegistrationName the client registration name
-	 * @param configuration the OAuth2 token provider configuration
+	 * @param options the OAuth2 token provider options
 	 * @param tokenRefreshScheduler the token refresh scheduler
 	 * @param tokenClientSupplier the supplier for the client that will make the actual token requests
 	 * @return a new OAuth2 token provider
 	 */
 	public OAuth2TokenProvider tokenProvider(
 			final String clientRegistrationName,
-			final OAuth2TokenProviderConfiguration configuration,
+			final OAuth2TokenProviderOptions options,
 			final ScheduledExecutorService tokenRefreshScheduler,
 			final BiFunction<OAuth2ClientRegistration, OAuth2ProviderDetails, AuthenticationTokenProvider> tokenClientSupplier) {
 		OAuth2ResolvedRegistration registration = get(clientRegistrationName);
-		return new OAuth2TokenProvider(configuration, registration, tokenRefreshScheduler, tokenClientSupplier);
+		return new OAuth2TokenProvider(options, registration, tokenRefreshScheduler, tokenClientSupplier);
 	}
 
 	/**
@@ -110,9 +110,9 @@ public class OAuth2Registry {
 	public OAuth2TokenProvider tokenProvider(
 			final String clientRegistrationName,
 			final BiFunction<OAuth2ClientRegistration, OAuth2ProviderDetails, AuthenticationTokenProvider> tokenClientSupplier) {
-		OAuth2TokenProviderConfiguration configuration = OAuth2TokenProviderConfiguration.defaults();
+		OAuth2TokenProviderOptions options = OAuth2TokenProviderOptions.defaults();
 		ScheduledExecutorService tokenRefreshScheduler = Executors.newScheduledThreadPool(0, Thread.ofVirtual().factory());
-		return tokenProvider(clientRegistrationName, configuration, tokenRefreshScheduler, tokenClientSupplier);
+		return tokenProvider(clientRegistrationName, options, tokenRefreshScheduler, tokenClientSupplier);
 	}
 
 	/**

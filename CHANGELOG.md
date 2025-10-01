@@ -8,6 +8,7 @@
 - Added `Assert` utility class to be used to check preconditions.
 - Added `Bytes.padRightToBlockSize` to add padding to a byte array given a block size.
 - Added `Bytes.padPKCS7` to add PKCS#7 padding to a byte array.
+- Renamed `OAuth2TokenProviderConfiguration` to `OAuth2TokenProviderOptions`.
 
 ---
 
