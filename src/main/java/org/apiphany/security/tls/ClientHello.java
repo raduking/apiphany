@@ -108,6 +108,19 @@ public class ClientHello implements TLSHandshakeBody {
 	}
 
 	/**
+	 * Constructs a ClientHello with list of cipher suites.
+	 *
+	 * @param cypherSuites the list of cipher suites
+	 * @param serverNames the SNI hostnames
+	 * @param namedCurves the supported elliptic curves
+	 * @param signatureAlgorithms the supported signature algorithms
+	 */
+	public ClientHello(final List<CipherSuite> cypherSuites, final List<String> serverNames,
+			final List<NamedCurve> namedCurves, final List<SignatureAlgorithm> signatureAlgorithms) {
+		this(new SecureRandom(), new CipherSuites(cypherSuites), serverNames, namedCurves, signatureAlgorithms);
+	}
+
+	/**
 	 * Returns the binary representation of this ClientHello.
 	 *
 	 * @return byte array containing all message fields

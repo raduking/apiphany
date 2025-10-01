@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apiphany.lang.Pair;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -101,5 +102,30 @@ class MeterFactoryTest {
 		BasicCounter basicCounter = counter.unwrap(BasicCounter.class);
 
 		assertThat(basicCounter.getName(), equalTo(NAME));
+	}
+
+	@Test
+	void shouldReturnNewMeterFactoryInstanceOnInitialize() {
+		MeterFactory meterFactory = MeterFactory.initializeInstance();
+
+		assertThat(meterFactory.getClass(), equalTo(MeterFactory.class));
+	}
+
+	@Test
+	void shouldReturnNewMeterFactoryInstanceOnInitializeWithNull() {
+		MeterFactory meterFactory = MeterFactory.initializeInstance((Pair<Boolean, Class<? extends MeterFactory>>[]) null);
+
+		assertThat(meterFactory.getClass(), equalTo(MeterFactory.class));
+	}
+
+	@Test
+	void shouldReturnNewMeterFactoryInstanceOnInitializeWhenLibraryIsNotAvailable() {
+		MeterFactory meterFactory = MeterFactory.initializeInstance(Pair.of(Boolean.FALSE, DummyMeterFactory.class));
+
+		assertThat(meterFactory.getClass(), equalTo(MeterFactory.class));
+	}
+
+	static class DummyMeterFactory extends MeterFactory {
+		// empty
 	}
 }

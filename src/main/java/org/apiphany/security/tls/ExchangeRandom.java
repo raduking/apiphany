@@ -46,7 +46,7 @@ public class ExchangeRandom extends BytesWrapper implements TLSObject {
 	 * @param secureRandom The cryptographically secure random number generator to use
 	 */
 	public ExchangeRandom(final SecureRandom secureRandom) {
-		this(generate(secureRandom, new byte[BYTES]));
+		this(generate(secureRandom, BYTES));
 	}
 
 	/**

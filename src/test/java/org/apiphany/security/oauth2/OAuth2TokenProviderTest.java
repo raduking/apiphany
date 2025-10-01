@@ -250,7 +250,7 @@ class OAuth2TokenProviderTest {
 		assertTrue(tokenProvider.isSchedulerEnabled());
 		verify(expiration).minus(AuthenticationToken.EXPIRATION_ERROR_MARGIN);
 		verify(scheduledExecutorService).schedule(any(Runnable.class),
-				eq(OAuth2TokenProviderConfiguration.Default.MIN_REFRESH_INTERVAL.toMillis()), eq(TimeUnit.MILLISECONDS));
+				eq(OAuth2TokenProviderOptions.Default.MIN_REFRESH_INTERVAL.toMillis()), eq(TimeUnit.MILLISECONDS));
 	}
 
 	@SuppressWarnings("resource")
@@ -274,13 +274,13 @@ class OAuth2TokenProviderTest {
 		doReturn(scheduledFuture).when(scheduledExecutorService).schedule(any(Runnable.class), anyLong(), any());
 
 		Duration expirationErrorMargin = AuthenticationToken.EXPIRATION_ERROR_MARGIN.plusSeconds(1);
-		Duration minRefreshInterval = OAuth2TokenProviderConfiguration.Default.MIN_REFRESH_INTERVAL.plusMillis(66);
+		Duration minRefreshInterval = OAuth2TokenProviderOptions.Default.MIN_REFRESH_INTERVAL.plusMillis(66);
 
-		OAuth2TokenProviderConfiguration configuration = new OAuth2TokenProviderConfiguration();
-		configuration.setExpirationErrorMargin(expirationErrorMargin);
-		configuration.setMinRefreshInterval(minRefreshInterval);
+		OAuth2TokenProviderOptions options = new OAuth2TokenProviderOptions();
+		options.setExpirationErrorMargin(expirationErrorMargin);
+		options.setMinRefreshInterval(minRefreshInterval);
 
-		tokenProvider = new OAuth2TokenProvider(configuration, oAuth2Properties, CLIENT_REGISTRATION_NAME,
+		tokenProvider = new OAuth2TokenProvider(options, oAuth2Properties, CLIENT_REGISTRATION_NAME,
 				scheduledExecutorService, (cr, pd) -> tokenClient);
 
 		assertTrue(tokenProvider.isSchedulerEnabled());
@@ -356,11 +356,11 @@ class OAuth2TokenProviderTest {
 		doReturn(scheduledFuture).when(scheduledExecutorService).schedule(any(Runnable.class), anyLong(), any());
 
 		int maxAttempts = 2;
-		OAuth2TokenProviderConfiguration configuration = OAuth2TokenProviderConfiguration.defaults();
-		configuration.setMaxTaskCloseAttempts(maxAttempts);
+		OAuth2TokenProviderOptions options = OAuth2TokenProviderOptions.defaults();
+		options.setMaxTaskCloseAttempts(maxAttempts);
 
 		try (OAuth2TokenProvider localTokenProvider =
-				new OAuth2TokenProvider(configuration, oAuth2Properties, null, scheduledExecutorService, (cr, pd) -> localTokenClient)) {
+				new OAuth2TokenProvider(options, oAuth2Properties, null, scheduledExecutorService, (cr, pd) -> localTokenClient)) {
 			// empty
 		}
 

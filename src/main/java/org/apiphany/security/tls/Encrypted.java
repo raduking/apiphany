@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 import org.apiphany.io.BytesWrapper;
-import org.apiphany.lang.Bytes;
 
 /**
  * Represents encrypted data in TLS protocol messages.
@@ -37,16 +36,6 @@ public class Encrypted implements TLSObject {
 	 */
 	public Encrypted(final byte[] data) {
 		this(new BytesWrapper(data));
-	}
-
-	/**
-	 * Constructs an Encrypted message with raw byte arrays.
-	 *
-	 * @param nonce the nonce/IV bytes
-	 * @param encryptedData the encrypted data bytes
-	 */
-	public Encrypted(final byte[] nonce, final byte[] encryptedData) {
-		this(Bytes.concatenate(nonce, encryptedData));
 	}
 
 	/**

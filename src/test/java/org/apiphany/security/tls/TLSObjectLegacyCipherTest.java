@@ -86,6 +86,7 @@ class TLSObjectLegacyCipherTest {
 				"java",
 				"--add-opens", "java.base/sun.security.ssl=ALL-UNNAMED",
 				"--add-opens", "java.base/javax.net.ssl=ALL-UNNAMED",
+				"--add-opens", "jdk.httpserver/sun.net.httpserver=ALL-UNNAMED",
 				"-cp", System.getProperty("java.class.path"),
 				ForkedLegacyHttpsServerRunner.class.getName(),
 				String.valueOf(port),

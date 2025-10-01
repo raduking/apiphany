@@ -1,6 +1,7 @@
 package org.apiphany.security.tls;
 
 import java.security.GeneralSecurityException;
+import java.security.SecureRandom;
 import java.security.spec.AlgorithmParameterSpec;
 
 import javax.crypto.Cipher;
@@ -277,20 +278,21 @@ public enum BulkCipher {
 	 * @return full IV to pass to Cipher
 	 */
 	public byte[] fullIV(final byte[] keyIV, final byte[] explicitNonce) {
-		switch (type()) {
-			case AEAD:
-				if (explicitNonceLength() == 0) {
-					return Bytes.isNotEmpty(keyIV) ? keyIV.clone() : new byte[fixedIvLength()];
-				}
+		return switch (type()) {
+			case AEAD -> {
 				byte[] iv = new byte[fixedIvLength() + explicitNonceLength()];
 				System.arraycopy(keyIV, 0, iv, 0, fixedIvLength());
-				System.arraycopy(explicitNonce, 0, iv, fixedIvLength(), explicitNonceLength());
-				return iv;
-			case BLOCK:
-				return Bytes.isNotEmpty(keyIV) ? keyIV.clone() : new byte[blockSize()];
-			case STREAM, NO_ENCRYPTION:
-			default:
-				return Bytes.isNotEmpty(keyIV) ? keyIV.clone() : Bytes.EMPTY;
-		}
+				if (explicitNonceLength() > 0) {
+					System.arraycopy(explicitNonce, 0, iv, fixedIvLength(), explicitNonceLength());
+				}
+				yield iv;
+			}
+			case BLOCK -> {
+				byte[] iv = new byte[blockSize()];
+				new SecureRandom().nextBytes(iv);
+				yield iv;
+			}
+			case STREAM, NO_ENCRYPTION -> Bytes.isNotEmpty(keyIV) ? keyIV.clone() : Bytes.EMPTY;
+		};
 	}
 }

@@ -2,6 +2,16 @@
 
 ---
 
+`1.0.14`
+
+- Added overloads for `Sockets.findAvailableTcpPort`.
+- Added `Assert` utility class to be used to check preconditions.
+- Added `Bytes.padRightToBlockSize` to add padding to a byte array given a block size.
+- Added `Bytes.padPKCS7` to add PKCS#7 padding to a byte array.
+- Renamed `OAuth2TokenProviderConfiguration` to `OAuth2TokenProviderOptions`.
+
+---
+
 `1.0.13`
 
 - Added `Strings.fromCamelToKebabCase` as an alias for `Strings.fromLowerCamelToKebabCase`.
