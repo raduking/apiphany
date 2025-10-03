@@ -32,6 +32,8 @@ import org.apiphany.security.oauth2.OAuth2ProviderDetails;
 /**
  * Specialized {@link ApiClient} for OAuth2 authentication flows. Handles token acquisition and management for OAuth2
  * protected APIs.
+ * <p>
+ * TODO: implement full functionality.
  *
  * @author Radu Sebastian LAZIN
  */
@@ -148,7 +150,7 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 			case CLIENT_SECRET_POST -> getTokenWithClientSecretPost();
 			case CLIENT_SECRET_JWT -> getTokenWithClientSecretJwt();
 			case PRIVATE_KEY_JWT -> getTokenWithPrivateKeyJwt();
-			case NONE -> getTokenWithNone();
+			default -> throw new UnsupportedOperationException("Unsupported client authentication method: " + method);
 		};
 	}
 
@@ -239,27 +241,6 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 				parameter(OAuth2Parameter.GRANT_TYPE, clientRegistration.getAuthorizationGrantType()),
 				parameter(OAuth2Parameter.CLIENT_ASSERTION_TYPE, "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"),
 				parameter(OAuth2Parameter.CLIENT_ASSERTION, clientAssertion),
-				parameter(OAuth2Parameter.EXPIRES_IN, OAuth2Parameter.Default.EXPIRES_IN.toSeconds()));
-
-		return client()
-				.http()
-				.post()
-				.url(providerDetails.getTokenUri())
-				.body(RequestParameters.asString(RequestParameters.encode(params)))
-				.header(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_FORM_URLENCODED)
-				.retrieve(AuthenticationToken.class)
-				.orRethrow(AuthenticationException::new);
-	}
-
-	/**
-	 * Returns the authentication token with {@link ClientAuthenticationMethod#NONE}.
-	 *
-	 * @return the authentication token for `none` method
-	 */
-	private AuthenticationToken getTokenWithNone() {
-		Map<String, String> params = RequestParameters.of(
-				parameter(OAuth2Parameter.GRANT_TYPE, clientRegistration.getAuthorizationGrantType()),
-				parameter(OAuth2Parameter.CLIENT_ID, clientRegistration.getClientId()),
 				parameter(OAuth2Parameter.EXPIRES_IN, OAuth2Parameter.Default.EXPIRES_IN.toSeconds()));
 
 		return client()
