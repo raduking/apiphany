@@ -94,6 +94,8 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 	 * Constructs a new OAuth2 API client with the specified configurations.
 	 *
 	 * @param clientRegistration the OAuth2 client registration details
+	 * @param privateKey the private key used when authorizing with {@code private_key_jwt}
+	 * @param signingAlgorithm the signing algorithm used to sign the client assertion
 	 * @param providerDetails the OAuth2 provider configuration details
 	 * @param httpExchangeClient the HTTP exchange client to use for requests
 	 */
@@ -109,6 +111,8 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 	 *
 	 * @param clientRegistration the OAuth2 client registration details
 	 * @param providerDetails the OAuth2 provider configuration details
+	 * @param privateKey the private key used when authorizing with {@code private_key_jwt}
+	 * @param signingAlgorithm the signing algorithm used to sign the client assertion
 	 * @param exchangeClientBuilder the HTTP exchange client to use for requests
 	 */
 	public OAuth2ApiClient(final OAuth2ClientRegistration clientRegistration, final OAuth2ProviderDetails providerDetails,
@@ -219,27 +223,6 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 	}
 
 	/**
-	 * Returns the authentication token with {@link ClientAuthenticationMethod#NONE}.
-	 *
-	 * @return the authentication token for `none` method
-	 */
-	private AuthenticationToken getTokenWithNone() {
-		Map<String, String> params = RequestParameters.of(
-				parameter(OAuth2Parameter.GRANT_TYPE, clientRegistration.getAuthorizationGrantType()),
-				parameter(OAuth2Parameter.CLIENT_ID, clientRegistration.getClientId()),
-				parameter(OAuth2Parameter.EXPIRES_IN, OAuth2Parameter.Default.EXPIRES_IN.toSeconds()));
-
-		return client()
-				.http()
-				.post()
-				.url(providerDetails.getTokenUri())
-				.body(RequestParameters.asString(RequestParameters.encode(params)))
-				.header(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_FORM_URLENCODED)
-				.retrieve(AuthenticationToken.class)
-				.orRethrow(AuthenticationException::new);
-	}
-
-	/**
 	 * Returns the authentication token with {@link ClientAuthenticationMethod#PRIVATE_KEY_JWT}.
 	 *
 	 * @return the authentication token with `private_key_jwt`.
@@ -256,6 +239,27 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 				parameter(OAuth2Parameter.GRANT_TYPE, clientRegistration.getAuthorizationGrantType()),
 				parameter(OAuth2Parameter.CLIENT_ASSERTION_TYPE, "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"),
 				parameter(OAuth2Parameter.CLIENT_ASSERTION, clientAssertion),
+				parameter(OAuth2Parameter.EXPIRES_IN, OAuth2Parameter.Default.EXPIRES_IN.toSeconds()));
+
+		return client()
+				.http()
+				.post()
+				.url(providerDetails.getTokenUri())
+				.body(RequestParameters.asString(RequestParameters.encode(params)))
+				.header(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_FORM_URLENCODED)
+				.retrieve(AuthenticationToken.class)
+				.orRethrow(AuthenticationException::new);
+	}
+
+	/**
+	 * Returns the authentication token with {@link ClientAuthenticationMethod#NONE}.
+	 *
+	 * @return the authentication token for `none` method
+	 */
+	private AuthenticationToken getTokenWithNone() {
+		Map<String, String> params = RequestParameters.of(
+				parameter(OAuth2Parameter.GRANT_TYPE, clientRegistration.getAuthorizationGrantType()),
+				parameter(OAuth2Parameter.CLIENT_ID, clientRegistration.getClientId()),
 				parameter(OAuth2Parameter.EXPIRES_IN, OAuth2Parameter.Default.EXPIRES_IN.toSeconds()));
 
 		return client()
