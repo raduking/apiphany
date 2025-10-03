@@ -1,4 +1,4 @@
-package org.apiphany.security.oauth2.server;
+package org.apiphany.utils.security.oauth2.server;
 
 import java.io.IOException;
 import java.io.InputStream;

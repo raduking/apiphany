@@ -1,4 +1,4 @@
-package org.apiphany.security.ssl;
+package org.apiphany.utils.security.ssl;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -16,7 +16,7 @@ import java.util.Base64;
 
 import org.apiphany.io.BytesOrder;
 import org.apiphany.lang.Hex;
-import org.apiphany.security.tls.client.X25519Keys;
+import org.apiphany.utils.security.X25519Keys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

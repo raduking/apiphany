@@ -1,9 +1,8 @@
-package org.apiphany.utils;
+package org.apiphany.utils.security.ssl.server;
 
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.security.ssl.SSLProperties;
-import org.apiphany.security.ssl.server.LegacyHttpsServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

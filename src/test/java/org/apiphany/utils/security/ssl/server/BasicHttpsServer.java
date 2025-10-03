@@ -1,4 +1,4 @@
-package org.apiphany.security.ssl.server;
+package org.apiphany.utils.security.ssl.server;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -9,9 +9,9 @@ import java.util.concurrent.Executors;
 import javax.net.ssl.SSLContext;
 
 import org.apiphany.json.JsonBuilder;
-import org.apiphany.security.ssl.SSLContextAdapter;
 import org.apiphany.security.ssl.SSLContexts;
 import org.apiphany.security.ssl.SSLProperties;
+import org.apiphany.utils.security.ssl.SSLContextAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

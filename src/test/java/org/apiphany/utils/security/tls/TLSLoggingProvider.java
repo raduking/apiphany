@@ -1,4 +1,4 @@
-package org.apiphany.security.tls;
+package org.apiphany.utils.security.tls;
 
 import java.io.Serial;
 import java.lang.ref.ReferenceQueue;
