@@ -9,8 +9,10 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
 import java.util.Base64;
+import java.util.stream.Stream;
 
 import org.apiphany.ApiClient;
+import org.apiphany.client.ExchangeClientBuilder;
 import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.io.ByteBufferInputStream;
 import org.apiphany.json.JsonBuilder;
@@ -25,6 +27,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.junit.jupiter.Container;
@@ -153,17 +158,41 @@ class OAuth2ApiClientIT {
 		}
 	}
 
-	@Test
-	void shouldReturnAuthenticationTokenWithClientSecretPrivateKey() throws Exception {
+	@ParameterizedTest
+	@MethodSource("provideRSASigningAlgorithm")
+	void shouldReturnAuthenticationTokenWithClientSecretPrivateKey(final String algorithm) throws Exception {
 		String clientRegistrationJsonString = Strings.fromFile("/security/oauth2/oauth2-client-registration-pk.json");
 		OAuth2ClientRegistration pkClientRegistration = JsonBuilder.fromJson(clientRegistrationJsonString, OAuth2ClientRegistration.class);
 
 		RSAPrivateKey privateKey = Keys.loadRSAPrivateKey("/security/oauth2/rsa_private.pem");
 
-		try (OAuth2ApiClient oAuth2ApiClient = new OAuth2ApiClient(pkClientRegistration, providerDetails, privateKey, "RS256", exchangeClient)) {
+		try (OAuth2ApiClient oAuth2ApiClient = new OAuth2ApiClient(pkClientRegistration, providerDetails, privateKey, algorithm, exchangeClient)) {
 			AuthenticationToken token = oAuth2ApiClient.getAuthenticationToken(ClientAuthenticationMethod.PRIVATE_KEY_JWT);
 
 			assertThat(token, notNullValue());
 		}
+	}
+
+	@ParameterizedTest
+	@MethodSource("provideRSASigningAlgorithm")
+	void shouldReturnAuthenticationTokenWithClientSecretPrivateKeyAndExchangeClientBuilder(final String algorithm) throws Exception {
+		String clientRegistrationJsonString = Strings.fromFile("/security/oauth2/oauth2-client-registration-pk.json");
+		OAuth2ClientRegistration pkClientRegistration = JsonBuilder.fromJson(clientRegistrationJsonString, OAuth2ClientRegistration.class);
+
+		RSAPrivateKey privateKey = Keys.loadRSAPrivateKey("/security/oauth2/rsa_private.pem");
+
+		ExchangeClientBuilder exchangeClientBuilder = ExchangeClientBuilder.create().client(JavaNetHttpExchangeClient.class);
+		try (OAuth2ApiClient oAuth2ApiClient = new OAuth2ApiClient(pkClientRegistration, providerDetails, privateKey, algorithm, exchangeClientBuilder)) {
+			AuthenticationToken token = oAuth2ApiClient.getAuthenticationToken(ClientAuthenticationMethod.PRIVATE_KEY_JWT);
+
+			assertThat(token, notNullValue());
+		}
+	}
+
+	private static Stream<Arguments> provideRSASigningAlgorithm() {
+		return Stream.of(
+				Arguments.of("RS256"),
+				Arguments.of("RS384"),
+				Arguments.of("RS512"));
 	}
 }
