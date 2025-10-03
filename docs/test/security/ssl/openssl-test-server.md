@@ -1,5 +1,6 @@
+# OpenSSL Server
 
-Start the OpenSSL server with AEAD - (Cipher suite: TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384)
+### Start the OpenSSL server with AEAD - (Cipher suite: `TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384`)
 
 ```bash
 openssl s_server \
@@ -16,7 +17,7 @@ openssl s_server \
   -trace
 ```
 
-Start the OpenSSL server with BLOCK - (Cipher suite: TLS_RSA_WITH_AES_128_CBC_SHA)
+### Start the OpenSSL server with BLOCK - (Cipher suite: `TLS_RSA_WITH_AES_128_CBC_SHA`)
 
 ```bash
 openssl s_server \

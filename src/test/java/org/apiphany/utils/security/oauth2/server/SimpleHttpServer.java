@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.apiphany.header.MapHeaderValues;
+import org.apiphany.header.Headers;
 import org.apiphany.http.HttpAuthScheme;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
@@ -114,43 +114,39 @@ public class SimpleHttpServer implements AutoCloseable {
 			if (null == server.tokenValidator) {
 				return true;
 			}
-			List<String> authorizationHeaderValues = MapHeaderValues.get(HttpHeader.AUTHORIZATION, exchange.getRequestHeaders());
+			List<String> authorizationHeaderValues = Headers.get(HttpHeader.AUTHORIZATION, exchange.getRequestHeaders());
 			if (Lists.isEmpty(authorizationHeaderValues)) {
-				sendResponse(exchange, HttpStatus.UNAUTHORIZED, "Missing " + HttpHeader.AUTHORIZATION + " header.");
-				return false;
+				return sendResponse(exchange, HttpStatus.UNAUTHORIZED, "Missing " + HttpHeader.AUTHORIZATION + " header.");
 			}
 			if (authorizationHeaderValues.size() > 1) {
-				sendResponse(exchange, HttpStatus.UNAUTHORIZED, "Only one " + HttpHeader.AUTHORIZATION + " header value accepted.");
-				return false;
+				return sendResponse(exchange, HttpStatus.UNAUTHORIZED, "Only one " + HttpHeader.AUTHORIZATION + " header value accepted.");
 			}
 			String authorizationHeaderValue = Lists.first(authorizationHeaderValues);
 			String[] pair = authorizationHeaderValue.split(" ");
 			if (pair.length != 2) {
-				sendResponse(exchange, HttpStatus.UNAUTHORIZED, "Invalid " + HttpHeader.AUTHORIZATION + " header value.");
-				return false;
+				return sendResponse(exchange, HttpStatus.UNAUTHORIZED, "Invalid " + HttpHeader.AUTHORIZATION + " header value.");
 			}
 			try {
 				HttpAuthScheme.fromString(pair[0]);
 			} catch (IllegalArgumentException e) {
-				sendResponse(exchange, HttpStatus.UNAUTHORIZED, "Invalid authorization scheme.");
-				return false;
+				return sendResponse(exchange, HttpStatus.UNAUTHORIZED, "Invalid authorization scheme.");
 			}
 			String token = pair[1];
 			try {
 				server.tokenValidator.validateToken(token);
 				return true;
 			} catch (Exception e) {
-				sendResponse(exchange, HttpStatus.UNAUTHORIZED, e.getMessage());
-				return false;
+				return sendResponse(exchange, HttpStatus.UNAUTHORIZED, e.getMessage());
 			}
 		}
 
-		private static <T> void sendResponse(final HttpExchange exchange, final HttpStatus status, final T response) throws IOException {
+		private static <T> boolean sendResponse(final HttpExchange exchange, final HttpStatus status, final T response) throws IOException {
 			String responseString = Strings.safeToString(response);
 			exchange.sendResponseHeaders(status.getCode(), responseString.length());
 			OutputStream os = exchange.getResponseBody();
 			os.write(responseString.getBytes(StandardCharsets.UTF_8));
 			os.close();
+			return status.is2xxSuccessful();
 		}
 
 	}

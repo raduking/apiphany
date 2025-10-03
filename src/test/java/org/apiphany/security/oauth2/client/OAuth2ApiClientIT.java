@@ -4,11 +4,10 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.net.URI;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import java.security.PublicKey;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.RSAPrivateKey;
 import java.util.Base64;
 
 import org.apiphany.ApiClient;
@@ -20,6 +19,7 @@ import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.oauth2.ClientAuthenticationMethod;
 import org.apiphany.security.oauth2.OAuth2ClientRegistration;
 import org.apiphany.security.oauth2.OAuth2ProviderDetails;
+import org.apiphany.utils.security.ssl.Keys;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -155,30 +155,20 @@ class OAuth2ApiClientIT {
 		}
 	}
 
-	// @Test
+	@Test
 	void shouldReturnAuthenticationTokenWithClientSecretPrivateKey() throws Exception {
 		String clientRegistrationJsonString =
 				Strings.fromFile("/security/oauth2/oauth2-client-registration-pk.json");
 		OAuth2ClientRegistration pkClientRegistration =
 				JsonBuilder.fromJson(clientRegistrationJsonString, OAuth2ClientRegistration.class);
 
-		KeyPair keyPair = loadTestRsaKeyPair();
+		RSAPrivateKey privateKey = Keys.loadRSAPrivateKey("/security/oauth2/rsa_private.pem");
 
-		try (OAuth2ApiClient oAuth2ApiClient = new OAuth2ApiClient(pkClientRegistration, providerDetails,
-				keyPair.getPrivate(), "RS256", exchangeClient)) {
-			AuthenticationToken token = oAuth2ApiClient.getAuthenticationToken(ClientAuthenticationMethod.CLIENT_SECRET_JWT);
+		try (OAuth2ApiClient oAuth2ApiClient = new OAuth2ApiClient(pkClientRegistration, providerDetails, privateKey, "RS256", exchangeClient)) {
+			AuthenticationToken token = oAuth2ApiClient.getAuthenticationToken(ClientAuthenticationMethod.PRIVATE_KEY_JWT);
 
 			assertThat(token, notNullValue());
 		}
 	}
 
-	private static KeyPair loadTestRsaKeyPair() {
-		try {
-			KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
-			kpg.initialize(2048);
-			return kpg.generateKeyPair();
-		} catch (Exception e) {
-			throw new IllegalStateException("Could not generate RSA keypair for test", e);
-		}
-	}
 }
