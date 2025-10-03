@@ -1,3 +1,4 @@
+## Compile the random override (only works for Mac OS)
 
 ```bash
 gcc -dynamiclib -o openssl_rand_override_mac.dylib openssl_rand_override_mac.c \
