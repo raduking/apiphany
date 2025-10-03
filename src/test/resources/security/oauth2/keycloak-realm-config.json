@@ -18,6 +18,12 @@
 			"clientRoles": {
 				"apiphany-client": [
 					"read-profile"
+				],
+				"apiphany-client-jwt": [
+					"read-profile"
+				],
+				"apiphany-client-pk": [
+					"read-profile"
 				]
 			}
 		}
@@ -37,6 +43,40 @@
 			"authorizationServicesEnabled": true,
 			"standardFlowEnabled": true,
 			"directAccessGrantsEnabled": true
+		},
+		{
+			"clientId": "apiphany-client-jwt",
+			"enabled": true,
+			"publicClient": false,
+			"secret": "apiphany-client-secret-for-jwt-more-than-32-characters",
+			"redirectUris": [
+				"http://localhost:8080/*"
+			],
+			"webOrigins": [
+				"+"
+			],
+			"authorizationServicesEnabled": true,
+			"standardFlowEnabled": true,
+			"directAccessGrantsEnabled": true,
+			"clientAuthenticatorType": "client-secret-jwt"
+		},
+		{
+			"clientId": "apiphany-client-pk",
+			"enabled": true,
+			"publicClient": false,
+			"redirectUris": [
+				"http://localhost:8080/*"
+			],
+			"webOrigins": [
+				"+"
+			],
+			"authorizationServicesEnabled": true,
+			"standardFlowEnabled": true,
+			"directAccessGrantsEnabled": true,
+			"clientAuthenticatorType": "client-jwt",
+			"attributes": {
+				"jwt.credential.certificate": "-----BEGIN CERTIFICATE-----\nMIIB...your test cert...\n-----END CERTIFICATE-----"
+			}
 		}
 	],
 	"roles": {
@@ -52,12 +92,38 @@
 					"name": "read-profile",
 					"description": "Allows reading the user profile"
 				}
+			],
+			"apiphany-client-jwt": [
+				{
+					"name": "read-profile",
+					"description": "Allows reading the user profile"
+				}
+			],
+			"apiphany-client-pk": [
+				{
+					"name": "read-profile",
+					"description": "Allows reading the user profile"
+				}
 			]
 		}
 	},
 	"scopeMappings": [
 		{
 			"client": "apiphany-client",
+			"roles": [
+				"user",
+				"read-profile"
+			]
+		},
+		{
+			"client": "apiphany-client-jwt",
+			"roles": [
+				"user",
+				"read-profile"
+			]
+		},
+		{
+			"client": "apiphany-client-pk",
 			"roles": [
 				"user",
 				"read-profile"

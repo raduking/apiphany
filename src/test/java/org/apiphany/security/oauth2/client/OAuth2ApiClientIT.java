@@ -4,6 +4,8 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.net.URI;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.PublicKey;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -136,6 +138,47 @@ class OAuth2ApiClientIT {
 			AuthenticationToken token = oAuth2ApiClient.getAuthenticationToken();
 
 			assertThat(token, notNullValue());
+		}
+	}
+
+	@Test
+	void shouldReturnAuthenticationTokenWithClientSecretJwt() throws Exception {
+		String clientRegistrationJsonString =
+				Strings.fromFile("/security/oauth2/oauth2-client-registration-jwt.json");
+		OAuth2ClientRegistration jwtClientRegistration =
+				JsonBuilder.fromJson(clientRegistrationJsonString, OAuth2ClientRegistration.class);
+
+		try (OAuth2ApiClient oAuth2ApiClient = new OAuth2ApiClient(jwtClientRegistration, providerDetails, exchangeClient)) {
+			AuthenticationToken token = oAuth2ApiClient.getAuthenticationToken(ClientAuthenticationMethod.CLIENT_SECRET_JWT);
+
+			assertThat(token, notNullValue());
+		}
+	}
+
+	// @Test
+	void shouldReturnAuthenticationTokenWithClientSecretPrivateKey() throws Exception {
+		String clientRegistrationJsonString =
+				Strings.fromFile("/security/oauth2/oauth2-client-registration-pk.json");
+		OAuth2ClientRegistration pkClientRegistration =
+				JsonBuilder.fromJson(clientRegistrationJsonString, OAuth2ClientRegistration.class);
+
+		KeyPair keyPair = loadTestRsaKeyPair();
+
+		try (OAuth2ApiClient oAuth2ApiClient = new OAuth2ApiClient(pkClientRegistration, providerDetails,
+				keyPair.getPrivate(), "RS256", exchangeClient)) {
+			AuthenticationToken token = oAuth2ApiClient.getAuthenticationToken(ClientAuthenticationMethod.CLIENT_SECRET_JWT);
+
+			assertThat(token, notNullValue());
+		}
+	}
+
+	private static KeyPair loadTestRsaKeyPair() {
+		try {
+			KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
+			kpg.initialize(2048);
+			return kpg.generateKeyPair();
+		} catch (Exception e) {
+			throw new IllegalStateException("Could not generate RSA keypair for test", e);
 		}
 	}
 }
