@@ -288,7 +288,6 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 	 */
 	public static String buildClientAssertionPrivateKey(final String clientId, final String tokenEndpoint, final PrivateKey privateKey,
 			final String algorithm) {
-		// algorithm should be something like "RS256" or "ES256"
 		Map<String, Object> header = Map.of("alg", algorithm, "typ", "JWT");
 		Map<String, Object> claims = defaultClaims(clientId, tokenEndpoint);
 
@@ -332,16 +331,15 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 	 */
 	private static byte[] sign(final PrivateKey privateKey, final String alg, final byte[] input) {
 		try {
-			String jcaAlg;
-			switch (alg) {
-				case "RS256" -> jcaAlg = "SHA256withRSA";
-				case "RS384" -> jcaAlg = "SHA384withRSA";
-				case "RS512" -> jcaAlg = "SHA512withRSA";
-				case "ES256" -> jcaAlg = "SHA256withECDSA";
-				case "ES384" -> jcaAlg = "SHA384withECDSA";
-				case "ES512" -> jcaAlg = "SHA512withECDSA";
+			String jcaAlg = switch (alg) {
+				case "RS256" -> "SHA256withRSA";
+				case "RS384" -> "SHA384withRSA";
+				case "RS512" -> "SHA512withRSA";
+				case "ES256" -> "SHA256withECDSA";
+				case "ES384" -> "SHA384withECDSA";
+				case "ES512" -> "SHA512withECDSA";
 				default -> throw new IllegalArgumentException("Unsupported JWS alg: " + alg);
-			}
+			};
 			Signature sig = Signature.getInstance(jcaAlg);
 			sig.initSign(privateKey);
 			sig.update(input);
