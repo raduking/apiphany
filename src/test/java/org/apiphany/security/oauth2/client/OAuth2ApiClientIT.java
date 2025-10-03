@@ -143,10 +143,8 @@ class OAuth2ApiClientIT {
 
 	@Test
 	void shouldReturnAuthenticationTokenWithClientSecretJwt() throws Exception {
-		String clientRegistrationJsonString =
-				Strings.fromFile("/security/oauth2/oauth2-client-registration-jwt.json");
-		OAuth2ClientRegistration jwtClientRegistration =
-				JsonBuilder.fromJson(clientRegistrationJsonString, OAuth2ClientRegistration.class);
+		String clientRegistrationJsonString = Strings.fromFile("/security/oauth2/oauth2-client-registration-jwt.json");
+		OAuth2ClientRegistration jwtClientRegistration = JsonBuilder.fromJson(clientRegistrationJsonString, OAuth2ClientRegistration.class);
 
 		try (OAuth2ApiClient oAuth2ApiClient = new OAuth2ApiClient(jwtClientRegistration, providerDetails, exchangeClient)) {
 			AuthenticationToken token = oAuth2ApiClient.getAuthenticationToken(ClientAuthenticationMethod.CLIENT_SECRET_JWT);
@@ -157,10 +155,8 @@ class OAuth2ApiClientIT {
 
 	@Test
 	void shouldReturnAuthenticationTokenWithClientSecretPrivateKey() throws Exception {
-		String clientRegistrationJsonString =
-				Strings.fromFile("/security/oauth2/oauth2-client-registration-pk.json");
-		OAuth2ClientRegistration pkClientRegistration =
-				JsonBuilder.fromJson(clientRegistrationJsonString, OAuth2ClientRegistration.class);
+		String clientRegistrationJsonString = Strings.fromFile("/security/oauth2/oauth2-client-registration-pk.json");
+		OAuth2ClientRegistration pkClientRegistration = JsonBuilder.fromJson(clientRegistrationJsonString, OAuth2ClientRegistration.class);
 
 		RSAPrivateKey privateKey = Keys.loadRSAPrivateKey("/security/oauth2/rsa_private.pem");
 
@@ -170,5 +166,4 @@ class OAuth2ApiClientIT {
 			assertThat(token, notNullValue());
 		}
 	}
-
 }
