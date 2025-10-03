@@ -1,0 +1,11 @@
+{
+  "registrationId": "keycloak-client",
+  "clientId": "apiphany-client-pk",
+  "clientSecret": "apiphany-client-secret-for-jwt-pk-more-than-32-characters",
+  "clientAuthenticationMethod": "PRIVATE_KEY_JWT",
+  "authorizationGrantType": "CLIENT_CREDENTIALS",
+  "redirectUri": "https://example.com/login/oauth2/code/keycloak",
+  "scopes": ["openid", "profile", "email"],
+  "clientName": "Apiphany Client Private Key",
+  "provider": "keycloak"
+}

@@ -8,7 +8,9 @@
 - Added `Assert` utility class to be used to check preconditions.
 - Added `Bytes.padRightToBlockSize` to add padding to a byte array given a block size.
 - Added `Bytes.padPKCS7` to add PKCS#7 padding to a byte array.
-- Renamed `OAuth2TokenProviderConfiguration` to `OAuth2TokenProviderOptions`.
+- Renamed `OAuth2TokenProviderConfiguration` to `OAuth2TokenProviderOptions` so it's not confused with configuration objects in Spring environments.
+- Added `OAuth2Parameter.CLIENT_ASSERTION` that represents client assertion parameter used in JWT/SAML client authentication flows.
+- Added `OAuth2Parameter.CLIENT_ASSERTION_TYPE` that specifies the assertion type for client authentication.
 
 ---
 

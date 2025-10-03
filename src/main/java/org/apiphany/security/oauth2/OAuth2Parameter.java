@@ -98,6 +98,18 @@ public enum OAuth2Parameter {
 	ACCESS_TOKEN("access_token"),
 
 	/**
+	 * The client assertion parameter (RFC 7521 Section 4.2, RFC 7523). Used in JWT/SAML client authentication flows
+	 * ({@code client_secret_jwt}, {@code private_key_jwt}).
+	 */
+	CLIENT_ASSERTION("client_assertion"),
+
+	/**
+	 * The client assertion type parameter (RFC 7521 Section 4.2, RFC 7523). Specifies the assertion type for client
+	 * authentication (e.g. {@code "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"}).
+	 */
+	CLIENT_ASSERTION_TYPE("client_assertion_type"),
+
+	/**
 	 * The error parameter (RFC 6749 Section 5.2). Contains error codes for failed responses.
 	 */
 	ERROR("error"),

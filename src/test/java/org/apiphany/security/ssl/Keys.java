@@ -1,6 +1,7 @@
 package org.apiphany.security.ssl;
 
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -11,6 +12,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
 
 import org.apiphany.io.BytesOrder;
 import org.apiphany.lang.Hex;
@@ -32,20 +34,42 @@ public class Keys {
 	public static final String XDH_PRIVATE_KEY_FILE_NAME = "xdh_private.key";
 	public static final String XDH_PUBLIC_KEY_FILE_NAME = "xdh_public.key";
 
-	public static void save(final KeyPair keyPair, final String resourceDir) throws Exception {
+	public static final String XDH_PRIVATE_PEM_FILE_NAME = "xdh_private.pem";
+	public static final String XDH_PUBLIC_PEM_FILE_NAME = "xdh_public.pem";
+
+	public static void saveAsKey(final KeyPair keyPair, final String resourceDir) throws Exception {
 		Path dirPath = Paths.get(resourceDir);
 		if (!Files.exists(dirPath)) {
 			Files.createDirectories(dirPath);
 		}
 
 		byte[] privateKeyBytes = keyPair.getPrivate().getEncoded();
-		Path privateKeyPath = dirPath.resolve("xdh_private.key");
+		Path privateKeyPath = dirPath.resolve(XDH_PRIVATE_KEY_FILE_NAME);
 		Files.write(privateKeyPath, privateKeyBytes);
-		LOGGER.info("Saved private key: {}", privateKeyPath);
+		LOGGER.info("Saved private key (KEY): {}", privateKeyPath);
 
 		byte[] publicKeyBytes = keyPair.getPublic().getEncoded();
-		Path publicKeyPath = dirPath.resolve("xdh_public.key");
+		Path publicKeyPath = dirPath.resolve(XDH_PUBLIC_KEY_FILE_NAME);
 		Files.write(publicKeyPath, publicKeyBytes);
+		LOGGER.info("Saved public key (KEY): {}", publicKeyPath);
+	}
+
+	public static void saveAsPem(final KeyPair keyPair, final String resourceDir) throws Exception {
+		Path dirPath = Paths.get(resourceDir);
+		if (!Files.exists(dirPath)) {
+			Files.createDirectories(dirPath);
+		}
+
+		String privateBase64 = Base64.getMimeEncoder(64, new byte[] { '\n' }).encodeToString(keyPair.getPrivate().getEncoded());
+		Path privateKeyPath = dirPath.resolve(XDH_PRIVATE_PEM_FILE_NAME);
+		String privatePem = "-----BEGIN PRIVATE KEY-----\n" + privateBase64 + "\n-----END PRIVATE KEY-----\n";
+		Files.writeString(privateKeyPath, privatePem, StandardCharsets.US_ASCII);
+		LOGGER.info("Saved private key (PEM): {}", privateKeyPath);
+
+		String publicBase64 = Base64.getMimeEncoder(64, new byte[] { '\n' }).encodeToString(keyPair.getPublic().getEncoded());
+		Path publicKeyPath = dirPath.resolve(XDH_PUBLIC_PEM_FILE_NAME);
+		String publicPem = "-----BEGIN PUBLIC KEY-----\n" + publicBase64 + "\n-----END PUBLIC KEY-----\n";
+		Files.writeString(publicKeyPath, publicPem, StandardCharsets.US_ASCII);
 		LOGGER.info("Saved public key: {}", publicKeyPath);
 	}
 
@@ -81,6 +105,7 @@ public class Keys {
 		KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("XDH");
 		KeyPair keyPair = keyPairGenerator.generateKeyPair();
 
-		save(keyPair, "src/test/resources/security/ssl");
+		saveAsKey(keyPair, "src/test/resources/security/ssl");
+		saveAsPem(keyPair, "src/test/resources/security/oauth2");
 	}
 }
