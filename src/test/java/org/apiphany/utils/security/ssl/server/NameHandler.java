@@ -1,4 +1,4 @@
-package org.apiphany.security.ssl.server;
+package org.apiphany.utils.security.ssl.server;
 
 import java.io.IOException;
 import java.io.OutputStream;

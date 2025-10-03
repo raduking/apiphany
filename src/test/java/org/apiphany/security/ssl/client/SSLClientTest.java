@@ -14,8 +14,8 @@ import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.net.Sockets;
 import org.apiphany.security.ssl.SSLProperties;
-import org.apiphany.security.ssl.server.BasicHttpsServer;
-import org.apiphany.security.ssl.server.NameHandler;
+import org.apiphany.utils.security.ssl.server.BasicHttpsServer;
+import org.apiphany.utils.security.ssl.server.NameHandler;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 

@@ -1,4 +1,4 @@
-package org.apiphany.security;
+package org.apiphany.utils.security;
 
 import java.io.Serial;
 import java.security.SecureRandom;
