@@ -182,7 +182,8 @@ class OAuth2ApiClientIT {
 		RSAPrivateKey privateKey = Keys.loadRSAPrivateKey("/security/oauth2/rsa_private.pem");
 
 		ExchangeClientBuilder exchangeClientBuilder = ExchangeClientBuilder.create().client(JavaNetHttpExchangeClient.class);
-		try (OAuth2ApiClient oAuth2ApiClient = new OAuth2ApiClient(pkClientRegistration, providerDetails, privateKey, algorithm, exchangeClientBuilder)) {
+		try (OAuth2ApiClient oAuth2ApiClient =
+				new OAuth2ApiClient(pkClientRegistration, providerDetails, privateKey, algorithm, exchangeClientBuilder)) {
 			AuthenticationToken token = oAuth2ApiClient.getAuthenticationToken(ClientAuthenticationMethod.PRIVATE_KEY_JWT);
 
 			assertThat(token, notNullValue());

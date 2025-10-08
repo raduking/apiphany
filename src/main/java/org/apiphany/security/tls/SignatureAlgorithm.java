@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apiphany.io.UInt16;
+import org.apiphany.security.JcaSignatureAlgorithm;
 import org.morphix.lang.Enums;
 
 /**
@@ -39,129 +40,129 @@ public enum SignatureAlgorithm implements TLSObject {
 	 * RSA/PKCS1/SHA224. RSA with PKCS#1 v1.5 padding and SHA-224. TLS identifier: {@code 0x0301}. Not recommended due to
 	 * PKCS#1v1.5 vulnerabilities.
 	 */
-	RSA_PKCS1_SHA224((short) 0x301),
+	RSA_PKCS1_SHA224((short) 0x301, JcaSignatureAlgorithm.SHA224_WITH_RSA),
 
 	/**
 	 * DSA/SHA224. DSA with SHA-224. TLS identifier: {@code 0x0302}. Avoid (DSA requires precise 1024/2048-bit keys).
 	 */
-	DSA_SHA224((short) 0x0302),
+	DSA_SHA224((short) 0x0302, JcaSignatureAlgorithm.SHA224_WITH_DSA),
 
 	/**
 	 * ECDSA/SHA224. ECDSA with SHA-224. TLS identifier: {@code 0x0303}. Prefer {@link #ECDSA_SECP256R1_SHA256} instead.
 	 */
-	ECDSA_SHA224((short) 0x0303),
+	ECDSA_SHA224((short) 0x0303, JcaSignatureAlgorithm.SHA224_WITH_ECDSA),
 
 	/**
 	 * RSA/PKCS1/SHA256. RSA with PKCS#1 v1.5 padding and SHA-256. TLS identifier: {@code 0x0401}. Acceptable if RSA-PSS is
 	 * unavailable.
 	 */
-	RSA_PKCS1_SHA256((short) 0x0401),
+	RSA_PKCS1_SHA256((short) 0x0401, JcaSignatureAlgorithm.SHA256_WITH_RSA),
 
 	/**
 	 * DSA/SHA256. DSA with SHA-256. TLS identifier: {@code 0x0402}. Avoid (see {@link #DSA_SHA224}).
 	 */
-	DSA_SHA256((short) 0x0402),
+	DSA_SHA256((short) 0x0402, JcaSignatureAlgorithm.SHA256_WITH_DSA),
 
 	/**
 	 * ECDSA/SECP256r1/SHA256. ECDSA using NIST P-256 curve with SHA-256. TLS identifier: {@code 0x0403}. Recommended for
 	 * ECDSA deployments.
 	 */
-	ECDSA_SECP256R1_SHA256((short) 0x0403),
+	ECDSA_SECP256R1_SHA256((short) 0x0403, JcaSignatureAlgorithm.SHA256_WITH_ECDSA),
 
 	/**
 	 * RSA/PKCS1/SHA384. RSA with PKCS#1 v1.5 padding and SHA-384. TLS identifier: {@code 0x0501}. Prefer
 	 * {@link #RSA_PSS_RSAE_SHA384}.
 	 */
-	RSA_PKCS1_SHA384((short) 0x0501),
+	RSA_PKCS1_SHA384((short) 0x0501, JcaSignatureAlgorithm.SHA384_WITH_RSA),
 
 	/**
 	 * DSA/SHA384. DSA with SHA-384. TLS identifier: {@code 0x0502}. Avoid (see {@link #DSA_SHA224}).
 	 */
-	DSA_SHA384((short) 0x0502),
+	DSA_SHA384((short) 0x0502, JcaSignatureAlgorithm.SHA384_WITH_DSA),
 
 	/**
 	 * ECDSA/SECP384r1/SHA384. ECDSA using NIST P-384 curve with SHA-384. TLS identifier: {@code 0x0503}. Use for
 	 * higher-security ECDSA needs.
 	 */
-	ECDSA_SECP384R1_SHA384((short) 0x0503),
+	ECDSA_SECP384R1_SHA384((short) 0x0503, JcaSignatureAlgorithm.SHA384_WITH_ECDSA),
 
 	/**
 	 * RSA/PKCS1/SHA512. RSA with PKCS#1 v1.5 padding and SHA-512. TLS identifier: {@code 0x0601}. Prefer
 	 * {@link #RSA_PSS_RSAE_SHA512}.
 	 */
-	RSA_PKCS1_SHA512((short) 0x0601),
+	RSA_PKCS1_SHA512((short) 0x0601, JcaSignatureAlgorithm.SHA512_WITH_RSA),
 
 	/**
 	 * DSA/SHA512. DSA with SHA-512. TLS identifier: {@code 0x0602}. Avoid (see {@link #DSA_SHA224}).
 	 */
-	DSA_SHA512((short) 0x0602),
+	DSA_SHA512((short) 0x0602, JcaSignatureAlgorithm.SHA512_WITH_DSA),
 
 	/**
 	 * ECDSA/SECP521r1/SHA512. ECDSA using NIST P-521 curve with SHA-512. TLS identifier: {@code 0x0603}. Rarely needed due
 	 * to performance overhead.
 	 */
-	ECDSA_SECP521R1_SHA512((short) 0x0603),
+	ECDSA_SECP521R1_SHA512((short) 0x0603, JcaSignatureAlgorithm.SHA512_WITH_ECDSA),
 
 	/**
 	 * RSA/PKCS1/SHA1. RSA with PKCS#1 v1.5 padding and SHA-1. TLS identifier: {@code 0x0201}. <b>Deprecated</b> due to
 	 * SHA-1 collisions.
 	 */
 	@Deprecated
-	RSA_PKCS1_SHA1((short) 0x0201),
+	RSA_PKCS1_SHA1((short) 0x0201, JcaSignatureAlgorithm.SHA1_WITH_RSA),
 
 	/**
 	 * ECDSA/SHA1. ECDSA with SHA-1. TLS identifier: {@code 0x0203}. <b>Deprecated</b> (see {@link #RSA_PKCS1_SHA1}).
 	 */
 	@Deprecated
-	ECDSA_SHA1((short) 0x0203),
+	ECDSA_SHA1((short) 0x0203, JcaSignatureAlgorithm.SHA1_WITH_ECDSA),
 
 	/**
 	 * EdDSA/Ed25519. Ed25519 (EdDSA with Curve25519). TLS identifier: {@code 0x0807}. <b>Preferred</b> for modern
 	 * deployments (fast, secure).
 	 */
-	EDDSA_ED25519((short) 0x0807),
+	EDDSA_ED25519((short) 0x0807, JcaSignatureAlgorithm.ED25519),
 
 	/**
 	 * EdDSA/Ed448. Ed448 (EdDSA with Curve448). TLS identifier: {@code 0x0808}. Use for post-quantum resistance where
 	 * performance is acceptable.
 	 */
-	EDDSA_ED448((short) 0x0808),
+	EDDSA_ED448((short) 0x0808, JcaSignatureAlgorithm.ED448),
 
 	/**
 	 * RSA/PSS/PSS/SHA256. RSA-PSS with PSS padding using SHA-256 and MGF1. TLS identifier: {@code 0x0809}. Recommended over
 	 * PKCS#1 for RSA.
 	 */
-	RSA_PSS_PSS_SHA256((short) 0x0809),
+	RSA_PSS_PSS_SHA256((short) 0x0809, JcaSignatureAlgorithm.RSASSA_PSS),
 
 	/**
 	 * RSA/PSS/RSAE/SHA256. RSA-PSS with PKCS#1v1.5 key and SHA-256. TLS identifier: {@code 0x0804}. Widely supported
 	 * RSA-PSS variant.
 	 */
-	RSA_PSS_RSAE_SHA256((short) 0x0804),
+	RSA_PSS_RSAE_SHA256((short) 0x0804, JcaSignatureAlgorithm.RSASSA_PSS),
 
 	/**
 	 * RSA/PSS/RSAE/SHA384. RSA-PSS with PKCS#1v1.5 key and SHA-384. TLS identifier: {@code 0x0805}. Higher-security RSA-PSS
 	 * option.
 	 */
-	RSA_PSS_RSAE_SHA384((short) 0x0805),
+	RSA_PSS_RSAE_SHA384((short) 0x0805, JcaSignatureAlgorithm.RSASSA_PSS),
 
 	/**
 	 * RSA/PSS/RSAE/SHA512. RSA-PSS with PKCS#1v1.5 key and SHA-512. TLS identifier: {@code 0x0806}. Highest-security
 	 * RSA-PSS option.
 	 */
-	RSA_PSS_RSAE_SHA512((short) 0x0806),
+	RSA_PSS_RSAE_SHA512((short) 0x0806, JcaSignatureAlgorithm.RSASSA_PSS),
 
 	/**
 	 * RSA/PSS/PSS/SHA384. RSA-PSS with PSS padding using SHA-384 and MGF1. TLS identifier: {@code 0x080A}. Less common than
 	 * {@link #RSA_PSS_RSAE_SHA384}.
 	 */
-	RSA_PSS_PSS_SHA384((short) 0x080A),
+	RSA_PSS_PSS_SHA384((short) 0x080A, JcaSignatureAlgorithm.RSASSA_PSS),
 
 	/**
 	 * RSA/PSS/PSS/SHA512. RSA-PSS with PSS padding using SHA-512 and MGF1. TLS identifier: {@code 0x080B}. Less common than
 	 * {@link #RSA_PSS_RSAE_SHA512}.
 	 */
-	RSA_PSS_PSS_SHA512((short) 0x080B);
+	RSA_PSS_PSS_SHA512((short) 0x080B, JcaSignatureAlgorithm.RSASSA_PSS);
 
 	/**
 	 * A list of algorithms considered cryptographically strong for TLS 1.3+. Includes:
@@ -195,12 +196,18 @@ public enum SignatureAlgorithm implements TLSObject {
 	private final short value;
 
 	/**
+	 * The JCA signature associated.
+	 */
+	private final JcaSignatureAlgorithm jcaSignature;
+
+	/**
 	 * Creates a {@link SignatureAlgorithm} with the given TLS-encoded value.
 	 *
 	 * @param value The 2-byte identifier assigned to this algorithm in the IANA registry.
 	 */
-	SignatureAlgorithm(final short value) {
+	SignatureAlgorithm(final short value, final JcaSignatureAlgorithm jcaSignature) {
 		this.value = value;
+		this.jcaSignature = jcaSignature;
 	}
 
 	/**
@@ -243,5 +250,23 @@ public enum SignatureAlgorithm implements TLSObject {
 	@Override
 	public byte[] toByteArray() {
 		return UInt16.toByteArray(value);
+	}
+
+	/**
+	 * Returns the standard JCA signature algorithm name corresponding to this TLS signature algorithm.
+	 *
+	 * @return the JCA algorithm name (e.g., "SHA256withRSA", "Ed25519")
+	 */
+	public String jcaName() {
+		return jcaSignature().value();
+	}
+
+	/**
+	 * Returns the standard JCA signature corresponding to this TLS signature algorithm.
+	 *
+	 * @return the JCA signature.
+	 */
+	public JcaSignatureAlgorithm jcaSignature() {
+		return jcaSignature;
 	}
 }

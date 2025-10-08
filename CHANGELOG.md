@@ -11,6 +11,10 @@
 - Renamed `OAuth2TokenProviderConfiguration` to `OAuth2TokenProviderOptions` so it's not confused with configuration objects in Spring environments.
 - Added `OAuth2Parameter.CLIENT_ASSERTION` that represents client assertion parameter used in JWT/SAML client authentication flows.
 - Added `OAuth2Parameter.CLIENT_ASSERTION_TYPE` that specifies the assertion type for client authentication.
+- Added `JcaSignatureAlgorithm` enumeration of standard JCA (Java Cryptography Architecture) signature algorithm names.
+- Added `JwsAlgorithm` enumeration of standard JWS (JSON Web Signature) algorithms.
+- Added `SignatureAlgorithm.jcaSignature` to extract the JCA signature for a TLS signature algorithm.
+- Added `Signer` utility class to easily sign and verify with a private and public key.
 
 ---
 

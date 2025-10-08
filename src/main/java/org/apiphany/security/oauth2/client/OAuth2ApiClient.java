@@ -4,7 +4,6 @@ import static org.apiphany.ParameterFunction.parameter;
 
 import java.nio.charset.StandardCharsets;
 import java.security.PrivateKey;
-import java.security.Signature;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Map;
@@ -22,7 +21,9 @@ import org.apiphany.lang.Strings;
 import org.apiphany.security.AuthenticationException;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationTokenProvider;
+import org.apiphany.security.JwsAlgorithm;
 import org.apiphany.security.MessageDigestAlgorithm;
+import org.apiphany.security.Signer;
 import org.apiphany.security.oauth2.AuthorizationGrantType;
 import org.apiphany.security.oauth2.ClientAuthenticationMethod;
 import org.apiphany.security.oauth2.OAuth2ClientRegistration;
@@ -324,26 +325,15 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 	/**
 	 * Signs the input with the given private key and algorithm.
 	 *
-	 * @param privateKey the private key to sign with.
-	 * @param alg the algorithm used for signing
-	 * @param input the input bytes to sign.
+	 * @param privateKey the private key to sign with
+	 * @param algorithm the algorithm used for signing (e.g. "RS256", "ES256", etc.)
+	 * @param input the input bytes to sign
 	 * @return signed output byte array
 	 */
-	private static byte[] sign(final PrivateKey privateKey, final String alg, final byte[] input) {
+	private static byte[] sign(final PrivateKey privateKey, final String algorithm, final byte[] input) {
 		try {
-			String jcaAlg = switch (alg) {
-				case "RS256" -> "SHA256withRSA";
-				case "RS384" -> "SHA384withRSA";
-				case "RS512" -> "SHA512withRSA";
-				case "ES256" -> "SHA256withECDSA";
-				case "ES384" -> "SHA384withECDSA";
-				case "ES512" -> "SHA512withECDSA";
-				default -> throw new IllegalArgumentException("Unsupported JWS alg: " + alg);
-			};
-			Signature sig = Signature.getInstance(jcaAlg);
-			sig.initSign(privateKey);
-			sig.update(input);
-			return sig.sign();
+			JwsAlgorithm signatureAlgorithm = JwsAlgorithm.fromString(algorithm);
+			return Signer.sign(privateKey, signatureAlgorithm, input);
 		} catch (Exception e) {
 			throw new SecurityException("Error signing JWT", e);
 		}
