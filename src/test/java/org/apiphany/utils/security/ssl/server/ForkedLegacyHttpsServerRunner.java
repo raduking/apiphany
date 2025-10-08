@@ -16,6 +16,11 @@ import org.morphix.lang.function.ThrowingBiFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Helper class to run a {@link LegacyHttpsServer} in a separate process so that it has a separated SSL context.
+ *
+ * @author Radu Sebastian LAZIN
+ */
 public class ForkedLegacyHttpsServerRunner {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ForkedLegacyHttpsServerRunner.class);
@@ -49,15 +54,12 @@ public class ForkedLegacyHttpsServerRunner {
 		int port = Sockets.findAvailableTcpPort();
 
 		Pair<Process, Thread> serverInfo = start(sslPropertiesJsonFile, host, port, socketTimeout, sslDebugInfo);
-		Process serverProcess = serverInfo.left();
-		Thread loggingThread = serverInfo.right();
-
 		try {
 			return statements.apply(host, port);
 		} catch (Throwable t) {
 			throw new IllegalStateException("Error executing statements: ", t);
 		} finally {
-			stop(serverProcess, loggingThread);
+			stop(serverInfo);
 		}
 	}
 
