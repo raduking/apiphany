@@ -13,7 +13,7 @@ public interface AuthenticationTokenProvider {
 
 	/**
 	 * Retrieves an authentication token.
-	 *
+	 * <p>
 	 * The implementation may generate a new token, retrieve a cached token, or obtain a token from an external
 	 * authentication service depending on the specific implementation strategy.
 	 *

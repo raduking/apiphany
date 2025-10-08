@@ -14,8 +14,7 @@ import org.apiphany.lang.annotation.Ignored;
  * Represents a client registration with an OAuth 2.0 or OpenID Connect 1.0 Provider. Contains all necessary
  * configurations for client authentication and authorization.
  *
- * @see <a target="_blank" href="https://tools.ietf.org/html/rfc6749#section-2">RFC 6749 Section 2 - Client
- * Registration</a>
+ * @see <a href="https://tools.ietf.org/html/rfc6749#section-2">RFC 6749 Section 2 - Client Registration</a>
  *
  * @author Radu Sebastian LAZIN
  */

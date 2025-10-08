@@ -20,7 +20,7 @@ public interface FromFunction<T extends TLSObject> {
 	 * Reads and parses a {@link TLSObject} of a given size in bytes from the provided input stream.
 	 *
 	 * @param inputStream the input stream to read from
-	 * @param size the number of bytes available for reading (may be ignored by some implementations)
+	 * @param size the number of bytes available for reading (can be ignored by some implementations)
 	 * @return the parsed TLSObject
 	 * @throws IOException If an I/O error occurs while reading from the stream
 	 * @throws IllegalArgumentException If the input data is malformed or invalid

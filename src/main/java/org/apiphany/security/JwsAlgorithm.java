@@ -81,7 +81,7 @@ public enum JwsAlgorithm {
 	EDDSA("EdDSA", JcaSignatureAlgorithm.ED25519);
 
 	/**
-	 * The name map for easy {@link #fromValue(String)} implementation.
+	 * The name map for easy {@link #fromString(String)} implementation.
 	 */
 	private static final Map<String, JwsAlgorithm> NAME_MAP = Enums.buildNameMap(values());
 

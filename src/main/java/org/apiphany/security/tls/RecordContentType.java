@@ -7,7 +7,7 @@ import org.morphix.lang.Enums;
 import org.morphix.lang.JavaObjects;
 
 /**
- * Represents the content type of a TLS record layer message.
+ * Represents the content type for TLS record layer message.
  * <p>
  * This enum defines the different types of messages that can be carried in the TLS record protocol, each with its own
  * parsing logic.
