@@ -4,13 +4,17 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.SecureRandom;
 import java.security.Security;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLParameters;
 
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.lang.collections.Lists;
 import org.apiphany.security.ssl.SSLContexts;
 import org.apiphany.security.ssl.SSLProperties;
 import org.apiphany.security.ssl.SSLProtocol;
@@ -27,6 +31,8 @@ import com.sun.net.httpserver.HttpsServer;
  * HTTPS server that allows enabling legacy cipher suites such as RC4.
  * <p>
  * WARNING: This should only be used for testing purposes.
+ *
+ * @author Radu Sebastian LAZIN
  */
 public class LegacyHttpsServer implements AutoCloseable {
 
@@ -38,9 +44,21 @@ public class LegacyHttpsServer implements AutoCloseable {
 
 	public static final String NAME = "Mumu";
 
-	private static final String[] LEGACY_CIPHER_SUITES = {
-			CipherSuite.TLS_RSA_WITH_RC4_128_SHA.name()
+	public static final List<CipherSuite> SUPPORTED_CIPHER_SUITES = List.of(
+			CipherSuite.TLS_RSA_WITH_RC4_128_SHA,
+			CipherSuite.TLS_RSA_WITH_AES_256_GCM_SHA384,
+			CipherSuite.TLS_RSA_WITH_AES_128_CBC_SHA,
+			CipherSuite.TLS_RSA_WITH_AES_128_CBC_SHA256);
+
+	private static final String[] LEGACY_CIPHER_SUITES = SUPPORTED_CIPHER_SUITES.stream().map(CipherSuite::name).toArray(String[]::new);
+
+	private static final String[] SSL_PROTOCOLS = {
+			SSLProtocol.TLS_1_2.value()
 	};
+
+	private static final List<String> LEGACY_ALGORITHMS = List.of(
+			"RC4",
+			"TLS_RSA_*");
 
 	private final HttpsServer httpsServer;
 	private final ExecutorService executor;
@@ -56,11 +74,19 @@ public class LegacyHttpsServer implements AutoCloseable {
 		this.originalDisabledAlgorithms = Security.getProperty(PROPERTY_JDK_TLS_DISABLED_ALGORITHMS);
 		String disabled = this.originalDisabledAlgorithms;
 		LOGGER.info("Disabled algorithms before: {}", disabled);
-		if (disabled.contains("RC4")) {
-			disabled = disabled.replace("RC4, ", "").replace("RC4", "");
-			Security.setProperty(PROPERTY_JDK_TLS_DISABLED_ALGORITHMS, disabled);
-			LOGGER.warn("RC4 was re-enabled for TLS (INSECURE).");
+
+		List<String> disabledAlgorithms = new ArrayList<>();
+		for (String legacyAlgorithm : LEGACY_ALGORITHMS) {
+			if (disabled.contains(legacyAlgorithm)) {
+				disabled = disabled.replace(legacyAlgorithm + ", ", "").replace(legacyAlgorithm, "");
+				LOGGER.warn("'{}' was re-enabled for TLS (INSECURE).", legacyAlgorithm);
+				disabledAlgorithms.add(legacyAlgorithm);
+			}
 		}
+		if (Lists.isNotEmpty(disabledAlgorithms)) {
+			Security.setProperty(PROPERTY_JDK_TLS_DISABLED_ALGORITHMS, disabled);
+		}
+		LOGGER.info("Disabled algorithms after: {}", disabled);
 
 		this.sslContext = new SSLContextAdapter(SSLContexts.create(sslProperties));
 		this.sslContext.setSecureRandom(secureRandom);
@@ -104,10 +130,8 @@ public class LegacyHttpsServer implements AutoCloseable {
 			httpsServer.setHttpsConfigurator(new HttpsConfigurator(sslContext) {
 				@Override
 				public void configure(HttpsParameters params) {
-					params.setCipherSuites(LEGACY_CIPHER_SUITES);
-					params.setProtocols(new String[] {
-							SSLProtocol.TLS_1_2.value()
-					});
+					SSLParameters sslParameters = new SSLParameters(LEGACY_CIPHER_SUITES, SSL_PROTOCOLS);
+					params.setSSLParameters(sslParameters);
 					LOGGER.debug("HTTPS parameters: {}", JsonBuilder.toJson(params));
 				}
 			});

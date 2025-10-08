@@ -2,15 +2,14 @@ package org.apiphany.security.tls;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.io.InputStream;
 import java.security.KeyPair;
 import java.time.Duration;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.lang.Pair;
 import org.apiphany.lang.Strings;
-import org.apiphany.lang.retry.Retry;
-import org.apiphany.lang.retry.WaitTimeout;
 import org.apiphany.net.Sockets;
 import org.apiphany.security.ssl.SSLProperties;
 import org.apiphany.security.ssl.SSLProtocol;
@@ -21,10 +20,14 @@ import org.apiphany.utils.security.ssl.server.ForkedLegacyHttpsServerRunner;
 import org.apiphany.utils.security.ssl.server.LegacyHttpsServer;
 import org.apiphany.utils.security.tls.TLSLoggingProvider;
 import org.apiphany.utils.security.tls.client.MinimalTLSClient;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Test class for {@link TLSObject} hierarchy with legacy cipher suite.
@@ -36,10 +39,23 @@ class TLSObjectLegacyCipherTest {
 
 	private static final String SSL_PROPERTIES_JSON_FILE = "/security/ssl/ssl-properties.json";
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(TLSObjectLegacyCipherTest.class);
+	private static final Duration DEBUG_SOCKET_TIMEOUT = Duration.ofMinutes(3);
+	private static final KeyPair CLIENT_KEY_PAIR = Keys.loadKeyPairFromResources();
 
 	private static final String LOCALHOST = "localhost";
-	private static final Duration DEBUG_SOCKET_TIMEOUT = Duration.ofMinutes(3);
+	private static final int PORT = Sockets.findAvailableTcpPort();
+
+	private static Pair<Process, Thread> serverInfo;
+
+	@BeforeAll
+	static void setUpAll() throws Exception {
+		serverInfo = ForkedLegacyHttpsServerRunner.start(SSL_PROPERTIES_JSON_FILE, LOCALHOST, PORT, DEBUG_SOCKET_TIMEOUT, false);
+	}
+
+	@AfterAll
+	static void tearDownAll() throws Exception {
+		ForkedLegacyHttpsServerRunner.stop(serverInfo);
+	}
 
 	@Test
 	@ForkedJvmTest(
@@ -79,51 +95,34 @@ class TLSObjectLegacyCipherTest {
 		assertNotNull(serverFinished);
 	}
 
+	@Disabled("This test is here to debug errors, the same is tested in shouldPerformTLS12HandshakeWithUnsupportedCipherSuitesWithResetSSL")
 	@Test
 	void shouldPerformTLS12HandshakeWithRC4128SHAWithResetSSL() throws Exception {
-		int port = Sockets.findAvailableTcpPort();
-
-		String[] cmd = new String[] {
-				"java",
-				"--add-opens", "java.base/sun.security.ssl=ALL-UNNAMED",
-				"--add-opens", "java.base/javax.net.ssl=ALL-UNNAMED",
-				"--add-opens", "jdk.httpserver/sun.net.httpserver=ALL-UNNAMED",
-				"-cp", System.getProperty("java.class.path"),
-				ForkedLegacyHttpsServerRunner.class.getName(),
-				String.valueOf(port),
-				SSL_PROPERTIES_JSON_FILE
-		};
-		Process serverProcess = new ProcessBuilder(cmd)
-				.redirectErrorStream(true)
-				.start();
-
-		Thread loggingThread = Thread.ofVirtual().start(() -> {
-			try (InputStream is = serverProcess.getInputStream()) {
-				is.transferTo(System.out);
-			} catch (Exception e) {
-				LOGGER.error("Error logging", e);
+		byte[] serverFinished = ForkedLegacyHttpsServerRunner.on(SSL_PROPERTIES_JSON_FILE, LOCALHOST, DEBUG_SOCKET_TIMEOUT, true, (host, port) -> {
+			List<CipherSuite> cipherSuites = List.of(CipherSuite.TLS_RSA_WITH_RC4_128_SHA);
+			try (MinimalTLSClient client = new MinimalTLSClient(host, port, DEBUG_SOCKET_TIMEOUT, CLIENT_KEY_PAIR, cipherSuites)) {
+				return client.performHandshake();
 			}
 		});
 
-		Retry retry = Retry.of(WaitTimeout.of(DEBUG_SOCKET_TIMEOUT, Duration.ofMillis(200)));
-		boolean canConnect = retry.when(() -> Sockets.canConnectTo(LOCALHOST, port), Boolean::booleanValue);
+		assertNotNull(serverFinished);
+	}
 
+	private static Stream<Arguments> provideUnsupportedCipherSuites() {
+		return Stream.of(
+				Arguments.of(CipherSuite.TLS_RSA_WITH_RC4_128_SHA),
+				Arguments.of(CipherSuite.TLS_RSA_WITH_AES_256_GCM_SHA384),
+				Arguments.of(CipherSuite.TLS_RSA_WITH_AES_128_CBC_SHA),
+				Arguments.of(CipherSuite.TLS_RSA_WITH_AES_128_CBC_SHA256));
+	}
+
+	@ParameterizedTest
+	@MethodSource("provideUnsupportedCipherSuites")
+	void shouldPerformTLS12HandshakeWithUnsupportedCipherSuitesWithResetSSL(final CipherSuite cipherSuite) throws Exception {
 		byte[] serverFinished = null;
-		try {
-			if (canConnect) {
-				KeyPair clientKeyPair = Keys.loadKeyPairFromResources();
-				List<CipherSuite> cipherSuites = List.of(CipherSuite.TLS_RSA_WITH_RC4_128_SHA);
-				try (MinimalTLSClient client = new MinimalTLSClient(LOCALHOST, port, DEBUG_SOCKET_TIMEOUT, clientKeyPair, cipherSuites)) {
-					serverFinished = client.performHandshake();
-				}
-			} else {
-				throw new IllegalStateException("Cannot connect to server: " + LOCALHOST + ":" + port);
-			}
-		} finally {
-			serverProcess.destroy();
-			if (null != loggingThread) {
-				loggingThread.join();
-			}
+		List<CipherSuite> cipherSuites = List.of(cipherSuite);
+		try (MinimalTLSClient client = new MinimalTLSClient(LOCALHOST, PORT, DEBUG_SOCKET_TIMEOUT, CLIENT_KEY_PAIR, cipherSuites)) {
+			serverFinished = client.performHandshake();
 		}
 
 		assertNotNull(serverFinished);

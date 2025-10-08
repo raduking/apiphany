@@ -92,6 +92,7 @@ public class MinimalTLSClient implements AutoCloseable {
 
 	public static final List<CipherSuite> SUPPORTED_CIPHER_SUITES = List.of(
 			CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+			CipherSuite.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
 			CipherSuite.TLS_RSA_WITH_AES_256_GCM_SHA384,
 			CipherSuite.TLS_RSA_WITH_AES_128_CBC_SHA,
 			CipherSuite.TLS_RSA_WITH_AES_128_CBC_SHA256,
