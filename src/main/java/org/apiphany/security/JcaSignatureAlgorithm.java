@@ -39,7 +39,7 @@ public enum JcaSignatureAlgorithm {
 	SHA1_WITH_RSA("SHA1withRSA"),
 
 	/**
-	 * RSA signature using SHA-224 hashing. Rarely used outside of FIPS contexts.
+	 * RSA signature using SHA-224 hashing. Rarely used outside FIPS contexts.
 	 */
 	SHA224_WITH_RSA("SHA224withRSA"),
 
