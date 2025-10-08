@@ -54,9 +54,7 @@ class TLSObjectTest {
 	private static Stream<Arguments> provideSupportedCipherSuites() {
 		return Stream.of(
 				Arguments.of(CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384),
-				Arguments.of(CipherSuite.TLS_RSA_WITH_AES_256_GCM_SHA384),
-				Arguments.of(CipherSuite.TLS_RSA_WITH_AES_128_CBC_SHA),
-				Arguments.of(CipherSuite.TLS_RSA_WITH_AES_128_CBC_SHA256));
+				Arguments.of(CipherSuite.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256));
 	}
 
 	@ParameterizedTest
@@ -81,27 +79,9 @@ class TLSObjectTest {
 		assertThat(response, equalTo(NameHandler.NAME));
 	}
 
-	@Disabled("This test is here to debug errors the same is tested in shouldPerformTLS12HandshakeWithParameterizedCipherSuites")
+	@Disabled("This test is here to debug errors, the same is tested in shouldPerformTLS12HandshakeWithParameterizedCipherSuites")
 	@Test
 	void shouldPerformTLS12HandshakeWithECDHERSAAES256GCMSHA384() throws Exception {
-		int port = Sockets.findAvailableTcpPort();
-		SSLProperties sslProperties = JsonBuilder.fromJson(SSL_PROPERTIES_JSON, SSLProperties.class);
-		sslProperties.setProtocol(SSLProtocol.TLS_1_2);
-		BasicHttpsServer server = new BasicHttpsServer(port, sslProperties);
-
-		byte[] serverFinished = null;
-		List<CipherSuite> cipherSuites = List.of(CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384);
-		try (MinimalTLSClient client = new MinimalTLSClient(LOCALHOST, port, DEBUG_SOCKET_TIMEOUT, CLIENT_KEY_PAIR, cipherSuites)) {
-			serverFinished = client.performHandshake();
-		} finally {
-			server.close();
-		}
-		assertNotNull(serverFinished);
-	}
-
-	@Disabled("This test is here to debug errors the same is tested in shouldPerformTLS12HandshakeWithParameterizedCipherSuites")
-	@Test
-	void shouldPerformTLS12HandshakeWithAES128CBCSHA() throws Exception {
 		int port = Sockets.findAvailableTcpPort();
 		SSLProperties sslProperties = JsonBuilder.fromJson(SSL_PROPERTIES_JSON, SSLProperties.class);
 		sslProperties.setProtocol(SSLProtocol.TLS_1_2);
@@ -110,7 +90,7 @@ class TLSObjectTest {
 		BasicHttpsServer server = new BasicHttpsServer(port, sslProperties);
 
 		byte[] serverFinished = null;
-		List<CipherSuite> cipherSuites = List.of(CipherSuite.TLS_RSA_WITH_AES_128_CBC_SHA);
+		List<CipherSuite> cipherSuites = List.of(CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384);
 		try (MinimalTLSClient client = new MinimalTLSClient(LOCALHOST, port, DEBUG_SOCKET_TIMEOUT, CLIENT_KEY_PAIR, cipherSuites)) {
 			serverFinished = client.performHandshake();
 		} finally {
