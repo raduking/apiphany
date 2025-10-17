@@ -51,6 +51,10 @@
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
+		<!-- Publishing dependencies versions -->
+		<gpg.plugin.version>3.2.8</gpg.plugin.version>
+		<central.publishing.plugin.version>0.9.0</central.publishing.plugin.version>
+
 		<!-- Testing dependencies versions -->
 		<testcontainers.keycloak.version>3.8.0</testcontainers.keycloak.version>
 		<nimbus.jose.jwt.version>10.5</nimbus.jose.jwt.version>
@@ -60,13 +64,11 @@
 		<jacoco.plugin.version>0.8.13</jacoco.plugin.version>
 		<project.info.reports.plugin.version>3.9.0</project.info.reports.plugin.version>
 
-		<!-- Publishing dependencies versions -->
-		<gpg.plugin.version>3.2.8</gpg.plugin.version>
-		<central.publishing.plugin.version>0.9.0</central.publishing.plugin.version>
-
 		<integration.tests.pattern>**/*IT.java</integration.tests.pattern>
+
 		<!-- Initialize the Jacoco arguments as empty by default -->
 		<jacocoArgLine />
+
 		<!--
 			The apiphanyArgLine property is only used during the build process of the library 
 			and does not affect projects that consume your jar as a dependency. 
