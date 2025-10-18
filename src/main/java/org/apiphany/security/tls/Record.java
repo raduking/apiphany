@@ -42,7 +42,7 @@ public class Record implements TLSObject {
 	/**
 	 * The maximum size of a TLS record: 16kb.
 	 */
-	public static final int MAX_SIZE = 16384;
+	public static final int MAX_SIZE = 2 << 13;
 
 	/**
 	 * The TLS record header.

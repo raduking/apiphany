@@ -32,6 +32,11 @@ class RecordTest {
 	}
 
 	@Test
+	void shouldHaveTheMaxSize16kb() {
+		assertThat(Record.MAX_SIZE, equalTo(16384));
+	}
+
+	@Test
 	void shouldReadCertificateTLSRecord() throws IOException {
 		@SuppressWarnings("resource")
 		InputStream is = createCertificateStream();
