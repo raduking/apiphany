@@ -108,10 +108,9 @@ public class BytesWrapper implements ByteSizeable, BinaryRepresentable {
 		if (0 == size) {
 			return empty();
 		}
-		byte[] bytes = new byte[size];
-		int bytesRead = is.read(bytes);
-		if (size != bytesRead) {
-			throw new EOFException("Error reading: " + size + " bytes (bytes read: " + bytesRead + ")");
+		byte[] bytes = is.readNBytes(size);
+		if (size != bytes.length) {
+			throw new EOFException("Error reading: " + size + " bytes (bytes read: " + bytes.length + ")");
 		}
 
 		return new BytesWrapper(bytes);
