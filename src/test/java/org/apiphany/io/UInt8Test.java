@@ -112,7 +112,7 @@ class UInt8Test {
 		UInt8 a = UInt8.of(BYTE_66);
 		UInt8 b = UInt8.of(BYTE_66);
 
-		// They wrap to the same unsigned value
+		// they wrap to the same unsigned value
 		assertThat(a.equals(b), is(true));
 		assertThat(a.hashCode(), equalTo(b.hashCode()));
 	}

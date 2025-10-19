@@ -172,7 +172,7 @@ public class KeyValueHttpServer implements AutoCloseable {
 		}
 
 		private static void handleOptions(HttpExchange exchange) throws IOException {
-			// Set CORS headers to allow requests from any origin and the methods the server supports
+			// set CORS headers to allow requests from any origin and the methods the server supports
 			exchange.getResponseHeaders().set(HttpHeader.ALLOW.value(), ALLOW_HEADER_VALUE);
 			exchange.getResponseHeaders().set(HttpHeader.ACCESS_CONTROL_ALLOW_ORIGIN.value(), "*");
 			exchange.getResponseHeaders().set(HttpHeader.ACCESS_CONTROL_ALLOW_METHODS.value(), ALLOW_HEADER_VALUE);
@@ -182,7 +182,7 @@ public class KeyValueHttpServer implements AutoCloseable {
 		}
 
 		private static void handleTrace(HttpExchange exchange) throws IOException {
-			// Reconstruct the request to echo back
+			// reconstruct the request to echo back
 			StringBuilder requestBuilder = new StringBuilder();
 			requestBuilder.append(exchange.getRequestMethod()).append(" ")
 					.append(exchange.getRequestURI()).append(" ")

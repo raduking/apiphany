@@ -281,7 +281,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 		if (body instanceof CharSequence cs) {
 			return new ByteArrayInputStream(cs.toString().getBytes());
 		}
-		// Fallback to toString()
+		// fallback to toString()
 		return new ByteArrayInputStream(Strings.safe(body.toString()).getBytes());
 	}
 

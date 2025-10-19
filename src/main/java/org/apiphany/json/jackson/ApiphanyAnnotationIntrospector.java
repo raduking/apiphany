@@ -87,7 +87,7 @@ public class ApiphanyAnnotationIntrospector extends NopAnnotationIntrospector { 
 	@Override
 	public JsonProperty.Access findPropertyAccess(final Annotated a) {
 		if (_hasAnnotation(a, Ignored.class)) {
-			// Exclude from serialization but allow deserialization
+			// exclude from serialization but allow deserialization
 			return JsonProperty.Access.WRITE_ONLY;
 		}
 		return super.findPropertyAccess(a);
@@ -110,7 +110,7 @@ public class ApiphanyAnnotationIntrospector extends NopAnnotationIntrospector { 
 	 */
 	@Override
 	public Boolean hasAsValue(final Annotated a) {
-		// Tells Jackson that this method/field should be used as the "value" during serialization
+		// tells Jackson that this method/field should be used as the "value" during serialization
 		if (a.hasAnnotation(AsValue.class)) {
 			return Boolean.TRUE;
 		}

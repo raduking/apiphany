@@ -92,7 +92,8 @@ public class ByteBufferInputStream extends InputStream {
 		if (!byteBuffer.hasRemaining()) {
 			return -1;
 		}
-		return byteBuffer.get() & 0xFF; // Convert to unsigned byte
+		// convert to unsigned byte
+		return byteBuffer.get() & 0xFF;
 	}
 
 	/**

@@ -231,7 +231,7 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 	 * @return the authentication token with `private_key_jwt`.
 	 */
 	private AuthenticationToken getTokenWithPrivateKeyJwt() {
-		// Build a JWT signed with client private key (RSA or EC)
+		// build a JWT signed with client private key (RSA or EC)
 		String clientAssertion = buildClientAssertionPrivateKey(
 				clientRegistration.getClientId(),
 				providerDetails.getTokenUri(),

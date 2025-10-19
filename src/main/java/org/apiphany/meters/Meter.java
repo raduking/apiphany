@@ -13,10 +13,10 @@ import org.morphix.lang.JavaObjects;
  * <pre>{@code
  * Meter meter = registry.counter("http.requests");
  *
- * // Access the meter's name
+ * // access the meter's name
  * String name = meter.getName();
  *
- * // Safely unwrap to a concrete type
+ * // aafely unwrap to a concrete type
  * MeterCounter counter = meter.unwrap(MeterCounter.class);
  * counter.increment();
  * }</pre>

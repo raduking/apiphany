@@ -14,10 +14,10 @@ import java.time.Duration;
  * <pre>{@code
  * MeterTimer requestTimer = registry.timer("http.requests");
  *
- * // Record a known duration
+ * // record a known duration
  * requestTimer.record(Duration.ofMillis(250));
  *
- * // Record the execution of a code block
+ * // record the execution of a code block
  * long start = System.nanoTime();
  * try {
  * 	service.processRequest();

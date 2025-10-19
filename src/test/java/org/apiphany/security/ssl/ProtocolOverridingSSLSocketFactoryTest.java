@@ -317,7 +317,7 @@ class ProtocolOverridingSSLSocketFactoryTest {
 
 		Socket result = factory.createSocket();
 
-		// Verify socket is not closed (caller's responsibility)
+		// verify socket is not closed (caller's responsibility)
 		verify(mockSSLSocket, never()).close();
 		assertThat(result, is(mockSSLSocket));
 	}

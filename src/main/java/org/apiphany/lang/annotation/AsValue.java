@@ -33,7 +33,7 @@ import java.lang.annotation.Target;
  * 	}
  * }
  *
- * // Serializes to "ok" or "error" instead of a full object
+ * // serializes to "ok" or "error" instead of a full object
  * }</pre>
  *
  * <p>

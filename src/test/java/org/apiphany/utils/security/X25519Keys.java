@@ -107,7 +107,7 @@ public class X25519Keys implements KeyExchangeHandler {
 
 		byte[] beNormalized = new byte[PUBLIC_KEY_SIZE];
 		if (bigEndian.length > PUBLIC_KEY_SIZE) {
-			// Strip sign byte if present
+			// strip sign byte if present
 			if (bigEndian.length == PUBLIC_KEY_SIZE + 1 && bigEndian[0] == 0x00) {
 				System.arraycopy(bigEndian, 1, beNormalized, 0, PUBLIC_KEY_SIZE);
 			} else {

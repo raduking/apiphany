@@ -101,34 +101,34 @@ class RecordTest {
 		Certificates certificates = new Certificates(List.of(certificate));
 		byte[] handshakeBytes = new Handshake(handshakeHeader, certificates).toByteArray(); // includes 4-byte handshake header
 
-		// Split the handshake into two fragments (simulate TLS record fragmentation)
+		// split the handshake into two fragments (simulate TLS record fragmentation)
 		int firstFragmentLen = SPLIT_POINT;
 		byte[] fragment1 = Arrays.copyOfRange(handshakeBytes, 0, firstFragmentLen);
 		byte[] fragment2 = Arrays.copyOfRange(handshakeBytes, firstFragmentLen, handshakeBytes.length);
 
-		// Build the first TLS record with HANDSHAKE type
+		// build the first TLS record with HANDSHAKE type
 		RecordHeader header1 = new RecordHeader(RecordContentType.HANDSHAKE, SSLProtocol.TLS_1_2, (short) fragment1.length);
 		byte[] record1Bytes = Bytes.concatenate(header1.toByteArray(), fragment1);
 
-		// Build the second TLS record with HANDSHAKE type, only continuation bytes
+		// build the second TLS record with HANDSHAKE type, only continuation bytes
 		RecordHeader header2 = new RecordHeader(RecordContentType.HANDSHAKE, SSLProtocol.TLS_1_2, (short) fragment2.length);
 		byte[] record2Bytes = Bytes.concatenate(header2.toByteArray(), fragment2);
 
-		// Combine both records into a single input stream
+		// combine both records into a single input stream
 		return new ByteArrayInputStream(Bytes.concatenate(record1Bytes, record2Bytes));
 	}
 
 	private static InputStream createFragmentedByteByByteCertificateStream() throws IOException {
-		// Create full handshake bytes (including header)
+		// create full handshake bytes (including header)
 		Certificate certificate = new Certificate(CERTIFICATE_BYTES);
 		Certificates certificates = new Certificates(List.of(certificate));
 		Handshake handshake = new Handshake(certificates);
 		byte[] handshakeBytes = handshake.toByteArray(); // includes 4-byte handshake header
 
-		// Build an input stream with each byte in its own TLS record
+		// build an input stream with each byte in its own TLS record
 		ByteArrayOutputStream fragmentedStream = new ByteArrayOutputStream();
 		for (byte b : handshakeBytes) {
-			// Each TLS record contains a single byte of handshake data
+			// each TLS record contains a single byte of handshake data
 			RecordHeader header = new RecordHeader(RecordContentType.HANDSHAKE, SSLProtocol.TLS_1_2, (short) 1);
 			fragmentedStream.write(header.toByteArray());
 			fragmentedStream.write(b);
