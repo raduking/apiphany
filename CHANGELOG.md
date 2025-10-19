@@ -2,6 +2,10 @@
 
 ---
 
+`1.0.15`
+
+---
+
 `1.0.14`
 
 - Added overloads for `Sockets.findAvailableTcpPort`.
