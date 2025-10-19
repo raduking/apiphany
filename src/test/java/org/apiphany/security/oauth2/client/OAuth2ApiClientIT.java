@@ -18,6 +18,7 @@ import org.apiphany.io.ByteBufferInputStream;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.security.AuthenticationToken;
+import org.apiphany.security.JwsAlgorithm;
 import org.apiphany.security.oauth2.ClientAuthenticationMethod;
 import org.apiphany.security.oauth2.OAuth2ClientRegistration;
 import org.apiphany.security.oauth2.OAuth2ProviderDetails;
@@ -166,7 +167,8 @@ class OAuth2ApiClientIT {
 
 		RSAPrivateKey privateKey = Keys.loadRSAPrivateKey("/security/oauth2/rsa_private.pem");
 
-		try (OAuth2ApiClient oAuth2ApiClient = new OAuth2ApiClient(pkClientRegistration, providerDetails, privateKey, algorithm, exchangeClient)) {
+		JwsAlgorithm jwsAlgorithm = JwsAlgorithm.fromString(algorithm);
+		try (OAuth2ApiClient oAuth2ApiClient = new OAuth2ApiClient(pkClientRegistration, providerDetails, privateKey, jwsAlgorithm, exchangeClient)) {
 			AuthenticationToken token = oAuth2ApiClient.getAuthenticationToken(ClientAuthenticationMethod.PRIVATE_KEY_JWT);
 
 			assertThat(token, notNullValue());
@@ -181,9 +183,10 @@ class OAuth2ApiClientIT {
 
 		RSAPrivateKey privateKey = Keys.loadRSAPrivateKey("/security/oauth2/rsa_private.pem");
 
+		JwsAlgorithm jwsAlgorithm = JwsAlgorithm.fromString(algorithm);
 		ExchangeClientBuilder exchangeClientBuilder = ExchangeClientBuilder.create().client(JavaNetHttpExchangeClient.class);
 		try (OAuth2ApiClient oAuth2ApiClient =
-				new OAuth2ApiClient(pkClientRegistration, providerDetails, privateKey, algorithm, exchangeClientBuilder)) {
+				new OAuth2ApiClient(pkClientRegistration, providerDetails, privateKey, jwsAlgorithm, exchangeClientBuilder)) {
 			AuthenticationToken token = oAuth2ApiClient.getAuthenticationToken(ClientAuthenticationMethod.PRIVATE_KEY_JWT);
 
 			assertThat(token, notNullValue());

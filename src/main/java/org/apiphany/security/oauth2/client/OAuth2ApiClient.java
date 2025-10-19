@@ -62,9 +62,9 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 	private PrivateKey privateKey;
 
 	/**
-	 * The signing algorithm used when {@link ClientAuthenticationMethod#PRIVATE_KEY_JWT} is used.
+	 * The JWS signing algorithm used when {@link ClientAuthenticationMethod#PRIVATE_KEY_JWT} is used.
 	 */
-	private String signingAlgorithm;
+	private JwsAlgorithm signingAlgorithm;
 
 	/**
 	 * Constructs a new OAuth2 API client with the specified configurations.
@@ -104,7 +104,7 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 	 * @param httpExchangeClient the HTTP exchange client to use for requests
 	 */
 	public OAuth2ApiClient(final OAuth2ClientRegistration clientRegistration, final OAuth2ProviderDetails providerDetails,
-			final PrivateKey privateKey, final String signingAlgorithm, final ExchangeClient httpExchangeClient) {
+			final PrivateKey privateKey, final JwsAlgorithm signingAlgorithm, final ExchangeClient httpExchangeClient) {
 		this(clientRegistration, providerDetails, httpExchangeClient);
 		this.privateKey = privateKey;
 		this.signingAlgorithm = signingAlgorithm;
@@ -120,7 +120,7 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 	 * @param exchangeClientBuilder the HTTP exchange client to use for requests
 	 */
 	public OAuth2ApiClient(final OAuth2ClientRegistration clientRegistration, final OAuth2ProviderDetails providerDetails,
-			final PrivateKey privateKey, final String signingAlgorithm, final ExchangeClientBuilder exchangeClientBuilder) {
+			final PrivateKey privateKey, final JwsAlgorithm signingAlgorithm, final ExchangeClientBuilder exchangeClientBuilder) {
 		this(clientRegistration, providerDetails, exchangeClientBuilder);
 		this.privateKey = privateKey;
 		this.signingAlgorithm = signingAlgorithm;
@@ -289,7 +289,7 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 	 * @return the client assertion private key
 	 */
 	public static String buildClientAssertionPrivateKey(final String clientId, final String tokenEndpoint, final PrivateKey privateKey,
-			final String algorithm) {
+			final JwsAlgorithm algorithm) {
 		Map<String, Object> header = Map.of("alg", algorithm, "typ", "JWT");
 		Map<String, Object> claims = defaultClaims(clientId, tokenEndpoint);
 
@@ -300,7 +300,8 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 		String payloadB64 = BASE64_URL_ENCODER.encodeToString(payloadJson.getBytes(StandardCharsets.UTF_8));
 		String signingInput = headerB64 + "." + payloadB64;
 
-		byte[] signature = sign(privateKey, algorithm, signingInput.getBytes(StandardCharsets.UTF_8));
+		byte[] signature = Signer.sign(privateKey, algorithm, signingInput.getBytes(StandardCharsets.UTF_8));
+
 		return signingInput + "." + BASE64_URL_ENCODER.encodeToString(signature);
 	}
 
@@ -321,22 +322,5 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 				"jti", UUID.randomUUID().toString(),
 				"iat", now.getEpochSecond(),
 				"exp", now.plusSeconds(defaultExpiration.toSeconds()).getEpochSecond());
-	}
-
-	/**
-	 * Signs the input with the given private key and algorithm.
-	 *
-	 * @param privateKey the private key to sign with
-	 * @param algorithm the algorithm used for signing (e.g. "RS256", "ES256", etc.)
-	 * @param input the input bytes to sign
-	 * @return signed output byte array
-	 */
-	private static byte[] sign(final PrivateKey privateKey, final String algorithm, final byte[] input) {
-		try {
-			JwsAlgorithm signatureAlgorithm = JwsAlgorithm.fromString(algorithm);
-			return Signer.sign(privateKey, signatureAlgorithm, input);
-		} catch (Exception e) {
-			throw new SecurityException("Error signing JWT", e);
-		}
 	}
 }
