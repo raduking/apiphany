@@ -182,7 +182,7 @@ public class MinimalTLSClient implements AutoCloseable {
 	public byte[] performHandshake() throws Exception {
 		connect();
 
-		// 1. Send Client Hello
+		// 1. Send Client Hello (maybe make a builder)
 		ClientHello clientHello = new ClientHello(cipherSuites, List.of(host), SUPPORTED_NAMED_CURVES, SignatureAlgorithm.STRONG_ALGORITHMS);
 		Record clientHelloRecord = new Record(SSLProtocol.TLS_1_0, clientHello);
 		sendRecord(clientHelloRecord);

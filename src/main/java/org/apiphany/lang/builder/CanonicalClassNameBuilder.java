@@ -37,7 +37,7 @@ public class CanonicalClassNameBuilder extends DelimitedStringBuilder {
 	 */
 	@Override
 	public CanonicalClassNameBuilder asSuffix() {
-		// Class names should not be built as suffixes.
+		// class names should not be built as suffixes.
 		return this;
 	}
 }

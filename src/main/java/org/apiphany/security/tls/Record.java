@@ -155,7 +155,7 @@ public class Record implements TLSObject {
 			int handshakeHeaderSize = 0;
 			while (handshakeHeaderSize < HandshakeHeader.BYTES) {
 				if (remainingRecordSize == 0) {
-					// Need next record to finish the header (rare but legal)
+					// need next record to finish the header (rare but legal)
 					RecordHeader nextRecord = RecordHeader.from(is, RecordContentType.HANDSHAKE);
 					remainingRecordSize = nextRecord.getLength().getValue();
 				}
@@ -174,7 +174,7 @@ public class Record implements TLSObject {
 				remainingRecordSize -= available;
 				remainingHandshakeSize -= available;
 			}
-			// If the body spills, keep pulling subsequent HANDSHAKE records
+			// if the body spills, keep pulling subsequent HANDSHAKE records
 			while (remainingHandshakeSize > 0) {
 				RecordHeader nextRecord = RecordHeader.from(is, RecordContentType.HANDSHAKE);
 				int chunkSize = Math.min(nextRecord.getLength().getValue(), remainingHandshakeSize);

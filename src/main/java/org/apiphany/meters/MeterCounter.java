@@ -19,13 +19,13 @@ package org.apiphany.meters;
  * <pre>{@code
  * MeterCounter retries = registry.counter("retries.total");
  *
- * // Increment by one
+ * // increment by one
  * retries.increment();
  *
- * // Increment by a custom amount
+ * // increment by a custom amount
  * retries.increment(3.0);
  *
- * // Retrieve current count
+ * // retrieve current count
  * double totalRetries = retries.count();
  * }</pre>
  *

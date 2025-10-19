@@ -70,7 +70,7 @@ public class LegacyHttpsServer implements AutoCloseable {
 	public LegacyHttpsServer(final int port, final SSLProperties sslProperties, SecureRandom secureRandom) {
 		this.executor = Executors.newVirtualThreadPerTaskExecutor();
 
-		// Remove RC4 from disabled algorithms
+		// remove RC4 from disabled algorithms
 		this.originalDisabledAlgorithms = Security.getProperty(PROPERTY_JDK_TLS_DISABLED_ALGORITHMS);
 		String disabled = this.originalDisabledAlgorithms;
 		LOGGER.info("Disabled algorithms before: {}", disabled);
@@ -112,7 +112,7 @@ public class LegacyHttpsServer implements AutoCloseable {
 			httpsServer.stop(0);
 			executor.close();
 		} finally {
-			// Restore global security property
+			// restore global security property
 			if (originalDisabledAlgorithms != null) {
 				Security.setProperty(PROPERTY_JDK_TLS_DISABLED_ALGORITHMS, originalDisabledAlgorithms);
 				LOGGER.info("Restored {}: {}", PROPERTY_JDK_TLS_DISABLED_ALGORITHMS, originalDisabledAlgorithms);

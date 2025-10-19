@@ -34,7 +34,7 @@ public class StatusRequest implements TLSExtension {
 	/**
 	 * The certificate status type (1 for OCSP).
 	 */
-	private final UInt8 certificateStatusType; // OCSP
+	private final UInt8 certificateStatusType;
 
 	/**
 	 * The size of responder ID list (typically 0).

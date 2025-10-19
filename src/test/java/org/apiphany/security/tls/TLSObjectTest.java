@@ -120,7 +120,7 @@ class TLSObjectTest {
 
 	@Test
 	void shouldPerformTLS12HandshakeWithECDHERSAAES256GCMSHA384WithOpenSSL() throws Exception {
-		// Assumes OpenSSL is running on port 4433 you can run it with the command described in the keystore-generation.md file.
+		// assumes OpenSSL is running on port 4433 you can run it with the command described in the keystore-generation.md file.
 		int port = 4433;
 		assumeTrue(Sockets.canConnectTo(LOCALHOST, port), LOCALHOST + ":" + port + " is unreachable, skipping test.");
 
@@ -137,7 +137,7 @@ class TLSObjectTest {
 
 	@Test
 	void shouldPerformTLS12HandshakeWithAES128CBCSHAWithOpenSSL() throws Exception {
-		// Assumes OpenSSL is running on port 4433 you can run it with the command described in the keystore-generation.md file.
+		// assumes OpenSSL is running on port 4433 you can run it with the command described in the keystore-generation.md file.
 		int port = 4433;
 		assumeTrue(Sockets.canConnectTo(LOCALHOST, port), LOCALHOST + ":" + port + " is unreachable, skipping test.");
 
