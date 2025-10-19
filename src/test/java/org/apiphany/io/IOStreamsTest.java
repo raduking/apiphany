@@ -16,11 +16,11 @@ import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 
 /**
- * Test class {@link IO}.
+ * Test class {@link IOStreams}.
  *
  * @author Radu Sebastian LAZIN
  */
-class IOTest {
+class IOStreamsTest {
 
 	private static final int SIZE = 48;
 	private static final byte[] BYTES = new byte[SIZE];
@@ -32,13 +32,13 @@ class IOTest {
 	void shouldReadChunkFromInputStream() throws IOException {
 		ByteArrayInputStream bis = new ByteArrayInputStream(BYTES);
 
-		byte[] halfChunk = IO.readChunk(bis, SIZE / 2);
+		byte[] halfChunk = IOStreams.readChunk(bis, SIZE / 2);
 		assertThat(halfChunk.length, equalTo(SIZE / 2));
 
-		halfChunk = IO.readChunk(bis, SIZE / 2);
+		halfChunk = IOStreams.readChunk(bis, SIZE / 2);
 		assertThat(halfChunk.length, equalTo(SIZE / 2));
 
-		EOFException e = assertThrows(EOFException.class, () -> IO.readChunk(bis, SIZE));
+		EOFException e = assertThrows(EOFException.class, () -> IOStreams.readChunk(bis, SIZE));
 		assertThat(e.getMessage(), equalTo("Stream closed; need " + SIZE + " more bytes"));
 	}
 
@@ -49,13 +49,13 @@ class IOTest {
 		@SuppressWarnings("resource")
 		ByteBufferInputStream bis = ByteBufferInputStream.of(buffer);
 
-		byte[] halfChunk = IO.readChunk(bis, SIZE / 2);
+		byte[] halfChunk = IOStreams.readChunk(bis, SIZE / 2);
 		assertThat(halfChunk.length, equalTo(SIZE / 2));
 
-		halfChunk = IO.readChunk(bis, SIZE / 2);
+		halfChunk = IOStreams.readChunk(bis, SIZE / 2);
 		assertThat(halfChunk.length, equalTo(SIZE / 2));
 
-		EOFException e = assertThrows(EOFException.class, () -> IO.readChunk(bis, SIZE));
+		EOFException e = assertThrows(EOFException.class, () -> IOStreams.readChunk(bis, SIZE));
 		assertThat(e.getMessage(), equalTo("Stream closed; need " + SIZE + " more bytes"));
 	}
 
@@ -65,9 +65,9 @@ class IOTest {
 
 		int size = 10;
 		byte[] buffer = new byte[size];
-		EOFException expected = IO.eofExceptionBytesNeeded(size - 1);
+		EOFException expected = IOStreams.eofExceptionBytesNeeded(size - 1);
 
-		EOFException e = assertThrows(EOFException.class, () -> IO.readFully(bis, buffer, 0, size));
+		EOFException e = assertThrows(EOFException.class, () -> IOStreams.readFully(bis, buffer, 0, size));
 		assertThat(e.getMessage(), equalTo(expected.getMessage()));
 	}
 
@@ -77,9 +77,9 @@ class IOTest {
 
 		int size = 10;
 		ByteArrayOutputStream bos = new ByteArrayOutputStream(size);
-		EOFException expected = IO.eofExceptionBytesNeeded(size - 1);
+		EOFException expected = IOStreams.eofExceptionBytesNeeded(size - 1);
 
-		EOFException e = assertThrows(EOFException.class, () -> IO.copy(bis, bos, size));
+		EOFException e = assertThrows(EOFException.class, () -> IOStreams.copy(bis, bos, size));
 		assertThat(e.getMessage(), equalTo(expected.getMessage()));
 	}
 
@@ -88,7 +88,7 @@ class IOTest {
 		ByteArrayInputStream bis = mock(ByteArrayInputStream.class);
 		ByteArrayOutputStream bos = mock(ByteArrayOutputStream.class);
 
-		IO.copy(bis, bos, 0);
+		IOStreams.copy(bis, bos, 0);
 
 		verifyNoInteractions(bis, bos);
 	}

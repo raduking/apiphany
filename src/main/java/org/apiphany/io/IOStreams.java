@@ -10,7 +10,7 @@ import java.io.OutputStream;
  *
  * @author Radu Sebastian LAZIN
  */
-public interface IO {
+public interface IOStreams {
 
 	/**
 	 * Default buffer size when working with buffers and streams (8192 bytes).

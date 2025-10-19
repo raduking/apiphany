@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import org.apiphany.io.IO;
+import org.apiphany.io.IOStreams;
 import org.morphix.lang.function.Consumers;
 
 /**
@@ -173,7 +173,7 @@ public interface Strings {
 	 * @return the input stream as string
 	 */
 	static String toString(final InputStream inputStream, final Charset encoding) {
-		return toString(inputStream, encoding, IO.DEFAULT_BUFFER_SIZE, Consumers.consumeNothing());
+		return toString(inputStream, encoding, IOStreams.DEFAULT_BUFFER_SIZE, Consumers.consumeNothing());
 	}
 
 	/**
@@ -216,7 +216,7 @@ public interface Strings {
 	 * @return the file content as string
 	 */
 	static String fromFile(final String path) {
-		return fromFile(path, DEFAULT_CHARSET, IO.DEFAULT_BUFFER_SIZE);
+		return fromFile(path, DEFAULT_CHARSET, IOStreams.DEFAULT_BUFFER_SIZE);
 	}
 
 	/**
@@ -229,7 +229,7 @@ public interface Strings {
 	 * @return the file content as string
 	 */
 	static String fromFile(final String path, final Consumer<Exception> onError) {
-		return fromFile(path, DEFAULT_CHARSET, IO.DEFAULT_BUFFER_SIZE, onError);
+		return fromFile(path, DEFAULT_CHARSET, IOStreams.DEFAULT_BUFFER_SIZE, onError);
 	}
 
 	/**
