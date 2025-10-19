@@ -74,7 +74,7 @@ public class UInt8 implements ByteSizeable, BinaryRepresentable {
 	public static UInt8 from(final InputStream is) throws IOException {
 		int byteRead = is.read();
 		if (-1 == byteRead) {
-			throw new EOFException("Error reading " + BYTES + " bytes");
+			throw IOStreams.eofExceptionBytesNeeded(BYTES, BYTES);
 		}
 		return UInt8.of((byte) byteRead);
 	}

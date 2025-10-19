@@ -168,15 +168,15 @@ class UInt64Test {
 		ByteArrayInputStream bis = new ByteArrayInputStream(Bytes.EMPTY);
 
 		EOFException e = assertThrows(EOFException.class, () -> UInt64.from(bis));
-		assertThat(e.getMessage(), equalTo("Error reading " + UInt64.BYTES + " bytes"));
+		assertThat(e.getMessage(), equalTo("Stream closed, need " + UInt64.BYTES + " more bytes out of " + UInt64.BYTES));
 	}
 
 	@Test
 	void shouldThrowExceptionWhenInputStreamHasLessElements() {
-		ByteArrayInputStream bis = new ByteArrayInputStream(new byte[] { 0x12, 0x13, 0x14 });
+		ByteArrayInputStream bis = new ByteArrayInputStream(new byte[] { 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18 });
 
 		EOFException e = assertThrows(EOFException.class, () -> UInt64.from(bis));
-		assertThat(e.getMessage(), equalTo("Error reading " + UInt64.BYTES + " bytes"));
+		assertThat(e.getMessage(), equalTo("Stream closed, need " + (UInt64.BYTES - 7) + " more bytes out of " + UInt64.BYTES));
 	}
 
 }

@@ -39,7 +39,7 @@ class UInt32Test {
 		ByteArrayInputStream bis = new ByteArrayInputStream(Bytes.EMPTY);
 
 		EOFException e = assertThrows(EOFException.class, () -> UInt32.from(bis));
-		assertThat(e.getMessage(), equalTo("Error reading " + UInt32.BYTES + " bytes"));
+		assertThat(e.getMessage(), equalTo("Stream closed, need " + UInt32.BYTES + " more bytes out of " + UInt32.BYTES));
 	}
 
 	@Test
@@ -47,7 +47,7 @@ class UInt32Test {
 		ByteArrayInputStream bis = new ByteArrayInputStream(new byte[] { 0x12, 0x13, 0x14 });
 
 		EOFException e = assertThrows(EOFException.class, () -> UInt32.from(bis));
-		assertThat(e.getMessage(), equalTo("Error reading " + UInt32.BYTES + " bytes"));
+		assertThat(e.getMessage(), equalTo("Stream closed, need " + (UInt32.BYTES - 3) + " more bytes out of " + UInt32.BYTES));
 	}
 
 	@Test

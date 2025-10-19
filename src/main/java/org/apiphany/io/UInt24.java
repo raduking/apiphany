@@ -80,10 +80,8 @@ public class UInt24 implements ByteSizeable, BinaryRepresentable {
 	 * @throws NullPointerException if {@code is} is {@code null}
 	 */
 	public static UInt24 from(final InputStream is) throws IOException {
-		byte[] buffer = is.readNBytes(BYTES);
-		if (BYTES != buffer.length) {
-			throw new EOFException("Error reading " + BYTES + " bytes");
-		}
+		byte[] buffer = new byte[BYTES];
+		IOStreams.readFully(is, buffer, 0, BYTES);
 		int int24 = ((buffer[0] & 0xFF) << 16) |
 				((buffer[1] & 0xFF) << 8) |
 				(buffer[2] & 0xFF);

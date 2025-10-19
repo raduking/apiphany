@@ -114,7 +114,7 @@ class UInt16Test {
 		ByteArrayInputStream bis = new ByteArrayInputStream(Bytes.EMPTY);
 
 		EOFException e = assertThrows(EOFException.class, () -> UInt16.from(bis));
-		assertThat(e.getMessage(), equalTo("Error reading " + UInt16.BYTES + " bytes"));
+		assertThat(e.getMessage(), equalTo("Stream closed, need " + UInt16.BYTES + " more bytes out of " + UInt16.BYTES));
 	}
 
 	@Test
@@ -122,6 +122,6 @@ class UInt16Test {
 		ByteArrayInputStream bis = new ByteArrayInputStream(new byte[] { 0x12 });
 
 		EOFException e = assertThrows(EOFException.class, () -> UInt16.from(bis));
-		assertThat(e.getMessage(), equalTo("Error reading " + UInt16.BYTES + " bytes"));
+		assertThat(e.getMessage(), equalTo("Stream closed, need " + (UInt16.BYTES - 1) + " more bytes out of " + UInt16.BYTES));
 	}
 }
