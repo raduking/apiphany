@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.function.BiFunction;
 
 import org.apiphany.io.ByteSizeable;
-import org.apiphany.io.IO;
+import org.apiphany.io.IOStreams;
 import org.apiphany.io.UInt16;
 import org.apiphany.lang.annotation.Ignored;
 import org.apiphany.lang.collections.Lists;
@@ -160,7 +160,7 @@ public class Record implements TLSObject {
 					remainingRecordSize = nextRecord.getLength().getValue();
 				}
 				int available = Math.min(HandshakeHeader.BYTES - handshakeHeaderSize, remainingRecordSize);
-				IO.readFully(is, handshakeHeaderBytes, handshakeHeaderSize, available);
+				IOStreams.readFully(is, handshakeHeaderBytes, handshakeHeaderSize, available);
 				handshakeHeaderSize += available;
 				remainingRecordSize -= available;
 			}
@@ -170,7 +170,7 @@ public class Record implements TLSObject {
 			int remainingHandshakeSize = handshakeHeader.getLength().getValue();
 			if (remainingRecordSize > 0) {
 				int available = Math.min(remainingRecordSize, remainingHandshakeSize);
-				IO.copy(is, os, available);
+				IOStreams.copy(is, os, available);
 				remainingRecordSize -= available;
 				remainingHandshakeSize -= available;
 			}
@@ -178,7 +178,7 @@ public class Record implements TLSObject {
 			while (remainingHandshakeSize > 0) {
 				RecordHeader nextRecord = RecordHeader.from(is, RecordContentType.HANDSHAKE);
 				int chunkSize = Math.min(nextRecord.getLength().getValue(), remainingHandshakeSize);
-				IO.copy(is, os, chunkSize);
+				IOStreams.copy(is, os, chunkSize);
 				remainingHandshakeSize -= chunkSize;
 				remainingRecordSize = nextRecord.getLength().getValue() - chunkSize;
 			}

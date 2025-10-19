@@ -9,7 +9,7 @@ import java.nio.charset.Charset;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import org.apiphany.io.IO;
+import org.apiphany.io.IOStreams;
 import org.apiphany.lang.Strings;
 import org.morphix.reflection.Constructors;
 
@@ -88,7 +88,7 @@ public class GZip {
 	 */
 	public static String decompress(final byte[] body) throws IOException {
 		try (GZIPInputStream gzipInputStream = new GZIPInputStream(new ByteArrayInputStream(body))) {
-			return Strings.toString(gzipInputStream, Strings.DEFAULT_CHARSET, IO.DEFAULT_BUFFER_SIZE);
+			return Strings.toString(gzipInputStream, Strings.DEFAULT_CHARSET, IOStreams.DEFAULT_BUFFER_SIZE);
 		}
 	}
 
@@ -101,7 +101,7 @@ public class GZip {
 	 */
 	public static String decompress(final InputStream inputStream) throws IOException {
 		try (GZIPInputStream gzipInputStream = new GZIPInputStream(inputStream)) {
-			return Strings.toString(gzipInputStream, Strings.DEFAULT_CHARSET, IO.DEFAULT_BUFFER_SIZE);
+			return Strings.toString(gzipInputStream, Strings.DEFAULT_CHARSET, IOStreams.DEFAULT_BUFFER_SIZE);
 		}
 	}
 

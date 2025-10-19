@@ -15,6 +15,7 @@
 - Added `JwsAlgorithm` enumeration of standard JWS (JSON Web Signature) algorithms.
 - Added `SignatureAlgorithm.jcaSignature` to extract the JCA signature for a TLS signature algorithm.
 - Added `Signer` utility class to easily sign and verify with a private and public key.
+- Renamed `IO` class to `IOStreams` to not create confusion because Java 25 will add an `IO` class.
 
 ---
 

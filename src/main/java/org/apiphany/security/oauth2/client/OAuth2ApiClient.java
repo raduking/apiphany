@@ -4,6 +4,7 @@ import static org.apiphany.ParameterFunction.parameter;
 
 import java.nio.charset.StandardCharsets;
 import java.security.PrivateKey;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Map;
@@ -311,6 +312,7 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 	 * @return the JWT default claims map
 	 */
 	private static Map<String, Object> defaultClaims(final String clientId, final String tokenEndpoint) {
+		Duration defaultExpiration = Duration.ofMinutes(5);
 		Instant now = Instant.now();
 		return Map.of(
 				"iss", clientId,
@@ -318,8 +320,7 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 				"aud", tokenEndpoint,
 				"jti", UUID.randomUUID().toString(),
 				"iat", now.getEpochSecond(),
-				"exp", now.plusSeconds(300).getEpochSecond() // 5 min
-		);
+				"exp", now.plusSeconds(defaultExpiration.toSeconds()).getEpochSecond());
 	}
 
 	/**
