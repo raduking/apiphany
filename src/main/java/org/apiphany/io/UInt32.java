@@ -74,10 +74,8 @@ public class UInt32 implements ByteSizeable, BinaryRepresentable {
 	 * @throws NullPointerException if {@code is} is {@code null}
 	 */
 	public static UInt32 from(final InputStream is) throws IOException {
-		byte[] buffer = is.readNBytes(BYTES);
-		if (BYTES != buffer.length) {
-			throw new EOFException("Error reading " + BYTES + " bytes");
-		}
+		byte[] buffer = new byte[BYTES];
+		IOStreams.readFully(is, buffer, 0, BYTES);
 		int int32 = 0;
 		for (int i = BYTES; i > 0; --i) {
 			int32 |= (buffer[BYTES - i] & 0xFF) << ((i - 1) * 8);

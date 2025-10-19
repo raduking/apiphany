@@ -29,7 +29,7 @@ public interface IOStreams {
 		byte[] result = new byte[bytesToRead];
 		int bytesRead = is.readNBytes(result, 0, bytesToRead);
 		if (bytesRead != bytesToRead) {
-			throw eofExceptionBytesNeeded(bytesToRead - bytesRead);
+			throw eofExceptionBytesNeeded(bytesToRead - bytesRead, bytesToRead);
 		}
 		return result;
 	}
@@ -49,7 +49,7 @@ public interface IOStreams {
 		while (remainingBytes > 0) {
 			int bytesRead = is.read(buffer, currentOffset, remainingBytes);
 			if (bytesRead < 0) {
-				throw eofExceptionBytesNeeded(remainingBytes);
+				throw eofExceptionBytesNeeded(remainingBytes, bytesToRead);
 			}
 			currentOffset += bytesRead;
 			remainingBytes -= bytesRead;
@@ -74,20 +74,22 @@ public interface IOStreams {
 			int bytesToRead = Math.min(buffer.length, remainingBytes);
 			int bytesRead = is.read(buffer, 0, bytesToRead);
 			if (bytesRead < 0) {
-				throw eofExceptionBytesNeeded(remainingBytes);
+				throw eofExceptionBytesNeeded(remainingBytes, bytesToCopy);
 			}
 			os.write(buffer, 0, bytesRead);
 			remainingBytes -= bytesRead;
 		}
+		os.flush();
 	}
 
 	/**
-	 * Returns an {@link EOFException} with the remaining bytes needed.
+	 * Returns an {@link EOFException} with the remaining bytes needed out of a total needed bytes.
 	 *
-	 * @param remainingBytes the needed bytes.
+	 * @param remaining the remaining unread bytes needed
+	 * @param total the total needed bytes
 	 * @return a new {@link EOFException}
 	 */
-	static EOFException eofExceptionBytesNeeded(final int remainingBytes) {
-		return new EOFException("Stream closed; need " + remainingBytes + " more bytes");
+	static EOFException eofExceptionBytesNeeded(final int remaining, final int total) {
+		return new EOFException("Stream closed, need " + remaining + " more bytes out of " + total);
 	}
 }

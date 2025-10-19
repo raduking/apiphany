@@ -50,15 +50,23 @@ class UInt24Test {
 		ByteArrayInputStream bis = new ByteArrayInputStream(Bytes.EMPTY);
 
 		EOFException e = assertThrows(EOFException.class, () -> UInt24.from(bis));
-		assertThat(e.getMessage(), equalTo("Error reading " + UInt24.BYTES + " bytes"));
+		assertThat(e.getMessage(), equalTo("Stream closed, need " + UInt24.BYTES + " more bytes out of " + UInt24.BYTES));
 	}
 
 	@Test
-	void shouldThrowExceptionWhenInputStreamHasLessElements() {
+	void shouldThrowExceptionWhenInputStreamHasTwoLessElements() {
+		ByteArrayInputStream bis = new ByteArrayInputStream(new byte[] { 0x12 });
+
+		EOFException e = assertThrows(EOFException.class, () -> UInt24.from(bis));
+		assertThat(e.getMessage(), equalTo("Stream closed, need " + (UInt24.BYTES - 1) + " more bytes out of " + UInt24.BYTES));
+	}
+
+	@Test
+	void shouldThrowExceptionWhenInputStreamHasOneLessElement() {
 		ByteArrayInputStream bis = new ByteArrayInputStream(new byte[] { 0x12, 0x13 });
 
 		EOFException e = assertThrows(EOFException.class, () -> UInt24.from(bis));
-		assertThat(e.getMessage(), equalTo("Error reading " + UInt24.BYTES + " bytes"));
+		assertThat(e.getMessage(), equalTo("Stream closed, need " + (UInt24.BYTES - 2) + " more bytes out of " + UInt24.BYTES));
 	}
 
 	@Test

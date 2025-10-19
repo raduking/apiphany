@@ -73,10 +73,8 @@ public class UInt16 implements ByteSizeable, BinaryRepresentable {
 	 * @throws NullPointerException if {@code is} is {@code null}
 	 */
 	public static UInt16 from(final InputStream is) throws IOException {
-		byte[] buffer = is.readNBytes(BYTES);
-		if (BYTES != buffer.length) {
-			throw new EOFException("Error reading " + BYTES + " bytes");
-		}
+		byte[] buffer = new byte[BYTES];
+		IOStreams.readFully(is, buffer, 0, BYTES);
 		int unsigned = ((buffer[0] & 0xFF) << 8) |
 				(buffer[1] & 0xFF);
 		return UInt16.of((short) unsigned);

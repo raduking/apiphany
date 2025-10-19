@@ -61,7 +61,7 @@ class UInt8Test {
 		ByteArrayInputStream bis = new ByteArrayInputStream(Bytes.EMPTY);
 
 		EOFException e = assertThrows(EOFException.class, () -> UInt8.from(bis));
-		assertThat(e.getMessage(), equalTo("Error reading " + UInt8.BYTES + " bytes"));
+		assertThat(e.getMessage(), equalTo("Stream closed, need " + UInt8.BYTES + " more bytes out of " + UInt8.BYTES));
 	}
 
 	@Test
