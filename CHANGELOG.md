@@ -4,6 +4,8 @@
 
 `1.0.15`
 
+- Added `ContentType.Value` name space class so that all content type string values are accessible directly.
+
 ---
 
 `1.0.14`
