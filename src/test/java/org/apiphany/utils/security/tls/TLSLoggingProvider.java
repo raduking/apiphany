@@ -19,9 +19,9 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 
 import org.apiphany.lang.Hex;
+import org.morphix.reflection.Classes;
 import org.morphix.reflection.Constructors;
 import org.morphix.reflection.Fields;
-import org.morphix.reflection.Reflection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,7 +66,7 @@ public final class TLSLoggingProvider extends Provider {
 	}
 
 	private static void markAsVerified(final Provider provider) {
-		Class<?> jceSecurityClass = Reflection.getClass("javax.crypto.JceSecurity");
+		Class<?> jceSecurityClass = Classes.getOne("javax.crypto.JceSecurity");
 		Map<Object, Object> verificationResults = Fields.IgnoreAccess.getStatic(jceSecurityClass, "verificationResults");
 		ReferenceQueue<Object> queue = Fields.IgnoreAccess.getStatic(jceSecurityClass, "queue");
 
