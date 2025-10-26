@@ -5,6 +5,7 @@
 `1.0.15`
 
 - Added `ContentType.Value` name space class so that all content type string values are accessible directly.
+- Upgraded `morphix-all` to `1.0.10`.
 
 ---
 
@@ -23,7 +24,6 @@
 - Added `Signer` utility class to easily sign and verify with a private and public key.
 - Renamed `IO` class to `IOStreams` to not create confusion because Java 25 will add an `IO` class.
 - Changed `OAuth2ApiClient` constructors to use `JwsAlgorithm` instead of `String`.
-- Upgraded `morphix-all` to `1.0.10`.
 
 ---
 
