@@ -6,13 +6,18 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Marks a constructor or static factory method as the preferred way to create
- * an instance of a class during automated instantiation or deserialization.
+ * Marks a constructor or static factory method as the preferred way to create an instance of a class during automated
+ * instantiation or deserialization.
  *
- * <p>This allows frameworks or libraries that support annotation-driven
- * object creation to identify which constructor or factory method to use.</p>
+ * <p>
+ * This allows frameworks or libraries that support annotation-driven object creation to identify which constructor or
+ * factory method to use.
+ * </p>
  *
- * <p>Example usage:</p>
+ * <p>
+ * Example usage:
+ * </p>
+ *
  * <pre>
  * public class ErrorResponse {
  *
@@ -26,7 +31,9 @@ import java.lang.annotation.Target;
  *     }
  * }
  * </pre>
+ *
  * or
+ *
  * <pre>
  *  {@code @Creator}
  *  public static OAuth2ErrorCode fromString(final String value) {
@@ -34,7 +41,9 @@ import java.lang.annotation.Target;
  *  }
  * </pre>
  *
- * <p>This annotation is a marker and does not contain any fields or values.</p>
+ * <p>
+ * This annotation is a marker and does not contain any fields or values.
+ * </p>
  *
  * @author Radu Sebastian LAZIN
  */

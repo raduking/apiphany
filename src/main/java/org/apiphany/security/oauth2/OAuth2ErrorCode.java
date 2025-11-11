@@ -81,7 +81,7 @@ public enum OAuth2ErrorCode {
 	}
 
 	/**
-	 * Resolves an {@link ErrorCode} from its string value.
+	 * Resolves an {@link OAuth2ErrorCode} from its string value.
 	 *
 	 * @param value the string error code
 	 * @return the matching enum constant, or {@link #UNKNOWN} if none matches
