@@ -3,13 +3,16 @@ package org.apiphany.json.jackson;
 import java.io.Serializable;
 
 import org.apiphany.lang.annotation.AsValue;
+import org.apiphany.lang.annotation.Creator;
 import org.apiphany.lang.annotation.FieldName;
 import org.apiphany.lang.annotation.FieldOrder;
 import org.apiphany.lang.annotation.Ignored;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.PropertyName;
+import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.introspect.Annotated;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
 import com.fasterxml.jackson.databind.introspect.NopAnnotationIntrospector;
@@ -20,6 +23,8 @@ import com.fasterxml.jackson.databind.introspect.NopAnnotationIntrospector;
  *
  * This allows your domain classes to remain independent of Jackson while still benefiting from annotation-driven
  * serialization.
+ *
+ * @author Radu Sebastian LAZIN
  */
 public class ApiphanyAnnotationIntrospector extends NopAnnotationIntrospector { // NOSONAR - singleton needed
 
@@ -115,5 +120,20 @@ public class ApiphanyAnnotationIntrospector extends NopAnnotationIntrospector { 
 			return Boolean.TRUE;
 		}
 		return super.hasAsValue(a);
+	}
+
+	/**
+	 * @see #findCreatorAnnotation(MapperConfig, Annotated)
+	 */
+	@Override
+	public JsonCreator.Mode findCreatorAnnotation(final MapperConfig<?> config, final Annotated ann) {
+		if (_hasAnnotation(ann, Creator.class)) {
+			// Use PROPERTIES mode for constructors with parameters, DEFAULT otherwise
+			if (ann.getRawType() != null && ann.getType().containedTypeCount() > 0) {
+				return JsonCreator.Mode.PROPERTIES;
+			}
+			return JsonCreator.Mode.DEFAULT;
+		}
+		return super.findCreatorAnnotation(config, ann);
 	}
 }

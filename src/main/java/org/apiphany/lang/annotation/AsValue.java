@@ -16,25 +16,26 @@ import java.lang.annotation.Target;
  *
  * <h2>Usage example</h2>
  *
- * <pre>{@code
+ * <pre>
  * public enum Status {
- * 	OK("ok"),
- * 	ERROR("error");
  *
- * 	private final String code;
+ *     OK("ok"),
+ *     ERROR("error");
  *
- * 	Status(String code) {
- * 		this.code = code;
- * 	}
+ *     private final String code;
  *
- * 	@AsValue
- * 	public String getCode() {
- * 		return code;
- * 	}
+ *     Status(String code) {
+ *         this.code = code;
+ *     }
+ *
+ *     {@code @AsValue}
+ *     public String getCode() {
+ *         return code;
+ *     }
  * }
  *
  * // serializes to "ok" or "error" instead of a full object
- * }</pre>
+ * </pre>
  *
  * <p>
  * Rules:
