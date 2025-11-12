@@ -40,7 +40,7 @@ public class OAuth2ErrorResponse {
 	 * </p>
 	 */
 	@FieldName("error")
-	private String error;
+	private OAuth2ErrorCode error;
 
 	/**
 	 * A human-readable ASCII text providing additional information about the error, intended for a developer or
@@ -93,7 +93,7 @@ public class OAuth2ErrorResponse {
 	 *
 	 * @return the error code (e.g., {@code "invalid_client"})
 	 */
-	public String getError() {
+	public OAuth2ErrorCode getError() {
 		return error;
 	}
 
@@ -102,7 +102,7 @@ public class OAuth2ErrorResponse {
 	 *
 	 * @param error the error code to set
 	 */
-	public void setError(final String error) {
+	public void setError(final OAuth2ErrorCode error) {
 		this.error = error;
 	}
 
