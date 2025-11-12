@@ -1,0 +1,7 @@
+{
+	"error": "invalid_client",
+	"error_description": "Client authentication failed",
+	"error_uri": "https://server.example.com/errors/invalid_client",
+	"state": "some optional state",
+	"hint": "some optional hint"
+}
