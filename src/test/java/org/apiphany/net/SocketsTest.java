@@ -14,7 +14,10 @@ import java.util.function.Supplier;
 import org.apiphany.utils.Tests;
 import org.junit.jupiter.api.Test;
 import org.morphix.lang.function.ThrowingRunnable;
+import org.morphix.lang.thread.Threads;
 import org.morphix.reflection.Constructors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Test class for {@link Sockets}.
@@ -22,6 +25,8 @@ import org.morphix.reflection.Constructors;
  * @author Radu Sebastian LAZIN
  */
 class SocketsTest {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(SocketsTest.class);
 
 	private static final int PORT = 6666;
 
@@ -95,20 +100,30 @@ class SocketsTest {
 	}
 
 	private static <T> T onOccupiedPort(final int port, final Supplier<T> resultSupplier) throws Exception {
+		LOGGER.debug("[ON-OCCUPIED-PORT] BEGIN");
+		Thread thread = null;
 		try (ServerSocket serverSocket = new ServerSocket(port)) {
 			CountDownLatch serverReady = new CountDownLatch(1);
 
-			Thread.ofVirtual().start(ThrowingRunnable.unchecked(() -> {
+			thread = Thread.ofVirtual().start(ThrowingRunnable.unchecked(() -> {
 				serverReady.countDown();
 				try (Socket clientSocket = serverSocket.accept()) {
 					// empty
 				} catch (Exception e) {
 					// expected when test finishes
+					LOGGER.debug("Socket accept interrupted.", e);
 				}
 			}));
 			serverReady.await();
 
 			return resultSupplier.get();
+		} finally {
+			if (null != thread) {
+				thread.interrupt();
+				// wait for virtual thread to terminate
+				Threads.safeJoin(thread);
+			}
+			LOGGER.debug("[ON-OCCUPIED-PORT] END");
 		}
 	}
 }
