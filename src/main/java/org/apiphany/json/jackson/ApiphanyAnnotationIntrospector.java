@@ -126,14 +126,10 @@ public class ApiphanyAnnotationIntrospector extends NopAnnotationIntrospector { 
 	 * @see #findCreatorAnnotation(MapperConfig, Annotated)
 	 */
 	@Override
-	public JsonCreator.Mode findCreatorAnnotation(final MapperConfig<?> config, final Annotated ann) {
-		if (_hasAnnotation(ann, Creator.class)) {
-			// Use PROPERTIES mode for constructors with parameters, DEFAULT otherwise
-			if (ann.getRawType() != null && ann.getType().containedTypeCount() > 0) {
-				return JsonCreator.Mode.PROPERTIES;
-			}
+	public JsonCreator.Mode findCreatorAnnotation(final MapperConfig<?> config, final Annotated a) {
+		if (a.hasAnnotation(Creator.class)) {
 			return JsonCreator.Mode.DEFAULT;
 		}
-		return super.findCreatorAnnotation(config, ann);
+		return super.findCreatorAnnotation(config, a);
 	}
 }
