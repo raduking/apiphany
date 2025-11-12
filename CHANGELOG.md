@@ -5,7 +5,7 @@
 `1.0.15`
 
 - Added `ContentType.Value` name space class so that all content type string values are accessible directly.
-- Upgraded `morphix-all` to `1.0.10`.
+- Upgraded `morphix-all` to `1.0.11`.
 - Added `OAuth2ErrorResponse` for the standard OAuth2 error responses.
 - Added `OAuth2ErrorCode` for the standard OAuth2 error response error codes.
 - Added `Creator` annotation to signify the constructor or a factory method to use for object creation, similar to `JsonCreator` from Jackson.

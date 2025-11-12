@@ -93,7 +93,7 @@
 		<dependency>
 			<groupId>io.github.raduking</groupId>
 			<artifactId>morphix-all</artifactId>
-			<version>1.0.10</version>
+			<version>1.0.11</version>
 		</dependency>
 
 		<!-- Logging -->
