@@ -24,7 +24,7 @@ import java.lang.annotation.Target;
  * @author Radu Sebastian LAZIN
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.FIELD, ElementType.METHOD })
+@Target({ ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER })
 public @interface FieldName {
 
 	/**
