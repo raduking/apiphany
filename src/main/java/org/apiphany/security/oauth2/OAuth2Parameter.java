@@ -12,6 +12,7 @@ import org.morphix.reflection.Constructors;
  * authorization requests, and token responses as defined in RFC 6749 and related specifications.
  *
  * @see <a href="https://tools.ietf.org/html/rfc6749">RFC 6749 - OAuth 2.0</a>
+ *
  * @author Radu Sebastian LAZIN
  */
 public enum OAuth2Parameter {
