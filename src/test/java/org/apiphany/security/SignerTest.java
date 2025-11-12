@@ -2,7 +2,9 @@ package org.apiphany.security;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -38,6 +40,29 @@ class SignerTest {
 		boolean valid = Signer.verify(publicKey, JwsAlgorithm.PS256, data, signature);
 
 		assertTrue(valid);
+	}
+
+	@Test
+	void shouldThrowSecurityExceptionIfSigningFails() {
+		byte[] data = TEXT.getBytes();
+		PrivateKey privateKey = mock(PrivateKey.class);
+
+		SecurityException e = assertThrows(SecurityException.class, () -> Signer.sign(privateKey, JwsAlgorithm.PS256, data));
+
+		assertThat(e.getMessage(), equalTo("Signing failed with " + JwsAlgorithm.PS256));
+	}
+
+	@Test
+	void shouldThrowSecurityExceptionIfVerifyingFails() throws Exception {
+		byte[] data = TEXT.getBytes();
+		PrivateKey privateKey = Keys.loadRSAPrivateKey("/security/oauth2/rsa_private.pem");
+		PublicKey publicKey = mock(PublicKey.class);
+
+		byte[] signature = Signer.sign(privateKey, JwsAlgorithm.PS256, data);
+
+		SecurityException e = assertThrows(SecurityException.class, () -> Signer.verify(publicKey, JwsAlgorithm.PS256, data, signature));
+
+		assertThat(e.getMessage(), equalTo("Signature verification failed with " + JwsAlgorithm.PS256));
 	}
 
 }
