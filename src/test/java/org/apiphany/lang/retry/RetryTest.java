@@ -153,7 +153,7 @@ class RetryTest {
 	}
 
 	@Test
-	void shouldFluentRetryGivenTimesAndAccumulateExceptions() {
+	void shouldPolicyRetryGivenTimesAndAccumulateExceptions() {
 		List<RuntimeException> expectedExceptions = IntStream.range(1, 3)
 				.boxed()
 				.map(i -> new RuntimeException(String.valueOf(i)))
@@ -163,7 +163,7 @@ class RetryTest {
 		ExceptionsAccumulator exceptionsAccumulator = ExceptionsAccumulator.of();
 
 		var result = Retry.of(WaitCounter.of(RETRY_COUNT, Duration.ofSeconds(0)))
-				.<String, Exception>fluent()
+				.<String, Exception>policy()
 				.stopWhen(STRING_RESULT::equals)
 				.accumulateWith(exceptionsAccumulator)
 				.on(() -> {
@@ -182,7 +182,7 @@ class RetryTest {
 	}
 
 	@Test
-	void shouldFluentRetryGivenTimesConsumeAndAccumulateExceptions() {
+	void shouldPolicyRetryGivenTimesConsumeAndAccumulateExceptions() {
 		List<RuntimeException> expectedExceptions = IntStream.range(1, 3)
 				.boxed()
 				.map(i -> new RuntimeException(String.valueOf(i)))
@@ -192,7 +192,7 @@ class RetryTest {
 		ExceptionsAccumulator exceptionsAccumulator = ExceptionsAccumulator.of();
 
 		var retry = Retry.of(WaitCounter.of(RETRY_COUNT, Duration.ofSeconds(0)))
-				.<String, Exception>fluent()
+				.<String, Exception>policy()
 				.stopWhen(STRING_RESULT::equals)
 				.consumeBeforeWait(e -> inConsumer.foo(e))
 				.accumulateWith(exceptionsAccumulator);
@@ -216,7 +216,7 @@ class RetryTest {
 	}
 
 	@Test
-	void shouldFluentRetryGivenTimesExecuteBeforeWait() {
+	void shouldPolicyRetryGivenTimesExecuteBeforeWait() {
 		List<RuntimeException> expectedExceptions = IntStream.range(1, 3)
 				.boxed()
 				.map(i -> new RuntimeException(String.valueOf(i)))
@@ -226,7 +226,7 @@ class RetryTest {
 		AtomicInteger doBeforeCounter = new AtomicInteger(0);
 
 		var retry = Retry.of(WaitCounter.of(RETRY_COUNT, Duration.ofSeconds(0)))
-				.<String, Exception>fluent()
+				.<String, Exception>policy()
 				.stopWhen(STRING_RESULT::equals)
 				.doBeforeWait(() -> {
 					int c = doBeforeCounter.getAndIncrement();
@@ -251,7 +251,7 @@ class RetryTest {
 	}
 
 	@Test
-	void shouldFluentRetryWithRunnableGivenTimesAndAccumulateExceptions() {
+	void shouldPolicyRetryWithRunnableGivenTimesAndAccumulateExceptions() {
 		List<RuntimeException> expectedExceptions = IntStream.range(1, 3)
 				.boxed()
 				.map(i -> new RuntimeException(String.valueOf(i)))
@@ -261,7 +261,7 @@ class RetryTest {
 		ExceptionsAccumulator exceptionsAccumulator = ExceptionsAccumulator.of();
 
 		var retry = Retry.of(WaitCounter.of(RETRY_COUNT, Duration.ofSeconds(0)))
-				.<Object, Exception>fluent()
+				.<Object, Exception>policy()
 				.accumulateWith(exceptionsAccumulator);
 
 		retry.on(() -> {
@@ -291,10 +291,10 @@ class RetryTest {
 	}
 
 	@Test
-	void shouldRetryFluentGivenTimesWithDurationAccumulator() {
+	void shouldRetryPolicyGivenTimesWithDurationAccumulator() {
 		DurationAccumulator durationAccumulator = DurationAccumulator.of();
 		var retry = Retry.of(WaitCounter.of(RETRY_COUNT, Duration.ofSeconds(0)))
-				.<String, Duration>fluent()
+				.<String, Duration>policy()
 				.accumulateWith(durationAccumulator);
 
 		retry.on(() -> inSupplier.foo());

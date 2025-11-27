@@ -54,7 +54,7 @@ public class Retry {
 	 * @return a retry object
 	 */
 	public static Retry of(final Wait wait) {
-		return new Retry(wait);
+		return new Retry(Objects.requireNonNull(wait, "wait cannot be null"));
 	}
 
 	/**
@@ -120,7 +120,7 @@ public class Retry {
 	 * @return result from supplier
 	 */
 	public <T, U> T until(final Supplier<T> resultSupplier, final Predicate<T> exitCondition, final Supplier<Accumulator<U>> accumulatorSupplier) {
-		return until(resultSupplier, exitCondition, Consumers.noConsumer(), accumulatorSupplier);
+		return until(resultSupplier, exitCondition, Consumers.consumeNothing(), accumulatorSupplier);
 	}
 
 	/**
@@ -289,13 +289,16 @@ public class Retry {
 	 * @param <U> accumulated information type
 	 * @return fluent retry adapter
 	 */
-	public <T, U> FluentRetry<T, U> fluent() {
+	public <T, U> FluentRetry<T, U> policy() {
 		return new FluentRetry<>(this);
 	}
 
 	/**
 	 * A fluent adapter for the {@link Retry} class, providing a more expressive way to configure and execute retry logic.
 	 * This class allows for chaining methods to define exit conditions, pre-wait actions, and accumulation of results.
+	 * <p>
+	 * Note: This class is intended to be used in a fluent style, enabling more readable and maintainable code when working
+	 * with retry operations but instances should not be reused after calling the {@link #on(Supplier)} method.
 	 *
 	 * @param <T> the type of the result produced by the retry operation.
 	 * @param <U> the type of the accumulated information during retries.
