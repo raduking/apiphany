@@ -3,6 +3,7 @@
 `1.0.16`
 
 - Renamed all `Retry.when` methods to `Retry.until` to better emphasize what the parameters actually do.
+- Renamed `Accumulator.emptyAccumulator` method to `Accumulator.empty` for brevity.
 
 ---
 

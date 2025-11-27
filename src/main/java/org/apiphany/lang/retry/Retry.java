@@ -318,11 +318,6 @@ public class Retry {
 		private Predicate<T> exitCondition = Objects::nonNull;
 
 		/**
-		 * An action to execute before waiting between retries.
-		 */
-		private Runnable doBeforeWait = Runnables.doNothing();
-
-		/**
 		 * A consumer to process accumulated information before waiting between retries.
 		 */
 		private Consumer<U> consumeBeforeWait = Consumers.consumeNothing();
@@ -330,7 +325,7 @@ public class Retry {
 		/**
 		 * The accumulator used to collect information during retries.
 		 */
-		private Accumulator<U> accumulator = null;
+		private Accumulator<U> accumulator = Accumulator.empty();
 
 		/**
 		 * Constructs a new {@link FluentRetry} instance with the specified {@link Retry} configuration.
@@ -348,18 +343,7 @@ public class Retry {
 		 * @return this {@link FluentRetry} instance for method chaining.
 		 */
 		public FluentRetry<T, U> stopWhen(final Predicate<T> exitCondition) {
-			this.exitCondition = exitCondition;
-			return this;
-		}
-
-		/**
-		 * Sets the action to execute before waiting between retries.
-		 *
-		 * @param doBeforeWait the action to execute before waiting.
-		 * @return this {@link FluentRetry} instance for method chaining.
-		 */
-		public FluentRetry<T, U> doBeforeWait(final Runnable doBeforeWait) {
-			this.doBeforeWait = doBeforeWait;
+			this.exitCondition = Objects.requireNonNull(exitCondition, "exitCondition cannot be null");
 			return this;
 		}
 
@@ -370,8 +354,21 @@ public class Retry {
 		 * @return this {@link FluentRetry} instance for method chaining.
 		 */
 		public FluentRetry<T, U> consumeBeforeWait(final Consumer<U> consumeBeforeWait) {
-			this.consumeBeforeWait = consumeBeforeWait;
+			this.consumeBeforeWait = Objects.requireNonNull(consumeBeforeWait, "consumeBeforeWait cannot be null");
 			return this;
+		}
+
+		/**
+		 * Sets the action to execute before waiting between retries. This method effectively calls
+		 * {@link #consumeBeforeWait(Consumer)} by transforming the given {@link Runnable} to a {@link Consumer} which doesn't
+		 * use the input.
+		 *
+		 * @param doBeforeWait the action to execute before waiting.
+		 * @return this {@link FluentRetry} instance for method chaining.
+		 */
+		public FluentRetry<T, U> doBeforeWait(final Runnable doBeforeWait) {
+			Objects.requireNonNull(doBeforeWait, "doBeforeWait cannot be null");
+			return consumeBeforeWait(u -> doBeforeWait.run());
 		}
 
 		/**
@@ -383,7 +380,7 @@ public class Retry {
 		 * @return this {@link FluentRetry} instance for method chaining.
 		 */
 		public <A extends Accumulator<U>> FluentRetry<T, U> accumulateWith(final A accumulator) {
-			this.accumulator = accumulator;
+			this.accumulator = Objects.requireNonNull(accumulator, "accumulator cannot be null");
 			return this;
 		}
 
@@ -394,9 +391,6 @@ public class Retry {
 		 * @return the result of the retry operation.
 		 */
 		public T on(final Supplier<T> resultSupplier) {
-			if (null == accumulator) {
-				return retry.until(resultSupplier, exitCondition, doBeforeWait);
-			}
 			return retry.until(resultSupplier, exitCondition, consumeBeforeWait, accumulator);
 		}
 	}
