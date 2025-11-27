@@ -365,9 +365,10 @@ public class ApiClient implements AutoCloseable {
 		ExchangeClient exchangeClient = getExchangeClient(apiRequest.getAuthenticationType());
 
 		BasicMeters activeMeters = getActiveMeters(apiRequest);
+		Retry activeRetry = getActiveRetry(apiRequest);
 		DurationAccumulator durationAccumulator = DurationAccumulator.of();
 
-		ApiResponse<T> apiResponse = getActiveRetry(apiRequest).when(
+		ApiResponse<T> apiResponse = activeRetry.until(
 				() -> exchange(apiRequest, exchangeClient, activeMeters),
 				(response, duration) -> logExchange(apiRequest, response, duration),
 				ApiResponse::isSuccessful,

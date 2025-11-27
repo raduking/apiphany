@@ -75,8 +75,8 @@ public class Retry {
 	 * @param exitCondition end predicate
 	 * @return result from supplier
 	 */
-	public <T> T when(final Supplier<T> resultSupplier, final Predicate<T> exitCondition) {
-		return when(resultSupplier, exitCondition, Runnables.doNothing());
+	public <T> T until(final Supplier<T> resultSupplier, final Predicate<T> exitCondition) {
+		return until(resultSupplier, exitCondition, Runnables.doNothing());
 	}
 
 	/**
@@ -89,8 +89,8 @@ public class Retry {
 	 * @param beforeWait code to run before wait
 	 * @return result from supplier
 	 */
-	public <T> T when(final Supplier<T> resultSupplier, final Predicate<T> exitCondition, final Runnable beforeWait) {
-		return when(resultSupplier, exitCondition, e -> beforeWait.run());
+	public <T> T until(final Supplier<T> resultSupplier, final Predicate<T> exitCondition, final Runnable beforeWait) {
+		return until(resultSupplier, exitCondition, e -> beforeWait.run());
 	}
 
 	/**
@@ -104,8 +104,8 @@ public class Retry {
 	 * @param accumulator information accumulator
 	 * @return result from supplier
 	 */
-	public <T, U> T when(final Supplier<T> resultSupplier, final Predicate<T> exitCondition, final Accumulator<U> accumulator) {
-		return when(resultSupplier, exitCondition, Consumers.consumeNothing(), accumulator);
+	public <T, U> T until(final Supplier<T> resultSupplier, final Predicate<T> exitCondition, final Accumulator<U> accumulator) {
+		return until(resultSupplier, exitCondition, Consumers.consumeNothing(), accumulator);
 	}
 
 	/**
@@ -119,8 +119,8 @@ public class Retry {
 	 * @param accumulatorSupplier information accumulator supplier
 	 * @return result from supplier
 	 */
-	public <T, U> T when(final Supplier<T> resultSupplier, final Predicate<T> exitCondition, final Supplier<Accumulator<U>> accumulatorSupplier) {
-		return when(resultSupplier, exitCondition, Consumers.noConsumer(), accumulatorSupplier);
+	public <T, U> T until(final Supplier<T> resultSupplier, final Predicate<T> exitCondition, final Supplier<Accumulator<U>> accumulatorSupplier) {
+		return until(resultSupplier, exitCondition, Consumers.noConsumer(), accumulatorSupplier);
 	}
 
 	/**
@@ -135,9 +135,9 @@ public class Retry {
 	 * @param accumulator information accumulator
 	 * @return result from supplier
 	 */
-	public <T, U> T when(final Supplier<T> resultSupplier, final Predicate<T> exitCondition, final Consumer<U> beforeWait,
+	public <T, U> T until(final Supplier<T> resultSupplier, final Predicate<T> exitCondition, final Consumer<U> beforeWait,
 			final Accumulator<U> accumulator) {
-		return when(resultSupplier, Consumers.noBiConsumer(), exitCondition, beforeWait, accumulator);
+		return until(resultSupplier, Consumers.noBiConsumer(), exitCondition, beforeWait, accumulator);
 	}
 
 	/**
@@ -151,8 +151,8 @@ public class Retry {
 	 * @param beforeWait code to run before wait
 	 * @return result from supplier
 	 */
-	public <T, U> T when(final Supplier<T> resultSupplier, final Predicate<T> exitCondition, final Consumer<U> beforeWait) {
-		return when(resultSupplier, exitCondition, beforeWait, Accumulator.noAccumulator());
+	public <T, U> T until(final Supplier<T> resultSupplier, final Predicate<T> exitCondition, final Consumer<U> beforeWait) {
+		return until(resultSupplier, exitCondition, beforeWait, Accumulator.noAccumulator());
 	}
 
 	/**
@@ -168,7 +168,7 @@ public class Retry {
 	 * @param accumulator information accumulator
 	 * @return result from supplier
 	 */
-	public <T, U> T when(final Supplier<T> resultSupplier, final BiConsumer<T, U> afterResult, final Predicate<T> exitCondition,
+	public <T, U> T until(final Supplier<T> resultSupplier, final BiConsumer<T, U> afterResult, final Predicate<T> exitCondition,
 			final Consumer<U> beforeWait, final Accumulator<U> accumulator) {
 		if (this == NO_RETRY) {
 			return whenNoRetry(resultSupplier, afterResult, accumulator);
@@ -231,12 +231,12 @@ public class Retry {
 	 * @param accumulatorSupplier accumulator supplier
 	 * @return result from supplier
 	 */
-	public <T, U> T when(
+	public <T, U> T until(
 			final Supplier<T> resultSupplier,
 			final Predicate<T> exitCondition,
 			final Consumer<U> beforeWait,
 			final Supplier<Accumulator<U>> accumulatorSupplier) {
-		return when(resultSupplier, exitCondition, beforeWait, accumulatorSupplier.get());
+		return until(resultSupplier, exitCondition, beforeWait, accumulatorSupplier.get());
 	}
 
 	/**
@@ -395,9 +395,9 @@ public class Retry {
 		 */
 		public T on(final Supplier<T> resultSupplier) {
 			if (null == accumulator) {
-				return retry.when(resultSupplier, exitCondition, doBeforeWait);
+				return retry.until(resultSupplier, exitCondition, doBeforeWait);
 			}
-			return retry.when(resultSupplier, exitCondition, consumeBeforeWait, accumulator);
+			return retry.until(resultSupplier, exitCondition, consumeBeforeWait, accumulator);
 		}
 	}
 }

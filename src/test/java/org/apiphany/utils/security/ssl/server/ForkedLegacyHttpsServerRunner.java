@@ -94,7 +94,7 @@ public class ForkedLegacyHttpsServerRunner {
 		});
 
 		Retry retry = Retry.of(WaitTimeout.of(socketTimeout, Duration.ofMillis(200)));
-		boolean canConnect = retry.when(() -> Sockets.canConnectTo(host, port), Boolean::booleanValue);
+		boolean canConnect = retry.until(() -> Sockets.canConnectTo(host, port), Boolean::booleanValue);
 
 		if (!canConnect) {
 			stop(serverProcess, loggingThread);
