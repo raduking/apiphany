@@ -5,6 +5,7 @@
 - Renamed all `Retry.when` methods to `Retry.until` to better emphasize what the parameters actually do.
 - Renamed `Accumulator.emptyAccumulator` method to `Accumulator.empty` for brevity.
 - Changed `Retry.until` methods to always have the first 2 parameters the result supplier first and the exit condition second where applicable.
+- Renamed `Retry.fluent` method to `Retry.policy` to better match its purpose.
 
 ---
 
