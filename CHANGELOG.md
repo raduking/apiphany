@@ -2,6 +2,8 @@
 
 `1.0.16`
 
+- Renamed all `Retry.when` methods to `Retry.until` to better emphasize what the parameters actually do.
+
 ---
 
 `1.0.15`

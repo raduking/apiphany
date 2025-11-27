@@ -51,7 +51,7 @@ class RetryTest {
 	void shouldRetryGivenTimes() {
 		Retry retry = Retry.of(WaitCounter.of(RETRY_COUNT, Duration.ofSeconds(0)));
 
-		retry.when(() -> {
+		retry.until(() -> {
 			inSupplier.foo();
 			return null;
 		}, Objects::nonNull);
@@ -63,7 +63,7 @@ class RetryTest {
 	void shouldNotRetryWithNoRetry() {
 		Retry retry = Retry.NO_RETRY;
 
-		retry.when(() -> {
+		retry.until(() -> {
 			inSupplier.foo();
 			return null;
 		}, Objects::nonNull);
@@ -82,7 +82,7 @@ class RetryTest {
 	void shouldRetryGivenTimesWithEmptyAccumulator() {
 		Retry retry = Retry.of(WaitCounter.of(RETRY_COUNT, Duration.ofSeconds(0)));
 
-		retry.when(() -> inSupplier.foo(), Objects::nonNull, Accumulator.noAccumulator());
+		retry.until(() -> inSupplier.foo(), Objects::nonNull, Accumulator.noAccumulator());
 
 		verify(inSupplier, times(RETRY_COUNT)).foo();
 	}
@@ -92,7 +92,7 @@ class RetryTest {
 		Retry retry = Retry.of(WaitCounter.of(RETRY_COUNT, Duration.ofSeconds(0)));
 
 		DurationAccumulator durationAccumulator = DurationAccumulator.of();
-		retry.when(() -> inSupplier.foo(), Objects::nonNull, durationAccumulator);
+		retry.until(() -> inSupplier.foo(), Objects::nonNull, durationAccumulator);
 
 		verify(inSupplier, times(RETRY_COUNT)).foo();
 		assertThat(durationAccumulator.getInformationList(), hasSize(RETRY_COUNT));
@@ -102,7 +102,7 @@ class RetryTest {
 	void shouldRetryGivenTimesWithDurationAccumulatorSupplier() {
 		Retry retry = Retry.of(WaitCounter.of(RETRY_COUNT, Duration.ofSeconds(0)));
 
-		retry.when(() -> inSupplier.foo(), Objects::nonNull, DurationAccumulator::of);
+		retry.until(() -> inSupplier.foo(), Objects::nonNull, DurationAccumulator::of);
 
 		verify(inSupplier, times(RETRY_COUNT)).foo();
 	}
@@ -114,7 +114,7 @@ class RetryTest {
 		AtomicInteger counter = new AtomicInteger(0);
 		ExceptionsAccumulator exceptionsAccumulator = ExceptionsAccumulator.of();
 		assertThrows(RuntimeException.class,
-				() -> retry.when(
+				() -> retry.until(
 						() -> inSupplier.errorFoo(counter.incrementAndGet()),
 						Objects::nonNull,
 						exceptionsAccumulator));
@@ -137,7 +137,7 @@ class RetryTest {
 
 		AtomicInteger counter = new AtomicInteger(0);
 		ExceptionsAccumulator exceptionsAccumulator = ExceptionsAccumulator.of();
-		String result = retry.when(() -> {
+		String result = retry.until(() -> {
 			inSupplier.foo();
 			int c = counter.incrementAndGet();
 			if (c < RETRY_COUNT) {
@@ -248,7 +248,7 @@ class RetryTest {
 		Retry retry = Retry.NO_RETRY;
 
 		DurationAccumulator durationAccumulator = DurationAccumulator.of();
-		String result = retry.when(() -> inSupplier.name(), Objects::nonNull, durationAccumulator);
+		String result = retry.until(() -> inSupplier.name(), Objects::nonNull, durationAccumulator);
 
 		verify(inSupplier).name();
 		assertThat(durationAccumulator.getInformationList(), hasSize(1));
@@ -284,7 +284,7 @@ class RetryTest {
 		Retry retry = Retry.of(WaitCounter.of(retryCount, Duration.ofMillis(10)));
 
 		Threads.executeForEachIn(integers,
-				i -> retry.when(() -> inSupplier.foo(), Objects::nonNull), ExecutionType.PARALLEL);
+				i -> retry.until(() -> inSupplier.foo(), Objects::nonNull), ExecutionType.PARALLEL);
 
 		verify(inSupplier, times(threadCount * retryCount)).foo();
 	}
