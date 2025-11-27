@@ -216,6 +216,41 @@ class RetryTest {
 	}
 
 	@Test
+	void shouldFluentRetryGivenTimesExecuteBeforeWait() {
+		List<RuntimeException> expectedExceptions = IntStream.range(1, 3)
+				.boxed()
+				.map(i -> new RuntimeException(String.valueOf(i)))
+				.toList();
+
+		AtomicInteger retryCounter = new AtomicInteger(0);
+		AtomicInteger doBeforeCounter = new AtomicInteger(0);
+
+		var retry = Retry.of(WaitCounter.of(RETRY_COUNT, Duration.ofSeconds(0)))
+				.<String, Exception>fluent()
+				.stopWhen(STRING_RESULT::equals)
+				.doBeforeWait(() -> {
+					int c = doBeforeCounter.getAndIncrement();
+					RuntimeException e = expectedExceptions.get(c);
+					inConsumer.foo(e);
+				});
+
+		var result = retry.on(() -> {
+			inSupplier.foo();
+			int c = retryCounter.incrementAndGet();
+			if (c < RETRY_COUNT) {
+				return null;
+			}
+			return STRING_RESULT;
+		});
+
+		verify(inSupplier, times(RETRY_COUNT)).foo();
+		for (RuntimeException e : expectedExceptions) {
+			verify(inConsumer).foo(e);
+		}
+		assertThat(result, equalTo(STRING_RESULT));
+	}
+
+	@Test
 	void shouldFluentRetryWithRunnableGivenTimesAndAccumulateExceptions() {
 		List<RuntimeException> expectedExceptions = IntStream.range(1, 3)
 				.boxed()
@@ -316,6 +351,24 @@ class RetryTest {
 		int result = retry.hashCode();
 
 		assertThat(result, equalTo(expected));
+	}
+
+	@Test
+	void shouldReturnFalseWhenKeepWaitingOnNoWait() {
+		Wait wait = Retry.noWait();
+
+		boolean result = wait.keepWaiting();
+
+		assertFalse(result);
+	}
+
+	@Test
+	void shouldReturnTheStaticInstanceOnNoWait() {
+		Wait wait = Retry.noWait();
+
+		boolean result = wait == Retry.NO_WAIT;
+
+		assertTrue(result);
 	}
 
 	public static class Foo {
