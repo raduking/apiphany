@@ -11,6 +11,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Test;
+import org.morphix.lang.thread.Threads;
 
 /**
  * Test class for {@link WaitTimeout}.
@@ -132,6 +133,7 @@ class WaitTimeoutTest {
 		WaitTimeout waitTimeout = WaitTimeout.of(TIMEOUT, INTERVAL);
 
 		waitTimeout.start();
+		Threads.safeSleep(Duration.ofMillis(50));
 
 		WaitTimeout copyWithoutStart = waitTimeout.copy();
 		boolean result = waitTimeout.equals(copyWithoutStart);
