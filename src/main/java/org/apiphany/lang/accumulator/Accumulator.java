@@ -142,7 +142,7 @@ public abstract class Accumulator<T> {
 	}
 
 	/**
-	 * Returns an empty accumulator. Equivalent to {@link #emptyAccumulator()}
+	 * Returns an empty accumulator. Equivalent to {@link #empty()}
 	 *
 	 * @param <T> accumulator information type
 	 * @return an empty accumulator
@@ -158,7 +158,7 @@ public abstract class Accumulator<T> {
 	 * @param <T> accumulator information type
 	 * @return an empty accumulator
 	 */
-	public static <T> Accumulator<T> emptyAccumulator() {
+	public static <T> Accumulator<T> empty() {
 		return noAccumulator();
 	}
 
