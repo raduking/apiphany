@@ -6,6 +6,8 @@
 - Renamed `Accumulator.emptyAccumulator` method to `Accumulator.empty` for brevity.
 - Changed `Retry.until` methods to always have the first 2 parameters the result supplier first and the exit condition second where applicable.
 - Renamed `Retry.fluent` method to `Retry.policy` to better match its purpose.
+- Upgraded `testcontainers` to `2.0.2`.
+- Removed all JUnit4 dependencies. 
 
 ---
 
