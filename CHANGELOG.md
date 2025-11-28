@@ -7,7 +7,15 @@
 - Changed `Retry.until` methods to always have the first 2 parameters the result supplier first and the exit condition second where applicable.
 - Renamed `Retry.fluent` method to `Retry.policy` to better match its purpose.
 - Upgraded `testcontainers` to `2.0.2`.
-- Removed all JUnit4 dependencies. 
+- Removed all JUnit4 dependencies.
+- Removed `HttpHeaderValuesChain` in favor of `HttpHeaderValues` to hold the chain.
+- Added `MapHeaderValues.contains` method specific to headers as map.
+- Added `HttpHeaderValues.contains` method specific to headers as `HttpHeaders`.
+- Changed `AbstractHttpExchangeClient.getHeaderValuesChain` to `AbstractHttpExchangeClient.getHeaderValues`.
+- Changed `AbstractHttpExchangeClient.getHeaderValues` to return `HeaderValues` instead of `HeaderValuesChain`.
+- Changed `AbstractHttpExchangeClient.addDefaultHeaderValues` to use `HeaderValues` instead of `HeaderValuesChain`.
+- Changed `AbstractHttpExchangeClient.addDefaultHeaderValues` to return the first `HeaderValues` in the chain.
+- Changed `ContentConverter.getHeaderValues` and its implementations to use `HeaderValues` instead of `HeaderValuesChain`.
 
 ---
 

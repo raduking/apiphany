@@ -4,7 +4,7 @@ import org.apiphany.ApiMessage;
 import org.apiphany.ApiMimeType;
 import org.apiphany.client.ContentConverter;
 import org.apiphany.client.http.HttpContentConverter;
-import org.apiphany.header.HeaderValuesChain;
+import org.apiphany.header.HeaderValues;
 import org.apiphany.io.ContentType;
 import org.morphix.reflection.GenericClass;
 
@@ -64,11 +64,11 @@ public class JacksonJsonHttpContentConverter<T> implements HttpContentConverter<
 	 * @param message the {@link ApiMessage} containing the content to convert
 	 * @param mimeType the content type
 	 * @param headers the headers that may influence the conversion
+	 * @param headerValues chain of header values that will be used to get a specific header list
 	 * @return true if the content type is {@code application/json}, false otherwise
 	 */
 	@Override
-	public <U, V> boolean isConvertible(final ApiMessage<U> message, final ApiMimeType mimeType, final V headers,
-			final HeaderValuesChain headerValuesChain) {
+	public <U, V> boolean isConvertible(final ApiMessage<U> message, final ApiMimeType mimeType, final V headers, final HeaderValues headerValues) {
 		if (null != mimeType) {
 			return ContentType.APPLICATION_JSON == mimeType.contentType();
 		}

@@ -50,6 +50,31 @@ public class MapHeaderValues extends HeaderValues {
 	}
 
 	/**
+	 * Checks if the specified header with the given value exists in a Map structure or delegates to the next handler in the
+	 * chain. If the input headers object is a {@link Map}, this method checks for the presence of the header and its value
+	 * using {@link Headers#contains(Object, Object, Map)}. Otherwise, it passes the request to the next
+	 * {@link HeaderValues} in the chain.
+	 *
+	 * @param <N> header name type
+	 * @param <V> header value type
+	 * @param headerName header name
+	 * @param headerValue header value
+	 * @param headers the object containing the headers, expected to be a {@link Map} of header names to values, or any
+	 *     other type that subsequent handlers in the chain might process
+	 * @return true if the specified header with the given value exists in the Map, otherwise the result from the next
+	 * handler in the chain
+	 * @throws ClassCastException if headers is a Map but cannot be cast to the expected type
+	 */
+	@Override
+	public <N, V> boolean contains(final N headerName, final V headerValue, final Object headers) {
+		if (headers instanceof Map<?, ?> mapHeaders) {
+			Map<String, List<String>> headersMap = JavaObjects.cast(mapHeaders);
+			return Headers.contains(headerName, headerValue, headersMap);
+		}
+		return getNext().contains(headerName, headerValue, headers);
+	}
+
+	/**
 	 * Retrieves the values of a specific header from the provided {@link Map} of headers.
 	 *
 	 * @param <N> header name type

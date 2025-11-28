@@ -6,7 +6,7 @@ import java.nio.charset.Charset;
 import org.apiphany.ApiMessage;
 import org.apiphany.ApiMimeType;
 import org.apiphany.client.ContentConverter;
-import org.apiphany.header.HeaderValuesChain;
+import org.apiphany.header.HeaderValues;
 import org.apiphany.io.ContentType;
 import org.apiphany.lang.Strings;
 import org.morphix.reflection.GenericClass;
@@ -57,8 +57,7 @@ public class StringHttpContentConverter implements HttpContentConverter<String> 
 	 * @see #isConvertible(ApiMessage, ApiMimeType, Object, HeaderValuesChain)
 	 */
 	@Override
-	public <U, H> boolean isConvertible(final ApiMessage<U> message, final ApiMimeType mimeType, final H headers,
-			final HeaderValuesChain headerValuesChain) {
+	public <U, H> boolean isConvertible(final ApiMessage<U> message, final ApiMimeType mimeType, final H headers, final HeaderValues headerValues) {
 		if (null != mimeType) {
 			return ContentType.TEXT_PLAIN == mimeType.contentType();
 		}

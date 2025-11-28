@@ -10,7 +10,7 @@ import org.apiphany.ApiMimeType;
 import org.apiphany.ApiRequest;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ContentConverter;
-import org.apiphany.header.HeaderValuesChain;
+import org.apiphany.header.HeaderValues;
 import org.apiphany.header.Headers;
 import org.apiphany.header.MapHeaderValues;
 import org.apiphany.http.HttpHeaderValues;
@@ -50,7 +50,7 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	/**
 	 * Header values chain.
 	 */
-	private final HeaderValuesChain headerValuesChain = new HeaderValuesChain();
+	private final HeaderValues headerValues;
 
 	/**
 	 * The SSL context for HTTPS if configured in client properties via {@link SSLProperties}.
@@ -67,7 +67,7 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 		this.clientProperties = clientProperties;
 		initialize();
 		addDefaultContentConverters(contentConverters);
-		addDefaultHeaderValues(headerValuesChain);
+		this.headerValues = addDefaultHeaderValues(new HeaderValues());
 	}
 
 	/**
@@ -101,11 +101,13 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	/**
 	 * Adds default value handlers to the header values chain.
 	 *
-	 * @param headerValuesChain the header values chain object
+	 * @param headerValues the header values chain object
+	 * @return the header values chain with default handlers added
 	 */
-	public static void addDefaultHeaderValues(final HeaderValuesChain headerValuesChain) {
-		headerValuesChain.add(new HttpHeaderValues());
-		headerValuesChain.add(new MapHeaderValues());
+	public static HeaderValues addDefaultHeaderValues(final HeaderValues headerValues) {
+		return headerValues
+				.addFirst(new MapHeaderValues())
+				.addFirst(new HttpHeaderValues());
 	}
 
 	/**
@@ -136,7 +138,7 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 			return JavaObjects.cast(StringHttpContentConverter.instance().from(body, mimeType, String.class));
 		}
 		for (ContentConverter<?> contentConverter : getContentConverters()) {
-			if (contentConverter.isConvertible(apiRequest, mimeType, headers, getHeaderValuesChain())) {
+			if (contentConverter.isConvertible(apiRequest, mimeType, headers, getHeaderValues())) {
 				ContentConverter<U> typeConverter = JavaObjects.cast(contentConverter);
 				return ContentConverter.convertBody(typeConverter, apiRequest, mimeType, body);
 			}
@@ -185,8 +187,8 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	 *
 	 * @return the header values chain
 	 */
-	public HeaderValuesChain getHeaderValuesChain() {
-		return headerValuesChain;
+	public HeaderValues getHeaderValues() {
+		return headerValues;
 	}
 
 	/**

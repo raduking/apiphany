@@ -5,7 +5,7 @@ import java.util.List;
 import org.apiphany.ApiMessage;
 import org.apiphany.ApiMimeType;
 import org.apiphany.ApiRequest;
-import org.apiphany.header.HeaderValuesChain;
+import org.apiphany.header.HeaderValues;
 import org.morphix.reflection.GenericClass;
 
 /**
@@ -48,10 +48,10 @@ public interface ContentConverter<T> {
 	 * @param message the {@link ApiMessage} containing the content to convert
 	 * @param contentType the content type
 	 * @param headers the headers that may influence the conversion
-	 * @param headerValuesChain chain of header values that will be used to get a specific header list
+	 * @param headerValues chain of header values that will be used to get a specific header list
 	 * @return true if the converter can perform the conversion, false otherwise
 	 */
-	<U, H> boolean isConvertible(ApiMessage<U> message, ApiMimeType contentType, H headers, HeaderValuesChain headerValuesChain);
+	<U, H> boolean isConvertible(ApiMessage<U> message, ApiMimeType contentType, H headers, HeaderValues headerValues);
 
 	/**
 	 * Retrieves the values of a specific header from the provided headers object.
@@ -61,12 +61,12 @@ public interface ContentConverter<T> {
 	 *
 	 * @param headers the headers object from which to retrieve the values
 	 * @param header the name of the header whose values are to be retrieved
-	 * @param headerValuesChain chain of header values that will be used to get a specific header list
+	 * @param headerValues chain of header values that will be used to get a specific header list
 	 * @return a list of values for the specified header. If the header is not found or the {@code headers} parameter is of
 	 * an unsupported type, an empty list is returned
 	 */
-	default <H, N> List<String> getHeaderValues(final H headers, final N header, final HeaderValuesChain headerValuesChain) {
-		return headerValuesChain.get(header, headers);
+	default <H, N> List<String> getHeaderValues(final H headers, final N header, final HeaderValues headerValues) {
+		return headerValues.get(header, headers);
 	}
 
 	/**
