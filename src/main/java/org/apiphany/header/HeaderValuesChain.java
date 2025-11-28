@@ -40,7 +40,8 @@ public class HeaderValuesChain {
 	 * @throws NullPointerException if {@code headerValues} is null
 	 */
 	public void add(final HeaderValues headerValues) {
-		Objects.requireNonNull(headerValues).setNext(headerValuesList.getFirst());
+		Objects.requireNonNull(headerValues, "headerValues must not be null");
+		headerValues.setNext(headerValuesList.getFirst());
 		headerValuesList.addFirst(headerValues);
 	}
 
