@@ -17,11 +17,11 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 /**
- * Test class for {@link HeaderValuesChain}.
+ * Test class for {@link HeaderValues}.
  *
  * @author Radu Sebastian LAZIN
  */
-class HeaderValuesChainTest {
+class HeaderValuesTest {
 
 	private static final String HEADER_VALUE1 = "headerValue1";
 	private static final String HEADER_VALUE2 = "headerValue2";
@@ -37,7 +37,7 @@ class HeaderValuesChainTest {
 	@ParameterizedTest
 	@MethodSource("provideHeadersObjectsForChainWithoutHandlers")
 	void shouldReturnEmptyListFromHeadersWhenNoElementsAreAddedToTheChain(final Object headers) {
-		HeaderValuesChain chain = new HeaderValuesChain();
+		HeaderValues chain = new HeaderValues();
 
 		List<String> values = chain.get(HEADER_NAME1, headers);
 
@@ -47,7 +47,7 @@ class HeaderValuesChainTest {
 	@ParameterizedTest
 	@MethodSource("provideHeadersObjectsForChainWithoutHandlers")
 	void shouldReturnFalseOnContainsWhenNoElementsAreAddedToTheChain(final Object headers) {
-		HeaderValuesChain chain = new HeaderValuesChain();
+		HeaderValues chain = new HeaderValues();
 
 		boolean contains = chain.contains(HEADER_NAME1, HEADER_VALUE1, headers);
 
@@ -56,8 +56,7 @@ class HeaderValuesChainTest {
 
 	@Test
 	void shouldReturnListFromMapHeadersChainContainsMapHeaderValues() {
-		HeaderValuesChain chain = new HeaderValuesChain();
-		chain.add(new MapHeaderValues());
+		HeaderValues chain = new HeaderValues().addFirst(new MapHeaderValues());
 
 		var headers = Map.of(HEADER_NAME1, List.of(HEADER_VALUE1));
 
@@ -69,8 +68,7 @@ class HeaderValuesChainTest {
 
 	@Test
 	void shouldReturnListFromMapHeadersWithMoreElementsChainContainsMapHeaderValues() {
-		HeaderValuesChain chain = new HeaderValuesChain();
-		chain.add(new MapHeaderValues());
+		HeaderValues chain = new HeaderValues().addFirst(new MapHeaderValues());
 
 		var headerValues = List.of(HEADER_VALUE1, HEADER_VALUE2);
 		var headers = Map.of(
@@ -85,8 +83,8 @@ class HeaderValuesChainTest {
 	@ParameterizedTest
 	@MethodSource("provideHeadersObjectsForChainWithoutHandlers")
 	void shouldReturnEmptyListFromHeadersWhenChainIsNotEmptyButNoHeaderValuesCanHandle(final Object headers) {
-		HeaderValuesChain chain = new HeaderValuesChain();
-		chain.add(new HttpHeaderValues());
+		HeaderValues chain = new HeaderValues();
+		chain.addFirst(new HttpHeaderValues());
 
 		List<String> values = chain.get(HEADER_NAME1, headers);
 

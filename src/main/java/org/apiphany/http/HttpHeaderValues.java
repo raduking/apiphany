@@ -2,6 +2,7 @@ package org.apiphany.http;
 
 import java.net.http.HttpHeaders;
 import java.util.List;
+import java.util.Objects;
 
 import org.apiphany.header.HeaderValues;
 import org.apiphany.lang.Strings;
@@ -31,6 +32,7 @@ public class HttpHeaderValues extends HeaderValues {
 	 * {@link #get(Object, HttpHeaders)}. Otherwise, it passes the request to the next {@link HeaderValues} in the chain.
 	 *
 	 * @param <N> header name type
+	 *
 	 * @param header the name of the header to retrieve (typically case-insensitive, according to HTTP standards)
 	 * @param headers the object containing the headers, expected to be an {@link HttpHeaders} instance or any other type
 	 *     that subsequent handlers in the chain might process
@@ -43,6 +45,28 @@ public class HttpHeaderValues extends HeaderValues {
 		return switch (headers) {
 			case HttpHeaders httpHeaders -> get(header, httpHeaders);
 			default -> getNext().get(header, headers);
+		};
+	}
+
+	/**
+	 * Checks if the specified header with the given value exists in an {@link HttpHeaders} object or delegates to the next
+	 * handler in the chain. If the input headers object is an instance of {@link HttpHeaders}, this method checks for the
+	 * presence of the header and its value. Otherwise, it passes the request to the next {@link HeaderValues} in the chain.
+	 *
+	 * @param <N> header name type
+	 * @param <V> header value type
+	 *
+	 * @param headerName header name
+	 * @param headerValue header value
+	 * @param headers headers to check
+	 * @return true if the given headers contain the given header with the given value, false otherwise
+	 */
+	@Override
+	public <N, V> boolean contains(final N headerName, final V headerValue, final Object headers) {
+		return switch (headers) {
+			case HttpHeaders httpHeaders -> httpHeaders.allValues(Strings.safeToString(headerName)).stream()
+					.anyMatch(value -> Objects.equals(value, Strings.safeToString(headerValue)));
+			default -> getNext().contains(headerName, headerValue, headers);
 		};
 	}
 

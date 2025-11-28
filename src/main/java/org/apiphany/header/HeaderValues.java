@@ -9,9 +9,6 @@ import org.apiphany.lang.Strings;
  * Represents a node in a chain of responsibility for resolving HTTP header values. Each instance can either handle a
  * header request directly or delegate it to the next {@link HeaderValues} in the chain. By default, this implementation
  * returns an empty list for all header requests, serving as a base class that can be extended for custom behavior.
- * <p>
- * This class is typically used in conjunction with {@link HeaderValuesChain} to form a linked structure of header value
- * resolvers.
  *
  * @author Radu Sebastian LAZIN
  */
@@ -30,7 +27,7 @@ public class HeaderValues {
 	/**
 	 * Default constructor.
 	 */
-	protected HeaderValues() {
+	public HeaderValues() {
 		// empty
 	}
 
@@ -81,6 +78,17 @@ public class HeaderValues {
 	 */
 	public void setNext(final HeaderValues next) {
 		this.next = next;
+	}
+
+	/**
+	 * Sets the first {@link HeaderValues} in the chain of responsibility.
+	 *
+	 * @param first the {@link HeaderValues} to set as first in the chain, or {@code null} to indicate the end of the chain
+	 * @return the added {@link HeaderValues}
+	 */
+	public HeaderValues addFirst(final HeaderValues first) {
+		first.setNext(this);
+		return first;
 	}
 
 	/**
