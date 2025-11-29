@@ -50,7 +50,7 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	/**
 	 * Header values chain.
 	 */
-	private final HeaderValues headerValues;
+	private final HeaderValues headerValuesChain;
 
 	/**
 	 * The SSL context for HTTPS if configured in client properties via {@link SSLProperties}.
@@ -67,7 +67,7 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 		this.clientProperties = clientProperties;
 		initialize();
 		addDefaultContentConverters(contentConverters);
-		this.headerValues = addDefaultHeaderValues(new HeaderValues());
+		this.headerValuesChain = addDefaultHeaderValues(new HeaderValues());
 	}
 
 	/**
@@ -138,7 +138,7 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 			return JavaObjects.cast(StringHttpContentConverter.instance().from(body, mimeType, String.class));
 		}
 		for (ContentConverter<?> contentConverter : getContentConverters()) {
-			if (contentConverter.isConvertible(apiRequest, mimeType, headers, getHeaderValues())) {
+			if (contentConverter.isConvertible(apiRequest, mimeType, headers, getHeaderValuesChain())) {
 				ContentConverter<U> typeConverter = JavaObjects.cast(contentConverter);
 				return ContentConverter.convertBody(typeConverter, apiRequest, mimeType, body);
 			}
@@ -183,12 +183,12 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	}
 
 	/**
-	 * Returns the header values chain.
+	 * Returns the header values extractor chain.
 	 *
-	 * @return the header values chain
+	 * @return the header values extractor chain
 	 */
-	public HeaderValues getHeaderValues() {
-		return headerValues;
+	public HeaderValues getHeaderValuesChain() {
+		return headerValuesChain;
 	}
 
 	/**

@@ -11,7 +11,6 @@
 - Removed `HttpHeaderValuesChain` in favor of `HttpHeaderValues` to hold the chain.
 - Added `MapHeaderValues.contains` method specific to headers as map.
 - Added `HttpHeaderValues.contains` method specific to headers as `HttpHeaders`.
-- Changed `AbstractHttpExchangeClient.getHeaderValuesChain` to `AbstractHttpExchangeClient.getHeaderValues`.
 - Changed `AbstractHttpExchangeClient.getHeaderValues` to return `HeaderValues` instead of `HeaderValuesChain`.
 - Changed `AbstractHttpExchangeClient.addDefaultHeaderValues` to use `HeaderValues` instead of `HeaderValuesChain`.
 - Changed `AbstractHttpExchangeClient.addDefaultHeaderValues` to return the first `HeaderValues` in the chain.
