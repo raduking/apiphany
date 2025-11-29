@@ -52,20 +52,28 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<!-- Publishing dependencies versions -->
-		<gpg.plugin.version>3.2.8</gpg.plugin.version>
-		<central.publishing.plugin.version>0.9.0</central.publishing.plugin.version>
+		<maven.gpg.plugin.version>3.2.8</maven.gpg.plugin.version>
+		<central.publishing.maven.plugin.version>0.9.0</central.publishing.maven.plugin.version>
 
 		<!-- Testing dependencies versions -->
 		<testcontainers.base.version>2.0.2</testcontainers.base.version>
-		<testcontainers.keycloak.version>3.8.0</testcontainers.keycloak.version>
-		<nimbus.jose.jwt.version>10.5</nimbus.jose.jwt.version>
-		<nimbus.oauth2.oidc.sdk.version>11.29.1</nimbus.oauth2.oidc.sdk.version>
-		<pitest.plugin.version>1.20.3</pitest.plugin.version>
-		<pitest.plugin.junit5.version>1.2.3</pitest.plugin.junit5.version>
-		<jacoco.plugin.version>0.8.13</jacoco.plugin.version>
-		<project.info.reports.plugin.version>3.9.0</project.info.reports.plugin.version>
+		<testcontainers.keycloak.version>4.0.0</testcontainers.keycloak.version>
+		<nimbus.jose.jwt.version>10.6</nimbus.jose.jwt.version>
+		<nimbus.oauth2.oidc.sdk.version>11.30.1</nimbus.oauth2.oidc.sdk.version>
 
+		<!-- Testing plugin versions -->
+		<pitest.maven.plugin.version>1.22.0</pitest.maven.plugin.version>
+		<pitest.junit5.plugin.version>1.2.3</pitest.junit5.plugin.version>
+		<jacoco.maven.plugin.version>0.8.14</jacoco.maven.plugin.version>
+		<maven.project.info.reports.plugin.version>3.9.0</maven.project.info.reports.plugin.version>
+
+		<!-- Testing properties -->
 		<integration.tests.pattern>**/*IT.java</integration.tests.pattern>
+
+		<!-- Other plugin versions -->
+		<spotless.maven.plugin.version>2.46.1</spotless.maven.plugin.version>
+		<org.eclipse.jdt.core.version>3.42.0</org.eclipse.jdt.core.version>
+		<eclipse.formatter.version>4.36</eclipse.formatter.version>
 
 		<!-- Initialize the Jacoco arguments as empty by default -->
 		<jacocoArgLine />
@@ -326,7 +334,7 @@
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>${jacoco.plugin.version}</version>
+				<version>${jacoco.maven.plugin.version}</version>
 				<executions>
 					<execution>
 						<id>pre-unit-test</id>
@@ -359,13 +367,13 @@
 			<plugin>
 				<groupId>org.pitest</groupId>
 				<artifactId>pitest-maven</artifactId>
-				<version>${pitest.plugin.version}</version>
+				<version>${pitest.maven.plugin.version}</version>
 				<!-- Allows it to work with JUnit 5 -->
 				<dependencies>
 					<dependency>
 						<groupId>org.pitest</groupId>
 						<artifactId>pitest-junit5-plugin</artifactId>
-						<version>${pitest.plugin.junit5.version}</version>
+						<version>${pitest.junit5.plugin.version}</version>
 					</dependency>
 				</dependencies>
 				<configuration>
@@ -384,19 +392,19 @@
 			<plugin>
 				<groupId>com.diffplug.spotless</groupId>
 				<artifactId>spotless-maven-plugin</artifactId>
-				<version>2.46.1</version>
+				<version>${spotless.maven.plugin.version}</version>
 				<dependencies>
 					<dependency>
 						<groupId>org.eclipse.jdt</groupId>
 						<artifactId>org.eclipse.jdt.core</artifactId>
-						<version>3.42.0</version>
+						<version>${org.eclipse.jdt.core.version}</version>
 					</dependency>
 				</dependencies>
 				<configuration>
 					<java>
 						<eclipse>
 							<file>${project.basedir}/formatter/java-formatter.xml</file>
-							<version>4.36</version>
+							<version>${eclipse.formatter.version}</version>
 						</eclipse>
 						<removeUnusedImports/>
 						<trimTrailingWhitespace/>
@@ -432,7 +440,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-gpg-plugin</artifactId>
-						<version>${gpg.plugin.version}</version>
+						<version>${maven.gpg.plugin.version}</version>
 						<executions>
 							<execution>
 							<id>sign-artifacts</id>
@@ -457,7 +465,7 @@
 					<plugin>
 						<groupId>org.sonatype.central</groupId>
 						<artifactId>central-publishing-maven-plugin</artifactId>
-						<version>${central.publishing.plugin.version}</version>
+						<version>${central.publishing.maven.plugin.version}</version>
 						<extensions>true</extensions>
 						<configuration>
 							<autoPublish>true</autoPublish>
@@ -486,7 +494,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-project-info-reports-plugin</artifactId>
-				<version>${project.info.reports.plugin.version}</version>
+				<version>${maven.project.info.reports.plugin.version}</version>
 			</plugin>
 
 			<!--Jacoco code coverage -->
