@@ -11,16 +11,20 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,8 +39,11 @@ import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
 import org.apiphany.io.ContentType;
 import org.apiphany.lang.retry.Retry;
+import org.apiphany.lang.retry.WaitCounter;
 import org.apiphany.meters.BasicMeters;
+import org.apiphany.meters.MeterCounter;
 import org.apiphany.meters.MeterFactory;
+import org.apiphany.meters.MeterTimer;
 import org.apiphany.security.AuthenticationType;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -68,6 +75,8 @@ class ApiClientTest {
 
 	private static final int HTTP_STATUS_OK = 200;
 	private static final int HTTP_STATUS_BAD_REQUEST = 400;
+
+	private static final int RETRY_COUNT = 3;
 
 	@SuppressWarnings({ "unchecked", "resource" })
 	@Test
@@ -769,4 +778,86 @@ class ApiClientTest {
 		}
 	}
 
+	@SuppressWarnings({ "unchecked", "resource" })
+	@Test
+	void shouldSetMetricsOnExchangeWhenThereAreNoExceptions() {
+		ExchangeClient exchangeClient = mock(ExchangeClient.class);
+		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
+
+		MeterFactory meterFactory = mock(MeterFactory.class);
+		MeterTimer latency = mock(MeterTimer.class);
+		MeterCounter requests = mock(MeterCounter.class);
+		MeterCounter errors = mock(MeterCounter.class);
+		MeterCounter retries = mock(MeterCounter.class);
+		doReturn(latency).when(meterFactory).timer(eq(METRICS_PREFIX), eq(BasicMeters.Name.LATENCY), any(List.class));
+		doReturn(requests).when(meterFactory).counter(eq(METRICS_PREFIX), eq(BasicMeters.Name.REQUEST), any(List.class));
+		doReturn(errors).when(meterFactory).counter(eq(METRICS_PREFIX), eq(BasicMeters.Name.ERROR), any(List.class));
+		doReturn(retries).when(meterFactory).counter(eq(METRICS_PREFIX), eq(BasicMeters.Name.RETRY), any(List.class));
+
+		BasicMeters meters = BasicMeters.of(meterFactory, METRICS_PREFIX);
+
+		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
+		api.setMetricsEnabled(true);
+		api.setMeters(meters);
+
+		Retry retry = Retry.of(WaitCounter.of(RETRY_COUNT, Duration.ofMillis(10)));
+		api.setRetry(retry);
+
+		ApiRequest<?> request = mock(ApiRequest.class);
+		doReturn(AuthenticationType.OAUTH2).when(request).getAuthenticationType();
+
+		ApiResponse<?> response = mock(ApiResponse.class);
+		doReturn(false).when(response).isSuccessful();
+		doReturn(response).when(exchangeClient).exchange(request);
+
+		ApiResponse<?> result = api.exchange(request);
+
+		assertThat(result, sameInstance(response));
+
+		verify(retries, times(RETRY_COUNT)).increment();
+		verify(requests, times(RETRY_COUNT)).increment();
+		verify(latency, times(RETRY_COUNT)).record(any(Duration.class));
+		verifyNoInteractions(errors);
+	}
+
+	@SuppressWarnings({ "unchecked", "resource" })
+	@Test
+	void shouldSetMetricsOnExchangeWhenThereAreExceptions() {
+		ExchangeClient exchangeClient = mock(ExchangeClient.class);
+		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
+
+		MeterFactory meterFactory = mock(MeterFactory.class);
+		MeterTimer latency = mock(MeterTimer.class);
+		MeterCounter requests = mock(MeterCounter.class);
+		MeterCounter errors = mock(MeterCounter.class);
+		MeterCounter retries = mock(MeterCounter.class);
+		doReturn(latency).when(meterFactory).timer(eq(METRICS_PREFIX), eq(BasicMeters.Name.LATENCY), any(List.class));
+		doReturn(requests).when(meterFactory).counter(eq(METRICS_PREFIX), eq(BasicMeters.Name.REQUEST), any(List.class));
+		doReturn(errors).when(meterFactory).counter(eq(METRICS_PREFIX), eq(BasicMeters.Name.ERROR), any(List.class));
+		doReturn(retries).when(meterFactory).counter(eq(METRICS_PREFIX), eq(BasicMeters.Name.RETRY), any(List.class));
+
+		BasicMeters meters = BasicMeters.of(meterFactory, METRICS_PREFIX);
+
+		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
+		api.setMetricsEnabled(true);
+		api.setMeters(meters);
+
+		Retry retry = Retry.of(WaitCounter.of(RETRY_COUNT, Duration.ofMillis(10)));
+		api.setRetry(retry);
+
+		ApiRequest<?> request = mock(ApiRequest.class);
+		doReturn(AuthenticationType.OAUTH2).when(request).getAuthenticationType();
+
+		RuntimeException exception = new RuntimeException(SOME_ERROR_MESSAGE);
+		doThrow(exception).when(exchangeClient).exchange(request);
+
+		ApiResponse<?> result = api.exchange(request);
+
+		assertThat(result.getException(), sameInstance(exception));
+
+		verify(retries, times(RETRY_COUNT)).increment();
+		verify(requests, times(RETRY_COUNT)).increment();
+		verify(latency, times(RETRY_COUNT)).record(any(Duration.class));
+		verify(errors, times(RETRY_COUNT)).increment();
+	}
 }
