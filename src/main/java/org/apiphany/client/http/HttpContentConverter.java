@@ -25,12 +25,12 @@ public interface HttpContentConverter<T> extends ContentConverter<T> {
 	 *
 	 * @param headers the headers object from which to retrieve the {@code Content-Type} values. This can be an instance of
 	 *     {@link HttpHeaders} or a {@link Map} of header names to lists of values.
-	 * @param headerValues chain of header values that will be used to get a specific header list
+	 * @param chain chain of header values extractor that will be used to get a specific header list
 	 * @return a list of values for the {@code Content-Type} header. If the header is not found or the headers parameter is
 	 * of an unsupported type, an empty list is returned.
 	 */
-	default <V> List<String> getContentTypes(final V headers, final HeaderValues headerValues) {
-		return getHeaderValues(HttpHeader.CONTENT_TYPE, headers, headerValues);
+	default <V> List<String> getContentTypes(final V headers, final HeaderValues chain) {
+		return getHeaderValues(HttpHeader.CONTENT_TYPE, headers, chain);
 	}
 
 }

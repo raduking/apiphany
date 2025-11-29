@@ -57,7 +57,7 @@ public class StringHttpContentConverter implements HttpContentConverter<String> 
 	 * @see #isConvertible(ApiMessage, ApiMimeType, Object, HeaderValuesChain)
 	 */
 	@Override
-	public <U, H> boolean isConvertible(final ApiMessage<U> message, final ApiMimeType mimeType, final H headers, final HeaderValues headerValues) {
+	public <U, H> boolean isConvertible(final ApiMessage<U> message, final ApiMimeType mimeType, final H headers, final HeaderValues chain) {
 		if (null != mimeType) {
 			return ContentType.TEXT_PLAIN == mimeType.contentType();
 		}
