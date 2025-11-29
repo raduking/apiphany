@@ -76,13 +76,11 @@ public class StringHttpContentConverter implements HttpContentConverter<String> 
 			return string;
 		}
 		Charset charset = ApiMimeType.charset(mimeType);
-		if (obj instanceof byte[] bytes) {
-			return new String(bytes, charset);
-		}
-		if (obj instanceof InputStream is) {
-			return Strings.toString(is, charset);
-		}
-		return Strings.safeToString(obj);
+		return switch (obj) {
+			case byte[] bytes -> new String(bytes, charset);
+			case InputStream is -> Strings.toString(is, charset);
+			default -> Strings.safeToString(obj);
+		};
 	}
 
 	/**
