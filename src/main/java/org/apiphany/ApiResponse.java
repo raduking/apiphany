@@ -272,17 +272,13 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @return the input stream
 	 */
 	private static <T> InputStream defaultInputStreamConverter(final T body) {
-		if (body instanceof InputStream is) {
-			return is;
-		}
-		if (body instanceof byte[] bytes) {
-			return new ByteArrayInputStream(bytes);
-		}
-		if (body instanceof CharSequence cs) {
-			return new ByteArrayInputStream(cs.toString().getBytes());
-		}
-		// fallback to toString()
-		return new ByteArrayInputStream(Strings.safe(body.toString()).getBytes());
+		return switch (body) {
+			case InputStream is -> is;
+			case byte[] bytes -> new ByteArrayInputStream(bytes);
+			case CharSequence cs -> new ByteArrayInputStream(cs.toString().getBytes());
+			// fallback to toString()
+			default -> new ByteArrayInputStream(Strings.safe(body.toString()).getBytes());
+		};
 	}
 
 	/**

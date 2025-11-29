@@ -40,11 +40,10 @@ public class MapHeaderValues extends HeaderValues {
 	 */
 	@Override
 	public <N> List<String> get(final N header, final Object headers) {
-		if (headers instanceof Map<?, ?> mapHeaders) {
-			Map<String, List<String>> headersMap = JavaObjects.cast(mapHeaders);
-			return Headers.get(header, headersMap);
-		}
-		return getNext().get(header, headers);
+		return switch (headers) {
+			case Map<?, ?> map -> Headers.get(header, JavaObjects.<Map<String, List<String>>>cast(map));
+			default -> getNext().get(header, headers);
+		};
 	}
 
 	/**
@@ -66,11 +65,10 @@ public class MapHeaderValues extends HeaderValues {
 	 */
 	@Override
 	public <N, V> boolean contains(final N headerName, final V headerValue, final Object headers) {
-		if (headers instanceof Map<?, ?> mapHeaders) {
-			Map<String, List<String>> headersMap = JavaObjects.cast(mapHeaders);
-			return Headers.contains(headerName, headerValue, headersMap);
-		}
-		return getNext().contains(headerName, headerValue, headers);
+		return switch (headers) {
+			case Map<?, ?> map -> Headers.contains(headerName, headerValue, JavaObjects.<Map<String, List<String>>>cast(map));
+			default -> getNext().contains(headerName, headerValue, headers);
+		};
 	}
 
 	/**

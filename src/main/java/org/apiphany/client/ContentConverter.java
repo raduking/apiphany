@@ -84,8 +84,8 @@ public interface ContentConverter<T> {
 	 * @throws IllegalArgumentException if the conversion fails
 	 * @throws UnsupportedOperationException if the request specifies an unsupported conversion
 	 */
-	static <U, T> U convertBody(final ContentConverter<U> typeConverter, final ApiRequest<T> apiRequest,
-			final ApiMimeType mimeType, final Object body) {
+	static <U, T> U convertBody(final ContentConverter<U> typeConverter, final ApiRequest<T> apiRequest, final ApiMimeType mimeType,
+			final Object body) {
 		return apiRequest.hasGenericType()
 				? typeConverter.from(body, mimeType, apiRequest.getGenericResponseType())
 				: typeConverter.from(body, mimeType, apiRequest.getClassResponseType());
