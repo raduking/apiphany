@@ -1,5 +1,9 @@
 ## Release Notes
 
+`1.0.17`
+
+---
+
 `1.0.16`
 
 - Renamed all `Retry.when` methods to `Retry.until` to better emphasize what the parameters actually do.
