@@ -477,13 +477,6 @@
 				</plugins>
 			</build>
 		</profile>
-    	
-		<profile>
-			<id>eclipse</id>
-			<properties>
-				<jacocoArgLine></jacocoArgLine>
-			</properties>
-		</profile>
 	</profiles>
 
 	<reporting>
@@ -501,7 +494,7 @@
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>${jacoco.plugin.version}</version>
+				<version>${jacoco.maven.plugin.version}</version>
 				<reportSets>
 					<reportSet>
 						<reports>
