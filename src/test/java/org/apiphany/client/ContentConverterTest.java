@@ -101,7 +101,7 @@ class ContentConverterTest {
 		}
 
 		@Override
-		public <U, H> boolean isConvertible(final ApiMessage<U> message, final ApiMimeType contentType, final H headers, final HeaderValues headerValues) {
+		public <U, H> boolean isConvertible(final ApiMessage<U> message, final ApiMimeType contentType, final H headers, final HeaderValues chain) {
 			return false;
 		}
 

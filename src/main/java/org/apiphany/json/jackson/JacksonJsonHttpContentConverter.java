@@ -64,11 +64,11 @@ public class JacksonJsonHttpContentConverter<T> implements HttpContentConverter<
 	 * @param message the {@link ApiMessage} containing the content to convert
 	 * @param mimeType the content type
 	 * @param headers the headers that may influence the conversion
-	 * @param headerValues chain of header values that will be used to get a specific header list
+	 * @param chain chain of header values extractor that will be used to get a specific header list
 	 * @return true if the content type is {@code application/json}, false otherwise
 	 */
 	@Override
-	public <U, V> boolean isConvertible(final ApiMessage<U> message, final ApiMimeType mimeType, final V headers, final HeaderValues headerValues) {
+	public <U, V> boolean isConvertible(final ApiMessage<U> message, final ApiMimeType mimeType, final V headers, final HeaderValues chain) {
 		if (null != mimeType) {
 			return ContentType.APPLICATION_JSON == mimeType.contentType();
 		}
