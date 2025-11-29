@@ -30,7 +30,7 @@ public interface HttpContentConverter<T> extends ContentConverter<T> {
 	 * of an unsupported type, an empty list is returned.
 	 */
 	default <V> List<String> getContentTypes(final V headers, final HeaderValues headerValues) {
-		return getHeaderValues(headers, HttpHeader.CONTENT_TYPE, headerValues);
+		return getHeaderValues(HttpHeader.CONTENT_TYPE, headers, headerValues);
 	}
 
 }
