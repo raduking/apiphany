@@ -48,7 +48,7 @@ public interface ContentConverter<T> {
 	 * @param message the {@link ApiMessage} containing the content to convert
 	 * @param contentType the content type
 	 * @param headers the headers that may influence the conversion
-	 * @param headerValues chain of header values that will be used to get a specific header list
+	 * @param headerValues chain of header values extractor that will be used to get a specific header list
 	 * @return true if the converter can perform the conversion, false otherwise
 	 */
 	<U, H> boolean isConvertible(ApiMessage<U> message, ApiMimeType contentType, H headers, HeaderValues headerValues);
@@ -59,13 +59,13 @@ public interface ContentConverter<T> {
 	 * @param <H> the type of the headers object
 	 * @param <N> header name type
 	 *
-	 * @param headers the headers object from which to retrieve the values
 	 * @param header the name of the header whose values are to be retrieved
-	 * @param headerValues chain of header values that will be used to get a specific header list
+	 * @param headers the headers object from which to retrieve the values
+	 * @param headerValues chain of header values extractor that will be used to get a specific header list
 	 * @return a list of values for the specified header. If the header is not found or the {@code headers} parameter is of
 	 * an unsupported type, an empty list is returned
 	 */
-	default <H, N> List<String> getHeaderValues(final H headers, final N header, final HeaderValues headerValues) {
+	default <H, N> List<String> getHeaderValues(final N header, final H headers, final HeaderValues headerValues) {
 		return headerValues.get(header, headers);
 	}
 

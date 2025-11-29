@@ -22,6 +22,7 @@
 - Added `HttpStatus.fromString` to build a HTTP status from a `String`.
 - Added `HttpStatus.fromMessage` to build a HTTP status from a HTTP `String` status message.
 - Renamed `HttpStatus.Type.from` to `HttpStatus.Type.fromCode` to better emphasize what the method does.
+- Changed `ContentConverter.getHeaderValues` parameter order, now the header name is the first parameter.
 
 ---
 
