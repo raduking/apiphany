@@ -128,7 +128,7 @@ public interface Headers {
 	 * @return true if the given headers contain the given header with the given value, false otherwise
 	 */
 	static <N, V> boolean contains(final N headerName, final V headerValue, final Map<String, List<String>> headers) {
-		return Maps.isNotEmpty(headers) && contains(headerName, headerValue, hn -> MapHeaderValues.get(hn, headers));
+		return Maps.isNotEmpty(headers) && contains(headerName, headerValue, hn -> get(hn, headers));
 	}
 
 	/**
@@ -141,7 +141,19 @@ public interface Headers {
 	 * @return true if the headers contain the given header, false otherwise
 	 */
 	static <N> boolean contains(final N headerName, final Map<String, List<String>> headers) {
-		return MapHeaderValues.contains(headerName, headers);
+		if (Maps.isEmpty(headers)) {
+			return false;
+		}
+		String headerKey = Strings.safeToString(headerName);
+		if (headers.containsKey(headerKey)) {
+			return true;
+		}
+		for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
+			if (entry.getKey().equalsIgnoreCase(headerKey)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -154,6 +166,20 @@ public interface Headers {
 	 * @return a list of values for the specified header. If the header is not found, an empty list is returned.
 	 */
 	static <N> List<String> get(final N header, final Map<String, List<String>> headers) {
-		return MapHeaderValues.get(header, headers);
+		if (Maps.isEmpty(headers)) {
+			return Collections.emptyList();
+		}
+		String headerKey = Strings.safeToString(header);
+
+		List<String> values = headers.get(headerKey);
+		if (null != values) {
+			return values;
+		}
+		for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
+			if (entry.getKey().equalsIgnoreCase(headerKey)) {
+				return entry.getValue();
+			}
+		}
+		return Collections.emptyList();
 	}
 }

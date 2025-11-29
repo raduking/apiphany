@@ -40,7 +40,7 @@ public class HttpException extends RuntimeException {
 	 * @param message the detail message explaining the exception.
 	 */
 	public HttpException(final int statusCode, final String message) {
-		this(HttpStatus.from(statusCode), message, null);
+		this(HttpStatus.fromCode(statusCode), message, null);
 	}
 
 	/**
@@ -51,7 +51,7 @@ public class HttpException extends RuntimeException {
 	 * @param cause the cause of the exception (can be null).
 	 */
 	public HttpException(final int statusCode, final String message, final Throwable cause) {
-		this(HttpStatus.from(statusCode), message, cause);
+		this(HttpStatus.fromCode(statusCode), message, cause);
 	}
 
 	/**
@@ -123,7 +123,7 @@ public class HttpException extends RuntimeException {
 	 * @return the status message string
 	 */
 	public static String message(final HttpStatus status) {
-		return "[" + status.value() + " " + status.getMessage() + "]";
+		return "[" + status.value() + " " + status.message() + "]";
 	}
 
 	/**

@@ -47,6 +47,13 @@ class HttpMessagesTest {
 	}
 
 	@Test
+	void shouldThrowIllegalArgumentExceptionWhenParsingUnknownJavaNetHttpVersion() {
+		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> HttpMessages.parseJavaNetHttpVersion("HTTP/3"));
+
+		assertThat(e.getMessage(), equalTo("Unsupported HTTP version: HTTP/3"));
+	}
+
+	@Test
 	void shouldBuildRangeString() {
 		String result = HttpMessages.getRangeString(LONG_42, LONG_666);
 

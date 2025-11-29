@@ -1,11 +1,8 @@
 package org.apiphany.header;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.apiphany.lang.Strings;
-import org.apiphany.lang.collections.Maps;
 import org.morphix.lang.JavaObjects;
 
 /**
@@ -29,10 +26,11 @@ public class MapHeaderValues extends HeaderValues {
 
 	/**
 	 * Retrieves header values from a Map structure or delegates to the next handler in the chain. If the input headers
-	 * object is a {@link Map}, this method extracts values for the specified header using {@link #get(Object, Map)}.
+	 * object is a {@link Map}, this method extracts values for the specified header using {@link Headers#get(Object, Map)}.
 	 * Otherwise, it passes the request to the next {@link HeaderValues} in the chain.
 	 *
 	 * @param <N> header name type
+	 *
 	 * @param header the name of the header to retrieve (case sensitivity depends on implementation)
 	 * @param headers the object containing the headers, expected to be a {@link Map} of header names to values, or any
 	 *     other type that subsequent handlers in the chain might process
@@ -44,7 +42,7 @@ public class MapHeaderValues extends HeaderValues {
 	public <N> List<String> get(final N header, final Object headers) {
 		if (headers instanceof Map<?, ?> mapHeaders) {
 			Map<String, List<String>> headersMap = JavaObjects.cast(mapHeaders);
-			return get(header, headersMap);
+			return Headers.get(header, headersMap);
 		}
 		return getNext().get(header, headers);
 	}
@@ -57,6 +55,7 @@ public class MapHeaderValues extends HeaderValues {
 	 *
 	 * @param <N> header name type
 	 * @param <V> header value type
+	 *
 	 * @param headerName header name
 	 * @param headerValue header value
 	 * @param headers the object containing the headers, expected to be a {@link Map} of header names to values, or any
@@ -84,21 +83,7 @@ public class MapHeaderValues extends HeaderValues {
 	 * @return a list of values for the specified header. If the header is not found, an empty list is returned.
 	 */
 	public static <N> List<String> get(final N header, final Map<String, List<String>> headers) {
-		if (Maps.isEmpty(headers)) {
-			return Collections.emptyList();
-		}
-		String headerKey = Strings.safeToString(header);
-
-		List<String> values = headers.get(headerKey);
-		if (null != values) {
-			return values;
-		}
-		for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
-			if (entry.getKey().equalsIgnoreCase(headerKey)) {
-				return entry.getValue();
-			}
-		}
-		return Collections.emptyList();
+		return Headers.get(header, headers);
 	}
 
 	/**
@@ -111,18 +96,6 @@ public class MapHeaderValues extends HeaderValues {
 	 * @return true if the headers contain the given header, false otherwise
 	 */
 	public static <N> boolean contains(final N headerName, final Map<String, List<String>> headers) {
-		if (Maps.isEmpty(headers)) {
-			return false;
-		}
-		String headerKey = Strings.safeToString(headerName);
-		if (headers.containsKey(headerKey)) {
-			return true;
-		}
-		for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
-			if (entry.getKey().equalsIgnoreCase(headerKey)) {
-				return true;
-			}
-		}
-		return false;
+		return Headers.contains(headerName, headers);
 	}
 }

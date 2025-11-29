@@ -468,9 +468,19 @@ public enum HttpStatus implements Status {
 	private static final HttpStatus[] VALUES = values();
 
 	/**
+	 * The value map for easy from implementation.
+	 */
+	private static final Map<Integer, HttpStatus> VALUE_MAP = Enums.buildNameMap(VALUES, HttpStatus::value);
+
+	/**
+	 * The message map for easy from implementation.
+	 */
+	private static final Map<String, HttpStatus> MESSAGE_MAP = Enums.buildNameMap(VALUES, HttpStatus::message);
+
+	/**
 	 * The name map for easy from implementation.
 	 */
-	private static final Map<Integer, HttpStatus> NAME_MAP = Enums.buildNameMap(VALUES, HttpStatus::value);
+	private static final Map<String, HttpStatus> NAME_MAP = Enums.buildNameMap(VALUES, HttpStatus::name);
 
 	/**
 	 * The numeric value of the HTTP status code.
@@ -533,7 +543,7 @@ public enum HttpStatus implements Status {
 	 *
 	 * @return the message associated with this status code
 	 */
-	public String getMessage() {
+	public String message() {
 		return this.message;
 	}
 
@@ -625,12 +635,34 @@ public enum HttpStatus implements Status {
 	/**
 	 * Returns the {@code HttpStatus} enum constant with the specified numeric value.
 	 *
-	 * @param statusCode the numeric value of the enum to be returned
+	 * @param statusCode the numeric value of the returned enum
 	 * @return the enum constant with the specified numeric value
 	 * @throws IllegalArgumentException if this enum has no constant for the specified numeric value
 	 */
-	public static HttpStatus from(final int statusCode) {
-		return Enums.from(statusCode, NAME_MAP, VALUES);
+	public static HttpStatus fromCode(final int statusCode) {
+		return Enums.from(statusCode, VALUE_MAP, VALUES);
+	}
+
+	/**
+	 * Returns the {@code HttpStatus} enum constant with the specified numeric value.
+	 *
+	 * @param message the message of the returned enum
+	 * @return the enum constant with the specified message
+	 * @throws IllegalArgumentException if this enum has no constant for the specified message
+	 */
+	public static HttpStatus fromMessage(final String message) {
+		return Enums.from(message, MESSAGE_MAP, VALUES);
+	}
+
+	/**
+	 * Returns the {@code HttpStatus} enum constant with the specified name.
+	 *
+	 * @param name the name of the returned enum
+	 * @return the enum constant with the specified name
+	 * @throws IllegalArgumentException if this enum has no constant for the specified name
+	 */
+	public static HttpStatus fromString(final String name) {
+		return Enums.from(name, NAME_MAP, VALUES);
 	}
 
 	/**
@@ -702,7 +734,7 @@ public enum HttpStatus implements Status {
 		 * @return the {@code Type} enum constant for the supplied status code
 		 * @throws IllegalArgumentException if this enum has no corresponding constant
 		 */
-		public static Type from(final int statusCode) {
+		public static Type fromCode(final int statusCode) {
 			int typeCode = statusCode / 100;
 			return Enums.from(typeCode, NAME_MAP, values());
 		}

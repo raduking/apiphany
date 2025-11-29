@@ -1,7 +1,9 @@
 package org.apiphany.header;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -27,6 +29,8 @@ class HeadersTest {
 	private static final String V2 = "v2";
 	private static final String V3 = "v3";
 	private static final String V4 = "v4";
+
+	private static final String HEADER_VALUE = "headerValue";
 
 	Map<String, List<String>> headers = new HashMap<>() {
 		private static final long serialVersionUID = 1L;
@@ -145,4 +149,23 @@ class HeadersTest {
 
 		assertFalse(result);
 	}
+
+	@Test
+	void shouldReturnHeaderWhenCaseDoesntMatch() {
+		Map<String, List<String>> mapHeaders = Map.of("some-header", List.of(HEADER_VALUE));
+
+		List<String> headerValues = Headers.get("Some-Header", mapHeaders);
+
+		assertThat(headerValues, hasSize(1));
+		assertThat(headerValues.getFirst(), equalTo(HEADER_VALUE));
+	}
+
+	@Test
+	void shouldReturnEmptyListOnGetFromEmptyHeadersMap() {
+		List<String> headerValues = Headers.get("Some-Header", Map.of());
+
+		assertThat(headerValues, notNullValue());
+		assertThat(headerValues, hasSize(0));
+	}
+
 }

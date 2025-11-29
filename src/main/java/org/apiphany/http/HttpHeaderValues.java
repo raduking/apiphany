@@ -2,9 +2,9 @@ package org.apiphany.http;
 
 import java.net.http.HttpHeaders;
 import java.util.List;
-import java.util.Objects;
 
 import org.apiphany.header.HeaderValues;
+import org.apiphany.header.Headers;
 import org.apiphany.lang.Strings;
 
 /**
@@ -64,8 +64,7 @@ public class HttpHeaderValues extends HeaderValues {
 	@Override
 	public <N, V> boolean contains(final N headerName, final V headerValue, final Object headers) {
 		return switch (headers) {
-			case HttpHeaders httpHeaders -> httpHeaders.allValues(Strings.safeToString(headerName)).stream()
-					.anyMatch(value -> Objects.equals(value, Strings.safeToString(headerValue)));
+			case HttpHeaders httpHeaders -> Headers.contains(headerName, headerValue, httpHeaders.map());
 			default -> getNext().contains(headerName, headerValue, headers);
 		};
 	}
@@ -81,5 +80,18 @@ public class HttpHeaderValues extends HeaderValues {
 	 */
 	public static <N> List<String> get(final N header, final HttpHeaders headers) {
 		return headers.allValues(Strings.safeToString(header));
+	}
+
+	/**
+	 * Returns true if the headers contain the given header, false otherwise.
+	 *
+	 * @param <N> header name type
+	 *
+	 * @param headerName header name
+	 * @param headers existing headers
+	 * @return true if the headers contain the given header, false otherwise
+	 */
+	public static <N> boolean contains(final N headerName, final HttpHeaders headers) {
+		return Headers.contains(headerName, headers.map());
 	}
 }

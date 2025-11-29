@@ -16,6 +16,12 @@
 - Changed `AbstractHttpExchangeClient.addDefaultHeaderValues` to use `HeaderValues` instead of `HeaderValuesChain`.
 - Changed `AbstractHttpExchangeClient.addDefaultHeaderValues` to return the first `HeaderValues` in the chain.
 - Changed `ContentConverter.getHeaderValues` and its implementations to use `HeaderValues` instead of `HeaderValuesChain`.
+- Moved all map header method implementations to `Headers` and `MapHeaderValues` now delegates to them.
+- Renamed `HttpStatus.getMessage` to `HttpStatus.message` for consistency with other methods.
+- Renamed `HttpStatus.from` to `HttpStatus.fromCode` to better emphasize what the method does.
+- Added `HttpStatus.fromString` to build a HTTP status from a `String`.
+- Added `HttpStatus.fromMessage` to build a HTTP status from a HTTP `String` status message.
+- Renamed `HttpStatus.Type.from` to `HttpStatus.Type.fromCode` to better emphasize what the method does.
 
 ---
 

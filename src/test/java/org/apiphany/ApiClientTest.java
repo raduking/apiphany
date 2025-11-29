@@ -77,7 +77,7 @@ class ApiClientTest {
 
 		TestDto expected = TestDto.of(ID1, COUNT1);
 		ApiResponse<TestDto> response = ApiResponse.create(expected)
-				.status(HTTP_STATUS_OK, HttpStatus::from)
+				.status(HTTP_STATUS_OK, HttpStatus::fromCode)
 				.exchangeClient(exchangeClient)
 				.build();
 
@@ -103,7 +103,7 @@ class ApiClientTest {
 
 		TestDto expected = TestDto.of(ID1, COUNT1);
 		ApiResponse<TestDto> response = ApiResponse.create(expected)
-				.status(HTTP_STATUS_OK, HttpStatus::from)
+				.status(HTTP_STATUS_OK, HttpStatus::fromCode)
 				.exchangeClient(exchangeClient)
 				.build();
 
@@ -150,7 +150,7 @@ class ApiClientTest {
 
 		TestDto expected = TestDto.of(ID1, COUNT1);
 		ApiResponse<TestDto> response = ApiResponse.create(expected)
-				.status(HTTP_STATUS_OK, HttpStatus::from)
+				.status(HTTP_STATUS_OK, HttpStatus::fromCode)
 				.exchangeClient(exchangeClient)
 				.build();
 
@@ -208,7 +208,7 @@ class ApiClientTest {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 		ApiResponse<TestDto> response = ApiResponse.<TestDto>builder()
-				.status(HTTP_STATUS_BAD_REQUEST, HttpStatus::from)
+				.status(HTTP_STATUS_BAD_REQUEST, HttpStatus::fromCode)
 				.exchangeClient(exchangeClient)
 				.build();
 		doReturn(response).when(exchangeClient).exchange(any(ApiRequest.class));
@@ -232,7 +232,7 @@ class ApiClientTest {
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient1).getAuthenticationType();
 		TestDto expected1 = TestDto.of(ID1, COUNT1);
 		ApiResponse<TestDto> response1 = ApiResponse.create(expected1)
-				.status(HTTP_STATUS_OK, HttpStatus::from)
+				.status(HTTP_STATUS_OK, HttpStatus::fromCode)
 				.exchangeClient(exchangeClient1)
 				.build();
 		doReturn(response1).when(exchangeClient1).exchange(any(ApiRequest.class));
@@ -241,7 +241,7 @@ class ApiClientTest {
 		doReturn(AuthenticationType.SSL).when(exchangeClient2).getAuthenticationType();
 		TestDto expected2 = TestDto.of(ID2, COUNT2);
 		ApiResponse<TestDto> response2 = ApiResponse.create(expected2)
-				.status(HTTP_STATUS_OK, HttpStatus::from)
+				.status(HTTP_STATUS_OK, HttpStatus::fromCode)
 				.exchangeClient(exchangeClient2)
 				.build();
 		doReturn(response2).when(exchangeClient2).exchange(any(ApiRequest.class));
