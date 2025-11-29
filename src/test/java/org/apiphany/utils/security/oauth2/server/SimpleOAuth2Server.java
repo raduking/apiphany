@@ -195,7 +195,7 @@ public class SimpleOAuth2Server implements AutoCloseable {
 		}
 
 		private static void sendResponse(final HttpExchange exchange, final HttpStatus status) throws IOException {
-			sendResponse(exchange, status, ErrorResponse.of(status.getMessage()));
+			sendResponse(exchange, status, ErrorResponse.of(status.message()));
 		}
 	}
 

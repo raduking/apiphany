@@ -13,7 +13,7 @@ import org.apiphany.ApiRequest;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.header.HeaderValues;
-import org.apiphany.header.MapHeaderValues;
+import org.apiphany.header.Headers;
 import org.apiphany.http.HttpAuthScheme;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.lang.Strings;
@@ -136,7 +136,7 @@ class TokenHttpExchangeClientTest {
 		client.exchange(apiRequest);
 
 		Map<String, List<String>> headers = apiRequest.getHeaders();
-		String authorizationHeader = MapHeaderValues.get(HttpHeader.AUTHORIZATION, headers).getFirst();
+		String authorizationHeader = Headers.get(HttpHeader.AUTHORIZATION, headers).getFirst();
 
 		assertThat(authorizationHeader, equalTo(HeaderValues.value(HttpAuthScheme.BEARER, TOKEN)));
 	}
@@ -155,7 +155,7 @@ class TokenHttpExchangeClientTest {
 		client.exchange(apiRequest);
 
 		Map<String, List<String>> headers = apiRequest.getHeaders();
-		String authorizationHeader = MapHeaderValues.get(HttpHeader.AUTHORIZATION, headers).getFirst();
+		String authorizationHeader = Headers.get(HttpHeader.AUTHORIZATION, headers).getFirst();
 
 		assertThat(authorizationHeader, equalTo(HeaderValues.value(HttpAuthScheme.BEARER, TOKEN)));
 	}
@@ -175,7 +175,7 @@ class TokenHttpExchangeClientTest {
 		client.exchange(apiRequest);
 
 		Map<String, List<String>> headers = apiRequest.getHeaders();
-		String authorizationHeader = MapHeaderValues.get(HttpHeader.AUTHORIZATION, headers).getFirst();
+		String authorizationHeader = Headers.get(HttpHeader.AUTHORIZATION, headers).getFirst();
 
 		assertThat(authorizationHeader, equalTo(HeaderValues.value(HttpAuthScheme.BASIC, TOKEN)));
 	}

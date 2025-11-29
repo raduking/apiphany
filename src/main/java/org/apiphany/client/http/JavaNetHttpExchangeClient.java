@@ -206,7 +206,7 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	 * @return API response object
 	 */
 	protected <T, U, R> ApiResponse<U> buildResponse(final ApiRequest<T> apiRequest, final HttpResponse<R> httpResponse) {
-		HttpStatus httpStatus = HttpStatus.from(httpResponse.statusCode());
+		HttpStatus httpStatus = HttpStatus.fromCode(httpResponse.statusCode());
 		Map<String, List<String>> headers = Nullables.apply(httpResponse.headers(), HttpHeaders::map);
 		List<String> contentTypes = getHeaderValues().get(HttpHeader.CONTENT_TYPE, headers);
 		HttpContentType contentType = HttpContentType.parseHeader(contentTypes);
