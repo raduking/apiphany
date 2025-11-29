@@ -2,6 +2,12 @@
 
 `1.0.17`
 
+- Upgraded `testcontainers-keycloak` to `4.0.0`.
+- Upgraded `nimbus-jose-jwt` to `10.6`.
+- Upgraded `oauth2-oidc-sdk` to `11.30.1`.
+- Upgraded `pitest-maven` to `1.22.0`.
+- Upgraded `jacoco-maven-plugin` to `0.8.14`.
+
 ---
 
 `1.0.16`
