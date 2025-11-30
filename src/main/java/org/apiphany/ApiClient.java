@@ -126,11 +126,11 @@ public class ApiClient implements AutoCloseable {
 	}
 
 	/**
-	 * Constructor with exchange clients.
+	 * Constructor with exchange clients and managed flag.
 	 *
 	 * @param baseUrl base URL to which all paths will be appended
 	 * @param exchangeClients list of exchange clients
-	 * @param managed flag that indicates whether the exchange clients are managed
+	 * @param managed true if all exchange clients are managed by this API client
 	 */
 	protected ApiClient(final String baseUrl, final List<ExchangeClient> exchangeClients, final boolean managed) {
 		this(baseUrl, exchangeClients.stream().collect(
