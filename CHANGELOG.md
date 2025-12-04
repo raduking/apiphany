@@ -8,7 +8,7 @@
 - Upgraded `pitest-maven` to `1.22.0`.
 - Upgraded `jacoco-maven-plugin` to `0.8.14`.
 - Upgraded `maven-gpg-plugin` to `3.2.8`.
-- Upgraded `morphix-all` to `1.0.12`.
+- Upgraded `morphix-all` to `1.0.13`.
 
 ---
 
