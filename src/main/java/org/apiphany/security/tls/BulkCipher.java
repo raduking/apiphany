@@ -121,6 +121,11 @@ public enum BulkCipher {
 	UNENCRYPTED(BulkCipherInfo.of("NONE", 0, 0, 0, 0, CipherType.NO_ENCRYPTION, 0, 0));
 
 	/**
+	 * Secure random number generator for IV generation.
+	 */
+	private static final SecureRandom RANDOM = new SecureRandom();
+
+	/**
 	 * The information about this bulk cipher.
 	 */
 	private final BulkCipherInfo info;
@@ -289,7 +294,7 @@ public enum BulkCipher {
 			}
 			case BLOCK -> {
 				byte[] iv = new byte[blockSize()];
-				new SecureRandom().nextBytes(iv);
+				RANDOM.nextBytes(iv);
 				yield iv;
 			}
 			case STREAM, NO_ENCRYPTION -> Bytes.isNotEmpty(keyIV) ? keyIV.clone() : Bytes.EMPTY;

@@ -2,6 +2,8 @@
 
 `1.0.18`
 
+- Fixed random generation for `BulkCipher`.
+
 ---
 
 `1.0.17`
