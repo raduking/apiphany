@@ -1,5 +1,11 @@
 ## Release Notes
 
+`1.0.18`
+
+- Fixed random generation for `BulkCipher`.
+
+---
+
 `1.0.17`
 
 - Upgraded `testcontainers-keycloak` to `4.0.0`.
