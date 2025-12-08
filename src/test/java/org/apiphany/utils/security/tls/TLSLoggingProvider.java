@@ -73,10 +73,10 @@ public final class TLSLoggingProvider extends Provider {
 		// find the WeakIdentityWrapper private static inner class
 		Class<?>[] declared = jceSecurityClass.getDeclaredClasses();
 		Class<?> weakIdentityWrapperClass = null;
-		for (Class<?> c : declared) {
-			String className = c.getSimpleName();
+		for (Class<?> cls : declared) {
+			String className = cls.getSimpleName();
 			if ("WeakIdentityWrapper".equals(className)) {
-				weakIdentityWrapperClass = c;
+				weakIdentityWrapperClass = cls;
 				break;
 			}
 		}
@@ -127,8 +127,8 @@ public final class TLSLoggingProvider extends Provider {
 				byte[] serverRandom = Fields.IgnoreAccess.get(spec, "serverRandom");
 				LOGGER.debug("Server Random: {}", Hex.string(serverRandom));
 
-				logKey(spec, "premasterSecret");
-				logKey(spec, "masterSecret");
+				logKeyField(spec, "premasterSecret");
+				logKeyField(spec, "masterSecret");
 			} catch (Exception e) {
 				LOGGER.warn("Could not log secrets", e);
 			}
@@ -136,10 +136,10 @@ public final class TLSLoggingProvider extends Provider {
 				if (null != key.getEncoded()) {
 					logKey(key);
 				} else {
-					logKey(key, "clientMacKey");
-					logKey(key, "serverMacKey");
-					logKey(key, "clientCipherKey");
-					logKey(key, "serverCipherKey");
+					logKeyField(key, "clientMacKey");
+					logKeyField(key, "serverMacKey");
+					logKeyField(key, "clientCipherKey");
+					logKeyField(key, "serverCipherKey");
 
 					IvParameterSpec clientIV = Fields.IgnoreAccess.get(key, "clientIv");
 					IvParameterSpec serverIV = Fields.IgnoreAccess.get(key, "serverIv");
@@ -153,16 +153,20 @@ public final class TLSLoggingProvider extends Provider {
 		}
 	}
 
-	private static void logKey(final Object obj, final String fieldName) {
+	private static void logKeyField(final Object obj, final String fieldName) {
 		Field keyField = Fields.getOneDeclaredInHierarchy(obj, fieldName);
 		if (null != keyField) {
 			SecretKey key = Fields.IgnoreAccess.get(obj, keyField);
-			logKey(key);
+			logKey(key, fieldName);
 		}
 	}
 
 	private static void logKey(final SecretKey key) {
-		LOGGER.debug("Generated {}: {}", key.getAlgorithm(), Hex.string(key.getEncoded()));
+		logKey(key, "<none>");
+	}
+
+	private static void logKey(final SecretKey key, final String fieldName) {
+		LOGGER.debug("Generated {} (field:{}): {}", key.getAlgorithm(), fieldName, Hex.string(key.getEncoded()));
 	}
 
 	public static final class LoggingTlsKeyMaterialGenerator extends LoggingWrapper {
