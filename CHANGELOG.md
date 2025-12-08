@@ -1,5 +1,9 @@
 ## Release Notes
 
+`1.0.19`
+
+---
+
 `1.0.18`
 
 - Fixed random generation for `BulkCipher`.
