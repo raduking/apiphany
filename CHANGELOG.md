@@ -6,6 +6,7 @@
 - Changed `JsonBuilder.toDebugString` to return `Class.getCannonicalName` instead of `Class.getSimpleName`.
 - Upgraded `morphix-all` to `1.0.14`.
 - Added `Temporals.formatToSeconds(double, Locale)` so that a `Locale` can also be specified when formatting. 
+- Added class file version test to ensure correct class files are built.
 
 ---
 
