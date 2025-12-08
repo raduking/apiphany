@@ -3,6 +3,8 @@
 `1.0.18`
 
 - Fixed random generation for `BulkCipher`.
+- Changed `JsonBuilder.toDebugString` to return `Class.getCannonicalName` instead of `Class.getSimpleName`.
+- Upgraded `morphix-all` to `1.0.14`.
 
 ---
 

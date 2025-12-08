@@ -202,7 +202,8 @@ class JsonBuilderTest {
 
 		String result = JsonBuilder.toDebugString(b);
 
-		String expected = "{ \"type\":\"B\", \"id\":\"" + TEST_LONG + "\", \"hash\":\"" + JsonBuilder.hexHash(b) + "\" }";
+		String expected =
+				"{ \"type\":\"" + B.class.getCanonicalName() + "\", \"id\":\"" + TEST_LONG + "\", \"hash\":\"" + JsonBuilder.hexHash(b) + "\" }";
 
 		assertThat(result, equalTo(expected));
 	}
@@ -213,7 +214,7 @@ class JsonBuilderTest {
 
 		String result = JsonBuilder.toDebugString(o);
 
-		String expected = "{ \"type\":\"Object\", \"hash\":\"" + JsonBuilder.hexHash(o) + "\" }";
+		String expected = "{ \"type\":\"" + Object.class.getCanonicalName() + "\", \"hash\":\"" + JsonBuilder.hexHash(o) + "\" }";
 
 		assertThat(result, equalTo(expected));
 	}

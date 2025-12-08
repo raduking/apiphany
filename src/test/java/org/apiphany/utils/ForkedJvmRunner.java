@@ -34,7 +34,7 @@ public class ForkedJvmRunner {
 		}
 	}
 
-	private static void runTest(final String className, final String methodName) throws ClassNotFoundException, NoSuchMethodException {
+	private static void runTest(final String className, final String methodName) throws ClassNotFoundException {
 		Class<?> testClass = Class.forName(className);
 		Object instance = Constructors.IgnoreAccess.newInstance(testClass);
 		Method method = Methods.getOneDeclaredInHierarchy(methodName, testClass);
