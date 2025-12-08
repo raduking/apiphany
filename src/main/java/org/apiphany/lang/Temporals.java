@@ -1,6 +1,7 @@
 package org.apiphany.lang;
 
 import java.time.Duration;
+import java.util.Locale;
 
 /**
  * Utility methods for handling date/time/duration.
@@ -42,7 +43,7 @@ public interface Temporals {
 	}
 
 	/**
-	 * Formats a double duration in seconds with 3 decimals.
+	 * Formats a double duration in seconds with 3 decimals. This method always uses {@code .} as decimal separator.
 	 * <p>
 	 * Returns "N/A" if the value is equal to {@link Double#NaN}.
 	 *
@@ -50,9 +51,22 @@ public interface Temporals {
 	 * @return the duration formatted to seconds.
 	 */
 	static String formatToSeconds(final double duration) {
+		return formatToSeconds(duration, Locale.ROOT);
+	}
+
+	/**
+	 * Formats a double duration in seconds with 3 decimals.
+	 * <p>
+	 * Returns "N/A" if the value is equal to {@link Double#NaN}.
+	 *
+	 * @param duration duration in seconds as double
+	 * @param locale the locale used for formatting
+	 * @return the duration formatted to seconds.
+	 */
+	static String formatToSeconds(final double duration, final Locale locale) {
 		if (Double.isNaN(duration)) {
 			return "N/A";
 		}
-		return String.format("%.3fs", duration);
+		return String.format(locale, "%.3fs", duration);
 	}
 }
