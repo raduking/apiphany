@@ -399,7 +399,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 			Long id;
 		}
 		FieldExtractor fieldExtractor = Converter.convert(obj).to(FieldExtractor::new);
-		return "{ \"type\":\"" + obj.getClass().getSimpleName() + "\""
+		return "{ \"type\":\"" + obj.getClass().getCanonicalName() + "\""
 				+ (null != fieldExtractor.id ? ", \"id\":\"" + fieldExtractor.id + "\"" : "")
 				+ ", \"hash\":\"" + hexHash(obj) + "\""
 				+ " }";

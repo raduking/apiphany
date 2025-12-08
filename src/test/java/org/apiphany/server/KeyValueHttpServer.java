@@ -117,7 +117,7 @@ public class KeyValueHttpServer implements AutoCloseable {
 			}
 		}
 
-		private void handleGet(HttpExchange exchange) throws IOException {
+		private void handleGet(final HttpExchange exchange) throws IOException {
 			String key = getKeyFromPath(exchange);
 			if (null == key) {
 				String json = JsonBuilder.toJson(server.map);
@@ -130,28 +130,31 @@ public class KeyValueHttpServer implements AutoCloseable {
 			}
 		}
 
-		private void handlePut(HttpExchange exchange) throws IOException {
+		private void handlePut(final HttpExchange exchange) throws IOException {
 			String key = getKeyFromPath(exchange);
+			@SuppressWarnings("resource")
 			String body = Strings.toString(exchange.getRequestBody(), StandardCharsets.UTF_8);
 			server.map.put(key, body);
 			sendResponse(exchange, HttpStatus.OK, body);
 		}
 
-		private void handlePost(HttpExchange exchange) throws IOException {
+		private void handlePost(final HttpExchange exchange) throws IOException {
+			@SuppressWarnings("resource")
 			String body = Strings.toString(exchange.getRequestBody(), StandardCharsets.UTF_8);
 			String[] pair = body.split(":");
 			server.map.put(pair[0], pair[1]);
 			sendResponse(exchange, HttpStatus.OK, pair[1]);
 		}
 
-		private void handleDelete(HttpExchange exchange) throws IOException {
+		private void handleDelete(final HttpExchange exchange) throws IOException {
 			String key = getKeyFromPath(exchange);
 			String value = server.map.remove(key);
 			sendResponse(exchange, HttpStatus.OK, value);
 		}
 
-		private void handlePatch(HttpExchange exchange) throws IOException {
+		private void handlePatch(final HttpExchange exchange) throws IOException {
 			String key = getKeyFromPath(exchange);
+			@SuppressWarnings("resource")
 			String body = Strings.toString(exchange.getRequestBody(), StandardCharsets.UTF_8);
 			String value = server.map.get(key);
 			String newValue = value + body;
@@ -159,7 +162,7 @@ public class KeyValueHttpServer implements AutoCloseable {
 			sendResponse(exchange, HttpStatus.OK, newValue);
 		}
 
-		private void handleHead(HttpExchange exchange) throws IOException {
+		private void handleHead(final HttpExchange exchange) throws IOException {
 			String key = getKeyFromPath(exchange);
 			if (server.map.containsKey(key)) {
 				exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");
@@ -171,7 +174,7 @@ public class KeyValueHttpServer implements AutoCloseable {
 			}
 		}
 
-		private static void handleOptions(HttpExchange exchange) throws IOException {
+		private static void handleOptions(final HttpExchange exchange) throws IOException {
 			// set CORS headers to allow requests from any origin and the methods the server supports
 			exchange.getResponseHeaders().set(HttpHeader.ALLOW.value(), ALLOW_HEADER_VALUE);
 			exchange.getResponseHeaders().set(HttpHeader.ACCESS_CONTROL_ALLOW_ORIGIN.value(), "*");
@@ -181,7 +184,7 @@ public class KeyValueHttpServer implements AutoCloseable {
 			exchange.sendResponseHeaders(HttpStatus.OK.value(), NO_BODY);
 		}
 
-		private static void handleTrace(HttpExchange exchange) throws IOException {
+		private static void handleTrace(final HttpExchange exchange) throws IOException {
 			// reconstruct the request to echo back
 			StringBuilder requestBuilder = new StringBuilder();
 			requestBuilder.append(exchange.getRequestMethod()).append(" ")
@@ -208,7 +211,7 @@ public class KeyValueHttpServer implements AutoCloseable {
 			os.close();
 		}
 
-		private static String getKeyFromPath(HttpExchange exchange) {
+		private static String getKeyFromPath(final HttpExchange exchange) {
 			String fullPath = exchange.getRequestURI().getPath();
 			if (ROUTE_API_KEYS.equals(fullPath)) {
 				return null;

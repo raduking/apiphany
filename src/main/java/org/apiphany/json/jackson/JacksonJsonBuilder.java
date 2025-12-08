@@ -189,11 +189,11 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 	 */
 	@Override
 	public <T> String toJsonString(final T obj) {
-		if (null == obj) {
-			return null;
-		}
 		if (isDebugString()) {
 			return toDebugString(obj);
+		}
+		if (null == obj) {
+			return null;
 		}
 		ObjectWriter objectWriter = objectMapper.writerFor(obj.getClass());
 		try {
