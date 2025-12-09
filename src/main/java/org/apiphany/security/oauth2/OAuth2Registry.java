@@ -100,7 +100,8 @@ public class OAuth2Registry {
 	}
 
 	/**
-	 * Returns a new OAuth2 token provider based on the given parameters.
+	 * Returns a new OAuth2 token provider based on the given parameters. The caller is responsible for handling the life
+	 * cycle of the returned token provider.
 	 *
 	 * @param clientRegistrationName the client registration name
 	 * @param tokenClientSupplier the supplier for the client that will make the actual token requests
@@ -116,7 +117,8 @@ public class OAuth2Registry {
 	}
 
 	/**
-	 * Returns a list of OAuth2 token providers based on this registry.
+	 * Returns a list of new OAuth2 token providers based on this registry. The caller is responsible for handling the life
+	 * cycle of the returned token providers.
 	 *
 	 * @param tokenClientSupplier the supplier for the client that will make the actual token requests
 	 * @return a list of OAuth2 token providers based on this registry

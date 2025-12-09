@@ -2,6 +2,8 @@
 
 `1.0.19`
 
+- Added `OAuth2TokenProviderRegistry` that holds all `OAuthTokenProvider` instances.
+
 ---
 
 `1.0.18`
