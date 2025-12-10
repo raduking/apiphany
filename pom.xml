@@ -74,6 +74,7 @@
 		<spotless.maven.plugin.version>2.46.1</spotless.maven.plugin.version>
 		<org.eclipse.jdt.core.version>3.42.0</org.eclipse.jdt.core.version>
 		<eclipse.formatter.version>4.36</eclipse.formatter.version>
+		<properties.maven.plugin.version>1.2.1</properties.maven.plugin.version>
 
 		<!-- Initialize the Jacoco arguments as empty by default -->
 		<jacocoArgLine />
@@ -102,7 +103,7 @@
 		<dependency>
 			<groupId>io.github.raduking</groupId>
 			<artifactId>morphix-all</artifactId>
-			<version>1.0.14</version>
+			<version>1.0.15</version>
 		</dependency>
 
 		<!-- Logging -->
@@ -328,6 +329,24 @@
 				<configuration>
 					<additionalOptions>-Xmaxwarns 10000</additionalOptions>
 				</configuration>
+			</plugin>
+
+			<!-- Writes all maven project properties to ${project.build.directory}/maven.properties -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>properties-maven-plugin</artifactId>
+				<version>${properties.maven.plugin.version}</version>
+				<executions>
+					<execution>
+						<phase>initialize</phase>
+						<goals>
+							<goal>write-project-properties</goal>
+						</goals>
+						<configuration>
+							<outputFile>${project.build.directory}/maven.properties</outputFile>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 
 			<!--Jacoco code coverage -->
