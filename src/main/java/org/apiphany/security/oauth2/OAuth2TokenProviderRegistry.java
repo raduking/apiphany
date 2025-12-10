@@ -15,8 +15,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Registry for OAuth2 token providers. This class allows thread safe adding, retrieving, and managing OAuth2 token
- * providers by name. It supports automatic resource management and ensures proper cleanup of providers when the registry
- * is closed.
+ * providers by name. It supports automatic resource management and ensures proper cleanup of providers when the
+ * registry is closed.
  *
  * @author Radu Sebastian LAZIN
  */
