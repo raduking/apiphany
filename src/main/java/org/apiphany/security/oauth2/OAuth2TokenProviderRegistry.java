@@ -6,7 +6,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiFunction;
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 import org.apiphany.lang.ScopedResource;
 import org.apiphany.security.AuthenticationTokenProvider;
@@ -38,25 +38,31 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 	private final AtomicBoolean closing = new AtomicBoolean(false);
 
 	/**
+	 * The OAuth2 registry this token provider registry is based on.
+	 */
+	private final OAuth2Registry oAuth2Registry;
+
+	/**
 	 * Constructor.
 	 */
-	private OAuth2TokenProviderRegistry() {
-		// empty
+	private OAuth2TokenProviderRegistry(final OAuth2Registry oAuth2Registry) {
+		this.oAuth2Registry = oAuth2Registry;
 	}
 
 	/**
 	 * Creates an empty OAuth2 token provider registry.
 	 *
+	 * @param oAuth2Registry the OAuth2 registry must not be null
 	 * @return an empty OAuth2 token provider registry
 	 */
-	public static OAuth2TokenProviderRegistry of() {
-		return new OAuth2TokenProviderRegistry();
+	public static OAuth2TokenProviderRegistry of(final OAuth2Registry oAuth2Registry) {
+		return new OAuth2TokenProviderRegistry(Objects.requireNonNull(oAuth2Registry, "OAuth2 registry cannot be null"));
 	}
 
 	/**
 	 * Creates an OAuth2 token provider registry based on the given OAuth2 registry.
 	 *
-	 * @param oAuth2Registry the OAuth2 registry
+	 * @param oAuth2Registry the OAuth2 registry must not be null
 	 * @param tokenClientSupplier a function that creates an authentication token provider based on the client registration
 	 *     and provider details
 	 * @param tokenProviderNameFunction a function that maps the client registration name to the token provider name
@@ -65,8 +71,8 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 	public static OAuth2TokenProviderRegistry of(
 			final OAuth2Registry oAuth2Registry,
 			final BiFunction<OAuth2ClientRegistration, OAuth2ProviderDetails, AuthenticationTokenProvider> tokenClientSupplier,
-			final Function<String, String> tokenProviderNameFunction) {
-		OAuth2TokenProviderRegistry registry = new OAuth2TokenProviderRegistry();
+			final UnaryOperator<String> tokenProviderNameFunction) {
+		OAuth2TokenProviderRegistry registry = of(oAuth2Registry);
 		List<OAuth2TokenProvider> tokenProviders = oAuth2Registry.tokenProviders(tokenClientSupplier);
 		for (OAuth2TokenProvider provider : tokenProviders) {
 			String providerName = tokenProviderNameFunction.apply(provider.getClientRegistrationName());
@@ -87,7 +93,7 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 	public static OAuth2TokenProviderRegistry of(
 			final OAuth2Properties oAuth2Properties,
 			final BiFunction<OAuth2ClientRegistration, OAuth2ProviderDetails, AuthenticationTokenProvider> tokenClientSupplier,
-			final Function<String, String> tokenProviderNameFunction) {
+			final UnaryOperator<String> tokenProviderNameFunction) {
 		return of(OAuth2Registry.of(oAuth2Properties), tokenClientSupplier, tokenProviderNameFunction);
 	}
 
@@ -144,6 +150,15 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 	 */
 	public List<String> getProviderNames() {
 		return List.copyOf(providers.keySet());
+	}
+
+	/**
+	 * Returns the OAuth2 registry this token provider registry is based on.
+	 *
+	 * @return the OAuth2 registry this token provider registry is based on
+	 */
+	public OAuth2Registry getOAuth2Registry() {
+		return oAuth2Registry;
 	}
 
 	/**
