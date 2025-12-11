@@ -83,7 +83,7 @@ public final class TLSLoggingProvider extends Provider {
 		if (weakIdentityWrapperClass == null) {
 			throw new IllegalStateException("WeakIdentityWrapper class not found");
 		}
-		Constructor<?> constructor = Constructors.getDeclaredConstructor(weakIdentityWrapperClass, Provider.class, ReferenceQueue.class);
+		Constructor<?> constructor = Constructors.getDeclared(weakIdentityWrapperClass, Provider.class, ReferenceQueue.class);
 		Object wrapperInstance = Constructors.IgnoreAccess.newInstance(constructor, provider, queue);
 		if (verificationResults.containsKey(wrapperInstance)) {
 			LOGGER.warn("Provider wrapper already present in verification results.");
