@@ -4,7 +4,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -250,7 +249,7 @@ public class ApiClient implements AutoCloseable {
 	 */
 	private static void initializeTypeObject(final Field typeObjectField) {
 		GenericClass<?> typeObject = Fields.IgnoreAccess.get(null, typeObjectField);
-		if (typeObject.getType() instanceof TypeVariable) {
+		if (null == typeObject.getType()) {
 			ParameterizedType parameterizedType = JavaObjects.cast(typeObjectField.getGenericType());
 			Type actualTypeArgument = parameterizedType.getActualTypeArguments()[0];
 			if (actualTypeArgument instanceof ParameterizedType) {
@@ -279,9 +278,7 @@ public class ApiClient implements AutoCloseable {
 	 * @return type object
 	 */
 	public static <T> GenericClass<T> typeObject() {
-		return new GenericClass<>() {
-			// empty
-		};
+		return GenericClass.of();
 	}
 
 	/**
