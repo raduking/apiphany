@@ -9,6 +9,7 @@ import org.apiphany.http.HttpAuthScheme;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.annotation.Ignored;
+import org.apiphany.security.Sensitive;
 
 /**
  * Represents a client registration with an OAuth 2.0 or OpenID Connect 1.0 Provider. Contains all necessary
@@ -33,6 +34,7 @@ public class OAuth2ClientRegistration {
 	/**
 	 * The client secret issued by the authorization server.
 	 */
+	@Sensitive
 	private String clientSecret;
 
 	/**
