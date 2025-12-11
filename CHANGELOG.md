@@ -4,6 +4,7 @@
 
 - Added `OAuth2TokenProviderRegistry` that holds all `OAuthTokenProvider` instances.
 - Added `maven-properties-plugin` to `pom.xml` to output all Maven properties to `target/maven.properties`.
+- Added `JacksonJsonBuilder.configureSensitivity` method to configure `Sensitive` annotations behavior.
 
 ---
 

@@ -2,6 +2,7 @@ package org.apiphany.security.oauth2;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.morphix.lang.function.Predicates.allOf;
@@ -68,5 +69,17 @@ class OAuth2ClientRegistrationTest {
 				fail("Field: " + fieldS + " not found");
 			}
 		}
+	}
+
+	@Test
+	void shouldDeserializeButNotSerializeClientSecret() {
+		String jsonRead = Strings.fromFile("/security/oauth2/oauth2-client-registration.json");
+		OAuth2ClientRegistration registrationRead = JsonBuilder.fromJson(jsonRead, OAuth2ClientRegistration.class);
+
+		String jsonWrite = registrationRead.toString();
+		OAuth2ClientRegistration registrationWrite = JsonBuilder.fromJson(jsonWrite, OAuth2ClientRegistration.class);
+
+		assertThat(registrationRead.getClientSecret(), notNullValue());
+		assertThat(registrationWrite.getClientSecret(), nullValue());
 	}
 }

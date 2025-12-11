@@ -105,10 +105,7 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 		this.objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 
 		this.defaultAnnotationIntrospector = objectMapper.getSerializationConfig().getAnnotationIntrospector();
-		this.objectMapper.setAnnotationIntrospector(
-				AnnotationIntrospector.pair(
-						SensitiveAnnotationIntrospector.hideSensitive(),
-						defaultAnnotationIntrospector));
+		configureSensitivity(objectMapper, SensitiveAnnotationIntrospector.hideSensitive(), defaultAnnotationIntrospector);
 	}
 
 	/**
@@ -353,11 +350,9 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 	@Override
 	public <T> Map<String, Object> toPropertiesMap(final T properties, final Consumer<Exception> onError) {
 		final ObjectMapper propertiesObjectMapper = objectMapper.copy()
-				.setPropertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE)
-				.setAnnotationIntrospector(
-						AnnotationIntrospector.pair(
-								SensitiveAnnotationIntrospector.allowSensitive(),
-								defaultAnnotationIntrospector));
+				.setPropertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
+		configureSensitivity(propertiesObjectMapper,
+				SensitiveAnnotationIntrospector.allowSensitive(), defaultAnnotationIntrospector);
 		try {
 			return propertiesObjectMapper.convertValue(properties, Map.class);
 		} catch (Exception e) {
@@ -398,6 +393,33 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 				.addSerializer(RequestMethod.class, new RequestMethodSerializer())
 				.addDeserializer(RequestMethod.class, new RequestMethodDeserializer());
 
+	}
+
+	/**
+	 * Configures the given {@link ObjectMapper} with the given {@link SensitiveAnnotationIntrospector}.
+	 *
+	 * @param objectMapper the object mapper to configure
+	 * @param sensitiveAnnotationIntrospector the sensitive annotation introspector
+	 * @return the configured object mapper
+	 */
+	public static ObjectMapper configureSensitivity(final ObjectMapper objectMapper,
+			final SensitiveAnnotationIntrospector sensitiveAnnotationIntrospector) {
+		AnnotationIntrospector baseAnnotationIntrospector = objectMapper.getSerializationConfig().getAnnotationIntrospector();
+		return configureSensitivity(objectMapper, sensitiveAnnotationIntrospector, baseAnnotationIntrospector);
+	}
+
+	/**
+	 * Configures the given {@link ObjectMapper} with the given {@link SensitiveAnnotationIntrospector}.
+	 *
+	 * @param objectMapper the object mapper to configure
+	 * @param sensitiveAnnotationIntrospector the sensitive annotation introspector
+	 * @param baseAnnotationIntrospector the base annotation introspector
+	 * @return the configured object mapper
+	 */
+	public static ObjectMapper configureSensitivity(final ObjectMapper objectMapper,
+			final SensitiveAnnotationIntrospector sensitiveAnnotationIntrospector, final AnnotationIntrospector baseAnnotationIntrospector) {
+		return objectMapper.setAnnotationIntrospector(
+				AnnotationIntrospector.pair(sensitiveAnnotationIntrospector, baseAnnotationIntrospector));
 	}
 
 	/**
