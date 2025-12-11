@@ -105,7 +105,7 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 		this.objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 
 		this.defaultAnnotationIntrospector = objectMapper.getSerializationConfig().getAnnotationIntrospector();
-		configureSensitivity(objectMapper, SensitiveAnnotationIntrospector.hideSensitive(), defaultAnnotationIntrospector);
+		configureSensitivity(SensitiveAnnotationIntrospector.hideSensitive());
 	}
 
 	/**
@@ -393,6 +393,15 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 				.addSerializer(RequestMethod.class, new RequestMethodSerializer())
 				.addDeserializer(RequestMethod.class, new RequestMethodDeserializer());
 
+	}
+
+	/**
+	 * Configures the underlying {@link ObjectMapper} with the given {@link SensitiveAnnotationIntrospector}.
+	 *
+	 * @param sensitiveAnnotationIntrospector the sensitive annotation introspector
+	 */
+	public void configureSensitivity(final SensitiveAnnotationIntrospector sensitiveAnnotationIntrospector) {
+		configureSensitivity(objectMapper, sensitiveAnnotationIntrospector, defaultAnnotationIntrospector);
 	}
 
 	/**
