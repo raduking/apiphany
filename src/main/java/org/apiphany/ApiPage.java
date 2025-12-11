@@ -33,7 +33,7 @@ public interface ApiPage<T> {
 	 * @return API page object
 	 */
 	static <T, U extends ApiPage<T>> U of(final Class<U> apiPageClass, final List<T> content) {
-		Constructor<U> constructor = Constructors.getDeclaredConstructor(apiPageClass, List.class);
+		Constructor<U> constructor = Constructors.getDeclared(apiPageClass, List.class);
 		return Constructors.IgnoreAccess.newInstance(constructor, content);
 	}
 

@@ -573,7 +573,7 @@ public class ClientProperties {
 			 * @return an instance of the specified timeout class.
 			 */
 			public <T extends Timeout> T build(final Class<T> cls) {
-				Constructor<T> ctr = Constructors.getDeclaredConstructor(cls, Builder.class);
+				Constructor<T> ctr = Constructors.getDeclared(cls, Builder.class);
 				return Constructors.IgnoreAccess.newInstance(ctr, this);
 			}
 
