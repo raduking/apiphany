@@ -1,4 +1,4 @@
-package org.apiphany.build;
+package org.apiphany.utils;
 
 import java.io.File;
 
