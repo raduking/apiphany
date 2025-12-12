@@ -3,6 +3,8 @@
 `1.0.20`
 
 - Moved default values from `Sockets` class into `Sockets.Default` name space inner class.
+- Added `AuthenticationTokenClientSupplier` functional interface that provides an token client instead of using a generic `BiFunction`.
+- Added `OAuth2Registry.of` method without parameters to create an empty `OAuth2Registry`.
 
 ---
 
