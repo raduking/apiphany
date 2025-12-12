@@ -173,7 +173,8 @@ public final class Sockets {
 	}
 
 	/**
-	 * Check if the given TCP port is available.
+	 * Check if the given TCP port is available. This method uses {@link InetAddress#getLoopbackAddress()} to check the port
+	 * availability instead of {@link InetAddress#getLocalHost()} because the latter may not be configured on all systems.
 	 *
 	 * @param currentPort port to check
 	 * @param timeout the operation timeout
@@ -181,7 +182,7 @@ public final class Sockets {
 	 */
 	public static boolean isTcpPortAvailable(final int currentPort, final int timeout) {
 		try (Socket socket = new Socket()) {
-			socket.connect(new InetSocketAddress(InetAddress.getLocalHost(), currentPort), timeout);
+			socket.connect(new InetSocketAddress(InetAddress.getLoopbackAddress(), currentPort), timeout);
 			return false;
 		} catch (Exception e) {
 			return true;
