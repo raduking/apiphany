@@ -67,6 +67,7 @@
 		<pitest.junit5.plugin.version>1.2.3</pitest.junit5.plugin.version>
 		<jacoco.maven.plugin.version>0.8.14</jacoco.maven.plugin.version>
 		<maven.project.info.reports.plugin.version>3.9.0</maven.project.info.reports.plugin.version>
+		<exec.maven.plugin.version>3.6.2</exec.maven.plugin.version>
 
 		<!-- Testing properties -->
 		<integration.tests.pattern>**/*IT.java</integration.tests.pattern>
@@ -437,6 +438,25 @@
 						<goals>
 							<goal>apply</goal>
 						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>${exec.maven.plugin.version}</version>
+				<executions>
+					<execution>
+						<id>build-test-summary</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>java</goal>
+						</goals>
+						<configuration>
+							<mainClass>org.apiphany.build.BuildTestSummary</mainClass>
+							<classpathScope>test</classpathScope>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
