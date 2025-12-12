@@ -352,7 +352,7 @@
 				</executions>
 			</plugin>
 
-			<!--Jacoco code coverage -->
+			<!-- Jacoco code coverage -->
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
@@ -411,6 +411,7 @@
 				</configuration>
 			</plugin>
 
+	        <!-- Code formatting -->
 			<plugin>
 				<groupId>com.diffplug.spotless</groupId>
 				<artifactId>spotless-maven-plugin</artifactId>
@@ -442,6 +443,7 @@
 				</executions>
 			</plugin>
 
+	        <!-- Build test summary after tests are run -->
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
