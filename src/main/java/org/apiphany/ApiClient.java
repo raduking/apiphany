@@ -255,8 +255,9 @@ public class ApiClient implements AutoCloseable {
 			if (actualTypeArgument instanceof ParameterizedType) {
 				typeObject.setType(actualTypeArgument);
 			} else {
-				throw new IllegalArgumentException("typeObject should only be used for generic types, current type: "
-						+ actualTypeArgument.getTypeName() + " is not a generic type.");
+				throw new IllegalArgumentException("The typeObject method should only be used for generic types, current type: "
+						+ actualTypeArgument.getTypeName() + " is not a generic type for static field: "
+						+ typeObjectField.getName());
 			}
 		}
 	}

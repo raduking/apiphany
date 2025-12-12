@@ -176,7 +176,7 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 				ScopedResource<OAuth2TokenProvider> provider = entry.getValue();
 				provider.closeIfManaged();
 			} catch (Exception e) {
-				LOGGER.error("Error closing OAuth2 token provider: {}", entry.getKey(), e);
+				LOGGER.error("Error closing OAuth2 token provider: {} when closing registry", entry.getKey(), e);
 			}
 		}
 	}

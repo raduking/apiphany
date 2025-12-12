@@ -45,6 +45,9 @@ import org.apiphany.meters.MeterCounter;
 import org.apiphany.meters.MeterFactory;
 import org.apiphany.meters.MeterTimer;
 import org.apiphany.security.AuthenticationType;
+import org.apiphany.testdata.DummyApiClient;
+import org.apiphany.testdata.DummyExchangeClient;
+import org.apiphany.testdata.TestDto;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.morphix.lang.JavaObjects;
@@ -859,5 +862,28 @@ class ApiClientTest {
 		verify(requests, times(RETRY_COUNT)).increment();
 		verify(latency, times(RETRY_COUNT)).record(any(Duration.class));
 		verify(errors, times(RETRY_COUNT)).increment();
+	}
+
+	static class BadApiClient extends ApiClient {
+
+		public static final GenericClass<String> WRONG_TYPE = ApiClient.typeObject();
+
+		public BadApiClient(final String baseUrl, final ExchangeClient exchangeClient) {
+			super(baseUrl, exchangeClient);
+		}
+
+	}
+
+	@Test
+	void shouldThrowExceptionIfGenericClassIsNotParameterized() {
+		IllegalArgumentException iae = assertThrows(IllegalArgumentException.class, () -> {
+			new BadApiClient(BASE_URL, new DummyExchangeClient());
+		});
+
+		Field typeObjectField = Fields.getOneDeclared(BadApiClient.class, "WRONG_TYPE");
+
+		assertThat(iae.getMessage(), equalTo("The typeObject method should only be used for generic types, current type: "
+				+ String.class.getTypeName() + " is not a generic type for static field: "
+				+ typeObjectField.getName()));
 	}
 }

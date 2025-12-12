@@ -1,5 +1,7 @@
-package org.apiphany;
+package org.apiphany.testdata;
 
+import org.apiphany.ApiRequest;
+import org.apiphany.ApiResponse;
 import org.apiphany.client.ExchangeClient;
 
 public class DummyExchangeClient implements ExchangeClient {
