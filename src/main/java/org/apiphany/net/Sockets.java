@@ -17,20 +17,35 @@ import org.morphix.reflection.Constructors;
 public final class Sockets {
 
 	/**
-	 * The minimum port number.
+	 * Name space class for default values.
+	 *
+	 * @author Radu Sebastian LAZIN
 	 */
-	public static final int MIN_PORT = 1024;
+	public static class Default {
 
-	/**
-	 * The maximum port number.
-	 */
-	public static final int MAX_PORT = 65535;
+		/**
+		 * The minimum port number.
+		 */
+		public static final int MIN_PORT = 1024;
 
-	/**
-	 * Default timeout used when methods are called without a timeout. We enforce a default timeout because these are
-	 * utility methods, for infinite timeout use 0 (zero) as a parameter or a zero duration.
-	 */
-	public static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(2);
+		/**
+		 * The maximum port number.
+		 */
+		public static final int MAX_PORT = 65535;
+
+		/**
+		 * Default timeout used when methods are called without a timeout. We enforce a default timeout because these are
+		 * utility methods, for infinite timeout use 0 (zero) as a parameter or a zero duration.
+		 */
+		public static final Duration TIMEOUT = Duration.ofSeconds(2);
+
+		/**
+		 * Hide constructor.
+		 */
+		private Default() {
+			throw Constructors.unsupportedOperationException();
+		}
+	}
 
 	/**
 	 * Used for generating a random port number, no need for SecureRandom.
@@ -50,7 +65,7 @@ public final class Sockets {
 	 * @return the available port
 	 */
 	public static int findAvailableTcpPort() {
-		return findAvailableTcpPort(DEFAULT_TIMEOUT);
+		return findAvailableTcpPort(Default.TIMEOUT);
 	}
 
 	/**
@@ -70,7 +85,7 @@ public final class Sockets {
 	 * @return the available port
 	 */
 	public static int findAvailableTcpPort(final int timeout) {
-		return findAvailableTcpPort(MIN_PORT, MAX_PORT, timeout);
+		return findAvailableTcpPort(Default.MIN_PORT, Default.MAX_PORT, timeout);
 	}
 
 	/**
@@ -82,8 +97,8 @@ public final class Sockets {
 	 * @return the available port
 	 */
 	public static int findAvailableTcpPort(final int minPortRange, final int maxPortRange, final int timeout) {
-		Assert.thatArgument(minPortRange >= MIN_PORT, "Port minimum value must be greater than %d", MIN_PORT);
-		Assert.thatArgument(maxPortRange <= MAX_PORT, "Port maximum value must be less than %d", MAX_PORT);
+		Assert.thatArgument(minPortRange >= Default.MIN_PORT, "Port minimum value must be greater than %d", Default.MIN_PORT);
+		Assert.thatArgument(maxPortRange <= Default.MAX_PORT, "Port maximum value must be less than %d", Default.MAX_PORT);
 		Assert.thatArgument(maxPortRange >= minPortRange, "Max port range must be greater than minimum port range");
 
 		int attempts = maxPortRange - minPortRange + 1;
@@ -116,7 +131,7 @@ public final class Sockets {
 	 * @return the available port
 	 */
 	public static int findAvailableTcpPort(final int minPortRange, final int maxPortRange) {
-		return findAvailableTcpPort(minPortRange, maxPortRange, DEFAULT_TIMEOUT);
+		return findAvailableTcpPort(minPortRange, maxPortRange, Default.TIMEOUT);
 	}
 
 	/**
@@ -127,7 +142,7 @@ public final class Sockets {
 	 * @return true if connection is successful, false otherwise
 	 */
 	public static boolean canConnectTo(final String host, final int port) {
-		return canConnectTo(host, port, DEFAULT_TIMEOUT);
+		return canConnectTo(host, port, Default.TIMEOUT);
 	}
 
 	/**
@@ -154,7 +169,7 @@ public final class Sockets {
 	 * @return true if the port is available
 	 */
 	public static boolean isTcpPortAvailable(final int currentPort) {
-		return isTcpPortAvailable(currentPort, Math.toIntExact(DEFAULT_TIMEOUT.toMillis()));
+		return isTcpPortAvailable(currentPort, Math.toIntExact(Default.TIMEOUT.toMillis()));
 	}
 
 	/**
