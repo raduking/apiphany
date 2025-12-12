@@ -1,5 +1,9 @@
 ## Release Notes
 
+`1.0.20`
+
+---
+
 `1.0.19`
 
 - Added `OAuth2TokenProviderRegistry` that holds all `OAuthTokenProvider` instances.
