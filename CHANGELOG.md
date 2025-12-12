@@ -5,6 +5,10 @@
 - Moved default values from `Sockets` class into `Sockets.Default` name space inner class.
 - Added `AuthenticationTokenClientSupplier` functional interface that provides an token client instead of using a generic `BiFunction`.
 - Added `OAuth2Registry.of` method without parameters to create an empty `OAuth2Registry`.
+- Changed `OAuth2TokenProvider` to throw `AuthenticationException` if the token client returns a `null` token.
+- Changed `OAuth2TokenProvider` to throw `AuthenticationException` if the token client returns a token with invalid `expires_in` field.
+- Added `OAuth2TokenProviderRegistry.getProvider` method to return a registered provider by name.
+- Added variations of the `OAuth2TokenProviderRegistry.of` method without the token provider name function.
 
 ---
 

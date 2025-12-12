@@ -239,6 +239,29 @@ class OAuth2TokenProviderRegistryTest {
 
 	@SuppressWarnings("resource")
 	@Test
+	void shouldCreateRegistryFromTokenSupplierFactoriesWithoutNameConverters() throws Exception {
+		OAuth2Registry mockRegistry = mock(OAuth2Registry.class);
+		OAuth2TokenProvider tokenProvider = mock(OAuth2TokenProvider.class);
+		doReturn(CLIENT_REGISTRATION_NAME).when(tokenProvider).getClientRegistrationName();
+
+		AuthenticationTokenClientSupplier tokenClientSupplier = (r, d) -> mock(AuthenticationTokenProvider.class);
+		doReturn(List.of(tokenProvider)).when(mockRegistry).tokenProviders(any());
+
+		OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.of(
+				mockRegistry,
+				tokenClientSupplier);
+
+		registry.close();
+
+		assertThat(registry.getProviders(), hasSize(1));
+		assertThat(registry.getProviderNames(), hasSize(1));
+		assertThat(registry.getProviderNames().getFirst(), equalTo(CLIENT_REGISTRATION_NAME));
+
+		verify(mockRegistry).tokenProviders(tokenClientSupplier);
+	}
+
+	@SuppressWarnings("resource")
+	@Test
 	void shouldCreateRegistryFromProperties() throws Exception {
 		OAuth2Properties mockProperties = mock(OAuth2Properties.class);
 
@@ -278,6 +301,48 @@ class OAuth2TokenProviderRegistryTest {
 		assertThat(registry.getProviderNames(), hasSize(2));
 		assertThat(registry.getProviderNames(),
 				containsInAnyOrder(nameConverter(CLIENT_REGISTRATION_1), nameConverter(CLIENT_REGISTRATION_2)));
+	}
+
+	@SuppressWarnings("resource")
+	@Test
+	void shouldCreateRegistryFromPropertiesWithoutNameConverter() throws Exception {
+		OAuth2Properties mockProperties = mock(OAuth2Properties.class);
+
+		OAuth2ClientRegistration registration1 = mock(OAuth2ClientRegistration.class);
+		doReturn(PROVIDER_NAME_1).when(registration1).getProvider();
+		OAuth2ProviderDetails provider1 = mock(OAuth2ProviderDetails.class);
+
+		OAuth2ClientRegistration registration2 = mock(OAuth2ClientRegistration.class);
+		doReturn(PROVIDER_NAME_2).when(registration1).getProvider();
+		OAuth2ProviderDetails provider2 = mock(OAuth2ProviderDetails.class);
+
+		Map<String, OAuth2ClientRegistration> registrations =
+				Map.of(CLIENT_REGISTRATION_1, registration1, CLIENT_REGISTRATION_2, registration2);
+
+		doReturn(registrations).when(mockProperties).getRegistration();
+		doReturn(provider1).when(mockProperties).getProviderDetails(registration1);
+		doReturn(provider2).when(mockProperties).getProviderDetails(registration2);
+
+		OAuth2TokenProvider tokenProvider = mock(OAuth2TokenProvider.class);
+		doReturn(CLIENT_REGISTRATION_NAME).when(tokenProvider).getClientRegistrationName();
+
+		AuthenticationToken token = createToken();
+		AuthenticationTokenProvider tokenClient = mock(AuthenticationTokenProvider.class);
+		doReturn(token).when(tokenClient).getAuthenticationToken();
+
+		AuthenticationTokenClientSupplier tokenClientSupplier = (r, d) -> tokenClient;
+
+		OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.of(
+				mockProperties,
+				tokenClientSupplier);
+
+		registry.close();
+
+		assertThat(registry.getOAuth2Registry().entries(), hasSize(2));
+		assertThat(registry.getProviders(), hasSize(2));
+		assertThat(registry.getProviderNames(), hasSize(2));
+		assertThat(registry.getProviderNames(),
+				containsInAnyOrder(CLIENT_REGISTRATION_1, CLIENT_REGISTRATION_2));
 	}
 
 	@SuppressWarnings({ "unchecked", "resource" })
