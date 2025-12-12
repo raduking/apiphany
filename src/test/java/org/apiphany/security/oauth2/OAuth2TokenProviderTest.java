@@ -45,7 +45,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class OAuth2TokenProviderTest {
 
-	private static final int EXPIRES_IN = 300;
+	private static final long EXPIRES_IN = 300;
+	private static final long NEGATIVE_EXPIRES_IN = -10;
 	private static final Instant DEFAULT_EXPIRATION = Instant.now();
 
 	private static final String SECRET = "a-string-secret-at-least-256-bits-long";
@@ -238,6 +239,7 @@ class OAuth2TokenProviderTest {
 		AuthenticationToken authenticationToken = mock(AuthenticationToken.class);
 		Instant expiration = mock(Instant.class);
 		doReturn(expiration).when(authenticationToken).getExpiration();
+		doReturn(EXPIRES_IN).when(authenticationToken).getExpiresIn();
 		doReturn(authenticationToken).when(tokenClient).getAuthenticationToken();
 
 		ScheduledExecutorService scheduledExecutorService = mock(ScheduledExecutorService.class);
@@ -266,6 +268,7 @@ class OAuth2TokenProviderTest {
 		AuthenticationToken authenticationToken = mock(AuthenticationToken.class);
 		Instant expiration = mock(Instant.class);
 		doReturn(expiration).when(authenticationToken).getExpiration();
+		doReturn(EXPIRES_IN).when(authenticationToken).getExpiresIn();
 		doReturn(authenticationToken).when(tokenClient).getAuthenticationToken();
 
 		ScheduledExecutorService scheduledExecutorService = mock(ScheduledExecutorService.class);
@@ -298,6 +301,42 @@ class OAuth2TokenProviderTest {
 		doReturn(providerDetails).when(oAuth2Properties).getProviderDetails(clientRegistration);
 
 		doThrow(new RuntimeException("Error getting token")).when(tokenClient).getAuthenticationToken();
+
+		tokenProvider = new OAuth2TokenProvider(oAuth2Properties, CLIENT_REGISTRATION_NAME, (cr, pd) -> tokenClient);
+
+		AuthenticationException e = assertThrows(AuthenticationException.class, tokenProvider::getAuthenticationToken);
+		assertThat(e.getMessage(), equalTo("Missing authentication token"));
+	}
+
+	@Test
+	void shouldThrowExceptionWhenGettingTokenIfTokenRetrievalReturnsNull() {
+		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
+		doReturn(clientRegistration).when(oAuth2Properties).getClientRegistration(CLIENT_REGISTRATION_NAME);
+		doReturn(true).when(clientRegistration).hasClientId();
+		doReturn(true).when(clientRegistration).hasClientSecret();
+		doReturn(Map.of(PROVIDER_NAME, providerDetails)).when(oAuth2Properties).getProvider();
+		doReturn(providerDetails).when(oAuth2Properties).getProviderDetails(clientRegistration);
+
+		doReturn(null).when(tokenClient).getAuthenticationToken();
+
+		tokenProvider = new OAuth2TokenProvider(oAuth2Properties, CLIENT_REGISTRATION_NAME, (cr, pd) -> tokenClient);
+
+		AuthenticationException e = assertThrows(AuthenticationException.class, tokenProvider::getAuthenticationToken);
+		assertThat(e.getMessage(), equalTo("Missing authentication token"));
+	}
+
+	@Test
+	void shouldThrowExceptionWhenGettingTokenIfTokenRetrievalReturnsInvalidExpiration() {
+		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
+		doReturn(clientRegistration).when(oAuth2Properties).getClientRegistration(CLIENT_REGISTRATION_NAME);
+		doReturn(true).when(clientRegistration).hasClientId();
+		doReturn(true).when(clientRegistration).hasClientSecret();
+		doReturn(Map.of(PROVIDER_NAME, providerDetails)).when(oAuth2Properties).getProvider();
+		doReturn(providerDetails).when(oAuth2Properties).getProviderDetails(clientRegistration);
+
+		AuthenticationToken invalidToken = new AuthenticationToken();
+		invalidToken.setExpiresIn(NEGATIVE_EXPIRES_IN);
+		doReturn(invalidToken).when(tokenClient).getAuthenticationToken();
 
 		tokenProvider = new OAuth2TokenProvider(oAuth2Properties, CLIENT_REGISTRATION_NAME, (cr, pd) -> tokenClient);
 
