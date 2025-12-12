@@ -108,7 +108,7 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 	public void add(final String name, final ScopedResource<OAuth2TokenProvider> provider) {
 		if (closing.get()) {
 			closeIfManaged(name, provider);
-			throw new IllegalStateException("Cannot add new OAuth2 token providers to a closing registry");
+			throw new IllegalStateException("Cannot add new OAuth2 token provider " + name + " to a closing registry");
 		}
 		ScopedResource<OAuth2TokenProvider> existing =
 				providers.putIfAbsent(name, Objects.requireNonNull(provider, "OAuth2 token provider cannot be null"));
