@@ -8,11 +8,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 import org.apiphany.lang.retry.Retry;
 import org.apiphany.lang.retry.WaitCounter;
+import org.apiphany.security.AuthenticationException;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationTokenProvider;
 import org.morphix.lang.Comparables;
@@ -86,7 +86,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 			final OAuth2TokenProviderOptions options,
 			final OAuth2ResolvedRegistration registration,
 			final ScheduledExecutorService tokenRefreshScheduler,
-			final BiFunction<OAuth2ClientRegistration, OAuth2ProviderDetails, AuthenticationTokenProvider> tokenClientSupplier) {
+			final AuthenticationTokenClientSupplier tokenClientSupplier) {
 		this.options = options;
 		this.tokenRefreshScheduler = tokenRefreshScheduler;
 		this.defaultExpirationSupplier = Instant::now;
@@ -94,7 +94,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 
 		if (null != registration) {
 			setSchedulerEnabled(true);
-			this.tokenClient = tokenClientSupplier.apply(registration.getClientRegistration(), registration.getProviderDetails());
+			this.tokenClient = tokenClientSupplier.get(registration.getClientRegistration(), registration.getProviderDetails());
 			updateAuthenticationToken();
 		}
 	}
@@ -113,7 +113,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 			final OAuth2Properties oAuth2Properties,
 			final String clientRegistrationName,
 			final ScheduledExecutorService tokenRefreshScheduler,
-			final BiFunction<OAuth2ClientRegistration, OAuth2ProviderDetails, AuthenticationTokenProvider> tokenClientSupplier) {
+			final AuthenticationTokenClientSupplier tokenClientSupplier) {
 		this(options, OAuth2ResolvedRegistration.of(oAuth2Properties, clientRegistrationName), tokenRefreshScheduler, tokenClientSupplier);
 	}
 
@@ -129,7 +129,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 			final OAuth2Properties oAuth2Properties,
 			final String clientRegistrationName,
 			final ScheduledExecutorService tokenRefreshScheduler,
-			final BiFunction<OAuth2ClientRegistration, OAuth2ProviderDetails, AuthenticationTokenProvider> tokenClientSupplier) {
+			final AuthenticationTokenClientSupplier tokenClientSupplier) {
 		this(OAuth2TokenProviderOptions.defaults(), oAuth2Properties, clientRegistrationName, tokenRefreshScheduler, tokenClientSupplier);
 	}
 
@@ -144,7 +144,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	public OAuth2TokenProvider(
 			final OAuth2Properties oAuth2Properties,
 			final String clientRegistrationName,
-			final BiFunction<OAuth2ClientRegistration, OAuth2ProviderDetails, AuthenticationTokenProvider> tokenClientSupplier) {
+			final AuthenticationTokenClientSupplier tokenClientSupplier) {
 		this(oAuth2Properties, clientRegistrationName,
 				Executors.newScheduledThreadPool(0, Thread.ofVirtual().factory()), tokenClientSupplier);
 	}
@@ -158,7 +158,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 */
 	public OAuth2TokenProvider(
 			final OAuth2Properties oAuth2Properties,
-			final BiFunction<OAuth2ClientRegistration, OAuth2ProviderDetails, AuthenticationTokenProvider> tokenClientSupplier) {
+			final AuthenticationTokenClientSupplier tokenClientSupplier) {
 		this(oAuth2Properties, null, tokenClientSupplier);
 	}
 
@@ -254,7 +254,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 		LOGGER.debug("[{}] Token expired, requesting new token.", getClientRegistrationName());
 		Instant expiration = Instant.now();
 		try {
-			AuthenticationToken token = getTokenClient().getAuthenticationToken();
+			AuthenticationToken token = getAuthenticationTokenFromClient();
 			token.setExpiration(expiration.plusSeconds(token.getExpiresIn()));
 			setAuthenticationToken(token);
 			LOGGER.debug("[{}] Successfully retrieved new token.", getClientRegistrationName());
@@ -262,6 +262,23 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 			LOGGER.error("[{}] Error retrieving new token.", getClientRegistrationName(), e);
 		}
 		scheduleTokenUpdate();
+	}
+
+	/**
+	 * Retrieves the authentication token from the client.
+	 *
+	 * @return the authentication token
+	 */
+	private AuthenticationToken getAuthenticationTokenFromClient() {
+		AuthenticationToken token = getTokenClient().getAuthenticationToken();
+		if (null == token) {
+			throw new AuthenticationException("Received null token from token client");
+		}
+		long expiresIn = token.getExpiresIn();
+		if (expiresIn <= 0) {
+			throw new AuthenticationException("Received token with invalid expiration: " + expiresIn);
+		}
+		return token;
 	}
 
 	/**

@@ -13,14 +13,16 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.function.BiFunction;
 
 import org.apiphany.lang.ScopedResource;
+import org.apiphany.lang.Strings;
+import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationTokenProvider;
 import org.junit.jupiter.api.Test;
 
@@ -46,6 +48,10 @@ class OAuth2TokenProviderRegistryTest {
 	private static final int THREADS = 200;
 	private static final int CLOSE_COUNT = 10;
 
+	private static final long EXPIRES_IN = 300;
+	private static final Instant DEFAULT_EXPIRATION = Instant.now();
+	private static final String TOKEN = Strings.fromFile("/security/oauth2/access-token.txt");
+
 	@SuppressWarnings({ "resource", "unchecked" })
 	@Test
 	void shouldAddProviderAndRetrieveIt() throws Exception {
@@ -59,11 +65,41 @@ class OAuth2TokenProviderRegistryTest {
 		registry.add(PROVIDER_NAME_MY_PROVIDER, resource);
 		registry.close();
 
+		OAuth2TokenProvider retrievedProvider = registry.getProvider(PROVIDER_NAME_MY_PROVIDER);
+
 		assertThat(registry.getProviderNames(), hasSize(1));
 		assertThat(registry.getProviderNames().getFirst(), equalTo(PROVIDER_NAME_MY_PROVIDER));
 
 		assertThat(registry.getProviders(), hasSize(1));
 		assertThat(registry.getProviders().getFirst(), equalTo(provider));
+
+		assertThat(retrievedProvider, equalTo(provider));
+
+		verify(resource).closeIfManaged();
+	}
+
+	@SuppressWarnings({ "resource", "unchecked" })
+	@Test
+	void shouldReturnNullWhenRetrievingProviderThatDoesNotExist() throws Exception {
+		OAuth2Registry mockRegistry = mock(OAuth2Registry.class);
+		OAuth2TokenProvider provider = mock(OAuth2TokenProvider.class);
+		ScopedResource<OAuth2TokenProvider> resource = mock(ScopedResource.class);
+		doReturn(provider).when(resource).unwrap();
+
+		OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.of(mockRegistry);
+
+		registry.add(PROVIDER_NAME_MY_PROVIDER, resource);
+		registry.close();
+
+		OAuth2TokenProvider retrievedProvider = registry.getProvider("ubknownProvider");
+
+		assertThat(registry.getProviderNames(), hasSize(1));
+		assertThat(registry.getProviderNames().getFirst(), equalTo(PROVIDER_NAME_MY_PROVIDER));
+
+		assertThat(registry.getProviders(), hasSize(1));
+		assertThat(registry.getProviders().getFirst(), equalTo(provider));
+
+		assertThat(retrievedProvider, equalTo(null));
 
 		verify(resource).closeIfManaged();
 	}
@@ -124,6 +160,24 @@ class OAuth2TokenProviderRegistryTest {
 
 	@SuppressWarnings("unchecked")
 	@Test
+	void shouldNotThrowExceptionWhenClosingProviderThrowsExceptionOndRejectAddWhenRegistryClosing() throws Exception {
+		OAuth2Registry mockRegistry = mock(OAuth2Registry.class);
+		OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.of(mockRegistry);
+
+		registry.close();
+
+		ScopedResource<OAuth2TokenProvider> resource = mock(ScopedResource.class);
+		doThrow(new RuntimeException(ERROR_MESSAGE)).when(resource).closeIfManaged();
+
+		IllegalStateException ex = assertThrows(IllegalStateException.class, () -> registry.add(PROVIDER_NAME_MY_PROVIDER, resource));
+
+		assertThat(ex.getMessage(), equalTo("Cannot add new OAuth2 token provider " + PROVIDER_NAME_MY_PROVIDER + " to a closing registry."));
+
+		verify(resource).closeIfManaged();
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
 	void shouldCloseAllProvidersEvenIfSomeFail() throws Exception {
 		OAuth2Registry mockRegistry = mock(OAuth2Registry.class);
 		OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.of(mockRegistry);
@@ -142,7 +196,7 @@ class OAuth2TokenProviderRegistryTest {
 		verify(bad).closeIfManaged();
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "resource" })
 	@Test
 	void shouldNotCallCloseOnAllProvidersEvenIfRegistryCloseIsCalledMultipleTimes() throws Exception {
 		OAuth2Registry mockRegistry = mock(OAuth2Registry.class);
@@ -161,19 +215,20 @@ class OAuth2TokenProviderRegistryTest {
 
 	@SuppressWarnings("resource")
 	@Test
-	void shouldCreateRegistryFromTokenSupplierFactories() {
+	void shouldCreateRegistryFromTokenSupplierFactories() throws Exception {
 		OAuth2Registry mockRegistry = mock(OAuth2Registry.class);
 		OAuth2TokenProvider tokenProvider = mock(OAuth2TokenProvider.class);
 		doReturn(CLIENT_REGISTRATION_NAME).when(tokenProvider).getClientRegistrationName();
 
-		BiFunction<OAuth2ClientRegistration, OAuth2ProviderDetails, AuthenticationTokenProvider> tokenClientSupplier =
-				(r, d) -> mock(AuthenticationTokenProvider.class);
+		AuthenticationTokenClientSupplier tokenClientSupplier = (r, d) -> mock(AuthenticationTokenProvider.class);
 		doReturn(List.of(tokenProvider)).when(mockRegistry).tokenProviders(any());
 
 		OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.of(
 				mockRegistry,
 				tokenClientSupplier,
 				OAuth2TokenProviderRegistryTest::nameConverter);
+
+		registry.close();
 
 		assertThat(registry.getProviders(), hasSize(1));
 		assertThat(registry.getProviderNames(), hasSize(1));
@@ -184,7 +239,7 @@ class OAuth2TokenProviderRegistryTest {
 
 	@SuppressWarnings("resource")
 	@Test
-	void shouldCreateRegistryFromProperties() {
+	void shouldCreateRegistryFromProperties() throws Exception {
 		OAuth2Properties mockProperties = mock(OAuth2Properties.class);
 
 		OAuth2ClientRegistration registration1 = mock(OAuth2ClientRegistration.class);
@@ -205,13 +260,18 @@ class OAuth2TokenProviderRegistryTest {
 		OAuth2TokenProvider tokenProvider = mock(OAuth2TokenProvider.class);
 		doReturn(CLIENT_REGISTRATION_NAME).when(tokenProvider).getClientRegistrationName();
 
-		BiFunction<OAuth2ClientRegistration, OAuth2ProviderDetails, AuthenticationTokenProvider> tokenClientSupplier =
-				(r, d) -> mock(AuthenticationTokenProvider.class);
+		AuthenticationToken token = createToken();
+		AuthenticationTokenProvider tokenClient = mock(AuthenticationTokenProvider.class);
+		doReturn(token).when(tokenClient).getAuthenticationToken();
+
+		AuthenticationTokenClientSupplier tokenClientSupplier = (r, d) -> tokenClient;
 
 		OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.of(
 				mockProperties,
 				tokenClientSupplier,
 				OAuth2TokenProviderRegistryTest::nameConverter);
+
+		registry.close();
 
 		assertThat(registry.getOAuth2Registry().entries(), hasSize(2));
 		assertThat(registry.getProviders(), hasSize(2));
@@ -268,6 +328,7 @@ class OAuth2TokenProviderRegistryTest {
 		doneTasksGate.await();
 
 		executor.shutdownNow();
+		registry.close();
 
 		assertThat(resources, hasSize(THREADS));
 
@@ -292,5 +353,13 @@ class OAuth2TokenProviderRegistryTest {
 
 	private static String nameConverter(final String clientRegistrationName) {
 		return "prefix" + clientRegistrationName + "Suffix";
+	}
+
+	private static AuthenticationToken createToken() {
+		AuthenticationToken authenticationToken = new AuthenticationToken();
+		authenticationToken.setAccessToken(TOKEN);
+		authenticationToken.setExpiresIn(EXPIRES_IN);
+		authenticationToken.setExpiration(DEFAULT_EXPIRATION.plusSeconds(EXPIRES_IN));
+		return authenticationToken;
 	}
 }

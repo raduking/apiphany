@@ -136,6 +136,13 @@ class OAuth2RegistryTest {
 		}
 	}
 
+	@Test
+	void shouldBuildEmptyRegistryFromNullProperties() {
+		OAuth2Registry registry = OAuth2Registry.of();
+
+		assertThat(registry.entries(), hasSize(0));
+	}
+
 	private static AuthenticationTokenProvider tokenClient() {
 		return new AuthenticationTokenProvider() {
 			@Override
