@@ -1,4 +1,4 @@
-package org.apiphany;
+package org.apiphany.testdata;
 
 import java.util.Objects;
 

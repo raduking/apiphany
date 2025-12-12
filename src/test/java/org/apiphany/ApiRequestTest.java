@@ -9,6 +9,7 @@ import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.collections.Maps;
+import org.apiphany.testdata.TestDto;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

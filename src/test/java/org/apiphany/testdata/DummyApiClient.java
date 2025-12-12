@@ -1,8 +1,9 @@
-package org.apiphany;
+package org.apiphany.testdata;
 
 import java.util.List;
 import java.util.Map;
 
+import org.apiphany.ApiClient;
 import org.apiphany.client.ExchangeClient;
 import org.morphix.reflection.GenericClass;
 
