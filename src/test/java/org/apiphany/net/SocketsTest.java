@@ -37,6 +37,12 @@ class SocketsTest {
 	}
 
 	@Test
+	void shouldThrowExceptionOnCallingDefaultClassConstructor() {
+		UnsupportedOperationException unsupportedOperationException = Tests.verifyDefaultConstructorThrows(Sockets.Default.class);
+		assertThat(unsupportedOperationException.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
+	}
+
+	@Test
 	void shouldReturnFalseWhenPortInUse() throws Exception {
 		int port = Sockets.findAvailableTcpPort();
 
@@ -78,23 +84,26 @@ class SocketsTest {
 	@Test
 	void shouldThrowExceptionIfMinPortRangeIsLowerThanMinPort() {
 		IllegalArgumentException e =
-				assertThrows(IllegalArgumentException.class, () -> Sockets.findAvailableTcpPort(Sockets.MIN_PORT - 1, Sockets.MAX_PORT));
+				assertThrows(IllegalArgumentException.class,
+						() -> Sockets.findAvailableTcpPort(Sockets.Default.MIN_PORT - 1, Sockets.Default.MAX_PORT));
 
-		assertThat(e.getMessage(), equalTo("Port minimum value must be greater than " + Sockets.MIN_PORT));
+		assertThat(e.getMessage(), equalTo("Port minimum value must be greater than " + Sockets.Default.MIN_PORT));
 	}
 
 	@Test
 	void shouldThrowExceptionIfMaxPortRangeIsBiggerThanMaxPort() {
 		IllegalArgumentException e =
-				assertThrows(IllegalArgumentException.class, () -> Sockets.findAvailableTcpPort(Sockets.MIN_PORT, Sockets.MAX_PORT + 1));
+				assertThrows(IllegalArgumentException.class,
+						() -> Sockets.findAvailableTcpPort(Sockets.Default.MIN_PORT, Sockets.Default.MAX_PORT + 1));
 
-		assertThat(e.getMessage(), equalTo("Port maximum value must be less than " + Sockets.MAX_PORT));
+		assertThat(e.getMessage(), equalTo("Port maximum value must be less than " + Sockets.Default.MAX_PORT));
 	}
 
 	@Test
 	void shouldThrowExceptionIfMaxPortRangeIsLessThanMinPort() {
 		IllegalArgumentException e =
-				assertThrows(IllegalArgumentException.class, () -> Sockets.findAvailableTcpPort(Sockets.MAX_PORT, Sockets.MIN_PORT));
+				assertThrows(IllegalArgumentException.class,
+						() -> Sockets.findAvailableTcpPort(Sockets.Default.MAX_PORT, Sockets.Default.MIN_PORT));
 
 		assertThat(e.getMessage(), equalTo("Max port range must be greater than minimum port range"));
 	}
