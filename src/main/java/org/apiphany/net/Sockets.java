@@ -60,7 +60,7 @@ public final class Sockets {
 	}
 
 	/**
-	 * Finds an available TCP port between {@link #MIN_PORT} and {@link #MAX_PORT}.
+	 * Finds an available TCP port between {@link Default#MIN_PORT} and {@link Default#MAX_PORT}.
 	 *
 	 * @return the available port
 	 */
@@ -69,7 +69,7 @@ public final class Sockets {
 	}
 
 	/**
-	 * Finds an available TCP port between {@link #MIN_PORT} and {@link #MAX_PORT}.
+	 * Finds an available TCP port between {@link Default#MIN_PORT} and {@link Default#MAX_PORT}.
 	 *
 	 * @param timeout the operation timeout
 	 * @return the available port
@@ -79,7 +79,7 @@ public final class Sockets {
 	}
 
 	/**
-	 * Finds an available TCP port between {@link #MIN_PORT} and {@link #MAX_PORT}.
+	 * Finds an available TCP port between {@link Default#MIN_PORT} and {@link Default#MAX_PORT}.
 	 *
 	 * @param timeout the operation timeout
 	 * @return the available port
