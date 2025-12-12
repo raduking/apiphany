@@ -62,7 +62,7 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 
 	/**
 	 * Creates an OAuth2 token provider registry based on the given OAuth2 registry. This registry will be empty because to
-	 * create the token providers the caller must provide a token client supplier and token provider name function.
+	 * create the token providers the caller must provide a token client supplier and token provider name converter.
 	 *
 	 * @param oAuth2Registry the OAuth2 registry must not be null
 	 * @return an empty OAuth2 token provider registry
@@ -73,22 +73,21 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 
 	/**
 	 * Creates an OAuth2 token provider registry based on the given OAuth2 registry. When building the token providers, the
-	 * given token client supplier is used and when building the provider name the token provider name function is used.
+	 * given token client supplier is used and when building the provider name the token provider name converter is used.
 	 *
 	 * @param oAuth2Registry the OAuth2 registry must not be null
-	 * @param tokenClientSupplier a function that creates an authentication token provider based on the client registration
-	 *     and provider details
-	 * @param tokenProviderNameFunction a function that maps the client registration name to the token provider name
+	 * @param tokenClientSupplier supplies a token provider client based on the client registration and provider details
+	 * @param providerNameConverter a function that maps the client registration name to the token provider name
 	 * @return an OAuth2 token provider registry based on the given OAuth2 registry
 	 */
 	public static OAuth2TokenProviderRegistry of(
 			final OAuth2Registry oAuth2Registry,
 			final AuthenticationTokenClientSupplier tokenClientSupplier,
-			final UnaryOperator<String> tokenProviderNameFunction) {
+			final UnaryOperator<String> providerNameConverter) {
 		OAuth2TokenProviderRegistry registry = of(oAuth2Registry);
 		List<OAuth2TokenProvider> tokenProviders = oAuth2Registry.tokenProviders(tokenClientSupplier);
 		for (OAuth2TokenProvider provider : tokenProviders) {
-			String providerName = tokenProviderNameFunction.apply(provider.getClientRegistrationName());
+			String providerName = providerNameConverter.apply(provider.getClientRegistrationName());
 			registry.add(providerName, ScopedResource.managed(provider));
 		}
 		return registry;
@@ -99,8 +98,7 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 	 * given token client supplier is used.
 	 *
 	 * @param oAuth2Registry the OAuth2 registry must not be null
-	 * @param tokenClientSupplier a function that creates an authentication token provider based on the client registration
-	 *     and provider details
+	 * @param tokenClientSupplier supplies a token provider client based on the client registration and provider details
 	 * @return an OAuth2 token provider registry based on the given OAuth2 registry
 	 */
 	public static OAuth2TokenProviderRegistry of(
@@ -111,30 +109,28 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 
 	/**
 	 * Creates an OAuth2 token provider registry based on the given OAuth2 properties. This will build the underlying OAuth2
-	 * registry based on the given OAuth2 properties and then create the token providers using the given token client supplier
-	 * and token provider name function for the provider name.
+	 * registry based on the given OAuth2 properties and then create the token providers using the given token client
+	 * supplier and token provider name function for the provider name.
 	 *
 	 * @param oAuth2Properties the OAuth2 properties
-	 * @param tokenClientSupplier a function that creates an authentication token provider based on the client registration
-	 *     and provider details
-	 * @param tokenProviderNameFunction a function that maps the client registration name to the token provider name
+	 * @param tokenClientSupplier supplies a token provider client based on the client registration and provider details
+	 * @param providerNameConverter a function that maps the client registration name to the token provider name
 	 * @return an OAuth2 token provider registry based on the given OAuth2 properties
 	 */
 	public static OAuth2TokenProviderRegistry of(
 			final OAuth2Properties oAuth2Properties,
 			final AuthenticationTokenClientSupplier tokenClientSupplier,
-			final UnaryOperator<String> tokenProviderNameFunction) {
-		return of(OAuth2Registry.of(oAuth2Properties), tokenClientSupplier, tokenProviderNameFunction);
+			final UnaryOperator<String> providerNameConverter) {
+		return of(OAuth2Registry.of(oAuth2Properties), tokenClientSupplier, providerNameConverter);
 	}
 
 	/**
 	 * Creates an OAuth2 token provider registry based on the given OAuth2 properties. This will build the underlying OAuth2
-	 * registry based on the given OAuth2 properties and then create the token providers using the given token client supplier.
+	 * registry based on the given OAuth2 properties and then create the token providers using the given token client
+	 * supplier.
 	 *
 	 * @param oAuth2Properties the OAuth2 properties
-	 * @param tokenClientSupplier a function that creates an authentication token provider based on the client registration
-	 *     and provider details
-	 * @param tokenProviderNameFunction a function that maps the client registration name to the token provider name
+	 * @param tokenClientSupplier supplies a token provider client based on the client registration and provider details
 	 * @return an OAuth2 token provider registry based on the given OAuth2 properties
 	 */
 	public static OAuth2TokenProviderRegistry of(
