@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import org.junit.jupiter.api.Test;
 
@@ -121,6 +122,40 @@ class ByteBufferInputStreamTest {
 		int result = bis.read();
 
 		assertThat(result, equalTo(-1));
+	}
+
+	@Test
+	void shouldReadAllBytesIntoByteArray() {
+		@SuppressWarnings("resource")
+		ByteBufferInputStream bis = ByteBufferInputStream.of(BYTES);
+
+		byte[] bytes = new byte[BYTES.length];
+		int result = bis.read(bytes);
+
+		assertThat(result, equalTo(BYTES.length));
+		for (int i = 0; i < BYTES.length; i++) {
+			assertThat(bytes[i], equalTo(BYTES[i]));
+		}
+	}
+
+	@Test
+	void shouldReadAllAvailableBytesIntoArray() {
+		@SuppressWarnings("resource")
+		ByteBufferInputStream bis = ByteBufferInputStream.of(BYTES);
+
+		byte[] bytes = new byte[BYTES.length * 2];
+		byte fillByte = (byte) 0xFF;
+		Arrays.fill(bytes, fillByte);
+
+		int result = bis.read(bytes);
+
+		assertThat(result, equalTo(BYTES.length));
+		for (int i = 0; i < BYTES.length; i++) {
+			assertThat(bytes[i], equalTo(BYTES[i]));
+		}
+		for (int i = BYTES.length; i < bytes.length; i++) {
+			assertThat(bytes[i], equalTo(fillByte));
+		}
 	}
 
 	@Test
