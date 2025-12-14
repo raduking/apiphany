@@ -9,6 +9,7 @@ import java.util.function.BiConsumer;
 import java.util.function.UnaryOperator;
 
 import org.apiphany.lang.ScopedResource;
+import org.morphix.lang.function.Consumers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,11 +85,30 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 			final OAuth2Registry oAuth2Registry,
 			final AuthenticationTokenClientSupplier tokenClientSupplier,
 			final UnaryOperator<String> providerNameConverter) {
+		return of(oAuth2Registry, tokenClientSupplier, providerNameConverter, Consumers.noBiConsumer());
+	}
+
+	/**
+	 * Creates an OAuth2 token provider registry based on the given OAuth2 registry. When building the token providers, the
+	 * given token client supplier is used and when building the provider name the token provider name converter is used.
+	 *
+	 * @param oAuth2Registry the OAuth2 registry must not be null
+	 * @param tokenClientSupplier supplies a token provider client based on the client registration and provider details
+	 * @param providerNameConverter a function that maps the client registration name to the token provider name
+	 * @param createdProviederCustomizer a consumer that is called when a new provider is created
+	 * @return an OAuth2 token provider registry based on the given OAuth2 registry
+	 */
+	public static OAuth2TokenProviderRegistry of(
+			final OAuth2Registry oAuth2Registry,
+			final AuthenticationTokenClientSupplier tokenClientSupplier,
+			final UnaryOperator<String> providerNameConverter,
+			final BiConsumer<String, OAuth2TokenProvider> createdProviederCustomizer) {
 		OAuth2TokenProviderRegistry registry = of(oAuth2Registry);
 		List<OAuth2TokenProvider> tokenProviders = oAuth2Registry.tokenProviders(tokenClientSupplier);
 		for (OAuth2TokenProvider provider : tokenProviders) {
 			String providerName = providerNameConverter.apply(provider.getClientRegistrationName());
 			registry.add(providerName, ScopedResource.managed(provider));
+			createdProviederCustomizer.accept(providerName, provider);
 		}
 		return registry;
 	}

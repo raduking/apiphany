@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.BiConsumer;
 
 import org.apiphany.lang.ScopedResource;
 import org.apiphany.lang.Strings;
@@ -258,6 +259,36 @@ class OAuth2TokenProviderRegistryTest {
 		assertThat(registry.getProviderNames().getFirst(), equalTo(CLIENT_REGISTRATION_NAME));
 
 		verify(mockRegistry).tokenProviders(tokenClientSupplier);
+	}
+
+	@SuppressWarnings({ "resource", "unchecked" })
+	@Test
+	void shouldCreateRegistryFromTokenSupplierFactoriesWithCustomizer() throws Exception {
+		OAuth2Registry mockRegistry = mock(OAuth2Registry.class);
+		OAuth2TokenProvider tokenProvider = mock(OAuth2TokenProvider.class);
+		doReturn(CLIENT_REGISTRATION_NAME).when(tokenProvider).getClientRegistrationName();
+
+		AuthenticationTokenClientSupplier tokenClientSupplier = (r, d) -> mock(AuthenticationTokenProvider.class);
+		doReturn(List.of(tokenProvider)).when(mockRegistry).tokenProviders(any());
+
+		BiConsumer<String, OAuth2TokenProvider> customizer = mock(BiConsumer.class);
+
+		OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.of(
+				mockRegistry,
+				tokenClientSupplier,
+				OAuth2TokenProviderRegistryTest::nameConverter,
+				customizer);
+
+		registry.close();
+
+		String expectedName = nameConverter(CLIENT_REGISTRATION_NAME);
+
+		assertThat(registry.getProviders(), hasSize(1));
+		assertThat(registry.getProviderNames(), hasSize(1));
+		assertThat(registry.getProviderNames().getFirst(), equalTo(expectedName));
+
+		verify(mockRegistry).tokenProviders(tokenClientSupplier);
+		verify(customizer).accept(expectedName, tokenProvider);
 	}
 
 	@SuppressWarnings("resource")
