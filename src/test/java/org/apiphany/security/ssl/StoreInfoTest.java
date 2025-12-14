@@ -48,4 +48,17 @@ class StoreInfoTest {
 
 		assertThat(result, equalTo(StoreInfo.UNKNOWN_LOCATION));
 	}
+
+	@Test
+	void shouldSerializeToJson() {
+		String json = Strings.fromFile("/security/ssl/store-info.json");
+
+		StoreInfo result1 = JsonBuilder.fromJson(json, StoreInfo.class);
+
+		json = result1.toString();
+
+		StoreInfo result2 = JsonBuilder.fromJson(json, StoreInfo.class);
+
+		assertThat(result1.toString(), equalTo(result2.toString()));
+	}
 }
