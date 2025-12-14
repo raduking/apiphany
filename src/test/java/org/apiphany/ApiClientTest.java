@@ -7,6 +7,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -49,6 +50,7 @@ import org.apiphany.testdata.DummyApiClient;
 import org.apiphany.testdata.DummyExchangeClient;
 import org.apiphany.testdata.TestDto;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.mockito.ArgumentCaptor;
 import org.morphix.lang.JavaObjects;
 import org.morphix.reflection.Fields;
@@ -875,10 +877,13 @@ class ApiClientTest {
 	}
 
 	@Test
-	void shouldThrowExceptionIfGenericClassIsNotParameterized() {
-		IllegalArgumentException iae = assertThrows(IllegalArgumentException.class, () -> {
-			new BadApiClient(BASE_URL, new DummyExchangeClient());
-		});
+	void shouldThrowExceptionIfGenericClassIsNotParameterized() throws Exception {
+		DummyExchangeClient exchangeClient = assertDoesNotThrow(DummyExchangeClient::new);
+
+		Executable executable = () -> new BadApiClient(BASE_URL, exchangeClient);
+		IllegalArgumentException iae = assertThrows(IllegalArgumentException.class, executable);
+
+		exchangeClient.close();
 
 		Field typeObjectField = Fields.getOneDeclared(BadApiClient.class, "WRONG_TYPE");
 
