@@ -10,6 +10,7 @@
 - Added `OAuth2TokenProviderRegistry.getProvider` method to return a registered provider by name.
 - Added variations of the `OAuth2TokenProviderRegistry.of` method without the token provider name function.
 - Added `AlwaysEmptyList` class that represents a list that is always empty no matter what operations are called on it.
+- Added `ErrorObservingInputStream` as a wrapper around an `InputStream` that observes errors.
 
 ---
 
