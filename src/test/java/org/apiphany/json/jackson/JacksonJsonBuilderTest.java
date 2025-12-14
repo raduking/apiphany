@@ -3,16 +3,31 @@ package org.apiphany.json.jackson;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.apiphany.lang.Strings;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.morphix.lang.function.Consumers;
 import org.morphix.reflection.Fields;
 import org.morphix.reflection.GenericClass;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.AnnotationIntrospector;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.SerializationConfig;
+import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 
 /**
  * Test class for {@link JacksonJsonBuilder}.
@@ -27,6 +42,11 @@ class JacksonJsonBuilderTest {
 	private static final String CUSTOMER_ID2 = "cid2";
 	private static final String TENANT_ID1 = "tid1";
 	private static final String TENANT_ID2 = "tid2";
+
+	private static final String EXPECTED_EXCEPTION_MESSAGE = "Expected exception";
+	private static final String SOME_INVALID_JSON_STRING = "some invalid json";
+	private static final byte[] SOME_INVALID_JSON_BYTES = SOME_INVALID_JSON_STRING.getBytes();
+	private static final String SOME_NAME = "someName";
 
 	private JacksonJsonBuilder jsonBuilder = new JacksonJsonBuilder();
 
@@ -205,6 +225,108 @@ class JacksonJsonBuilderTest {
 		assertThat(result.getElements().get(CUSTOMER_TWO).tenantId, equalTo(TENANT_ID2));
 	}
 
+	@Test
+	void shouldConfigureSensitivityWithExistingAnnotationIntrospector() {
+		ObjectMapper objectMapper = mock(ObjectMapper.class);
+
+		SerializationConfig serializationConfig = mock(SerializationConfig.class);
+		doReturn(serializationConfig).when(objectMapper).getSerializationConfig();
+
+		AnnotationIntrospector existingAnnotationIntrospector = mock(AnnotationIntrospector.class);
+		doReturn(existingAnnotationIntrospector).when(serializationConfig).getAnnotationIntrospector();
+
+		SensitiveAnnotationIntrospector sensitiveAnnotationIntrospector = mock(SensitiveAnnotationIntrospector.class);
+
+		ArgumentCaptor<AnnotationIntrospectorPair> captor = ArgumentCaptor.forClass(AnnotationIntrospectorPair.class);
+		doReturn(objectMapper).when(objectMapper).setAnnotationIntrospector(captor.capture());
+
+		ObjectMapper result = JacksonJsonBuilder.configureSensitivity(objectMapper, sensitiveAnnotationIntrospector);
+
+		assertThat(result, equalTo(objectMapper));
+
+		AnnotationIntrospectorPair pair = captor.getValue();
+		List<AnnotationIntrospector> introspectors = new ArrayList<>();
+		pair.allIntrospectors(introspectors);
+
+		verify(sensitiveAnnotationIntrospector).allIntrospectors(introspectors);
+		verify(existingAnnotationIntrospector).allIntrospectors(introspectors);
+	}
+
+	@Test
+	void shouldReturnToStringResultIfSerializationFails() throws JsonProcessingException {
+		JacksonJsonBuilder jacksonJsonBuilder = new JacksonJsonBuilder();
+
+		ObjectMapper objectMapper = mock(ObjectMapper.class);
+		Fields.IgnoreAccess.set(jacksonJsonBuilder, "objectMapper", objectMapper);
+
+		ObjectWriter writer = mock(ObjectWriter.class);
+		doReturn(writer).when(objectMapper).writerFor(any(Class.class));
+
+		JsonProcessingException jsonException = new JsonMappingException(null, EXPECTED_EXCEPTION_MESSAGE);
+		doThrow(jsonException).when(writer).writeValueAsString(any());
+
+		C c = new C();
+		c.setName(SOME_NAME);
+
+		String expectedString = "{ \"hash\":\"" + C.class.getName() + "@"
+				+ Integer.toHexString(c.hashCode()) + "\" }";
+
+		String result = jacksonJsonBuilder.toJsonString(c);
+
+		assertThat(result, equalTo(expectedString));
+	}
+
+	@Test
+	void shouldReturnNullWhenDeserializingStringJsonFailsWithClass() {
+		A result = jsonBuilder.fromJsonString(SOME_INVALID_JSON_STRING, A.class);
+
+		assertThat(result, equalTo(null));
+	}
+
+	@Test
+	void shouldReturnNullWhenDeserializingStringJsonFailsWithTypeReference() {
+		List<A> result = jsonBuilder.fromJsonString(SOME_INVALID_JSON_STRING, new TypeReference<List<A>>() {
+			// empty
+		});
+
+		assertThat(result, equalTo(null));
+	}
+
+	@Test
+	void shouldReturnNullWhenDeserializingStringJsonFailsWithGenericClass() {
+		List<A> result = jsonBuilder.fromJsonString(SOME_INVALID_JSON_STRING, new GenericClass<List<A>>() {
+			// empty
+		});
+
+		assertThat(result, equalTo(null));
+	}
+
+	@Test
+	void shouldReturnNullWhenDeserializingBytesJsonFailsWithClass() {
+		A result = jsonBuilder.fromJsonBytes(SOME_INVALID_JSON_BYTES, A.class);
+
+		assertThat(result, equalTo(null));
+	}
+
+	@Test
+	void shouldReturnNullWhenDeserializingBytesJsonFailsWithTypeReference() {
+		List<A> result = jsonBuilder.fromJsonBytes(SOME_INVALID_JSON_BYTES, new TypeReference<List<A>>() {
+			// empty
+		});
+
+		assertThat(result, equalTo(null));
+	}
+
+	@Test
+	void shouldReturnNullWhenDeserializingBytesJsonFailsWithGenericClass() {
+		List<A> result = jsonBuilder.fromJsonBytes(SOME_INVALID_JSON_BYTES, new GenericClass<List<A>>() {
+			// empty
+		});
+
+		assertThat(result, equalTo(null));
+	}
+
+
 	static class A {
 
 		private Map<String, B> elements;
@@ -248,6 +370,23 @@ class JacksonJsonBuilderTest {
 
 		public void setTenantId(final String tenantId) {
 			this.tenantId = tenantId;
+		}
+	}
+
+	static class C {
+
+		private String name;
+
+		public C() {
+			// empty
+		}
+
+		public void setName(final String name) {
+			this.name = name;
+		}
+
+		public String getName() {
+			return name;
 		}
 	}
 }
