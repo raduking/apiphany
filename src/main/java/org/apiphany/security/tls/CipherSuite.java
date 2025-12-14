@@ -289,13 +289,13 @@ public enum CipherSuite implements TLSObject {
 	 * ECDHE-RSA with 3DES EDE CBC legacy cipher suite.
 	 */
 	TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA((short) 0xC012,
-			KeyExchangeAlgorithm.ECDHE, BulkCipher._3DES_EDE_CBC, MessageDigestAlgorithm.SHA1),
+			KeyExchangeAlgorithm.ECDHE, BulkCipher.TRIPLE_DES_EDE_CBC, MessageDigestAlgorithm.SHA1),
 
 	/**
 	 * RSA with 3DES EDE CBC legacy cipher suite.
 	 */
 	TLS_RSA_WITH_3DES_EDE_CBC_SHA((short) 0x000A,
-			KeyExchangeAlgorithm.RSA, BulkCipher._3DES_EDE_CBC, MessageDigestAlgorithm.SHA1),
+			KeyExchangeAlgorithm.RSA, BulkCipher.TRIPLE_DES_EDE_CBC, MessageDigestAlgorithm.SHA1),
 
 	/**
 	 * RSA export with RC4-56 legacy cipher suite.

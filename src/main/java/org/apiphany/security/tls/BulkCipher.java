@@ -87,8 +87,10 @@ public enum BulkCipher {
 
 	/**
 	 * Triple-DES (3DES) in CBC mode (legacy). IV length: 8.
+	 * <p>
+	 * Note: 3DES is considered weak by modern standards and is included here only for compatibility with legacy systems.
 	 */
-	_3DES_EDE_CBC(BulkCipherInfo.of("DESede", 24, 8, 8, 0, CipherType.BLOCK, -1, 0)),
+	TRIPLE_DES_EDE_CBC(BulkCipherInfo.of("DESede", 24, 8, 8, 0, CipherType.BLOCK, -1, 0)),
 
 	/**
 	 * GOST R 34.12-2015 (Kuznyechik) in CTR mode. IV length: 16.

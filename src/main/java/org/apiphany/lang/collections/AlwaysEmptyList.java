@@ -71,7 +71,7 @@ public final class AlwaysEmptyList<E> implements List<E> {
 	 */
 	@Override
 	public Object[] toArray() {
-		return new Object[] {};
+		return new Object[] { };
 	}
 
 	/**
