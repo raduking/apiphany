@@ -176,7 +176,8 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 	}
 
 	/**
-	 * Transforms the parameter to a JSON String.
+	 * Transforms the parameter to a JSON String. If the object is null, returns null. If the object cannot be serialized,
+	 * returns the result of {@link #toString(Object)}.
 	 *
 	 * @param <T> type of the object
 	 *
@@ -196,13 +197,14 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 		try {
 			return eol() + objectWriter.writeValueAsString(obj);
 		} catch (JsonProcessingException e) {
-			LOGGER.warn(ErrorMessage.COULD_NOT_SERIALIZE_OBJECT, toString(obj), e);
+			String result = toString(obj);
+			LOGGER.warn(ErrorMessage.COULD_NOT_SERIALIZE_OBJECT, result, e);
+			return result;
 		}
-		return toString(obj);
 	}
 
 	/**
-	 * Returns an object from the JSON string.
+	 * Returns an object from the JSON string. If the JSON string cannot be de-serialized, returns null.
 	 *
 	 * @param <T> type of the object
 	 *
@@ -221,7 +223,7 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 	}
 
 	/**
-	 * Returns an object from the JSON string.
+	 * Returns an object from the JSON string. If the JSON string cannot be de-serialized, returns null.
 	 *
 	 * @param <T> type of the object
 	 *
@@ -241,7 +243,7 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 	}
 
 	/**
-	 * Returns an object from the JSON string.
+	 * Returns an object from the JSON string. If the JSON string cannot be de-serialized, returns null.
 	 *
 	 * @param <T> type of the object
 	 *
@@ -259,7 +261,7 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 	}
 
 	/**
-	 * Returns an object from the given byte array.
+	 * Returns an object from the given byte array. If the byte array cannot be de-serialized, returns null.
 	 *
 	 * @param <T> type of the object
 	 *
@@ -277,7 +279,7 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 	}
 
 	/**
-	 * Returns an object from the JSON byte array.
+	 * Returns an object from the JSON byte array. If the byte array cannot be de-serialized, returns null.
 	 *
 	 * @param <T> type of the object
 	 *
@@ -296,7 +298,7 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 	}
 
 	/**
-	 * Returns an object from the JSON byte array.
+	 * Returns an object from the JSON byte array. If the byte array cannot be de-serialized, returns null.
 	 *
 	 * @param <T> type of the object
 	 *
