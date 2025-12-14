@@ -33,6 +33,13 @@ public final class AlwaysEmptyList<E> implements List<E> {
 	private static final AlwaysEmptyList<Object> ALWAYS_EMPTY_LIST = new AlwaysEmptyList<>();
 
 	/**
+	 * Private constructor, use {@link #of()} to obtain an instance.
+	 */
+	private AlwaysEmptyList() {
+		// empty
+	}
+
+	/**
 	 * Returns a singleton instance of an always empty list.
 	 *
 	 * @param <T> element type
@@ -244,6 +251,13 @@ public final class AlwaysEmptyList<E> implements List<E> {
 		private static final EmptyIterator<Object> EMPTY_ITERATOR = new EmptyIterator<>();
 
 		/**
+		 * Private constructor, use {@link #of()} to obtain an instance.
+		 */
+		private EmptyIterator() {
+			// empty
+		}
+
+		/**
 		 * Returns a singleton instance of an empty iterator.
 		 *
 		 * @param <T> element type
@@ -299,6 +313,13 @@ public final class AlwaysEmptyList<E> implements List<E> {
 		 * Singleton instance of an empty list iterator.
 		 */
 		private static final EmptyListIterator<Object> EMPTY_LIST_ITERATOR = new EmptyListIterator<>();
+
+		/**
+		 * Private constructor, use {@link #of()} to obtain an instance.
+		 */
+		private EmptyListIterator() {
+			// empty
+		}
 
 		/**
 		 * Returns a singleton instance of an empty list iterator.

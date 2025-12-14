@@ -326,7 +326,6 @@ class JacksonJsonBuilderTest {
 		assertThat(result, equalTo(null));
 	}
 
-
 	static class A {
 
 		private Map<String, B> elements;
