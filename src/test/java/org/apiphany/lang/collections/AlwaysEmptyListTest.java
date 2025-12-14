@@ -87,7 +87,7 @@ class AlwaysEmptyListTest {
 		assertThat(result, sameInstance(target));
 		assertThat(result[0], equalTo(null));
 
-		target = new String[] {};
+		target = new String[] { };
 		result = list.toArray(target);
 		assertThat(result.length, equalTo(0));
 
