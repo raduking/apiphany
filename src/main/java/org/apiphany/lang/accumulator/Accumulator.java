@@ -23,7 +23,7 @@ import org.apiphany.lang.retry.Retry;
 public abstract class Accumulator<T> {
 
 	/**
-	 * Holds the accumulated information
+	 * Holds the accumulated information.
 	 */
 	private final List<T> list = new CopyOnWriteArrayList<>();
 
@@ -169,6 +169,9 @@ public abstract class Accumulator<T> {
 	 */
 	private static class EmptyAccumulator extends Accumulator<Object> { // NOSONAR only we need one instance
 
+		/**
+		 * Singleton instance.
+		 */
 		private static final EmptyAccumulator EMPTY_ACCUMULATOR = new EmptyAccumulator();
 
 		/**

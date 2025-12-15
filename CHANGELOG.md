@@ -1,5 +1,9 @@
 ## Release Notes
 
+`1.0.21`
+
+---
+
 `1.0.20`
 
 - Moved default values from `Sockets` class into `Sockets.Default` name space inner class.
