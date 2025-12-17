@@ -3,6 +3,7 @@
 `1.0.21`
 
 - Upgraded parent to `3.5.8`.
+- Upgraded `testcontainers-keycloak` to `4.0.1`.
 
 ---
 

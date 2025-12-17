@@ -58,7 +58,7 @@
 
 		<!-- Testing dependencies versions -->
 		<testcontainers.base.version>2.0.2</testcontainers.base.version>
-		<testcontainers.keycloak.version>4.0.0</testcontainers.keycloak.version>
+		<testcontainers.keycloak.version>4.0.1</testcontainers.keycloak.version>
 		<nimbus.jose.jwt.version>10.6</nimbus.jose.jwt.version>
 		<nimbus.oauth2.oidc.sdk.version>11.30.1</nimbus.oauth2.oidc.sdk.version>
 
