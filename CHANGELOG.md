@@ -1,5 +1,12 @@
 ## Release Notes
 
+`1.0.21`
+
+- Upgraded parent to `3.5.8`.
+- Upgraded `testcontainers-keycloak` to `4.0.1`.
+
+---
+
 `1.0.20`
 
 - Moved default values from `Sockets` class into `Sockets.Default` name space inner class.
