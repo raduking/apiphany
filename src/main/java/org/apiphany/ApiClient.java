@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.ExchangeClientBuilder;
+import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.lang.ScopedResource;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.accumulator.DurationAccumulator;
@@ -186,6 +187,18 @@ public class ApiClient implements AutoCloseable {
 	 */
 	protected ApiClient(final ExchangeClientBuilder exchangeClientBuilder) {
 		this(EMPTY_BASE_URL, exchangeClientBuilder);
+	}
+
+	/**
+	 * Constructor with base URL and a default exchange client {@link JavaNetHttpExchangeClient}.
+	 * <p>
+	 * This constructor should be used only for quick tests or prototyping. For production code, it is recommended to use one of the
+	 * other constructors that allow more fine tuning of the exchange client.
+	 *
+	 * @param baseUrl base URL
+	 */
+	protected ApiClient(final String baseUrl) {
+		this(baseUrl, with(JavaNetHttpExchangeClient.class));
 	}
 
 	/**

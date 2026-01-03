@@ -4,6 +4,7 @@
 
 - Upgraded parent to `3.5.8`.
 - Upgraded `testcontainers-keycloak` to `4.0.1`.
+- Added a new constructor to `ApiClient` with the base URL which uses the `JavaNetHttpExchangeClient` as the default client.
 
 ---
 

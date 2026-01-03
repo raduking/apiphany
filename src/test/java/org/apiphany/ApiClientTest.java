@@ -34,6 +34,7 @@ import java.util.function.Supplier;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.http.HttpExchangeClient;
+import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.header.Headers;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
@@ -890,5 +891,18 @@ class ApiClientTest {
 		assertThat(iae.getMessage(), equalTo("The typeObject method should only be used for generic types, current type: "
 				+ String.class.getTypeName() + " is not a generic type for static field: "
 				+ typeObjectField.getName()));
+	}
+
+	@Test
+	void shouldBuildApiClientWithUrlWithDefaultExchangeClient() throws Exception {
+		try (ApiClient apiClient = new ApiClient(BASE_URL)) {
+			@SuppressWarnings("resource")
+			ExchangeClient exchangeClient = apiClient.getExchangeClient(AuthenticationType.NONE);
+
+			assertThat(apiClient.getBaseUrl(), equalTo(BASE_URL));
+			assertThat(exchangeClient, notNullValue());
+			assertThat(exchangeClient.getAuthenticationType(), equalTo(AuthenticationType.NONE));
+			assertThat(exchangeClient.getClass(), equalTo(JavaNetHttpExchangeClient.class));
+		}
 	}
 }
