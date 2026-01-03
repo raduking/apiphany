@@ -69,7 +69,7 @@ import org.apiphany.client.JavaNetHttpExchangeClient;
 public class MyAwesomeClient extends ApiClient {
 
     public MyAwesomeClient() {
-        super("http://my.awesome.domain", with(JavaNetHttpExchangeClient.class));
+        super("http://my.awesome.domain");
     }
 
     public String getInfo() {
