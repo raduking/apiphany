@@ -46,7 +46,7 @@ public abstract class AbstractDecoratingHttpExchangeClient extends AbstractHttpE
 	@SuppressWarnings("resource")
 	@Override
 	public <T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest) {
-		return exchangeClient.unwrap().exchange(apiRequest);
+		return getExchangeClient().exchange(apiRequest);
 	}
 
 	/**
