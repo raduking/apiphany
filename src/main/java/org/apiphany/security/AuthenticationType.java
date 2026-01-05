@@ -36,5 +36,10 @@ public enum AuthenticationType {
 	/**
 	 * JSON Web Token (JWT) authentication.
 	 */
-	JWT
+	JWT,
+
+	/**
+	 * API Key-based authentication.
+	 */
+	API_KEY
 }
