@@ -10,6 +10,7 @@
 - Added `AbstractAuthenticatedHttpExchangeClient.authenticate` method to add all necessary authentication information to an API request.
 - Changed `TokenHttpExchangeClient` to inherit from `AbstractAuthenticatedHttpExchangeClient`.
 - Added `AuthenticationType.API_KEY` for API key based authentication.
+- Renamed `AuthenticationTokenClientSupplier` to `OAuth2TokenClientSupplier` since it is OAuth2 specific.
 
 ---
 
