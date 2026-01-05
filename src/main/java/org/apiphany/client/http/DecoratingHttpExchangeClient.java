@@ -10,7 +10,7 @@ import org.apiphany.lang.ScopedResource;
  *
  * @author Radu Sebastian LAZIN
  */
-public abstract class AbstractDecoratingHttpExchangeClient extends AbstractHttpExchangeClient {
+public class DecoratingHttpExchangeClient extends AbstractHttpExchangeClient {
 
 	/**
 	 * The actual exchange client doing the request.
@@ -23,7 +23,7 @@ public abstract class AbstractDecoratingHttpExchangeClient extends AbstractHttpE
 	 * @param delegate actual exchange client making the request
 	 */
 	@SuppressWarnings("resource")
-	protected AbstractDecoratingHttpExchangeClient(final ScopedResource<ExchangeClient> delegate) {
+	protected DecoratingHttpExchangeClient(final ScopedResource<ExchangeClient> delegate) {
 		super(delegate.unwrap().getClientProperties());
 		this.exchangeClient = delegate;
 	}
@@ -33,7 +33,7 @@ public abstract class AbstractDecoratingHttpExchangeClient extends AbstractHttpE
 	 *
 	 * @param delegate actual exchange client making the request
 	 */
-	protected AbstractDecoratingHttpExchangeClient(final ExchangeClient delegate) {
+	protected DecoratingHttpExchangeClient(final ExchangeClient delegate) {
 		this(ScopedResource.unmanaged(delegate));
 	}
 

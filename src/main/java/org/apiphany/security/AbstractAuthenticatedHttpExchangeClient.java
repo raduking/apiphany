@@ -3,7 +3,7 @@ package org.apiphany.security;
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
 import org.apiphany.client.ExchangeClient;
-import org.apiphany.client.http.AbstractDecoratingHttpExchangeClient;
+import org.apiphany.client.http.DecoratingHttpExchangeClient;
 import org.apiphany.lang.ScopedResource;
 
 /**
@@ -11,7 +11,7 @@ import org.apiphany.lang.ScopedResource;
  *
  * @author Radu Sebastian LAZIN
  */
-public abstract class AbstractAuthenticatedHttpExchangeClient extends AbstractDecoratingHttpExchangeClient {
+public abstract class AbstractAuthenticatedHttpExchangeClient extends DecoratingHttpExchangeClient {
 
 	/**
 	 * Initialize the client with the given exchange client delegate.
