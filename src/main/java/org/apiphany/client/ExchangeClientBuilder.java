@@ -54,6 +54,9 @@ public class ExchangeClientBuilder {
 	 */
 	@SuppressWarnings("resource")
 	public ScopedResource<ExchangeClient> build() {
+		if (null != this.exchangeClient && null != this.exchangeClientClass) {
+			throw new IllegalStateException("Cannot set both exchange client instance and exchange client class");
+		}
 		boolean managed = exchangeClient == null;
 		ExchangeClient client = managed ? build(exchangeClientClass, clientProperties) : exchangeClient;
 		return ScopedResource.of(client, managed);
