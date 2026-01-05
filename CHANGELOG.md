@@ -5,8 +5,8 @@
 - Upgraded parent to `3.5.8`.
 - Upgraded `testcontainers-keycloak` to `4.0.1`.
 - Added a new constructor to `ApiClient` with the base URL which uses the `JavaNetHttpExchangeClient` as the default client.
-- Added `AbstractDecoratingHttpExchangeClient` as a base class for all authenticated exchange clients since all are decorators.
-- Added `AbstractAuthenticatedHttpExchangeClient` to streamline the exchange and authentication.
+- Added `DecoratingHttpExchangeClient` as a base class for all authenticated exchange clients since all are decorators.
+- Added `AbstractAuthenticatedHttpExchangeClient` which extends `DecoratingHttpExchangeClient` to streamline the exchange and authentication.
 - Added `AbstractAuthenticatedHttpExchangeClient.authenticate` method to add all necessary authentication information to an API request.
 - Changed `TokenHttpExchangeClient` to inherit from `AbstractAuthenticatedHttpExchangeClient`.
 - Added `AuthenticationType.API_KEY` for API key based authentication.

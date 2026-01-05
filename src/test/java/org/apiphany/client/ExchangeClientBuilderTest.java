@@ -9,7 +9,7 @@ import org.apiphany.ApiResponse;
 import org.junit.jupiter.api.Test;
 
 /**
- * Test class for ExchangeClientBuilder.
+ * Test class for {@link ExchangeClientBuilder}.
  *
  * @author Radu Sebastian LAZIN
  */
