@@ -113,7 +113,7 @@ public class OAuth2Registry {
 			final String clientRegistrationName,
 			final OAuth2TokenProviderOptions options,
 			final ScheduledExecutorService tokenRefreshScheduler,
-			final AuthenticationTokenClientSupplier tokenClientSupplier) {
+			final OAuth2TokenClientSupplier tokenClientSupplier) {
 		OAuth2ResolvedRegistration registration = get(clientRegistrationName);
 		return new OAuth2TokenProvider(options, registration, tokenRefreshScheduler, tokenClientSupplier);
 	}
@@ -127,7 +127,7 @@ public class OAuth2Registry {
 	 * @return a new OAuth2 token provider
 	 */
 	@SuppressWarnings("resource")
-	public OAuth2TokenProvider tokenProvider(final String clientRegistrationName, final AuthenticationTokenClientSupplier tokenClientSupplier) {
+	public OAuth2TokenProvider tokenProvider(final String clientRegistrationName, final OAuth2TokenClientSupplier tokenClientSupplier) {
 		OAuth2TokenProviderOptions options = OAuth2TokenProviderOptions.defaults();
 		ScheduledExecutorService tokenRefreshScheduler = Executors.newScheduledThreadPool(0, Thread.ofVirtual().factory());
 		return tokenProvider(clientRegistrationName, options, tokenRefreshScheduler, tokenClientSupplier);
@@ -140,7 +140,7 @@ public class OAuth2Registry {
 	 * @param tokenClientSupplier the supplier for the client that will make the actual token requests
 	 * @return a list of OAuth2 token providers based on this registry
 	 */
-	public List<OAuth2TokenProvider> tokenProviders(final AuthenticationTokenClientSupplier tokenClientSupplier) {
+	public List<OAuth2TokenProvider> tokenProviders(final OAuth2TokenClientSupplier tokenClientSupplier) {
 		return entries.keySet().stream().map(key -> tokenProvider(key, tokenClientSupplier)).toList();
 	}
 }

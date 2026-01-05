@@ -86,7 +86,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 			final OAuth2TokenProviderOptions options,
 			final OAuth2ResolvedRegistration registration,
 			final ScheduledExecutorService tokenRefreshScheduler,
-			final AuthenticationTokenClientSupplier tokenClientSupplier) {
+			final OAuth2TokenClientSupplier tokenClientSupplier) {
 		this.options = options;
 		this.tokenRefreshScheduler = tokenRefreshScheduler;
 		this.defaultExpirationSupplier = Instant::now;
@@ -113,7 +113,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 			final OAuth2Properties oAuth2Properties,
 			final String clientRegistrationName,
 			final ScheduledExecutorService tokenRefreshScheduler,
-			final AuthenticationTokenClientSupplier tokenClientSupplier) {
+			final OAuth2TokenClientSupplier tokenClientSupplier) {
 		this(options, OAuth2ResolvedRegistration.of(oAuth2Properties, clientRegistrationName), tokenRefreshScheduler, tokenClientSupplier);
 	}
 
@@ -129,7 +129,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 			final OAuth2Properties oAuth2Properties,
 			final String clientRegistrationName,
 			final ScheduledExecutorService tokenRefreshScheduler,
-			final AuthenticationTokenClientSupplier tokenClientSupplier) {
+			final OAuth2TokenClientSupplier tokenClientSupplier) {
 		this(OAuth2TokenProviderOptions.defaults(), oAuth2Properties, clientRegistrationName, tokenRefreshScheduler, tokenClientSupplier);
 	}
 
@@ -144,7 +144,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	public OAuth2TokenProvider(
 			final OAuth2Properties oAuth2Properties,
 			final String clientRegistrationName,
-			final AuthenticationTokenClientSupplier tokenClientSupplier) {
+			final OAuth2TokenClientSupplier tokenClientSupplier) {
 		this(oAuth2Properties, clientRegistrationName,
 				Executors.newScheduledThreadPool(0, Thread.ofVirtual().factory()), tokenClientSupplier);
 	}
@@ -158,7 +158,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 */
 	public OAuth2TokenProvider(
 			final OAuth2Properties oAuth2Properties,
-			final AuthenticationTokenClientSupplier tokenClientSupplier) {
+			final OAuth2TokenClientSupplier tokenClientSupplier) {
 		this(oAuth2Properties, null, tokenClientSupplier);
 	}
 

@@ -83,7 +83,7 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 	 */
 	public static OAuth2TokenProviderRegistry of(
 			final OAuth2Registry oAuth2Registry,
-			final AuthenticationTokenClientSupplier tokenClientSupplier,
+			final OAuth2TokenClientSupplier tokenClientSupplier,
 			final UnaryOperator<String> providerNameConverter) {
 		return of(oAuth2Registry, tokenClientSupplier, providerNameConverter, Consumers.noBiConsumer());
 	}
@@ -100,7 +100,7 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 	 */
 	public static OAuth2TokenProviderRegistry of(
 			final OAuth2Registry oAuth2Registry,
-			final AuthenticationTokenClientSupplier tokenClientSupplier,
+			final OAuth2TokenClientSupplier tokenClientSupplier,
 			final UnaryOperator<String> providerNameConverter,
 			final BiConsumer<String, OAuth2TokenProvider> createdProviederCustomizer) {
 		OAuth2TokenProviderRegistry registry = of(oAuth2Registry);
@@ -123,7 +123,7 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 	 */
 	public static OAuth2TokenProviderRegistry of(
 			final OAuth2Registry oAuth2Registry,
-			final AuthenticationTokenClientSupplier tokenClientSupplier) {
+			final OAuth2TokenClientSupplier tokenClientSupplier) {
 		return of(oAuth2Registry, tokenClientSupplier, UnaryOperator.identity());
 	}
 
@@ -139,7 +139,7 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 	 */
 	public static OAuth2TokenProviderRegistry of(
 			final OAuth2Properties oAuth2Properties,
-			final AuthenticationTokenClientSupplier tokenClientSupplier,
+			final OAuth2TokenClientSupplier tokenClientSupplier,
 			final UnaryOperator<String> providerNameConverter) {
 		return of(OAuth2Registry.of(oAuth2Properties), tokenClientSupplier, providerNameConverter);
 	}
@@ -155,7 +155,7 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 	 */
 	public static OAuth2TokenProviderRegistry of(
 			final OAuth2Properties oAuth2Properties,
-			final AuthenticationTokenClientSupplier tokenClientSupplier) {
+			final OAuth2TokenClientSupplier tokenClientSupplier) {
 		return of(OAuth2Registry.of(oAuth2Properties), tokenClientSupplier);
 	}
 
