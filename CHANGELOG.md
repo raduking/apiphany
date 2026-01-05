@@ -8,7 +8,9 @@
 - Added `DecoratingHttpExchangeClient` as a base class for all authenticated exchange clients since all are decorators.
 - Added `AbstractAuthenticatedHttpExchangeClient` which extends `DecoratingHttpExchangeClient` to streamline the exchange and authentication.
 - Added `AbstractAuthenticatedHttpExchangeClient.authenticate` method to add all necessary authentication information to an API request.
-- Changed `TokenHttpExchangeClient` to inherit from `AbstractAuthenticatedHttpExchangeClient`.
+- Added `AuthorizationHeaderProvider` functional interface for supplying the value of the Authorization header.
+- Added `AbstractAuthorizationHttpExchangeClient` which automatically adds the provided `Authorization` header value.
+- Changed `TokenHttpExchangeClient` to inherit from `AbstractAuthorizationHttpExchangeClient`.
 - Added `AuthenticationType.API_KEY` for API key based authentication.
 - Renamed `AuthenticationTokenClientSupplier` to `OAuth2TokenClientSupplier` since it is OAuth2 specific.
 

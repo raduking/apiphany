@@ -3,18 +3,15 @@ package org.apiphany.security.token.client;
 import java.time.Instant;
 import java.util.function.Supplier;
 
-import org.apiphany.ApiRequest;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.header.HeaderValues;
-import org.apiphany.header.Headers;
 import org.apiphany.http.HttpAuthScheme;
-import org.apiphany.http.HttpHeader;
 import org.apiphany.lang.ScopedResource;
-import org.apiphany.security.AbstractAuthenticatedHttpExchangeClient;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationTokenProvider;
 import org.apiphany.security.AuthenticationType;
+import org.apiphany.security.AbstractAuthorizationHttpExchangeClient;
 import org.apiphany.security.token.TokenProperties;
 import org.morphix.lang.Nullables;
 
@@ -25,7 +22,7 @@ import org.morphix.lang.Nullables;
  *
  * @author Radu Sebastian LAZIN
  */
-public class TokenHttpExchangeClient extends AbstractAuthenticatedHttpExchangeClient implements AuthenticationTokenProvider {
+public class TokenHttpExchangeClient extends AbstractAuthorizationHttpExchangeClient implements AuthenticationTokenProvider {
 
 	/**
 	 * The authentication token.
@@ -94,13 +91,12 @@ public class TokenHttpExchangeClient extends AbstractAuthenticatedHttpExchangeCl
 	}
 
 	/**
-	 * @see #authenticate(ApiRequest)
+	 * @see #getAuthorizationHeader()
 	 */
 	@Override
-	public <T> void authenticate(final ApiRequest<T> apiRequest) {
+	public String getAuthorizationHeader() {
 		AuthenticationToken token = getAuthenticationToken();
-		String headerValue = HeaderValues.value(getAuthenticationScheme(), token.getAccessToken());
-		Headers.addTo(apiRequest.getHeaders(), HttpHeader.AUTHORIZATION, headerValue);
+		return HeaderValues.value(getAuthenticationScheme(), token.getAccessToken());
 	}
 
 	/**
