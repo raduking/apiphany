@@ -4,15 +4,14 @@ import java.time.Instant;
 import java.util.function.Supplier;
 
 import org.apiphany.ApiRequest;
-import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
-import org.apiphany.client.http.AbstractHttpExchangeClient;
 import org.apiphany.header.HeaderValues;
 import org.apiphany.header.Headers;
 import org.apiphany.http.HttpAuthScheme;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.lang.ScopedResource;
+import org.apiphany.security.AbstractAuthenticatedHttpExchangeClient;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationTokenProvider;
 import org.apiphany.security.AuthenticationType;
@@ -26,12 +25,7 @@ import org.morphix.lang.Nullables;
  *
  * @author Radu Sebastian LAZIN
  */
-public class TokenHttpExchangeClient extends AbstractHttpExchangeClient implements AuthenticationTokenProvider {
-
-	/**
-	 * The actual exchange client doing the request.
-	 */
-	protected final ScopedResource<ExchangeClient> exchangeClient;
+public class TokenHttpExchangeClient extends AbstractAuthenticatedHttpExchangeClient implements AuthenticationTokenProvider {
 
 	/**
 	 * The authentication token.
@@ -53,13 +47,10 @@ public class TokenHttpExchangeClient extends AbstractHttpExchangeClient implemen
 	 *
 	 * @param exchangeClient actual exchange client making the request
 	 */
-	@SuppressWarnings("resource")
 	protected TokenHttpExchangeClient(final ScopedResource<ExchangeClient> exchangeClient) {
-		super(exchangeClient.unwrap().getClientProperties());
+		super(exchangeClient);
 
-		this.exchangeClient = exchangeClient;
 		this.defaultExpirationSupplier = Instant::now;
-
 		initialize();
 	}
 
@@ -70,14 +61,6 @@ public class TokenHttpExchangeClient extends AbstractHttpExchangeClient implemen
 	 */
 	protected TokenHttpExchangeClient(final ExchangeClient exchangeClient) {
 		this(ScopedResource.unmanaged(exchangeClient));
-	}
-
-	/**
-	 * @see #close()
-	 */
-	@Override
-	public void close() throws Exception {
-		exchangeClient.closeIfManaged();
 	}
 
 	/**
@@ -111,15 +94,13 @@ public class TokenHttpExchangeClient extends AbstractHttpExchangeClient implemen
 	}
 
 	/**
-	 * @see #exchange(ApiRequest)
+	 * @see #authenticate(ApiRequest)
 	 */
-	@SuppressWarnings("resource")
 	@Override
-	public <T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest) {
+	public <T> void authenticate(final ApiRequest<T> apiRequest) {
 		AuthenticationToken token = getAuthenticationToken();
 		String headerValue = HeaderValues.value(getAuthenticationScheme(), token.getAccessToken());
 		Headers.addTo(apiRequest.getHeaders(), HttpHeader.AUTHORIZATION, headerValue);
-		return exchangeClient.unwrap().exchange(apiRequest);
 	}
 
 	/**
@@ -186,14 +167,5 @@ public class TokenHttpExchangeClient extends AbstractHttpExchangeClient implemen
 	 */
 	public void setAuthenticationScheme(final HttpAuthScheme authenticationScheme) {
 		this.authenticationScheme = authenticationScheme;
-	}
-
-	/**
-	 * Returns the exchange client.
-	 *
-	 * @return the exchange client
-	 */
-	protected ExchangeClient getExchangeClient() {
-		return exchangeClient.unwrap();
 	}
 }
