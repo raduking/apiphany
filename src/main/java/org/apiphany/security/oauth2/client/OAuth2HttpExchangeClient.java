@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Radu Sebastian LAZIN
  */
-public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
+public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient { // NOSONAR class hierarchy is acceptable here
 
 	/**
 	 * The class logger.

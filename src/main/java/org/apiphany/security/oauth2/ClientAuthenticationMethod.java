@@ -83,5 +83,4 @@ public enum ClientAuthenticationMethod {
 	public static ClientAuthenticationMethod fromString(final String method) {
 		return Enums.fromString(method, NAME_MAP, values());
 	}
-
 }

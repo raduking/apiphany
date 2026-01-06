@@ -92,5 +92,4 @@ public class OAuth2ExchangeClientBuilder extends ExchangeClientBuilder {
 		this.tokenExchangeClient = tokenClient;
 		return this;
 	}
-
 }
