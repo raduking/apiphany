@@ -94,5 +94,4 @@ public enum AuthorizationGrantType {
 	public boolean matches(final String value) {
 		return value().equals(value);
 	}
-
 }
