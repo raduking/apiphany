@@ -6,6 +6,7 @@
 - Upgraded `testcontainers-keycloak` to `4.0.1`.
 - Added a new constructor to `ApiClient` with the base URL which uses the `JavaNetHttpExchangeClient` as the default client.
 - Added `DecoratingHttpExchangeClient` as a base class for all authenticated exchange clients since all are decorators.
+- Added `AuthenticatedExchangeClient` interface to signify authenticated exchange clients.
 - Added `AbstractAuthenticatedHttpExchangeClient` which extends `DecoratingHttpExchangeClient` to streamline the exchange and authentication.
 - Added `AbstractAuthenticatedHttpExchangeClient.authenticate` method to add all necessary authentication information to an API request.
 - Added `AuthorizationHeaderProvider` functional interface for supplying the value of the Authorization header.

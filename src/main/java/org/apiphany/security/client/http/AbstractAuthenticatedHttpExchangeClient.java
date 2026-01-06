@@ -1,17 +1,18 @@
-package org.apiphany.security;
+package org.apiphany.security.client.http;
 
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.http.DecoratingHttpExchangeClient;
 import org.apiphany.lang.ScopedResource;
+import org.apiphany.security.client.AuthenticatedExchangeClient;
 
 /**
  * Abstract authenticated HTTP exchange client, enforcing authentication before performing the exchange.
  *
  * @author Radu Sebastian LAZIN
  */
-public abstract class AbstractAuthenticatedHttpExchangeClient extends DecoratingHttpExchangeClient {
+public abstract class AbstractAuthenticatedHttpExchangeClient extends DecoratingHttpExchangeClient implements AuthenticatedExchangeClient {
 
 	/**
 	 * Initialize the client with the given exchange client delegate.
@@ -30,15 +31,6 @@ public abstract class AbstractAuthenticatedHttpExchangeClient extends Decorating
 	protected AbstractAuthenticatedHttpExchangeClient(final ExchangeClient delegate) {
 		super(delegate);
 	}
-
-	/**
-	 * Subclasses must implement this method to authenticate the request.
-	 *
-	 * @param <T> the request body type
-	 *
-	 * @param apiRequest the request to authenticate
-	 */
-	protected abstract <T> void authenticate(ApiRequest<T> apiRequest);
 
 	/**
 	 * Template method enforcing authentication.
