@@ -11,7 +11,7 @@ import org.apiphany.lang.ScopedResource;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationTokenProvider;
 import org.apiphany.security.AuthenticationType;
-import org.apiphany.security.AbstractAuthorizationHttpExchangeClient;
+import org.apiphany.security.client.http.AbstractAuthorizationHttpExchangeClient;
 import org.apiphany.security.token.TokenProperties;
 import org.morphix.lang.Nullables;
 
