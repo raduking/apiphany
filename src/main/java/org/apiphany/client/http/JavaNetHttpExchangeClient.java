@@ -20,6 +20,7 @@ import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
+import org.apiphany.http.ContentEncoding;
 import org.apiphany.http.HttpContentType;
 import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
@@ -29,6 +30,7 @@ import org.apiphany.io.ContentType;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Maps;
+import org.apiphany.lang.gzip.GZip;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Nullables;
 
@@ -208,13 +210,31 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	protected <T, U, R> ApiResponse<U> buildResponse(final ApiRequest<T> apiRequest, final HttpResponse<R> httpResponse) {
 		HttpStatus httpStatus = HttpStatus.fromCode(httpResponse.statusCode());
 		Map<String, List<String>> headers = Nullables.apply(httpResponse.headers(), HttpHeaders::map);
+
+		R responseBody = httpResponse.body();
+
+		List<String> contentEncodings = getHeaderValuesChain().get(HttpHeader.CONTENT_ENCODING, headers);
+		ContentEncoding contentEncoding = ContentEncoding.parse(contentEncodings);
+		if (null != contentEncoding) {
+			try {
+				switch (contentEncoding) {
+					case GZIP -> responseBody = JavaObjects.cast(GZip.decompress((byte[]) responseBody));
+					default -> throw new HttpException(HttpStatus.UNSUPPORTED_MEDIA_TYPE,
+							"Content encoding " + contentEncoding + " is not supported!");
+				}
+			} catch (Exception e) {
+				throw new HttpException(HttpStatus.BAD_REQUEST, "Failed to decode response body with encoding: "
+						+ contentEncoding, e);
+			}
+		}
+
 		List<String> contentTypes = getHeaderValuesChain().get(HttpHeader.CONTENT_TYPE, headers);
 		HttpContentType contentType = HttpContentType.parseHeader(contentTypes);
 
 		if (httpStatus.isError()) {
-			throw new HttpException(httpStatus, StringHttpContentConverter.from(httpResponse.body(), contentType));
+			throw new HttpException(httpStatus, StringHttpContentConverter.from(responseBody, contentType));
 		}
-		U body = convertBody(apiRequest, contentType, headers, httpResponse.body());
+		U body = convertBody(apiRequest, contentType, headers, responseBody);
 
 		return ApiResponse.create(body)
 				.status(httpStatus)
