@@ -25,6 +25,7 @@
 - Renamed `GZip.decompress` methods which return `String` to `decompressToString`.
 - Added `GZip.decompressToBytes` method to de-compress a byte array to a byte array.
 - Added `GZip.decompress` method which handles both compressed byte array and compressed `InputStream` to de-compress to the same type as the input.
+- Added `ContentConverter.decodeBody` method to decode a given body and a `ContentEncoding`. 
 
 ---
 

@@ -15,7 +15,7 @@ import org.morphix.lang.JavaObjects;
 import org.morphix.reflection.Constructors;
 
 /**
- * Utility class for compressing / decompressing via GZIP.
+ * Utility class for compressing / de-compressing via GZIP.
  *
  * @author Radu Sebastian LAZIN
  */
@@ -88,8 +88,8 @@ public class GZip {
 	 * @throws IOException on error
 	 */
 	public static String decompressToString(final byte[] body) throws IOException {
-		try (GZIPInputStream gzipInputStream = new GZIPInputStream(new ByteArrayInputStream(body))) {
-			return Strings.toString(gzipInputStream, Strings.DEFAULT_CHARSET, IOStreams.DEFAULT_BUFFER_SIZE);
+		try (InputStream inputStream = inputStream(new ByteArrayInputStream(body))) {
+			return Strings.toString(inputStream, Strings.DEFAULT_CHARSET, IOStreams.DEFAULT_BUFFER_SIZE);
 		}
 	}
 
@@ -101,8 +101,8 @@ public class GZip {
 	 * @throws IOException on error
 	 */
 	public static String decompressToString(final InputStream inputStream) throws IOException {
-		try (GZIPInputStream gzipInputStream = new GZIPInputStream(inputStream)) {
-			return Strings.toString(gzipInputStream, Strings.DEFAULT_CHARSET, IOStreams.DEFAULT_BUFFER_SIZE);
+		try (InputStream newInputStream = inputStream(inputStream)) {
+			return Strings.toString(newInputStream, Strings.DEFAULT_CHARSET, IOStreams.DEFAULT_BUFFER_SIZE);
 		}
 	}
 
@@ -114,8 +114,8 @@ public class GZip {
 	 * @throws IOException on error
 	 */
 	public static byte[] decompressToBytes(final byte[] body) throws IOException {
-		try (GZIPInputStream gis = new GZIPInputStream(new ByteArrayInputStream(body))) {
-			return IOStreams.toByteArray(gis);
+		try (InputStream inputStream = inputStream(new ByteArrayInputStream(body))) {
+			return IOStreams.toByteArray(inputStream);
 		}
 	}
 
