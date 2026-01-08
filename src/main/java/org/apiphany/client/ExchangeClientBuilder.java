@@ -1,6 +1,7 @@
 package org.apiphany.client;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.function.Consumer;
 
 import org.apiphany.lang.ScopedResource;
@@ -8,6 +9,7 @@ import org.apiphany.security.oauth2.client.OAuth2ExchangeClientBuilder;
 import org.morphix.lang.Nullables;
 import org.morphix.lang.function.Consumers;
 import org.morphix.reflection.Constructors;
+import org.morphix.reflection.Methods;
 
 /**
  * Exchange client builder.
@@ -122,16 +124,29 @@ public class ExchangeClientBuilder {
 	}
 
 	/**
+	 * Decorates this builder with another decorating builder.
+	 *
+	 * @param <T> decorating builder type
+	 * @param decoratingBuilderClass decorating builder class
+	 * @param decoratorCustomizer decorator customizer
+	 * @return new decorating exchange client builder
+	 */
+	public <T extends ExchangeClientBuilder> T with(final Class<T> decoratingBuilderClass, final Consumer<T> decoratorCustomizer) {
+		Method createMethod = Methods.Safe.getOneDeclared("create", decoratingBuilderClass);
+		T decoratorBuilder = Methods.IgnoreAccess.invoke(createMethod, null);
+		decoratorBuilder.builder(this);
+		decoratorCustomizer.accept(decoratorBuilder);
+		return decoratorBuilder;
+	}
+
+	/**
 	 * Adds OAuth2 functionality.
 	 *
 	 * @param oAuth2BuilderCustomizer OAuth2 customizer
 	 * @return new OAuth2 exchange client builder
 	 */
-	public ExchangeClientBuilder oAuth2(final Consumer<OAuth2ExchangeClientBuilder> oAuth2BuilderCustomizer) {
-		OAuth2ExchangeClientBuilder oAuth2ExchangeClientBuilder = OAuth2ExchangeClientBuilder.create();
-		oAuth2ExchangeClientBuilder.builder(this);
-		oAuth2BuilderCustomizer.accept(oAuth2ExchangeClientBuilder);
-		return oAuth2ExchangeClientBuilder;
+	public OAuth2ExchangeClientBuilder oAuth2(final Consumer<OAuth2ExchangeClientBuilder> oAuth2BuilderCustomizer) {
+		return with(OAuth2ExchangeClientBuilder.class, oAuth2BuilderCustomizer);
 	}
 
 	/**
@@ -139,7 +154,7 @@ public class ExchangeClientBuilder {
 	 *
 	 * @return new OAuth2 exchange client builder
 	 */
-	public ExchangeClientBuilder oAuth2() {
+	public OAuth2ExchangeClientBuilder oAuth2() {
 		return oAuth2(Consumers.noConsumer());
 	}
 }

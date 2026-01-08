@@ -4,6 +4,7 @@ import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.ExchangeClientBuilder;
 import org.apiphany.lang.ScopedResource;
+import org.morphix.lang.JavaObjects;
 
 /**
  * OAuth2 exchange clients builder.
@@ -67,8 +68,7 @@ public class OAuth2ExchangeClientBuilder extends ExchangeClientBuilder {
 	 */
 	@Override
 	public OAuth2ExchangeClientBuilder properties(final ClientProperties clientProperties) {
-		this.clientProperties = clientProperties;
-		return this;
+		return JavaObjects.cast(super.properties(clientProperties));
 	}
 
 	/**
