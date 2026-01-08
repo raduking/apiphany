@@ -38,23 +38,23 @@ public class StringHttpContentConverter implements HttpContentConverter<String> 
 	}
 
 	/**
-	 * @see HttpContentConverter#from(Object, ApiMimeType, Class)
+	 * @see ContentConverter#from(Object, ApiMimeType, Class)
 	 */
 	@Override
-	public String from(final Object obj, final ApiMimeType mimeType, final Class<String> dstClass) {
+	public String from(final Object obj, final ApiMimeType mimeType, final Class<String> targetClass) {
 		return from(obj, mimeType);
 	}
 
 	/**
-	 * @see HttpContentConverter#from(Object, ApiMimeType, GenericClass)
+	 * @see ContentConverter#from(Object, ApiMimeType, GenericClass)
 	 */
 	@Override
-	public String from(final Object obj, final ApiMimeType mimeType, final GenericClass<String> genericDstClass) {
+	public String from(final Object obj, final ApiMimeType mimeType, final GenericClass<String> targetGenericClass) {
 		return from(obj, mimeType);
 	}
 
 	/**
-	 * @see HttpContentConverter#isConvertible(ApiMessage, ApiMimeType, Object, HeaderValuesChain)
+	 * @see ContentConverter#isConvertible(ApiMessage, ApiMimeType, Object, HeaderValues)
 	 */
 	@Override
 	public <U, H> boolean isConvertible(final ApiMessage<U> message, final ApiMimeType mimeType, final H headers, final HeaderValues chain) {

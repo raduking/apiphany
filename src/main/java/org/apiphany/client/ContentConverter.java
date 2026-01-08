@@ -23,20 +23,20 @@ public interface ContentConverter<T> {
 	 *
 	 * @param obj the object to convert
 	 * @param contentType the content type
-	 * @param dstClass the target class to convert the object to
+	 * @param targetClass the target class to convert the object to
 	 * @return the converted object as an instance of the specified class
 	 */
-	T from(Object obj, ApiMimeType contentType, Class<T> dstClass);
+	T from(Object obj, ApiMimeType contentType, Class<T> targetClass);
 
 	/**
-	 * Converts the given object to an instance of the specified generic class.
+	 * Converts the given object to an instance of the specified generic class generic type.
 	 *
 	 * @param obj the object to convert
 	 * @param contentType the content type
-	 * @param genericDstClass the target generic class to convert the object to
-	 * @return the converted object as an instance of the specified generic class
+	 * @param targetGenericClass the target generic class to convert the object to
+	 * @return the converted object as an instance of the specified generic class generic type
 	 */
-	T from(Object obj, ApiMimeType contentType, GenericClass<T> genericDstClass);
+	T from(Object obj, ApiMimeType contentType, GenericClass<T> targetGenericClass);
 
 	/**
 	 * Checks if the converter can convert the content of the given {@link ApiMessage} to the specified type, considering
