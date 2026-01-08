@@ -14,6 +14,7 @@ import org.morphix.reflection.GenericClass;
  * {@code application/json} content type.
  *
  * @param <T> the type of the object to which the JSON content will be converted.
+ *
  * @author Radu Sebastian LAZIN
  */
 public class JacksonJsonHttpContentConverter<T> implements HttpContentConverter<T> {
@@ -31,13 +32,15 @@ public class JacksonJsonHttpContentConverter<T> implements HttpContentConverter<
 	 *
 	 * @param obj the object to convert
 	 * @param mimeType the mime type
-	 * @param dstClass the target class to which the JSON content will be de-serialized
+	 * @param targetClass the target class to which the JSON content will be de-serialized
 	 * @return the de-serialized object of type {@code T}
 	 * @throws UnsupportedOperationException if the input object is not a JSON string
+	 * @see ContentConverter#from(Object, ApiMimeType, Class)
+	 * @see JacksonJsonBuilder#fromJson(Object, Class)
 	 */
 	@Override
-	public T from(final Object obj, final ApiMimeType mimeType, final Class<T> dstClass) {
-		return JacksonJsonBuilder.fromJson(obj, dstClass);
+	public T from(final Object obj, final ApiMimeType mimeType, final Class<T> targetClass) {
+		return JacksonJsonBuilder.fromJson(obj, targetClass);
 	}
 
 	/**
@@ -45,13 +48,15 @@ public class JacksonJsonHttpContentConverter<T> implements HttpContentConverter<
 	 * strings.
 	 *
 	 * @param obj the object to convert, which must be a JSON string
-	 * @param genericDstClass the target generic class to which the JSON content will be de-serialized
+	 * @param targetGenericClass the target generic class to which the JSON content will be de-serialized
 	 * @return the de-serialized object of type {@code T}
 	 * @throws UnsupportedOperationException if the input object is not a JSON
+	 * @see ContentConverter#from(Object, ApiMimeType, GenericClass)
+	 * @see JacksonJsonBuilder#fromJson(Object, GenericClass)
 	 */
 	@Override
-	public T from(final Object obj, final ApiMimeType mimeType, final GenericClass<T> genericDstClass) {
-		return JacksonJsonBuilder.fromJson(obj, genericDstClass);
+	public T from(final Object obj, final ApiMimeType mimeType, final GenericClass<T> targetGenericClass) {
+		return JacksonJsonBuilder.fromJson(obj, targetGenericClass);
 	}
 
 	/**
@@ -66,6 +71,7 @@ public class JacksonJsonHttpContentConverter<T> implements HttpContentConverter<
 	 * @param headers the headers that may influence the conversion
 	 * @param chain chain of header values extractor that will be used to get a specific header list
 	 * @return true if the content type is {@code application/json}, false otherwise
+	 * @see ContentConverter#isConvertible(ApiMessage, ApiMimeType, Object, HeaderValues)
 	 */
 	@Override
 	public <U, V> boolean isConvertible(final ApiMessage<U> message, final ApiMimeType mimeType, final V headers, final HeaderValues chain) {
