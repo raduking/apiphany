@@ -1,8 +1,10 @@
 package org.apiphany.http;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.apiphany.lang.collections.Lists;
 import org.morphix.lang.Enums;
 
 /**
@@ -141,4 +143,24 @@ public enum ContentEncoding {
 		return value();
 	}
 
+	/**
+	 * Parses the given list of strings and returns the first matching {@link ContentEncoding} enum. If none of the strings
+	 * match, null is returned.
+	 *
+	 * @param values the list of strings to parse
+	 * @return the first matching content encoding enum, or null if none match
+	 */
+	public static ContentEncoding parse(final List<String> values) {
+		if (Lists.isEmpty(values)) {
+			return null;
+		}
+		for (String value : values) {
+			try {
+				return fromString(value);
+			} catch (IllegalArgumentException ex) {
+				// continue
+			}
+		}
+		return null;
+	}
 }
