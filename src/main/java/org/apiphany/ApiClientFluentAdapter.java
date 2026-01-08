@@ -517,7 +517,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	}
 
 	/**
-	 * @see #getHeadersAsString()
+	 * @see ApiMessage#getHeadersAsString()
 	 */
 	@SuppressWarnings("resource")
 	@Override

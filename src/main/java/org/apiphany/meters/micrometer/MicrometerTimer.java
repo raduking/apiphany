@@ -3,6 +3,7 @@ package org.apiphany.meters.micrometer;
 import java.time.Duration;
 import java.util.Objects;
 
+import org.apiphany.meters.Meter;
 import org.apiphany.meters.MeterTimer;
 import org.morphix.lang.JavaObjects;
 
@@ -43,7 +44,7 @@ public class MicrometerTimer implements MeterTimer {
 	}
 
 	/**
-	 * @see #record(Duration)
+	 * @see MeterTimer#record(Duration)
 	 */
 	@Override
 	public void record(final Duration duration) { // NOSONAR
@@ -60,7 +61,7 @@ public class MicrometerTimer implements MeterTimer {
 	}
 
 	/**
-	 * @see #getName()
+	 * @see Meter#getName()
 	 */
 	@Override
 	public String getName() {
@@ -68,7 +69,7 @@ public class MicrometerTimer implements MeterTimer {
 	}
 
 	/**
-	 * @see #unwrap(Class)
+	 * @see Meter#unwrap(Class)
 	 */
 	@Override
 	public <T> T unwrap(final Class<T> cls) {

@@ -63,7 +63,7 @@ public class ApiphanyAnnotationIntrospector extends NopAnnotationIntrospector { 
 	}
 
 	/**
-	 * @see #findNameForSerialization(Annotated)
+	 * @see AnnotationIntrospector#findNameForSerialization(Annotated)
 	 */
 	@Override
 	public PropertyName findNameForSerialization(final Annotated a) {
@@ -75,7 +75,7 @@ public class ApiphanyAnnotationIntrospector extends NopAnnotationIntrospector { 
 	}
 
 	/**
-	 * @see #findNameForDeserialization(Annotated)
+	 * @see AnnotationIntrospector#findNameForDeserialization(Annotated)
 	 */
 	@Override
 	public PropertyName findNameForDeserialization(final Annotated a) {
@@ -87,7 +87,7 @@ public class ApiphanyAnnotationIntrospector extends NopAnnotationIntrospector { 
 	}
 
 	/**
-	 * @see #findPropertyAccess(Annotated)
+	 * @see AnnotationIntrospector#findPropertyAccess(Annotated)
 	 */
 	@Override
 	public JsonProperty.Access findPropertyAccess(final Annotated a) {
@@ -99,7 +99,7 @@ public class ApiphanyAnnotationIntrospector extends NopAnnotationIntrospector { 
 	}
 
 	/**
-	 * @see #findSerializationPropertyOrder(AnnotatedClass)
+	 * @see AnnotationIntrospector#findSerializationPropertyOrder(AnnotatedClass)
 	 */
 	@Override
 	public String[] findSerializationPropertyOrder(final AnnotatedClass ac) {
@@ -111,7 +111,7 @@ public class ApiphanyAnnotationIntrospector extends NopAnnotationIntrospector { 
 	}
 
 	/**
-	 * @see #hasAsValue(Annotated)
+	 * @see AnnotationIntrospector#hasAsValue(Annotated)
 	 */
 	@Override
 	public Boolean hasAsValue(final Annotated a) {
@@ -123,7 +123,7 @@ public class ApiphanyAnnotationIntrospector extends NopAnnotationIntrospector { 
 	}
 
 	/**
-	 * @see #findCreatorAnnotation(MapperConfig, Annotated)
+	 * @see AnnotationIntrospector#findCreatorAnnotation(MapperConfig, Annotated)
 	 */
 	@Override
 	public JsonCreator.Mode findCreatorAnnotation(final MapperConfig<?> config, final Annotated a) {

@@ -138,6 +138,7 @@ public class BytesWrapper implements ByteSizeable, BinaryRepresentable {
 	 * Returns a copy of the wrapped byte array.
 	 *
 	 * @return a new byte array containing the wrapped data (or empty array if empty)
+	 * @see BinaryRepresentable#toByteArray()
 	 */
 	@Override
 	public byte[] toByteArray() {
@@ -174,7 +175,7 @@ public class BytesWrapper implements ByteSizeable, BinaryRepresentable {
 	}
 
 	/**
-	 * @see #sizeOf()
+	 * @see ByteSizeable#sizeOf()
 	 */
 	@Override
 	public int sizeOf() {
@@ -182,7 +183,7 @@ public class BytesWrapper implements ByteSizeable, BinaryRepresentable {
 	}
 
 	/**
-	 * @see BytesWrapper#equals(Object)
+	 * @see Object#equals(Object)
 	 */
 	@Override
 	public boolean equals(final Object that) {
@@ -196,7 +197,7 @@ public class BytesWrapper implements ByteSizeable, BinaryRepresentable {
 	}
 
 	/**
-	 * @see #hashCode()
+	 * @see Object#hashCode()
 	 */
 	@Override
 	public int hashCode() {

@@ -6,6 +6,7 @@ import org.apiphany.security.Sensitive;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
+import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.introspect.Annotated;
 import com.fasterxml.jackson.databind.introspect.NopAnnotationIntrospector;
 
@@ -63,7 +64,7 @@ public class SensitiveAnnotationIntrospector extends NopAnnotationIntrospector {
 	}
 
 	/**
-	 * @see #findPropertyAccess(Annotated)
+	 * @see AnnotationIntrospector#findPropertyAccess(Annotated)
 	 */
 	@Override
 	public Access findPropertyAccess(final Annotated ann) {

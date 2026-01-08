@@ -179,7 +179,7 @@ public class OAuth2ErrorResponse {
 	}
 
 	/**
-	 * @see #toString()
+	 * @see Object#toString()
 	 */
 	@Override
 	public String toString() {

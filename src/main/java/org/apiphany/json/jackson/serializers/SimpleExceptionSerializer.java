@@ -21,7 +21,7 @@ public class SimpleExceptionSerializer extends JsonSerializer<Exception> {
 	}
 
 	/**
-	 * @see #serialize(Exception, JsonGenerator, SerializerProvider)
+	 * @see JsonSerializer#serialize(Object, JsonGenerator, SerializerProvider)
 	 */
 	@Override
 	public void serialize(final Exception value, final JsonGenerator gen, final SerializerProvider serializers) throws IOException {

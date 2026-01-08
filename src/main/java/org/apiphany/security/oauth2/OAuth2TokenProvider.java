@@ -163,7 +163,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	}
 
 	/**
-	 * @see #close()
+	 * @see AutoCloseable#close()
 	 */
 	@Override
 	public void close() throws Exception {

@@ -171,7 +171,7 @@ public enum MessageDigestAlgorithm {
 	}
 
 	/**
-	 * @see #toString()
+	 * @see Object#toString()
 	 */
 	@Override
 	public String toString() {

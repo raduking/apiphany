@@ -42,7 +42,7 @@ public class SSLProperties {
 	}
 
 	/**
-	 * @see #toString()
+	 * @see Object#toString()
 	 */
 	@Override
 	public String toString() {

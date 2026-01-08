@@ -32,7 +32,7 @@ public interface ParameterFunction extends Consumer<Map<String, String>> {
 	void putInto(Map<String, String> map);
 
 	/**
-	 * @see #accept(Map)
+	 * @see Consumer#accept(Object)
 	 */
 	@Override
 	default void accept(final Map<String, String> map) {

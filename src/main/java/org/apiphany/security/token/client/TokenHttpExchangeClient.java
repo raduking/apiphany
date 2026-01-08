@@ -11,6 +11,7 @@ import org.apiphany.lang.ScopedResource;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationTokenProvider;
 import org.apiphany.security.AuthenticationType;
+import org.apiphany.security.AuthorizationHeaderProvider;
 import org.apiphany.security.client.http.AbstractAuthorizationHttpExchangeClient;
 import org.apiphany.security.token.TokenProperties;
 import org.morphix.lang.Nullables;
@@ -83,7 +84,7 @@ public class TokenHttpExchangeClient extends AbstractAuthorizationHttpExchangeCl
 	}
 
 	/**
-	 * @see #getAuthenticationType()
+	 * @see ExchangeClient#getAuthenticationType()
 	 */
 	@Override
 	public AuthenticationType getAuthenticationType() {
@@ -91,7 +92,7 @@ public class TokenHttpExchangeClient extends AbstractAuthorizationHttpExchangeCl
 	}
 
 	/**
-	 * @see #getAuthorizationHeader()
+	 * @see AuthorizationHeaderProvider#getAuthorizationHeader()
 	 */
 	@Override
 	public String getAuthorizationHeader() {
