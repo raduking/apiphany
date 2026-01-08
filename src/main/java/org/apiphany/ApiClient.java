@@ -190,6 +190,26 @@ public class ApiClient implements AutoCloseable {
 	}
 
 	/**
+	 * Constructor with base URL and a scoped exchange client.
+	 *
+	 * @param baseUrl base URL
+	 * @param clientResource scoped exchange client
+	 */
+	@SuppressWarnings("resource")
+	protected ApiClient(final String baseUrl, final ScopedResource<ExchangeClient> clientResource) {
+		this(baseUrl, Collections.singletonMap(clientResource.unwrap(), clientResource.isManaged()));
+	}
+
+	/**
+	 * Constructor with a scoped exchange client and no base URL.
+	 *
+	 * @param clientResource scoped exchange client
+	 */
+	protected ApiClient(final ScopedResource<ExchangeClient> clientResource) {
+		this(EMPTY_BASE_URL, clientResource);
+	}
+
+	/**
 	 * Constructor with base URL and a default exchange client {@link JavaNetHttpExchangeClient}.
 	 * <p>
 	 * This constructor should be used only for quick tests or prototyping. For production code, it is recommended to use

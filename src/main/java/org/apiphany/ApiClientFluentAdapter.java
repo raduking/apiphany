@@ -532,6 +532,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 *
 	 * @param exchangeClientClass exchange client class
 	 * @return the required exchange class
+	 * @throws IllegalArgumentException if the underlying exchange client cannot be cast to the given class
 	 */
 	public <T extends ExchangeClient> T getExchangeClient(final Class<T> exchangeClientClass) {
 		if (!exchangeClientClass.isAssignableFrom(exchangeClient.getClass())) {
