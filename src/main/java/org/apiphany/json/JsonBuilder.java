@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import org.apiphany.json.jackson.JacksonJsonBuilder;
+import org.apiphany.json.jackson.JacksonLibrary;
 import org.apiphany.lang.Pair;
 import org.apiphany.lang.Strings;
 import org.morphix.convert.Converter;
@@ -101,7 +101,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 		/**
 		 * Singleton instance.
 		 */
-		private static final JsonBuilder INSTANCE = initializeInstance(JacksonJsonBuilder.JACKSON_LIBRARY_INFO);
+		private static final JsonBuilder INSTANCE = initializeInstance(JacksonLibrary.INFORMATION);
 	}
 
 	/**
@@ -367,7 +367,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 * @return true if Jackson library is present in the class path
 	 */
 	public static boolean isJacksonPresent() {
-		return JacksonJsonBuilder.JACKSON_LIBRARY_INFO.left().booleanValue();
+		return JacksonLibrary.INFORMATION.left().booleanValue();
 	}
 
 	/**

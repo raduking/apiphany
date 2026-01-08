@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.apiphany.lang.Pair;
 import org.apiphany.lang.builder.PropertyNameBuilder;
-import org.apiphany.meters.micrometer.MicrometerFactory;
+import org.apiphany.meters.micrometer.MicrometerLibrary;
 import org.morphix.reflection.Constructors;
 
 /**
@@ -32,7 +32,7 @@ public class MeterFactory {
 		/**
 		 * The meter factory.
 		 */
-		private static final MeterFactory METER_FACTORY = initializeInstance(MicrometerFactory.MICROMETER_LIBRARY_INFO);
+		private static final MeterFactory METER_FACTORY = initializeInstance(MicrometerLibrary.INFORMATION);
 	}
 
 	/**
