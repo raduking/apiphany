@@ -7,7 +7,7 @@ import org.apiphany.security.AuthenticationTokenProvider;
  * token based on OAuth2 client registration and provider details (usually by performing token requests to the OAuth2
  * authorization server).
  * <p>
- * This client supplier is used to supply the client that performs token requests.
+ * This client supplier is used to supply or create the client that performs token requests.
  *
  * @author Radu Sebastian LAZIN
  */
