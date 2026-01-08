@@ -5,6 +5,7 @@
 - Upgraded parent to `3.5.8`.
 - Upgraded `testcontainers-keycloak` to `4.0.1`.
 - Added a new constructor to `ApiClient` with the base URL which uses the `JavaNetHttpExchangeClient` as the default client.
+- Added a new constructors to `ApiClient` with `ScopedResource` for exchange client.
 - Added `DecoratingHttpExchangeClient` as a base class for all authenticated exchange clients since all are decorators.
 - Added `AuthenticatedExchangeClient` interface to signify authenticated exchange clients.
 - Added `AbstractAuthenticatedHttpExchangeClient` which extends `DecoratingHttpExchangeClient` to streamline the exchange and authentication.
@@ -14,6 +15,8 @@
 - Changed `TokenHttpExchangeClient` to inherit from `AbstractAuthorizationHttpExchangeClient`.
 - Added `AuthenticationType.API_KEY` for API key based authentication.
 - Renamed `AuthenticationTokenClientSupplier` to `OAuth2TokenClientSupplier` since it is OAuth2 specific.
+- Added `JacksonLibrary` class with information about the Jackson JSON library.
+- Added `MicrometerLibrary` class with information about the Micrometer library.
 
 ---
 

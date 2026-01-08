@@ -12,10 +12,8 @@ import org.apiphany.RequestMethod;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.json.jackson.serializers.RequestMethodDeserializer;
 import org.apiphany.json.jackson.serializers.RequestMethodSerializer;
-import org.apiphany.lang.Pair;
 import org.morphix.lang.JavaObjects;
 import org.morphix.reflection.GenericClass;
-import org.morphix.reflection.Reflection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,17 +57,6 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 	 * The custom serialization module name.
 	 */
 	public static final String APIPHANY_MODULE = "apiphany";
-
-	/**
-	 * Jackson JSON library ObjectMapper class name.
-	 */
-	private static final String JACKSON_OBJECT_MAPPER_CLASS_NAME = "com.fasterxml.jackson.databind.ObjectMapper";
-
-	/**
-	 * Pair that shows if Jackson JSON library is present in the class path and the {@link JsonBuilder} specific class.
-	 */
-	public static final Pair<Boolean, Class<? extends JsonBuilder>> JACKSON_LIBRARY_INFO =
-			Pair.of(Reflection.isClassPresent(JACKSON_OBJECT_MAPPER_CLASS_NAME), JacksonJsonBuilder.class);
 
 	/**
 	 * Singleton instance holder.

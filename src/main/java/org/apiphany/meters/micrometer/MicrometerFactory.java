@@ -4,12 +4,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.stream.StreamSupport;
 
-import org.apiphany.lang.Pair;
 import org.apiphany.meters.MeterCounter;
 import org.apiphany.meters.MeterFactory;
 import org.apiphany.meters.MeterTimer;
 import org.morphix.lang.JavaObjects;
-import org.morphix.reflection.Reflection;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -34,27 +32,13 @@ import io.micrometer.core.instrument.Timer;
  * In the future, this factory may be extended to automatically convert generic {@link Iterable} tag representations
  * (e.g., key/value pairs) into Micrometer {@link Tags}.
  *
- * <h2>Library presence detection</h2> The static field {@link #MICROMETER_LIBRARY_INFO} can be used to detect at
+ * <h2>Library presence detection</h2> The static field {@link MicrometerLibrary#INFORMATION} can be used to detect at
  * runtime whether the Micrometer library is present on the classpath. This allows code to conditionally enable
  * Micrometer-backed metrics without a hard dependency.
  *
  * @author Radu Sebastian LAZIN
  */
 public class MicrometerFactory extends MeterFactory {
-
-	/**
-	 * The Micrometer meter class name.
-	 */
-	private static final String MICROMETER_METER_CLASS_NAME = "io.micrometer.core.instrument.Meter";
-
-	/**
-	 * A {@link Pair} indicating whether the Micrometer library is present on the classpath, along with the
-	 * {@link MeterFactory} implementation class to use if it is available.
-	 * <p>
-	 * The {@code Boolean} value is {@code true} if Micrometer is detected, {@code false} otherwise.
-	 */
-	public static final Pair<Boolean, Class<? extends MeterFactory>> MICROMETER_LIBRARY_INFO =
-			Pair.of(Reflection.isClassPresent(MICROMETER_METER_CLASS_NAME), MicrometerFactory.class);
 
 	/**
 	 * The Micrometer meter registry.
