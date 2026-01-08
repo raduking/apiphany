@@ -20,12 +20,12 @@ import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
+import org.apiphany.http.HttpContentType;
 import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
 import org.apiphany.io.ContentType;
-import org.apiphany.http.HttpContentType;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Maps;
@@ -33,7 +33,7 @@ import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Nullables;
 
 /**
- * Java HTTP exchange client based on the default {@link HttpClient}. The default HTTP version used is HTTP/1.1.
+ * HTTP exchange client based on the default Java {@link HttpClient}. The default HTTP version used is HTTP/1.1.
  *
  * @author Radu Sebastian LAZIN
  */
