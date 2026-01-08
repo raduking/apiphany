@@ -5,7 +5,7 @@ import java.lang.reflect.Method;
 import java.util.function.Consumer;
 
 import org.apiphany.lang.ScopedResource;
-import org.apiphany.security.oauth2.client.OAuth2ExchangeClientBuilder;
+import org.apiphany.security.client.SecuredExchangeClientBuilder;
 import org.morphix.lang.Nullables;
 import org.morphix.lang.function.Consumers;
 import org.morphix.reflection.Constructors;
@@ -125,13 +125,16 @@ public class ExchangeClientBuilder {
 
 	/**
 	 * Decorates this builder with another decorating builder.
+	 * <p>
+	 * The decorating builder class must have a static {@code create} method that returns a new instance of the decorating
+	 * builder.
 	 *
 	 * @param <T> decorating builder type
 	 * @param decoratingBuilderClass decorating builder class
 	 * @param decoratorCustomizer decorator customizer
 	 * @return new decorating exchange client builder
 	 */
-	public <T extends ExchangeClientBuilder> T with(final Class<T> decoratingBuilderClass, final Consumer<T> decoratorCustomizer) {
+	public <T extends ExchangeClientBuilder> T decorateWith(final Class<T> decoratingBuilderClass, final Consumer<T> decoratorCustomizer) {
 		Method createMethod = Methods.Safe.getOneDeclared("create", decoratingBuilderClass);
 		T decoratorBuilder = Methods.IgnoreAccess.invoke(createMethod, null);
 		decoratorBuilder.builder(this);
@@ -140,21 +143,25 @@ public class ExchangeClientBuilder {
 	}
 
 	/**
-	 * Adds OAuth2 functionality.
+	 * Decorates this builder with another decorating builder.
+	 * <p>
+	 * The decorating builder class must have a static {@code create} method that returns a new instance of the decorating
+	 * builder.
 	 *
-	 * @param oAuth2BuilderCustomizer OAuth2 customizer
-	 * @return new OAuth2 exchange client builder
+	 * @param <T> decorating builder type
+	 * @param decoratingBuilderClass decorating builder class
+	 * @return new decorating exchange client builder
 	 */
-	public OAuth2ExchangeClientBuilder oAuth2(final Consumer<OAuth2ExchangeClientBuilder> oAuth2BuilderCustomizer) {
-		return with(OAuth2ExchangeClientBuilder.class, oAuth2BuilderCustomizer);
+	public <T extends ExchangeClientBuilder> T decorateWith(final Class<T> decoratingBuilderClass) {
+		return decorateWith(decoratingBuilderClass, Consumers.noConsumer());
 	}
 
 	/**
-	 * Adds OAuth2 functionality.
+	 * Adds security functionality.
 	 *
-	 * @return new OAuth2 exchange client builder
+	 * @return new secured exchange client builder
 	 */
-	public OAuth2ExchangeClientBuilder oAuth2() {
-		return oAuth2(Consumers.noConsumer());
+	public SecuredExchangeClientBuilder secureWith() {
+		return decorateWith(SecuredExchangeClientBuilder.class);
 	}
 }

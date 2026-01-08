@@ -17,6 +17,11 @@
 - Renamed `AuthenticationTokenClientSupplier` to `OAuth2TokenClientSupplier` since it is OAuth2 specific.
 - Added `JacksonLibrary` class with information about the Jackson JSON library.
 - Added `MicrometerLibrary` class with information about the Micrometer library.
+- Renamed `OAuth2ExchangeClientBuilder` to `OAuth2HttpExchangeClientBuilder`.
+- Added `ExchangeClientBuilder.decorateWith` to decorate an existing exchange client.
+- Added `SecuredExchangeClientBuilder` to add security to an existing exchange client.
+- Added `ContentEncoding.parse` to build a `ContentEncoding` based on a list of values, the first matching being returned.
+- Added `ContentEncoding.fromString` with default value supplier for building without exception handling.
 
 ---
 

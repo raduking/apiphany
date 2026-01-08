@@ -30,7 +30,6 @@ import org.apiphany.io.ContentType;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Maps;
-import org.apiphany.lang.gzip.GZip;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Nullables;
 
@@ -216,16 +215,7 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 		List<String> contentEncodings = getHeaderValuesChain().get(HttpHeader.CONTENT_ENCODING, headers);
 		ContentEncoding contentEncoding = ContentEncoding.parse(contentEncodings);
 		if (null != contentEncoding) {
-			try {
-				switch (contentEncoding) {
-					case GZIP -> responseBody = JavaObjects.cast(GZip.decompress((byte[]) responseBody));
-					default -> throw new HttpException(HttpStatus.UNSUPPORTED_MEDIA_TYPE,
-							"Content encoding " + contentEncoding + " is not supported!");
-				}
-			} catch (Exception e) {
-				throw new HttpException(HttpStatus.BAD_REQUEST, "Failed to decode response body with encoding: "
-						+ contentEncoding, e);
-			}
+			responseBody = decodeBody(responseBody, contentEncoding);
 		}
 
 		List<String> contentTypes = getHeaderValuesChain().get(HttpHeader.CONTENT_TYPE, headers);
