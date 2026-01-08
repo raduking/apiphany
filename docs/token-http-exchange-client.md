@@ -1,4 +1,4 @@
-`OAuth2HttpExchangeClient` class hierarchy:
+`TokenHttpExchangeClient` class hierarchy:
 
 ```mermaid
 classDiagram
