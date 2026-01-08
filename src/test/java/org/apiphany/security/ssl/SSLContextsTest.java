@@ -55,7 +55,8 @@ class SSLContextsTest {
 	@Test
 	void shouldFailToLoadKeyStoreWithWrongPassword() {
 		char[] wrongPassword = "wrongpassword".toCharArray();
-		SecurityException exception = assertThrows(SecurityException.class, () -> SSLContexts.keyStore(KEYSTORE_PATH, KEYSTORE_TYPE, wrongPassword, false));
+		SecurityException exception =
+				assertThrows(SecurityException.class, () -> SSLContexts.keyStore(KEYSTORE_PATH, KEYSTORE_TYPE, wrongPassword, false));
 
 		assertNotNull(exception);
 		assertThat(exception.getMessage(), equalTo("Error loading key store: " + KEYSTORE_PATH));

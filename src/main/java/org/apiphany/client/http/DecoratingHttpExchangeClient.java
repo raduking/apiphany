@@ -7,6 +7,10 @@ import org.apiphany.lang.ScopedResource;
 
 /**
  * Base class for HTTP exchange clients that decorate another exchange client.
+ * <p>
+ * The implementation is just a pass-through to the underlying exchange client (a simple delegate) but subclasses may
+ * override {@link #exchange(ApiRequest)} to add custom behavior (e.g., request/response modification, authentication,
+ * logging, metrics, etc.).
  *
  * @author Radu Sebastian LAZIN
  */
@@ -38,8 +42,10 @@ public class DecoratingHttpExchangeClient extends AbstractHttpExchangeClient {
 	}
 
 	/**
-	 * Subclasses must implement this method to perform the exchange, possibly decorating the request/response as needed.
-	 * The default implementation simply delegates to the underlying exchange client.
+	 * Delegates the exchange to the underlying exchange client.
+	 * <p>
+	 * Subclasses may override this method to perform the exchange, possibly decorating the request/response as needed but
+	 * they should call {@code super.exchange(...)} to delegate to the underlying exchange client.
 	 *
 	 * @see ExchangeClient#exchange(ApiRequest)
 	 */
