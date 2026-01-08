@@ -3,9 +3,11 @@ package org.apiphany.http;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 import org.apiphany.lang.collections.Lists;
 import org.morphix.lang.Enums;
+import org.morphix.lang.Nullables;
 
 /**
  * Represents the Content-Encoding HTTP header values. Used to indicate what content encodings have been applied to the
@@ -116,6 +118,18 @@ public enum ContentEncoding {
 	}
 
 	/**
+	 * Returns a {@link ContentEncoding} enum from a {@link String}, or a default value if the string does not match any
+	 * enum value.
+	 *
+	 * @param encoding the string representation of the content encoding
+	 * @param defaultValueSupplier supplier for the default value
+	 * @return a content encoding enum, or the default value if no match is found
+	 */
+	public static ContentEncoding fromString(final String encoding, final Supplier<ContentEncoding> defaultValueSupplier) {
+		return Enums.from(encoding, NAME_MAP, defaultValueSupplier);
+	}
+
+	/**
 	 * Returns true if the given string matches the enum value ignoring the case, false otherwise. The HTTP headers are
 	 * case-insensitive.
 	 *
@@ -155,10 +169,9 @@ public enum ContentEncoding {
 			return null;
 		}
 		for (String value : values) {
-			try {
-				return fromString(value);
-			} catch (IllegalArgumentException ex) {
-				// continue
+			ContentEncoding encoding = fromString(value, Nullables.supplyNull());
+			if (null != encoding) {
+				return encoding;
 			}
 		}
 		return null;

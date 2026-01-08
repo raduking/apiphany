@@ -11,7 +11,7 @@ import org.morphix.lang.JavaObjects;
  *
  * @author Radu Sebastian LAZIN
  */
-public class OAuth2ExchangeClientBuilder extends ExchangeClientBuilder {
+public class OAuth2HttpExchangeClientBuilder extends ExchangeClientBuilder {
 
 	/**
 	 * Token exchange client class.
@@ -26,7 +26,7 @@ public class OAuth2ExchangeClientBuilder extends ExchangeClientBuilder {
 	/**
 	 * Hide constructor.
 	 */
-	private OAuth2ExchangeClientBuilder() {
+	private OAuth2HttpExchangeClientBuilder() {
 		// empty
 	}
 
@@ -35,8 +35,8 @@ public class OAuth2ExchangeClientBuilder extends ExchangeClientBuilder {
 	 *
 	 * @return a new OAuth2 exchange client builder
 	 */
-	public static OAuth2ExchangeClientBuilder create() {
-		return new OAuth2ExchangeClientBuilder();
+	public static OAuth2HttpExchangeClientBuilder create() {
+		return new OAuth2HttpExchangeClientBuilder();
 	}
 
 	/**
@@ -67,7 +67,7 @@ public class OAuth2ExchangeClientBuilder extends ExchangeClientBuilder {
 	 * @return this
 	 */
 	@Override
-	public OAuth2ExchangeClientBuilder properties(final ClientProperties clientProperties) {
+	public OAuth2HttpExchangeClientBuilder properties(final ClientProperties clientProperties) {
 		return JavaObjects.cast(super.properties(clientProperties));
 	}
 
@@ -77,7 +77,7 @@ public class OAuth2ExchangeClientBuilder extends ExchangeClientBuilder {
 	 * @param tokenClientClass the token client class
 	 * @return this
 	 */
-	public OAuth2ExchangeClientBuilder tokenClient(final Class<? extends ExchangeClient> tokenClientClass) {
+	public OAuth2HttpExchangeClientBuilder tokenClient(final Class<? extends ExchangeClient> tokenClientClass) {
 		this.tokenExchangeClientClass = tokenClientClass;
 		return this;
 	}
@@ -88,7 +88,7 @@ public class OAuth2ExchangeClientBuilder extends ExchangeClientBuilder {
 	 * @param tokenClient the token client
 	 * @return this
 	 */
-	public OAuth2ExchangeClientBuilder tokenClient(final ExchangeClient tokenClient) {
+	public OAuth2HttpExchangeClientBuilder tokenClient(final ExchangeClient tokenClient) {
 		this.tokenExchangeClient = tokenClient;
 		return this;
 	}

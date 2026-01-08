@@ -151,7 +151,7 @@ public class HttpContentType implements ApiMimeType {
 			return null;
 		}
 		for (String headerValue : headerValues) {
-			HttpContentType contentType = parseHeaderValue(headerValue);
+			HttpContentType contentType = parseHeader(headerValue);
 			if (null != contentType) {
 				return contentType;
 			}
@@ -160,7 +160,25 @@ public class HttpContentType implements ApiMimeType {
 	}
 
 	/**
+	 * Returns a HTTP content type from the given header value. This is an alias for {@link #parseHeaderValue(String)}.
+	 * <p>
+	 * This method must be called only for single header values (as opposed to multiple header values). If multiple header
+	 * values are present, use {@link #parseHeader(List)} instead. To parse multiple header values the list must be
+	 * constructed first by splitting the header value on commas.
+	 *
+	 * @param headerValue the header value
+	 * @return a HTTP content type from the given header value
+	 */
+	public static HttpContentType parseHeader(final String headerValue) {
+		return parseHeaderValue(headerValue);
+	}
+
+	/**
 	 * Returns a HTTP content type from the given header value.
+	 * <p>
+	 * This method must be called only for single header values (as opposed to multiple header values). If multiple header
+	 * values are present, use {@link #parseHeader(List)} instead. To parse multiple header values the list must be
+	 * constructed first by splitting the header value on commas.
 	 *
 	 * @param headerValue the header value
 	 * @return a HTTP content type from the given header value
@@ -188,16 +206,6 @@ public class HttpContentType implements ApiMimeType {
 			}
 		}
 		return HttpContentType.of(type, charset);
-	}
-
-	/**
-	 * Returns a HTTP content type from the given header value. This is an alias for {@link #parseHeaderValue(String)}.
-	 *
-	 * @param headerValue the header value
-	 * @return a HTTP content type from the given header value
-	 */
-	public static HttpContentType parseHeader(final String headerValue) {
-		return parseHeaderValue(headerValue);
 	}
 
 	/**
