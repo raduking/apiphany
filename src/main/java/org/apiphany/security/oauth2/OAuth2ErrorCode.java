@@ -92,7 +92,7 @@ public enum OAuth2ErrorCode {
 	}
 
 	/**
-	 * @see #toString()
+	 * @see Object#toString()
 	 */
 	@Override
 	public String toString() {

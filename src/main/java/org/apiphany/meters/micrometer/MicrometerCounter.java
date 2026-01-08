@@ -2,6 +2,7 @@ package org.apiphany.meters.micrometer;
 
 import java.util.Objects;
 
+import org.apiphany.meters.Meter;
 import org.apiphany.meters.MeterCounter;
 import org.morphix.lang.JavaObjects;
 
@@ -43,7 +44,7 @@ public class MicrometerCounter implements MeterCounter {
 	}
 
 	/**
-	 * @see #increment(double)
+	 * @see MeterCounter#increment(double)
 	 */
 	@Override
 	public void increment(final double amount) {
@@ -51,7 +52,7 @@ public class MicrometerCounter implements MeterCounter {
 	}
 
 	/**
-	 * @see #count()
+	 * @see MeterCounter#count()
 	 */
 	@Override
 	public double count() {
@@ -68,7 +69,7 @@ public class MicrometerCounter implements MeterCounter {
 	}
 
 	/**
-	 * @see #getName()
+	 * @see Meter#getName()
 	 */
 	@Override
 	public String getName() {
@@ -76,7 +77,7 @@ public class MicrometerCounter implements MeterCounter {
 	}
 
 	/**
-	 * @see #unwrap(Class)
+	 * @see Meter#unwrap(Class)
 	 */
 	@Override
 	public <T> T unwrap(final Class<T> cls) {

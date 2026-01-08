@@ -131,7 +131,7 @@ public enum TracingHeader {
 	}
 
 	/**
-	 * @see #toString()
+	 * @see Object#toString()
 	 */
 	@Override
 	public String toString() {

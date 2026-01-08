@@ -23,7 +23,7 @@ public class RequestMethodSerializer extends JsonSerializer<RequestMethod> {
 	}
 
 	/**
-	 * @see #serialize(RequestMethod, JsonGenerator, SerializerProvider)
+	 * @see JsonSerializer#serialize(Object, JsonGenerator, SerializerProvider)
 	 */
 	@Override
 	public void serialize(final RequestMethod value, final JsonGenerator gen, final SerializerProvider serializers) throws IOException {

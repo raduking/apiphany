@@ -38,7 +38,7 @@ public class StringHttpContentConverter implements HttpContentConverter<String> 
 	}
 
 	/**
-	 * @see #from(Object, ApiMimeType, Class)
+	 * @see HttpContentConverter#from(Object, ApiMimeType, Class)
 	 */
 	@Override
 	public String from(final Object obj, final ApiMimeType mimeType, final Class<String> dstClass) {
@@ -46,7 +46,7 @@ public class StringHttpContentConverter implements HttpContentConverter<String> 
 	}
 
 	/**
-	 * @see #from(Object, ApiMimeType, GenericClass)
+	 * @see HttpContentConverter#from(Object, ApiMimeType, GenericClass)
 	 */
 	@Override
 	public String from(final Object obj, final ApiMimeType mimeType, final GenericClass<String> genericDstClass) {
@@ -54,7 +54,7 @@ public class StringHttpContentConverter implements HttpContentConverter<String> 
 	}
 
 	/**
-	 * @see #isConvertible(ApiMessage, ApiMimeType, Object, HeaderValuesChain)
+	 * @see HttpContentConverter#isConvertible(ApiMessage, ApiMimeType, Object, HeaderValuesChain)
 	 */
 	@Override
 	public <U, H> boolean isConvertible(final ApiMessage<U> message, final ApiMimeType mimeType, final H headers, final HeaderValues chain) {

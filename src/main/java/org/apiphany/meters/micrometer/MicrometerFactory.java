@@ -110,7 +110,7 @@ public class MicrometerFactory extends MeterFactory {
 	}
 
 	/**
-	 * @see #isEmpty(Iterable)
+	 * @see MeterFactory#isEmpty(Iterable)
 	 */
 	@Override
 	public <T, U extends Iterable<T>> boolean isEmpty(final U tags) {

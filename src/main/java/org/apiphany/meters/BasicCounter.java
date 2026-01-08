@@ -31,7 +31,7 @@ public class BasicCounter extends BasicMeter implements MeterCounter {
 	}
 
 	/**
-	 * @see #increment(double)
+	 * @see MeterCounter#increment(double)
 	 */
 	@Override
 	public void increment(final double amount) {
@@ -39,7 +39,7 @@ public class BasicCounter extends BasicMeter implements MeterCounter {
 	}
 
 	/**
-	 * @see #count()
+	 * @see MeterCounter#count()
 	 */
 	@Override
 	public double count() {

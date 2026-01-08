@@ -385,7 +385,7 @@ public enum ContentType implements ApiMimeType {
 	}
 
 	/**
-	 * @see #toString()
+	 * @see Object#toString()
 	 */
 	@Override
 	public String toString() {
@@ -403,7 +403,7 @@ public enum ContentType implements ApiMimeType {
 	}
 
 	/**
-	 * @see #contentType()
+	 * @see ApiMimeType#contentType()
 	 */
 	@Override
 	public ContentType contentType() {

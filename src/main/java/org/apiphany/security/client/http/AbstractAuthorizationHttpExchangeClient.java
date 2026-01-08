@@ -6,6 +6,7 @@ import org.apiphany.header.Headers;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.lang.ScopedResource;
 import org.apiphany.security.AuthorizationHeaderProvider;
+import org.apiphany.security.client.AuthenticatedExchangeClient;
 
 /**
  * Abstract authenticated HTTP exchange client that adds an Authorization header to each request.
@@ -33,7 +34,7 @@ public abstract class AbstractAuthorizationHttpExchangeClient extends AbstractAu
 	}
 
 	/**
-	 * @see #authenticate(ApiRequest)
+	 * @see AuthenticatedExchangeClient#authenticate(ApiRequest)
 	 */
 	@Override
 	public final <T> void authenticate(final ApiRequest<T> apiRequest) {

@@ -75,7 +75,7 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	}
 
 	/**
-	 * @see #close()
+	 * @see AutoCloseable#close()
 	 */
 	@Override
 	public void close() throws Exception {

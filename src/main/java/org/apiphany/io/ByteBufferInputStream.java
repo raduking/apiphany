@@ -85,7 +85,7 @@ public class ByteBufferInputStream extends InputStream {
 	}
 
 	/**
-	 * @see #read()
+	 * @see InputStream#read()
 	 */
 	@Override
 	public int read() {
@@ -97,7 +97,7 @@ public class ByteBufferInputStream extends InputStream {
 	}
 
 	/**
-	 * @see #read(byte[], int, int)
+	 * @see InputStream#read(byte[], int, int)
 	 */
 	@Override
 	public int read(final byte[] bytes, final int off, final int len) {
@@ -113,7 +113,7 @@ public class ByteBufferInputStream extends InputStream {
 	}
 
 	/**
-	 * @see #read(byte[])
+	 * @see InputStream#read(byte[])
 	 */
 	@Override
 	public int read(final byte[] bytes) {
@@ -121,7 +121,7 @@ public class ByteBufferInputStream extends InputStream {
 	}
 
 	/**
-	 * @see #available()
+	 * @see InputStream#available()
 	 */
 	@Override
 	public int available() {
@@ -129,7 +129,7 @@ public class ByteBufferInputStream extends InputStream {
 	}
 
 	/**
-	 * @see #skip(long)
+	 * @see InputStream#skip(long)
 	 */
 	@Override
 	public long skip(final long n) {
@@ -142,7 +142,7 @@ public class ByteBufferInputStream extends InputStream {
 	}
 
 	/**
-	 * @see #mark(int)
+	 * @see InputStream#mark(int)
 	 */
 	@Override
 	public void mark(final int readlimit) {
@@ -150,7 +150,7 @@ public class ByteBufferInputStream extends InputStream {
 	}
 
 	/**
-	 * @see #reset()
+	 * @see InputStream#reset()
 	 */
 	@Override
 	public void reset() {
@@ -158,7 +158,7 @@ public class ByteBufferInputStream extends InputStream {
 	}
 
 	/**
-	 * @see #markSupported()
+	 * @see InputStream#markSupported()
 	 */
 	@Override
 	public boolean markSupported() {
@@ -168,6 +168,8 @@ public class ByteBufferInputStream extends InputStream {
 	/**
 	 * Closing a {@code ByteArrayInputStream} has no effect. The methods in this class can be called after the stream has
 	 * been closed without generating an {@code IOException}.
+	 *
+	 * @see InputStream#close()
 	 */
 	@Override
 	public void close() throws IOException {

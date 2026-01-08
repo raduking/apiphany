@@ -143,7 +143,7 @@ public class ExceptionsAccumulator extends Accumulator<Exception> {
 	}
 
 	/**
-	 * @see #accumulate(Runnable)
+	 * @see Accumulator#accumulate(Runnable)
 	 */
 	@Override
 	public void accumulate(final Runnable runnable) {
@@ -155,7 +155,7 @@ public class ExceptionsAccumulator extends Accumulator<Exception> {
 	}
 
 	/**
-	 * @see #accumulate(Supplier, Object)
+	 * @see Accumulator#accumulate(Supplier, Object)
 	 */
 	@Override
 	public <T> T accumulate(final Supplier<T> supplier, final T defaultReturn) {
@@ -168,7 +168,7 @@ public class ExceptionsAccumulator extends Accumulator<Exception> {
 	}
 
 	/**
-	 * @see #rest()
+	 * @see Accumulator#rest()
 	 */
 	@Override
 	public void rest() {

@@ -22,7 +22,7 @@ public class DecoratingHttpExchangeClient extends AbstractHttpExchangeClient {
 	protected final ScopedResource<ExchangeClient> exchangeClient;
 
 	/**
-	 * Initialize the client with the given exchange client delegate.
+	 * Initialize the client with the given exchange client delegate scoped resource.
 	 *
 	 * @param delegate actual exchange client making the request
 	 */
@@ -33,7 +33,8 @@ public class DecoratingHttpExchangeClient extends AbstractHttpExchangeClient {
 	}
 
 	/**
-	 * Initialize the client with the given exchange client delegate.
+	 * Initialize the client with the given exchange client delegate. The delegate is considered unmanaged so that the
+	 * caller must take care of closing it.
 	 *
 	 * @param delegate actual exchange client making the request
 	 */
@@ -56,7 +57,9 @@ public class DecoratingHttpExchangeClient extends AbstractHttpExchangeClient {
 	}
 
 	/**
-	 * @see #close()
+	 * Closes the underlying exchange client if it is managed.
+	 *
+	 * @see AutoCloseable#close()
 	 */
 	@Override
 	public void close() throws Exception {

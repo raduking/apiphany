@@ -101,7 +101,7 @@ public class HttpContentType implements ApiMimeType {
 	}
 
 	/**
-	 * @see #charset()
+	 * @see ApiMimeType#charset()
 	 */
 	@Override
 	public Charset charset() {
@@ -109,7 +109,7 @@ public class HttpContentType implements ApiMimeType {
 	}
 
 	/**
-	 * @see #value()
+	 * @see ApiMimeType#value()
 	 */
 	@Override
 	public String value() {
@@ -125,7 +125,7 @@ public class HttpContentType implements ApiMimeType {
 	}
 
 	/**
-	 * @see #contentType()
+	 * @see ApiMimeType#contentType()
 	 */
 	@Override
 	public ContentType contentType() {
@@ -133,7 +133,7 @@ public class HttpContentType implements ApiMimeType {
 	}
 
 	/**
-	 * @see #toString()
+	 * @see Object#toString()
 	 */
 	@Override
 	public String toString() {
@@ -214,7 +214,7 @@ public class HttpContentType implements ApiMimeType {
 	}
 
 	/**
-	 * @see #equals(Object)
+	 * @see Object#equals(Object)
 	 */
 	@Override
 	public boolean equals(final Object obj) {
@@ -229,7 +229,7 @@ public class HttpContentType implements ApiMimeType {
 	}
 
 	/**
-	 * @see #hashCode()
+	 * @see Object#hashCode()
 	 */
 	@Override
 	public int hashCode() {

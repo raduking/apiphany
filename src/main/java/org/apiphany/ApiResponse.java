@@ -339,7 +339,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	}
 
 	/**
-	 * @see #getHeadersAsString()
+	 * @see ApiMessage#getHeadersAsString()
 	 */
 	@Override
 	public String getHeadersAsString() {

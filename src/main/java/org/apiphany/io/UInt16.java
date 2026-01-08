@@ -81,7 +81,7 @@ public class UInt16 implements ByteSizeable, BinaryRepresentable {
 	}
 
 	/**
-	 * @see #toByteArray()
+	 * @see BinaryRepresentable#toByteArray()
 	 */
 	@Override
 	public byte[] toByteArray() {
@@ -105,6 +105,8 @@ public class UInt16 implements ByteSizeable, BinaryRepresentable {
 	 * Returns a string representation of this object.
 	 *
 	 * @return string representation
+	 * @see #toUnsignedInt()
+	 * @see Object#toString()
 	 */
 	@Override
 	public String toString() {
@@ -133,7 +135,7 @@ public class UInt16 implements ByteSizeable, BinaryRepresentable {
 	}
 
 	/**
-	 * @see #sizeOf()
+	 * @see ByteSizeable#sizeOf()
 	 */
 	@Override
 	public int sizeOf() {
@@ -141,7 +143,7 @@ public class UInt16 implements ByteSizeable, BinaryRepresentable {
 	}
 
 	/**
-	 * @see #equals(Object)
+	 * @see Object#equals(Object)
 	 */
 	@Override
 	public boolean equals(final Object o) {
@@ -155,7 +157,7 @@ public class UInt16 implements ByteSizeable, BinaryRepresentable {
 	}
 
 	/**
-	 * @see #hashCode()
+	 * @see Object#hashCode()
 	 */
 	@Override
 	public int hashCode() {

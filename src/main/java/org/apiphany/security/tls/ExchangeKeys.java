@@ -151,7 +151,7 @@ public class ExchangeKeys {
 	}
 
 	/**
-	 * @see #toString()
+	 * @see Object#toString()
 	 */
 	@Override
 	public String toString() {

@@ -202,7 +202,7 @@ public class ApiClient implements AutoCloseable {
 	}
 
 	/**
-	 * @see #close()
+	 * @see AutoCloseable#close()
 	 */
 	@Override
 	public void close() throws Exception {
