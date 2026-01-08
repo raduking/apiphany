@@ -13,15 +13,11 @@ import org.apiphany.client.ContentConverter;
 import org.apiphany.header.HeaderValues;
 import org.apiphany.header.Headers;
 import org.apiphany.header.MapHeaderValues;
-import org.apiphany.http.ContentEncoding;
-import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeaderValues;
-import org.apiphany.http.HttpStatus;
 import org.apiphany.http.TracingHeader;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.json.jackson.JacksonJsonHttpContentConverter;
 import org.apiphany.lang.Strings;
-import org.apiphany.lang.gzip.GZip;
 import org.apiphany.security.ssl.SSLContexts;
 import org.apiphany.security.ssl.SSLProperties;
 import org.morphix.lang.JavaObjects;
@@ -149,30 +145,6 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 		}
 		throw new UnsupportedOperationException("No content converter found to convert response to: " + apiRequest.getResponseType().getTypeName()
 				+ ", for the response content type: " + mimeType);
-	}
-
-	/**
-	 * Decodes the body based on the given content encoding.
-	 * <p>
-	 * TODO: support more content encodings
-	 *
-	 * @param <T> body type
-	 *
-	 * @param body the body
-	 * @param contentEncoding content encoding
-	 * @return decoded body
-	 */
-	public static <T> T decodeBody(final T body, final ContentEncoding contentEncoding) {
-		try {
-			return switch (contentEncoding) {
-				case GZIP -> GZip.decompress(body);
-				default -> throw new HttpException(HttpStatus.UNSUPPORTED_MEDIA_TYPE,
-						"Content encoding " + contentEncoding + " is not supported!");
-			};
-		} catch (Exception e) {
-			throw new HttpException(HttpStatus.UNPROCESSABLE_ENTITY,
-					"Failed to decode response body with encoding: " + contentEncoding, e);
-		}
 	}
 
 	/**

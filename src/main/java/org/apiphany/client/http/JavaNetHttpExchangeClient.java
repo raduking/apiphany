@@ -19,6 +19,7 @@ import java.util.function.Supplier;
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
+import org.apiphany.client.ContentConverter;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.http.ContentEncoding;
 import org.apiphany.http.HttpContentType;
@@ -215,7 +216,7 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 		List<String> contentEncodings = getHeaderValuesChain().get(HttpHeader.CONTENT_ENCODING, headers);
 		ContentEncoding contentEncoding = ContentEncoding.parse(contentEncodings);
 		if (null != contentEncoding) {
-			responseBody = decodeBody(responseBody, contentEncoding);
+			responseBody = ContentConverter.decodeBody(responseBody, contentEncoding);
 		}
 
 		List<String> contentTypes = getHeaderValuesChain().get(HttpHeader.CONTENT_TYPE, headers);
