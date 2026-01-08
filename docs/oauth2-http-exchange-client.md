@@ -98,7 +98,6 @@ classDiagram
 `OAuth2HttpExchangeClient` exchange flow:
 
 ```mermaid
-
 sequenceDiagram
     participant User
     participant OAuth2 as OAuth2HttpExchangeClient
@@ -128,5 +127,4 @@ sequenceDiagram
     Decorator->>Delegate: exchange(request)
 
     Delegate-->>User: ApiResponse
-
 ```
