@@ -51,7 +51,7 @@ public interface ExchangeClient extends AutoCloseable {
 	 * @return response
 	 */
 	default <T, U> CompletableFuture<ApiResponse<U>> asyncExchange(final ApiRequest<T> apiRequest) {
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException("asyncExchange(ApiRequest)");
 	}
 
 	/**

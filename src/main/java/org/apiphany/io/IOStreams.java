@@ -1,5 +1,6 @@
 package org.apiphany.io;
 
+import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -91,5 +92,23 @@ public interface IOStreams {
 	 */
 	static EOFException eofExceptionBytesNeeded(final int remaining, final int total) {
 		return new EOFException("Stream closed, need " + remaining + " more bytes out of " + total);
+	}
+
+	/**
+	 * Reads all bytes from the given input stream and returns them as a byte array.
+	 *
+	 * @param is the input stream
+	 * @return a byte array containing all bytes read from the input stream
+	 * @throws IOException if any error occurs
+	 */
+	static byte[] toByteArray(final InputStream is) throws IOException {
+		byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
+		int n;
+		try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+			while ((n = is.read(buffer)) != -1) {
+				baos.write(buffer, 0, n);
+			}
+			return baos.toByteArray();
+		}
 	}
 }

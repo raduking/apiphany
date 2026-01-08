@@ -165,13 +165,13 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	public static <T> T decodeBody(final T body, final ContentEncoding contentEncoding) {
 		try {
 			return switch (contentEncoding) {
-				case GZIP -> JavaObjects.cast(GZip.decompress((byte[]) body));
+				case GZIP -> GZip.decompress(body);
 				default -> throw new HttpException(HttpStatus.UNSUPPORTED_MEDIA_TYPE,
 						"Content encoding " + contentEncoding + " is not supported!");
 			};
 		} catch (Exception e) {
-			throw new HttpException(HttpStatus.BAD_REQUEST, "Failed to decode response body with encoding: "
-					+ contentEncoding, e);
+			throw new HttpException(HttpStatus.UNPROCESSABLE_ENTITY,
+					"Failed to decode response body with encoding: " + contentEncoding, e);
 		}
 	}
 
