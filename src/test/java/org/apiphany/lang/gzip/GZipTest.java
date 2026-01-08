@@ -2,11 +2,14 @@ package org.apiphany.lang.gzip;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.apiphany.io.IOStreams;
 import org.apiphany.lang.Strings;
 import org.apiphany.utils.Tests;
 import org.junit.jupiter.api.Test;
@@ -30,7 +33,7 @@ class GZipTest {
 		String text = Strings.fromFile("/text-file.txt");
 		byte[] compressedText = GZip.compress(text);
 
-		String resultText = GZip.decompress(compressedText);
+		String resultText = GZip.decompressToString(compressedText);
 
 		assertThat(resultText, equalTo(text));
 	}
@@ -41,7 +44,7 @@ class GZipTest {
 		byte[] compressedText = GZip.compress(text);
 
 		InputStream is = new ByteArrayInputStream(compressedText);
-		String resultText = GZip.decompress(is);
+		String resultText = GZip.decompressToString(is);
 		is.close();
 
 		assertThat(resultText, equalTo(text));
@@ -68,5 +71,49 @@ class GZipTest {
 		is.close();
 
 		assertThat(resultText, equalTo(text));
+	}
+
+	@Test
+	void shouldDecompressBytesFromCompressedBytes() throws IOException {
+		String text = Strings.fromFile("/text-file.txt");
+		byte[] compressedText = GZip.compress(text);
+
+		byte[] decompressedBytes = GZip.decompressToBytes(compressedText);
+		String resultText = new String(decompressedBytes, Strings.DEFAULT_CHARSET);
+
+		assertThat(resultText, equalTo(text));
+	}
+
+	@Test
+	void shouldDecompressBytesFromCompressedBytesWithGenericMethod() throws IOException {
+		String text = Strings.fromFile("/text-file.txt");
+		byte[] compressedText = GZip.compress(text);
+
+		byte[] decompressedBytes = GZip.decompress(compressedText);
+		String resultText = new String(decompressedBytes, Strings.DEFAULT_CHARSET);
+
+		assertThat(resultText, equalTo(text));
+	}
+
+	@Test
+	void shouldDecompressInputStreamFromCompressedInputStreamWithGenericMethod() throws IOException {
+		String text = Strings.fromFile("/text-file.txt");
+		byte[] compressedText = GZip.compress(text);
+
+		InputStream decompressedInputStream = GZip.decompress(new ByteArrayInputStream(compressedText));
+		String resultText = Strings.toString(decompressedInputStream, Strings.DEFAULT_CHARSET, IOStreams.DEFAULT_BUFFER_SIZE);
+		decompressedInputStream.close();
+
+		assertThat(resultText, equalTo(text));
+	}
+
+	@Test
+	void shouldThrowExceptionWhenDecompressingUnknownType() {
+		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+				() -> GZip.decompress("This is a string, not a byte array or input stream"));
+
+		assertNotNull(exception);
+		assertThat(exception.getMessage(),
+				equalTo("Cannot decompress object of type: class java.lang.String, input must be byte[] or class java.io.InputStream"));
 	}
 }

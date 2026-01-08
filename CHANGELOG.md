@@ -22,6 +22,9 @@
 - Added `SecuredExchangeClientBuilder` to add security to an existing exchange client.
 - Added `ContentEncoding.parse` to build a `ContentEncoding` based on a list of values, the first matching being returned.
 - Added `ContentEncoding.fromString` with default value supplier for building without exception handling.
+- Renamed `GZip.decompress` methods which return `String` to `decompressToString`.
+- Added `GZip.decompressToBytes` method to de-compress a byte array to a byte array.
+- Added `GZip.decompress` method which handles both compressed byte array and compressed `InputStream` to de-compress to the same type as the input.
 
 ---
 
