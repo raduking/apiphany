@@ -85,13 +85,11 @@ classDiagram
         +HttpAuthScheme getAuthenticationScheme()
         +AuthenticationType getAuthenticationType()
     }
-
 ```
 
-`OAuth2HttpExchangeClient` exchange flow:
+`TokenHttpExchangeClient` exchange flow:
 
 ```mermaid
-
 sequenceDiagram
     participant User
     participant Token as TokenHttpExchangeClient
@@ -118,5 +116,4 @@ sequenceDiagram
     Decorator->>Delegate: exchange(request)
 
     Delegate-->>User: ApiResponse
-
 ```
