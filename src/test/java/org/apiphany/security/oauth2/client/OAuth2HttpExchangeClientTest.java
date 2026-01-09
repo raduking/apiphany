@@ -291,8 +291,8 @@ class OAuth2HttpExchangeClientTest {
 	}
 
 	/**
-	 * This is just a base class for the various API clients used in the tests so that they all have the same
-	 * implementation for the {@link #getName()} method.
+	 * This is just a base class for the various API clients used in the tests so that they all have the same implementation
+	 * for the {@link #getName()} method.
 	 */
 	static class BaseApiClient extends ApiClient {
 
