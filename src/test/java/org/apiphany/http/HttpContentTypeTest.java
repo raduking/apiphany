@@ -27,30 +27,26 @@ class HttpContentTypeTest {
 
 	@Test
 	void shouldResolveContentTypeAndCharset() {
-		HttpContentType ct1 = HttpContentType.parseHeaderValue(APPLICATION_JSON_CHARSET_ISO_8859_1);
-		HttpContentType ct2 = HttpContentType.parseHeader(APPLICATION_JSON_CHARSET_ISO_8859_1);
+		HttpContentType ct = HttpContentType.parse(APPLICATION_JSON_CHARSET_ISO_8859_1);
 
-		assertThat(ct1.getContentType(), equalTo(ContentType.APPLICATION_JSON));
-		assertThat(ct1.getCharset(), equalTo(StandardCharsets.ISO_8859_1));
-		assertThat(ct1, equalTo(ct2));
+		assertThat(ct.getContentType(), equalTo(ContentType.APPLICATION_JSON));
+		assertThat(ct.getCharset(), equalTo(StandardCharsets.ISO_8859_1));
 	}
 
 	@Test
 	void shouldResolveContentTypeAndCharsetInLowerCase() {
 		String lowerCaseValue = APPLICATION_JSON_CHARSET_ISO_8859_1.toLowerCase();
-		HttpContentType ct1 = HttpContentType.parseHeaderValue(lowerCaseValue);
-		HttpContentType ct2 = HttpContentType.parseHeader(lowerCaseValue);
+		HttpContentType ct = HttpContentType.parse(lowerCaseValue);
 
-		assertThat(ct1.getContentType(), equalTo(ContentType.APPLICATION_JSON));
-		assertThat(ct1.getCharset(), equalTo(StandardCharsets.ISO_8859_1));
-		assertThat(ct1, equalTo(ct2));
+		assertThat(ct.getContentType(), equalTo(ContentType.APPLICATION_JSON));
+		assertThat(ct.getCharset(), equalTo(StandardCharsets.ISO_8859_1));
 	}
 
 	@Test
 	void shouldTransformToStringAndParseBack() {
 		HttpContentType existing = HttpContentType.of(ContentType.APPLICATION_JSON, StandardCharsets.ISO_8859_1);
 
-		HttpContentType ct = HttpContentType.parseHeaderValue(existing.toString());
+		HttpContentType ct = HttpContentType.parse(existing.toString());
 
 		assertThat(ct.getContentType(), equalTo(ContentType.APPLICATION_JSON));
 		assertThat(ct.getCharset(), equalTo(StandardCharsets.ISO_8859_1));
@@ -60,7 +56,7 @@ class HttpContentTypeTest {
 	void shouldBuildFromStringTransformToStringAndParseBack() {
 		HttpContentType existing = HttpContentType.from("application/json", "iso-8859-1");
 
-		HttpContentType ct = HttpContentType.parseHeaderValue(existing.toString());
+		HttpContentType ct = HttpContentType.parse(existing.toString());
 
 		assertThat(ct.getContentType(), equalTo(ContentType.APPLICATION_JSON));
 		assertThat(ct.getCharset(), equalTo(StandardCharsets.ISO_8859_1));
@@ -68,14 +64,21 @@ class HttpContentTypeTest {
 
 	@Test
 	void shouldReturnNullWhenHeaderValuesDoesNotHaveAContentType() {
-		HttpContentType ct = HttpContentType.parseHeader(List.of("someheadervalue1", "someheadervalue2"));
+		HttpContentType ct = HttpContentType.parse(List.of("someheadervalue1", "someheadervalue2"));
 
 		assertNull(ct);
 	}
 
 	@Test
 	void shouldReturnNullWhenHeaderValuesIsNull() {
-		HttpContentType ct = HttpContentType.parseHeaderValue(null);
+		HttpContentType ct = HttpContentType.parse((List<String>) null);
+
+		assertNull(ct);
+	}
+
+	@Test
+	void shouldReturnNullWhenHeaderValueIsNull() {
+		HttpContentType ct = HttpContentType.parse((String) null);
 
 		assertNull(ct);
 	}
@@ -93,7 +96,7 @@ class HttpContentTypeTest {
 
 	@Test
 	void shouldBeEqualToSelf() {
-		HttpContentType ct = HttpContentType.parseHeaderValue(APPLICATION_JSON_CHARSET_ISO_8859_1);
+		HttpContentType ct = HttpContentType.parse(APPLICATION_JSON_CHARSET_ISO_8859_1);
 
 		boolean equals = ct.equals(ct);
 
@@ -102,8 +105,8 @@ class HttpContentTypeTest {
 
 	@Test
 	void shouldNotBeEqualIfCharsetsDiffer() {
-		HttpContentType ct1 = HttpContentType.parseHeaderValue(APPLICATION_JSON_CHARSET_ISO_8859_1);
-		HttpContentType ct2 = HttpContentType.parseHeaderValue("application/json; charset=utf-8");
+		HttpContentType ct1 = HttpContentType.parse(APPLICATION_JSON_CHARSET_ISO_8859_1);
+		HttpContentType ct2 = HttpContentType.parse("application/json; charset=utf-8");
 
 		boolean equals = ct1.equals(ct2);
 
@@ -112,8 +115,8 @@ class HttpContentTypeTest {
 
 	@Test
 	void shouldNotBeEqualIfContentTypeDiffer() {
-		HttpContentType ct1 = HttpContentType.parseHeaderValue(APPLICATION_JSON_CHARSET_ISO_8859_1);
-		HttpContentType ct2 = HttpContentType.parseHeaderValue("text/plain; charset=ISO-8859-1");
+		HttpContentType ct1 = HttpContentType.parse(APPLICATION_JSON_CHARSET_ISO_8859_1);
+		HttpContentType ct2 = HttpContentType.parse("text/plain; charset=ISO-8859-1");
 
 		boolean equals = ct1.equals(ct2);
 
@@ -122,7 +125,7 @@ class HttpContentTypeTest {
 
 	@Test
 	void shouldNotBeEqualToAnotherObject() {
-		HttpContentType ct = HttpContentType.parseHeaderValue(APPLICATION_JSON_CHARSET_ISO_8859_1);
+		HttpContentType ct = HttpContentType.parse(APPLICATION_JSON_CHARSET_ISO_8859_1);
 
 		@SuppressWarnings("unlikely-arg-type")
 		boolean equals = ct.equals("bubu");
@@ -132,7 +135,7 @@ class HttpContentTypeTest {
 
 	@Test
 	void shouldBuildHashCodeFromAllParams() {
-		HttpContentType ct = HttpContentType.parseHeaderValue(APPLICATION_JSON_CHARSET_ISO_8859_1);
+		HttpContentType ct = HttpContentType.parse(APPLICATION_JSON_CHARSET_ISO_8859_1);
 
 		int expected = Objects.hash(ct.getContentType(), ct.getCharset());
 		int hash = ct.hashCode();
