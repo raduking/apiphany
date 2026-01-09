@@ -99,7 +99,7 @@ public class ApiPredicates {
 	 * @return true predicate
 	 */
 	public static <T> Predicate<T> hasResponse() {
-		return t -> true;
+		return nonNullResponse();
 	}
 
 	/**

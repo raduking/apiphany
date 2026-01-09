@@ -2,6 +2,8 @@
 
 `1.0.22`
 
+- Fixed `ApiPredicates.hasResponse` to return `true` only when the response is not `null`.
+
 ---
 
 `1.0.21`
