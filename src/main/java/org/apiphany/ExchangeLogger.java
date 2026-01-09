@@ -10,6 +10,10 @@ import org.morphix.reflection.Constructors;
 /**
  * A utility class for logging API requests and responses, including success and error cases. This class provides
  * methods to log request details, response details, and exceptions in a structured format.
+ * <p>
+ * TODO: log headers on multiple lines for better readability.
+ * <p>
+ * TODO: implement injectable exchange logger.
  *
  * @author Radu Sebastian LAZIN
  */
@@ -39,10 +43,11 @@ public class ExchangeLogger {
 			+ "[REQUEST]" + Strings.EOL
 			+ "METHOD: {}" + Strings.EOL
 			+ "URL: {}" + Strings.EOL
-			+ "HEADERS: {}" + Strings.EOL
 			+ "PARAMETERS: {}" + Strings.EOL
+			+ "HEADERS: {}" + Strings.EOL
 			+ "BODY: {}" + Strings.EOL
 			+ "[RESPONSE]" + Strings.EOL
+			+ "STATUS: {}" + Strings.EOL
 			+ "HEADERS: {}" + Strings.EOL
 			+ "BODY: {}" + Strings.EOL
 			+ "DURATION: {}s" + Strings.EOL
@@ -57,10 +62,11 @@ public class ExchangeLogger {
 			+ "[REQUEST]" + Strings.EOL
 			+ "METHOD: {}" + Strings.EOL
 			+ "URL: {}" + Strings.EOL
-			+ "HEADERS: {}" + Strings.EOL
 			+ "PARAMETERS: {}" + Strings.EOL
+			+ "HEADERS: {}" + Strings.EOL
 			+ "REQUEST BODY: {}" + Strings.EOL
 			+ "[RESPONSE]" + Strings.EOL
+			+ "STATUS: {}" + Strings.EOL
 			+ "EXCEPTION: {}" + Strings.EOL
 			+ "DURATION: {}s" + Strings.EOL
 			+ LOG_SEPARATOR;
@@ -86,9 +92,10 @@ public class ExchangeLogger {
 				clientClass,
 				apiRequest.getMethod(),
 				apiRequest.getUrl(),
-				apiRequest.getHeadersAsString(),
 				apiRequest.getParams(),
+				apiRequest.getHeadersAsString(),
 				apiRequest.getBody(),
+				Nullables.apply(apiResponse, ApiResponse::getStatus),
 				Nullables.apply(apiResponse, ApiResponse::getHeadersAsString),
 				Nullables.apply(apiResponse, ApiResponse::getBody),
 				Temporals.toSeconds(duration.toMillis()));
@@ -116,9 +123,10 @@ public class ExchangeLogger {
 				clientClass,
 				apiRequest.getMethod(),
 				apiRequest.getUrl(),
-				apiRequest.getHeadersAsString(),
 				apiRequest.getParams(),
+				apiRequest.getHeadersAsString(),
 				apiRequest.getBody(),
+				Nullables.apply(apiResponse, ApiResponse::getStatus),
 				exception,
 				Temporals.toSeconds(duration.toMillis()));
 		loggingFunction.level("{}", apiResponse.getErrorMessage(), exception);
