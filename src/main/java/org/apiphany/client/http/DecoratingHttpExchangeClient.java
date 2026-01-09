@@ -1,5 +1,7 @@
 package org.apiphany.client.http;
 
+import java.util.Objects;
+
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
 import org.apiphany.client.ExchangeClient;
@@ -25,10 +27,11 @@ public class DecoratingHttpExchangeClient extends AbstractHttpExchangeClient {
 	 * Initialize the client with the given exchange client delegate scoped resource.
 	 *
 	 * @param delegate actual exchange client making the request
+	 * @throws NullPointerException if delegate is null
 	 */
 	@SuppressWarnings("resource")
 	protected DecoratingHttpExchangeClient(final ScopedResource<ExchangeClient> delegate) {
-		super(delegate.unwrap().getClientProperties());
+		super(Objects.requireNonNull(delegate, "delegate cannot be null").unwrap().getClientProperties());
 		this.exchangeClient = delegate;
 	}
 
