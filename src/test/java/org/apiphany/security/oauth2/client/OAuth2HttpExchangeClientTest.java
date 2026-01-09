@@ -17,6 +17,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import org.apiphany.ApiClient;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
+import org.apiphany.client.ExchangeClientBuilder;
 import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.http.HttpException;
 import org.apiphany.json.JsonBuilder;
@@ -238,6 +239,28 @@ class OAuth2HttpExchangeClientTest {
 
 	@SuppressWarnings("resource")
 	@Test
+	void shouldNotAutoCloseAllResourcesWithApiClientManagedResourcesWithOAuth2v6() throws Exception {
+		JavaNetHttpExchangeClient exchangeClient = spy(new JavaNetHttpExchangeClient(clientProperties));
+		try (exchangeClient) {
+			try (OAuth2v6ApiClient client = new OAuth2v6ApiClient(exchangeClient)) {
+				// empty
+			}
+			verify(exchangeClient, times(0)).close();
+		}
+		verify(exchangeClient).close();
+	}
+
+	@Test
+	void shouldReturnValidAuthenticationTokenWithApiClientManagedResourcesWithOAuth2v5() throws Exception {
+		try (OAuth2v5ApiClient client = new OAuth2v5ApiClient(clientProperties)) {
+			String result = client.getName();
+
+			assertThat(result, equalTo(SimpleHttpServer.NAME));
+		}
+	}
+
+	@SuppressWarnings("resource")
+	@Test
 	void shouldReturnValidAuthenticationTokenWithManagedApiClientManagedWithOAuth2() throws Exception {
 		try (JavaNetHttpExchangeClient tokenClient = spy(new JavaNetHttpExchangeClient())) {
 			try (OAuth2UnmanagedTokenClientApiClient client = new OAuth2UnmanagedTokenClientApiClient(clientProperties, tokenClient)) {
@@ -268,9 +291,38 @@ class OAuth2HttpExchangeClientTest {
 	}
 
 	/**
+	 * This is just a base class for the various API clients used in the tests so that they all have the same
+	 * implementation for the {@link #getName()} method.
+	 */
+	static class BaseApiClient extends ApiClient {
+
+		protected BaseApiClient(final ExchangeClient exchangeClient) {
+			super(exchangeClient);
+		}
+
+		protected BaseApiClient(final ExchangeClientBuilder exchangeClientBuilder) {
+			super(exchangeClientBuilder);
+		}
+
+		protected BaseApiClient(final ScopedResource<ExchangeClient> exchangeClientResource) {
+			super(exchangeClientResource);
+		}
+
+		public String getName() {
+			return client()
+					.http()
+					.get()
+					.url("http://localhost:" + API_SERVER_PORT)
+					.path(API, "name")
+					.retrieve(String.class)
+					.orNull();
+		}
+	}
+
+	/**
 	 * This class manages the client resources.
 	 */
-	static class ManagedApiClientWithOAuth2 extends ApiClient {
+	static class ManagedApiClientWithOAuth2 extends BaseApiClient {
 
 		@SuppressWarnings("resource")
 		protected ManagedApiClientWithOAuth2(final ClientProperties properties) {
@@ -287,22 +339,12 @@ class OAuth2HttpExchangeClientTest {
 		public ExchangeClient getExchangeClient(final AuthenticationType authenticationType) {
 			return super.getExchangeClient(authenticationType);
 		}
-
-		public String getName() {
-			return client()
-					.http()
-					.get()
-					.url("http://localhost:" + API_SERVER_PORT)
-					.path(API, "name")
-					.retrieve(String.class)
-					.orNull();
-		}
 	}
 
 	/**
 	 * This class manages the client resources.
 	 */
-	static class ManagedApiClient extends ApiClient {
+	static class ManagedApiClient extends BaseApiClient {
 
 		@SuppressWarnings("resource")
 		protected ManagedApiClient(final ClientProperties properties) {
@@ -314,22 +356,12 @@ class OAuth2HttpExchangeClientTest {
 			super.close();
 			getExchangeClient(AuthenticationType.NONE).close();
 		}
-
-		public String getName() {
-			return client()
-					.http()
-					.get()
-					.url("http://localhost:" + API_SERVER_PORT)
-					.path(API, "name")
-					.retrieve(String.class)
-					.orNull();
-		}
 	}
 
 	/**
 	 * In this client the {@link ApiClient} manages the resources, no need for {@link #close()}.
 	 */
-	static class OAuth2v1ApiClient extends ApiClient {
+	static class OAuth2v1ApiClient extends BaseApiClient {
 
 		protected OAuth2v1ApiClient(final ClientProperties properties) {
 			super(exchangeClient(JavaNetHttpExchangeClient.class)
@@ -337,22 +369,12 @@ class OAuth2HttpExchangeClientTest {
 					.secureWith()
 					.oAuth2());
 		}
-
-		public String getName() {
-			return client()
-					.http()
-					.get()
-					.url("http://localhost:" + API_SERVER_PORT)
-					.path(API, "name")
-					.retrieve(String.class)
-					.orNull();
-		}
 	}
 
 	/**
 	 * In this client the {@link ApiClient} manages the resources, no need for {@link #close()}.
 	 */
-	static class OAuth2v2ApiClient extends ApiClient {
+	static class OAuth2v2ApiClient extends BaseApiClient {
 
 		protected OAuth2v2ApiClient(final ClientProperties properties) {
 			super(with(JavaNetHttpExchangeClient.class)
@@ -360,22 +382,12 @@ class OAuth2HttpExchangeClientTest {
 					.secureWith()
 					.oAuth2());
 		}
-
-		public String getName() {
-			return client()
-					.http()
-					.get()
-					.url("http://localhost:" + API_SERVER_PORT)
-					.path(API, "name")
-					.retrieve(String.class)
-					.orNull();
-		}
 	}
 
 	/**
 	 * In this client the {@link ApiClient} manages the resources, no need for {@link #close()}.
 	 */
-	static class OAuth2v3ApiClient extends ApiClient {
+	static class OAuth2v3ApiClient extends BaseApiClient {
 
 		protected OAuth2v3ApiClient(final ClientProperties properties) {
 			super(with(JavaNetHttpExchangeClient.class)
@@ -383,22 +395,12 @@ class OAuth2HttpExchangeClientTest {
 					.secureWith()
 					.oAuth2(oauth2 -> oauth2.tokenClient(JavaNetHttpExchangeClient.class)));
 		}
-
-		public String getName() {
-			return client()
-					.http()
-					.get()
-					.url("http://localhost:" + API_SERVER_PORT)
-					.path(API, "name")
-					.retrieve(String.class)
-					.orNull();
-		}
 	}
 
 	/**
 	 * In this client the {@link ApiClient} manages the resources, no need for {@link #close()}.
 	 */
-	static class OAuth2v4ApiClient extends ApiClient {
+	static class OAuth2v4ApiClient extends BaseApiClient {
 
 		@SuppressWarnings("resource")
 		protected OAuth2v4ApiClient(final ClientProperties properties) {
@@ -411,44 +413,35 @@ class OAuth2HttpExchangeClientTest {
 			super(ScopedResource.managed(new OAuth2HttpExchangeClient(
 					ScopedResource.managed(exchangeClient))));
 		}
-
-		public String getName() {
-			return client()
-					.http()
-					.get()
-					.url("http://localhost:" + API_SERVER_PORT)
-					.path(API, "name")
-					.retrieve(String.class)
-					.orNull();
-		}
 	}
 
 	/**
 	 * In this client the {@link ApiClient} manages the resources, no need for {@link #close()}.
 	 */
-	static class OAuth2v5ApiClient extends ApiClient {
+	static class OAuth2v5ApiClient extends BaseApiClient {
 
 		protected OAuth2v5ApiClient(final ClientProperties properties) {
 			super(with(JavaNetHttpExchangeClient.class)
 					.properties(properties)
 					.decorateWith(OAuth2HttpExchangeClientBuilder.class));
 		}
+	}
 
-		public String getName() {
-			return client()
-					.http()
-					.get()
-					.url("http://localhost:" + API_SERVER_PORT)
-					.path(API, "name")
-					.retrieve(String.class)
-					.orNull();
+	/**
+	 * In this client the caller manages the resources and we manage the decorator.
+	 */
+	static class OAuth2v6ApiClient extends BaseApiClient {
+
+		@SuppressWarnings("resource")
+		protected OAuth2v6ApiClient(final ExchangeClient exchangeClient) {
+			super(ScopedResource.managed(new OAuth2HttpExchangeClient(exchangeClient)));
 		}
 	}
 
 	/**
 	 * In this client the {@link ApiClient} manages the resources except for the token retrieve client.
 	 */
-	static class OAuth2UnmanagedTokenClientApiClient extends ApiClient {
+	static class OAuth2UnmanagedTokenClientApiClient extends BaseApiClient {
 
 		protected OAuth2UnmanagedTokenClientApiClient(final ClientProperties properties, final ExchangeClient tokenClient) {
 			super(with(JavaNetHttpExchangeClient.class)
@@ -456,37 +449,17 @@ class OAuth2HttpExchangeClientTest {
 					.secureWith()
 					.oAuth2(oauth2 -> oauth2.tokenClient(tokenClient)));
 		}
-
-		public String getName() {
-			return client()
-					.http()
-					.get()
-					.url("http://localhost:" + API_SERVER_PORT)
-					.path(API, "name")
-					.retrieve(String.class)
-					.orNull();
-		}
 	}
 
 	/**
 	 * In this client the {@link ApiClient} manages the resources, no need for {@link #close()}.
 	 */
-	static class SimpleApiClient extends ApiClient {
+	static class SimpleApiClient extends BaseApiClient {
 
 		protected SimpleApiClient(final ClientProperties properties) {
 			super(ExchangeClient.builder()
 					.client(JavaNetHttpExchangeClient.class)
 					.properties(properties));
-		}
-
-		public String getName() {
-			return client()
-					.http()
-					.get()
-					.url("http://localhost:" + API_SERVER_PORT)
-					.path(API, "name")
-					.retrieve(String.class)
-					.orNull();
 		}
 	}
 
