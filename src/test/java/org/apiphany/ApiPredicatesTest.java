@@ -130,4 +130,11 @@ class ApiPredicatesTest {
 
 		assertTrue(result);
 	}
+
+	@Test
+	void shouldNotValidateResponseForNullResponse() {
+		boolean result = ApiPredicates.hasResponse().test(null);
+
+		assertFalse(result);
+	}
 }
