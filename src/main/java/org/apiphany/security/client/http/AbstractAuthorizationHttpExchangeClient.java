@@ -25,15 +25,6 @@ public abstract class AbstractAuthorizationHttpExchangeClient extends AbstractAu
 	}
 
 	/**
-	 * Initialize the client with the given exchange client delegate.
-	 *
-	 * @param delegate actual exchange client making the request
-	 */
-	protected AbstractAuthorizationHttpExchangeClient(final ExchangeClient delegate) {
-		super(delegate);
-	}
-
-	/**
 	 * @see AuthenticatedExchangeClient#authenticate(ApiRequest)
 	 */
 	@Override

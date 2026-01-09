@@ -24,15 +24,6 @@ public abstract class AbstractAuthenticatedHttpExchangeClient extends Decorating
 	}
 
 	/**
-	 * Initialize the client with the given exchange client delegate.
-	 *
-	 * @param delegate actual exchange client making the request
-	 */
-	protected AbstractAuthenticatedHttpExchangeClient(final ExchangeClient delegate) {
-		super(delegate);
-	}
-
-	/**
 	 * Template method enforcing authentication.
 	 *
 	 * @param <T> the request body type
