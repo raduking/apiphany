@@ -224,9 +224,13 @@ public class ApiClient implements AutoCloseable {
 	/**
 	 * @see AutoCloseable#close()
 	 */
+	@SuppressWarnings("resource")
 	@Override
 	public void close() throws Exception {
-		exchangeClientsMap.forEach(ThrowingBiConsumer.unchecked((key, value) -> value.closeIfManaged()));
+		exchangeClientsMap.forEach(ThrowingBiConsumer.unchecked((key, value) -> {
+			LOGGER.debug("Closing: [{}] for [AuthenticationType:{}]", value.unwrap().getName(), key);
+			value.closeIfManaged();
+		}));
 	}
 
 	/**
