@@ -3,6 +3,11 @@
 `1.0.22`
 
 - Fixed `ApiPredicates.hasResponse` to return `true` only when the response is not `null`.
+- Changed the whole `ExchangeClient` hierarchy to favor composition instead of inheritance.
+- Added `DelegatingExchangeClient` interface to signify a client that delegates all functionality to an underlying exchange client.
+- Removed `DecoratingHttpExchangeClient` in favor of `DecoratingExchangeClient` to better fit its functionality.
+- Removed `AbstractAuthenticatedHttpExchangeClient` in favor of `AuthenticatedExchangeClient` interface.
+- Changed `AbstractAuthorizedHttpExchangeClient` to an interface and renamed it to `AuthorizedHttpExchangeClient`.
 
 ---
 

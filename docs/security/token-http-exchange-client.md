@@ -1,4 +1,4 @@
-`OAuth2HttpExchangeClient` class hierarchy:
+`TokenHttpExchangeClient` class hierarchy:
 
 ```mermaid
 classDiagram
@@ -6,17 +6,23 @@ classDiagram
 
     ExchangeClient <|.. HttpExchangeClient
     ExchangeClient <|.. AuthenticatedExchangeClient
+    ExchangeClient <|.. DelegatingExchangeClient
 
-	HttpExchangeClient <|--  AbstractHttpExchangeClient
-    AbstractHttpExchangeClient <|-- DecoratingHttpExchangeClient
-    DecoratingHttpExchangeClient <|-- AbstractAuthenticatedHttpExchangeClient
-    AbstractAuthenticatedHttpExchangeClient <|-- AbstractAuthorizationHttpExchangeClient
-    AbstractAuthorizationHttpExchangeClient <|-- TokenHttpExchangeClient
-    TokenHttpExchangeClient <|-- OAuth2HttpExchangeClient
+    DelegatingExchangeClient <|-- DecoratingExchangeClient
 
-    AuthenticatedExchangeClient <|.. AbstractAuthenticatedHttpExchangeClient
-    AuthorizationHeaderProvider <|.. AbstractAuthorizationHttpExchangeClient
+    HttpExchangeClient <|--  AbstractHttpExchangeClient
+
+    DelegatingExchangeClient <|.. AuthenticatedExchangeClient
+
+    HttpExchangeClient <|.. AuthorizationHttpExchangeClient
+    AuthorizationHeaderProvider <|.. AuthorizationHttpExchangeClient
+    AuthenticatedExchangeClient <|.. AuthorizationHttpExchangeClient
+
     AuthenticationTokenProvider <|.. TokenHttpExchangeClient
+    AuthorizationHttpExchangeClient <|.. TokenHttpExchangeClient
+    DecoratingExchangeClient <|-- TokenHttpExchangeClient
+
+    TokenHttpExchangeClient <|-- OAuth2HttpExchangeClient
 
     class ExchangeClient {
         +[T,U] ApiResponse[U] exchange(ApiRequest[T])
@@ -24,6 +30,18 @@ classDiagram
         +[T extends ClientProperties] T getClientProperties()
         +AuthenticationType getAuthenticationType()
         +String getName()
+        +void close()
+    }
+
+    class DelegatingExchangeClient {
+        +[T,U] ApiResponse[U] exchange(ApiRequest[T])
+        +ExchangeClient getExchangeClient()
+    }
+
+    class DecoratingExchangeClient {
+        -ScopedResource[ExchangeClient] exchangeClient
+        +[T,U] ApiResponse[U] exchange(ApiRequest[T])
+        +ExchangeClient getExchangeClient()
         +void close()
     }
 
@@ -49,28 +67,17 @@ classDiagram
         +convertBody(...)
     }
 
-    class DecoratingHttpExchangeClient {
-        -ScopedResource<ExchangeClient> exchangeClient
-        +[T,U] ApiResponse[U] exchange(ApiRequest[T])
-        +void close()
-        #ExchangeClient getExchangeClient()
-    }
-
     class AuthenticatedExchangeClient {
+        +[T,U] ApiResponse[U] exchange(ApiRequest[T])
         +[T] void authenticate(ApiRequest[T])
-    }
-
-    class AbstractAuthenticatedHttpExchangeClient {
-        +final [T,U] ApiResponse[U] exchange(ApiRequest[T])
-        +[T] void authenticate(ApiRequest[T])*
     }
 
     class AuthorizationHeaderProvider {
         +String getAuthorizationHeader()
     }
 
-    class AbstractAuthorizationHttpExchangeClient {
-        +final [T] void authenticate(ApiRequest[T])
+    class AuthorizationHttpExchangeClient {
+        +[T] void authenticate(ApiRequest[T])
         +String getAuthorizationHeader()*
     }
 
@@ -83,40 +90,30 @@ classDiagram
         -HttpAuthScheme authenticationScheme
         +AuthenticationToken getAuthenticationToken()
         +String getAuthorizationHeader()
+        +AuthenticationType getAuthenticationType()
         +HttpAuthScheme getAuthenticationScheme()
-        +AuthenticationType getAuthenticationType()
-    }
-
-    class OAuth2HttpExchangeClient {
-        -ScopedResource[ExchangeClient] tokenExchangeClient
-        -OAuth2Properties oAuth2Properties
-        -OAuth2TokenProvider tokenProvider
-        +AuthenticationType getAuthenticationType()
     }
 ```
 
-`OAuth2HttpExchangeClient` exchange flow:
+`TokenHttpExchangeClient` exchange flow:
 
 ```mermaid
 sequenceDiagram
     participant User
-    participant OAuth2 as OAuth2HttpExchangeClient
     participant Token as TokenHttpExchangeClient
-    participant Authz as AbstractAuthorizationHttpExchangeClient
-    participant Auth as AbstractAuthenticatedHttpExchangeClient
-    participant Decorator as DecoratingHttpExchangeClient
+    participant Authz as AuthorizationHttpExchangeClient
+    participant Auth as AuthenticatedExchangeClient
+    participant Decorator as DelegatingExchangeClient
     participant Delegate as ExchangeClient
 
-    User->>OAuth2: exchange(request)
+    User->>Token: exchange(request)
 
 %% Template method
-    OAuth2->>Auth: exchange(request)
+    Token->>Auth: exchange(request)
     Auth->>Authz: authenticate(request)
 
 %% Authorization header construction
     Authz->>Token: getAuthorizationHeader()
-    Token->>OAuth2: getAuthenticationToken()
-    OAuth2-->>Token: AuthenticationToken
     Token-->>Authz: "Bearer <access_token>"
 
 %% Header mutation

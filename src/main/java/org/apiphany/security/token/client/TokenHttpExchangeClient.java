@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.function.Supplier;
 
 import org.apiphany.client.ClientProperties;
+import org.apiphany.client.DecoratingExchangeClient;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.header.HeaderValues;
 import org.apiphany.http.HttpAuthScheme;
@@ -12,7 +13,7 @@ import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationTokenProvider;
 import org.apiphany.security.AuthenticationType;
 import org.apiphany.security.AuthorizationHeaderProvider;
-import org.apiphany.security.client.http.AbstractAuthorizationHttpExchangeClient;
+import org.apiphany.security.client.http.AuthorizationHttpExchangeClient;
 import org.apiphany.security.token.TokenProperties;
 import org.morphix.lang.Nullables;
 
@@ -23,7 +24,7 @@ import org.morphix.lang.Nullables;
  *
  * @author Radu Sebastian LAZIN
  */
-public class TokenHttpExchangeClient extends AbstractAuthorizationHttpExchangeClient implements AuthenticationTokenProvider {
+public class TokenHttpExchangeClient extends DecoratingExchangeClient implements AuthorizationHttpExchangeClient, AuthenticationTokenProvider {
 
 	/**
 	 * The authentication token.
