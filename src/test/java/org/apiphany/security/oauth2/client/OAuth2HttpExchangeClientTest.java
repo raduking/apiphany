@@ -237,6 +237,15 @@ class OAuth2HttpExchangeClientTest {
 		verify(exchangeClient).close();
 	}
 
+	@Test
+	void shouldReturnValidAuthenticationTokenWithApiClientManagedResourcesWithOAuth2v5() throws Exception {
+		try (OAuth2v5ApiClient client = new OAuth2v5ApiClient(clientProperties)) {
+			String result = client.getName();
+
+			assertThat(result, equalTo(SimpleHttpServer.NAME));
+		}
+	}
+
 	@SuppressWarnings("resource")
 	@Test
 	void shouldNotAutoCloseAllResourcesWithApiClientManagedResourcesWithOAuth2v6() throws Exception {
@@ -251,12 +260,25 @@ class OAuth2HttpExchangeClientTest {
 	}
 
 	@Test
-	void shouldReturnValidAuthenticationTokenWithApiClientManagedResourcesWithOAuth2v5() throws Exception {
-		try (OAuth2v5ApiClient client = new OAuth2v5ApiClient(clientProperties)) {
+	void shouldReturnValidAuthenticationTokenWithApiClientManagedResourcesWithOAuth2v7() throws Exception {
+		try (OAuth2v7ApiClient client = new OAuth2v7ApiClient(clientProperties)) {
 			String result = client.getName();
 
 			assertThat(result, equalTo(SimpleHttpServer.NAME));
 		}
+	}
+
+	@SuppressWarnings("resource")
+	@Test
+	void shouldNotAutoCloseAllResourcesWithApiClientManagedResourcesWithOAuth2v8() throws Exception {
+		JavaNetHttpExchangeClient exchangeClient = spy(new JavaNetHttpExchangeClient(clientProperties));
+		try (exchangeClient) {
+			try (OAuth2v8ApiClient client = new OAuth2v8ApiClient(exchangeClient)) {
+				// empty
+			}
+			verify(exchangeClient, times(0)).close();
+		}
+		verify(exchangeClient).close();
 	}
 
 	@SuppressWarnings("resource")
@@ -423,7 +445,7 @@ class OAuth2HttpExchangeClientTest {
 		protected OAuth2v5ApiClient(final ClientProperties properties) {
 			super(with(JavaNetHttpExchangeClient.class)
 					.properties(properties)
-					.decorateWith(OAuth2HttpExchangeClientBuilder.class));
+					.decorateWithBuilder(OAuth2HttpExchangeClientBuilder.class));
 		}
 	}
 
@@ -435,6 +457,29 @@ class OAuth2HttpExchangeClientTest {
 		@SuppressWarnings("resource")
 		protected OAuth2v6ApiClient(final ExchangeClient exchangeClient) {
 			super(ScopedResource.managed(new OAuth2HttpExchangeClient(exchangeClient)));
+		}
+	}
+
+	/**
+	 * In this client the {@link ApiClient} manages the resources, no need for {@link #close()}.
+	 */
+	static class OAuth2v7ApiClient extends BaseApiClient {
+
+		protected OAuth2v7ApiClient(final ClientProperties properties) {
+			super(with(JavaNetHttpExchangeClient.class)
+					.properties(properties)
+					.decorateWith(OAuth2HttpExchangeClient.class));
+		}
+	}
+
+	/**
+	 * In this client the {@link ApiClient} manages the resources, no need for {@link #close()}.
+	 */
+	static class OAuth2v8ApiClient extends BaseApiClient {
+
+		protected OAuth2v8ApiClient(final ExchangeClient exchangeClient) {
+			super(with(exchangeClient)
+					.decorateWith(OAuth2HttpExchangeClient.class));
 		}
 	}
 

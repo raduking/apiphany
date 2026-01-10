@@ -2,6 +2,8 @@ package org.apiphany.client;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.function.Consumer;
 
 import org.apiphany.lang.ScopedResource;
@@ -34,6 +36,11 @@ public class ExchangeClientBuilder {
 	protected ClientProperties clientProperties;
 
 	/**
+	 * Decorator client classes. These are always managed by the builder.
+	 */
+	private List<Class<? extends DecoratingExchangeClient>> decoratorClientClasses = new LinkedList<>();
+
+	/**
 	 * Hide constructor.
 	 */
 	protected ExchangeClientBuilder() {
@@ -61,7 +68,14 @@ public class ExchangeClientBuilder {
 		}
 		boolean managed = exchangeClient == null;
 		ExchangeClient client = managed ? build(exchangeClientClass, clientProperties) : exchangeClient;
-		return ScopedResource.of(client, managed);
+
+		ScopedResource<ExchangeClient> scopedResource = ScopedResource.of(client, managed);
+		for (Class<? extends DecoratingExchangeClient> decoratorClientClass : decoratorClientClasses) {
+			Constructor<? extends DecoratingExchangeClient> constructor = Constructors.getDeclared(decoratorClientClass, ScopedResource.class);
+			client = Constructors.IgnoreAccess.newInstance(constructor, scopedResource);
+			scopedResource = ScopedResource.managed(client);
+		}
+		return scopedResource;
 	}
 
 	/**
@@ -134,7 +148,7 @@ public class ExchangeClientBuilder {
 	 * @param decoratorCustomizer decorator customizer
 	 * @return new decorating exchange client builder
 	 */
-	public <T extends ExchangeClientBuilder> T decorateWith(final Class<T> decoratingBuilderClass, final Consumer<T> decoratorCustomizer) {
+	public <T extends ExchangeClientBuilder> T decorateWithBuilder(final Class<T> decoratingBuilderClass, final Consumer<T> decoratorCustomizer) {
 		Method createMethod = Methods.Safe.getOneDeclared("create", decoratingBuilderClass);
 		T decoratorBuilder = Methods.IgnoreAccess.invoke(createMethod, null);
 		decoratorBuilder.builder(this);
@@ -152,8 +166,23 @@ public class ExchangeClientBuilder {
 	 * @param decoratingBuilderClass decorating builder class
 	 * @return new decorating exchange client builder
 	 */
-	public <T extends ExchangeClientBuilder> T decorateWith(final Class<T> decoratingBuilderClass) {
-		return decorateWith(decoratingBuilderClass, Consumers.noConsumer());
+	public <T extends ExchangeClientBuilder> T decorateWithBuilder(final Class<T> decoratingBuilderClass) {
+		return decorateWithBuilder(decoratingBuilderClass, Consumers.noConsumer());
+	}
+
+	/**
+	 * Decorates this builder with another decorating exchange client.
+	 * <p>
+	 * The decorating exchange client class must have a constructor with one parameter of type {@link ExchangeClient} or
+	 * {@link ScopedResource} depending on whether this builder has an exchange client class set or not.
+	 *
+	 * @param <T> decorating exchange client type
+	 * @param decoratingClientClass decorating exchange client class
+	 * @return new decorating exchange client builder
+	 */
+	public <T extends DecoratingExchangeClient> ExchangeClientBuilder decorateWith(final Class<T> decoratingClientClass) {
+		this.decoratorClientClasses.add(decoratingClientClass);
+		return this;
 	}
 
 	/**
@@ -162,6 +191,6 @@ public class ExchangeClientBuilder {
 	 * @return new secured exchange client builder
 	 */
 	public SecuredExchangeClientBuilder secureWith() {
-		return decorateWith(SecuredExchangeClientBuilder.class);
+		return decorateWithBuilder(SecuredExchangeClientBuilder.class);
 	}
 }
