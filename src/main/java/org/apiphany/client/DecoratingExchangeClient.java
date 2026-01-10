@@ -1,10 +1,8 @@
-package org.apiphany.client.http;
+package org.apiphany.client;
 
 import java.util.Objects;
 
 import org.apiphany.ApiRequest;
-import org.apiphany.ApiResponse;
-import org.apiphany.client.ExchangeClient;
 import org.apiphany.lang.ScopedResource;
 
 /**
@@ -16,7 +14,7 @@ import org.apiphany.lang.ScopedResource;
  *
  * @author Radu Sebastian LAZIN
  */
-public class DecoratingHttpExchangeClient extends AbstractHttpExchangeClient {
+public class DecoratingExchangeClient implements DelegatingExchangeClient {
 
 	/**
 	 * The actual exchange client doing the request.
@@ -29,10 +27,8 @@ public class DecoratingHttpExchangeClient extends AbstractHttpExchangeClient {
 	 * @param delegate actual exchange client making the request
 	 * @throws NullPointerException if delegate is null
 	 */
-	@SuppressWarnings("resource")
-	protected DecoratingHttpExchangeClient(final ScopedResource<ExchangeClient> delegate) {
-		super(Objects.requireNonNull(delegate, "delegate cannot be null").unwrap().getClientProperties());
-		this.exchangeClient = delegate;
+	public DecoratingExchangeClient(final ScopedResource<ExchangeClient> delegate) {
+		this.exchangeClient = Objects.requireNonNull(delegate, "delegate cannot be null");
 	}
 
 	/**
@@ -41,22 +37,18 @@ public class DecoratingHttpExchangeClient extends AbstractHttpExchangeClient {
 	 *
 	 * @param delegate actual exchange client making the request
 	 */
-	protected DecoratingHttpExchangeClient(final ExchangeClient delegate) {
+	public DecoratingExchangeClient(final ExchangeClient delegate) {
 		this(ScopedResource.unmanaged(delegate));
 	}
 
 	/**
-	 * Delegates the exchange to the underlying exchange client.
-	 * <p>
-	 * Subclasses may override this method to perform the exchange, possibly decorating the request/response as needed but
-	 * they should call {@code super.exchange(...)} to delegate to the underlying exchange client.
+	 * Returns the delegate exchange client.
 	 *
-	 * @see ExchangeClient#exchange(ApiRequest)
+	 * @return the delegate exchange client
 	 */
-	@SuppressWarnings("resource")
 	@Override
-	public <T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest) {
-		return getExchangeClient().exchange(apiRequest);
+	public ExchangeClient getExchangeClient() {
+		return exchangeClient.unwrap();
 	}
 
 	/**
@@ -67,14 +59,5 @@ public class DecoratingHttpExchangeClient extends AbstractHttpExchangeClient {
 	@Override
 	public void close() throws Exception {
 		exchangeClient.closeIfManaged();
-	}
-
-	/**
-	 * Returns the delegate exchange client.
-	 *
-	 * @return the delegate exchange client
-	 */
-	protected ExchangeClient getExchangeClient() {
-		return exchangeClient.unwrap();
 	}
 }

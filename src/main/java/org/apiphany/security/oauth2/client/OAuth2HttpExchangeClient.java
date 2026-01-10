@@ -1,7 +1,6 @@
 package org.apiphany.security.oauth2.client;
 
 import org.apiphany.client.ExchangeClient;
-import org.apiphany.client.http.DecoratingHttpExchangeClient;
 import org.apiphany.http.HttpAuthScheme;
 import org.apiphany.lang.ScopedResource;
 import org.apiphany.security.AuthenticationToken;
@@ -151,7 +150,7 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient { // NOSON
 	}
 
 	/**
-	 * @see DecoratingHttpExchangeClient#close()
+	 * @see DecoratingExchangeClient#close()
 	 */
 	@Override
 	public void close() throws Exception {
