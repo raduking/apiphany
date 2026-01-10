@@ -43,16 +43,6 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 	private final OAuth2Registry oAuth2Registry;
 
 	/**
-	 * Functional interface for handling errors when closing OAuth2 token providers.
-	 *
-	 * @author Radu Sebastian LAZIN
-	 */
-	@FunctionalInterface
-	interface CloseErrorHandler extends BiConsumer<String, Exception> {
-		// empty
-	}
-
-	/**
 	 * Constructor.
 	 *
 	 * @param oAuth2Registry the OAuth2 registry must not be null
@@ -169,30 +159,16 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 	 */
 	public void add(final String name, final ScopedResource<OAuth2TokenProvider> provider) {
 		if (closing.get()) {
-			closeIfManaged(name, provider,
-					(n, e) -> LOGGER.error("Error closing OAuth2 token provider: '{}' when adding to a closing registry.", n, e));
+			provider.closeIfManaged(
+					e -> LOGGER.error("Error closing OAuth2 token provider: '{}' when adding to a closing registry.", name, e));
 			throw new IllegalStateException("Cannot add new OAuth2 token provider " + name + " to a closing registry.");
 		}
 		ScopedResource<OAuth2TokenProvider> existing =
 				providers.putIfAbsent(name, Objects.requireNonNull(provider, "OAuth2 token provider cannot be null"));
 		if (null != existing) {
-			closeIfManaged(name, provider,
-					(n, e) -> LOGGER.error("Error closing candidate OAuth2 token provider: '{}' when a provider with the same name exists.", n, e));
+			provider.closeIfManaged(
+					e -> LOGGER.error("Error closing candidate OAuth2 token provider: '{}' when a provider with the same name exists.", name, e));
 			throw new IllegalStateException("An OAuth2 token provider with name '" + name + "' is already registered.");
-		}
-	}
-
-	/**
-	 * Closes the given OAuth2 token provider if it is managed, logging any errors.
-	 *
-	 * @param name the name of the OAuth2 token provider
-	 * @param provider the OAuth2 token provider
-	 */
-	private static void closeIfManaged(final String name, final ScopedResource<OAuth2TokenProvider> provider, final CloseErrorHandler onError) {
-		try {
-			provider.closeIfManaged();
-		} catch (Exception e) {
-			onError.accept(name, e);
 		}
 	}
 
@@ -251,8 +227,8 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 			return;
 		}
 		for (Map.Entry<String, ScopedResource<OAuth2TokenProvider>> entry : providers.entrySet()) {
-			closeIfManaged(entry.getKey(), entry.getValue(),
-					(n, e) -> LOGGER.error("Error closing OAuth2 token provider: {} when closing registry.", n, e));
+			ScopedResource<OAuth2TokenProvider> provider = entry.getValue();
+			provider.closeIfManaged(e -> LOGGER.error("Error closing OAuth2 token provider: {} when closing registry.", entry.getKey(), e));
 		}
 	}
 }

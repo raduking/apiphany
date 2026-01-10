@@ -2,6 +2,7 @@ package org.apiphany.lang;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 /**
  * A wrapper for managing the life-cycle of {@link AutoCloseable} resources with scope control.
@@ -38,6 +39,16 @@ public class ScopedResource<T extends AutoCloseable> {
 	}
 
 	/**
+	 * Constructs a new managed ScopedResource instance.
+	 *
+	 * @param resource the resource to wrap (must not be null)
+	 * @throws NullPointerException if resource is null
+	 */
+	public ScopedResource(final T resource) {
+		this(resource, true);
+	}
+
+	/**
 	 * Returns the underlying resource.
 	 *
 	 * @return the wrapped resource
@@ -47,7 +58,7 @@ public class ScopedResource<T extends AutoCloseable> {
 	}
 
 	/**
-	 * Checks if this wrapper manages the resource's lifecycle.
+	 * Checks if this wrapper manages the resource's life-cycle.
 	 *
 	 * @return true if the resource is managed by this wrapper
 	 */
@@ -56,7 +67,7 @@ public class ScopedResource<T extends AutoCloseable> {
 	}
 
 	/**
-	 * Checks if this wrapper manages the resource's lifecycle.
+	 * Checks if this wrapper manages the resource's life-cycle.
 	 *
 	 * @return true if the resource is not managed by this wrapper
 	 */
@@ -65,13 +76,27 @@ public class ScopedResource<T extends AutoCloseable> {
 	}
 
 	/**
-	 * Closes the resource if it is managed by this wrapper.
+	 * Closes the resource if it is managed by this wrapper. For unmanaged resources, this method does nothing. For handling
+	 * exceptions, consider using {@link #closeIfManaged(Consumer)}.
 	 *
 	 * @throws Exception if an error occurs while closing the resource
 	 */
 	public void closeIfManaged() throws Exception {
 		if (managed) {
 			resource.close();
+		}
+	}
+
+	/**
+	 * Closes the resource if it is managed by this wrapper, handling any exceptions using the provided exception handler.
+	 *
+	 * @param exceptionHandler a consumer to handle exceptions that may occur during closing
+	 */
+	public void closeIfManaged(final Consumer<? super Exception> exceptionHandler) {
+		try {
+			closeIfManaged();
+		} catch (Exception e) {
+			exceptionHandler.accept(e);
 		}
 	}
 

@@ -8,6 +8,9 @@
 - Removed `DecoratingHttpExchangeClient` in favor of `DecoratingExchangeClient` to better fit its functionality.
 - Removed `AbstractAuthenticatedHttpExchangeClient` in favor of `AuthenticatedExchangeClient` interface.
 - Changed `AbstractAuthorizedHttpExchangeClient` to an interface and renamed it to `AuthorizedHttpExchangeClient`.
+- Added `ScopedResource.closeIfManaged(Consumer)` which can handle resource closing exceptions.
+- Added constructor with resource only to `ScopedResource` defaulting to a managed resource.
+- Fixed `HttpContentType.parse` methods when `charset` parameter is missing but other parameter is present. 
 
 ---
 

@@ -22,6 +22,11 @@ import org.slf4j.LoggerFactory;
 
 /**
  * OAuth2 token provider component, this class provides a non-expired token by requesting a new one on expiration time.
+ * When a new token is requested, it uses the provided {@link AuthenticationTokenProvider} client to do the actual token
+ * retrieval. The client is supplied using the {@link OAuth2TokenClientSupplier} functional interface.
+ * <p>
+ * The token refresh is done using a scheduled task that runs when the token is about to expire (based on the expiration
+ * time minus an error margin defined in {@link OAuth2TokenProviderOptions}).
  * <p>
  * TODO: implement refresh token functionality<br/>
  *
