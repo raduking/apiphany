@@ -53,6 +53,8 @@ public class DecoratingExchangeClient implements DelegatingExchangeClient {
 
 	/**
 	 * Closes the underlying exchange client if it is managed.
+	 * <p>
+	 * Implementations overriding this method should call {@code super.close()} to ensure proper resource cleanup.
 	 *
 	 * @see AutoCloseable#close()
 	 */

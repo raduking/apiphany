@@ -1,5 +1,6 @@
 package org.apiphany.security.oauth2.client;
 
+import org.apiphany.client.DecoratingExchangeClient;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.http.HttpAuthScheme;
 import org.apiphany.lang.ScopedResource;
@@ -17,7 +18,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Radu Sebastian LAZIN
  */
-public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient { // NOSONAR class hierarchy is acceptable here
+public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 
 	/**
 	 * The class logger.
