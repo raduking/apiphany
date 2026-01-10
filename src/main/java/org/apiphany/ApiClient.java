@@ -388,6 +388,20 @@ public class ApiClient implements AutoCloseable {
 	}
 
 	/**
+	 * Returns an exchange client builder with the given exchange client set.
+	 * <p>
+	 * This method should be used when an instance of exchange client is already created. Prefer using the other overload
+	 * that makes use of the exchange client class when possible, so that the builder can manage the life cycle of the
+	 * exchange client.
+	 *
+	 * @param exchangeClient exchange client
+	 * @return exchange client builder
+	 */
+	public static ExchangeClientBuilder with(final ExchangeClient exchangeClient) {
+		return ExchangeClient.builder().client(exchangeClient);
+	}
+
+	/**
 	 * API call for resource.
 	 *
 	 * @param <T> response type
