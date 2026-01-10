@@ -186,12 +186,13 @@ public class HttpContentType implements ApiMimeType {
 			return HttpContentType.of(type);
 		}
 		Charset charset = null;
-		int index = 0;
-		while (null == charset && index++ < parts.length) {
+		int index = 1;
+		while (null == charset && index < parts.length) {
 			String[] param = parts[index].trim().split("=", 2);
 			if (param.length == 2 && Param.CHARSET.equalsIgnoreCase(param[0])) {
 				charset = ApiMimeType.parseCharset(param[1].trim());
 			}
+			index++;
 		}
 		return HttpContentType.of(type, charset);
 	}

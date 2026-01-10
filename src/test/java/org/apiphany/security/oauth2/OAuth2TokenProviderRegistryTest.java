@@ -76,7 +76,7 @@ class OAuth2TokenProviderRegistryTest {
 
 		assertThat(retrievedProvider, equalTo(provider));
 
-		verify(resource).closeIfManaged();
+		verify(resource).closeIfManaged(any());
 	}
 
 	@SuppressWarnings({ "resource", "unchecked" })
@@ -92,7 +92,7 @@ class OAuth2TokenProviderRegistryTest {
 		registry.add(PROVIDER_NAME_MY_PROVIDER, resource);
 		registry.close();
 
-		OAuth2TokenProvider retrievedProvider = registry.getProvider("ubknownProvider");
+		OAuth2TokenProvider retrievedProvider = registry.getProvider("unknownProvider");
 
 		assertThat(registry.getProviderNames(), hasSize(1));
 		assertThat(registry.getProviderNames().getFirst(), equalTo(PROVIDER_NAME_MY_PROVIDER));
@@ -102,12 +102,12 @@ class OAuth2TokenProviderRegistryTest {
 
 		assertThat(retrievedProvider, equalTo(null));
 
-		verify(resource).closeIfManaged();
+		verify(resource).closeIfManaged(any());
 	}
 
 	@SuppressWarnings({ "resource", "unchecked" })
 	@Test
-	void shouldRejectDuplicateProvider() throws Exception {
+	void shouldRejectDuplicateProvider() {
 		OAuth2Registry mockRegistry = mock(OAuth2Registry.class);
 		OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.of(mockRegistry);
 
@@ -120,7 +120,7 @@ class OAuth2TokenProviderRegistryTest {
 
 		assertThat(ex.getMessage(), equalTo("An OAuth2 token provider with name '" + PROVIDER_NAME_MY_PROVIDER + "' is already registered."));
 
-		verify(second).closeIfManaged();
+		verify(second).closeIfManaged(any());
 	}
 
 	@SuppressWarnings({ "resource", "unchecked" })
@@ -139,7 +139,7 @@ class OAuth2TokenProviderRegistryTest {
 
 		assertThat(ex.getMessage(), equalTo("An OAuth2 token provider with name '" + PROVIDER_NAME_MY_PROVIDER + "' is already registered."));
 
-		verify(second).closeIfManaged();
+		verify(second).closeIfManaged(any());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -156,7 +156,7 @@ class OAuth2TokenProviderRegistryTest {
 
 		assertThat(ex.getMessage(), equalTo("Cannot add new OAuth2 token provider " + PROVIDER_NAME_MY_PROVIDER + " to a closing registry."));
 
-		verify(resource).closeIfManaged();
+		verify(resource).closeIfManaged(any());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -174,7 +174,7 @@ class OAuth2TokenProviderRegistryTest {
 
 		assertThat(ex.getMessage(), equalTo("Cannot add new OAuth2 token provider " + PROVIDER_NAME_MY_PROVIDER + " to a closing registry."));
 
-		verify(resource).closeIfManaged();
+		verify(resource).closeIfManaged(any());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -193,8 +193,8 @@ class OAuth2TokenProviderRegistryTest {
 
 		registry.close();
 
-		verify(good).closeIfManaged();
-		verify(bad).closeIfManaged();
+		verify(good).closeIfManaged(any());
+		verify(bad).closeIfManaged(any());
 	}
 
 	@SuppressWarnings({ "unchecked", "resource" })
@@ -211,7 +211,7 @@ class OAuth2TokenProviderRegistryTest {
 			registry.close();
 		}
 
-		verify(tokenProvider).closeIfManaged();
+		verify(tokenProvider).closeIfManaged(any());
 	}
 
 	@SuppressWarnings("resource")
@@ -442,7 +442,7 @@ class OAuth2TokenProviderRegistryTest {
 
 		for (ScopedResource<OAuth2TokenProvider> resource : resources) {
 			if (resource != registeredResource) {
-				verify(resource, atLeastOnce()).closeIfManaged();
+				verify(resource, atLeastOnce()).closeIfManaged(any());
 			}
 		}
 	}
