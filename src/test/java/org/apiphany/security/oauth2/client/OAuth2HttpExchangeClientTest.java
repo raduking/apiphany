@@ -386,7 +386,7 @@ class OAuth2HttpExchangeClientTest {
 	static class OAuth2v1ApiClient extends BaseApiClient {
 
 		protected OAuth2v1ApiClient(final ClientProperties properties) {
-			super(exchangeClient(JavaNetHttpExchangeClient.class)
+			super(withClient(JavaNetHttpExchangeClient.class)
 					.properties(properties)
 					.secureWith()
 					.oAuth2());
