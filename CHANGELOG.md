@@ -18,7 +18,6 @@
 - Added `ApiClient.with(ExchangeClient)` static method to be used when the exchange client is managed by the caller.
 - Renamed `ApiClient.exchangeClient` static method to `ApiClient.withClient`.
 - Added `HttpContentType.normalizedValue` method to return the value in RFC 7231-style.
-- Added `ClientProperties.getClientProperty` method to return a value from the client part of the properties.
 
 ---
 

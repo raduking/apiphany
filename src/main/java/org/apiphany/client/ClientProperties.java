@@ -219,16 +219,6 @@ public class ClientProperties {
 	}
 
 	/**
-	 * Retrieves a specific client property by key. The property value is cast to the return type.
-	 *
-	 * @param key the key of the client property.
-	 * @return the value of the client property.
-	 */
-	public <T> T getClientProperty(final String key) {
-		return JavaObjects.cast(client.get(key));
-	}
-
-	/**
 	 * Returns the custom properties map.
 	 *
 	 * @return the custom properties map.
