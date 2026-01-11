@@ -4,6 +4,11 @@ import java.util.Objects;
 
 import org.apiphany.json.JsonBuilder;
 
+/**
+ * A simple DTO for tests.
+ *
+ * @author Radu Sebastian LAZIN
+ */
 public class TestDto {
 
 	public static final TestDto EMPTY = new TestDto();
