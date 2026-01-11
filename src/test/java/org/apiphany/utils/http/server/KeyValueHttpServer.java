@@ -10,9 +10,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.apiphany.http.HttpContentType;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
+import org.apiphany.io.ContentType;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.slf4j.Logger;
@@ -23,7 +25,8 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
 /**
- * A simple HTTP server that has all HTTP methods implemented.
+ * A simple HTTP server that has all HTTP methods implemented for a key-value store accessible under the
+ * {@code /api/keys} route.
  *
  * @author Radu Sebastian LAZIN
  */
@@ -122,7 +125,8 @@ public class KeyValueHttpServer implements AutoCloseable {
 			String key = getKeyFromPath(exchange);
 			if (null == key) {
 				String json = JsonBuilder.toJson(server.map);
-				exchange.getResponseHeaders().set(HttpHeader.CONTENT_TYPE.value(), "application/json; charset=utf-8");
+				HttpContentType contentType = HttpContentType.of(ContentType.APPLICATION_JSON, StandardCharsets.UTF_8);
+				exchange.getResponseHeaders().set(HttpHeader.CONTENT_TYPE.value(), contentType.value());
 				sendResponse(exchange, HttpStatus.OK, json);
 			} else if (server.map.containsKey(key)) {
 				sendResponse(exchange, HttpStatus.OK, server.map.get(key));
@@ -166,9 +170,11 @@ public class KeyValueHttpServer implements AutoCloseable {
 		private void handleHead(final HttpExchange exchange) throws IOException {
 			String key = getKeyFromPath(exchange);
 			if (server.map.containsKey(key)) {
-				exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");
+				HttpContentType contentType = HttpContentType.of(ContentType.TEXT_PLAIN, StandardCharsets.UTF_8);
+				exchange.getResponseHeaders().set(HttpHeader.CONTENT_TYPE.value(), contentType.value());
 				String value = server.map.get(key);
-				exchange.getResponseHeaders().set("Content-Length", String.valueOf(value.getBytes(StandardCharsets.UTF_8).length));
+				int length = value.getBytes(StandardCharsets.UTF_8).length;
+				exchange.getResponseHeaders().set(HttpHeader.CONTENT_LENGTH.value(), String.valueOf(length));
 				exchange.sendResponseHeaders(HttpStatus.OK.value(), NO_BODY);
 			} else {
 				exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.value(), NO_BODY);
@@ -200,7 +206,7 @@ public class KeyValueHttpServer implements AutoCloseable {
 			String responseBody = requestBuilder.toString();
 
 			// Set the Content-Type as specified by HTTP for TRACE
-			exchange.getResponseHeaders().set("Content-Type", "message/http");
+			exchange.getResponseHeaders().set(HttpHeader.CONTENT_TYPE.value(), ContentType.MESSAGE_HTTP.value());
 			sendResponse(exchange, HttpStatus.OK, responseBody);
 		}
 
