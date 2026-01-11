@@ -25,7 +25,7 @@ import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.io.ContentType;
 import org.apiphany.net.Sockets;
-import org.apiphany.server.KeyValueHttpServer;
+import org.apiphany.utils.http.server.KeyValueHttpServer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.morphix.reflection.GenericClass;

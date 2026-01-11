@@ -1,4 +1,4 @@
-package org.apiphany.server;
+package org.apiphany.utils.http.server;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -44,6 +44,7 @@ public class KeyValueHttpServer implements AutoCloseable {
 			HttpMethod.PATCH,
 			HttpMethod.HEAD,
 			HttpMethod.OPTIONS);
+
 	public static final String ALLOW_HEADER_VALUE = String.join(", ", ALLOW.stream().map(HttpMethod::toString).toList());
 
 	private static final int NO_BODY = -1;
@@ -58,7 +59,7 @@ public class KeyValueHttpServer implements AutoCloseable {
 		this.executor = Executors.newVirtualThreadPerTaskExecutor();
 
 		this.httpServer = createHttpServer(port);
-		this.httpServer.createContext(ROUTE_API_KEYS, new NameHandler(this));
+		this.httpServer.createContext(ROUTE_API_KEYS, new KeysHandler(this));
 		this.httpServer.setExecutor(executor);
 		this.httpServer.start();
 
@@ -87,11 +88,11 @@ public class KeyValueHttpServer implements AutoCloseable {
 		}
 	}
 
-	static class NameHandler implements HttpHandler {
+	static class KeysHandler implements HttpHandler {
 
 		private final KeyValueHttpServer server;
 
-		public NameHandler(final KeyValueHttpServer server) {
+		public KeysHandler(final KeyValueHttpServer server) {
 			this.server = server;
 		}
 

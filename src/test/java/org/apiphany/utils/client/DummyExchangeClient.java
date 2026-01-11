@@ -1,4 +1,4 @@
-package org.apiphany.testdata;
+package org.apiphany.utils.client;
 
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
