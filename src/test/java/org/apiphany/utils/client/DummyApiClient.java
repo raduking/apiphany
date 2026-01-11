@@ -1,10 +1,11 @@
-package org.apiphany.testdata;
+package org.apiphany.utils.client;
 
 import java.util.List;
 import java.util.Map;
 
 import org.apiphany.ApiClient;
 import org.apiphany.client.ExchangeClient;
+import org.apiphany.utils.TestDto;
 import org.morphix.reflection.GenericClass;
 
 public class DummyApiClient extends ApiClient {
