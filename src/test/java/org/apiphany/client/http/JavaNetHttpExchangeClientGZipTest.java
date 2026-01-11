@@ -4,7 +4,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.time.Duration;
-import java.util.Map;
 
 import org.apiphany.client.ClientProperties;
 import org.apiphany.net.Sockets;
@@ -25,12 +24,9 @@ class JavaNetHttpExchangeClientGZipTest {
 	private static final int API_SERVER_PORT = Sockets.findAvailableTcpPort(PORT_CHECK_TIMEOUT);
 
 	private static final ClientProperties CLIENT_PROPERTIES = new ClientProperties();
-	static {
-		CLIENT_PROPERTIES.setClient(Map.of("url", "http://localhost:" + API_SERVER_PORT));
-	}
 
 	private static final GZipKeyValueHttpServer API_SERVER = new GZipKeyValueHttpServer(API_SERVER_PORT);
-	private static final KeyValueApiClient API_CLIENT = new KeyValueApiClient(CLIENT_PROPERTIES);
+	private static final KeyValueApiClient API_CLIENT = new KeyValueApiClient("http://localhost:" + API_SERVER_PORT, CLIENT_PROPERTIES);
 
 	private static final String NEW_KEY = "Bubu";
 	private static final String NEW_VALUE_1 = "Juju";
