@@ -14,6 +14,7 @@
 - Renamed `ExchangeClientBuilder.decorateWith` with builder class parameter to `ExchangeClientBuilder.decorateWithBuilder`.
 - Added `ExchangeClientBuilder.decorateWith` with `DecoratingExchangeClient` class as parameter.
 - Added `ApiClient.with(ExchangeClient)` static method to be used when the exchange client is managed by the caller.
+- Renamed `ApiClient.exchangeClient` static method to `ApiClient.withClient`.
 
 ---
 

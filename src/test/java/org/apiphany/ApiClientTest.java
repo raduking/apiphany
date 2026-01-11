@@ -756,7 +756,7 @@ class ApiClientTest {
 		ClientProperties clientProperties = new ClientProperties();
 
 		ApiClient api = ApiClient.of(BASE_URL, ApiClient
-				.exchangeClient(SomeExchangeClient.class)
+				.withClient(SomeExchangeClient.class)
 				.properties(clientProperties));
 
 		SomeExchangeClient exchangeClient = JavaObjects.cast(api.getExchangeClient(AuthenticationType.NONE));
