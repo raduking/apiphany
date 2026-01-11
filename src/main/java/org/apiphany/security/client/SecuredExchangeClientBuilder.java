@@ -36,7 +36,7 @@ public class SecuredExchangeClientBuilder extends ExchangeClientBuilder {
 	 * @return new OAuth2 exchange client builder
 	 */
 	public OAuth2HttpExchangeClientBuilder oAuth2(final Consumer<OAuth2HttpExchangeClientBuilder> oAuth2BuilderCustomizer) {
-		return decorateWithBuilder(OAuth2HttpExchangeClientBuilder.class, oAuth2BuilderCustomizer);
+		return decoratedWithBuilder(OAuth2HttpExchangeClientBuilder.class, oAuth2BuilderCustomizer);
 	}
 
 	/**
