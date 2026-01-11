@@ -175,7 +175,7 @@ class ScopedResourceTest {
 		ScopedResource<TestResource> a = ScopedResource.managed(c);
 		ScopedResource<TestResource> b = ScopedResource.managed(c);
 
-		ScopedResource<TestResource> result = ScopedResource.checked(a, b);
+		ScopedResource<TestResource> result = ScopedResource.ensureSingleManager(a, b);
 
 		assertSame(c, result.unwrap());
 		assertTrue(result.isNotManaged());
@@ -187,7 +187,7 @@ class ScopedResourceTest {
 		ScopedResource<TestResource> a = ScopedResource.managed(new TestResource());
 		ScopedResource<TestResource> b = ScopedResource.managed(new TestResource());
 
-		ScopedResource<TestResource> result = ScopedResource.checked(a, b);
+		ScopedResource<TestResource> result = ScopedResource.ensureSingleManager(a, b);
 
 		assertSame(a, result);
 		assertTrue(result.isManaged());
@@ -199,7 +199,7 @@ class ScopedResourceTest {
 		ScopedResource<TestResource> a = ScopedResource.unmanaged(new TestResource());
 		ScopedResource<TestResource> b = ScopedResource.managed(new TestResource());
 
-		ScopedResource<TestResource> result = ScopedResource.checked(a, b);
+		ScopedResource<TestResource> result = ScopedResource.ensureSingleManager(a, b);
 
 		assertSame(a, result);
 		assertTrue(result.isNotManaged());
@@ -211,7 +211,7 @@ class ScopedResourceTest {
 		ScopedResource<TestResource> a = ScopedResource.managed(new TestResource());
 		ScopedResource<TestResource> b = ScopedResource.unmanaged(new TestResource());
 
-		ScopedResource<TestResource> result = ScopedResource.checked(a, b);
+		ScopedResource<TestResource> result = ScopedResource.ensureSingleManager(a, b);
 
 		assertSame(a, result);
 		assertTrue(a.isManaged());

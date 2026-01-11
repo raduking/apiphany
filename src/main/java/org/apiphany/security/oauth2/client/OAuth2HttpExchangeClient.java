@@ -53,7 +53,7 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 			final String clientRegistrationName) {
 		super(exchangeClient);
 
-		this.tokenExchangeClient = ScopedResource.checked(tokenExchangeClient, exchangeClient);
+		this.tokenExchangeClient = ScopedResource.ensureSingleManager(tokenExchangeClient, exchangeClient);
 		this.oAuth2Properties = getClientProperties().getCustomProperties(OAuth2Properties.ROOT, OAuth2Properties.class);
 
 		if (initialize()) {
