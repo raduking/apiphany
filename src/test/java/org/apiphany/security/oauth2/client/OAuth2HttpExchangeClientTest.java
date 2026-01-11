@@ -388,7 +388,7 @@ class OAuth2HttpExchangeClientTest {
 		protected OAuth2v1ApiClient(final ClientProperties properties) {
 			super(withClient(JavaNetHttpExchangeClient.class)
 					.properties(properties)
-					.secureWith()
+					.securedWith()
 					.oAuth2());
 		}
 	}
@@ -401,7 +401,7 @@ class OAuth2HttpExchangeClientTest {
 		protected OAuth2v2ApiClient(final ClientProperties properties) {
 			super(with(JavaNetHttpExchangeClient.class)
 					.properties(properties)
-					.secureWith()
+					.securedWith()
 					.oAuth2());
 		}
 	}
@@ -414,7 +414,7 @@ class OAuth2HttpExchangeClientTest {
 		protected OAuth2v3ApiClient(final ClientProperties properties) {
 			super(with(JavaNetHttpExchangeClient.class)
 					.properties(properties)
-					.secureWith()
+					.securedWith()
 					.oAuth2(oauth2 -> oauth2.tokenClient(JavaNetHttpExchangeClient.class)));
 		}
 	}
@@ -445,7 +445,7 @@ class OAuth2HttpExchangeClientTest {
 		protected OAuth2v5ApiClient(final ClientProperties properties) {
 			super(with(JavaNetHttpExchangeClient.class)
 					.properties(properties)
-					.decorateWithBuilder(OAuth2HttpExchangeClientBuilder.class));
+					.decoratedWithBuilder(OAuth2HttpExchangeClientBuilder.class));
 		}
 	}
 
@@ -468,7 +468,7 @@ class OAuth2HttpExchangeClientTest {
 		protected OAuth2v7ApiClient(final ClientProperties properties) {
 			super(with(JavaNetHttpExchangeClient.class)
 					.properties(properties)
-					.decorateWith(OAuth2HttpExchangeClient.class));
+					.decoratedWith(OAuth2HttpExchangeClient.class));
 		}
 	}
 
@@ -479,7 +479,7 @@ class OAuth2HttpExchangeClientTest {
 
 		protected OAuth2v8ApiClient(final ExchangeClient exchangeClient) {
 			super(with(exchangeClient)
-					.decorateWith(OAuth2HttpExchangeClient.class));
+					.decoratedWith(OAuth2HttpExchangeClient.class));
 		}
 	}
 
@@ -491,7 +491,7 @@ class OAuth2HttpExchangeClientTest {
 		protected OAuth2UnmanagedTokenClientApiClient(final ClientProperties properties, final ExchangeClient tokenClient) {
 			super(with(JavaNetHttpExchangeClient.class)
 					.properties(properties)
-					.secureWith()
+					.securedWith()
 					.oAuth2(oauth2 -> oauth2.tokenClient(tokenClient)));
 		}
 	}

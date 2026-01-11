@@ -148,7 +148,7 @@ public class ExchangeClientBuilder {
 	 * @param decoratorCustomizer decorator customizer
 	 * @return new decorating exchange client builder
 	 */
-	public <T extends ExchangeClientBuilder> T decorateWithBuilder(final Class<T> decoratingBuilderClass, final Consumer<T> decoratorCustomizer) {
+	public <T extends ExchangeClientBuilder> T decoratedWithBuilder(final Class<T> decoratingBuilderClass, final Consumer<T> decoratorCustomizer) {
 		Method createMethod = Methods.Safe.getOneDeclared("create", decoratingBuilderClass);
 		T decoratorBuilder = Methods.IgnoreAccess.invoke(createMethod, null);
 		decoratorBuilder.builder(this);
@@ -166,8 +166,8 @@ public class ExchangeClientBuilder {
 	 * @param decoratingBuilderClass decorating builder class
 	 * @return new decorating exchange client builder
 	 */
-	public <T extends ExchangeClientBuilder> T decorateWithBuilder(final Class<T> decoratingBuilderClass) {
-		return decorateWithBuilder(decoratingBuilderClass, Consumers.noConsumer());
+	public <T extends ExchangeClientBuilder> T decoratedWithBuilder(final Class<T> decoratingBuilderClass) {
+		return decoratedWithBuilder(decoratingBuilderClass, Consumers.noConsumer());
 	}
 
 	/**
@@ -180,7 +180,7 @@ public class ExchangeClientBuilder {
 	 * @param decoratingClientClass decorating exchange client class
 	 * @return new decorating exchange client builder
 	 */
-	public <T extends DecoratingExchangeClient> ExchangeClientBuilder decorateWith(final Class<T> decoratingClientClass) {
+	public <T extends DecoratingExchangeClient> ExchangeClientBuilder decoratedWith(final Class<T> decoratingClientClass) {
 		this.decoratorClientClasses.add(decoratingClientClass);
 		return this;
 	}
@@ -190,7 +190,7 @@ public class ExchangeClientBuilder {
 	 *
 	 * @return new secured exchange client builder
 	 */
-	public SecuredExchangeClientBuilder secureWith() {
-		return decorateWithBuilder(SecuredExchangeClientBuilder.class);
+	public SecuredExchangeClientBuilder securedWith() {
+		return decoratedWithBuilder(SecuredExchangeClientBuilder.class);
 	}
 }

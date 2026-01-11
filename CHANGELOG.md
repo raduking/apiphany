@@ -12,8 +12,9 @@
 - Renamed `ScopedResource.checked` method to `ensureSingleManager` to better emphasize what it does.
 - Added constructor with resource only to `ScopedResource` defaulting to a managed resource.
 - Fixed `HttpContentType.parse` methods when `charset` parameter is missing but other parameter is present.
-- Renamed `ExchangeClientBuilder.decorateWith` with builder class parameter to `ExchangeClientBuilder.decorateWithBuilder`.
-- Added `ExchangeClientBuilder.decorateWith` with `DecoratingExchangeClient` class as parameter.
+- Renamed `ExchangeClientBuilder.decorateWith` with builder class parameter to `ExchangeClientBuilder.decoratedWithBuilder`.
+- Added `ExchangeClientBuilder.decoratedWith` with `DecoratingExchangeClient` class as parameter.
+- Renamed `ExchangeClientBuilder.secureWith` with builder class parameter to `ExchangeClientBuilder.securedWith`.
 - Added `ApiClient.with(ExchangeClient)` static method to be used when the exchange client is managed by the caller.
 - Renamed `ApiClient.exchangeClient` static method to `ApiClient.withClient`.
 
