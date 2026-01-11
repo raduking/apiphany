@@ -5,10 +5,13 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
- * A wrapper for managing the life-cycle of {@link AutoCloseable} resources with scope control.
+ * An immutable wrapper for managing the life-cycle of {@link AutoCloseable} resources with scope control.
  * <p>
  * This class provides controlled access to resources while ensuring proper cleanup based on the managed flag. It
  * supports both managed (automatically closed) and unmanaged (manually closed) resource patterns.
+ * <p>
+ * Instances do not change management state; operations that adjust management return new {@link ScopedResource}
+ * instances.
  *
  * @param <T> the type of the {@link AutoCloseable} resource being wrapped
  *
@@ -150,6 +153,10 @@ public class ScopedResource<T extends AutoCloseable> {
 	 * Checks the first parameter against the second for the same underlying reference. If the referenced resources are the
 	 * same and they are both managed then we return an unmanaged scoped resource. Only one scoped resource should manage
 	 * the same resource.
+	 * <p>
+	 * This is useful when passing scoped resources around to ensure that only one manager exists for a given resource. It
+	 * is not a mandatory check but a safety mechanism to avoid double closing of resources but since the
+	 * {@link AutoCloseable#close()} method should be idempotent it is not a critical one.
 	 *
 	 * @param <T> the type of the {@link AutoCloseable} resources being wrapped
 	 *
@@ -158,7 +165,7 @@ public class ScopedResource<T extends AutoCloseable> {
 	 * @return a checked scoped resource
 	 */
 	@SuppressWarnings("resource")
-	public static <T extends AutoCloseable> ScopedResource<T> checked(
+	public static <T extends AutoCloseable> ScopedResource<T> ensureSingleManager(
 			final ScopedResource<T> checkedResource,
 			final ScopedResource<T> resource) {
 		if (checkedResource.isNotManaged() || resource.isNotManaged()) {
@@ -169,5 +176,4 @@ public class ScopedResource<T extends AutoCloseable> {
 				? ScopedResource.unmanaged(rawCheckedResource)
 				: checkedResource;
 	}
-
 }
