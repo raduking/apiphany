@@ -131,7 +131,7 @@ public class KeyValueHttpServer implements AutoCloseable {
 			} else if (server.map.containsKey(key)) {
 				sendResponse(exchange, HttpStatus.OK, server.map.get(key));
 			} else {
-				exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.value(), -1);
+				exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.value(), NO_BODY);
 			}
 		}
 
@@ -213,9 +213,9 @@ public class KeyValueHttpServer implements AutoCloseable {
 		private static <T> void sendResponse(final HttpExchange exchange, final HttpStatus status, final T response) throws IOException {
 			String responseString = Strings.safeToString(response);
 			exchange.sendResponseHeaders(status.getCode(), responseString.length());
-			OutputStream os = exchange.getResponseBody();
-			os.write(responseString.getBytes(StandardCharsets.UTF_8));
-			os.close();
+			try (OutputStream os = exchange.getResponseBody()) {
+				os.write(responseString.getBytes(StandardCharsets.UTF_8));
+			}
 		}
 
 		private static String getKeyFromPath(final HttpExchange exchange) {
@@ -225,6 +225,5 @@ public class KeyValueHttpServer implements AutoCloseable {
 			}
 			return fullPath.substring((ROUTE_API_KEYS + "/").length());
 		}
-
 	}
 }

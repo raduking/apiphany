@@ -15,6 +15,9 @@ import org.morphix.reflection.Constructors;
  * Represents a HTTP content type when the character set differs from the one already defined. This is useful for
  * parsing HTTP headers sent from an HTTP server which might decide not to follow the character sets defined in the
  * {@link ContentType} enumeration.
+ * <p>
+ * TODO: add support for other parameters besides charset (e.g. boundary for multipart types, version for application/*
+ * types, format for text/* types, etc.)
  *
  * @author Radu Sebastian LAZIN
  */
@@ -115,11 +118,37 @@ public class HttpContentType implements ApiMimeType {
 	public String value() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(getContentType().toString());
-		if (null != getCharset()) {
+		Charset charset = getCharset();
+		if (null != charset) {
 			sb.append("; ")
 					.append(Param.CHARSET)
 					.append("=")
-					.append(getCharset());
+					.append(charset);
+		}
+		return sb.toString();
+	}
+
+	/**
+	 * Returns the canonical RFC 7231-style string representation of this HTTP content type.
+	 * <ul>
+	 * <li>type/sub-type are lower-cased</li>
+	 * <li>charset parameter is included only if not null</li>
+	 * <li>parameter names are lower-cased</li>
+	 * <li>charset value is lower-cased</li>
+	 * <li>no superfluous whitespace</li>
+	 * </ul>
+	 *
+	 * @return the canonical normalized value
+	 */
+	public String normalizedValue() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(getContentType().value().toLowerCase());
+		Charset charset = getCharset();
+		if (charset != null) {
+			sb.append("; ")
+					.append(Param.CHARSET.toLowerCase())
+					.append("=")
+					.append(charset.name().toLowerCase());
 		}
 		return sb.toString();
 	}

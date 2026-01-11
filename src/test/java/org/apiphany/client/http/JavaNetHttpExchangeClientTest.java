@@ -16,19 +16,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import org.apiphany.ApiClient;
 import org.apiphany.ApiClientFluentAdapter;
 import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.header.Headers;
+import org.apiphany.http.HttpContentType;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.io.ContentType;
 import org.apiphany.net.Sockets;
+import org.apiphany.utils.http.client.KeyValueApiClient;
 import org.apiphany.utils.http.server.KeyValueHttpServer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
-import org.morphix.reflection.GenericClass;
 
 /**
  * Test class for {@link JavaNetHttpExchangeClient}.
@@ -40,10 +40,13 @@ class JavaNetHttpExchangeClientTest {
 	private static final Duration PORT_CHECK_TIMEOUT = Duration.ofMillis(500);
 	private static final int API_SERVER_PORT = Sockets.findAvailableTcpPort(PORT_CHECK_TIMEOUT);
 
-	private static final KeyValueHttpServer API_SERVER = new KeyValueHttpServer(API_SERVER_PORT);
-
 	private static final ClientProperties CLIENT_PROPERTIES = new ClientProperties();
-	private static final SimpleApiClient API_CLIENT = new SimpleApiClient(CLIENT_PROPERTIES);
+	static {
+		CLIENT_PROPERTIES.setClient(Map.of("url", "http://localhost:" + API_SERVER_PORT));
+	}
+
+	private static final KeyValueHttpServer API_SERVER = new KeyValueHttpServer(API_SERVER_PORT);
+	private static final KeyValueApiClient API_CLIENT = new KeyValueApiClient(CLIENT_PROPERTIES);
 
 	private static final String NEW_KEY = "Bubu";
 	private static final String NEW_VALUE_1 = "Juju";
@@ -87,8 +90,10 @@ class JavaNetHttpExchangeClientTest {
 		String value = API_CLIENT.get(KeyValueHttpServer.DEFAULT_KEY);
 		Map<String, List<String>> headers = API_CLIENT.head(KeyValueHttpServer.DEFAULT_KEY);
 
+		HttpContentType expectedContentType = HttpContentType.of(ContentType.TEXT_PLAIN, StandardCharsets.UTF_8);
+
 		assertThat(Headers.get(HttpHeader.CONTENT_LENGTH, headers), equalTo(List.of(String.valueOf(value.length()))));
-		assertThat(Headers.get(HttpHeader.CONTENT_TYPE, headers), equalTo(List.of("text/plain; charset=utf-8")));
+		assertThat(Headers.get(HttpHeader.CONTENT_TYPE, headers), equalTo(List.of(expectedContentType.value())));
 	}
 
 	@Test
@@ -192,99 +197,4 @@ class JavaNetHttpExchangeClientTest {
 		assertThat(NEW_VALUE_1.getBytes(StandardCharsets.UTF_8), equalTo(subscriber.getReceivedBytes()));
 	}
 
-	static class SimpleApiClient extends ApiClient {
-
-		private static final String KEYS = "keys";
-
-		private static final GenericClass<Map<String, String>> MAP_TYPE = typeObject();
-
-		protected SimpleApiClient(final ClientProperties properties) {
-			super("http://localhost:" + API_SERVER.getPort(),
-					with(JavaNetHttpExchangeClient.class)
-							.properties(properties));
-		}
-
-		public String get(final String key) {
-			return client()
-					.http()
-					.get()
-					.path(API, KEYS, key)
-					.retrieve(String.class)
-					.orNull();
-		}
-
-		public Map<String, String> getAll() {
-			return client()
-					.http()
-					.get()
-					.path(API, KEYS)
-					.retrieve(MAP_TYPE)
-					.orNull();
-		}
-
-		public String set(final String key, final String value) {
-			return client()
-					.http()
-					.put()
-					.path(API, KEYS, key)
-					.body(value)
-					.retrieve(String.class)
-					.orNull();
-		}
-
-		public String add(final String key, final String value) {
-			return client()
-					.http()
-					.post()
-					.path(API, KEYS)
-					.body(key + ":" + value)
-					.retrieve(String.class)
-					.orNull();
-		}
-
-		public String delete(final String key) {
-			return client()
-					.http()
-					.delete()
-					.path(API, KEYS, key)
-					.retrieve(String.class)
-					.orNull();
-		}
-
-		public String append(final String key, final String appended) {
-			return client()
-					.http()
-					.patch()
-					.path(API, KEYS, key)
-					.body(appended)
-					.retrieve(String.class)
-					.orNull();
-		}
-
-		public Map<String, List<String>> head(final String key) {
-			return client()
-					.http()
-					.head()
-					.path(API, KEYS, key)
-					.retrieve()
-					.getHeaders();
-		}
-
-		public Map<String, List<String>> options() {
-			return client()
-					.http()
-					.options()
-					.path(API, KEYS)
-					.retrieve()
-					.getHeaders();
-		}
-
-		public ApiResponse<String> trace() {
-			return client()
-					.http()
-					.trace()
-					.path(API, KEYS)
-					.retrieve(String.class);
-		}
-	}
 }
