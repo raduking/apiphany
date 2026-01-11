@@ -240,11 +240,29 @@ class HttpContentTypeTest {
 	}
 
 	@Test
+	void shouldReturnNormalizedValueWithoutCharset() {
+		HttpContentType ct = HttpContentType.of(ContentType.IMAGE_PNG);
+
+		String value = ct.normalizedValue();
+
+		assertThat(value, equalTo(ContentType.Value.IMAGE_PNG));
+	}
+
+	@Test
 	void shouldReturnValueWithCharset() {
 		HttpContentType ct = HttpContentType.of(ContentType.IMAGE_PNG, StandardCharsets.UTF_8);
 
 		String value = ct.toString();
 
 		assertThat(value, equalTo("image/png; charset=UTF-8"));
+	}
+
+	@Test
+	void shouldReturnNormalizedValueWithCharset() {
+		HttpContentType ct = HttpContentType.of(ContentType.IMAGE_PNG, StandardCharsets.UTF_8);
+
+		String value = ct.normalizedValue();
+
+		assertThat(value, equalTo("image/png; charset=utf-8"));
 	}
 }
