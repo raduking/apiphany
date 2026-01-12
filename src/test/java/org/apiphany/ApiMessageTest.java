@@ -1,5 +1,7 @@
 package org.apiphany;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -21,9 +23,12 @@ class ApiMessageTest {
 	private static final String DUMMY_BODY = "dummyBody";
 
 	private static final String N1 = "n1";
+	private static final String N2 = "n2";
 
 	private static final String V1 = "v1";
 	private static final String V2 = "v2";
+	private static final String V3 = "v3";
+	private static final String V4 = "v4";
 
 	Map<String, List<String>> headers = new HashMap<>() {
 		private static final long serialVersionUID = 1L;
@@ -112,5 +117,20 @@ class ApiMessageTest {
 		ApiMessage<String> message = new ApiMessage<>();
 
 		assertTrue(message.hasNoBody());
+	}
+
+	@Test
+	void shouldAddHeadersToExistingHeaders() {
+		ApiMessage<String> message = new ApiMessage<>(DUMMY_BODY, headers);
+
+		var headersToAdd = Map.of(N2, List.of(V3, V4));
+
+		message.addHeaders(headersToAdd);
+
+		var expected = Map.of(
+				N1, List.of(V1, V2),
+				N2, List.of(V3, V4));
+
+		assertThat(message.getHeaders(), equalTo(expected));
 	}
 }
