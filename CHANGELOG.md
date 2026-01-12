@@ -4,8 +4,11 @@
 
 - Added `Headers.of` method to dynamically build a headers map.
 - Added `HeaderFunction` functional interface as a helper to dynamically build a headers map together with `Headers.of`.
+- Added `Header` utility interface with factory methods to dynamically build headers.
 - Changed the whole `ExchangeClient` hierarchy to favor composition instead of inheritance.
 - Added `ExchangeClient.getCommonHeaders` to provide headers that will be added to all requests.
+- Added `ExchangeClient.getTracingHeaders` to provide tracing headers that will be added to all requests.
+- Removed `AbstractHttpExchangeClient.addTracingHeaders` in favor of `ExchangeClient.getTracingHeaders`.
 - Added `DelegatingExchangeClient` interface to signify a client that delegates all functionality to an underlying exchange client.
 - Removed `DecoratingHttpExchangeClient` in favor of `DecoratingExchangeClient` to better fit its functionality.
 - Removed `AbstractAuthenticatedHttpExchangeClient` in favor of `AuthenticatedExchangeClient` interface.

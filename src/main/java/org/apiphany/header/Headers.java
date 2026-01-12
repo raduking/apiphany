@@ -49,13 +49,11 @@ public interface Headers {
 	 * @param headers headers map
 	 */
 	static <N, H> void addTo(final Map<String, List<String>> existingHeaders, final Map<N, H> headers) {
-		Nullables.whenNotNull(headers).then(hdrs -> {
-			for (Map.Entry<N, H> header : hdrs.entrySet()) {
-				N headerName = header.getKey();
-				Object headerValue = Nullables.nonNullOrDefault(header.getValue(), "");
-				addTo(existingHeaders, headerName, headerValue);
-			}
-		});
+		for (Map.Entry<N, H> header : Maps.safe(headers).entrySet()) {
+			N headerName = header.getKey();
+			Object headerValue = Nullables.nonNullOrDefault(header.getValue(), "");
+			addTo(existingHeaders, headerName, headerValue);
+		}
 	}
 
 	/**

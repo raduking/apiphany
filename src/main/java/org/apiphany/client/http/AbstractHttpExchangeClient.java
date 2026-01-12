@@ -1,5 +1,6 @@
 package org.apiphany.client.http;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +11,7 @@ import org.apiphany.ApiMimeType;
 import org.apiphany.ApiRequest;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ContentConverter;
+import org.apiphany.header.Header;
 import org.apiphany.header.HeaderValues;
 import org.apiphany.header.Headers;
 import org.apiphany.header.MapHeaderValues;
@@ -148,19 +150,22 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	}
 
 	/**
-	 * Adds tracing headers to the given headers.
+	 * Returns the tracing headers for the current request.
 	 * <p>
-	 * TODO: make it more generic
+	 * TODO: make this more generic to support other tracing systems than B3
 	 *
-	 * @param headers headers to add tracing headers to
+	 * @return the tracing headers
 	 */
-	public static void addTracingHeaders(final Map<String, List<String>> headers) {
+	@Override
+	public Map<String, List<String>> getTracingHeaders() {
 		String traceId = MDC.get("traceId");
 		if (Strings.isNotEmpty(traceId)) {
 			String spanId = MDC.get("spanId");
-			Headers.addTo(headers, TracingHeader.B3_TRACE_ID, traceId);
-			Headers.addTo(headers, TracingHeader.B3_SPAN_ID, spanId);
+			return Headers.of(
+					Header.of(TracingHeader.B3_TRACE_ID, traceId),
+					Header.of(TracingHeader.B3_SPAN_ID, spanId));
 		}
+		return Collections.emptyMap();
 	}
 
 	/**

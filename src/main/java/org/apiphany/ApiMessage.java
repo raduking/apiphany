@@ -129,4 +129,12 @@ public class ApiMessage<T> {
 		return Headers.contains(headerName, getHeaders());
 	}
 
+	/**
+	 * Adds the given headers to the message's headers.
+	 *
+	 * @param headersToAdd the headers to add
+	 */
+	public void addHeaders(final Map<String, List<String>> headersToAdd) {
+		Headers.addTo(this.headers, headersToAdd);
+	}
 }
