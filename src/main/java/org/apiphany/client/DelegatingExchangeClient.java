@@ -2,7 +2,6 @@ package org.apiphany.client;
 
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
-import org.apiphany.header.Headers;
 
 /**
  * An ExchangeClient that delegates all calls to another ExchangeClient.
@@ -35,7 +34,7 @@ public interface DelegatingExchangeClient extends ExchangeClient {
 	@SuppressWarnings("resource")
 	@Override
 	default <T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest) {
-		Headers.addTo(apiRequest.getHeaders(), getCommonHeaders());
+		apiRequest.addHeaders(getCommonHeaders());
 		return getExchangeClient().exchange(apiRequest);
 	}
 
