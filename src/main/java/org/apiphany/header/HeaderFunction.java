@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import org.apiphany.ParameterFunction;
-
 /**
  * Functional interface for defining how headers are inserted into a headers map. This interface together with
  * {@link Headers#of(HeaderFunction...)} is used to build header maps dynamically.
@@ -31,11 +29,11 @@ public interface HeaderFunction extends Consumer<Map<String, List<String>>> {
 	}
 
 	/**
-	 * Creates a {@link ParameterFunction} for a single key-value pair.
+	 * Creates a {@link HeaderFunction} for a single key-value pair.
 	 *
 	 * @param name the parameter name
 	 * @param value the parameter value
-	 * @return a {@link ParameterFunction} that inserts the key-value pair into the map
+	 * @return a {@link HeaderFunction} that inserts the key-value pair into the map
 	 */
 	static HeaderFunction header(final String name, final String value) {
 		return map -> Headers.addTo(map, name, value);
@@ -49,7 +47,7 @@ public interface HeaderFunction extends Consumer<Map<String, List<String>>> {
 	 *
 	 * @param name the parameter name
 	 * @param value the parameter value
-	 * @return a {@link ParameterFunction} that inserts the key-value pair into the map
+	 * @return a {@link HeaderFunction} that inserts the key-value pair into the map
 	 */
 	static <T, U> HeaderFunction header(final T name, final U value) {
 		return header(String.valueOf(name), String.valueOf(value));

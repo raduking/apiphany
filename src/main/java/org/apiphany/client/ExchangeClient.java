@@ -103,11 +103,21 @@ public interface ExchangeClient extends AutoCloseable {
 
 	/**
 	 * Returns common headers for all requests. By default, it returns an empty map. These headers will be added to each
-	 * request made by this client before any request-specific headers.
+	 * request made by this client.
 	 *
 	 * @return common headers for all requests
 	 */
 	default Map<String, List<String>> getCommonHeaders() {
+		return Collections.emptyMap();
+	}
+
+	/**
+	 * Returns tracing headers for all requests. By default, it returns an empty map. These headers will be added to each
+	 * request made by this client.
+	 *
+	 * @return tracing headers for all requests
+	 */
+	default Map<String, List<String>> getTracingHeaders() {
 		return Collections.emptyMap();
 	}
 
@@ -119,5 +129,4 @@ public interface ExchangeClient extends AutoCloseable {
 	static ExchangeClientBuilder builder() {
 		return ExchangeClientBuilder.create();
 	}
-
 }
