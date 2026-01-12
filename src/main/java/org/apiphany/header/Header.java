@@ -5,7 +5,7 @@ package org.apiphany.header;
  *
  * @author Radu Sebastian LAZIN
  */
-public interface Header {
+public interface Header extends HeaderFunction {
 
 	/**
 	 * Creates a {@link HeaderFunction} for a single key-value pair.
@@ -14,8 +14,8 @@ public interface Header {
 	 * @param value the parameter value
 	 * @return a {@link HeaderFunction} that inserts the key-value pair into the map
 	 */
-	static HeaderFunction of(final String name, final String value) {
-		return HeaderFunction.header(name, value);
+	static Header of(final String name, final String value) {
+		return HeaderFunction.header(name, value)::addTo;
 	}
 
 	/**
@@ -28,7 +28,7 @@ public interface Header {
 	 * @param value the parameter value
 	 * @return a {@link HeaderFunction} that inserts the key-value pair into the map
 	 */
-	static <T, U> HeaderFunction of(final T name, final U value) {
-		return HeaderFunction.header(name, value);
+	static <T, U> Header of(final T name, final U value) {
+		return HeaderFunction.header(name, value)::addTo;
 	}
 }
