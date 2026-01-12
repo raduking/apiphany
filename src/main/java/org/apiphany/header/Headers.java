@@ -3,6 +3,7 @@ package org.apiphany.header;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiPredicate;
@@ -20,6 +21,23 @@ import org.morphix.lang.Nullables;
  * @author Radu Sebastian LAZIN
  */
 public interface Headers {
+
+	/**
+	 * Creates a new immutable map and populates it with the given external header functions.
+	 *
+	 * @param headerFunctions the {@link HeaderFunction}s to execute
+	 * @return a new map containing the inserted headers
+	 */
+	public static Map<String, List<String>> of(final HeaderFunction... headerFunctions) {
+		if (null == headerFunctions || 0 == headerFunctions.length) {
+			return Collections.emptyMap();
+		}
+		var map = new HashMap<String, List<String>>();
+		for (HeaderFunction headerFunction : headerFunctions) {
+			headerFunction.addTo(map);
+		}
+		return Collections.unmodifiableMap(map);
+	}
 
 	/**
 	 * Adds headers to existing headers.
