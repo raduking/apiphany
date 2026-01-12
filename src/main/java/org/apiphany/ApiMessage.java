@@ -132,9 +132,12 @@ public class ApiMessage<T> {
 	/**
 	 * Adds the given headers to the message's headers.
 	 *
+	 * @param <N> header name type
+	 * @param <V> header value type
+	 *
 	 * @param headersToAdd the headers to add
 	 */
-	public void addHeaders(final Map<String, List<String>> headersToAdd) {
+	public <N, V> void addHeaders(final Map<N, V> headersToAdd) {
 		Headers.addTo(getHeaders(), headersToAdd);
 	}
 }

@@ -323,7 +323,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @return this
 	 */
 	public <N, H> ApiClientFluentAdapter headers(final Map<N, H> headers) {
-		Headers.addTo(this.headers, headers);
+		addHeaders(headers);
 		return this;
 	}
 
@@ -518,6 +518,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 
 	/**
 	 * @see ApiMessage#getHeadersAsString()
+	 * @see ExchangeClient#getHeadersAsString(ApiMessage)
 	 */
 	@SuppressWarnings("resource")
 	@Override

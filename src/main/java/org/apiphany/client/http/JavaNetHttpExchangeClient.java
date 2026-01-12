@@ -21,7 +21,6 @@ import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ContentConverter;
 import org.apiphany.client.ExchangeClient;
-import org.apiphany.header.Headers;
 import org.apiphany.http.ContentEncoding;
 import org.apiphany.http.HttpContentType;
 import org.apiphany.http.HttpException;
@@ -116,8 +115,8 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	 */
 	@Override
 	public <T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest) {
-		Headers.addTo(apiRequest.getHeaders(), getCommonHeaders());
-		Headers.addTo(apiRequest.getHeaders(), getTracingHeaders());
+		apiRequest.addHeaders(getCommonHeaders());
+		apiRequest.addHeaders(getTracingHeaders());
 
 		HttpRequest httpRequest = buildRequest(apiRequest);
 		HttpResponse<?> httpResponse = HttpException.ifThrows(
