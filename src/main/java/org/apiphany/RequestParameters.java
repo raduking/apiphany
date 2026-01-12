@@ -26,7 +26,7 @@ public class RequestParameters {
 	public static final String SEPARATOR = "&";
 
 	/**
-	 * Creates a new map and populates it with the given external put functions.
+	 * Creates a new map and populates it with the given external parameter functions.
 	 *
 	 * @param paramFunctions the {@link ParameterFunction}s to execute
 	 * @return a new map containing the inserted parameters

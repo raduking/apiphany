@@ -2,8 +2,10 @@
 
 `1.0.22`
 
-- Fixed `ApiPredicates.hasResponse` to return `true` only when the response is not `null`.
+- Added `Headers.of` method to dynamically build a headers map.
+- Added `HeaderFunction` functional interface as a helper to dynamically build a headers map together with `Headers.of`.
 - Changed the whole `ExchangeClient` hierarchy to favor composition instead of inheritance.
+- Added `ExchangeClient.getCommonHeaders` to provide headers that will be added to all requests.
 - Added `DelegatingExchangeClient` interface to signify a client that delegates all functionality to an underlying exchange client.
 - Removed `DecoratingHttpExchangeClient` in favor of `DecoratingExchangeClient` to better fit its functionality.
 - Removed `AbstractAuthenticatedHttpExchangeClient` in favor of `AuthenticatedExchangeClient` interface.
@@ -18,6 +20,7 @@
 - Added `ApiClient.with(ExchangeClient)` static method to be used when the exchange client is managed by the caller.
 - Renamed `ApiClient.exchangeClient` static method to `ApiClient.withClient`.
 - Added `HttpContentType.normalizedValue` method to return the value in RFC 7231-style.
+- Fixed `ApiPredicates.hasResponse` to return `true` only when the response is not `null`.
 
 ---
 

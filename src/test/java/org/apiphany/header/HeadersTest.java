@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
@@ -168,4 +169,50 @@ class HeadersTest {
 		assertThat(headerValues, hasSize(0));
 	}
 
+	@Test
+	void shouldCreateHeadersMapWithAllHeaders() {
+		Map<String, List<String>> resultHeaders = Headers.of(
+				HeaderFunction.header(N1, V1),
+				HeaderFunction.header(N2, V2));
+
+		Map<String, List<String>> expected = new HashMap<>();
+		expected.put(N1, List.of(V1));
+		expected.put(N2, List.of(V2));
+
+		assertThat(resultHeaders, equalTo(expected));
+	}
+
+	@Test
+	void shouldCreateHeadersMapWithNoHeaders() {
+		Map<String, List<String>> resultHeaders = Headers.of();
+
+		assertThat(resultHeaders, equalTo(Collections.emptyMap()));
+	}
+
+	@Test
+	void shouldCreateHeadersMapWithNullHeaders() {
+		Map<String, List<String>> resultHeaders = Headers.of((HeaderFunction[]) null);
+
+		assertThat(resultHeaders, equalTo(Collections.emptyMap()));
+	}
+
+	@Test
+	void shouldCreateImmutableHeadersMapWithAllHeaders() {
+		Map<String, List<String>> resultHeaders = Headers.of(
+				HeaderFunction.header(N1, V1),
+				HeaderFunction.header(N2, V2));
+
+		assertThrows(UnsupportedOperationException.class, () -> {
+			resultHeaders.put("new-header", List.of("new-value"));
+		});
+	}
+
+	@Test
+	void shouldCreateImmutableHeadersMapWithNoHeaders() {
+		Map<String, List<String>> resultHeaders = Headers.of();
+
+		assertThrows(UnsupportedOperationException.class, () -> {
+			resultHeaders.put("new-header", List.of("new-value"));
+		});
+	}
 }

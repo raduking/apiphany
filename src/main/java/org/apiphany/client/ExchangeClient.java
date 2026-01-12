@@ -2,6 +2,7 @@ package org.apiphany.client;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
@@ -98,6 +99,16 @@ public interface ExchangeClient extends AutoCloseable {
 	 */
 	default Predicate<String> isRedactedHeader() {
 		return headerName -> false;
+	}
+
+	/**
+	 * Returns common headers for all requests. By default, it returns an empty map. These headers will be added to each
+	 * request made by this client before any request-specific headers.
+	 *
+	 * @return common headers for all requests
+	 */
+	default Map<String, List<String>> getCommonHeaders() {
+		return Collections.emptyMap();
 	}
 
 	/**

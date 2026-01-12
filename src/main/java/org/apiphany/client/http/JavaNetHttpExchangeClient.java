@@ -133,6 +133,7 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 		HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder()
 				.uri(apiRequest.getUri());
 		addTracingHeaders(apiRequest.getHeaders());
+		addHeaders(httpRequestBuilder, getCommonHeaders());
 		addHeaders(httpRequestBuilder, apiRequest.getHeaders());
 
 		HttpMethod httpMethod = apiRequest.getMethod();
