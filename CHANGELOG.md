@@ -1,5 +1,9 @@
 ## Release Notes
 
+`1.0.23`
+
+---
+
 `1.0.22`
 
 - Added `Headers.of` method to dynamically build a headers map.
