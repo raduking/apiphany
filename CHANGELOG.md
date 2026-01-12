@@ -24,6 +24,7 @@
 - Renamed `ApiClient.exchangeClient` static method to `ApiClient.withClient`.
 - Added `HttpContentType.normalizedValue` method to return the value in RFC 7231-style.
 - Fixed `ApiPredicates.hasResponse` to return `true` only when the response is not `null`.
+- Added `ApiMessage.addHeaders` to add headers to an existing message.
 
 ---
 
