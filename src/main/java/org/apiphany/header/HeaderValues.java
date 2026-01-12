@@ -2,6 +2,7 @@ package org.apiphany.header;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 import org.apiphany.lang.Strings;
 
@@ -53,6 +54,7 @@ public class HeaderValues {
 	 * @param headerValue header value
 	 * @param headers headers to check
 	 * @return true if the given headers contain the given header with the given value, false otherwise
+	 * @see Headers#contains(Object, Object, Function)
 	 */
 	public <N, V> boolean contains(final N headerName, final V headerValue, final Object headers) {
 		return Headers.contains(headerName, headerValue, name -> get(name, headers));

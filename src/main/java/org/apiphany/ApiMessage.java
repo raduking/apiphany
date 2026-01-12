@@ -112,6 +112,7 @@ public class ApiMessage<T> {
 	 * @param headerName header name
 	 * @param headerValue header value
 	 * @return true if the headers contain the given header with the given value, false otherwise
+	 * @see Headers#contains(Object, Object, Map)
 	 */
 	public <N, V> boolean containsHeader(final N headerName, final V headerValue) {
 		return Headers.contains(headerName, headerValue, getHeaders());
@@ -124,6 +125,7 @@ public class ApiMessage<T> {
 	 *
 	 * @param headerName header name
 	 * @return true if the headers contain the given header, false otherwise
+	 * @see Headers#contains(Object, Map)
 	 */
 	public <N> boolean containsHeader(final N headerName) {
 		return Headers.contains(headerName, getHeaders());
@@ -136,6 +138,7 @@ public class ApiMessage<T> {
 	 * @param <V> header value type
 	 *
 	 * @param headersToAdd the headers to add
+	 * @see Headers#addTo(Map, Map)
 	 */
 	public <N, V> void addHeaders(final Map<N, V> headersToAdd) {
 		Headers.addTo(getHeaders(), headersToAdd);

@@ -57,7 +57,8 @@ public interface Headers {
 	}
 
 	/**
-	 * Adds a header to existing headers.
+	 * Adds a header to existing headers. The method preserves all header values, including duplicates so that multiple
+	 * values for the same header name are allowed and not overwritten.
 	 *
 	 * @param <N> header name type
 	 * @param <H> header value type

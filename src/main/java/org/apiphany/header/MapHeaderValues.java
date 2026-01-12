@@ -37,6 +37,7 @@ public class MapHeaderValues extends HeaderValues {
 	 * @return a list of values for the specified header if headers is a Map and contains the header, otherwise the result
 	 * from the next handler in the chain
 	 * @throws ClassCastException if headers is a Map but cannot be cast to the expected type
+	 * @see Headers#get(Object, Map)
 	 */
 	@Override
 	public <N> List<String> get(final N header, final Object headers) {
@@ -62,6 +63,7 @@ public class MapHeaderValues extends HeaderValues {
 	 * @return true if the specified header with the given value exists in the Map, otherwise the result from the next
 	 * handler in the chain
 	 * @throws ClassCastException if headers is a Map but cannot be cast to the expected type
+	 * @see Headers#contains(Object, Object, Map)
 	 */
 	@Override
 	public <N, V> boolean contains(final N headerName, final V headerValue, final Object headers) {
@@ -79,6 +81,7 @@ public class MapHeaderValues extends HeaderValues {
 	 * @param header the name of the header whose values are to be retrieved.
 	 * @param headers the map of headers, where each key is a header name and the value is a list of header values.
 	 * @return a list of values for the specified header. If the header is not found, an empty list is returned.
+	 * @see Headers#get(Object, Map)
 	 */
 	public static <N> List<String> get(final N header, final Map<String, List<String>> headers) {
 		return Headers.get(header, headers);
@@ -92,6 +95,7 @@ public class MapHeaderValues extends HeaderValues {
 	 * @param headerName header name
 	 * @param headers existing headers
 	 * @return true if the headers contain the given header, false otherwise
+	 * @see Headers#contains(Object, Map)
 	 */
 	public static <N> boolean contains(final N headerName, final Map<String, List<String>> headers) {
 		return Headers.contains(headerName, headers);
