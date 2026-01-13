@@ -25,6 +25,11 @@ public class Hex {
 	private static final boolean VERBOSE = Objects.equals("true", System.getProperty(VERBOSE_PROPERTY_NAME));
 
 	/**
+	 * Hexadecimal characters.
+	 */
+	private static final char[] HEX_CHARS = "0123456789ABCDEF".toCharArray();
+
+	/**
 	 * Hide constructor.
 	 */
 	private Hex() {
@@ -94,7 +99,26 @@ public class Hex {
 	 * @return hexadecimal string representation of the byte
 	 */
 	public static String string(final byte b, final String separator) {
-		return String.format("%02X%s", b, separator);
+		char high = HEX_CHARS[(b >> 4) & 0x0F];
+		char low = HEX_CHARS[b & 0x0F];
+		return "" + high + low + separator;
+	}
+
+	/**
+	 * Converts an integer value to a hexadecimal string representation with specified width.
+	 *
+	 * @param value the integer value to convert
+	 * @param width the width of the resulting hexadecimal string
+	 * @return hexadecimal string representation of the integer value
+	 */
+	public static String string(final int value, final int width) {
+		int currentValue = value;
+		char[] hexChars = new char[width];
+		for (int i = width - 1; i >= 0; --i) {
+			hexChars[i] = HEX_CHARS[currentValue & 0x0F];
+			currentValue >>>= 4;
+		}
+		return new String(hexChars);
 	}
 
 	/**
@@ -118,7 +142,7 @@ public class Hex {
 
 		for (int i = 0; i < bytes.length; i += width) {
 			if (verbose) {
-				sb.append(String.format("%04X: ", i));
+				sb.append(string(i, 4)).append(": ");
 			}
 			for (int j = 0; j < width; ++j) {
 				if (i + j < bytes.length) {
