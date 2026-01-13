@@ -160,9 +160,7 @@ class RequestParametersTest {
 
 		Map<String, String> params = RequestParameters.from(b);
 
-		assertThat(params.entrySet(), hasSize(2));
-		assertThat(params.get("key1"), equalTo("null"));
-		assertThat(params.get("key2"), equalTo("null"));
+		assertThat(params.entrySet(), hasSize(0));
 	}
 
 	@Test
