@@ -3,6 +3,7 @@
 `1.0.23`
 
 - Moved `gzip` package to a better suited package `io.gzip`.
+- Added `Hex.string(int, int)` to convert an integer to hexadecimal string with the given width.
 
 ---
 

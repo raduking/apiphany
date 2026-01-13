@@ -53,7 +53,7 @@ public class HttpMessages {
 		if (actualRangeEnd < actualRangeStart) {
 			throw new IllegalArgumentException("rangeEnd must be greater or equal to rangeStart");
 		}
-		return String.format("bytes=%d-%d", actualRangeStart, actualRangeEnd);
+		return "bytes=" + actualRangeStart + "-" + actualRangeEnd;
 	}
 
 	/**
