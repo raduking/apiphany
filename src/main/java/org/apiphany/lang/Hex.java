@@ -84,11 +84,25 @@ public class Hex {
 		if (bytes == null) {
 			return "null";
 		}
-		StringBuilder sb = new StringBuilder();
-		for (byte b : bytes) {
-			sb.append(string(b, separator));
+		if (bytes.length == 0) {
+			return "";
 		}
-		return sb.toString().trim();
+
+		int sepLen = separator.length();
+		char[] chars = new char[bytes.length * 2 + Math.max(0, bytes.length - 1) * sepLen];
+		int pos = 0;
+
+		for (int i = 0; i < bytes.length; ++i) {
+			if (i > 0 && sepLen > 0) {
+				separator.getChars(0, sepLen, chars, pos);
+				pos += sepLen;
+			}
+			byte b = bytes[i];
+			chars[pos++] = HEX_CHARS[(b >> 4) & 0x0F];
+			chars[pos++] = HEX_CHARS[b & 0x0F];
+		}
+
+		return new String(chars);
 	}
 
 	/**
@@ -123,7 +137,7 @@ public class Hex {
 
 	/**
 	 * Dumps a byte array in hexadecimal format with optional verbose output. Verbose output includes offset, hex values,
-	 * and ASCII representation.
+	 * and ASCII representation. This method is useful for debugging binary data so it doesn't need to be more efficient.
 	 * <p>
 	 * Sonar will complain about the cognitive complexity, well, tough luck, breaking up this method doesn't make sense at
 	 * the moment.
