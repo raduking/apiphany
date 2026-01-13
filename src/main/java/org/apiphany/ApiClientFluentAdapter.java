@@ -314,6 +314,26 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	}
 
 	/**
+	 * Sets the request parameters.
+	 *
+	 * @param paramFunction request parameter function
+	 * @return this
+	 */
+	public ApiClientFluentAdapter params(final ParameterFunction paramFunction) {
+		return params(RequestParameters.of(paramFunction));
+	}
+
+	/**
+	 * Sets the request parameters from the given object.
+	 *
+	 * @param queryParams request parameters object
+	 * @return this
+	 */
+	public ApiClientFluentAdapter params(final Object queryParams) {
+		return params(RequestParameters.from(queryParams));
+	}
+
+	/**
 	 * Sets the headers.
 	 *
 	 * @param <N> header name type

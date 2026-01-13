@@ -7,6 +7,8 @@
 - Added `jmh-core` version `1.37` for benchmarking.
 - Added `jmh-generator-annprocess` version `1.37` for benchmarking.
 - Added `DelimitedStringBuilder.of` factory method for easier building.
+- Added `RequestParameters.from(Object)` factory method to create a request parameters map from a given object.
+- Added parameters object support when building API requests (`ApiClientFluentAdapter.params(Object)`)
 
 ---
 

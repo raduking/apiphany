@@ -138,6 +138,30 @@ class ApiClientFluentAdapterTest {
 		assertThat(request.getParams(), equalTo(expected));
 	}
 
+	static class ParamObject {
+		@SuppressWarnings("unused")
+		private String sum = "1+2+3";
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldEncodeParamsOnRetrieveWhenEncodingIsEnabledForObjectParameter() {
+		ExchangeClient exchangeClient = mock(ExchangeClient.class);
+		doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
+
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+				.authenticationType(AuthenticationType.SESSION)
+				.url(URL)
+				.params(new ParamObject())
+				.urlEncoded();
+
+		request.retrieve();
+
+		var expected = RequestParameters.of(parameter("sum", "1%2B2%2B3"));
+
+		assertThat(request.getParams(), equalTo(expected));
+	}
+
 	@Test
 	@SuppressWarnings("resource")
 	void shouldEncodeParamsOnRetrieveWhenEncodingIsEnabledWithDirectParameterFunction() {
@@ -153,6 +177,27 @@ class ApiClientFluentAdapterTest {
 		request.retrieve();
 
 		var expected = RequestParameters.of(parameter("sum", "1%2B2%2B3"));
+
+		assertThat(request.getParams(), equalTo(expected));
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldEncodeParamsOnRetrieveWhenEncodingIsEnabledWithDirectParameterFunctions() {
+		ExchangeClient exchangeClient = mock(ExchangeClient.class);
+		doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
+
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+				.authenticationType(AuthenticationType.SESSION)
+				.url(URL)
+				.params(parameter("sum", "1+2+3"), parameter("other", "a b c"))
+				.urlEncoded();
+
+		request.retrieve();
+
+		var expected = RequestParameters.of(
+				parameter("sum", "1%2B2%2B3"),
+				parameter("other", "a+b+c"));
 
 		assertThat(request.getParams(), equalTo(expected));
 	}
