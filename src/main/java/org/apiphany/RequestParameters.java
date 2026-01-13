@@ -1,15 +1,22 @@
 package org.apiphany;
 
+import java.lang.reflect.Array;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.apiphany.lang.Assert;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Maps;
 import org.morphix.convert.MapConversions;
+import org.morphix.convert.function.PutFunction;
 import org.morphix.reflection.Constructors;
 
 /**
@@ -155,10 +162,74 @@ public class RequestParameters {
 	 *
 	 * @param queryParams the object to convert
 	 * @return a map representation of the object's fields
+	 * @throws IllegalArgumentException if the provided object is not a pojo or a map.
 	 */
 	public static Map<String, String> from(final Object queryParams) {
-		return MapConversions.convertToMap(queryParams, k -> k, String::valueOf,
-				(map, key, value) -> (null != value) ? map.put(key, value) : null);
+		if (null == queryParams) {
+			return Collections.emptyMap();
+		}
+		Assert.thatArgumentNot(queryParams instanceof List<?>, "Cannot convert a List into request parameters map. Expected a POJO or a Map.");
+		Assert.thatArgumentNot(queryParams instanceof Set<?>, "Cannot convert a Set into request parameters map. Expected a POJO or a Map.");
+		Assert.thatArgumentNot(queryParams.getClass().isArray(), "Cannot convert an Array into request parameters map. Expected a POJO or a Map.");
+
+		if (queryParams instanceof Map<?, ?> map) {
+			return MapConversions.convertMap(map, String::valueOf, RequestParameters::value).toMap();
+		}
+		PutFunction<Map<String, Object>, String, Object> putIfNonNullValue = (map, key, value) -> (null != value) ? map.put(key, value) : null;
+		return MapConversions.convertToMap(queryParams, k -> k, RequestParameters::value, putIfNonNullValue);
+	}
+
+	/**
+	 * Converts the given value to its string representation.
+	 *
+	 * @param value the value to convert
+	 * @return the string representation of the value
+	 */
+	public static String value(final Object value) {
+		if (null == value) {
+			return null;
+		}
+		if (value.getClass().isArray()) {
+			Object[] array = toObjectArray(value);
+			return value(array);
+		}
+		return switch (value) {
+			case String str -> str;
+			case Collection<?> list -> String.join(",", list.stream().map(RequestParameters::value).toArray(String[]::new));
+			default -> String.valueOf(value);
+		};
+	}
+
+	/**
+	 * Converts the given array of values to a comma-separated string representation.
+	 *
+	 * @param values the array of values to convert
+	 * @return the comma-separated string representation of the values
+	 */
+	public static String value(final Object[] values) {
+		if (null == values) {
+			return null;
+		}
+		return String.join(",", Arrays.stream(values).map(RequestParameters::value).toArray(String[]::new));
+	}
+
+	/**
+	 * Converts a primitive or object array to an Object array.
+	 *
+	 * @param value the array to convert
+	 * @return the converted Object array
+	 */
+	private static Object[] toObjectArray(final Object value) {
+		if (value.getClass().getComponentType().isPrimitive()) {
+			int length = Array.getLength(value);
+			Object[] array = new Object[length];
+			for (int i = 0; i < length; ++i) {
+				Object element = Array.get(value, i);
+				array[i] = element;
+			}
+			return array;
+		}
+		return (Object[]) value;
 	}
 
 	/**
