@@ -43,15 +43,23 @@ public class DelimitedStringBuilder {
 	}
 
 	/**
-	 * Creates a new instance of {@link DelimitedStringBuilder} with the specified delimiter and initializes it with
-	 * the provided paths.
+	 * Creates a new instance of {@link DelimitedStringBuilder} with the specified delimiter and initializes it with the
+	 * provided paths. The first path is the delimiter and is used to initialize the builder, and subsequent paths are
+	 * appended.
 	 *
-	 * @param delimiter the delimiter to use between segments.
 	 * @param paths the initial paths to add to the constructed string.
 	 * @return a new {@link DelimitedStringBuilder} instance with the specified paths.
+	 * @throws IllegalArgumentException if the provided paths array is null or empty.
 	 */
-	public static DelimitedStringBuilder of(final String delimiter, final String... paths) {
-		return builder(delimiter).path(paths);
+	public static DelimitedStringBuilder of(final String... paths) {
+		if (null == paths || paths.length == 0) {
+			throw new IllegalArgumentException("Parameter paths should not be null or empty");
+		}
+		DelimitedStringBuilder builder = builder(paths[0]);
+		for (int i = 1; i < paths.length; ++i) {
+			builder.path(paths[i]);
+		}
+		return builder;
 	}
 
 	/**
@@ -99,7 +107,8 @@ public class DelimitedStringBuilder {
 	}
 
 	/**
-	 * Configures the builder to treat the delimiter as a suffix (appended at the end).
+	 * Configures the builder to treat the delimiter as a suffix meaning that it will be built starting with the delimiter
+	 * and the purpose is to append the result to an existing string.
 	 *
 	 * @return this {@link DelimitedStringBuilder} instance for method chaining.
 	 */

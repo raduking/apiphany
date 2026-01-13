@@ -38,7 +38,7 @@ public class PropertyNameBuilder extends DelimitedStringBuilder {
 	 * @return a new {@link PropertyNameBuilder} instance with the specified paths.
 	 */
 	public static PropertyNameBuilder of(final String... paths) {
-		return JavaObjects.cast(builder().path(paths));
+		return builder().path(paths);
 	}
 
 	/**

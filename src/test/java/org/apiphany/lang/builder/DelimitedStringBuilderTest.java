@@ -32,6 +32,20 @@ class DelimitedStringBuilderTest {
 	}
 
 	@Test
+	void shouldThrowExceptionIfFactoryMethodIsCalledWithNoPaths() {
+		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> DelimitedStringBuilder.of());
+
+		assertThat(e.getMessage(), equalTo("Parameter paths should not be null or empty"));
+	}
+
+	@Test
+	void shouldThrowExceptionIfFactoryMethodIsCalledWithNullPaths() {
+		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> DelimitedStringBuilder.of((String[]) null));
+
+		assertThat(e.getMessage(), equalTo("Parameter paths should not be null or empty"));
+	}
+
+	@Test
 	void shouldBuildADelimitedStringWithMultiplePathsAsSuffix() {
 		String result = DelimitedStringBuilder.builder(DELIMITER)
 				.asSuffix()
