@@ -150,12 +150,15 @@ public class RequestParameters {
 	 * Converts an object into a map of request parameters. Each field of the object is treated as a parameter, with the
 	 * field name as the key and the field value as the value. This method uses reflection to access the fields of the
 	 * object.
+	 * <p>
+	 * Null field values are ignored and not included in the resulting map.
 	 *
 	 * @param queryParams the object to convert
 	 * @return a map representation of the object's fields
 	 */
-	public static <T> Map<String, String> from(final T queryParams) {
-		return MapConversions.convertToMap(queryParams, k -> k, String::valueOf);
+	public static Map<String, String> from(final Object queryParams) {
+		return MapConversions.convertToMap(queryParams, k -> k, String::valueOf,
+				(map, key, value) -> (null != value) ? map.put(key, value) : null);
 	}
 
 	/**
