@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Maps;
+import org.morphix.convert.MapConversions;
 import org.morphix.reflection.Constructors;
 
 /**
@@ -143,6 +144,18 @@ public class RequestParameters {
 			encodedParams.put(encodedName, encodedValue);
 		});
 		return encodedParams;
+	}
+
+	/**
+	 * Converts an object into a map of request parameters. Each field of the object is treated as a parameter, with the
+	 * field name as the key and the field value as the value. This method uses reflection to access the fields of the
+	 * object.
+	 *
+	 * @param queryParams the object to convert
+	 * @return a map representation of the object's fields
+	 */
+	public static <T> Map<String, String> from(final T queryParams) {
+		return MapConversions.convertToMap(queryParams, k -> k, String::valueOf);
 	}
 
 	/**
