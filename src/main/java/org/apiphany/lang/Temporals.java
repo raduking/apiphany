@@ -17,8 +17,9 @@ public interface Temporals {
 	 * @return duration as double
 	 */
 	static Double toDouble(final Duration duration) {
-		String millis = String.format("%03d", duration.getNano() / 1_000_000);
-		return Double.parseDouble(duration.getSeconds() + "." + millis);
+		long seconds = duration.getSeconds();
+		int millis = duration.getNano() / 1_000_000;
+		return seconds + millis / 1000.0;
 	}
 
 	/**
