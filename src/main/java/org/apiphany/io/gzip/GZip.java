@@ -1,4 +1,4 @@
-package org.apiphany.lang.gzip;
+package org.apiphany.io.gzip;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

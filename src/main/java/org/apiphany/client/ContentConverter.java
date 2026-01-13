@@ -7,7 +7,7 @@ import org.apiphany.ApiMimeType;
 import org.apiphany.ApiRequest;
 import org.apiphany.header.HeaderValues;
 import org.apiphany.http.ContentEncoding;
-import org.apiphany.lang.gzip.GZip;
+import org.apiphany.io.gzip.GZip;
 import org.morphix.reflection.GenericClass;
 
 /**
