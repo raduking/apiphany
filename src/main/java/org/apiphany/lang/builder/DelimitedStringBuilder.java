@@ -43,6 +43,18 @@ public class DelimitedStringBuilder {
 	}
 
 	/**
+	 * Creates a new instance of {@link DelimitedStringBuilder} with the specified delimiter and initializes it with
+	 * the provided paths.
+	 *
+	 * @param delimiter the delimiter to use between segments.
+	 * @param paths the initial paths to add to the constructed string.
+	 * @return a new {@link DelimitedStringBuilder} instance with the specified paths.
+	 */
+	public static DelimitedStringBuilder of(final String delimiter, final String... paths) {
+		return builder(delimiter).path(paths);
+	}
+
+	/**
 	 * Builds and returns the constructed delimited string.
 	 *
 	 * @return the constructed string.

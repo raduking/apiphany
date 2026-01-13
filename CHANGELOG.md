@@ -6,6 +6,7 @@
 - Added `Hex.string(int, int)` to convert an integer to hexadecimal string with the given width.
 - Added `jmh-core` version `1.37` for benchmarking.
 - Added `jmh-generator-annprocess` version `1.37` for benchmarking.
+- Added `DelimitedStringBuilder.of` factory method for easier building.
 
 ---
 

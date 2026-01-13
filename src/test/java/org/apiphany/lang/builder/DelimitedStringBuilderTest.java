@@ -25,6 +25,13 @@ class DelimitedStringBuilderTest {
 	}
 
 	@Test
+	void shouldBuildADelimitedStringWithMultiplePathsWithFactoryMethod() {
+		String result = DelimitedStringBuilder.of(DELIMITER, "xxx", "yyy", "zzz").build();
+
+		assertThat(result, equalTo("xxx" + DELIMITER + "yyy" + DELIMITER + "zzz"));
+	}
+
+	@Test
 	void shouldBuildADelimitedStringWithMultiplePathsAsSuffix() {
 		String result = DelimitedStringBuilder.builder(DELIMITER)
 				.asSuffix()

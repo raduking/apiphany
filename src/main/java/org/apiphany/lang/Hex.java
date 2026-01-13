@@ -81,10 +81,10 @@ public class Hex {
 	 * @return hexadecimal string representation of the byte array
 	 */
 	public static String string(final byte[] bytes, final String separator) {
-		if (bytes == null) {
+		if (null == bytes) {
 			return "null";
 		}
-		if (bytes.length == 0) {
+		if (0 == bytes.length) {
 			return "";
 		}
 
