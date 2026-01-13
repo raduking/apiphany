@@ -5,12 +5,19 @@ import static org.apiphany.ParameterFunction.withCondition;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import org.apiphany.utils.Tests;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.morphix.reflection.Constructors;
 
 /**
@@ -41,6 +48,40 @@ class RequestParametersTest {
 	}
 
 	@Test
+	void shouldConvertParametersToUrlSuffix() {
+		Map<String, String> params = RequestParameters.of(
+				parameter("param1", "value1"),
+				parameter("param2", "value2"));
+
+		String urlSuffix = RequestParameters.asUrlSuffix(params);
+
+		assertThat(urlSuffix, equalTo("?param1=value1&param2=value2"));
+	}
+
+	@Test
+	void shouldEncodeParameters() {
+		Map<String, String> params = RequestParameters.of(
+				parameter("param 1", "value 1"),
+				parameter("param&2", "value&2"));
+		params = RequestParameters.encode(params);
+
+		Map<String, String> expected = Map.of(
+				"param+1", "value+1",
+				"param%262", "value%262");
+
+		assertThat(params, equalTo(expected));
+	}
+
+	@Test
+	void shouldReturnEmptyStringAsUrlSuffixIfNoParameters() {
+		Map<String, String> params = RequestParameters.of();
+
+		String urlSuffix = RequestParameters.asUrlSuffix(params);
+
+		assertThat(urlSuffix, equalTo(""));
+	}
+
+	@Test
 	void shouldReturnEmptyMapIfNoParametersWereSupplied() {
 		Map<String, String> params = RequestParameters.of(new ParameterFunction[0]);
 
@@ -54,18 +95,18 @@ class RequestParametersTest {
 		assertThat(params.entrySet(), hasSize(0));
 	}
 
-	@Test
-	void shouldReturnEmptyMapIfParametersStringIsEmpty() {
-		Map<String, String> params = RequestParameters.from("");
+	@ParameterizedTest
+	@MethodSource("provideValuesForEmptyMapResult")
+	void shouldReturnEmptyMap(final String parametersString) {
+		Map<String, String> params = RequestParameters.from(parametersString);
 
 		assertThat(params.entrySet(), hasSize(0));
 	}
 
-	@Test
-	void shouldReturnEmptyMapIfParametersStringIsNull() {
-		Map<String, String> params = RequestParameters.from(null);
-
-		assertThat(params.entrySet(), hasSize(0));
+	static Stream<Arguments> provideValuesForEmptyMapResult() {
+		return Stream.of(
+				Arguments.of(""),
+				Arguments.of((String) null));
 	}
 
 	@Test
@@ -82,19 +123,6 @@ class RequestParametersTest {
 
 		assertThat(params.entrySet(), hasSize(1));
 		assertThat(params.get("user"), equalTo(""));
-	}
-
-	@Test
-	void shouldConvertFromObject() {
-		TestParams testParams = new TestParams();
-		testParams.setParam1("value1");
-		testParams.setParam2("value2");
-
-		Map<String, String> params = RequestParameters.from(testParams);
-
-		assertThat(params.entrySet(), hasSize(2));
-		assertThat(params.get("param1"), equalTo("value1"));
-		assertThat(params.get("param2"), equalTo("value2"));
 	}
 
 	static class TestParams {
@@ -117,6 +145,19 @@ class RequestParametersTest {
 		public void setParam2(final String param2) {
 			this.param2 = param2;
 		}
+	}
+
+	@Test
+	void shouldConvertFromObject() {
+		TestParams testParams = new TestParams();
+		testParams.setParam1("value1");
+		testParams.setParam2("value2");
+
+		Map<String, String> params = RequestParameters.from(testParams);
+
+		assertThat(params.entrySet(), hasSize(2));
+		assertThat(params.get("param1"), equalTo("value1"));
+		assertThat(params.get("param2"), equalTo("value2"));
 	}
 
 	static class B {
@@ -154,19 +195,77 @@ class RequestParametersTest {
 		assertThat(params.get("key2"), equalTo("200"));
 	}
 
-	@Test
-	void shouldConvertFromEmptyObject() {
-		B b = new B();
-
-		Map<String, String> params = RequestParameters.from(b);
+	@ParameterizedTest
+	@MethodSource("provideValuesForEmptyMapFromObject")
+	void shouldConvertToEmptyMapFrom(final Object object) {
+		Map<String, String> params = RequestParameters.from(object);
 
 		assertThat(params.entrySet(), hasSize(0));
 	}
 
-	@Test
-	void shouldConvertFromNullObject() {
-		Map<String, String> params = RequestParameters.from(null);
+	private static Stream<Arguments> provideValuesForEmptyMapFromObject() {
+		return Stream.of(
+				Arguments.of(new TestParams()),
+				Arguments.of(new B()),
+				Arguments.of(new Object()),
+				Arguments.of((Object) null));
+	}
 
-		assertThat(params.entrySet(), hasSize(0));
+	@Test
+	void shouldThrowExceptionIfObjectIsList() {
+		Object list = List.of("a", "b");
+		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> RequestParameters.from(list));
+
+		assertThat(e.getMessage(), equalTo("Cannot convert a List into request parameters map. Expected a POJO or a Map."));
+	}
+
+	@Test
+	void shouldThrowExceptionIfObjectIsSet() {
+		Object set = Set.of("a", "b");
+		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> RequestParameters.from(set));
+
+		assertThat(e.getMessage(), equalTo("Cannot convert a Set into request parameters map. Expected a POJO or a Map."));
+	}
+
+	@Test
+	void shouldThrowExceptionIfObjectIsArray() {
+		Object array = new String[] { "a", "b" };
+		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> RequestParameters.from(array));
+
+		assertThat(e.getMessage(), equalTo("Cannot convert an Array into request parameters map. Expected a POJO or a Map."));
+	}
+
+	@Test
+	void shouldConvertFromMap() {
+		Map<String, Object> inputMap = Map.of(
+				"param1", "value1",
+				"param2", 123,
+				"param3", List.of("a", "b", "c"),
+				"param4", new boolean[] { true, false },
+				"param5", new Integer[] { 1, 2, 3 });
+
+		Map<String, String> params = RequestParameters.from(inputMap);
+
+		assertThat(params.entrySet(), hasSize(inputMap.size()));
+
+		assertThat(params.get("param1"), equalTo("value1"));
+		assertThat(params.get("param2"), equalTo("123"));
+		assertThat(params.get("param3"), equalTo("a,b,c"));
+		assertThat(params.get("param4"), equalTo("true,false"));
+		assertThat(params.get("param5"), equalTo("1,2,3"));
+	}
+
+	@Test
+	void shouldReturnNullWhenValueIsNull() {
+		String result = RequestParameters.value((Object) null);
+
+		assertThat(result, equalTo(null));
+	}
+
+	@Test
+	void shouldReturnNullWhenValueArrayIsNull() {
+		String result = RequestParameters.value((Object[]) null);
+
+		assertThat(result, equalTo(null));
 	}
 }

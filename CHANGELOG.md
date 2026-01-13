@@ -9,6 +9,8 @@
 - Added `DelimitedStringBuilder.of` factory method for easier building.
 - Added `RequestParameters.from(Object)` factory method to create a request parameters map from a given object.
 - Added parameters object support when building API requests (`ApiClientFluentAdapter.params(Object)`)
+- Added `Assert.thatArgumentNot` which throws `IllegalArgumentException` if the condition is `true`.
+- Added `RequestParameters.value` function to build a request parameter value from an object or object array.
 
 ---
 

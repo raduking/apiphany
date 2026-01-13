@@ -41,4 +41,17 @@ public final class Assert {
 			throw new IllegalArgumentException(String.format(message, args));
 		}
 	}
+
+	/**
+	 * Checks that the given condition is {@code false}. If not, throws an {@link IllegalArgumentException} with a formatted
+	 * message.
+	 *
+	 * @param condition the condition to check
+	 * @param message the error message template
+	 * @param args optional arguments to format the message
+	 * @throws IllegalArgumentException if {@code condition} is {@code true}
+	 */
+	public static void thatArgumentNot(final boolean condition, final String message, final Object... args) {
+		thatArgument(!condition, message, args);
+	}
 }
