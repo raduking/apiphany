@@ -2,6 +2,8 @@
 
 `1.0.23`
 
+- Moved `gzip` package to a better suited package `io.gzip`.
+
 ---
 
 `1.0.22`

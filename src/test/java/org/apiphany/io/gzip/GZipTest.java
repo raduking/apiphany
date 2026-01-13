@@ -1,4 +1,4 @@
-package org.apiphany.lang.gzip;
+package org.apiphany.io.gzip;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
