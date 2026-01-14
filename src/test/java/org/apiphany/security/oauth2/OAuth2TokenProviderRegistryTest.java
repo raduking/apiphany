@@ -123,15 +123,19 @@ class OAuth2TokenProviderRegistryTest {
 		verify(second).closeIfManaged(any());
 	}
 
-	@SuppressWarnings({ "resource", "unchecked" })
+	@SuppressWarnings({ "resource" })
 	@Test
 	void shouldRejectDuplicateProviderEvenIfProviderCannotBeClosed() throws Exception {
 		OAuth2Registry mockRegistry = mock(OAuth2Registry.class);
 		OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.of(mockRegistry);
 
-		ScopedResource<OAuth2TokenProvider> first = mock(ScopedResource.class);
-		ScopedResource<OAuth2TokenProvider> second = mock(ScopedResource.class);
-		doThrow(new RuntimeException(ERROR_MESSAGE)).when(second).closeIfManaged();
+		OAuth2TokenProvider firstProvider = mock(OAuth2TokenProvider.class);
+		OAuth2TokenProvider secondProvider = mock(OAuth2TokenProvider.class);
+
+		ScopedResource<OAuth2TokenProvider> first = ScopedResource.managed(firstProvider);
+		ScopedResource<OAuth2TokenProvider> second = ScopedResource.managed(secondProvider);
+
+		doThrow(new RuntimeException(ERROR_MESSAGE)).when(secondProvider).close();
 
 		registry.add(PROVIDER_NAME_MY_PROVIDER, first);
 
@@ -139,7 +143,7 @@ class OAuth2TokenProviderRegistryTest {
 
 		assertThat(ex.getMessage(), equalTo("An OAuth2 token provider with name '" + PROVIDER_NAME_MY_PROVIDER + "' is already registered."));
 
-		verify(second).closeIfManaged(any());
+		verify(secondProvider).close();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -159,7 +163,7 @@ class OAuth2TokenProviderRegistryTest {
 		verify(resource).closeIfManaged(any());
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("resource")
 	@Test
 	void shouldNotThrowExceptionWhenClosingProviderThrowsExceptionOndRejectAddWhenRegistryClosing() throws Exception {
 		OAuth2Registry mockRegistry = mock(OAuth2Registry.class);
@@ -167,34 +171,39 @@ class OAuth2TokenProviderRegistryTest {
 
 		registry.close();
 
-		ScopedResource<OAuth2TokenProvider> resource = mock(ScopedResource.class);
-		doThrow(new RuntimeException(ERROR_MESSAGE)).when(resource).closeIfManaged();
+		OAuth2TokenProvider provider = mock(OAuth2TokenProvider.class);
+
+		ScopedResource<OAuth2TokenProvider> resource = ScopedResource.managed(provider);
+		doThrow(new RuntimeException(ERROR_MESSAGE)).when(provider).close();
 
 		IllegalStateException ex = assertThrows(IllegalStateException.class, () -> registry.add(PROVIDER_NAME_MY_PROVIDER, resource));
 
 		assertThat(ex.getMessage(), equalTo("Cannot add new OAuth2 token provider " + PROVIDER_NAME_MY_PROVIDER + " to a closing registry."));
 
-		verify(resource).closeIfManaged(any());
+		verify(provider).close();
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("resource")
 	@Test
 	void shouldCloseAllProvidersEvenIfSomeFail() throws Exception {
 		OAuth2Registry mockRegistry = mock(OAuth2Registry.class);
 		OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.of(mockRegistry);
 
-		ScopedResource<OAuth2TokenProvider> good = mock(ScopedResource.class);
-		ScopedResource<OAuth2TokenProvider> bad = mock(ScopedResource.class);
+		OAuth2TokenProvider providerGood = mock(OAuth2TokenProvider.class);
+		OAuth2TokenProvider providerBad = mock(OAuth2TokenProvider.class);
 
-		doThrow(new RuntimeException(ERROR_MESSAGE)).when(bad).closeIfManaged();
+		ScopedResource<OAuth2TokenProvider> good = ScopedResource.managed(providerGood);
+		ScopedResource<OAuth2TokenProvider> bad = ScopedResource.managed(providerBad);
+
+		doThrow(new RuntimeException(ERROR_MESSAGE)).when(providerBad).close();
 
 		registry.add(PROVIDER_NAME_GOOD, good);
 		registry.add(PROVIDER_NAME_BAD, bad);
 
 		registry.close();
 
-		verify(good).closeIfManaged(any());
-		verify(bad).closeIfManaged(any());
+		verify(providerGood).close();
+		verify(providerBad).close();
 	}
 
 	@SuppressWarnings({ "unchecked", "resource" })

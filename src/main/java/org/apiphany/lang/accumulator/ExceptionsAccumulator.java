@@ -143,18 +143,6 @@ public class ExceptionsAccumulator extends Accumulator<Exception> {
 	}
 
 	/**
-	 * @see Accumulator#accumulate(Runnable)
-	 */
-	@Override
-	public void accumulate(final Runnable runnable) {
-		try {
-			runnable.run();
-		} catch (Exception e) {
-			addExceptions(e);
-		}
-	}
-
-	/**
 	 * @see Accumulator#accumulate(Supplier, Object)
 	 */
 	@Override
@@ -194,7 +182,8 @@ public class ExceptionsAccumulator extends Accumulator<Exception> {
 	}
 
 	/**
-	 * Adds an exception.
+	 * Adds an exception. If the exception type is not in the list of accumulated exception types, it is re-thrown
+	 * immediately.
 	 *
 	 * @param e exception to add
 	 */
