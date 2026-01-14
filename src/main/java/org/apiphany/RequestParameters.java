@@ -178,7 +178,7 @@ public class RequestParameters {
 	}
 
 	/**
-	 * Converts the given value to its string representation.
+	 * Converts the given value to its string representation suitable for request parameters.
 	 *
 	 * @param value the value to convert
 	 * @return the string representation of the value
@@ -198,7 +198,7 @@ public class RequestParameters {
 	}
 
 	/**
-	 * Converts the given array of values to a comma-separated string representation.
+	 * Converts the given array of values to a comma-separated string representation suitable for request parameters.
 	 *
 	 * @param values the array of values to convert
 	 * @return the comma-separated string representation of the values
