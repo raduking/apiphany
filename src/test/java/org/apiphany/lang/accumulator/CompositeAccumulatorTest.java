@@ -1,7 +1,10 @@
 package org.apiphany.lang.accumulator;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+
+import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
 import org.morphix.lang.function.Runnables;
@@ -12,6 +15,9 @@ import org.morphix.lang.function.Runnables;
  * @author Radu Sebastian LAZIN
  */
 class CompositeAccumulatorTest {
+
+	private static final String DEFAULT = "default";
+	private static final String VALUE = "value";
 
 	@Test
 	void shouldInstantiateWithMoreAccumulators() {
@@ -56,5 +62,66 @@ class CompositeAccumulatorTest {
 		});
 
 		assertThat(victim.getInformationList(), hasSize(2));
+	}
+
+	@Test
+	void shouldInstantiateEmptyCompositeAccumulator() {
+		CompositeAccumulator victim = CompositeAccumulator.of();
+
+		assertThat(victim.getAccumulators(), hasSize(0));
+	}
+
+	@Test
+	void shouldReturnDefaultValueWhenNoAccumulators() {
+		CompositeAccumulator victim = CompositeAccumulator.of();
+
+		String result = victim.accumulate(() -> VALUE, DEFAULT);
+
+		assertThat(victim.getAccumulators(), hasSize(0));
+		assertThat(victim.isEmpty(), equalTo(true));
+		assertThat(result, equalTo(DEFAULT));
+	}
+
+	@Test
+	void shouldCallClearOnAllAccumulators() {
+		TestAccumulator acc1 = new TestAccumulator();
+		TestAccumulator acc2 = new TestAccumulator();
+
+		CompositeAccumulator victim = CompositeAccumulator.of(acc1, acc2);
+		victim.accumulate(() -> VALUE);
+
+		assertThat(acc1.isNotEmpty(), equalTo(true));
+		assertThat(acc2.isNotEmpty(), equalTo(true));
+
+		victim.clear();
+
+		assertThat(acc1.isEmpty(), equalTo(true));
+		assertThat(acc2.isEmpty(), equalTo(true));
+	}
+
+	@Test
+	void shouldCallRestOnAllAccumulators() {
+		TestAccumulator acc1 = new TestAccumulator();
+		TestAccumulator acc2 = new TestAccumulator();
+
+		CompositeAccumulator victim = CompositeAccumulator.of(acc1, acc2);
+		victim.accumulate(() -> VALUE);
+
+		assertThat(acc1.isNotEmpty(), equalTo(true));
+		assertThat(acc2.isNotEmpty(), equalTo(true));
+
+		victim.rest();
+
+		assertThat(acc1.isEmpty(), equalTo(true));
+		assertThat(acc2.isEmpty(), equalTo(true));
+	}
+
+	static class TestAccumulator extends Accumulator<Boolean> {
+
+		@Override
+		public <U> U accumulate(final Supplier<U> supplier, final U defaultReturn) {
+			getInformationList().add(Boolean.TRUE);
+			return supplier.get();
+		}
 	}
 }

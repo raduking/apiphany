@@ -49,23 +49,6 @@ public class CompositeAccumulator extends Accumulator<Object> {
 	}
 
 	/**
-	 * @see Accumulator#accumulate(Runnable)
-	 */
-	@Override
-	public void accumulate(final Runnable runnable) {
-		if (Lists.isEmpty(accumulators)) {
-			return;
-		}
-		Runnable chainRunnable = runnable;
-		for (int i = accumulators.size() - 1; i > 0; --i) {
-			Accumulator<?> accumulator = accumulators.get(i);
-			Runnable tempRunnable = chainRunnable;
-			chainRunnable = () -> accumulator.accumulate(tempRunnable);
-		}
-		Lists.first(accumulators).accumulate(chainRunnable);
-	}
-
-	/**
 	 * @see Accumulator#accumulate(Supplier, Object)
 	 */
 	@Override

@@ -50,24 +50,6 @@ public class DurationAccumulator extends Accumulator<Duration> {
 	}
 
 	/**
-	 * Accumulates the duration of the provided {@link Runnable} operation. The duration is measured from the start of the
-	 * operation until its completion.
-	 *
-	 * @param runnable the operation to measure
-	 */
-	@Override
-	public void accumulate(final Runnable runnable) {
-		Instant start = Instant.now();
-		try {
-			runnable.run();
-		} catch (Exception e) {
-			Unchecked.reThrow(e);
-		} finally {
-			getInformationList().add(Duration.between(start, Instant.now()));
-		}
-	}
-
-	/**
 	 * Accumulates the duration of the provided {@link Supplier} operation and returns its result. The duration is measured
 	 * from the start of the operation until its completion.
 	 *
@@ -224,7 +206,7 @@ public class DurationAccumulator extends Accumulator<Duration> {
 	 */
 	public Statistics getStatistics() {
 		if (null == statistics) {
-			throw new IllegalStateException("Call buildStatistics() method first.");
+			throw new IllegalStateException("No statistics available. Build statistics by calling buildStatistics() first.");
 		}
 		return statistics;
 	}

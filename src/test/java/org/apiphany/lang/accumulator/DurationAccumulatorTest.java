@@ -304,4 +304,20 @@ class DurationAccumulatorTest {
 
 		assertThat(output, is(emptyString()));
 	}
+
+	@Test
+	void shouldThrowIllegalStateExceptionWhenBuildingStatisticsWithoutDurations() {
+		Exception exception = null;
+
+		try {
+			accumulator.getStatistics();
+		} catch (Exception e) {
+			exception = e;
+		}
+
+		assertNotNull(exception);
+		assertThat(exception.getClass(), equalTo(IllegalStateException.class));
+		assertThat(exception.getMessage(), equalTo("No statistics available. Build statistics by calling buildStatistics() first."));
+	}
+
 }
