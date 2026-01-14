@@ -1,11 +1,13 @@
 package org.apiphany.lang.accumulator;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Supplier;
 
 import org.apiphany.lang.collections.Lists;
 import org.apiphany.lang.retry.Retry;
+import org.morphix.lang.function.Runnables;
 
 /**
  * Information accumulator abstract class.<br/>
@@ -37,14 +39,8 @@ public abstract class Accumulator<T> {
 	/**
 	 * Information accumulator method.
 	 *
-	 * @param runnable action
-	 */
-	public abstract void accumulate(final Runnable runnable);
-
-	/**
-	 * Information accumulator method.
-	 *
 	 * @param <U> supplier type
+	 *
 	 * @param supplier information supplier
 	 * @param defaultReturn default return
 	 * @return the supplier result or a default return
@@ -54,7 +50,17 @@ public abstract class Accumulator<T> {
 	/**
 	 * Information accumulator method.
 	 *
+	 * @param runnable action
+	 */
+	public void accumulate(final Runnable runnable) {
+		accumulate(Runnables.toSupplier(runnable), null);
+	}
+
+	/**
+	 * Information accumulator method.
+	 *
 	 * @param <U> supplier type
+	 *
 	 * @param supplier information supplier
 	 * @return the supplier result
 	 */
@@ -156,6 +162,7 @@ public abstract class Accumulator<T> {
 	 * Returns an empty accumulator. Equivalent to {@link #noAccumulator()}.
 	 *
 	 * @param <T> accumulator information type
+	 *
 	 * @return an empty accumulator
 	 */
 	public static <T> Accumulator<T> empty() {
@@ -175,14 +182,6 @@ public abstract class Accumulator<T> {
 		private static final EmptyAccumulator EMPTY_ACCUMULATOR = new EmptyAccumulator();
 
 		/**
-		 * @see Accumulator#accumulate(Runnable)
-		 */
-		@Override
-		public void accumulate(final Runnable runnable) {
-			runnable.run();
-		}
-
-		/**
 		 * @see Accumulator#accumulate(Supplier, Object)
 		 */
 		@Override
@@ -190,5 +189,12 @@ public abstract class Accumulator<T> {
 			return supplier.get();
 		}
 
+		/**
+		 * @see Accumulator#getInformationList()
+		 */
+		@Override
+		public List<Object> getInformationList() {
+			return Collections.emptyList();
+		}
 	}
 }

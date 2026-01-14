@@ -40,6 +40,14 @@ class ParameterTest {
 	}
 
 	@Test
+	void shouldBuildParameterObjectFromArrayValues() {
+		Parameter parameter = Parameter.of("name", new Object[] {"a", "b", "c"});
+
+		assertThat(parameter.name(), equalTo("name"));
+		assertThat(parameter.value(), equalTo("a,b,c"));
+	}
+
+	@Test
 	void shouldThrowExceptionWhenBuildingParameterWithNullName() {
 		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> Parameter.of(null, "value"));
 
