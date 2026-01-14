@@ -18,6 +18,9 @@
 - Upgraded `oauth2-oidc-sdk` to `11.31.1`.
 - Upgraded `testcontainers` to `2.0.3`.
 - Upgraded `testcontainers-keycloak` to `4.1.0`.
+- Added `Strings.isBlank` to check if a character sequence is whitespace, `null` or empty.
+- Added `Strings.isNotBlank` to check if a character sequence is not whitespace, `null` or empty.
+- Added `Parameter` record to build (request) parameters.
 
 ---
 

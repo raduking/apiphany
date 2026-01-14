@@ -70,6 +70,35 @@ public interface Strings {
 	}
 
 	/**
+	 * Checks if a CharSequence is whitespace, empty ("") or null.
+	 *
+	 * @param cs the CharSequence to check, may be null
+	 * @return {@code true} if the CharSequence is whitespace, empty or null
+	 */
+	static boolean isBlank(final CharSequence cs) {
+		if (isEmpty(cs)) {
+			return true;
+		}
+		int length = cs.length();
+		for (int i = 0; i < length; ++i) {
+			if (!Character.isWhitespace(cs.charAt(i))) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Checks if a CharSequence is not whitespace, empty ("") or null.
+	 *
+	 * @param cs the CharSequence to check, may be null
+	 * @return {@code true} if the CharSequence is not whitespace, empty or null
+	 */
+	static boolean isNotBlank(final CharSequence cs) {
+		return !isBlank(cs);
+	}
+
+	/**
 	 * Transforms a string from Lower Camel case to Kebab case. The Lower Camel case is the Java convention for naming
 	 * methods. Example: <code>"someCoolName"</code> will be <code>"some-cool-name"</code>.
 	 *
