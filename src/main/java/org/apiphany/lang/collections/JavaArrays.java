@@ -29,7 +29,6 @@ public interface JavaArrays {
 	 * Converts the given value into an Object array. This method is useful for handling various input types uniformly as
 	 * arrays in scenarios such as processing method arguments, handling collections, or dealing with variable-length
 	 * inputs, it simplifies the handling of different input types by providing a consistent array representation.
-	 * <p>
 	 * <ul>
 	 * <li>If the value is {@code null}, {@code null} is returned.</li>
 	 * <li>If the value is already an array, it is converted to Object array</li>
