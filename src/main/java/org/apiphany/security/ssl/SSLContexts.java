@@ -15,7 +15,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
 import org.apiphany.lang.Strings;
-import org.apiphany.lang.collections.Arrays;
+import org.apiphany.lang.collections.JavaArrays;
 import org.morphix.lang.Nullables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -123,7 +123,7 @@ public final class SSLContexts {
 			keyManagerFactory.init(keyStore, password);
 			result = keyManagerFactory.getKeyManagers();
 		}
-		return Arrays.safe(result, KeyManager.class);
+		return JavaArrays.safe(result, KeyManager.class);
 	}
 
 	/**
@@ -153,7 +153,7 @@ public final class SSLContexts {
 			trustManagerFactory.init(trustStore);
 			result = trustManagerFactory.getTrustManagers();
 		}
-		return Arrays.safe(result, TrustManager.class);
+		return JavaArrays.safe(result, TrustManager.class);
 	}
 
 	/**
