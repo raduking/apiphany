@@ -28,6 +28,8 @@ class StringsTest {
 	private static final String TEST_STRING = "someString";
 	private static final Integer TEST_INTEGER = 10;
 	private static final String TEST_INTEGER_STRING = TEST_INTEGER.toString();
+	private static final String BLANK_STRING = "     ";
+	private static final String NOT_BLANK_STRING = "   a   ";
 
 	private static final String CAMEL_SOME_COOL_NAME = "someCoolName";
 	private static final String KEBAB_SOME_COOL_NAME = "some-cool-name";
@@ -94,6 +96,36 @@ class StringsTest {
 	@Test
 	void shouldReturnTrueForNonEmptyStringOnIsNotEmpty() {
 		assertTrue(Strings.isNotEmpty(TEST_STRING));
+	}
+
+	@Test
+	void shouldReturnTrueForStringWithOnlySpacesOnIsBlank() {
+		assertTrue(Strings.isBlank(BLANK_STRING));
+	}
+
+	@Test
+	void shouldReturnFalseForStringWithNonSpaceCharactersOnIsBlank() {
+		assertFalse(Strings.isBlank(NOT_BLANK_STRING));
+	}
+
+	@Test
+	void shouldReturnTrueForNullValueOnIsBlank() {
+		assertTrue(Strings.isBlank(null));
+	}
+
+	@Test
+	void shouldReturnFalseForStringWithOnlySpacesOnIsNotBlank() {
+		assertFalse(Strings.isNotBlank(BLANK_STRING));
+	}
+
+	@Test
+	void shouldReturnTrueForStringWithNonSpaceCharactersOnIsNotBlank() {
+		assertTrue(Strings.isNotBlank(NOT_BLANK_STRING));
+	}
+
+	@Test
+	void shouldReturnFalseForNullValueOnIsNotBlank() {
+		assertFalse(Strings.isNotBlank(null));
 	}
 
 	@Test

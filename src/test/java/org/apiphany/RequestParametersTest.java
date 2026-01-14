@@ -254,18 +254,4 @@ class RequestParametersTest {
 		assertThat(params.get("param4"), equalTo("true,false"));
 		assertThat(params.get("param5"), equalTo("1,2,3"));
 	}
-
-	@Test
-	void shouldReturnNullWhenValueIsNull() {
-		String result = RequestParameters.value((Object) null);
-
-		assertThat(result, equalTo(null));
-	}
-
-	@Test
-	void shouldReturnNullWhenValueArrayIsNull() {
-		String result = RequestParameters.value((Object[]) null);
-
-		assertThat(result, equalTo(null));
-	}
 }

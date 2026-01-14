@@ -11,9 +11,7 @@ import java.util.Set;
 
 import org.apiphany.lang.Assert;
 import org.apiphany.lang.Strings;
-import org.apiphany.lang.collections.JavaArrays;
 import org.apiphany.lang.collections.Maps;
-import org.morphix.convert.ArrayConversions;
 import org.morphix.convert.MapConversions;
 import org.morphix.lang.function.PutFunction;
 import org.morphix.reflection.Constructors;
@@ -171,43 +169,10 @@ public class RequestParameters {
 		Assert.thatArgumentNot(queryParams instanceof Set<?>, "Cannot convert a Set into request parameters map. Expected a POJO or a Map.");
 		Assert.thatArgumentNot(queryParams.getClass().isArray(), "Cannot convert an Array into request parameters map. Expected a POJO or a Map.");
 
-		if (queryParams instanceof Map<?, ?> map) {
-			return MapConversions.convertMap(map, String::valueOf, RequestParameters::value, PutFunction.ifNotNullValue()).toMap();
-		}
-		return MapConversions.convertToMap(queryParams, k -> k, RequestParameters::value, PutFunction.ifNotNullValue());
-	}
-
-	/**
-	 * Converts the given value to its string representation suitable for request parameters.
-	 *
-	 * @param value the value to convert
-	 * @return the string representation of the value
-	 */
-	public static String value(final Object value) {
-		if (null == value) {
-			return null;
-		}
-		if (value.getClass().isArray()) {
-			return value(JavaArrays.toArray(value));
-		}
-		return switch (value) {
-			case String str -> str;
-			case Iterable<?> iterable -> value(JavaArrays.toArray(iterable));
-			default -> String.valueOf(value);
+		return switch (queryParams) {
+			case Map<?, ?> map -> MapConversions.convertMap(map, String::valueOf, Parameter::value, PutFunction.ifNotNullValue()).toMap();
+			default -> MapConversions.convertToMap(queryParams, String::valueOf, Parameter::value, PutFunction.ifNotNullValue());
 		};
-	}
-
-	/**
-	 * Converts the given array of values to a comma-separated string representation suitable for request parameters.
-	 *
-	 * @param values the array of values to convert
-	 * @return the comma-separated string representation of the values
-	 */
-	public static String value(final Object[] values) {
-		if (null == values) {
-			return null;
-		}
-		return String.join(",", ArrayConversions.convertArray(values, String::valueOf).toArray(String[]::new));
 	}
 
 	/**
