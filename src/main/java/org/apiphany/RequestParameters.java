@@ -161,7 +161,7 @@ public class RequestParameters {
 	 *
 	 * @param queryParams the object to convert
 	 * @return a map representation of the object's fields
-	 * @throws IllegalArgumentException if the provided object is not a pojo or a map.
+	 * @throws IllegalArgumentException if the provided object is not a POJO or a map.
 	 */
 	public static Map<String, String> from(final Object queryParams) {
 		if (null == queryParams) {
