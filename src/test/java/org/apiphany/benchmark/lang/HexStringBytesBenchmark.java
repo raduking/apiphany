@@ -1,4 +1,4 @@
-package org.apiphany.benchmark;
+package org.apiphany.benchmark.lang;
 
 import java.util.concurrent.TimeUnit;
 
@@ -23,7 +23,7 @@ import org.openjdk.jmh.annotations.Warmup;
  * </ul>
  *
  * <pre>
- * mvn jmh:benchmark -Pbenchmark -Djmh.benchmarks=org.apiphany.benchmark.HexStringBytesBenchmark
+ * mvn jmh:benchmark -Pbenchmark -Djmh.benchmarks=org.apiphany.benchmark.lang.HexStringBytesBenchmark
  * </pre>
  *
  * @author Radu Sebastian LAZIN
