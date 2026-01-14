@@ -11,6 +11,13 @@
 - Added parameters object support when building API requests (`ApiClientFluentAdapter.params(Object)`)
 - Added `Assert.thatArgumentNot` which throws `IllegalArgumentException` if the condition is `true`.
 - Added `RequestParameters.value` function to build a request parameter value from an object or object array.
+- Renamed `Arrays` class to `JavaArrays` to avoid confusion with the Java `Arrays` class.
+- Added `JavaArrays.toArray(Object)` to convert any object to an array for handling various input types uniformly.
+- Upgraded `morphix-all` to `1.0.18`.
+- Upgraded `nimbus-jose-jwt` to `10.7`.
+- Upgraded `oauth2-oidc-sdk` to `11.31.1`.
+- Upgraded `testcontainers` to `2.0.3`.
+- Upgraded `testcontainers-keycloak` to `4.1.0`.
 
 ---
 

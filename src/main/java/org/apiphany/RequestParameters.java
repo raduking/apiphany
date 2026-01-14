@@ -1,11 +1,8 @@
 package org.apiphany;
 
-import java.lang.reflect.Array;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -14,9 +11,11 @@ import java.util.Set;
 
 import org.apiphany.lang.Assert;
 import org.apiphany.lang.Strings;
+import org.apiphany.lang.collections.JavaArrays;
 import org.apiphany.lang.collections.Maps;
+import org.morphix.convert.ArrayConversions;
 import org.morphix.convert.MapConversions;
-import org.morphix.convert.function.PutFunction;
+import org.morphix.lang.function.PutFunction;
 import org.morphix.reflection.Constructors;
 
 /**
@@ -173,10 +172,9 @@ public class RequestParameters {
 		Assert.thatArgumentNot(queryParams.getClass().isArray(), "Cannot convert an Array into request parameters map. Expected a POJO or a Map.");
 
 		if (queryParams instanceof Map<?, ?> map) {
-			return MapConversions.convertMap(map, String::valueOf, RequestParameters::value).toMap();
+			return MapConversions.convertMap(map, String::valueOf, RequestParameters::value, PutFunction.ifNotNullValue()).toMap();
 		}
-		PutFunction<Map<String, Object>, String, Object> putIfNonNullValue = (map, key, value) -> (null != value) ? map.put(key, value) : null;
-		return MapConversions.convertToMap(queryParams, k -> k, RequestParameters::value, putIfNonNullValue);
+		return MapConversions.convertToMap(queryParams, k -> k, RequestParameters::value, PutFunction.ifNotNullValue());
 	}
 
 	/**
@@ -190,12 +188,11 @@ public class RequestParameters {
 			return null;
 		}
 		if (value.getClass().isArray()) {
-			Object[] array = toObjectArray(value);
-			return value(array);
+			return value(JavaArrays.toArray(value));
 		}
 		return switch (value) {
 			case String str -> str;
-			case Collection<?> list -> String.join(",", list.stream().map(RequestParameters::value).toArray(String[]::new));
+			case Iterable<?> iterable -> value(JavaArrays.toArray(iterable));
 			default -> String.valueOf(value);
 		};
 	}
@@ -210,26 +207,7 @@ public class RequestParameters {
 		if (null == values) {
 			return null;
 		}
-		return String.join(",", Arrays.stream(values).map(RequestParameters::value).toArray(String[]::new));
-	}
-
-	/**
-	 * Converts a primitive or object array to an Object array.
-	 *
-	 * @param value the array to convert
-	 * @return the converted Object array
-	 */
-	private static Object[] toObjectArray(final Object value) {
-		if (value.getClass().getComponentType().isPrimitive()) {
-			int length = Array.getLength(value);
-			Object[] array = new Object[length];
-			for (int i = 0; i < length; ++i) {
-				Object element = Array.get(value, i);
-				array[i] = element;
-			}
-			return array;
-		}
-		return (Object[]) value;
+		return String.join(",", ArrayConversions.convertArray(values, String::valueOf).toArray(String[]::new));
 	}
 
 	/**
