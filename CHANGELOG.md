@@ -21,6 +21,7 @@
 - Added `Strings.isBlank` to check if a character sequence is whitespace, `null` or empty.
 - Added `Strings.isNotBlank` to check if a character sequence is not whitespace, `null` or empty.
 - Added `Parameter` record to build (request) parameters.
+- Updated `ParameterFunction` to use `Parameter.value` instead of `String.valueOf`.
 
 ---
 

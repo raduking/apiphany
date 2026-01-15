@@ -254,4 +254,15 @@ class RequestParametersTest {
 		assertThat(params.get("param4"), equalTo("true,false"));
 		assertThat(params.get("param5"), equalTo("1,2,3"));
 	}
+
+	@Test
+	void shouldAddParameterWithParameterRecord() {
+		Map<String, String> params = RequestParameters.of(
+				Parameter.of("param1", "value1"),
+				Parameter.of("param2", "value2"));
+
+		assertThat(params.entrySet(), hasSize(2));
+		assertThat(params.get("param1"), equalTo("value1"));
+		assertThat(params.get("param2"), equalTo("value2"));
+	}
 }

@@ -60,7 +60,7 @@ public interface ParameterFunction extends Consumer<Map<String, String>> {
 	 * @return a {@link ParameterFunction} that inserts the key-value pair into the map
 	 */
 	static <T> ParameterFunction parameter(final String name, final T value) {
-		return parameter(name, String.valueOf(value));
+		return parameter(name, Parameter.value(value));
 	}
 
 	/**
@@ -75,7 +75,7 @@ public interface ParameterFunction extends Consumer<Map<String, String>> {
 	 * @return a {@link ParameterFunction} that inserts the key-value pair into the map
 	 */
 	static <T, U> ParameterFunction parameter(final T name, final U value) {
-		return parameter(String.valueOf(name), String.valueOf(value));
+		return parameter(String.valueOf(name), Parameter.value(value));
 	}
 
 	/**
@@ -88,7 +88,7 @@ public interface ParameterFunction extends Consumer<Map<String, String>> {
 	 * @return a {@link ParameterFunction} that inserts the key-value pair into the map
 	 */
 	static <T> ParameterFunction parameter(final String name, final Supplier<T> value) {
-		return parameter(name, String.valueOf(value.get()));
+		return parameter(name, Parameter.value(value.get()));
 	}
 
 	/**
@@ -102,7 +102,7 @@ public interface ParameterFunction extends Consumer<Map<String, String>> {
 	 * @return a {@link ParameterFunction} that inserts the key-value pair into the map
 	 */
 	static <T, U> ParameterFunction parameter(final T name, final Supplier<U> value) {
-		return parameter(String.valueOf(name), String.valueOf(value.get()));
+		return parameter(String.valueOf(name), Parameter.value(value.get()));
 	}
 
 	/**
@@ -117,7 +117,7 @@ public interface ParameterFunction extends Consumer<Map<String, String>> {
 	 * @return a {@link ParameterFunction} that inserts the key-value pair into the map
 	 */
 	static <T, U> ParameterFunction parameter(final Supplier<T> name, final Supplier<U> value) {
-		return parameter(String.valueOf(name.get()), String.valueOf(value.get()));
+		return parameter(String.valueOf(name.get()), Parameter.value(value.get()));
 	}
 
 	/**
@@ -146,7 +146,7 @@ public interface ParameterFunction extends Consumer<Map<String, String>> {
 	 * @return a {@link ParameterFunction} that inserts the key-value pair into the map
 	 */
 	static <T, U> ParameterFunction parameter(final T name, final List<U> elements) {
-		return parameter(String.valueOf(name), Lists.safe(elements).stream().map(String::valueOf).toList());
+		return parameter(String.valueOf(name), Parameter.value(elements));
 	}
 
 	/**
