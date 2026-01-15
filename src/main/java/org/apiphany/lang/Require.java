@@ -12,10 +12,10 @@ import org.morphix.reflection.Constructors;
  * Provides static methods to validate conditions and throw {@link IllegalArgumentException}s with formatted messages.
  * This is a lightweight alternative to Guava's {@code Preconditions}.
  * <p>
- * Note: the name "Require" emphasizes the intent of enforcing preconditions even though it is a verb rather than a noun
- * because it conveys the action of requiring certain conditions to be met and aligns with similar utility classes in
- * other libraries. The usage of "Require" helps to clearly communicate that the methods within this class are used to
- * enforce requirements on method arguments and state.
+ * Note: the name {@code Require} emphasizes the intent of enforcing preconditions even though it is a verb rather than
+ * a noun because it conveys the action of requiring certain conditions to be met and aligns with similar utility
+ * classes in other libraries. The usage of {@code Require} helps to clearly communicate that the methods within this
+ * class are used to enforce requirements on method arguments and state.
  * <p>
  * Usage example:
  *
