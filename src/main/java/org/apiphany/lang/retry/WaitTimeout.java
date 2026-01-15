@@ -5,8 +5,6 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-import org.morphix.lang.thread.Threads;
-
 /**
  * Timeout wait implementation.
  *
@@ -35,17 +33,17 @@ public class WaitTimeout implements Wait {
 	private final long timeout;
 
 	/**
-	 * Time unit for timeout
+	 * Time unit for timeout.
 	 */
 	private final TimeUnit timeoutTimeUnit;
 
 	/**
-	 * Interval between waits
+	 * Interval between waits.
 	 */
 	private final long interval;
 
 	/**
-	 * Interval time unit
+	 * Interval time unit.
 	 */
 	private final TimeUnit intervalTimeUnit;
 
@@ -62,7 +60,7 @@ public class WaitTimeout implements Wait {
 	 * @param interval interval
 	 * @param intervalTimeUnit interval time unit
 	 */
-	private WaitTimeout(final long timeout, final TimeUnit timeoutTimeUnit, final long interval, final TimeUnit intervalTimeUnit) {
+	protected WaitTimeout(final long timeout, final TimeUnit timeoutTimeUnit, final long interval, final TimeUnit intervalTimeUnit) {
 		this.timeout = timeout;
 		this.timeoutTimeUnit = timeoutTimeUnit;
 		this.interval = interval;
@@ -95,13 +93,19 @@ public class WaitTimeout implements Wait {
 	}
 
 	/**
-	 * Waits.
+	 * @see Wait#interval()
 	 */
 	@Override
-	public void now() {
-		if (keepWaiting()) {
-			Threads.safeSleep(interval, intervalTimeUnit);
-		}
+	public long interval() {
+		return interval;
+	}
+
+	/**
+	 * @see Wait#timeUnit()
+	 */
+	@Override
+	public TimeUnit timeUnit() {
+		return intervalTimeUnit;
 	}
 
 	/**
@@ -122,30 +126,53 @@ public class WaitTimeout implements Wait {
 	}
 
 	/**
+	 * @see Wait#now()
+	 */
+	@Override
+	public void now() {
+		// don't wait if the timeout is over
+		if (keepWaiting()) {
+			Wait.super.now();
+		}
+	}
+
+	/**
 	 * Returns true if the retry should keep waiting.
 	 *
 	 * @return true if the retry should keep waiting
 	 */
 	@Override
 	public boolean keepWaiting() {
-		return !isOver(start);
+		return !isOver();
 	}
 
 	/**
-	 * Returns true if the retry is over.
+	 * Returns true if the wait is over. This method can be used to check if the timeout has been reached since the internal
+	 * start time.
+	 *
+	 * @return true if the wait is over
+	 */
+	public boolean isOver() {
+		return isOver(start);
+	}
+
+	/**
+	 * Returns true if the wait is over. This method can be used to check if the timeout has been reached since the provided
+	 * start time.
 	 *
 	 * @param start start time
-	 * @return true if the retry is over
+	 * @return true if the wait is over
 	 */
 	public boolean isOver(final Instant start) {
 		return Instant.now().isAfter(start.plus(timeout, timeoutTimeUnit.toChronoUnit()));
 	}
 
 	/**
-	 * Returns true if the retry is over.
+	 * Returns true if the wait is over. This method can be used to check if the timeout has been reached since the provided
+	 * start time in epoch milliseconds.
 	 *
 	 * @param startTimeEpochMilli start time in epoch milliseconds
-	 * @return true if the retry is over
+	 * @return true if the wait is over
 	 */
 	public boolean isOver(final long startTimeEpochMilli) {
 		return isOver(Instant.ofEpochMilli(startTimeEpochMilli));

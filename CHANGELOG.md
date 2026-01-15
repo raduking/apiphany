@@ -26,6 +26,10 @@
 - Renamed `Assert.thatArgument` to `Require.that`.
 - Renamed `Assert.thatArgumentNot` to `Require.thatNot`.
 - Added `Require.notNull` to check for `null` values and to throw `IllegalArgumentException` instead of `NullPointerException`.
+- Added `Wait.Default` name space class which holds the defaults for `Wait` objects such as sleep action, interval, time unit.
+- Added `Wait.interval` method which defaults to `Wait.Default.INTERVAL` with value `1`.
+- Added `Wait.timeUnit` method which defaults to `Wait.Default.TIME_UNIT` with value `TimeUnit.SECONDS`.
+- Added `Wait.sleepAction` method which defaults to `Wait.Default.SLEEP_ACTION` which uses `Threads.safeSleep`.
 
 ---
 

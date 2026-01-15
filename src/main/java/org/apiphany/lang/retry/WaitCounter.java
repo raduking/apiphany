@@ -4,8 +4,6 @@ import java.time.Duration;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-import org.morphix.lang.thread.Threads;
-
 /**
  * Counter wait implementation. After each iteration, the counter waits for the given interval. If the interval is 0,
  * the counter doesn't wait.
@@ -76,11 +74,19 @@ public class WaitCounter implements Wait {
 	}
 
 	/**
-	 * Waits.
+	 * @see Wait#interval()
 	 */
 	@Override
-	public void now() {
-		Threads.safeSleep(interval, intervalTimeUnit);
+	public long interval() {
+		return interval;
+	}
+
+	/**
+	 * @see Wait#timeUnit()
+	 */
+	@Override
+	public TimeUnit timeUnit() {
+		return intervalTimeUnit;
 	}
 
 	/**
