@@ -63,6 +63,7 @@ class TLSObjectTest {
 		int port = Sockets.findAvailableTcpPort();
 		SSLProperties sslProperties = JsonBuilder.fromJson(SSL_PROPERTIES_JSON, SSLProperties.class);
 		sslProperties.setProtocol(SSLProtocol.TLS_1_2);
+
 		BasicHttpsServer server = new BasicHttpsServer(port, sslProperties);
 
 		String response = null;
@@ -79,7 +80,7 @@ class TLSObjectTest {
 		assertThat(response, equalTo(NameHandler.NAME));
 	}
 
-	@Disabled("This test is here to debug errors, the same is tested in shouldPerformTLS12HandshakeWithParameterizedCipherSuites")
+	@Disabled("This test is here to debug errors, the same is tested in shouldPerformTLS12HandshakeAndGetName")
 	@Test
 	void shouldPerformTLS12HandshakeWithECDHERSAAES256GCMSHA384() throws Exception {
 		int port = Sockets.findAvailableTcpPort();
@@ -89,14 +90,16 @@ class TLSObjectTest {
 		TLSLoggingProvider.install();
 		BasicHttpsServer server = new BasicHttpsServer(port, sslProperties);
 
-		byte[] serverFinished = null;
+		String response = null;
 		List<CipherSuite> cipherSuites = List.of(CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384);
 		try (MinimalTLSClient client = new MinimalTLSClient(LOCALHOST, port, DEBUG_SOCKET_TIMEOUT, CLIENT_KEY_PAIR, cipherSuites)) {
-			serverFinished = client.performHandshake();
+			byte[] serverFinished = client.performHandshake();
+			assertNotNull(serverFinished);
+			response = client.get("/" + ApiClient.API + "/name");
 		} finally {
 			server.close();
 		}
-		assertNotNull(serverFinished);
+		assertThat(response, equalTo(NameHandler.NAME));
 	}
 
 	@Test
@@ -121,6 +124,7 @@ class TLSObjectTest {
 	@Test
 	void shouldPerformTLS12HandshakeWithECDHERSAAES256GCMSHA384WithOpenSSL() throws Exception {
 		// assumes OpenSSL is running on port 4433 you can run it with the command described in the keystore-generation.md file.
+		// TODO: move this to an integration test module
 		int port = 4433;
 		assumeTrue(Sockets.canConnectTo(LOCALHOST, port), LOCALHOST + ":" + port + " is unreachable, skipping test.");
 
@@ -138,6 +142,7 @@ class TLSObjectTest {
 	@Test
 	void shouldPerformTLS12HandshakeWithAES128CBCSHAWithOpenSSL() throws Exception {
 		// assumes OpenSSL is running on port 4433 you can run it with the command described in the keystore-generation.md file.
+		// TODO: move this to an integration test module
 		int port = 4433;
 		assumeTrue(Sockets.canConnectTo(LOCALHOST, port), LOCALHOST + ":" + port + " is unreachable, skipping test.");
 

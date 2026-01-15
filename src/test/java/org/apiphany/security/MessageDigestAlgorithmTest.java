@@ -60,6 +60,14 @@ class MessageDigestAlgorithmTest {
 
 	@ParameterizedTest
 	@EnumSource(names = { "SHA1", "SHA256", "SHA384", "SHA512", "SHA224", "SHA512_224", "SHA512_256" })
+	void shouldReturnHmacAlgorithmNameForValidDigestAlgorithm(final MessageDigestAlgorithm mda) {
+		String expected = "Hmac" + mda.value().replaceAll("-", "");
+
+		assertThat(mda.hmacAlgorithmName(), equalTo(expected));
+	}
+
+	@ParameterizedTest
+	@EnumSource(names = { "SHA1", "SHA256", "SHA384", "SHA512", "SHA224", "SHA512_224", "SHA512_256" })
 	void shouldDigestTheInputWithTheGivenAlgorithm(final MessageDigestAlgorithm mda) throws Exception {
 		byte[] bytes = MESSAGE.getBytes(StandardCharsets.UTF_8);
 
