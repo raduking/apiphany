@@ -7,14 +7,16 @@ import org.morphix.lang.Messages;
 import org.morphix.reflection.Constructors;
 
 /**
- * Utility class for argument and state validations. The name "Require" emphasizes the intent of enforcing preconditions
- * even though it is a verb rather than a noun because it conveys the action of requiring certain conditions to be met
- * and aligns with similar utility classes in other libraries. The usage of "Require" helps to clearly communicate that
- * the methods within this class are used to enforce requirements on method arguments and state.
+ * Utility class for enforcing argument and state preconditions.
  * <p>
- * Provides static methods to check conditions and throw exceptions with formatted messages. This is a lightweight
- * alternative to Guava's {@code Preconditions}.
- * </p>
+ * Provides static methods to validate conditions and throw {@link IllegalArgumentException}s with formatted messages.
+ * This is a lightweight alternative to Guava's {@code Preconditions}.
+ * <p>
+ * Note: the name "Require" emphasizes the intent of enforcing preconditions even though it is a verb rather than a noun
+ * because it conveys the action of requiring certain conditions to be met and aligns with similar utility classes in
+ * other libraries. The usage of "Require" helps to clearly communicate that the methods within this class are used to
+ * enforce requirements on method arguments and state.
+ * <p>
  * Usage example:
  *
  * <pre>
@@ -55,16 +57,16 @@ public final class Require {
 	 *
 	 * @param <T> the type of the object to check
 	 *
-	 * @param obj the object to check
+	 * @param object the object to check
 	 * @param condition the condition to test
 	 * @param message the error message template
 	 * @param args optional arguments to format the message
 	 * @return the object if the condition is met
 	 * @see Messages#message(String, Object...)
 	 */
-	public static <T> T that(final T obj, final Predicate<T> condition, final String message, final Object... args) {
-		Require.that(condition.test(obj), message, args);
-		return obj;
+	public static <T> T that(final T object, final Predicate<T> condition, final String message, final Object... args) {
+		Require.that(condition.test(Objects.requireNonNull(object, "object cannot be null")), message, args);
+		return object;
 	}
 
 	/**
