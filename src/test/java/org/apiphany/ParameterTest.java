@@ -79,9 +79,9 @@ class ParameterTest {
 
 	@Test
 	void shouldThrowExceptionWhenBuildingParameterWithConstructorAndNullName() {
-		NullPointerException e = assertThrows(NullPointerException.class, () -> new Parameter(null, VALUE));
+		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> new Parameter(null, VALUE));
 
-		assertThat(e.getMessage(), equalTo("parameter name cannot be null"));
+		assertThat(e.getMessage(), equalTo("Parameter name cannot be null"));
 	}
 
 	@Test
@@ -93,9 +93,9 @@ class ParameterTest {
 
 	@Test
 	void shouldThrowExceptionWhenBuildingParameterWithNullName() {
-		NullPointerException e = assertThrows(NullPointerException.class, () -> Parameter.of(null, VALUE));
+		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> Parameter.of(null, VALUE));
 
-		assertThat(e.getMessage(), equalTo("parameter name cannot be null"));
+		assertThat(e.getMessage(), equalTo("Parameter name cannot be null"));
 	}
 
 	@Test

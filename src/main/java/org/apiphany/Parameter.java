@@ -1,8 +1,8 @@
 package org.apiphany;
 
 import java.util.Map;
-import java.util.Objects;
 
+import org.apiphany.lang.Require;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.JavaArrays;
 import org.morphix.convert.ArrayConversions;
@@ -24,10 +24,8 @@ public record Parameter(String name, String value) implements ParameterFunction 
 	 * @param value the value of the parameter
 	 */
 	public Parameter {
-		Objects.requireNonNull(name, "parameter name cannot be null");
-		if (Strings.isBlank(name)) {
-			throw new IllegalArgumentException("Parameter name cannot be blank");
-		}
+		Require.notNull(name, "Parameter name cannot be null");
+		Require.that(name, Strings::isNotBlank, "Parameter name cannot be blank");
 	}
 
 	/**
@@ -41,7 +39,7 @@ public record Parameter(String name, String value) implements ParameterFunction 
 	 * @return a new {@link Parameter} instance
 	 */
 	public static <N, V> Parameter of(final N name, final V value) {
-		return new Parameter(String.valueOf(Objects.requireNonNull(name, "parameter name cannot be null")), value(value));
+		return new Parameter(String.valueOf(Require.notNull(name, "Parameter name cannot be null")), value(value));
 	}
 
 	/**

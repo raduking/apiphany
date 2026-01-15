@@ -128,8 +128,8 @@ public final class Bytes {
 	 * @return a new byte array padded to a block-size multiple, or the original if already aligned
 	 */
 	public static byte[] padRightToBlockSize(final byte[] bytes, final int blockSize, final byte paddingByte, final boolean extendIfAligned) {
-		Objects.requireNonNull(bytes, "Byte array cannot be null");
-		Assert.thatArgument(blockSize > 0, "Block size must be greater than zero");
+		Require.notNull(bytes, "Byte array cannot be null");
+		Require.that(blockSize > 0, "Block size must be greater than zero");
 
 		final int remainder = bytes.length % blockSize;
 		if (0 == remainder && !extendIfAligned) {
