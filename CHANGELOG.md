@@ -1,5 +1,9 @@
 ## Release Notes
 
+`1.0.24`
+
+---
+
 `1.0.23`
 
 - Moved `gzip` package to a better suited package `io.gzip`.
