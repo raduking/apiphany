@@ -6,7 +6,7 @@ import java.net.Socket;
 import java.time.Duration;
 import java.util.Random;
 
-import org.apiphany.lang.Assert;
+import org.apiphany.lang.Require;
 import org.morphix.reflection.Constructors;
 
 /**
@@ -97,9 +97,9 @@ public final class Sockets {
 	 * @return the available port
 	 */
 	public static int findAvailableTcpPort(final int minPortRange, final int maxPortRange, final int timeout) {
-		Assert.thatArgument(minPortRange >= Default.MIN_PORT, "Port minimum value must be greater than %d", Default.MIN_PORT);
-		Assert.thatArgument(maxPortRange <= Default.MAX_PORT, "Port maximum value must be less than %d", Default.MAX_PORT);
-		Assert.thatArgument(maxPortRange >= minPortRange, "Max port range must be greater than minimum port range");
+		Require.that(minPortRange >= Default.MIN_PORT, "Port minimum value must be greater than {}", Default.MIN_PORT);
+		Require.that(maxPortRange <= Default.MAX_PORT, "Port maximum value must be less than {}", Default.MAX_PORT);
+		Require.that(maxPortRange >= minPortRange, "Max port range must be greater than minimum port range");
 
 		int attempts = maxPortRange - minPortRange + 1;
 		for (int i = 0; i < attempts; ++i) {

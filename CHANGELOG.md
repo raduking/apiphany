@@ -22,6 +22,10 @@
 - Added `Strings.isNotBlank` to check if a character sequence is not whitespace, `null` or empty.
 - Added `Parameter` record to build (request) parameters.
 - Updated `ParameterFunction` to use `Parameter.value` instead of `String.valueOf`.
+- Renamed `Assert` to `Require` even if it is a verb rather than a noun because it conveys the action of requiring certain conditions to be met.
+- Renamed `Assert.thatArgument` to `Require.that`.
+- Renamed `Assert.thatArgumentNot` to `Require.thatNot`.
+- Added `Require.notNull` to check for `null` values and to throw `IllegalArgumentException` instead of `NullPointerException`.
 
 ---
 

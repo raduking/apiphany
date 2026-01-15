@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apiphany.lang.Assert;
+import org.apiphany.lang.Require;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Maps;
 import org.morphix.convert.MapConversions;
@@ -165,9 +165,9 @@ public class RequestParameters {
 		if (null == queryParams) {
 			return Collections.emptyMap();
 		}
-		Assert.thatArgumentNot(queryParams instanceof List<?>, "Cannot convert a List into request parameters map. Expected a POJO or a Map.");
-		Assert.thatArgumentNot(queryParams instanceof Set<?>, "Cannot convert a Set into request parameters map. Expected a POJO or a Map.");
-		Assert.thatArgumentNot(queryParams.getClass().isArray(), "Cannot convert an Array into request parameters map. Expected a POJO or a Map.");
+		Require.thatNot(queryParams instanceof List<?>, "Cannot convert a List into request parameters map. Expected a POJO or a Map.");
+		Require.thatNot(queryParams instanceof Set<?>, "Cannot convert a Set into request parameters map. Expected a POJO or a Map.");
+		Require.thatNot(queryParams.getClass().isArray(), "Cannot convert an Array into request parameters map. Expected a POJO or a Map.");
 
 		return switch (queryParams) {
 			case Map<?, ?> map -> MapConversions.convertMap(map, String::valueOf, Parameter::value, PutFunction.ifNotNullValue()).toMap();
