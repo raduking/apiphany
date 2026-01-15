@@ -108,4 +108,22 @@ class WaitCounterTest {
 		assertNotSame(waitCounter, waitCounterCopy);
 		assertEquals(waitCounter, waitCounterCopy);
 	}
+
+	@Test
+	void shouldReturnFalseOnEqualsIfOtherIsNull() {
+		WaitCounter waitCounter = WaitCounter.of(MAX_COUNT, INTERVAL);
+
+		boolean result = waitCounter.equals(null);
+
+		assertFalse(result);
+	}
+
+	@Test
+	void shouldReturnFalseOnEqualsIfOtherIsADifferentClass() {
+		WaitCounter waitCounter = WaitCounter.of(MAX_COUNT, INTERVAL);
+
+		boolean result = waitCounter.equals(new Object());
+
+		assertFalse(result);
+	}
 }

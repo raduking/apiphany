@@ -35,7 +35,6 @@ import org.apiphany.utils.security.JwtTokenValidator;
 import org.apiphany.utils.security.oauth2.server.SimpleHttpServer;
 import org.apiphany.utils.security.oauth2.server.SimpleOAuth2Server;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.morphix.lang.JavaObjects;
@@ -65,8 +64,6 @@ class OAuth2HttpExchangeClientTest {
 	private OAuth2ClientRegistration clientRegistration;
 	private OAuth2ProviderDetails providerDetails;
 
-	private ManagedApiClientWithOAuth2 managedApiClientWithOAuth2;
-
 	private ClientProperties clientProperties;
 
 	private OAuth2Properties oAuth2Properties;
@@ -87,13 +84,6 @@ class OAuth2HttpExchangeClientTest {
 
 		clientProperties = new ClientProperties();
 		clientProperties.setCustomProperties(oAuth2Properties);
-
-		managedApiClientWithOAuth2 = new ManagedApiClientWithOAuth2(clientProperties);
-	}
-
-	@AfterEach
-	void tearDown() throws Exception {
-		managedApiClientWithOAuth2.close();
 	}
 
 	@AfterAll
@@ -103,8 +93,11 @@ class OAuth2HttpExchangeClientTest {
 	}
 
 	@Test
-	void shouldReturnValidAuthenticationTokenWithManagedApiClientWithOAuth2() {
-		String result = managedApiClientWithOAuth2.getName();
+	void shouldReturnValidAuthenticationTokenWithManagedApiClientWithOAuth2() throws Exception {
+		String result = null;
+		try (ManagedApiClientWithOAuth2 managedApiClientWithOAuth2 = new ManagedApiClientWithOAuth2(clientProperties)) {
+			result = managedApiClientWithOAuth2.getName();
+		}
 
 		assertThat(result, equalTo(SimpleHttpServer.NAME));
 	}
