@@ -19,7 +19,7 @@ public interface HttpContentConverter<T> extends ContentConverter<T> {
 
 	/**
 	 * Retrieves the values of the {@code Content-Type} header from the provided headers object. This method delegates to
-	 * {@link #getHeaderValues(Object, Object, HeaderValuesChain)} to fetch the header values.
+	 * {@link ContentConverter#getHeaderValues(Object, Object, HeaderValues)} to fetch the header values.
 	 *
 	 * @param <V> the type of the headers object (e.g., {@link HttpHeaders} or {@link Map}).
 	 *

@@ -1,5 +1,6 @@
 package org.apiphany.json.jackson;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 import org.apiphany.lang.annotation.AsValue;
@@ -20,7 +21,7 @@ import com.fasterxml.jackson.databind.introspect.NopAnnotationIntrospector;
 /**
  * A Jackson {@link AnnotationIntrospector} that adapts neutral field annotations ({@link FieldName}, {@link Ignored},
  * {@link FieldOrder}) into Jackson's property model.
- *
+ * <p>
  * This allows your domain classes to remain independent of Jackson while still benefiting from annotation-driven
  * serialization.
  *
@@ -31,6 +32,7 @@ public class ApiphanyAnnotationIntrospector extends NopAnnotationIntrospector { 
 	/**
 	 * Serial version UID needed for {@link Serializable} objects.
 	 */
+	@Serial
 	private static final long serialVersionUID = -7229112614741239569L;
 
 	/**

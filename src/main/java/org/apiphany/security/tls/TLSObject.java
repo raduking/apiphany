@@ -26,7 +26,7 @@ public interface TLSObject extends ByteSizeable, BinaryRepresentable {
 	/**
 	 * The logging format for TLS objects, configurable via system property {@code apiphany.logging.format.tls}.
 	 */
-	static LoggingFormat FORMAT = LoggingFormat.fromString(System.getProperty("apiphany.logging.format.tls"));
+	LoggingFormat FORMAT = LoggingFormat.fromString(System.getProperty("apiphany.logging.format.tls"));
 
 	/**
 	 * Serializes the TLS object according to the configured format.

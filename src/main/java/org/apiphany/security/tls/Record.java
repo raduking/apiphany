@@ -286,7 +286,7 @@ public class Record implements TLSObject {
 	 * @param <T> the type of fragments to filter for
 	 *
 	 * @param tlsObjectClass the class object of the fragment type to filter for
-	 * @return a list containing all matching fragments (may be empty)
+	 * @return a list containing all matching fragments (can be empty)
 	 */
 	public <T extends TLSObject> List<T> getFragments(final Class<T> tlsObjectClass) {
 		if (Lists.isEmpty(fragments)) {

@@ -106,12 +106,12 @@ public enum SSLProtocol {
 	/**
 	 * The {@link String} value.
 	 */
-	private String value;
+	private final String value;
 
 	/**
 	 * The SSL handshake version as {@code short}.
 	 */
-	private short handshakeVersion;
+	private final short handshakeVersion;
 
 	/**
 	 * Constructs an enumeration.
