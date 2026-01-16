@@ -16,7 +16,7 @@ public abstract class BasicMeter {
 	/**
 	 * The meter name.
 	 */
-	private String name;
+	private final String name;
 
 	/**
 	 * Creates a new meter with the given {@code name}.

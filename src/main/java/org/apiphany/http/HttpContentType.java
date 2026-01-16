@@ -12,7 +12,7 @@ import org.morphix.lang.Nullables;
 import org.morphix.reflection.Constructors;
 
 /**
- * Represents a HTTP content type when the character set differs from the one already defined. This is useful for
+ * Represents an HTTP content type when the character set differs from the one already defined. This is useful for
  * parsing HTTP headers sent from an HTTP server which might decide not to follow the character sets defined in the
  * {@link ContentType} enumeration.
  * <p>
@@ -170,10 +170,10 @@ public class HttpContentType implements ApiMimeType {
 	}
 
 	/**
-	 * Returns a HTTP content type from the given list of header values.
+	 * Returns an HTTP content type from the given list of header values.
 	 *
 	 * @param headerValues the header values list
-	 * @return a HTTP content type from the given list of header values
+	 * @return an HTTP content type from the given list of header values
 	 */
 	public static HttpContentType parse(final List<String> headerValues) {
 		if (Lists.isEmpty(headerValues)) {
@@ -189,7 +189,7 @@ public class HttpContentType implements ApiMimeType {
 	}
 
 	/**
-	 * Returns a HTTP content type from the given header value.
+	 * Returns an HTTP content type from the given header value.
 	 * <p>
 	 * This method must be called only for single header values (as opposed to multiple header values). If multiple header
 	 * values are present, use {@link #parse(List)} instead. To parse multiple header values the list must be constructed
@@ -198,7 +198,7 @@ public class HttpContentType implements ApiMimeType {
 	 * TODO: implement proper handling of multiple header values in a single string
 	 *
 	 * @param headerValue the header value
-	 * @return a HTTP content type from the given header value
+	 * @return an HTTP content type from the given header value
 	 */
 	public static HttpContentType parse(final String headerValue) {
 		if (Strings.isEmpty(headerValue)) {

@@ -120,7 +120,7 @@ public class GZip {
 	}
 
 	/**
-	 * De-compress a GZIP-ed input (byte array or input stream) to a the same output type as the input.
+	 * De-compress a GZIP-ed input (byte array or input stream) to the same output type as the input.
 	 *
 	 * @param <T> input type
 	 *
