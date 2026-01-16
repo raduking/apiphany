@@ -22,7 +22,7 @@ public class WaitCounter implements Wait {
 	public static class Default {
 
 		/**
-		 * Default timeout: 30 seconds.
+		 * Default maximum count: 3.
 		 */
 		public static final int MAX_COUNT = 3;
 
