@@ -80,6 +80,7 @@
 
 		<!-- Benchmarking -->
 		<jmh.version>1.37</jmh.version>
+		<jmh.maven.plugin.version>0.2.2</jmh.maven.plugin.version>
 
 		<!-- Initialize the Jacoco arguments as empty by default -->
 		<jacocoArgLine />
@@ -428,8 +429,10 @@
 			</plugin>
 
 			<!-- Mutation testing -->
-			<!-- mvn org.jacoco:jacoco-maven-plugin:prepare-agent org.pitest:pitest-maven:mutationCoverage -->
-			<!-- mvn -DwithHistory org.jacoco:jacoco-maven-plugin:prepare-agent org.pitest:pitest-maven:mutationCoverage -->
+			<!-- 
+				mvn org.jacoco:jacoco-maven-plugin:prepare-agent org.pitest:pitest-maven:mutationCoverage
+				mvn -DwithHistory org.jacoco:jacoco-maven-plugin:prepare-agent org.pitest:pitest-maven:mutationCoverage
+			-->
 			<plugin>
 				<groupId>org.pitest</groupId>
 				<artifactId>pitest-maven</artifactId>
@@ -510,6 +513,9 @@
 	</build>
 
 	<profiles>
+		<!--
+			Release profile, activate it with: -Drelease=true
+		-->
 		<profile>
 			<id>active-on-property-environment-release</id>
 			<activation>
@@ -520,9 +526,6 @@
 			</activation>
 			<build>
 				<plugins>
-					<!--
-						Activate it with: -Drelease=true
-					-->
 					<!-- Artifact signing for publishing -->
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
@@ -547,8 +550,10 @@
 					</plugin>
 
 					<!-- Publish to Maven Central -->
-					<!-- https://central.sonatype.org/publish/publish-portal-guide/ -->
-					<!-- For snapshots: https://central.sonatype.org/publish/publish-portal-snapshots/ -->
+					<!-- 
+						Releases: https://central.sonatype.org/publish/publish-portal-guide/
+						Snapshots: https://central.sonatype.org/publish/publish-portal-snapshots/
+					-->
 					<plugin>
 						<groupId>org.sonatype.central</groupId>
 						<artifactId>central-publishing-maven-plugin</artifactId>
@@ -565,6 +570,9 @@
 			</build>
 		</profile>
 
+		<!--
+			Benchmarking profile, activate it with: -Pbenchmark
+		-->
     	<profile>
 			<id>benchmark</id>
 			<properties>
@@ -574,6 +582,8 @@
 			</properties>
 			<build>
 				<plugins>
+
+					<!-- Benchmarking annotation processor (with JMH) -->
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-compiler-plugin</artifactId>
@@ -591,14 +601,17 @@
 						</configuration>
 					</plugin>
 
+					<!-- Benchmarking plugin -->
 					<!--
-						run benchmarks conditionally with 1 warmup forks and 2 run forks:
+						GitHub: https://github.com/metlos/jmh-maven-plugin
+						Run benchmarks conditionally with 1 warmup forks and 2 run forks:
+
 						mvn jmh:benchmark -Pbenchmark -Djmh.wf=1 -Djmh.fork=2
 					-->
 					<plugin>
 						<groupId>pw.krejci</groupId>
 						<artifactId>jmh-maven-plugin</artifactId>
-						<version>0.2.2</version>
+						<version>${jmh.maven.plugin.version}</version>
 						<configuration>
 							<fork>${jmh.fork}</fork>
 							<resultFormat>JSON</resultFormat>
@@ -611,7 +624,6 @@
 	</profiles>
 
 	<reporting>
-		<!-- mvn clean install org.pitest:pitest-maven:mutationCoverage site -->
 
 		<plugins>
 			<!-- Reports -->
@@ -621,7 +633,7 @@
 				<version>${maven.project.info.reports.plugin.version}</version>
 			</plugin>
 
-			<!--Jacoco code coverage -->
+			<!-- Jacoco code coverage -->
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
@@ -637,7 +649,10 @@
 			</plugin>
 
 			<!-- Mutation testing -->
-			<!-- mvn clean org.pitest:pitest-maven:mutationCoverage site -->
+			<!-- 
+				mvn clean org.pitest:pitest-maven:mutationCoverage site
+				mvn clean install org.pitest:pitest-maven:mutationCoverage site
+			-->
 			<plugin>
 				<groupId>org.pitest</groupId>
 				<artifactId>pitest-maven</artifactId>
