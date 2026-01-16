@@ -17,7 +17,7 @@ class OAuth2ErrorResponseTest {
 
 	@Test
 	void shouldLoadFromFile() {
-		String json = Strings.fromFile("/security/oauth2/oauth2-error-response.json");
+		String json = Strings.fromFile("security/oauth2/oauth2-error-response.json");
 
 		OAuth2ErrorResponse result = JsonBuilder.fromJson(json, OAuth2ErrorResponse.class);
 
@@ -31,7 +31,7 @@ class OAuth2ErrorResponseTest {
 
 	@Test
 	void shouldSerializeToJson() {
-		String json = Strings.fromFile("/security/oauth2/oauth2-error-response.json");
+		String json = Strings.fromFile("security/oauth2/oauth2-error-response.json");
 
 		OAuth2ErrorResponse result1 = JsonBuilder.fromJson(json, OAuth2ErrorResponse.class);
 

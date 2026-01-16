@@ -105,10 +105,10 @@ class OAuth2ApiClientIT {
 
 		logJWTSigningPublicKey(authServerUrl);
 
-		String clientRegistrationJsonString = Strings.fromFile("/security/oauth2/oauth2-client-registration.json");
+		String clientRegistrationJsonString = Strings.fromFile("security/oauth2/oauth2-client-registration.json");
 		clientRegistration = JsonBuilder.fromJson(clientRegistrationJsonString, OAuth2ClientRegistration.class);
 
-		String providerDetailsJsonString = Strings.fromFile("/security/oauth2/oauth2-provider-details.json");
+		String providerDetailsJsonString = Strings.fromFile("security/oauth2/oauth2-provider-details.json");
 		providerDetails = JsonBuilder.fromJson(providerDetailsJsonString, OAuth2ProviderDetails.class);
 		providerDetails.setTokenUri(KEYCLOAK_CONTAINER.getAuthServerUrl() + KEYCLOAK_TOKEN_PATH);
 
@@ -149,7 +149,7 @@ class OAuth2ApiClientIT {
 
 	@Test
 	void shouldReturnAuthenticationTokenWithClientSecretJwt() throws Exception {
-		String clientRegistrationJsonString = Strings.fromFile("/security/oauth2/oauth2-client-registration-jwt.json");
+		String clientRegistrationJsonString = Strings.fromFile("security/oauth2/oauth2-client-registration-jwt.json");
 		OAuth2ClientRegistration jwtClientRegistration = JsonBuilder.fromJson(clientRegistrationJsonString, OAuth2ClientRegistration.class);
 
 		try (OAuth2ApiClient oAuth2ApiClient = new OAuth2ApiClient(jwtClientRegistration, providerDetails, exchangeClient)) {
@@ -162,10 +162,10 @@ class OAuth2ApiClientIT {
 	@ParameterizedTest
 	@MethodSource("provideRSASigningAlgorithm")
 	void shouldReturnAuthenticationTokenWithClientSecretPrivateKey(final String algorithm) throws Exception {
-		String clientRegistrationJsonString = Strings.fromFile("/security/oauth2/oauth2-client-registration-pk.json");
+		String clientRegistrationJsonString = Strings.fromFile("security/oauth2/oauth2-client-registration-pk.json");
 		OAuth2ClientRegistration pkClientRegistration = JsonBuilder.fromJson(clientRegistrationJsonString, OAuth2ClientRegistration.class);
 
-		RSAPrivateKey privateKey = Keys.loadRSAPrivateKey("/security/oauth2/rsa_private.pem");
+		RSAPrivateKey privateKey = Keys.loadRSAPrivateKey("security/oauth2/rsa_private.pem");
 
 		JwsAlgorithm jwsAlgorithm = JwsAlgorithm.fromString(algorithm);
 		try (OAuth2ApiClient oAuth2ApiClient = new OAuth2ApiClient(pkClientRegistration, providerDetails, privateKey, jwsAlgorithm, exchangeClient)) {
@@ -178,10 +178,10 @@ class OAuth2ApiClientIT {
 	@ParameterizedTest
 	@MethodSource("provideRSASigningAlgorithm")
 	void shouldReturnAuthenticationTokenWithClientSecretPrivateKeyAndExchangeClientBuilder(final String algorithm) throws Exception {
-		String clientRegistrationJsonString = Strings.fromFile("/security/oauth2/oauth2-client-registration-pk.json");
+		String clientRegistrationJsonString = Strings.fromFile("security/oauth2/oauth2-client-registration-pk.json");
 		OAuth2ClientRegistration pkClientRegistration = JsonBuilder.fromJson(clientRegistrationJsonString, OAuth2ClientRegistration.class);
 
-		RSAPrivateKey privateKey = Keys.loadRSAPrivateKey("/security/oauth2/rsa_private.pem");
+		RSAPrivateKey privateKey = Keys.loadRSAPrivateKey("security/oauth2/rsa_private.pem");
 
 		JwsAlgorithm jwsAlgorithm = JwsAlgorithm.fromString(algorithm);
 		ExchangeClientBuilder exchangeClientBuilder = ExchangeClientBuilder.create().client(JavaNetHttpExchangeClient.class);

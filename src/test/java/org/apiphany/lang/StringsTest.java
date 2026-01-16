@@ -13,6 +13,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.NoSuchFileException;
 import java.util.function.Consumer;
 
 import org.junit.jupiter.api.Test;
@@ -161,7 +162,7 @@ class StringsTest {
 
 	@Test
 	void shouldReturnStringFromFile() {
-		String result = Strings.fromFile("/text-file.txt", StandardCharsets.UTF_8, 1000);
+		String result = Strings.fromFile("text-file.txt", StandardCharsets.UTF_8, 1000);
 
 		assertThat(result, equalTo(TEXT_FILE_CONTENT));
 	}
@@ -171,7 +172,7 @@ class StringsTest {
 		Runnable runnable = mock(Runnable.class);
 		Consumer<Exception> onError = e -> {
 			runnable.run();
-			assertThat(e, instanceOf(NullPointerException.class));
+			assertThat(e, instanceOf(NoSuchFileException.class));
 		};
 
 		String result = Strings.fromFile("/unknown-file.txt", StandardCharsets.UTF_8, 10, onError);
@@ -185,7 +186,7 @@ class StringsTest {
 		Runnable runnable = mock(Runnable.class);
 		Consumer<Exception> onError = e -> {
 			runnable.run();
-			assertThat(e, instanceOf(NullPointerException.class));
+			assertThat(e, instanceOf(NoSuchFileException.class));
 		};
 
 		String result = Strings.fromFile("/unknown-file.txt", onError);
@@ -196,7 +197,7 @@ class StringsTest {
 
 	@Test
 	void shouldReturnStringFromFileWithOnlyPathParameter() {
-		String result = Strings.fromFile("/text-file.txt");
+		String result = Strings.fromFile("text-file.txt");
 
 		assertThat(result, equalTo(TEXT_FILE_CONTENT));
 	}

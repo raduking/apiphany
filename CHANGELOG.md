@@ -3,6 +3,10 @@
 `1.0.24`
 
 - Upgraded parent to `3.5.9`.
+- Upgraded `exec-maven-plugin` to `3.6.3`.
+- Upgraded `org.eclipse.jdt/org.eclipse.jdt.core` to `3.44.0`.
+- Added support for XML via `jackson-dataformat-xml` only available if library is provided.
+- Changed `Strings.fromFile` to be more deterministic, everything that starts with `/` is absolute, everything else relative.
 
 ---
 

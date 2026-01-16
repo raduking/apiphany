@@ -17,7 +17,7 @@ class JavaNetHttpPropertiesTest {
 
 	private static final String ROOT = "java-net-http";
 
-	private static final String JAVA_NET_HTTP_PROPERTIES_JSON = Strings.fromFile("/client/http/java-net-http-properties.json");
+	private static final String JAVA_NET_HTTP_PROPERTIES_JSON = Strings.fromFile("client/http/java-net-http-properties.json");
 
 	@Test
 	void shouldHaveSSLAsRootProperty() {
