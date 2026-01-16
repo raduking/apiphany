@@ -10,13 +10,19 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.Paths;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Test class for {@link Strings}.
@@ -130,9 +136,18 @@ class StringsTest {
 	}
 
 	@Test
-	void shouldReadATextFileWithFileInputStream() throws IOException {
+	void shouldReadATextFileWithFileInputStreamAndSpecifiedCharsetAndBuffer() throws IOException {
 		try (FileInputStream fileInputStream = new FileInputStream("src/test/resources/text-file.txt")) {
 			String result = Strings.toString(fileInputStream, StandardCharsets.UTF_8, 10);
+
+			assertThat(result, equalTo(TEXT_FILE_CONTENT));
+		}
+	}
+
+	@Test
+	void shouldReadATextFileWithFileInputStreamAndSpecifiedCharset() throws IOException {
+		try (FileInputStream fileInputStream = new FileInputStream("src/test/resources/text-file.txt")) {
+			String result = Strings.toString(fileInputStream, StandardCharsets.UTF_8);
 
 			assertThat(result, equalTo(TEXT_FILE_CONTENT));
 		}
@@ -168,6 +183,14 @@ class StringsTest {
 	}
 
 	@Test
+	void shouldReturnStringFromAbsoultePathFile() {
+		String currentDir = Paths.get("").toAbsolutePath().toString();
+		String result = Strings.fromFile(currentDir + "/src/test/resources/text-file.txt");
+
+		assertThat(result, equalTo(TEXT_FILE_CONTENT));
+	}
+
+	@Test
 	void shouldDelegateErrorToOnErrorConsumerWhenFromStringThrowsExceptionWhenCalledWithNameCharsetSize() {
 		Runnable runnable = mock(Runnable.class);
 		Consumer<Exception> onError = e -> {
@@ -190,6 +213,21 @@ class StringsTest {
 		};
 
 		String result = Strings.fromFile("/unknown-file.txt", onError);
+
+		assertThat(result, nullValue());
+		verify(runnable).run();
+	}
+
+	@Test
+	void shouldDelegateErrorToOnErrorConsumerWhenFromStringThrowsExceptionWhenCalledWithClasspathPath() {
+		Runnable runnable = mock(Runnable.class);
+		Consumer<Exception> onError = e -> {
+			runnable.run();
+			assertThat(e, instanceOf(FileNotFoundException.class));
+			assertThat(e.getMessage(), equalTo("Classpath resource not found: unknown-file.txt"));
+		};
+
+		String result = Strings.fromFile("unknown-file.txt", onError);
 
 		assertThat(result, nullValue());
 		verify(runnable).run();
@@ -243,5 +281,42 @@ class StringsTest {
 		String result = Strings.fromCamelToKebabCase(text);
 
 		assertThat(result, equalTo(KEBAB_SOME_COOL_NAME));
+	}
+
+	@ParameterizedTest
+	@MethodSource("provideValuesForStripChar")
+	void shouldStripCharacterFromString(final String input, final char charToStrip, final String expectedOutput) {
+		String result = Strings.stripChar(input, charToStrip);
+
+		assertThat(result, equalTo(expectedOutput));
+	}
+
+	private static Stream<Arguments> provideValuesForStripChar() {
+		return Stream.of(
+				Arguments.of(null, '-', null),
+				Arguments.of("", '-', ""),
+				Arguments.of("a", '-', "a"),
+				Arguments.of("----", '-', ""),
+				Arguments.of("-a-", '-', "a"),
+				Arguments.of("a-a", '-', "a-a"),
+				Arguments.of("---some-text---", '-', "some-text"));
+	}
+
+	@ParameterizedTest
+	@MethodSource("provideValuesForRemoveWhitespaces")
+	void shouldRemoveWhitespacesFromString(final String input, final String expectedOutput) {
+		String result = Strings.removeAllWhitespace(input);
+
+		assertThat(result, equalTo(expectedOutput));
+	}
+
+	private static Stream<Arguments> provideValuesForRemoveWhitespaces() {
+		return Stream.of(
+				Arguments.of(null, null),
+				Arguments.of("", ""),
+				Arguments.of("     ", ""),
+				Arguments.of(" a b c ", "abc"),
+				Arguments.of("some text with spaces", "sometextwithspaces"),
+				Arguments.of("some\ttext\nwith\rdifferent\twhitespaces", "sometextwithdifferentwhitespaces"));
 	}
 }

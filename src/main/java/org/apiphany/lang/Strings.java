@@ -305,11 +305,14 @@ public interface Strings {
 	/**
 	 * Returns the input string with all whitespace like spaces, tabs, new lines, etc. removed.
 	 *
-	 * @param s input string
+	 * @param input input string
 	 * @return the input string with all whitespace removed
 	 */
-	static String removeAllWhitespace(final String s) {
-		return s.replaceAll("\\s", "");
+	static String removeAllWhitespace(final String input) {
+		if (isEmpty(input)) {
+			return input;
+		}
+		return input.replaceAll("\\s", "");
 	}
 
 	/**
