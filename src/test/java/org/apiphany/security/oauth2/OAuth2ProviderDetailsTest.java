@@ -17,7 +17,7 @@ class OAuth2ProviderDetailsTest {
 
 	@Test
 	void shouldLoadFromFile() {
-		String json = Strings.fromFile("/security/oauth2/oauth2-provider-details.json");
+		String json = Strings.fromFile("security/oauth2/oauth2-provider-details.json");
 
 		OAuth2ProviderDetails result = JsonBuilder.fromJson(json, OAuth2ProviderDetails.class);
 
@@ -26,7 +26,7 @@ class OAuth2ProviderDetailsTest {
 
 	@Test
 	void shouldSerializeToJson() {
-		String json = Strings.fromFile("/security/oauth2/oauth2-provider-details.json");
+		String json = Strings.fromFile("security/oauth2/oauth2-provider-details.json");
 
 		OAuth2ProviderDetails result1 = JsonBuilder.fromJson(json, OAuth2ProviderDetails.class);
 

@@ -20,7 +20,7 @@ class StoreInfoTest {
 
 	@Test
 	void shouldReadButNotWritePassword() {
-		String jsonRead = Strings.fromFile("/security/ssl/store-info.json");
+		String jsonRead = Strings.fromFile("security/ssl/store-info.json");
 		StoreInfo keystoreRead = JsonBuilder.fromJson(jsonRead, StoreInfo.class);
 
 		String jsonWrite = keystoreRead.toString();
@@ -51,7 +51,7 @@ class StoreInfoTest {
 
 	@Test
 	void shouldSerializeToJson() {
-		String json = Strings.fromFile("/security/ssl/store-info.json");
+		String json = Strings.fromFile("security/ssl/store-info.json");
 
 		StoreInfo result1 = JsonBuilder.fromJson(json, StoreInfo.class);
 

@@ -37,7 +37,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 @ExtendWith(ForkedJvmExtension.class)
 class TLSObjectLegacyCipherTest {
 
-	private static final String SSL_PROPERTIES_JSON_FILE = "/security/ssl/ssl-properties.json";
+	private static final String SSL_PROPERTIES_JSON_FILE = "security/ssl/ssl-properties.json";
 
 	private static final Duration DEBUG_SOCKET_TIMEOUT = Duration.ofMinutes(3);
 	private static final KeyPair CLIENT_KEY_PAIR = Keys.loadKeyPairFromResources();

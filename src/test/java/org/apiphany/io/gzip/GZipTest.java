@@ -22,6 +22,9 @@ import org.morphix.reflection.Constructors;
  */
 class GZipTest {
 
+	private static final String TEXT_FILE_PATH = "text-file.txt";
+	private static final String TEXT = Strings.fromFile(TEXT_FILE_PATH);
+
 	@Test
 	void shouldThrowExceptionOnCallingConstructor() {
 		UnsupportedOperationException unsupportedOperationException = Tests.verifyDefaultConstructorThrows(GZip.class);
@@ -30,81 +33,73 @@ class GZipTest {
 
 	@Test
 	void shouldCompressAndDecompressWithGzip() throws IOException {
-		String text = Strings.fromFile("/text-file.txt");
-		byte[] compressedText = GZip.compress(text);
+		byte[] compressedText = GZip.compress(TEXT);
 
 		String resultText = GZip.decompressToString(compressedText);
 
-		assertThat(resultText, equalTo(text));
+		assertThat(resultText, equalTo(TEXT));
 	}
 
 	@Test
 	void shouldCompressAndDecompressWithGzipFromCompressedStream() throws IOException {
-		String text = Strings.fromFile("/text-file.txt");
-		byte[] compressedText = GZip.compress(text);
+		byte[] compressedText = GZip.compress(TEXT);
 
 		InputStream is = new ByteArrayInputStream(compressedText);
 		String resultText = GZip.decompressToString(is);
 		is.close();
 
-		assertThat(resultText, equalTo(text));
+		assertThat(resultText, equalTo(TEXT));
 	}
 
 	@Test
 	void shouldCompressAndDecompressWithGzipFromStream() throws IOException {
-		String text = Strings.fromFile("/text-file.txt");
-		byte[] compressedText = GZip.compress(text);
+		byte[] compressedText = GZip.compress(TEXT);
 
 		InputStream is = GZip.inputStream(new ByteArrayInputStream(compressedText));
 		String resultText = Strings.toString(is, Strings.DEFAULT_CHARSET, 10);
 		is.close();
 
-		assertThat(resultText, equalTo(text));
+		assertThat(resultText, equalTo(TEXT));
 	}
 
 	@Test
 	void shouldReturnAReadableStreamFromUncompressedStream() throws IOException {
-		String text = Strings.fromFile("/text-file.txt");
-
-		InputStream is = GZip.inputStream(new ByteArrayInputStream(text.getBytes()));
+		InputStream is = GZip.inputStream(new ByteArrayInputStream(TEXT.getBytes()));
 		String resultText = Strings.toString(is, Strings.DEFAULT_CHARSET, 10);
 		is.close();
 
-		assertThat(resultText, equalTo(text));
+		assertThat(resultText, equalTo(TEXT));
 	}
 
 	@Test
 	void shouldDecompressBytesFromCompressedBytes() throws IOException {
-		String text = Strings.fromFile("/text-file.txt");
-		byte[] compressedText = GZip.compress(text);
+		byte[] compressedText = GZip.compress(TEXT);
 
 		byte[] decompressedBytes = GZip.decompressToBytes(compressedText);
 		String resultText = new String(decompressedBytes, Strings.DEFAULT_CHARSET);
 
-		assertThat(resultText, equalTo(text));
+		assertThat(resultText, equalTo(TEXT));
 	}
 
 	@Test
 	void shouldDecompressBytesFromCompressedBytesWithGenericMethod() throws IOException {
-		String text = Strings.fromFile("/text-file.txt");
-		byte[] compressedText = GZip.compress(text);
+		byte[] compressedText = GZip.compress(TEXT);
 
 		byte[] decompressedBytes = GZip.decompress(compressedText);
 		String resultText = new String(decompressedBytes, Strings.DEFAULT_CHARSET);
 
-		assertThat(resultText, equalTo(text));
+		assertThat(resultText, equalTo(TEXT));
 	}
 
 	@Test
 	void shouldDecompressInputStreamFromCompressedInputStreamWithGenericMethod() throws IOException {
-		String text = Strings.fromFile("/text-file.txt");
-		byte[] compressedText = GZip.compress(text);
+		byte[] compressedText = GZip.compress(TEXT);
 
 		InputStream decompressedInputStream = GZip.decompress(new ByteArrayInputStream(compressedText));
 		String resultText = Strings.toString(decompressedInputStream, Strings.DEFAULT_CHARSET, IOStreams.DEFAULT_BUFFER_SIZE);
 		decompressedInputStream.close();
 
-		assertThat(resultText, equalTo(text));
+		assertThat(resultText, equalTo(TEXT));
 	}
 
 	@Test

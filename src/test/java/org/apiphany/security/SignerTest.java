@@ -32,8 +32,8 @@ class SignerTest {
 	@Test
 	void shouldVerifySignature() throws Exception {
 		byte[] data = TEXT.getBytes();
-		PrivateKey privateKey = Keys.loadRSAPrivateKey("/security/oauth2/rsa_private.pem");
-		PublicKey publicKey = Keys.loadRSAPublicKey("/security/oauth2/rsa_public.pem");
+		PrivateKey privateKey = Keys.loadRSAPrivateKey("security/oauth2/rsa_private.pem");
+		PublicKey publicKey = Keys.loadRSAPublicKey("security/oauth2/rsa_public.pem");
 
 		byte[] signature = Signer.sign(privateKey, JwsAlgorithm.PS256, data);
 
@@ -55,7 +55,7 @@ class SignerTest {
 	@Test
 	void shouldThrowSecurityExceptionIfVerifyingFails() throws Exception {
 		byte[] data = TEXT.getBytes();
-		PrivateKey privateKey = Keys.loadRSAPrivateKey("/security/oauth2/rsa_private.pem");
+		PrivateKey privateKey = Keys.loadRSAPrivateKey("security/oauth2/rsa_private.pem");
 		PublicKey publicKey = mock(PublicKey.class);
 
 		byte[] signature = Signer.sign(privateKey, JwsAlgorithm.PS256, data);

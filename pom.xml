@@ -70,11 +70,11 @@
 		<pitest.junit5.plugin.version>1.2.3</pitest.junit5.plugin.version>
 		<jacoco.maven.plugin.version>0.8.14</jacoco.maven.plugin.version>
 		<maven.project.info.reports.plugin.version>3.9.0</maven.project.info.reports.plugin.version>
-		<exec.maven.plugin.version>3.6.2</exec.maven.plugin.version>
+		<exec.maven.plugin.version>3.6.3</exec.maven.plugin.version>
 
 		<!-- Other plugin versions -->
-		<spotless.maven.plugin.version>2.46.1</spotless.maven.plugin.version>
-		<org.eclipse.jdt.core.version>3.42.0</org.eclipse.jdt.core.version>
+		<spotless.maven.plugin.version>3.1.0</spotless.maven.plugin.version>
+		<org.eclipse.jdt.core.version>3.44.0</org.eclipse.jdt.core.version>
 		<eclipse.formatter.version>4.36</eclipse.formatter.version>
 		<properties.maven.plugin.version>1.2.1</properties.maven.plugin.version>
 
@@ -132,6 +132,13 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.datatype</groupId>
 			<artifactId>jackson-datatype-jsr310</artifactId>
+			<scope>provided</scope>
+			<optional>true</optional>
+		</dependency>
+
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-xml</artifactId>
 			<scope>provided</scope>
 			<optional>true</optional>
 		</dependency>
@@ -234,7 +241,15 @@
 			<version>${jmh.version}</version>
 			<scope>test</scope>
 		</dependency>
-      
+		
+		<!-- Formatter validation -->
+		<dependency>
+			<groupId>org.eclipse.jdt</groupId>
+			<artifactId>org.eclipse.jdt.core</artifactId>
+			<version>${org.eclipse.jdt.core.version}</version>
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -246,6 +261,9 @@
 					<execution>
 						<id>copy-main-resources</id>
 						<phase>process-resources</phase>
+						<goals>
+							<goal>resources</goal>
+						</goals>
 						<configuration>
 							<outputDirectory>${project.build.outputDirectory}</outputDirectory>
 							<resources>
@@ -258,11 +276,17 @@
 					<execution>
 						<id>copy-test-resources</id>
 						<phase>process-test-resources</phase>
+						<goals>
+							<goal>testResources</goal>
+						</goals>
 						<configuration>
 							<outputDirectory>${project.build.testOutputDirectory}</outputDirectory>
 							<resources>
 								<resource>
 									<directory>src/test/resources</directory>
+								</resource>
+								<resource>
+									<directory>formatter</directory>
 								</resource>
 							</resources>
 						</configuration>

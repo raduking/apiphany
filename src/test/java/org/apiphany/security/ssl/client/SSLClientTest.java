@@ -33,7 +33,7 @@ class SSLClientTest {
 	private static final int SERVER_PORT = Sockets.findAvailableTcpPort();
 	private static final String SERVER_URL = "https://" + SERVER_HOST + ":" + SERVER_PORT;
 
-	private static final String SSL_PROPERTIES_JSON = Strings.fromFile("/security/ssl/ssl-properties.json");
+	private static final String SSL_PROPERTIES_JSON = Strings.fromFile("security/ssl/ssl-properties.json");
 	private static final SSLProperties SSL_PROPERTIES = JsonBuilder.fromJson(SSL_PROPERTIES_JSON, SSLProperties.class);
 	private static final ClientProperties CLIENT_PROPERTIES = new ClientProperties();
 	static {

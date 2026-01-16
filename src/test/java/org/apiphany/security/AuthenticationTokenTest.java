@@ -36,7 +36,7 @@ class AuthenticationTokenTest {
 		token.setNotBeforePolicy(NOT_BEFORE_POLICY);
 		token.setScope(READ_WRITE);
 
-		String expected = Strings.removeAllWhitespace(Strings.fromFile("/security/authentication-token.json"));
+		String expected = Strings.removeAllWhitespace(Strings.fromFile("security/authentication-token.json"));
 
 		String result = Strings.removeAllWhitespace(token.toString());
 

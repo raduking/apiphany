@@ -29,7 +29,7 @@ class OAuth2ClientRegistrationTest {
 
 	@Test
 	void shouldLoadFromFile() {
-		String json = Strings.fromFile("/security/oauth2/oauth2-client-registration.json");
+		String json = Strings.fromFile("security/oauth2/oauth2-client-registration.json");
 
 		OAuth2ClientRegistration result = JsonBuilder.fromJson(json, OAuth2ClientRegistration.class);
 
@@ -38,7 +38,7 @@ class OAuth2ClientRegistrationTest {
 
 	@Test
 	void shouldSerializeToJson() {
-		String json = Strings.fromFile("/security/oauth2/oauth2-client-registration.json");
+		String json = Strings.fromFile("security/oauth2/oauth2-client-registration.json");
 
 		OAuth2ClientRegistration result1 = JsonBuilder.fromJson(json, OAuth2ClientRegistration.class);
 
@@ -73,7 +73,7 @@ class OAuth2ClientRegistrationTest {
 
 	@Test
 	void shouldDeserializeButNotSerializeClientSecret() {
-		String jsonRead = Strings.fromFile("/security/oauth2/oauth2-client-registration.json");
+		String jsonRead = Strings.fromFile("security/oauth2/oauth2-client-registration.json");
 		OAuth2ClientRegistration registrationRead = JsonBuilder.fromJson(jsonRead, OAuth2ClientRegistration.class);
 
 		String jsonWrite = registrationRead.toString();

@@ -43,7 +43,7 @@ class TokenHttpExchangeClientTest {
 	private static final Instant DEFAULT_EXPIRATION = Instant.now();
 
 	private static final String SECRET = "a-string-secret-at-least-256-bits-long";
-	private static final String TOKEN = Strings.fromFile("/security/oauth2/access-token.txt");
+	private static final String TOKEN = Strings.fromFile("security/oauth2/access-token.txt");
 
 	@Mock
 	private ExchangeClient exchangeClient;

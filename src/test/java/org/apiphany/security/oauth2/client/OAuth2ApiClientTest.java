@@ -71,10 +71,10 @@ class OAuth2ApiClientTest {
 
 	@BeforeEach
 	void setUp() {
-		String clientRegistrationJson = Strings.fromFile("/security/oauth2/oauth2-client-registration.json");
+		String clientRegistrationJson = Strings.fromFile("security/oauth2/oauth2-client-registration.json");
 		clientRegistration = JsonBuilder.fromJson(clientRegistrationJson, OAuth2ClientRegistration.class);
 
-		String providerDetailsJson = Strings.fromFile("/security/oauth2/oauth2-provider-details.json");
+		String providerDetailsJson = Strings.fromFile("security/oauth2/oauth2-provider-details.json");
 		providerDetails = JsonBuilder.fromJson(providerDetailsJson, OAuth2ProviderDetails.class);
 		providerDetails.setTokenUri(OAUTH2_SERVER.getUrl() + "/token");
 	}

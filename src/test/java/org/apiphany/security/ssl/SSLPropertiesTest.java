@@ -23,7 +23,7 @@ class SSLPropertiesTest {
 
 	@Test
 	void shouldSerializeToJson() {
-		String json = Strings.fromFile("/security/ssl/ssl-properties.json");
+		String json = Strings.fromFile("security/ssl/ssl-properties.json");
 
 		SSLProperties result1 = JsonBuilder.fromJson(json, SSLProperties.class);
 

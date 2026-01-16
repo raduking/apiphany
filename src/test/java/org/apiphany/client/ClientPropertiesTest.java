@@ -17,7 +17,7 @@ class ClientPropertiesTest {
 
 	private static final String ROOT = "ROOT";
 
-	private static final String CLIENT_PROPERTIES_JSON = Strings.fromFile("/client/client-properties.json");
+	private static final String CLIENT_PROPERTIES_JSON = Strings.fromFile("client/client-properties.json");
 
 	private static final int CONNECT_TIMEOUT = 666;
 	private static final int CONNECTION_REQUEST_TIMEOUT = 667;

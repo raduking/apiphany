@@ -48,7 +48,7 @@ class TLSObjectTest {
 	private static final Duration DEBUG_SOCKET_TIMEOUT = Duration.ofMinutes(3);
 
 	private static final KeyPair CLIENT_KEY_PAIR = Keys.loadKeyPairFromResources();
-	private static final String SSL_PROPERTIES_JSON = Strings.fromFile("/security/ssl/ssl-properties.json");
+	private static final String SSL_PROPERTIES_JSON = Strings.fromFile("security/ssl/ssl-properties.json");
 	private static final List<CipherSuite> CIPHER_SUITES = List.of(CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384);
 
 	private static Stream<Arguments> provideSupportedCipherSuites() {

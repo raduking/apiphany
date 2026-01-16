@@ -1,11 +1,15 @@
 package org.apiphany.lang;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -207,6 +211,9 @@ public interface Strings {
 
 	/**
 	 * Returns a string from a file or {@code null} if any error occurred.
+	 * <p>
+	 * If the given path starts with a slash ("/"), it is considered a file system path otherwise, it is considered a
+	 * classpath resource.
 	 *
 	 * @param path path to the file
 	 * @param encoding the file encoding
@@ -215,17 +222,28 @@ public interface Strings {
 	 * @return the file content as string
 	 */
 	static String fromFile(final String path, final Charset encoding, final int bufferSize, final Consumer<Exception> onError) {
-		String fileContent = null;
-		try (InputStream inputStream = Strings.class.getResourceAsStream(path)) {
-			fileContent = toString(inputStream, encoding, bufferSize, onError);
+		try {
+			if (path.startsWith("/")) {
+				Path fsPath = Paths.get(path);
+				return Files.readString(fsPath, encoding);
+			}
+			try (InputStream inputStream = Strings.class.getClassLoader().getResourceAsStream(path)) {
+				if (null == inputStream) {
+					throw new FileNotFoundException("Classpath resource not found: " + path);
+				}
+				return toString(inputStream, encoding, bufferSize, onError);
+			}
 		} catch (Exception e) {
 			onError.accept(e);
+			return null;
 		}
-		return fileContent;
 	}
 
 	/**
 	 * Returns a string from a file or {@code null} if any error occurred.
+	 * <p>
+	 * If the given path starts with a slash ("/"), it is considered a file system path otherwise, it is considered a
+	 * classpath resource.
 	 *
 	 * @param path path to the file
 	 * @param encoding the file encoding
@@ -240,6 +258,9 @@ public interface Strings {
 	 * Returns a string from a file or {@code null} if any error occurred. It assumes that the encoding in
 	 * {@link StandardCharsets#UTF_8} and uses a default buffer size of 4096 bytes. Use this method only if the file to be
 	 * read respects these conditions.
+	 * <p>
+	 * If the given path starts with a slash ("/"), it is considered a file system path otherwise, it is considered a
+	 * classpath resource.
 	 *
 	 * @param path path to the file
 	 * @return the file content as string
@@ -252,6 +273,9 @@ public interface Strings {
 	 * Returns a string from a file or {@code null} if any error occurred. It assumes that the encoding in
 	 * {@link StandardCharsets#UTF_8} and uses a default buffer size of 4096 bytes. Use this method only if the file to be
 	 * read respects these conditions.
+	 * <p>
+	 * If the given path starts with a slash ("/"), it is considered a file system path otherwise, it is considered a
+	 * classpath resource.
 	 *
 	 * @param path path to the file
 	 * @param onError on error handler
