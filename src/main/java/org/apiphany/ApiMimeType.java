@@ -40,7 +40,7 @@ public interface ApiMimeType {
 	 * @param mimiType the mime type
 	 * @return the character set from a mime type
 	 */
-	public static Charset charset(final ApiMimeType mimiType) {
+	static Charset charset(final ApiMimeType mimiType) {
 		if (null == mimiType) {
 			return Strings.DEFAULT_CHARSET;
 		}
@@ -57,7 +57,7 @@ public interface ApiMimeType {
 	 * @param charset character set string
 	 * @return a character set
 	 */
-	public static Charset parseCharset(final String charset) {
+	static Charset parseCharset(final String charset) {
 		try {
 			return Charset.forName(charset);
 		} catch (Exception e) {
