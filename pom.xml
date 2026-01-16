@@ -75,7 +75,7 @@
 		<!-- Other plugin versions -->
 		<spotless.maven.plugin.version>3.1.0</spotless.maven.plugin.version>
 		<org.eclipse.jdt.core.version>3.44.0</org.eclipse.jdt.core.version>
-		<eclipse.formatter.version>4.36</eclipse.formatter.version>
+		<eclipse.formatter.version>4.38</eclipse.formatter.version>
 		<properties.maven.plugin.version>1.2.1</properties.maven.plugin.version>
 
 		<!-- Benchmarking -->

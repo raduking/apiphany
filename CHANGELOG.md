@@ -7,6 +7,7 @@
 - Upgraded `org.eclipse.jdt/org.eclipse.jdt.core` to `3.44.0`.
 - Added support for XML via `jackson-dataformat-xml` only available if library is provided.
 - Changed `Strings.fromFile` to be more deterministic, everything that starts with `/` is absolute, everything else relative.
+- Upgraded formatter version to `4.38`.
 
 ---
 
