@@ -227,6 +227,13 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>org.eclipse.jdt</groupId>
+			<artifactId>org.eclipse.jdt.core</artifactId>
+			<version>${org.eclipse.jdt.core.version}</version>
+			<scope>test</scope>
+		</dependency>
+
         <!-- Benchmarking dependencies (scope=test so they don't affect the main build) -->
 		<dependency>
 			<groupId>org.openjdk.jmh</groupId>
@@ -242,14 +249,6 @@
 			<scope>test</scope>
 		</dependency>
 		
-		<!-- Formatter validation -->
-		<dependency>
-			<groupId>org.eclipse.jdt</groupId>
-			<artifactId>org.eclipse.jdt.core</artifactId>
-			<version>${org.eclipse.jdt.core.version}</version>
-			<scope>test</scope>
-		</dependency>
-
 	</dependencies>
 
 	<build>
