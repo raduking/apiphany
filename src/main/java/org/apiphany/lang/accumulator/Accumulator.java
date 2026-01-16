@@ -174,7 +174,7 @@ public abstract class Accumulator<T> {
 	 *
 	 * @author Radu Sebastian LAZIN
 	 */
-	private static class EmptyAccumulator extends Accumulator<Object> { // NOSONAR only we need one instance
+	private static class EmptyAccumulator extends Accumulator<Object> { // NOSONAR we need only one instance
 
 		/**
 		 * Singleton instance.

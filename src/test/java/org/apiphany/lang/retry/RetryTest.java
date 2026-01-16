@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.times;
@@ -102,8 +103,9 @@ class RetryTest {
 	void shouldRetryGivenTimesWithDurationAccumulatorSupplier() {
 		Retry retry = Retry.of(WaitCounter.of(RETRY_COUNT, Duration.ofSeconds(0)));
 
-		retry.until(() -> inSupplier.foo(), Objects::nonNull, DurationAccumulator::of);
+		String foo = retry.until(() -> inSupplier.foo(), Objects::nonNull, DurationAccumulator::of);
 
+		assertNull(foo);
 		verify(inSupplier, times(RETRY_COUNT)).foo();
 	}
 
