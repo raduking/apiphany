@@ -1,5 +1,7 @@
 package org.apiphany.lang.retry;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
@@ -8,7 +10,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
+import org.apiphany.utils.Tests;
 import org.junit.jupiter.api.Test;
+import org.morphix.reflection.Constructors;
 
 /**
  * Test class for {@link WaitCounter}.
@@ -125,5 +129,27 @@ class WaitCounterTest {
 		boolean result = waitCounter.equals(new Object());
 
 		assertFalse(result);
+	}
+
+	@Test
+	void shouldThrowExceptionWhenTryingToInstantiateWaitCounterDefaultConstructor() {
+		UnsupportedOperationException e = Tests.verifyDefaultConstructorThrows(WaitCounter.Default.class);
+
+		assertThat(e.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
+	}
+
+	@Test
+	void shouldHaveTheCorrectDefaultValues() {
+		assertThat(WaitCounter.Default.MAX_COUNT, equalTo(3));
+		assertThat(WaitCounter.Default.SLEEP, equalTo(Duration.ofSeconds(1)));
+	}
+
+	@Test
+	void shouldInstantiateWaitCounterWithDefaultValues() {
+		WaitCounter waitCounter = WaitCounter.DEFAULT;
+
+		assertThat(waitCounter.maxCount(), equalTo(WaitCounter.Default.MAX_COUNT));
+		assertThat(waitCounter.interval(), equalTo(WaitCounter.Default.SLEEP.toMillis()));
+		assertThat(waitCounter.timeUnit(), equalTo(TimeUnit.MILLISECONDS));
 	}
 }

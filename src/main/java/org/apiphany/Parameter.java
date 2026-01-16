@@ -48,7 +48,7 @@ public record Parameter(String name, String value) implements ParameterFunction 
 	 * @return the string representation of the parameter
 	 */
 	@Override
-	public final String toString() {
+	public String toString() {
 		return String.join("=", name, value);
 	}
 

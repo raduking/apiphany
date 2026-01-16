@@ -1,5 +1,7 @@
 package org.apiphany.lang.retry;
 
+import org.morphix.reflection.Constructors;
+
 import java.time.Duration;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -13,9 +15,34 @@ import java.util.concurrent.TimeUnit;
 public class WaitCounter implements Wait {
 
 	/**
+	 * Default values name space.
+	 *
+	 * @author Radu Sebastian LAZIN
+	 */
+	public static class Default {
+
+		/**
+		 * Default timeout: 30 seconds.
+		 */
+		public static final int MAX_COUNT = 3;
+
+		/**
+		 * Default sleep: 1 second.
+		 */
+		public static final Duration SLEEP = Duration.ofSeconds(1);
+
+		/**
+		 * Private constructor.
+		 */
+		private Default() {
+			throw Constructors.unsupportedOperationException();
+		}
+	}
+
+	/**
 	 * Default wait counter: 3 times one second apart.
 	 */
-	public static final WaitCounter DEFAULT = WaitCounter.of(3, Duration.ofSeconds(1));
+	public static final WaitCounter DEFAULT = WaitCounter.of(Default.MAX_COUNT, Default.SLEEP);
 
 	/**
 	 * Interval between waits
@@ -87,6 +114,15 @@ public class WaitCounter implements Wait {
 	@Override
 	public TimeUnit timeUnit() {
 		return intervalTimeUnit;
+	}
+
+	/**
+	 * Returns the maximum count.
+	 *
+	 * @return the maximum count
+	 */
+	public int maxCount() {
+		return maxCount;
 	}
 
 	/**
