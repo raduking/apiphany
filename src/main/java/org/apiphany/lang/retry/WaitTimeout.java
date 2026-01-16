@@ -1,5 +1,7 @@
 package org.apiphany.lang.retry;
 
+import org.morphix.reflection.Constructors;
+
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Objects;
@@ -13,19 +15,34 @@ import java.util.concurrent.TimeUnit;
 public class WaitTimeout implements Wait {
 
 	/**
-	 * Default timeout: 30 seconds.
+	 * Default values name space.
+	 *
+	 * @author Radu Sebastian LAZIN
 	 */
-	public static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(30);
+	public static class Default {
 
-	/**
-	 * Default sleep: 1 second.
-	 */
-	public static final Duration DEFAULT_SLEEP = Duration.ofSeconds(1);
+		/**
+		 * Default timeout: 30 seconds.
+		 */
+		public static final Duration TIMEOUT = Duration.ofSeconds(30);
+
+		/**
+		 * Default sleep: 1 second.
+		 */
+		public static final Duration SLEEP = Duration.ofSeconds(1);
+
+		/**
+		 * Private constructor.
+		 */
+		private Default() {
+			throw Constructors.unsupportedOperationException();
+		}
+	}
 
 	/**
 	 * Default Wait object.
 	 */
-	public static final WaitTimeout DEFAULT = WaitTimeout.of(DEFAULT_TIMEOUT, DEFAULT_SLEEP);
+	public static final WaitTimeout DEFAULT = WaitTimeout.of(Default.TIMEOUT, Default.SLEEP);
 
 	/**
 	 * Timeout

@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 
 import org.apiphany.lang.Holder;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.morphix.lang.thread.Threads;
 
@@ -263,5 +264,19 @@ class WaitTimeoutTest {
 		waitTimeout.now();
 
 		assertThat(sleepCalls.getValue(), equalTo(Boolean.FALSE));
+	}
+
+	@Test
+	void shouldHaveTheCorrectDefaultValues() {
+		assertThat(WaitTimeout.Default.SLEEP, Matchers.equalTo(Duration.ofSeconds(1)));
+		assertThat(WaitTimeout.Default.TIMEOUT, Matchers.equalTo(Duration.ofSeconds(30)));
+	}
+
+	@Test
+	void shouldInstantiateWaitCounterWithDefaultValues() {
+		WaitTimeout waitTimeout = WaitTimeout.DEFAULT;
+
+		assertThat(waitTimeout.interval(), Matchers.equalTo(WaitTimeout.Default.SLEEP.toMillis()));
+		assertThat(waitTimeout.timeUnit(), Matchers.equalTo(TimeUnit.MILLISECONDS));
 	}
 }

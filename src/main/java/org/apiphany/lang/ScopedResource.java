@@ -151,7 +151,7 @@ public class ScopedResource<T extends AutoCloseable> {
 
 	/**
 	 * Checks the first parameter against the second for the same underlying reference. If the referenced resources are the
-	 * same and they are both managed then we return an unmanaged scoped resource. Only one scoped resource should manage
+	 * same, and they are both managed then we return an unmanaged scoped resource. Only one scoped resource should manage
 	 * the same resource.
 	 * <p>
 	 * This is useful when passing scoped resources around to ensure that only one manager exists for a given resource. It
