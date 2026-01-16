@@ -38,7 +38,7 @@ public class ExchangeClientBuilder {
 	/**
 	 * Decorator client classes. These are always managed by the builder.
 	 */
-	private List<Class<? extends DecoratingExchangeClient>> decoratorClientClasses = new LinkedList<>();
+	private final List<Class<? extends DecoratingExchangeClient>> decoratorClientClasses = new LinkedList<>();
 
 	/**
 	 * Hide constructor.

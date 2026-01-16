@@ -219,7 +219,7 @@ public enum BulkCipher {
 	 * Builds the appropriate {@link AlgorithmParameterSpec} for this bulk cipher, based on its cipher type and provided
 	 * IV/nonce.
 	 *
-	 * @param fullIV the IV or nonce to use (may be null for stream ciphers)
+	 * @param fullIV the IV or nonce to use (can be null for stream ciphers)
 	 * @return the AlgorithmParameterSpec, or null if not required
 	 */
 	public AlgorithmParameterSpec spec(final byte[] fullIV) {

@@ -143,7 +143,7 @@ public final class ErrorObservingInputStream extends InputStream {
 	 * @param supplier the supplier to execute
 	 * @return the supplier result
 	 */
-	protected <T> T tryAndRethrow(final Supplier<T> supplier) {
+	<T> T tryAndRethrow(final Supplier<T> supplier) {
 		return tryAndRethrow(supplier, onError);
 	}
 
@@ -156,7 +156,7 @@ public final class ErrorObservingInputStream extends InputStream {
 	 * @param onError the consumer to notify on exceptions
 	 * @return the supplier result
 	 */
-	protected static <T> T tryAndRethrow(final Supplier<T> supplier, final Consumer<? super Exception> onError) {
+	static <T> T tryAndRethrow(final Supplier<T> supplier, final Consumer<? super Exception> onError) {
 		try {
 			return supplier.get();
 		} catch (Exception e) {
@@ -170,7 +170,7 @@ public final class ErrorObservingInputStream extends InputStream {
 	 *
 	 * @param runnable the runnable to execute
 	 */
-	protected void tryAndRethrow(final Runnable runnable) {
+	void tryAndRethrow(final Runnable runnable) {
 		tryAndRethrow(Runnables.toSupplier(runnable), onError);
 	}
 }

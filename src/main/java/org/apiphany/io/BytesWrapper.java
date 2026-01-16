@@ -35,7 +35,7 @@ import org.apiphany.lang.annotation.AsValue;
 public class BytesWrapper implements ByteSizeable, BinaryRepresentable {
 
 	/**
-	 * Cache an empty bytes wrapper.
+	 * Cache an empty {@link BytesWrapper}.
 	 */
 	private static final BytesWrapper EMPTY = new BytesWrapper();
 
@@ -47,7 +47,7 @@ public class BytesWrapper implements ByteSizeable, BinaryRepresentable {
 	/**
 	 * Creates a new instance containing a copy of the specified bytes.
 	 *
-	 * @param bytes the byte array to wrap (may be {@code null}, which is treated as empty)
+	 * @param bytes the byte array to wrap (can be {@code null}, which is treated as empty)
 	 * @param offset the offset from where to create the wrapper
 	 * @param size the size in bytes of the buffer
 	 */
@@ -68,7 +68,7 @@ public class BytesWrapper implements ByteSizeable, BinaryRepresentable {
 	/**
 	 * Creates a new instance containing a copy of the specified bytes.
 	 *
-	 * @param bytes the byte array to wrap (may be {@code null}, which is treated as empty)
+	 * @param bytes the byte array to wrap (can be {@code null}, which is treated as empty)
 	 */
 	public BytesWrapper(final byte[] bytes) {
 		this(bytes, 0, bytes.length);

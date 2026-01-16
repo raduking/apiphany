@@ -1,6 +1,7 @@
 package org.apiphany.json.jackson;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -370,6 +371,7 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 	public static SimpleModule apiphanySerializationModule() {
 		SimpleModule apiphanyModule = new SimpleModule(APIPHANY_MODULE) {
 
+			@Serial
 			private static final long serialVersionUID = -1205949335841515195L;
 
 			@Override

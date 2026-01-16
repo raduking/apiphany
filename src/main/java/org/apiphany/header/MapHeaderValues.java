@@ -42,7 +42,7 @@ public class MapHeaderValues extends HeaderValues {
 	@Override
 	public <N> List<String> get(final N header, final Object headers) {
 		return switch (headers) {
-			case Map<?, ?> map -> Headers.get(header, JavaObjects.<Map<String, List<String>>>cast(map));
+			case Map<?, ?> map -> Headers.get(header, JavaObjects.cast(map));
 			default -> getNext().get(header, headers);
 		};
 	}

@@ -118,8 +118,8 @@ public final class Bytes {
 
 	/**
 	 * Pads the given byte array on the right with the specified padding byte until its length becomes a multiple of the
-	 * given block size. If already aligned, the original array reference is returned if the extendIfAligned flag is false, otherwise
-	 * a new block is added padded with the given padding byte.
+	 * given block size. If already aligned, the original array reference is returned if the extendIfAligned flag is false,
+	 * otherwise a new block is added padded with the given padding byte.
 	 *
 	 * @param bytes the byte array to pad (can be null)
 	 * @param blockSize the block size (must be > 0)

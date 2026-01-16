@@ -28,7 +28,7 @@ public interface Headers {
 	 * @param headerFunctions the {@link HeaderFunction}s to execute
 	 * @return a new map containing the inserted headers
 	 */
-	public static Map<String, List<String>> of(final HeaderFunction... headerFunctions) {
+	static Map<String, List<String>> of(final HeaderFunction... headerFunctions) {
 		if (null == headerFunctions || 0 == headerFunctions.length) {
 			return Collections.emptyMap();
 		}
@@ -71,12 +71,10 @@ public interface Headers {
 		if (null == headerName) {
 			return;
 		}
-		Collection<?> headerCollection = null;
-		if (headerValue instanceof Collection<?>) {
-			headerCollection = JavaObjects.cast(headerValue);
-		} else {
-			headerCollection = Collections.singletonList(headerValue);
-		}
+		Collection<?> headerCollection = headerValue instanceof Collection<?>
+				? JavaObjects.cast(headerValue)
+				: Collections.singletonList(headerValue);
+
 		List<String> existing = existingHeaders.computeIfAbsent(headerName.toString(), k -> new ArrayList<>());
 		headerCollection.forEach(hv -> {
 			String stringValue = Strings.safeToString(hv);

@@ -20,7 +20,7 @@ public interface DelegatingExchangeClient extends ExchangeClient {
 	/**
 	 * Delegates the exchange to the underlying exchange client.
 	 * <p>
-	 * Implementations may override this method to perform the exchange, possibly decorating the request/response as needed
+	 * Implementations may override this method to perform the exchange, possibly decorating the request/response as needed,
 	 * but they should call {@code super.exchange(...)} to delegate to the underlying exchange client.
 	 *
 	 * @param <T> request body type
