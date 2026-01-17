@@ -1,39 +1,41 @@
-package org.apiphany.formatter;
+package org.apiphany.codeformat;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import org.apiphany.lang.Strings;
 import org.eclipse.jdt.internal.formatter.DefaultCodeFormatterOptions;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 
 /**
- * Test class for `formatter/java-formatter.xml`.
+ * Test class for `java-code-style.xml` copied from `code-format` module.
  *
  * @author Radu Sebastian LAZIN
  */
-public class FormatterTest {
+class JavaCodeStyleTest {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(FormatterTest.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(JavaCodeStyleTest.class);
 
-	private static final String FORMATTER_FILE_PATH = "java-formatter.xml";
+	private static final String FORMATTER_FILE = "java-code-style.xml";
 
 	@Test
-	void shouldHaveValidFormatterFile() throws JsonMappingException, JsonProcessingException {
-		String xml = Strings.fromFile(FORMATTER_FILE_PATH, e -> LOGGER.error("Could not read formatter file", e));
+	void shouldValidateFormatterFileWithProvidedJDT() throws IOException {
+		String xml = readString(FORMATTER_FILE);
 
 		Map<String, String> settings = getSettingsMap(xml);
 
@@ -53,7 +55,16 @@ public class FormatterTest {
 		}
 	}
 
-	private static Map<String, String> getSettingsMap(final String xml) throws JsonProcessingException, JsonMappingException {
+	private static String readString(final String formatterFile) throws IOException {
+		try (InputStream inputStream = JavaCodeStyleTest.class.getClassLoader().getResourceAsStream(formatterFile)) {
+			if (inputStream == null) {
+				throw new FileNotFoundException("File not found in classpath: " + formatterFile);
+			}
+			return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+		}
+	}
+
+	private static Map<String, String> getSettingsMap(final String xml) throws JsonProcessingException {
 		XmlMapper xmlMapper = new XmlMapper();
 		JsonNode xmlRoot = xmlMapper.readTree(xml);
 
@@ -81,5 +92,4 @@ public class FormatterTest {
 				});
 		return settings;
 	}
-
 }

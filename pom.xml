@@ -76,6 +76,7 @@
 		<spotless.maven.plugin.version>3.1.0</spotless.maven.plugin.version>
 		<org.eclipse.jdt.core.version>3.44.0</org.eclipse.jdt.core.version>
 		<eclipse.formatter.version>4.38</eclipse.formatter.version>
+		<code.format.version>1.0.0</code.format.version>
 		<properties.maven.plugin.version>1.2.1</properties.maven.plugin.version>
 
 		<!-- Benchmarking -->
@@ -235,6 +236,13 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>io.github.raduking</groupId>
+			<artifactId>code-format</artifactId>
+			<version>${code.format.version}</version>
+			<scope>test</scope>
+        </dependency>
+
         <!-- Benchmarking dependencies (scope=test so they don't affect the main build) -->
 		<dependency>
 			<groupId>org.openjdk.jmh</groupId>
@@ -262,7 +270,7 @@
 						<id>copy-main-resources</id>
 						<phase>process-resources</phase>
 						<goals>
-							<goal>resources</goal>
+							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
 							<outputDirectory>${project.build.outputDirectory}</outputDirectory>
@@ -469,11 +477,16 @@
 						<artifactId>org.eclipse.jdt.core</artifactId>
 						<version>${org.eclipse.jdt.core.version}</version>
 					</dependency>
+					<dependency>
+						<groupId>io.github.raduking</groupId>
+						<artifactId>code-format</artifactId>
+						<version>${code.format.version}</version>
+                    </dependency>
 				</dependencies>
 				<configuration>
 					<java>
 						<eclipse>
-							<file>${project.basedir}/formatter/java-formatter.xml</file>
+							<file>java-code-style.xml</file>
 							<version>${eclipse.formatter.version}</version>
 						</eclipse>
 						<removeUnusedImports/>
