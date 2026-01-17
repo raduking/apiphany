@@ -8,6 +8,8 @@ import java.util.function.Supplier;
 /**
  * Functional interface for defining how parameters are inserted into a map. This interface is used to build parameter
  * maps dynamically.
+ * <p>
+ * This interface extends {@link ParameterFunction}, inheriting its method for inserting parameters into a map.
  *
  * @author Radu Sebastian LAZIN
  */
