@@ -3,8 +3,6 @@ package org.apiphany;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verifyNoInteractions;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -146,7 +144,7 @@ class ParameterTest {
 	}
 
 	@Test
-	void shouldAddAParameterFunctionParameter() {
+	void shouldAddATestParameterParameter() {
 		Parameter param = new TestParameter(PARAM_1, STRING_INTEGER_VALUE);
 
 		Map<String, String> params = RequestParameters.of(
@@ -246,34 +244,26 @@ class ParameterTest {
 	@Test
 	void shouldReturnNoneOnWhenConditionIfTheConditionIsFalse() {
 		Parameter param = new TestParameter(PARAM_1, STRING_INTEGER_VALUE);
-		ParameterFunction parameterFunction = Parameter.when(false, param);
+		Parameter parameter = Parameter.when(false, param);
 
-		@SuppressWarnings("unchecked")
-		Map<String, String> mockMap = mock(Map.class);
-		parameterFunction.putInto(mockMap);
-
-		verifyNoInteractions(mockMap);
+		assertThat(parameter, equalTo(Parameter.none()));
 	}
 
 	@Test
 	void shouldAddParametersOnWhenConditionIfTheConditionIsTrue() {
 		Parameter param = new TestParameter(PARAM_1, STRING_INTEGER_VALUE);
-		ParameterFunction parameterFunction = Parameter.withNonNull(null, param);
+		Parameter parameter = Parameter.withNonNull(null, param);
 
-		@SuppressWarnings("unchecked")
-		Map<String, String> mockMap = mock(Map.class);
-		parameterFunction.putInto(mockMap);
-
-		verifyNoInteractions(mockMap);
+		assertThat(parameter, equalTo(Parameter.none()));
 	}
 
 	@Test
 	void shouldReturnNoneOnWhenNotNullConditionIfTheConditionIsFalse() {
 		Parameter param = new TestParameter(PARAM_1, STRING_INTEGER_VALUE);
-		ParameterFunction parameterFunction = Parameter.withNonNull(INTEGER_VALUE, param);
+		Parameter parameter = Parameter.withNonNull(INTEGER_VALUE, param);
 
 		Map<String, String> map = new HashMap<>();
-		parameterFunction.putInto(map);
+		parameter.putInto(map);
 
 		assertThat(map.entrySet(), hasSize(1));
 		assertThat(map.get(PARAM_1), equalTo(STRING_INTEGER_VALUE));
@@ -282,12 +272,8 @@ class ParameterTest {
 	@Test
 	void shouldReturnNoneOnWhenWithPredicateIfTheConditionIsFalse() {
 		Parameter param = new TestParameter(PARAM_1, STRING_INTEGER_VALUE);
-		ParameterFunction parameterFunction = Parameter.when(null, Objects::nonNull, param);
+		Parameter parameter = Parameter.when(null, Objects::nonNull, param);
 
-		@SuppressWarnings("unchecked")
-		Map<String, String> mockMap = mock(Map.class);
-		parameterFunction.putInto(mockMap);
-
-		verifyNoInteractions(mockMap);
+		assertThat(parameter, equalTo(Parameter.none()));
 	}
 }
