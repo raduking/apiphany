@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
  */
 class JacksonJsonHttpContentConverterTest {
 
-	private JacksonJsonHttpContentConverter<String> converter = new JacksonJsonHttpContentConverter<>();
+	private final JacksonJsonHttpContentConverter<String> converter = new JacksonJsonHttpContentConverter<>();
 
 	@Test
 	void shouldReturnTrueIfObjectIsConvertible() {

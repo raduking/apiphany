@@ -50,10 +50,9 @@ public class TestDto {
 		if (this == obj) {
 			return true;
 		}
-		if (!(obj instanceof TestDto)) {
+		if (!(obj instanceof TestDto other)) {
 			return false;
 		}
-		TestDto other = (TestDto) obj;
 		return count == other.count && Objects.equals(id, other.id);
 	}
 

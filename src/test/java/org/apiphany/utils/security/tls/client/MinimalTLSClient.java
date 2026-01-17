@@ -20,7 +20,7 @@ import java.util.Objects;
 import javax.crypto.Cipher;
 import javax.net.ssl.SSLException;
 
-import org.apiphany.http.HttpResponseParser;
+import org.apiphany.utils.http.HttpResponseParser;
 import org.apiphany.io.BinaryRepresentable;
 import org.apiphany.io.ByteBufferInputStream;
 import org.apiphany.io.ByteSizeable;

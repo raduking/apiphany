@@ -66,10 +66,9 @@ class HexTest {
 
 	@Test
 	void shouldConvertBytesToHexDumpWith16BytesAlignment() {
-		String expected = HEX;
 		String result = Hex.dump(BYTES);
 
-		assertThat(result, equalTo(expected));
+		assertThat(result, equalTo(HEX));
 	}
 
 	@Test
@@ -121,11 +120,10 @@ class HexTest {
 
 	@Test
 	void shouldConvertBinaryRepresentableToHexDump() throws IOException {
-		String expected = HEX;
 		BytesWrapper bytes = BytesWrapper.from(new ByteArrayInputStream(BYTES), BYTES.length);
 		String result = Hex.dump(bytes);
 
-		assertThat(result, equalTo(expected));
+		assertThat(result, equalTo(HEX));
 	}
 
 	@Test

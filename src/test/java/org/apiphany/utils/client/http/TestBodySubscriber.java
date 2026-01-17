@@ -1,4 +1,4 @@
-package org.apiphany.client.http;
+package org.apiphany.utils.client.http;
 
 import java.nio.ByteBuffer;
 import java.time.Duration;

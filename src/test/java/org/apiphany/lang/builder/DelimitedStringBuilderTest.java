@@ -33,7 +33,7 @@ class DelimitedStringBuilderTest {
 
 	@Test
 	void shouldThrowExceptionIfFactoryMethodIsCalledWithNoPaths() {
-		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> DelimitedStringBuilder.of());
+		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, DelimitedStringBuilder::of);
 
 		assertThat(e.getMessage(), equalTo("Parameter paths should not be null or empty"));
 	}

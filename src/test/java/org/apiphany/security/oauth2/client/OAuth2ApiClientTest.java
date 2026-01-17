@@ -65,9 +65,9 @@ class OAuth2ApiClientTest {
 
 	private OAuth2ApiClient oAuth2ApiClient;
 
-	private SimpleApiClient simpleApiClient = new SimpleApiClient();
+	private final SimpleApiClient simpleApiClient = new SimpleApiClient();
 
-	private ExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+	private final ExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
 
 	@BeforeEach
 	void setUp() {

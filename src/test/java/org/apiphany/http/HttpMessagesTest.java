@@ -68,7 +68,7 @@ class HttpMessagesTest {
 	}
 
 	@Test
-	void shouldThrowExceptionIfFirstParameterIsBiggerThanTheSecondOnRagneString() {
+	void shouldThrowExceptionIfFirstParameterIsBiggerThanTheSecondOnRangeString() {
 		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> HttpMessages.getRangeString(LONG_666, LONG_42));
 
 		assertThat(e.getMessage(), equalTo("rangeEnd must be greater or equal to rangeStart"));

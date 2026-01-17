@@ -47,9 +47,7 @@ class StringsTest {
 
 	@Test
 	void shouldSafelyCallToStringOnAnObject() {
-		Integer i = TEST_INTEGER;
-
-		String result = Strings.safeToString(i);
+		String result = Strings.safeToString(TEST_INTEGER);
 
 		assertThat(result, equalTo(TEST_INTEGER_STRING));
 	}
@@ -249,36 +247,28 @@ class StringsTest {
 
 	@Test
 	void shouldTransformKebabToLowerCamelCaseWhenTheStringIsKebabCase() {
-		String text = KEBAB_SOME_COOL_NAME;
-
-		String result = Strings.fromKebabToLowerCamelCase(text);
+		String result = Strings.fromKebabToLowerCamelCase(KEBAB_SOME_COOL_NAME);
 
 		assertThat(result, equalTo(CAMEL_SOME_COOL_NAME));
 	}
 
 	@Test
 	void shouldTransformKebabToCamelCaseWhenTheStringIsKebabCase() {
-		String text = KEBAB_SOME_COOL_NAME;
-
-		String result = Strings.fromKebabToCamelCase(text);
+		String result = Strings.fromKebabToCamelCase(KEBAB_SOME_COOL_NAME);
 
 		assertThat(result, equalTo(CAMEL_SOME_COOL_NAME));
 	}
 
 	@Test
 	void shouldTransformLowerCamelToKebabCaseWhenTheStringIsKebabCase() {
-		String text = CAMEL_SOME_COOL_NAME;
-
-		String result = Strings.fromLowerCamelToKebabCase(text);
+		String result = Strings.fromLowerCamelToKebabCase(CAMEL_SOME_COOL_NAME);
 
 		assertThat(result, equalTo(KEBAB_SOME_COOL_NAME));
 	}
 
 	@Test
 	void shouldTransformCamelToKebabCaseWhenTheStringIsKebabCase() {
-		String text = CAMEL_SOME_COOL_NAME;
-
-		String result = Strings.fromCamelToKebabCase(text);
+		String result = Strings.fromCamelToKebabCase(CAMEL_SOME_COOL_NAME);
 
 		assertThat(result, equalTo(KEBAB_SOME_COOL_NAME));
 	}

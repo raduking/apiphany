@@ -25,6 +25,7 @@ import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.io.ContentType;
 import org.apiphany.net.Sockets;
+import org.apiphany.utils.client.http.TestBodySubscriber;
 import org.apiphany.utils.http.client.KeyValueApiClient;
 import org.apiphany.utils.http.server.KeyValueHttpServer;
 import org.junit.jupiter.api.AfterAll;

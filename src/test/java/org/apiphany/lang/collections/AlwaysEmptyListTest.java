@@ -45,7 +45,7 @@ class AlwaysEmptyListTest {
 		assertThat(list.addAll(0, List.of("a")), equalTo(false));
 
 		assertThat(list.remove("x"), equalTo(false));
-		assertThat(list.remove(0), equalTo(null));
+		assertThat(list.removeFirst(), equalTo(null));
 		assertThat(list.removeAll(List.of("x")), equalTo(false));
 		assertThat(list.retainAll(List.of("x")), equalTo(false));
 
@@ -70,8 +70,9 @@ class AlwaysEmptyListTest {
 	void shouldReturnNullOrEmptyOnElementAccess() {
 		List<String> list = AlwaysEmptyList.of();
 
-		assertThat(list.get(0), equalTo(null));
+		assertThat(list.getFirst(), equalTo(null));
 		assertThat(list.get(123), equalTo(null));
+		assertThat(list.getLast(), equalTo(null));
 	}
 
 	@Test

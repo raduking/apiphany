@@ -370,7 +370,7 @@ class ProtocolOverridingSSLSocketFactoryTest {
 		}
 
 		@Override
-		public void startHandshake() throws IOException {
+		public void startHandshake() {
 			// empty
 		}
 

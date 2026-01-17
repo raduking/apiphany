@@ -48,7 +48,7 @@ class JacksonJsonBuilderTest {
 	private static final byte[] SOME_INVALID_JSON_BYTES = SOME_INVALID_JSON_STRING.getBytes();
 	private static final String SOME_NAME = "someName";
 
-	private JacksonJsonBuilder jsonBuilder = new JacksonJsonBuilder();
+	private final JacksonJsonBuilder jsonBuilder = new JacksonJsonBuilder();
 
 	@Test
 	void shouldTransformObjectToJsonStringAndReadItBack() {
@@ -95,7 +95,7 @@ class JacksonJsonBuilderTest {
 
 		Object json1 = Strings.removeAllWhitespace(JacksonJsonBuilder.toJson(elements1));
 
-		Map<String, B> elements2 = JacksonJsonBuilder.fromJson(json1, new GenericClass<Map<String, B>>() {
+		Map<String, B> elements2 = JacksonJsonBuilder.fromJson(json1, new GenericClass<>() {
 			// empty
 		});
 
@@ -110,7 +110,7 @@ class JacksonJsonBuilderTest {
 
 		Object json1 = Strings.removeAllWhitespace(JacksonJsonBuilder.toJson(elements1)).getBytes();
 
-		Map<String, B> elements2 = JacksonJsonBuilder.fromJson(json1, new GenericClass<Map<String, B>>() {
+		Map<String, B> elements2 = JacksonJsonBuilder.fromJson(json1, new GenericClass<>() {
 			// empty
 		});
 
@@ -137,7 +137,7 @@ class JacksonJsonBuilderTest {
 
 		Object json1 = Strings.removeAllWhitespace(JacksonJsonBuilder.toJson(elements1));
 
-		Map<String, B> elements2 = JacksonJsonBuilder.fromJson(json1, new TypeReference<Map<String, B>>() {
+		Map<String, B> elements2 = JacksonJsonBuilder.fromJson(json1, new TypeReference<>() {
 			// empty
 		});
 
@@ -152,7 +152,7 @@ class JacksonJsonBuilderTest {
 
 		Object json1 = Strings.removeAllWhitespace(JacksonJsonBuilder.toJson(elements1)).getBytes();
 
-		Map<String, B> elements2 = JacksonJsonBuilder.fromJson(json1, new TypeReference<Map<String, B>>() {
+		Map<String, B> elements2 = JacksonJsonBuilder.fromJson(json1, new TypeReference<>() {
 			// empty
 		});
 
@@ -285,7 +285,7 @@ class JacksonJsonBuilderTest {
 
 	@Test
 	void shouldReturnNullWhenDeserializingStringJsonFailsWithTypeReference() {
-		List<A> result = jsonBuilder.fromJsonString(SOME_INVALID_JSON_STRING, new TypeReference<List<A>>() {
+		List<A> result = jsonBuilder.fromJsonString(SOME_INVALID_JSON_STRING, new TypeReference<>() {
 			// empty
 		});
 
@@ -294,7 +294,7 @@ class JacksonJsonBuilderTest {
 
 	@Test
 	void shouldReturnNullWhenDeserializingStringJsonFailsWithGenericClass() {
-		List<A> result = jsonBuilder.fromJsonString(SOME_INVALID_JSON_STRING, new GenericClass<List<A>>() {
+		List<A> result = jsonBuilder.fromJsonString(SOME_INVALID_JSON_STRING, new GenericClass<>() {
 			// empty
 		});
 
@@ -310,7 +310,7 @@ class JacksonJsonBuilderTest {
 
 	@Test
 	void shouldReturnNullWhenDeserializingBytesJsonFailsWithTypeReference() {
-		List<A> result = jsonBuilder.fromJsonBytes(SOME_INVALID_JSON_BYTES, new TypeReference<List<A>>() {
+		List<A> result = jsonBuilder.fromJsonBytes(SOME_INVALID_JSON_BYTES, new TypeReference<>() {
 			// empty
 		});
 
@@ -319,7 +319,7 @@ class JacksonJsonBuilderTest {
 
 	@Test
 	void shouldReturnNullWhenDeserializingBytesJsonFailsWithGenericClass() {
-		List<A> result = jsonBuilder.fromJsonBytes(SOME_INVALID_JSON_BYTES, new GenericClass<List<A>>() {
+		List<A> result = jsonBuilder.fromJsonBytes(SOME_INVALID_JSON_BYTES, new GenericClass<>() {
 			// empty
 		});
 

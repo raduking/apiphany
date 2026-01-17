@@ -28,7 +28,7 @@ class ParameterFunctionTest {
 	private static final String PARAM_1 = "param1";
 	private static final int TEST_INT = 666;
 	private static final int TEST_INT_42 = 42;
-	private static final Integer INTEGER_VALUE = Integer.valueOf(TEST_INT);
+	private static final Integer INTEGER_VALUE = TEST_INT;
 	private static final String STRING_INTEGER_VALUE = String.valueOf(INTEGER_VALUE);
 
 	@Test
@@ -174,7 +174,7 @@ class ParameterFunctionTest {
 
 	@Test
 	void shouldAddListParameterByConvertingEachParameterToString() {
-		List<Integer> list = List.of(INTEGER_VALUE, Integer.valueOf(42));
+		List<Integer> list = List.of(INTEGER_VALUE, TEST_INT_42);
 
 		Map<String, String> params = RequestParameters.of(
 				ParameterFunction.<String, Integer>parameter(PARAM_1, list));
@@ -198,7 +198,7 @@ class ParameterFunctionTest {
 		Map<String, String> map = Map.of(PARAM_1, STRING_INTEGER_VALUE);
 
 		Map<String, String> params = RequestParameters.of(
-				parameter(PARAM_1, Integer.valueOf(TEST_INT_42)),
+				parameter(PARAM_1, TEST_INT_42),
 				parameters(map));
 
 		assertThat(params.entrySet(), hasSize(1));

@@ -26,7 +26,7 @@ class ExceptionsAccumulatorTest {
 		ExceptionsAccumulator ea = ExceptionsAccumulator.of(Set.of(RuntimeException.class));
 
 		assertThat(ea.getExceptionTypes(), hasSize(1));
-		assertThat(ea.getExceptionTypes().get(0), equalTo(RuntimeException.class));
+		assertThat(ea.getExceptionTypes().getFirst(), equalTo(RuntimeException.class));
 		assertFalse(ea.isWrapException());
 		assertTrue(ea.isThrowException());
 	}
@@ -52,7 +52,7 @@ class ExceptionsAccumulatorTest {
 		ExceptionsAccumulator ea = ExceptionsAccumulator.of(true, false, Set.of(RuntimeException.class));
 
 		assertThat(ea.getExceptionTypes(), hasSize(1));
-		assertThat(ea.getExceptionTypes().get(0), equalTo(RuntimeException.class));
+		assertThat(ea.getExceptionTypes().getFirst(), equalTo(RuntimeException.class));
 		assertTrue(ea.isWrapException());
 		assertFalse(ea.isThrowException());
 	}
@@ -107,7 +107,7 @@ class ExceptionsAccumulatorTest {
 	void shouldNotAccumulateAnythingWithRunnable() {
 		ExceptionsAccumulator ea = ExceptionsAccumulator.of();
 		for (int i = 0; i < COUNT; ++i) {
-			ea.accumulate((Runnable) () -> {
+			ea.accumulate(() -> {
 				@SuppressWarnings("unused")
 				int x = 0;
 			});

@@ -443,7 +443,7 @@ class OAuth2HttpExchangeClientTest {
 	}
 
 	/**
-	 * In this client the caller manages the resources and we manage the decorator.
+	 * In this client the caller manages the resources, and we manage the decorator.
 	 */
 	static class OAuth2v6ApiClient extends BaseApiClient {
 
