@@ -1,5 +1,9 @@
 ## Release Notes
 
+`1.0.25`
+
+---
+
 `1.0.24`
 
 - Upgraded parent to `3.5.9`.
