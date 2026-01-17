@@ -11,7 +11,6 @@ import java.security.interfaces.RSAPrivateKey;
 import java.util.Base64;
 import java.util.stream.Stream;
 
-import org.apiphany.ApiClient;
 import org.apiphany.client.ExchangeClientBuilder;
 import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.io.ByteBufferInputStream;
@@ -50,7 +49,7 @@ import dasniko.testcontainers.keycloak.KeycloakContainer;
 @TestInstance(Lifecycle.PER_CLASS)
 class OAuth2ApiClientIT {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(ApiClient.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(OAuth2ApiClientIT.class);
 
 	private static final String KEYCLOAK_TOKEN_PATH = "/realms/test-realm/protocol/openid-connect/token";
 	private static final String KEYCLOAK_REALM_NAME = "test-realm";

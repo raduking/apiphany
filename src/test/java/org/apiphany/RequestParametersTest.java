@@ -83,7 +83,7 @@ class RequestParametersTest {
 
 	@Test
 	void shouldReturnEmptyMapIfNoParametersWereSupplied() {
-		Map<String, String> params = RequestParameters.of(new ParameterFunction[0]);
+		Map<String, String> params = RequestParameters.of();
 
 		assertThat(params.entrySet(), hasSize(0));
 	}

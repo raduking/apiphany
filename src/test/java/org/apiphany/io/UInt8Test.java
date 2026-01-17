@@ -50,7 +50,7 @@ class UInt8Test {
 	}
 
 	@Test
-	void shoudReturnFalseOnNonZeroElements() {
+	void shouldReturnFalseOnNonZeroElements() {
 		UInt8 nonZero = UInt8.of((byte) 42);
 
 		assertFalse(nonZero.isZero());

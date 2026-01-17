@@ -27,7 +27,7 @@ class MapHeaderValuesTest {
 	private static final String HEADER_VALUE = "headerValue";
 
 	@Test
-	void shouldReturnHeaderWhenCaseDoesntMatch() {
+	void shouldReturnHeaderWhenCaseDoesNotMatch() {
 		Map<String, List<String>> mapHeaders = Map.of("some-header", List.of(HEADER_VALUE));
 
 		List<String> headerValues = MapHeaderValues.get("Some-Header", mapHeaders);
@@ -107,7 +107,7 @@ class MapHeaderValuesTest {
 	}
 
 	@Test
-	void shouldReturnHeaderWhenCaseDoesntMatchWithMapHeaderValuesObject() {
+	void shouldReturnHeaderWhenCaseDoesNotMatchWithMapHeaderValuesObject() {
 		MapHeaderValues mhv = new MapHeaderValues();
 		Object mapHeaders = Map.of("some-header", List.of(HEADER_VALUE));
 

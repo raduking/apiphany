@@ -9,6 +9,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -308,7 +309,7 @@ class ApiClientTest {
 
 		assertThat(result, equalTo(expected));
 
-		assertTrue(requestCaptor.getValue() instanceof ApiClientFluentAdapter);
+		assertInstanceOf(ApiClientFluentAdapter.class, requestCaptor.getValue());
 		ApiClientFluentAdapter adapter = JavaObjects.cast(requestCaptor.getValue());
 
 		assertThat(adapter.getMethod(), equalTo(HttpMethod.GET));
@@ -657,7 +658,7 @@ class ApiClientTest {
 
 		TestDto result = api.getTest(PATH_TEST, PATH_TEST);
 
-		assertTrue(requestCaptor.getValue() instanceof ApiClientFluentAdapter);
+		assertInstanceOf(ApiClientFluentAdapter.class, requestCaptor.getValue());
 		ApiClientFluentAdapter adapter = JavaObjects.cast(requestCaptor.getValue());
 
 		assertThat(result, equalTo(expected));

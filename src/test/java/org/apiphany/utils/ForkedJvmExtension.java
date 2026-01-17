@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 
 public class ForkedJvmExtension implements InvocationInterceptor {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(ForkedJvmRunner.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ForkedJvmExtension.class);
 
 	@Override
 	public void interceptTestMethod(
@@ -41,19 +41,13 @@ public class ForkedJvmExtension implements InvocationInterceptor {
 				.redirectErrorStream(true);
 		Process process = pb.start();
 
-		InputStream inputStream = null;
-		try {
-			inputStream = process.getInputStream();
+		try (InputStream inputStream = process.getInputStream()) {
 			inputStream.transferTo(System.out);
 
 			if (ForkedJvmRunner.SUCCESS != process.waitFor()) {
 				throw new AssertionError("Forked JVM test failed: " + className + "#" + methodName);
 			}
 			invocation.skip();
-		} finally {
-			if (null != inputStream) {
-				inputStream.close();
-			}
 		}
 	}
 
@@ -67,6 +61,6 @@ public class ForkedJvmExtension implements InvocationInterceptor {
 		command.add(className);
 		command.add(methodName);
 
-		return command.stream().toArray(String[]::new);
+		return command.toArray(String[]::new);
 	}
 }

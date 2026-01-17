@@ -28,7 +28,7 @@ class HttpHeaderValuesTest {
 	private static final String HEADER_VALUE = "headerValue";
 
 	@Test
-	void shouldReturnHeaderWhenCaseDoesntMatch() {
+	void shouldReturnHeaderWhenCaseDoesNotMatch() {
 		HttpHeaders httpHeaders = HttpHeaders.of(Map.of("some-header", List.of(HEADER_VALUE)), (name, value) -> true);
 
 		List<String> headerValues = HttpHeaderValues.get("Some-Header", httpHeaders);
@@ -111,7 +111,7 @@ class HttpHeaderValuesTest {
 	}
 
 	@Test
-	void shouldReturnHeaderWhenCaseDoesntMatchWithMapHeaderValuesObject() {
+	void shouldReturnHeaderWhenCaseDoesNotMatchWithMapHeaderValuesObject() {
 		HttpHeaderValues hhv = new HttpHeaderValues();
 		Object httpHeaders = HttpHeaders.of(Map.of("some-header", List.of(HEADER_VALUE)), (name, value) -> true);
 

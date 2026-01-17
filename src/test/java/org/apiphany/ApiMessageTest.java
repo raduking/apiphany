@@ -5,6 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,9 +32,11 @@ class ApiMessageTest {
 	private static final String V4 = "v4";
 
 	Map<String, List<String>> headers = new HashMap<>() {
+		@Serial
 		private static final long serialVersionUID = 1L;
 		{
 			put(N1, new ArrayList<>() {
+				@Serial
 				private static final long serialVersionUID = 1L;
 				{
 					add(V1);

@@ -2,7 +2,7 @@ package org.apiphany.security.oauth2;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -38,6 +38,6 @@ class OAuth2ParameterTest {
 			assertThat(e.getTargetException().getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
 			targetException = e.getTargetException();
 		}
-		assertTrue(targetException instanceof UnsupportedOperationException);
+		assertInstanceOf(UnsupportedOperationException.class, targetException);
 	}
 }

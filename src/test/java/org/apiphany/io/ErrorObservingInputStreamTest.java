@@ -38,7 +38,7 @@ class ErrorObservingInputStreamTest {
 	@Mock
 	private InputStream mockInputStream;
 
-	private List<Exception> observedExceptions = new ArrayList<>();
+	private final List<Exception> observedExceptions = new ArrayList<>();
 
 	private static Executable executable(final ThrowingRunnable runnable) {
 		return runnable::run;
@@ -46,7 +46,7 @@ class ErrorObservingInputStreamTest {
 
 	@SuppressWarnings("resource")
 	@Test
-	void shoudObserveReadWithIOException() throws IOException {
+	void shouldObserveReadWithIOException() throws IOException {
 		doReturn(TEST_INT).doThrow(TEST_IO_EXCEPTION).when(mockInputStream).read();
 
 		var errorObservingInputStream = ErrorObservingInputStream.observe(mockInputStream, observedExceptions::add);
@@ -57,11 +57,11 @@ class ErrorObservingInputStreamTest {
 		assertThat(readValue, equalTo(TEST_INT));
 		assertSame(TEST_IO_EXCEPTION, thrownException);
 		assertThat(observedExceptions, hasSize(1));
-		assertSame(TEST_IO_EXCEPTION, observedExceptions.get(0));
+		assertSame(TEST_IO_EXCEPTION, observedExceptions.getFirst());
 	}
 
 	@Test
-	void shoudObserveCloseWithIOException() throws IOException {
+	void shouldObserveCloseWithIOException() throws IOException {
 		doNothing().doThrow(TEST_IO_EXCEPTION).when(mockInputStream).close();
 
 		var errorObservingInputStream = ErrorObservingInputStream.observe(mockInputStream, observedExceptions::add);
@@ -71,7 +71,7 @@ class ErrorObservingInputStreamTest {
 
 		assertSame(TEST_IO_EXCEPTION, thrownException);
 		assertThat(observedExceptions, hasSize(1));
-		assertSame(TEST_IO_EXCEPTION, observedExceptions.get(0));
+		assertSame(TEST_IO_EXCEPTION, observedExceptions.getFirst());
 	}
 
 	@SuppressWarnings("resource")
@@ -88,7 +88,7 @@ class ErrorObservingInputStreamTest {
 		assertThat(readValue, equalTo(TEST_INT));
 		assertSame(TEST_IO_EXCEPTION, thrownException);
 		assertThat(observedExceptions, hasSize(1));
-		assertSame(TEST_IO_EXCEPTION, observedExceptions.get(0));
+		assertSame(TEST_IO_EXCEPTION, observedExceptions.getFirst());
 	}
 
 	@SuppressWarnings("resource")
@@ -105,7 +105,7 @@ class ErrorObservingInputStreamTest {
 		assertThat(readValue, equalTo(TEST_INT));
 		assertSame(TEST_IO_EXCEPTION, thrownException);
 		assertThat(observedExceptions, hasSize(1));
-		assertSame(TEST_IO_EXCEPTION, observedExceptions.get(0));
+		assertSame(TEST_IO_EXCEPTION, observedExceptions.getFirst());
 	}
 
 	@SuppressWarnings("resource")
@@ -121,7 +121,7 @@ class ErrorObservingInputStreamTest {
 		assertThat(readValue, equalTo(TEST_BYTE_ARRAY));
 		assertSame(TEST_IO_EXCEPTION, thrownException);
 		assertThat(observedExceptions, hasSize(1));
-		assertSame(TEST_IO_EXCEPTION, observedExceptions.get(0));
+		assertSame(TEST_IO_EXCEPTION, observedExceptions.getFirst());
 	}
 
 	@SuppressWarnings("resource")
@@ -138,7 +138,7 @@ class ErrorObservingInputStreamTest {
 		assertThat(readValue, equalTo(TEST_INT));
 		assertSame(TEST_IO_EXCEPTION, thrownException);
 		assertThat(observedExceptions, hasSize(1));
-		assertSame(TEST_IO_EXCEPTION, observedExceptions.get(0));
+		assertSame(TEST_IO_EXCEPTION, observedExceptions.getFirst());
 	}
 
 	@SuppressWarnings("resource")
@@ -154,6 +154,6 @@ class ErrorObservingInputStreamTest {
 		assertThat(readValue, equalTo(TEST_BYTE_ARRAY));
 		assertSame(TEST_IO_EXCEPTION, thrownException);
 		assertThat(observedExceptions, hasSize(1));
-		assertSame(TEST_IO_EXCEPTION, observedExceptions.get(0));
+		assertSame(TEST_IO_EXCEPTION, observedExceptions.getFirst());
 	}
 }

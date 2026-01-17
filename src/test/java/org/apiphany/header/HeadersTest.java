@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -34,9 +35,11 @@ class HeadersTest {
 	private static final String HEADER_VALUE = "headerValue";
 
 	Map<String, List<String>> headers = new HashMap<>() {
+		@Serial
 		private static final long serialVersionUID = 1L;
 		{
 			put(N1, new ArrayList<>() {
+				@Serial
 				private static final long serialVersionUID = 1L;
 				{
 					add(V1);
@@ -62,6 +65,7 @@ class HeadersTest {
 	@Test
 	void shouldNotAddNullHeader() {
 		var headersToAdd = Map.of(N2, new ArrayList<>() {
+			@Serial
 			private static final long serialVersionUID = 1L;
 			{
 				add(null);
@@ -81,6 +85,7 @@ class HeadersTest {
 	@Test
 	void shouldNotAddAnythingIfHeaderNameIsNull() {
 		var headersToAdd = new HashMap<String, List<String>>() {
+			@Serial
 			private static final long serialVersionUID = 1L;
 			{
 				put(null, List.of());

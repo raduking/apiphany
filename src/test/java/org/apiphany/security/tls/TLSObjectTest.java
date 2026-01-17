@@ -122,7 +122,7 @@ class TLSObjectTest {
 	}
 
 	@Test
-	void shouldPerformTLS12HandshakeWithECDHERSAAES256GCMSHA384WithOpenSSL() throws Exception {
+	void shouldPerformTLS12HandshakeWithECDHERSAAES256GCMSHA384WithOpenSSL() {
 		// assumes OpenSSL is running on port 4433 you can run it with the command described in the keystore-generation.md file.
 		// TODO: move this to an integration test module
 		int port = 4433;
@@ -155,7 +155,7 @@ class TLSObjectTest {
 	}
 
 	@Test
-	void shouldPerformTLS12HandshakeWithGoogle() throws Exception {
+	void shouldPerformTLS12HandshakeWithGoogle() {
 		int port = 443;
 		String host = "google.com";
 		assumeTrue(Sockets.canConnectTo(host, port), host + " is unreachable, skipping test.");
@@ -171,7 +171,7 @@ class TLSObjectTest {
 	}
 
 	@Test
-	void shouldPerformTLS12HandshakeWithWwwGoogleCom() throws Exception {
+	void shouldPerformTLS12HandshakeWithWwwGoogleCom() {
 		assumeTrue("true".equals(System.getProperty("test.tls.chunked")));
 		int port = 443;
 		String host = "www.google.com";

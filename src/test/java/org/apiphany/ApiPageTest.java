@@ -56,7 +56,7 @@ class ApiPageTest {
 
 	static class DummyApiPage implements ApiPage<String> {
 
-		private List<String> content;
+		private final List<String> content;
 
 		DummyApiPage(final List<String> content) {
 			this.content = content;

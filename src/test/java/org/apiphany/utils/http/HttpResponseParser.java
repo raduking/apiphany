@@ -1,4 +1,4 @@
-package org.apiphany.http;
+package org.apiphany.utils.http;
 
 import java.util.Map;
 import java.util.TreeMap;

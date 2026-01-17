@@ -109,6 +109,14 @@ public final class AlwaysEmptyList<E> implements List<E> {
 	}
 
 	/**
+	 * @see List#removeFirst()
+	 */
+	@Override
+	public E removeFirst() {
+		return null;
+	}
+
+	/**
 	 * @see List#containsAll(Collection)
 	 */
 	@Override
@@ -161,6 +169,22 @@ public final class AlwaysEmptyList<E> implements List<E> {
 	 */
 	@Override
 	public E get(final int index) {
+		return null;
+	}
+
+	/**
+	 * @see List#getFirst()
+	 */
+	@Override
+	public E getFirst() {
+		return null;
+	}
+
+	/**
+	 * @see List#getLast()
+	 */
+	@Override
+	public E getLast() {
 		return null;
 	}
 

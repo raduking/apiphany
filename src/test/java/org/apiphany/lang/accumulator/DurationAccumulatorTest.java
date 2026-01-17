@@ -44,7 +44,7 @@ class DurationAccumulatorTest {
 
 		List<Double> durations = accumulator.durationsAsDouble();
 		assertThat(durations, hasSize(1));
-		assertThat(durations.get(0), greaterThan(0.0));
+		assertThat(durations.getFirst(), greaterThan(0.0));
 	}
 
 	@Test
@@ -57,7 +57,7 @@ class DurationAccumulatorTest {
 		assertThat(result, is(OK));
 		List<Double> durations = accumulator.durationsAsDouble();
 		assertThat(durations, hasSize(1));
-		assertThat(durations.get(0), greaterThan(0.0));
+		assertThat(durations.getFirst(), greaterThan(0.0));
 	}
 
 	@Test
@@ -135,7 +135,7 @@ class DurationAccumulatorTest {
 		durationAccumulator.buildStatistics();
 		var statistics = durationAccumulator.getStatistics();
 
-		assertThat(statistics.getP90RequestTime(), equalTo(Temporals.toDouble(durationAccumulator.getInformationList().get(0))));
+		assertThat(statistics.getP90RequestTime(), equalTo(Temporals.toDouble(durationAccumulator.getInformationList().getFirst())));
 	}
 
 	@Test

@@ -140,7 +140,7 @@ class ApiClientFluentAdapterTest {
 
 	static class ParamObject {
 		@SuppressWarnings("unused")
-		private String sum = "1+2+3";
+		private final String sum = "1+2+3";
 	}
 
 	@Test

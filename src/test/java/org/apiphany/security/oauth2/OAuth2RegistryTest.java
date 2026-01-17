@@ -144,12 +144,7 @@ class OAuth2RegistryTest {
 	}
 
 	private static AuthenticationTokenProvider tokenClient() {
-		return new AuthenticationTokenProvider() {
-			@Override
-			public AuthenticationToken getAuthenticationToken() {
-				return createToken("token-" + new Random().nextInt());
-			}
-		};
+		return () -> createToken("token-" + new Random().nextInt());
 	}
 
 	private static OAuth2ClientRegistration buildRegistration(final String client, final String provider) {

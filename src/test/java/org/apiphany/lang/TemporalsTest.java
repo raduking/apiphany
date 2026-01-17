@@ -31,7 +31,7 @@ class TemporalsTest {
 	}
 
 	@Test
-	void shouldReturnNotAvailableIfInputIsNaNOnFormtatToSecondsWithDouble() {
+	void shouldReturnNotAvailableIfInputIsNaNOnFormatToSecondsWithDouble() {
 		String result = Temporals.formatToSeconds(Double.NaN);
 
 		assertThat(result, equalTo("N/A"));

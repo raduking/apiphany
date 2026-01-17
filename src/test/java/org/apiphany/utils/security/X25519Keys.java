@@ -27,8 +27,8 @@ public class X25519Keys implements KeyExchangeHandler {
 
 	private static final int PUBLIC_KEY_SIZE = 32;
 
-	private String algorithm;
-	private KeyFactory keyFactory;
+	private final String algorithm;
+	private final KeyFactory keyFactory;
 
 	public X25519Keys(final String algorithm) {
 		this.algorithm = algorithm;

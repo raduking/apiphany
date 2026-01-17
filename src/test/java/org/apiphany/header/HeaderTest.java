@@ -20,7 +20,7 @@ class HeaderTest {
 	private static final String HEADER_1 = "header1";
 	private static final Object HEADER_2 = "header2";
 	private static final int TEST_INT = 666;
-	private static final Integer INTEGER_VALUE = Integer.valueOf(TEST_INT);
+	private static final Integer INTEGER_VALUE = TEST_INT;
 	private static final String STRING_INTEGER_VALUE = String.valueOf(INTEGER_VALUE);
 
 	@Test

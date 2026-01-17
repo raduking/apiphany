@@ -29,12 +29,12 @@ class SSLProtocolTest {
 	@SuppressWarnings("deprecation")
 	private static Stream<Arguments> provideHandshakeArguments() {
 		return Stream.of(
-				Arguments.of(SSLProtocol.SSL_2_0, Short.valueOf((short) 0x0200)),
-				Arguments.of(SSLProtocol.SSL_3_0, Short.valueOf((short) 0x0300)),
-				Arguments.of(SSLProtocol.TLS_1_0, Short.valueOf((short) 0x0301)),
-				Arguments.of(SSLProtocol.TLS_1_1, Short.valueOf((short) 0x0302)),
-				Arguments.of(SSLProtocol.TLS_1_2, Short.valueOf((short) 0x0303)),
-				Arguments.of(SSLProtocol.TLS_1_3, Short.valueOf((short) 0x0304)));
+				Arguments.of(SSLProtocol.SSL_2_0, (short) 0x0200),
+				Arguments.of(SSLProtocol.SSL_3_0, (short) 0x0300),
+				Arguments.of(SSLProtocol.TLS_1_0, (short) 0x0301),
+				Arguments.of(SSLProtocol.TLS_1_1, (short) 0x0302),
+				Arguments.of(SSLProtocol.TLS_1_2, (short) 0x0303),
+				Arguments.of(SSLProtocol.TLS_1_3, (short) 0x0304));
 	}
 
 	@ParameterizedTest

@@ -244,7 +244,7 @@ class ApiResponseTest {
 
 	@Test
 	void shouldReturnStatus() {
-		ApiResponse<Object> response = ApiResponse.create((Object) null)
+		ApiResponse<Object> response = ApiResponse.create(null)
 				.status(HttpStatus.OK)
 				.build();
 
@@ -255,7 +255,7 @@ class ApiResponseTest {
 
 	@Test
 	void shouldReturnStatusCode() {
-		ApiResponse<Object> response = ApiResponse.create((Object) null)
+		ApiResponse<Object> response = ApiResponse.create(null)
 				.status(HttpStatus.OK)
 				.build();
 
@@ -266,7 +266,7 @@ class ApiResponseTest {
 
 	@Test
 	void shouldReturnUnknownStatusCodeWhenStatusCodeIsMissing() {
-		ApiResponse<Object> response = ApiResponse.create((Object) null)
+		ApiResponse<Object> response = ApiResponse.create(null)
 				.build();
 
 		int statusCode = response.getStatusCode();

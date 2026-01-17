@@ -479,7 +479,7 @@ class BasicMetersTest {
 		MeterCounter errors = mock(MeterCounter.class);
 		doReturn(errors).when(factory).counter(METRICS_PREFIX, BasicMeters.Name.ERROR, tags);
 
-		String result = BasicMeters.wrapAndSwallow(factory, METRICS_PREFIX, (Supplier<String>) () -> {
+		String result = BasicMeters.wrapAndSwallow(factory, METRICS_PREFIX, () -> {
 			throw new RuntimeException(TEST_EXCEPTION_MESSAGE);
 		});
 
@@ -547,7 +547,7 @@ class BasicMetersTest {
 		MeterCounter errors = mock(MeterCounter.class);
 		doReturn(errors).when(factory).counter(METRICS_PREFIX, BasicMeters.Name.ERROR, tags);
 
-		BasicMeters.wrap(factory, METRICS_PREFIX, (Runnable) () -> {
+		BasicMeters.wrap(factory, METRICS_PREFIX, () -> {
 			// empty
 		});
 
@@ -581,7 +581,7 @@ class BasicMetersTest {
 	@Test
 	void shouldWrapButSendMetricsWithTagsWithDefaultMeterFactoryAndRunnable() {
 		String prefix = METRICS_PREFIX + "." + SOME_RANDOM_KEBAB_STRING;
-		BasicMeters.wrap(prefix, (Runnable) () -> {
+		BasicMeters.wrap(prefix, () -> {
 			Threads.safeSleep(Duration.ofMillis(10));
 		});
 

@@ -61,10 +61,10 @@ class RequestParameterTest {
 		assertThat(parameter.value(), equalTo("a,b,c"));
 	}
 
-	static record A(String name) {
+	record A(String name) {
 
 		@Override
-		public final String toString() {
+		public String toString() {
 			return name;
 		}
 	}
@@ -130,7 +130,7 @@ class RequestParameterTest {
 
 	@Test
 	void shouldReturnNullWhenValueArrayIsNull() {
-		String result = RequestParameter.value((Object[]) null);
+		String result = RequestParameter.value(null);
 
 		assertThat(result, equalTo(null));
 	}

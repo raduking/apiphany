@@ -28,7 +28,7 @@ class JsonBuilderTest {
 	private static final String TENANT_ID1 = "tid1";
 	private static final long TEST_LONG = 42L;
 
-	private JsonBuilder jsonBuilder = new JsonBuilder();
+	private final JsonBuilder jsonBuilder = new JsonBuilder();
 
 	@Test
 	void shouldThrowExceptionOnFromJsonStringWithClass() {
@@ -116,7 +116,7 @@ class JsonBuilderTest {
 
 		Object json1 = Strings.removeAllWhitespace(JsonBuilder.toJson(list1));
 
-		List<A> list2 = JsonBuilder.fromJson(json1, new GenericClass<List<A>>() {
+		List<A> list2 = JsonBuilder.fromJson(json1, new GenericClass<>() {
 			// empty
 		});
 
@@ -184,8 +184,8 @@ class JsonBuilderTest {
 			if (this == obj) {
 				return true;
 			}
-			if (this instanceof B that) {
-				return Objects.equals(that, obj);
+			if (obj instanceof B that) {
+				return Objects.equals(this.id, that.id);
 			}
 			return false;
 		}

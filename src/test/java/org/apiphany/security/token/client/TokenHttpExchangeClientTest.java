@@ -50,7 +50,7 @@ class TokenHttpExchangeClientTest {
 
 	private TokenHttpExchangeClient client;
 
-	private ClientProperties clientProperties = new ClientProperties();
+	private final ClientProperties clientProperties = new ClientProperties();
 
 	@BeforeEach
 	void setUp() {
