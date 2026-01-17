@@ -1,96 +1,251 @@
 package org.apiphany;
 
+import java.util.List;
 import java.util.Map;
-
-import org.apiphany.lang.Require;
-import org.apiphany.lang.Strings;
-import org.apiphany.lang.collections.JavaArrays;
-import org.morphix.convert.ArrayConversions;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 /**
- * Represents a parameter in the API context.
- *
- * @param name the name of the parameter
- * @param value the value of the parameter
+ * Functional interface for defining how parameters are inserted into a map. This interface is used to build parameter
+ * maps dynamically.
  *
  * @author Radu Sebastian LAZIN
  */
-public record Parameter(String name, String value) implements ParameterFunction {
+@FunctionalInterface
+public interface Parameter extends ParameterFunction {
 
 	/**
-	 * Constructs a {@link Parameter} instance ensuring the name is not null or blank.
-	 *
-	 * @param name the name of the parameter
-	 * @param value the value of the parameter
+	 * Cache empty function instance.
 	 */
-	public Parameter {
-		Require.notNull(name, "Parameter name cannot be null");
-		Require.that(name, Strings::isNotBlank, "Parameter name cannot be blank");
+	Parameter EMPTY = map -> {
+		// empty
+	};
+
+	/**
+	 * Creates a {@link Parameter} for a single key-value pair.
+	 *
+	 * @param name the parameter name
+	 * @param value the parameter value
+	 * @return a {@link Parameter} that inserts the key-value pair into the map
+	 */
+	static Parameter of(final String name, final String value) {
+		return ParameterFunction.parameter(name, value)::putInto;
 	}
 
 	/**
-	 * Creates a {@link Parameter} instance from the given name and value.
+	 * Creates a {@link Parameter} for a single key-value pair, where the value is converted to a string.
 	 *
-	 * @param <N> the type of the parameter name
-	 * @param <V> the type of the parameter value
+	 * @param <T> the type of the value
 	 *
-	 * @param name the name of the parameter
-	 * @param value the value of the parameter
-	 * @return a new {@link Parameter} instance
+	 * @param name the parameter name
+	 * @param value the parameter value
+	 * @return a {@link Parameter} that inserts the key-value pair into the map
 	 */
-	public static <N, V> Parameter of(final N name, final V value) {
-		return new Parameter(String.valueOf(Require.notNull(name, "Parameter name cannot be null")), value(value));
+	static <T> Parameter of(final String name, final T value) {
+		return ParameterFunction.parameter(name, value)::putInto;
 	}
 
 	/**
-	 * Returns the string representation of the parameter in the format {@code "name=value"}.
+	 * Creates a {@link Parameter} for a single key-value pair, where both the key and value are converted to strings.
 	 *
-	 * @return the string representation of the parameter
+	 * @param <T> the type of the key
+	 * @param <U> the type of the value
+	 *
+	 * @param name the parameter name
+	 * @param value the parameter value
+	 * @return a {@link Parameter} that inserts the key-value pair into the map
 	 */
-	@Override
-	public String toString() {
-		return String.join("=", name, value);
+	static <T, U> Parameter of(final T name, final U value) {
+		return ParameterFunction.parameter(name, value)::putInto;
 	}
 
 	/**
-	 * Puts this parameter into the given map.
+	 * Creates a {@link Parameter} for a single key-value pair, where the value is provided by a supplier.
 	 *
-	 * @param map the map to put the parameter into
+	 * @param <T> the type of the value
+	 *
+	 * @param name the parameter name
+	 * @param value the supplier of the parameter value
+	 * @return a {@link Parameter} that inserts the key-value pair into the map
 	 */
-	@Override
-	public void putInto(final Map<String, String> map) {
-		map.put(name, value);
+	static <T> Parameter of(final String name, final Supplier<T> value) {
+		return ParameterFunction.parameter(name, value)::putInto;
 	}
 
 	/**
-	 * Converts the given value to its string representation suitable for request parameters.
+	 * Creates a {@link Parameter} for a single key-value pair, where the value is provided by a supplier.
 	 *
-	 * @param obj the object to convert to string parameter value
-	 * @return the string representation of the value
+	 * @param <T> the type of the name
+	 * @param <U> the type of the value
+	 *
+	 * @param name the parameter name
+	 * @param value the supplier of the parameter value
+	 * @return a {@link Parameter} that inserts the key-value pair into the map
 	 */
-	public static String value(final Object obj) {
-		if (null == obj) {
-			return null;
+	static <T, U> Parameter of(final T name, final Supplier<U> value) {
+		return ParameterFunction.parameter(name, value)::putInto;
+	}
+
+	/**
+	 * Creates a {@link Parameter} for a single key-value pair, where both the key and value are provided by suppliers.
+	 *
+	 * @param <T> the type of the key
+	 * @param <U> the type of the value
+	 *
+	 * @param name the supplier of the parameter name
+	 * @param value the supplier of the parameter value
+	 * @return a {@link Parameter} that inserts the key-value pair into the map
+	 */
+	static <T, U> Parameter of(final Supplier<T> name, final Supplier<U> value) {
+		return ParameterFunction.parameter(name, value)::putInto;
+	}
+
+	/**
+	 * Creates a {@link Parameter} for a list of elements, which are joined into a single string.
+	 *
+	 * @param name the parameter name
+	 * @param elements the list of elements to join
+	 * @return a {@link Parameter} that inserts the key-value pair into the map
+	 */
+	static Parameter of(final String name, final List<String> elements) {
+		return ParameterFunction.parameter(name, elements)::putInto;
+	}
+
+	/**
+	 * Creates a {@link Parameter} for a list of elements, where both the key and elements are converted to strings.
+	 *
+	 * @param <T> the type of the key
+	 * @param <U> the type of the elements
+	 *
+	 * @param name the parameter name
+	 * @param elements the list of elements to join
+	 * @return a {@link Parameter} that inserts the key-value pair into the map
+	 */
+	static <T, U> Parameter of(final T name, final List<U> elements) {
+		return ParameterFunction.parameter(name, elements)::putInto;
+	}
+
+	/**
+	 * Creates a {@link Parameter} that delegates to another {@link Parameter}.
+	 *
+	 * @param parameter the delegate {@link Parameter}
+	 * @return a {@link Parameter} that delegates to the provided parameter
+	 */
+	static Parameter of(final Parameter parameter) {
+		return parameter;
+	}
+
+	/**
+	 * Creates a {@link Parameter} that delegates to another {@link ParameterFunction}.
+	 *
+	 * @param parameter the delegate {@link Parameter}
+	 * @return a {@link Parameter} that delegates to the provided function
+	 */
+	static Parameter of(final ParameterFunction parameter) {
+		return parameter::putInto;
+	}
+
+	/**
+	 * Creates a {@link Parameter} that inserts all entries from a map.
+	 *
+	 * @param map the map containing the entries to insert
+	 * @return a {@link Parameter} that inserts all entries from the map
+	 */
+	static Parameter of(final Map<String, String> map) {
+		return ParameterFunction.parameters(map)::putInto;
+	}
+
+	/**
+	 * Creates a {@link Parameter} that inserts all entries from more parameter functions.
+	 *
+	 * @param parameters the parameters containing the entries to insert
+	 * @return a {@link Parameter} that inserts all entries from more parameter functions
+	 */
+	static Parameter of(final Parameter... parameters) {
+		if (null == parameters) {
+			return none();
 		}
-		return switch (obj) {
-			case String str -> str;
-			case Iterable<?> iterable -> value(JavaArrays.toArray(iterable));
-			case Object[] array -> value(array);
-			case Object o when o.getClass().isArray() -> value(JavaArrays.toArray(o));
-			default -> String.valueOf(obj);
+		return map -> {
+			for (Parameter parameter : parameters) {
+				parameter.putInto(map);
+			}
 		};
 	}
 
 	/**
-	 * Converts the given array of values to a comma-separated string representation suitable for request parameters.
+	 * Returns an empty parameter function.
 	 *
-	 * @param objs the array of objects to convert to string parameter value
-	 * @return the comma-separated string representation of the values
+	 * @return an empty parameter function
 	 */
-	public static String value(final Object[] objs) {
-		if (null == objs) {
-			return null;
+	static Parameter none() {
+		return EMPTY;
+	}
+
+	/**
+	 * Creates a {@link Parameter} that conditionally inserts parameters based on a condition.
+	 *
+	 * @param condition the condition to evaluate
+	 * @param parameters the {@link Parameter}s to execute if the condition is true
+	 * @return a {@link Parameter} that conditionally inserts parameters
+	 */
+	static Parameter withCondition(final boolean condition, final Parameter... parameters) {
+		if (condition) {
+			return of(parameters);
 		}
-		return String.join(",", ArrayConversions.convertArray(objs, String::valueOf).toArray(String[]::new));
+		return none();
+	}
+
+	/**
+	 * Creates a {@link Parameter} that conditionally inserts parameters based on a condition. This is an alias for
+	 * {@link #withCondition(boolean, Parameter...)}.
+	 *
+	 * @param condition the condition to evaluate
+	 * @param parameters the {@link Parameter}s to execute if the condition is true
+	 * @return a {@link Parameter} that conditionally inserts parameters
+	 */
+	static Parameter when(final boolean condition, final Parameter... parameters) {
+		return withCondition(condition, parameters);
+	}
+
+	/**
+	 * Creates a {@link Parameter} that conditionally inserts parameters if the provided object is non-null.
+	 *
+	 * @param <T> the type of the object
+	 *
+	 * @param obj the object to check for null
+	 * @param parameters the {@link Parameter}s to execute if the object is non-null
+	 * @return a {@link Parameter} that conditionally inserts parameters
+	 */
+	static <T> Parameter withNonNull(final T obj, final Parameter... parameters) {
+		return withCondition(null != obj, parameters);
+	}
+
+	/**
+	 * Creates a {@link Parameter} that conditionally inserts parameters based on a predicate.
+	 *
+	 * @param <T> the type of the object
+	 *
+	 * @param obj the object to evaluate
+	 * @param predicate the predicate to test
+	 * @param parameters the {@link Parameter}s to execute if the predicate is true
+	 * @return a {@link Parameter} that conditionally inserts parameters
+	 */
+	static <T> Parameter withPredicate(final T obj, final Predicate<T> predicate, final Parameter... parameters) {
+		return withCondition(predicate.test(obj), parameters);
+	}
+
+	/**
+	 * Creates a {@link Parameter} that conditionally inserts parameters based on a predicate. This is an alias for
+	 * {@link #withPredicate(Object, Predicate, Parameter...)}.
+	 *
+	 * @param <T> the type of the object
+	 *
+	 * @param obj the object to evaluate
+	 * @param predicate the predicate to test
+	 * @param parameters the {@link Parameter}s to execute if the predicate is true
+	 * @return a {@link Parameter} that conditionally inserts parameters
+	 */
+	static <T> Parameter when(final T obj, final Predicate<T> predicate, final Parameter... parameters) {
+		return withPredicate(obj, predicate, parameters);
 	}
 }

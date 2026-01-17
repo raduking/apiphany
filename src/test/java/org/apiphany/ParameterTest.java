@@ -1,12 +1,16 @@
 package org.apiphany;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.junit.jupiter.api.Test;
 
@@ -17,152 +21,273 @@ import org.junit.jupiter.api.Test;
  */
 class ParameterTest {
 
-	private static final String NAME = "name";
-	private static final String VALUE = "value";
-	private static final String BLANK_STRING = "   ";
+	private static final String PARAM_1 = "param1";
+	private static final int TEST_INT = 666;
+	private static final int TEST_INT_42 = 42;
+	private static final Integer INTEGER_VALUE = Integer.valueOf(TEST_INT);
+	private static final String STRING_INTEGER_VALUE = String.valueOf(INTEGER_VALUE);
 
-	@Test
-	void shouldBuildParameterObjectFromStringValues() {
-		Parameter parameter = Parameter.of(NAME, VALUE);
-
-		assertThat(parameter.name(), equalTo(NAME));
-		assertThat(parameter.value(), equalTo(VALUE));
-	}
-
-	@Test
-	void shouldBuildParameterObjectFromObjectValues() {
-		Parameter parameter = Parameter.of(NAME, 123);
-
-		assertThat(parameter.name(), equalTo(NAME));
-		assertThat(parameter.value(), equalTo("123"));
-	}
-
-	@Test
-	void shouldBuildParameterObjectFromListValues() {
-		Parameter parameter = Parameter.of(NAME, List.of(1, 2, 3));
-
-		assertThat(parameter.name(), equalTo(NAME));
-		assertThat(parameter.value(), equalTo("1,2,3"));
-	}
-
-	@Test
-	void shouldBuildParameterObjectFromArrayValues() {
-		Parameter parameter = Parameter.of(NAME, new Object[] { "a", "b", "c" });
-
-		assertThat(parameter.name(), equalTo(NAME));
-		assertThat(parameter.value(), equalTo("a,b,c"));
-	}
-
-	@Test
-	void shouldBuildParameterObjectFromStringArrayValues() {
-		Parameter parameter = Parameter.of(NAME, new String[] { "a", "b", "c" });
-
-		assertThat(parameter.name(), equalTo(NAME));
-		assertThat(parameter.value(), equalTo("a,b,c"));
-	}
-
-	static record A(String name) {
+	static class Name {
 
 		@Override
-		public final String toString() {
-			return name;
+		public String toString() {
+			return PARAM_1;
 		}
 	}
 
 	@Test
-	void shouldBuildParameterObjectFromObject() {
-		Parameter parameter = Parameter.of(NAME, new A("test"));
+	void shouldAddParametersToMapWithGenericArguments() {
+		Parameter param = Parameter.of(new Name(), INTEGER_VALUE);
 
-		assertThat(parameter.name(), equalTo(NAME));
-		assertThat(parameter.value(), equalTo("test"));
+		Map<String, String> params = new HashMap<>();
+		param.putInto(params);
+
+		assertThat(params.entrySet(), hasSize(1));
+		assertThat(params.get(PARAM_1), equalTo(STRING_INTEGER_VALUE));
 	}
 
 	@Test
-	void shouldThrowExceptionWhenBuildingParameterWithConstructorAndNullName() {
-		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> new Parameter(null, VALUE));
+	void shouldAddParametersToAMapWithConsumerAPI() {
+		Parameter param = Parameter.of(PARAM_1, STRING_INTEGER_VALUE);
 
-		assertThat(e.getMessage(), equalTo("Parameter name cannot be null"));
+		Map<String, String> params = new HashMap<>();
+		param.accept(params);
+
+		assertThat(params.entrySet(), hasSize(1));
+		assertThat(params.get(PARAM_1), equalTo(STRING_INTEGER_VALUE));
 	}
 
 	@Test
-	void shouldThrowExceptionWhenBuildingParameterWithConstructorAndBlankName() {
-		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> new Parameter(BLANK_STRING, VALUE));
+	void shouldAddNonStringParameterByConvertingItToString() {
+		Map<String, String> params = RequestParameters.of(
+				Parameter.of(PARAM_1, INTEGER_VALUE));
 
-		assertThat(e.getMessage(), equalTo("Parameter name cannot be blank"));
+		assertThat(params.entrySet(), hasSize(1));
+		assertThat(params.get(PARAM_1), equalTo(STRING_INTEGER_VALUE));
 	}
 
 	@Test
-	void shouldThrowExceptionWhenBuildingParameterWithNullName() {
-		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> Parameter.of(null, VALUE));
+	void shouldAddNonStringSuppliedParameterByConvertingItToString() {
+		Map<String, String> params = RequestParameters.of(
+				Parameter.of(PARAM_1, () -> INTEGER_VALUE));
 
-		assertThat(e.getMessage(), equalTo("Parameter name cannot be null"));
+		assertThat(params.entrySet(), hasSize(1));
+		assertThat(params.get(PARAM_1), equalTo(STRING_INTEGER_VALUE));
+	}
+
+	static class A {
+
+		String s;
+
+		A(final String s) {
+			this.s = s;
+		}
+
+		@Override
+		public String toString() {
+			return s;
+		}
 	}
 
 	@Test
-	void shouldThrowExceptionWhenBuildingParameterWithBlankName() {
-		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> Parameter.of(BLANK_STRING, VALUE));
+	void shouldAddNonStringSuppliedNonStringParameterByConvertingItToString() {
+		Map<String, String> params = RequestParameters.of(
+				Parameter.of(new A(PARAM_1), () -> INTEGER_VALUE));
 
-		assertThat(e.getMessage(), equalTo("Parameter name cannot be blank"));
+		assertThat(params.entrySet(), hasSize(1));
+		assertThat(params.get(PARAM_1), equalTo(STRING_INTEGER_VALUE));
 	}
 
 	@Test
-	void shouldBuildParameterString() {
-		Parameter parameter = Parameter.of(NAME, VALUE);
+	void shouldAddNonStringSuppliedNonStringSuppliedParameterByConvertingItToString() {
+		Map<String, String> params = RequestParameters.of(
+				Parameter.of(() -> new A(PARAM_1), () -> INTEGER_VALUE));
 
-		String result = parameter.toString();
-
-		assertThat(result, equalTo("name=value"));
+		assertThat(params.entrySet(), hasSize(1));
+		assertThat(params.get(PARAM_1), equalTo(STRING_INTEGER_VALUE));
 	}
 
 	@Test
-	void shouldBuildStringValueFromObject() {
-		String result = Parameter.value(123);
+	void shouldAddAFilterParameter() {
+		Filter filter = Filter.of("x", "==", "y");
 
-		assertThat(result, equalTo("123"));
+		Map<String, String> params = RequestParameters.of(
+				Parameter.of(filter));
+
+		assertThat(params.entrySet(), hasSize(1));
+		assertThat(params.get(Filter.NAME), equalTo(filter.getValue()));
 	}
 
 	@Test
-	void shouldReturnNullWhenValueIsNull() {
-		String result = Parameter.value((Object) null);
+	void shouldAddFilterParameterWithValues() {
+		Filter filter = Filter.of("x", "==", "y");
 
-		assertThat(result, equalTo(null));
+		Map<String, String> params = RequestParameters.of(
+				Parameter.of(Filter.NAME, filter.getValue()));
+
+		assertThat(params.entrySet(), hasSize(1));
+		assertThat(params.get(Filter.NAME), equalTo(filter.getValue()));
+	}
+
+	static class TestParameter implements Parameter {
+
+		String name;
+		String value;
+
+		public TestParameter(final String name, final String value) {
+			this.name = name;
+			this.value = value;
+		}
+
+		@Override
+		public void putInto(final Map<String, String> map) {
+			map.put(name, value);
+		}
 	}
 
 	@Test
-	void shouldReturnNullWhenValueArrayIsNull() {
-		String result = Parameter.value((Object[]) null);
+	void shouldAddAParameterFunctionParameter() {
+		Parameter param = new TestParameter(PARAM_1, STRING_INTEGER_VALUE);
 
-		assertThat(result, equalTo(null));
+		Map<String, String> params = RequestParameters.of(
+				Parameter.of(param));
+
+		assertThat(params.entrySet(), hasSize(1));
+		assertThat(params.get(PARAM_1), equalTo(STRING_INTEGER_VALUE));
 	}
 
 	@Test
-	void shouldBuildValueFromObject() {
-		String parameter = Parameter.value(new A("test"));
+	void shouldAddStringListParameter() {
+		List<String> list = List.of("v1", "v2");
 
-		assertThat(parameter, equalTo("test"));
+		Map<String, String> params = RequestParameters.of(
+				Parameter.of(PARAM_1, list));
+
+		assertThat(params.entrySet(), hasSize(1));
+		assertThat(params.get(PARAM_1), equalTo(String.join(",", list)));
 	}
 
 	@Test
-	void shouldBuildValueFromIntegerArray() {
-		String parameter = Parameter.value((Object) new Integer[] { 1, 2, 3 });
+	void shouldNotAddStringListParameterIfListIsEmpty() {
+		List<String> list = Collections.emptyList();
 
-		assertThat(parameter, equalTo("1,2,3"));
+		Map<String, String> params = RequestParameters.of(
+				Parameter.of(PARAM_1, list));
+
+		assertThat(params.entrySet(), hasSize(0));
 	}
 
 	@Test
-	void shouldBuildValueFromIntArray() {
-		String parameter = Parameter.value(new int[] { 1, 2, 3 });
+	void shouldNotAddStringListParameterIfListIsNull() {
+		List<String> list = null;
 
-		assertThat(parameter, equalTo("1,2,3"));
+		Map<String, String> params = RequestParameters.of(
+				Parameter.of(PARAM_1, list));
+
+		assertThat(params.entrySet(), hasSize(0));
 	}
 
 	@Test
-	void shouldPutParameterIntoMap() {
-		Parameter parameter = Parameter.of(NAME, VALUE);
+	void shouldAddListParameterByConvertingEachParameterToString() {
+		List<Integer> list = List.of(INTEGER_VALUE, Integer.valueOf(42));
+
+		Map<String, String> params = RequestParameters.of(
+				Parameter.<String, Integer>of(PARAM_1, list));
+
+		assertThat(params.get(PARAM_1), equalTo(String.join(",", list.stream().map(String::valueOf).toList())));
+	}
+
+	@Test
+	void shouldPutAllValuesFromAMap() {
+		Map<String, String> map = Map.of(PARAM_1, STRING_INTEGER_VALUE);
+
+		Map<String, String> params = RequestParameters.of(
+				Parameter.of(map));
+
+		assertThat(params.entrySet(), hasSize(1));
+		assertThat(params.get(PARAM_1), equalTo(STRING_INTEGER_VALUE));
+	}
+
+	@Test
+	void shouldOverwriteExistingParametersFromAMap() {
+		Map<String, String> map = Map.of(PARAM_1, STRING_INTEGER_VALUE);
+
+		Map<String, String> params = RequestParameters.of(
+				Parameter.of(PARAM_1, Integer.valueOf(TEST_INT_42)),
+				Parameter.of(map));
+
+		assertThat(params.entrySet(), hasSize(1));
+		assertThat(params.get(PARAM_1), equalTo(STRING_INTEGER_VALUE));
+	}
+
+	@Test
+	void shouldNotModifyExistingParametersWhenAddingNone() {
+		Map<String, String> params = RequestParameters.of(
+				Parameter.of(PARAM_1, STRING_INTEGER_VALUE),
+				ParameterFunction.none());
+
+		assertThat(params.entrySet(), hasSize(1));
+		assertThat(params.get(PARAM_1), equalTo(STRING_INTEGER_VALUE));
+
+		Map<String, String> expected = new HashMap<>(params);
+
+		Parameter.none().putInto(params);
+
+		assertThat(params, equalTo(expected));
+	}
+
+	@Test
+	void shouldReturnNoneOnParametersWhenParameterFunctionArrayIsNull() {
+		Parameter param = Parameter.of((Parameter[]) null);
+
+		assertThat(param, equalTo(Parameter.none()));
+	}
+
+	@Test
+	void shouldReturnNoneOnWhenConditionIfTheConditionIsFalse() {
+		Parameter param = new TestParameter(PARAM_1, STRING_INTEGER_VALUE);
+		ParameterFunction parameterFunction = Parameter.when(false, param);
+
+		@SuppressWarnings("unchecked")
+		Map<String, String> mockMap = mock(Map.class);
+		parameterFunction.putInto(mockMap);
+
+		verifyNoInteractions(mockMap);
+	}
+
+	@Test
+	void shouldAddParametersOnWhenConditionIfTheConditionIsTrue() {
+		Parameter param = new TestParameter(PARAM_1, STRING_INTEGER_VALUE);
+		ParameterFunction parameterFunction = Parameter.withNonNull(null, param);
+
+		@SuppressWarnings("unchecked")
+		Map<String, String> mockMap = mock(Map.class);
+		parameterFunction.putInto(mockMap);
+
+		verifyNoInteractions(mockMap);
+	}
+
+	@Test
+	void shouldReturnNoneOnWhenNotNullConditionIfTheConditionIsFalse() {
+		Parameter param = new TestParameter(PARAM_1, STRING_INTEGER_VALUE);
+		ParameterFunction parameterFunction = Parameter.withNonNull(INTEGER_VALUE, param);
+
 		Map<String, String> map = new HashMap<>();
+		parameterFunction.putInto(map);
 
-		parameter.putInto(map);
+		assertThat(map.entrySet(), hasSize(1));
+		assertThat(map.get(PARAM_1), equalTo(STRING_INTEGER_VALUE));
+	}
 
-		assertThat(map.get(NAME), equalTo(VALUE));
+	@Test
+	void shouldReturnNoneOnWhenWithPredicateIfTheConditionIsFalse() {
+		Parameter param = new TestParameter(PARAM_1, STRING_INTEGER_VALUE);
+		ParameterFunction parameterFunction = Parameter.when(null, Objects::nonNull, param);
+
+		@SuppressWarnings("unchecked")
+		Map<String, String> mockMap = mock(Map.class);
+		parameterFunction.putInto(mockMap);
+
+		verifyNoInteractions(mockMap);
 	}
 }
