@@ -8,6 +8,7 @@
 - Added support for XML via `jackson-dataformat-xml` only available if library is provided.
 - Changed `Strings.fromFile` to be more deterministic, everything that starts with `/` is absolute, everything else relative.
 - Upgraded formatter version to `4.38`.
+- Added `code-format` as the source for Java formatter file `java-code-style.xml`.
 
 ---
 

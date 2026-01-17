@@ -293,9 +293,6 @@
 								<resource>
 									<directory>src/test/resources</directory>
 								</resource>
-								<resource>
-									<directory>formatter</directory>
-								</resource>
 							</resources>
 						</configuration>
 					</execution>
