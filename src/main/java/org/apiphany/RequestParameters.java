@@ -155,7 +155,7 @@ public class RequestParameters {
 	 * field name as the key and the field value as the value. This method uses reflection to access the fields of the
 	 * object.
 	 * <p>
-	 * Null field values are ignored and not included in the resulting map.
+	 * Field values that are {@code null} are not included in the resulting map.
 	 *
 	 * @param queryParams the object to convert
 	 * @return a map representation of the object's fields
@@ -170,8 +170,8 @@ public class RequestParameters {
 		Require.thatNot(queryParams.getClass().isArray(), "Cannot convert an Array into request parameters map. Expected a POJO or a Map.");
 
 		return switch (queryParams) {
-			case Map<?, ?> map -> MapConversions.convertMap(map, String::valueOf, Parameter::value, PutFunction.ifNotNullValue()).toMap();
-			default -> MapConversions.convertToMap(queryParams, String::valueOf, Parameter::value, PutFunction.ifNotNullValue());
+			case Map<?, ?> map -> MapConversions.convertMap(map, String::valueOf, RequestParameter::value, PutFunction.ifNotNullValue()).toMap();
+			default -> MapConversions.convertToMap(queryParams, String::valueOf, RequestParameter::value, PutFunction.ifNotNullValue());
 		};
 	}
 
