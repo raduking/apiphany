@@ -16,7 +16,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -294,10 +293,10 @@ class ApiClientTest {
 				.exchangeClient(exchangeClient)
 				.build();
 
-		ApiClient api = spy(ApiClient.of(BASE_URL, exchangeClient));
-		ApiClientFluentAdapter adapter = ApiClientFluentAdapter.of(api).exchangeClient(exchangeClient);
-		doReturn(adapter).when(api).client();
-		doReturn(response).when(exchangeClient).exchange(adapter);
+		ArgumentCaptor<ApiRequest<?>> requestCaptor = ArgumentCaptor.forClass(ApiRequest.class);
+
+		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
+		doReturn(response).when(exchangeClient).exchange(requestCaptor.capture());
 		doReturn(HttpMethod.GET).when(exchangeClient).get();
 
 		TestDto result = api.client()
@@ -308,6 +307,9 @@ class ApiClientTest {
 				.orDefault(TestDto.EMPTY);
 
 		assertThat(result, equalTo(expected));
+
+		assertTrue(requestCaptor.getValue() instanceof ApiClientFluentAdapter);
+		ApiClientFluentAdapter adapter = JavaObjects.cast(requestCaptor.getValue());
 
 		assertThat(adapter.getMethod(), equalTo(HttpMethod.GET));
 		assertThat(adapter.getClassResponseType(), equalTo(TestDto.class));
@@ -636,7 +638,7 @@ class ApiClientTest {
 		assertThat(result, notNullValue());
 	}
 
-	@SuppressWarnings({ "unchecked", "resource" })
+	@SuppressWarnings("resource")
 	@Test
 	void shouldMakeGetCallWithTheCorrectUri() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
@@ -647,13 +649,16 @@ class ApiClientTest {
 				.status(HttpStatus.OK)
 				.exchangeClient(exchangeClient)
 				.build();
-		doReturn(response).when(exchangeClient).exchange(any(ApiRequest.class));
 
-		DummyApiClient api = spy(new DummyApiClient(BASE_URL, exchangeClient));
-		ApiClientFluentAdapter adapter = ApiClientFluentAdapter.of(api).exchangeClient(exchangeClient);
-		doReturn(adapter).when(api).client();
+		ArgumentCaptor<ApiRequest<?>> requestCaptor = ArgumentCaptor.forClass(ApiRequest.class);
+		doReturn(response).when(exchangeClient).exchange(requestCaptor.capture());
+
+		DummyApiClient api = new DummyApiClient(BASE_URL, exchangeClient);
 
 		TestDto result = api.getTest(PATH_TEST, PATH_TEST);
+
+		assertTrue(requestCaptor.getValue() instanceof ApiClientFluentAdapter);
+		ApiClientFluentAdapter adapter = JavaObjects.cast(requestCaptor.getValue());
 
 		assertThat(result, equalTo(expected));
 		assertThat(adapter.getUrl(), equalTo(BASE_URL + "/" + PATH_TEST + "/" + PATH_TEST));
