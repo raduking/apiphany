@@ -1,10 +1,10 @@
 package org.apiphany.lang.accumulator;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Supplier;
 
+import org.apiphany.lang.collections.AlwaysEmptyList;
 import org.apiphany.lang.collections.Lists;
 import org.apiphany.lang.retry.Retry;
 import org.morphix.lang.function.Runnables;
@@ -27,13 +27,22 @@ public abstract class Accumulator<T> {
 	/**
 	 * Holds the accumulated information.
 	 */
-	private final List<T> list = new CopyOnWriteArrayList<>();
+	private final List<T> list;
 
 	/**
 	 * Hidden constructor.
 	 */
 	protected Accumulator() {
-		// empty
+		this(new CopyOnWriteArrayList<>());
+	}
+
+	/**
+	 * Hidden constructor.
+	 *
+	 * @param list list to use for accumulation
+	 */
+	private Accumulator(final List<T> list) {
+		this.list = list;
 	}
 
 	/**
@@ -148,6 +157,15 @@ public abstract class Accumulator<T> {
 	}
 
 	/**
+	 * Adds information to the accumulator.
+	 *
+	 * @param information information to add
+	 */
+	public void addInformation(final T information) {
+		getInformationList().add(information);
+	}
+
+	/**
 	 * Returns an empty accumulator. Equivalent to {@link #empty()}
 	 *
 	 * @param <T> accumulator information type
@@ -182,19 +200,18 @@ public abstract class Accumulator<T> {
 		private static final EmptyAccumulator EMPTY_ACCUMULATOR = new EmptyAccumulator();
 
 		/**
+		 * Private constructor.
+		 */
+		private EmptyAccumulator() {
+			super(AlwaysEmptyList.of());
+		}
+
+		/**
 		 * @see Accumulator#accumulate(Supplier, Object)
 		 */
 		@Override
 		public <U> U accumulate(final Supplier<U> supplier, final U defaultReturn) {
 			return supplier.get();
-		}
-
-		/**
-		 * @see Accumulator#getInformationList()
-		 */
-		@Override
-		public List<Object> getInformationList() {
-			return Collections.emptyList();
 		}
 	}
 }

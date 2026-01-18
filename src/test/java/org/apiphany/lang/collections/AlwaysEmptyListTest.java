@@ -45,6 +45,7 @@ class AlwaysEmptyListTest {
 		assertThat(list.addAll(0, List.of("a")), equalTo(false));
 
 		assertThat(list.remove("x"), equalTo(false));
+		assertThat(list.remove(0), equalTo(null));
 		assertThat(list.removeFirst(), equalTo(null));
 		assertThat(list.removeLast(), equalTo(null));
 		assertThat(list.removeAll(List.of("x")), equalTo(false));
