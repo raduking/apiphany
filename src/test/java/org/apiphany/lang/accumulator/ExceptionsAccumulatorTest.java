@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Set;
 
+import org.apiphany.lang.accumulator.ExceptionsAccumulator.ThrowMode;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -32,8 +33,15 @@ class ExceptionsAccumulatorTest {
 	}
 
 	@Test
-	void shouldBuildExceptionsAccumulatorFromNull() {
-		ExceptionsAccumulator ea = ExceptionsAccumulator.of(null);
+	void shouldBuildExceptionsAccumulatorFromNullThrowMode() {
+		ExceptionsAccumulator ea = ExceptionsAccumulator.of((ThrowMode) null);
+
+		assertThat(ea.getExceptionTypes(), empty());
+	}
+
+	@Test
+	void shouldBuildExceptionsAccumulatorFromNullExceptions() {
+		ExceptionsAccumulator ea = ExceptionsAccumulator.of((Set<Class<?>>) null);
 
 		assertThat(ea.getExceptionTypes(), empty());
 	}
@@ -49,20 +57,20 @@ class ExceptionsAccumulatorTest {
 
 	@Test
 	void shouldBuildExceptionsAccumulatorWithAllParams() {
-		ExceptionsAccumulator ea = ExceptionsAccumulator.of(true, false, Set.of(RuntimeException.class));
+		ExceptionsAccumulator ea = ExceptionsAccumulator.of(ThrowMode.THROW_NONE, Set.of(RuntimeException.class));
 
 		assertThat(ea.getExceptionTypes(), hasSize(1));
 		assertThat(ea.getExceptionTypes().getFirst(), equalTo(RuntimeException.class));
-		assertTrue(ea.isWrapException());
+		assertFalse(ea.isWrapException());
 		assertFalse(ea.isThrowException());
 	}
 
 	@Test
-	void shouldBuildExceptionsAccumulatorWithBooleanParams() {
-		ExceptionsAccumulator ea = ExceptionsAccumulator.of(true, false);
+	void shouldBuildExceptionsAccumulatorWithThrowMode() {
+		ExceptionsAccumulator ea = ExceptionsAccumulator.of(ThrowMode.THROW_NONE);
 
 		assertThat(ea.getExceptionTypes(), hasSize(0));
-		assertTrue(ea.isWrapException());
+		assertFalse(ea.isWrapException());
 		assertFalse(ea.isThrowException());
 	}
 
@@ -158,8 +166,23 @@ class ExceptionsAccumulatorTest {
 	}
 
 	@Test
+	void shouldThrowLastExceptionOnRestWhenThrowRawIsConfigured() {
+		ExceptionsAccumulator ea = ExceptionsAccumulator.of(ThrowMode.THROW_RAW);
+		for (int i = 0; i < COUNT; ++i) {
+			int n = i;
+			ea.accumulate((Runnable) () -> {
+				throw new RuntimeException(String.valueOf(n));
+			});
+		}
+		RuntimeException result = assertThrows(RuntimeException.class, ea::rest);
+
+		assertThat(ea.getExceptions(), hasSize(COUNT));
+		assertThat(result.getMessage(), equalTo(String.valueOf(COUNT - 1)));
+	}
+
+	@Test
 	void shouldThrowWrappedLastExceptionOnRest() {
-		ExceptionsAccumulator ea = ExceptionsAccumulator.of(true, false);
+		ExceptionsAccumulator ea = ExceptionsAccumulator.of(ThrowMode.THROW_WRAPPED);
 		for (int i = 0; i < COUNT; ++i) {
 			int n = i;
 			ea.accumulate((Runnable) () -> {
@@ -170,11 +193,26 @@ class ExceptionsAccumulatorTest {
 
 		assertThat(ea.getExceptions(), hasSize(COUNT));
 		assertThat(result.getCause().getMessage(), equalTo(String.valueOf(COUNT - 1)));
+		assertTrue(ea.isWrapException());
 	}
 
 	@Test
 	void shouldNotDoAnythingWhenNoWrappingOrThrowingIsConfiguredOnRest() {
-		ExceptionsAccumulator ea = ExceptionsAccumulator.of(false, false);
+		ExceptionsAccumulator ea = ExceptionsAccumulator.of(ThrowMode.THROW_NONE);
+		for (int i = 0; i < COUNT; ++i) {
+			int n = i;
+			ea.accumulate((Runnable) () -> {
+				throw new RuntimeException(String.valueOf(n));
+			});
+		}
+		ea.rest();
+
+		assertThat(ea.getExceptions(), hasSize(COUNT));
+	}
+
+	@Test
+	void shouldNotDoAnythingWhenNoThrowingIsConfiguredOnRest() {
+		ExceptionsAccumulator ea = ExceptionsAccumulator.of(ThrowMode.THROW_NONE);
 		for (int i = 0; i < COUNT; ++i) {
 			int n = i;
 			ea.accumulate((Runnable) () -> {

@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.hasSize;
 
 import java.util.function.Supplier;
 
+import org.apiphany.lang.accumulator.ExceptionsAccumulator.ThrowMode;
 import org.junit.jupiter.api.Test;
 import org.morphix.lang.function.Runnables;
 
@@ -54,7 +55,7 @@ class CompositeAccumulatorTest {
 	@Test
 	void shouldAccumulateWithEachAccumulatorInCompositeIncludingExceptions() {
 		DurationAccumulator da1 = DurationAccumulator.of();
-		ExceptionsAccumulator ea1 = ExceptionsAccumulator.of(false, false);
+		ExceptionsAccumulator ea1 = ExceptionsAccumulator.of(ThrowMode.THROW_NONE);
 
 		CompositeAccumulator victim = CompositeAccumulator.of(ea1, da1);
 		victim.accumulate(() -> {
