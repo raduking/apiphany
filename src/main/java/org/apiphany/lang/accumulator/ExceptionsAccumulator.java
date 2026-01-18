@@ -17,15 +17,30 @@ import org.morphix.lang.Unchecked;
 public class ExceptionsAccumulator extends Accumulator<Exception> {
 
 	/**
-	 * After all exceptions are accumulated the last exception is thrown in the {@link #rest()} method. This flag tells the
-	 * accumulator if it should wrap the exception in an {@link AccumulatorException}.
+	 * Accumulator modes.
 	 */
-	private final boolean wrapException;
+	public enum ThrowMode {
+
+		/**
+		 * Throws the last caught exception as is when {@link #rest()} is called.
+		 */
+		THROW_RAW,
+
+		/**
+		 * Throws the last caught exception wrapped in an {@link AccumulatorException} when {@link #rest()} is called.
+		 */
+		THROW_WRAPPED,
+
+		/**
+		 * Does not throw any exception when {@link #rest()} is called.
+		 */
+		THROW_NONE
+	}
 
 	/**
-	 * Flag that tells the accumulator to throw the last caught exception when {@link #rest()} method is called.
+	 * Indicates how exceptions are handled when {@link #rest()} is called.
 	 */
-	private final boolean throwException;
+	private final ThrowMode throwMode;
 
 	/**
 	 * Specifies the exception types accumulated. If this list is empty, all exceptions are accumulated; otherwise only the
@@ -43,13 +58,11 @@ public class ExceptionsAccumulator extends Accumulator<Exception> {
 	/**
 	 * Private constructor.
 	 *
-	 * @param wrapException flag for exception wrapping
-	 * @param throwException flag to throw the exception on {@link #rest()}
+	 * @param throwMode throw mode for the accumulator when {@link #rest()} is called
 	 * @param exceptionTypes exception types to accumulate
 	 */
-	private ExceptionsAccumulator(final boolean wrapException, final boolean throwException, final Set<Class<?>> exceptionTypes) {
-		this.wrapException = wrapException;
-		this.throwException = throwException;
+	private ExceptionsAccumulator(final ThrowMode throwMode, final Set<Class<?>> exceptionTypes) {
+		this.throwMode = null == throwMode ? ThrowMode.THROW_RAW : throwMode;
 		if (null != exceptionTypes) {
 			for (Class<?> exceptionType : exceptionTypes) {
 				this.exceptionTypes.add(JavaObjects.cast(exceptionType));
@@ -64,31 +77,29 @@ public class ExceptionsAccumulator extends Accumulator<Exception> {
 	 * @param exceptionTypes exception types to accumulate
 	 */
 	private ExceptionsAccumulator(final Set<Class<?>> exceptionTypes) {
-		this(false, true, exceptionTypes);
+		this(ThrowMode.THROW_RAW, exceptionTypes);
 	}
 
 	/**
 	 * Returns a new exceptions accumulator. If no exception type is specified, then all exceptions are accumulated,
 	 * otherwise only the types given are accumulated.
 	 *
-	 * @param wrapException flag for exception wrapping
-	 * @param throwException flag to throw the exception on {@link #rest()}
+	 * @param throwMode throw mode for the accumulator when {@link #rest()} is called
 	 * @param exceptionTypes exception types to accumulate
 	 * @return a new exceptions accumulator
 	 */
-	public static ExceptionsAccumulator of(final boolean wrapException, final boolean throwException, final Set<Class<?>> exceptionTypes) {
-		return new ExceptionsAccumulator(wrapException, throwException, exceptionTypes);
+	public static ExceptionsAccumulator of(final ThrowMode throwMode, final Set<Class<?>> exceptionTypes) {
+		return new ExceptionsAccumulator(throwMode, exceptionTypes);
 	}
 
 	/**
 	 * Returns a new exceptions accumulator.
 	 *
-	 * @param wrapException flag for exception wrapping
-	 * @param throwException flag to throw the exception on {@link #rest()}
+	 * @param throwMode throw mode for the accumulator when {@link #rest()} is called
 	 * @return a new exceptions accumulator
 	 */
-	public static ExceptionsAccumulator of(final boolean wrapException, final boolean throwException) {
-		return new ExceptionsAccumulator(wrapException, throwException, Collections.emptySet());
+	public static ExceptionsAccumulator of(final ThrowMode throwMode) {
+		return new ExceptionsAccumulator(throwMode, Collections.emptySet());
 	}
 
 	/**
@@ -160,16 +171,17 @@ public class ExceptionsAccumulator extends Accumulator<Exception> {
 	 */
 	@Override
 	public void rest() {
-		Exception lastException = lastInformation();
-		if (null != lastException) {
-			if (wrapException) {
-				// the cause is by default considered the last exception accumulated
-				throw new AccumulatorException(lastException, this);
-			}
-			if (throwException) {
-				Unchecked.reThrow(lastException);
-			}
+		if (ThrowMode.THROW_NONE == throwMode) {
+			return;
 		}
+		Exception lastException = lastException();
+		if (null == lastException) {
+			return;
+		}
+		if (ThrowMode.THROW_RAW == throwMode) {
+			Unchecked.reThrow(lastException);
+		}
+		throw new AccumulatorException(lastException, this);
 	}
 
 	/**
@@ -200,7 +212,7 @@ public class ExceptionsAccumulator extends Accumulator<Exception> {
 	 * @return the wrap exception flag
 	 */
 	public boolean isWrapException() {
-		return wrapException;
+		return ThrowMode.THROW_WRAPPED == throwMode;
 	}
 
 	/**
@@ -209,6 +221,6 @@ public class ExceptionsAccumulator extends Accumulator<Exception> {
 	 * @return the throw exception flag
 	 */
 	public boolean isThrowException() {
-		return throwException;
+		return ThrowMode.THROW_NONE != throwMode;
 	}
 }

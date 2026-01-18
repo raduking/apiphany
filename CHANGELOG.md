@@ -6,6 +6,8 @@
 - Changed `Lists.merge` to always return a new list even if any of the inputs is empty.
 - Fixed `Lists.merge` to have O(n) complexity for single linked lists also.
 - Added `Accumulator.addInformation` to easily add information to an accumulator.
+- Added `ExcheptionsAccumulator.ThrowMode` to configure the throwing mode of the accumulator when calling `rest` method instead of `boolean` flags.
+- Changed `ExceptionsAccumulator` to use the `ExcheptionsAccumulator.ThrowMode` to configure the throwing mode.
 
 ---
 
