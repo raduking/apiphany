@@ -18,6 +18,8 @@ public class ExceptionsAccumulator extends Accumulator<Exception> {
 
 	/**
 	 * Accumulator modes.
+	 *
+	 * @author Radu Sebastian LAZIN
 	 */
 	public enum ThrowMode {
 
