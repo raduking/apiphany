@@ -4,6 +4,8 @@
 
 - Added missing `removeLast` to `AlwaysEmptyList`.
 - Changed `Lists.merge` to always return a new list even if any of the inputs is empty.
+- Fixed `Lists.merge` to have O(n) complexity for single linked lists also.
+- Added `Accumulator.addInformation` to easily add information to an accumulator.
 
 ---
 

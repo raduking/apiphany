@@ -68,7 +68,7 @@ public class DurationAccumulator extends Accumulator<Duration> {
 		} catch (Exception e) {
 			Unchecked.reThrow(e);
 		} finally {
-			getInformationList().add(Duration.between(start, Instant.now()));
+			addInformation(Duration.between(start, Instant.now()));
 		}
 		return result;
 	}

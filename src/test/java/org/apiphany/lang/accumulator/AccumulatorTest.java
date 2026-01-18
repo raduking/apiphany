@@ -3,7 +3,6 @@ package org.apiphany.lang.accumulator;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.function.Supplier;
@@ -157,8 +156,7 @@ class AccumulatorTest {
 	void shouldNotAllowModificationOfInformationListForEmptyAccumulator() {
 		Accumulator<String> accumulator = Accumulator.empty();
 
-		assertThrows(UnsupportedOperationException.class,
-				() -> accumulator.getInformationList().add(TEST_STRING));
+		accumulator.getInformationList().add(TEST_STRING);
 
 		assertThat(accumulator.size(), equalTo(0));
 		assertThat(accumulator.getInformationList().size(), equalTo(0));

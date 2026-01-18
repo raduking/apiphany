@@ -150,7 +150,7 @@ public class ExceptionsAccumulator extends Accumulator<Exception> {
 		try {
 			return supplier.get();
 		} catch (Exception e) {
-			addExceptions(e);
+			addException(e);
 			return defaultReturn;
 		}
 	}
@@ -187,7 +187,7 @@ public class ExceptionsAccumulator extends Accumulator<Exception> {
 	 *
 	 * @param e exception to add
 	 */
-	private void addExceptions(final Exception e) {
+	private void addException(final Exception e) {
 		if (!exceptionTypes.isEmpty() && !exceptionTypes.contains(e.getClass())) {
 			Unchecked.reThrow(e);
 		}
