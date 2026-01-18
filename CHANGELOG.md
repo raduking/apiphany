@@ -2,6 +2,9 @@
 
 `1.0.25`
 
+- Added missing `removeLast` to `AlwaysEmptyList`.
+- Changed `Lists.merge` to always return a new list even if any of the inputs is empty.
+
 ---
 
 `1.0.24`

@@ -1,10 +1,11 @@
 package org.apiphany.lang.collections;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.hamcrest.Matchers.sameInstance;
 
 import java.util.Collections;
 import java.util.List;
@@ -156,7 +157,29 @@ class ListsTest {
 	}
 
 	@Test
-	void shouldSkipNullOrEmptyListAndReturnTheOtherOnMerge() {
+	void shouldMerge2SortedListsWhenElementsAreNotInterleaved() {
+		List<Integer> l1 = IntStream.rangeClosed(1, 20)
+				.boxed()
+				.toList();
+		List<Integer> l2 = IntStream.rangeClosed(21, 40)
+				.boxed()
+				.toList();
+
+		List<Integer> expected = IntStream.rangeClosed(1, 40)
+				.boxed()
+				.toList();
+
+		List<Integer> result = Lists.merge(l1, l2);
+
+		assertThat(result, equalTo(expected));
+
+		result = Lists.merge(l2, l1);
+
+		assertThat(result, equalTo(expected));
+	}
+
+	@Test
+	void shouldSkipNullOrEmptyListAndReturnACopyOfTheOtherOnMerge() {
 		List<Integer> l1 = IntStream.rangeClosed(1, 21)
 				.filter(n -> n % 2 != 0)
 				.boxed()
@@ -164,11 +187,13 @@ class ListsTest {
 
 		List<Integer> result = Lists.merge(l1, null);
 		assertThat(result, equalTo(l1));
+		assertThat(result, not(sameInstance(l1)));
 
 		result = Lists.merge(null, l1);
 		assertThat(result, equalTo(l1));
+		assertThat(result, not(sameInstance(l1)));
 
 		result = Lists.merge(null, null);
-		assertNull(result);
+		assertThat(result, hasSize(0));
 	}
 }
