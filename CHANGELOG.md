@@ -8,6 +8,8 @@
 - Added `Accumulator.addInformation` to easily add information to an accumulator.
 - Added `ExcheptionsAccumulator.ThrowMode` to configure the throwing mode of the accumulator when calling `rest` method instead of `boolean` flags.
 - Changed `ExceptionsAccumulator` to use the `ExcheptionsAccumulator.ThrowMode` to configure the throwing mode.
+- Changed `Accumulator.EmptyAccumulator` to use `AlwaysEmptyList` instead of `Collections.emptyList`.
+- Extracted `LoggingFunction` functional interface from `ExchangeLogger` class to `lang.function` package.
 
 ---
 

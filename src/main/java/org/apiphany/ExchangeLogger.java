@@ -4,6 +4,7 @@ import java.time.Duration;
 
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.Temporals;
+import org.apiphany.lang.function.LoggingFunction;
 import org.morphix.lang.Nullables;
 import org.morphix.reflection.Constructors;
 
@@ -88,7 +89,7 @@ public class ExchangeLogger {
 			final ApiRequest<T> apiRequest,
 			final ApiResponse<T> apiResponse,
 			final Duration duration) {
-		loggingFunction.level(LOG_MESSAGE_SUCCESS,
+		loggingFunction.log(LOG_MESSAGE_SUCCESS,
 				clientClass,
 				apiRequest.getMethod(),
 				apiRequest.getUrl(),
@@ -119,7 +120,7 @@ public class ExchangeLogger {
 			final ApiResponse<T> apiResponse,
 			final Duration duration) {
 		Exception exception = apiResponse.getException();
-		loggingFunction.level(LOG_MESSAGE_ERROR,
+		loggingFunction.log(LOG_MESSAGE_ERROR,
 				clientClass,
 				apiRequest.getMethod(),
 				apiRequest.getUrl(),
@@ -129,7 +130,7 @@ public class ExchangeLogger {
 				Nullables.apply(apiResponse, ApiResponse::getStatus),
 				exception,
 				Temporals.toSeconds(duration.toMillis()));
-		loggingFunction.level("{}", apiResponse.getErrorMessage(), exception);
+		loggingFunction.log("{}", apiResponse.getErrorMessage(), exception);
 	}
 
 	/**
@@ -137,22 +138,5 @@ public class ExchangeLogger {
 	 */
 	private ExchangeLogger() {
 		throw Constructors.unsupportedOperationException();
-	}
-
-	/**
-	 * Functional interface for logging messages with a specific format and arguments.
-	 *
-	 * @author Radu Sebastian LAZIN
-	 */
-	@FunctionalInterface
-	public interface LoggingFunction {
-
-		/**
-		 * Logs a message with the specified format and arguments.
-		 *
-		 * @param format the log message format.
-		 * @param arguments the arguments to include in the log message.
-		 */
-		void level(String format, Object... arguments);
 	}
 }
