@@ -56,21 +56,19 @@ public class DurationAccumulator extends Accumulator<Duration> {
 	 * @param <U> the type of the result
 	 *
 	 * @param supplier the operation to measure
-	 * @param defaultReturn the default value to return if the operation fails
-	 * @return the result of the operation or the default value if an exception occurs
+	 * @param defaultReturn the default value to return if the operation fails (ignored in this implementation)
+	 * @return the result of the operation or throws if an exception occurs
 	 */
 	@Override
 	public <U> U accumulate(final Supplier<U> supplier, final U defaultReturn) {
 		Instant start = Instant.now();
-		U result = defaultReturn;
 		try {
-			result = supplier.get();
+			return supplier.get();
 		} catch (Exception e) {
-			Unchecked.reThrow(e);
+			return Unchecked.reThrow(e);
 		} finally {
 			addInformation(Duration.between(start, Instant.now()));
 		}
-		return result;
 	}
 
 	/**
