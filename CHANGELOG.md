@@ -21,7 +21,8 @@
 - Added support for XML via `jackson-dataformat-xml` only available if library is provided.
 - Changed `Strings.fromFile` to be more deterministic, everything that starts with `/` is absolute, everything else relative.
 - Upgraded formatter version to `4.38`.
-- Added `code-format` as the source for Java formatter file `java-code-style.xml`.
+- Upgraded `spotless-maven-plugin` to `3.1.0`.
+- Added `code-format` version `1.0.0` as the source for Java formatter file `java-code-style.xml`.
 - Renamed `Parameter` to `RequestParameter`.
 - Added `Parameter` interface which can be used in pace of `ParameterFunction` (`ParameterFunction.parameter` -> `Parameter.of`).
 
