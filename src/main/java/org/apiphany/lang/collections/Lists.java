@@ -2,6 +2,7 @@ package org.apiphany.lang.collections;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -44,7 +45,13 @@ public interface Lists {
 	 * var list = List.of(null);
 	 * </pre>
 	 *
-	 * will throw an exception.
+	 * will throw an exception whereas calling:
+	 *
+	 * <pre>
+	 * var list = Lists.asList(null);
+	 * </pre>
+	 *
+	 * will return an empty immutable list.
 	 *
 	 * @param <T> element type
 	 *
@@ -67,7 +74,7 @@ public interface Lists {
 	 * @return The first element from the given list, if the list is not null or empty, or null otherwise.
 	 */
 	static <T> T first(final List<T> list) {
-		return isNotEmpty(list) ? list.getFirst() : null;
+		return first(list, null);
 	}
 
 	/**
@@ -83,8 +90,7 @@ public interface Lists {
 	 * @return The first element from the given list, if the list is not null or empty, defaultValue otherwise.
 	 */
 	static <T> T first(final List<T> list, final T defaultValue) {
-		T first = first(list);
-		return null != first ? first : defaultValue;
+		return isNotEmpty(list) ? list.getFirst() : defaultValue;
 	}
 
 	/**
@@ -130,7 +136,15 @@ public interface Lists {
 	}
 
 	/**
-	 * Merges two sorted lists. The result list is also sorted. The algorithm has O(n + m) complexity.
+	 * Merges two sorted lists returning a new mutable sorted list.
+	 * <ul>
+	 * <li>Both input lists must be sorted in ascending order.</li>
+	 * <li>The returned list will be sorted in ascending order.</li>
+	 * <li>The returned list is a new list.</li>
+	 * <li>If one of the lists is empty, a copy of the other list is returned.</li>
+	 * <li>if both are empty, an empty list is returned.</li>
+	 * </ul>
+	 * The algorithm has O(n + m) complexity (assuming that advancing in the iterators is O(1))
 	 *
 	 * @param <T> element type
 	 *
@@ -140,32 +154,40 @@ public interface Lists {
 	 */
 	static <T extends Comparable<? super T>> List<T> merge(final List<T> sortedList1, final List<T> sortedList2) {
 		if (isEmpty(sortedList1)) {
-			return sortedList2;
+			return new ArrayList<>(safe(sortedList2));
 		}
 		if (isEmpty(sortedList2)) {
-			return sortedList1;
+			return new ArrayList<>(safe(sortedList1));
 		}
 		int resultSize = sortedList1.size() + sortedList2.size();
 		var result = new ArrayList<T>(resultSize);
 
-		int list1Index = 0;
-		int list2Index = 0;
-		var list1Iterator = sortedList1.iterator();
-		var list2Iterator = sortedList2.iterator();
+		Iterator<T> list1Iterator = sortedList1.iterator();
+		Iterator<T> list2Iterator = sortedList2.iterator();
 
-		for (int i = 0; i < resultSize; ++i) {
-			boolean advanceSecond = true;
-			if (list1Index == sortedList1.size()) {
-				// advance second
-			} else if (list2Index == sortedList2.size() || sortedList1.get(list1Index).compareTo(sortedList2.get(list2Index)) < 0) {
-				result.add(list1Iterator.next());
-				list1Index++;
-				advanceSecond = false;
+		T item1 = list1Iterator.next();
+		T item2 = list2Iterator.next();
+
+		while (list1Iterator.hasNext() && list2Iterator.hasNext()) {
+			if (item1.compareTo(item2) < 0) {
+				result.add(item1);
+				item1 = list1Iterator.next();
+			} else {
+				result.add(item2);
+				item2 = list2Iterator.next();
 			}
-			if (advanceSecond) {
-				result.add(list2Iterator.next());
-				list2Index++;
-			}
+		}
+		if (item1.compareTo(item2) < 0) {
+			result.add(item1);
+			result.add(item2);
+		} else {
+			result.add(item2);
+			result.add(item1);
+		}
+		if (list1Iterator.hasNext()) {
+			list1Iterator.forEachRemaining(result::add);
+		} else {
+			list2Iterator.forEachRemaining(result::add);
 		}
 		return result;
 	}

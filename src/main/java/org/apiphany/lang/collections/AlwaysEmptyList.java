@@ -117,6 +117,14 @@ public final class AlwaysEmptyList<E> implements List<E> {
 	}
 
 	/**
+	 * @see List#removeLast()
+	 */
+	@Override
+	public E removeLast() {
+		return null;
+	}
+
+	/**
 	 * @see List#containsAll(Collection)
 	 */
 	@Override
