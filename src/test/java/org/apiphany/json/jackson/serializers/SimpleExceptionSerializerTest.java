@@ -16,7 +16,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
  */
 class SimpleExceptionSerializerTest {
 
-	private SimpleExceptionSerializer victim = new SimpleExceptionSerializer();
+	private final SimpleExceptionSerializer victim = new SimpleExceptionSerializer();
 
 	@SuppressWarnings("resource")
 	@Test

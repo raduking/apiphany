@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Security provider that logs TLS key material generation.
  * <p>
- * Needs open access to {@link javax.crypto.JceSecurity} and may require
+ * Needs open access to {@code javax.crypto.JceSecurity} and may require
  *
  * <pre>
  * --add-opens java.base/javax.crypto=ALL-UNNAMED
@@ -106,8 +106,8 @@ public final class TLSLoggingProvider extends Provider {
 		}
 
 		@Override
-		protected void engineInit(final int keysize, final SecureRandom random) {
-			delegate.init(keysize, random);
+		protected void engineInit(final int keySize, final SecureRandom random) {
+			delegate.init(keySize, random);
 		}
 
 		@Override

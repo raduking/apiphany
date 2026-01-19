@@ -67,7 +67,7 @@ public class LegacyHttpsServer implements AutoCloseable {
 
 	private final String originalDisabledAlgorithms;
 
-	public LegacyHttpsServer(final int port, final SSLProperties sslProperties, SecureRandom secureRandom) {
+	public LegacyHttpsServer(final int port, final SSLProperties sslProperties, final SecureRandom secureRandom) {
 		this.executor = Executors.newVirtualThreadPerTaskExecutor();
 
 		// remove RC4 from disabled algorithms
@@ -129,7 +129,7 @@ public class LegacyHttpsServer implements AutoCloseable {
 			HttpsServer httpsServer = HttpsServer.create(new InetSocketAddress(port), 0);
 			httpsServer.setHttpsConfigurator(new HttpsConfigurator(sslContext) {
 				@Override
-				public void configure(HttpsParameters params) {
+				public void configure(final HttpsParameters params) {
 					SSLParameters sslParameters = new SSLParameters(LEGACY_CIPHER_SUITES, SSL_PROTOCOLS);
 					params.setSSLParameters(sslParameters);
 					LOGGER.debug("HTTPS parameters: {}", JsonBuilder.toJson(params));

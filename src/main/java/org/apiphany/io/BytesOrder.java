@@ -19,6 +19,6 @@ public enum BytesOrder {
 	 * Constant denoting little-endian byte order. In this order, the bytes of a multibyte value are ordered from least
 	 * significant to most significant.
 	 */
-	BIG_ENDIAN;
+	BIG_ENDIAN
 
 }

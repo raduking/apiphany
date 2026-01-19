@@ -440,9 +440,7 @@ public class MinimalTLSClient implements AutoCloseable {
 
 				yield new Encrypted(encrypted);
 			}
-			case NO_ENCRYPTION -> {
-				yield new Encrypted(plaintext);
-			}
+			case NO_ENCRYPTION -> new Encrypted(plaintext);
 		};
 	}
 
@@ -527,9 +525,7 @@ public class MinimalTLSClient implements AutoCloseable {
 				}
 				yield decrypted;
 			}
-			case NO_ENCRYPTION -> {
-				yield encrypted.getEncryptedData(bulkCipher).toByteArray();
-			}
+			case NO_ENCRYPTION -> encrypted.getEncryptedData(bulkCipher).toByteArray();
 		};
 	}
 

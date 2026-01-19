@@ -39,7 +39,7 @@ class SSLProtocolTest {
 
 	@ParameterizedTest
 	@MethodSource("provideHandshakeArguments")
-	void shouldReturnCorrectHandshakeVersion(SSLProtocol sslProtocol, Short version) {
+	void shouldReturnCorrectHandshakeVersion(final SSLProtocol sslProtocol, final Short version) {
 		boolean validVersion = sslProtocol.handshakeVersion() == version;
 		assertTrue(validVersion);
 	}

@@ -28,7 +28,7 @@ class ApiResponseTest {
 	private static final String PREFIX = "big";
 
 	@Test
-	void shouldReturnDefaultOnOrDefaultWithObjectWhenNotSuccessfull() {
+	void shouldReturnDefaultOnOrDefaultWithObjectWhenNotSuccessful() {
 		ApiResponse<A> response = ApiResponse.create((A) null)
 				.status(HttpStatus.NOT_FOUND)
 				.build();
@@ -40,7 +40,7 @@ class ApiResponseTest {
 	}
 
 	@Test
-	void shouldReturnBodyOnOrDefaultWithObjectWhenSuccessfull() {
+	void shouldReturnBodyOnOrDefaultWithObjectWhenSuccessful() {
 		A a1 = new A();
 		ApiResponse<A> response = ApiResponse.create(a1)
 				.status(HttpStatus.OK)
@@ -53,7 +53,7 @@ class ApiResponseTest {
 	}
 
 	@Test
-	void shouldReturnDefaultOnOrDefaultWithClassWhenNotSuccessfull() {
+	void shouldReturnDefaultOnOrDefaultWithClassWhenNotSuccessful() {
 		ApiResponse<A> response = ApiResponse.create((A) null)
 				.status(HttpStatus.NOT_FOUND)
 				.build();
@@ -65,7 +65,7 @@ class ApiResponseTest {
 	}
 
 	@Test
-	void shouldReturnDefaultOnOrNullWhenNotSuccessfull() {
+	void shouldReturnDefaultOnOrNullWhenNotSuccessful() {
 		ApiResponse<A> response = ApiResponse.create((A) null)
 				.status(HttpStatus.NOT_FOUND)
 				.build();
@@ -76,7 +76,7 @@ class ApiResponseTest {
 	}
 
 	@Test
-	void shouldReturnBodyOnOrNullWithObjectWhenSuccessfull() {
+	void shouldReturnBodyOnOrNullWithObjectWhenSuccessful() {
 		A a = new A();
 		ApiResponse<A> response = ApiResponse.create(a)
 				.status(HttpStatus.OK)
@@ -132,7 +132,7 @@ class ApiResponseTest {
 	}
 
 	@Test
-	void shouldReturnListOnAsListFromArrayWhenSuccessfull() {
+	void shouldReturnListOnAsListFromArrayWhenSuccessful() {
 		A a1 = new A(MUMU);
 		A a2 = new A(BUBU);
 		ApiResponse<A[]> response = ApiResponse.create(new A[] { a1, a2 })
@@ -145,7 +145,7 @@ class ApiResponseTest {
 	}
 
 	@Test
-	void shouldReturnEmptyListOnAsListFromArrayWhenNotSuccessfull() {
+	void shouldReturnEmptyListOnAsListFromArrayWhenNotSuccessful() {
 		ApiResponse<A[]> response = ApiResponse.create((A[]) null)
 				.status(HttpStatus.NOT_FOUND)
 				.build();

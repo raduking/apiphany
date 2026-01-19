@@ -106,7 +106,7 @@ public class SimpleHttpServer implements AutoCloseable {
 			}
 		}
 
-		private static void handleGet(HttpExchange exchange) throws IOException {
+		private static void handleGet(final HttpExchange exchange) throws IOException {
 			sendResponse(exchange, HttpStatus.OK, SimpleHttpServer.NAME);
 		}
 
