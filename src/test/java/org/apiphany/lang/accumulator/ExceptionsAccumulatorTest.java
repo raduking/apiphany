@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Set;
 
-import org.apiphany.lang.accumulator.ExceptionsAccumulator.ThrowMode;
+import org.apiphany.lang.accumulator.ExceptionsAccumulator.Throw;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -34,7 +34,7 @@ class ExceptionsAccumulatorTest {
 
 	@Test
 	void shouldBuildExceptionsAccumulatorFromNullThrowMode() {
-		ExceptionsAccumulator ea = ExceptionsAccumulator.of((ThrowMode) null);
+		ExceptionsAccumulator ea = ExceptionsAccumulator.of((Throw) null);
 
 		assertThat(ea.getExceptionTypes(), empty());
 	}
@@ -57,7 +57,7 @@ class ExceptionsAccumulatorTest {
 
 	@Test
 	void shouldBuildExceptionsAccumulatorWithAllParams() {
-		ExceptionsAccumulator ea = ExceptionsAccumulator.of(ThrowMode.THROW_NONE, Set.of(RuntimeException.class));
+		ExceptionsAccumulator ea = ExceptionsAccumulator.of(Throw.NONE, Set.of(RuntimeException.class));
 
 		assertThat(ea.getExceptionTypes(), hasSize(1));
 		assertThat(ea.getExceptionTypes().getFirst(), equalTo(RuntimeException.class));
@@ -67,7 +67,7 @@ class ExceptionsAccumulatorTest {
 
 	@Test
 	void shouldBuildExceptionsAccumulatorWithThrowMode() {
-		ExceptionsAccumulator ea = ExceptionsAccumulator.of(ThrowMode.THROW_NONE);
+		ExceptionsAccumulator ea = ExceptionsAccumulator.of(Throw.NONE);
 
 		assertThat(ea.getExceptionTypes(), hasSize(0));
 		assertFalse(ea.isWrapException());
@@ -167,7 +167,7 @@ class ExceptionsAccumulatorTest {
 
 	@Test
 	void shouldThrowLastExceptionOnRestWhenThrowRawIsConfigured() {
-		ExceptionsAccumulator ea = ExceptionsAccumulator.of(ThrowMode.THROW_RAW);
+		ExceptionsAccumulator ea = ExceptionsAccumulator.of(Throw.RAW);
 		for (int i = 0; i < COUNT; ++i) {
 			int n = i;
 			ea.accumulate((Runnable) () -> {
@@ -182,7 +182,7 @@ class ExceptionsAccumulatorTest {
 
 	@Test
 	void shouldThrowWrappedLastExceptionOnRest() {
-		ExceptionsAccumulator ea = ExceptionsAccumulator.of(ThrowMode.THROW_WRAPPED);
+		ExceptionsAccumulator ea = ExceptionsAccumulator.of(Throw.WRAPPED);
 		for (int i = 0; i < COUNT; ++i) {
 			int n = i;
 			ea.accumulate((Runnable) () -> {
@@ -198,7 +198,7 @@ class ExceptionsAccumulatorTest {
 
 	@Test
 	void shouldNotDoAnythingWhenNoWrappingOrThrowingIsConfiguredOnRest() {
-		ExceptionsAccumulator ea = ExceptionsAccumulator.of(ThrowMode.THROW_NONE);
+		ExceptionsAccumulator ea = ExceptionsAccumulator.of(Throw.NONE);
 		for (int i = 0; i < COUNT; ++i) {
 			int n = i;
 			ea.accumulate((Runnable) () -> {
@@ -212,7 +212,7 @@ class ExceptionsAccumulatorTest {
 
 	@Test
 	void shouldNotDoAnythingWhenNoThrowingIsConfiguredOnRest() {
-		ExceptionsAccumulator ea = ExceptionsAccumulator.of(ThrowMode.THROW_NONE);
+		ExceptionsAccumulator ea = ExceptionsAccumulator.of(Throw.NONE);
 		for (int i = 0; i < COUNT; ++i) {
 			int n = i;
 			ea.accumulate((Runnable) () -> {

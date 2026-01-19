@@ -110,8 +110,8 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 	/**
 	 * Creates an OAuth2 token provider registry based on the given OAuth2 registry. When building the token providers, the
 	 * given token client supplier is used and when building the provider name the token provider name converter is used.
-	 * This method allows filtering which providers to create based on their converted name. When a provider name is filtered
-	 * out, no token provider is created for the corresponding client registration.
+	 * This method allows filtering which providers to create based on their converted name. When a provider name is
+	 * filtered out, no token provider is created for the corresponding client registration.
 	 * <p>
 	 * Note: The filter is applied on the converted provider name.
 	 *

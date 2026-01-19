@@ -21,28 +21,28 @@ public class ExceptionsAccumulator extends Accumulator<Exception> {
 	 *
 	 * @author Radu Sebastian LAZIN
 	 */
-	public enum ThrowMode {
+	public enum Throw {
 
 		/**
 		 * Throws the last caught exception as is when {@link #rest()} is called.
 		 */
-		THROW_RAW,
+		RAW,
 
 		/**
 		 * Throws the last caught exception wrapped in an {@link AccumulatorException} when {@link #rest()} is called.
 		 */
-		THROW_WRAPPED,
+		WRAPPED,
 
 		/**
 		 * Does not throw any exception when {@link #rest()} is called.
 		 */
-		THROW_NONE
+		NONE
 	}
 
 	/**
 	 * Indicates how exceptions are handled when {@link #rest()} is called.
 	 */
-	private final ThrowMode throwMode;
+	private final Throw throwMode;
 
 	/**
 	 * Specifies the exception types accumulated. If this list is empty, all exceptions are accumulated; otherwise only the
@@ -63,8 +63,8 @@ public class ExceptionsAccumulator extends Accumulator<Exception> {
 	 * @param throwMode throw mode for the accumulator when {@link #rest()} is called
 	 * @param exceptionTypes exception types to accumulate
 	 */
-	private ExceptionsAccumulator(final ThrowMode throwMode, final Set<Class<?>> exceptionTypes) {
-		this.throwMode = null == throwMode ? ThrowMode.THROW_RAW : throwMode;
+	private ExceptionsAccumulator(final Throw throwMode, final Set<Class<?>> exceptionTypes) {
+		this.throwMode = null == throwMode ? Throw.RAW : throwMode;
 		if (null != exceptionTypes) {
 			for (Class<?> exceptionType : exceptionTypes) {
 				this.exceptionTypes.add(JavaObjects.cast(exceptionType));
@@ -79,7 +79,7 @@ public class ExceptionsAccumulator extends Accumulator<Exception> {
 	 * @param exceptionTypes exception types to accumulate
 	 */
 	private ExceptionsAccumulator(final Set<Class<?>> exceptionTypes) {
-		this(ThrowMode.THROW_RAW, exceptionTypes);
+		this(Throw.RAW, exceptionTypes);
 	}
 
 	/**
@@ -90,7 +90,7 @@ public class ExceptionsAccumulator extends Accumulator<Exception> {
 	 * @param exceptionTypes exception types to accumulate
 	 * @return a new exceptions accumulator
 	 */
-	public static ExceptionsAccumulator of(final ThrowMode throwMode, final Set<Class<?>> exceptionTypes) {
+	public static ExceptionsAccumulator of(final Throw throwMode, final Set<Class<?>> exceptionTypes) {
 		return new ExceptionsAccumulator(throwMode, exceptionTypes);
 	}
 
@@ -100,7 +100,7 @@ public class ExceptionsAccumulator extends Accumulator<Exception> {
 	 * @param throwMode throw mode for the accumulator when {@link #rest()} is called
 	 * @return a new exceptions accumulator
 	 */
-	public static ExceptionsAccumulator of(final ThrowMode throwMode) {
+	public static ExceptionsAccumulator of(final Throw throwMode) {
 		return new ExceptionsAccumulator(throwMode, Collections.emptySet());
 	}
 
@@ -173,14 +173,14 @@ public class ExceptionsAccumulator extends Accumulator<Exception> {
 	 */
 	@Override
 	public void rest() {
-		if (ThrowMode.THROW_NONE == throwMode) {
+		if (Throw.NONE == throwMode) {
 			return;
 		}
 		Exception lastException = lastException();
 		if (null == lastException) {
 			return;
 		}
-		if (ThrowMode.THROW_RAW == throwMode) {
+		if (Throw.RAW == throwMode) {
 			Unchecked.reThrow(lastException);
 		}
 		throw new AccumulatorException(lastException, this);
@@ -214,7 +214,7 @@ public class ExceptionsAccumulator extends Accumulator<Exception> {
 	 * @return the wrap exception flag
 	 */
 	public boolean isWrapException() {
-		return ThrowMode.THROW_WRAPPED == throwMode;
+		return Throw.WRAPPED == throwMode;
 	}
 
 	/**
@@ -223,6 +223,6 @@ public class ExceptionsAccumulator extends Accumulator<Exception> {
 	 * @return the throw exception flag
 	 */
 	public boolean isThrowException() {
-		return ThrowMode.THROW_NONE != throwMode;
+		return Throw.NONE != throwMode;
 	}
 }
