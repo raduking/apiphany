@@ -6,6 +6,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
 import org.apiphany.lang.ScopedResource;
@@ -81,6 +82,10 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 	/**
 	 * Creates an OAuth2 token provider registry based on the given OAuth2 registry. When building the token providers, the
 	 * given token client supplier is used and when building the provider name the token provider name converter is used.
+	 * <p>
+	 * If you want to filter which providers to include, use the other
+	 * {@code #of(OAuth2Registry, OAuth2TokenClientSupplier, UnaryOperator, Predicate, BiConsumer)} method that accepts a
+	 * provider name filter.
 	 *
 	 * @param oAuth2Registry the OAuth2 registry must not be null
 	 * @param tokenClientSupplier supplies a token provider client based on the client registration and provider details
@@ -101,6 +106,42 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 			createdProviderCustomizer.accept(providerName, provider);
 		}
 		return registry;
+	}
+
+	/**
+	 * Creates an OAuth2 token provider registry based on the given OAuth2 registry. When building the token providers, the
+	 * given token client supplier is used and when building the provider name the token provider name converter is used.
+	 * <p>
+	 * Note: The filter is applied on the converted provider name.
+	 *
+	 * @param oAuth2Registry the OAuth2 registry must not be null
+	 * @param tokenClientSupplier supplies a token provider client based on the client registration and provider details
+	 * @param providerNameConverter a function that maps the client registration name to the token provider name
+	 * @param providerNameFilter a predicate to filter which providers to include by their converted name
+	 * @param createdProviderCustomizer a consumer that is called when a new provider is created
+	 * @return an OAuth2 token provider registry based on the given OAuth2 registry
+	 */
+	@SuppressWarnings("resource")
+	public static OAuth2TokenProviderRegistry of(
+			final OAuth2Registry oAuth2Registry,
+			final OAuth2TokenClientSupplier tokenClientSupplier,
+			final UnaryOperator<String> providerNameConverter,
+			final Predicate<String> providerNameFilter,
+			final BiConsumer<String, OAuth2TokenProvider> createdProviderCustomizer) {
+		OAuth2TokenProviderRegistry providerRegistry = of(oAuth2Registry);
+		for (OAuth2ResolvedRegistration registration : oAuth2Registry.entries()) {
+			String clientRegistrationName = registration.getClientRegistrationName();
+			String providerName = providerNameConverter.apply(clientRegistrationName);
+			if (providerNameFilter.test(providerName)) {
+				OAuth2TokenProvider provider = oAuth2Registry.tokenProvider(clientRegistrationName, tokenClientSupplier);
+				providerRegistry.add(providerName, ScopedResource.managed(provider));
+				createdProviderCustomizer.accept(providerName, provider);
+			} else {
+				LOGGER.info("Skipping OAuth2 token provider creation for client registration: '{}' "
+						+ "as the provider name: '{}' was filtered out.", clientRegistrationName, providerName);
+			}
+		}
+		return providerRegistry;
 	}
 
 	/**

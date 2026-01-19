@@ -7,10 +7,12 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.time.Instant;
@@ -297,6 +299,82 @@ class OAuth2TokenProviderRegistryTest {
 		assertThat(registry.getProviderNames().getFirst(), equalTo(expectedName));
 
 		verify(mockRegistry).tokenProviders(tokenClientSupplier);
+		verify(customizer).accept(expectedName, tokenProvider);
+	}
+
+	@SuppressWarnings({ "resource", "unchecked" })
+	@Test
+	void shouldCreateRegistryFromTokenSupplierFactoriesWithCustomizerAndNoFilter() throws Exception {
+		OAuth2Registry mockRegistry = mock(OAuth2Registry.class);
+		OAuth2ResolvedRegistration registration = mock(OAuth2ResolvedRegistration.class);
+		doReturn(List.of(registration)).when(mockRegistry).entries();
+		doReturn(CLIENT_REGISTRATION_NAME).when(registration).getClientRegistrationName();
+
+		OAuth2TokenProvider tokenProvider = mock(OAuth2TokenProvider.class);
+
+		OAuth2TokenClientSupplier tokenClientSupplier = (r, d) -> mock(AuthenticationTokenProvider.class);
+		doReturn(tokenProvider).when(mockRegistry).tokenProvider(eq(CLIENT_REGISTRATION_NAME), any());
+
+		BiConsumer<String, OAuth2TokenProvider> customizer = mock(BiConsumer.class);
+
+		OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.of(
+				mockRegistry,
+				tokenClientSupplier,
+				OAuth2TokenProviderRegistryTest::nameConverter,
+				convertedName -> true,
+				customizer);
+
+		registry.close();
+
+		String expectedName = nameConverter(CLIENT_REGISTRATION_NAME);
+
+		assertThat(registry.getProviders(), hasSize(1));
+		assertThat(registry.getProviderNames(), hasSize(1));
+		assertThat(registry.getProviderNames().getFirst(), equalTo(expectedName));
+
+		verify(mockRegistry).entries();
+		verify(mockRegistry).tokenProvider(CLIENT_REGISTRATION_NAME, tokenClientSupplier);
+		verify(customizer).accept(expectedName, tokenProvider);
+	}
+
+	@SuppressWarnings({ "resource", "unchecked" })
+	@Test
+	void shouldCreateRegistryFromTokenSupplierFactoriesWithCustomizerAndFilterOutProviders() throws Exception {
+		OAuth2Registry mockRegistry = mock(OAuth2Registry.class);
+
+		OAuth2ResolvedRegistration registration1 = mock(OAuth2ResolvedRegistration.class);
+		doReturn(CLIENT_REGISTRATION_1).when(registration1).getClientRegistrationName();
+
+		OAuth2ResolvedRegistration registration2 = mock(OAuth2ResolvedRegistration.class);
+		doReturn(CLIENT_REGISTRATION_2).when(registration2).getClientRegistrationName();
+
+		doReturn(List.of(registration1, registration2)).when(mockRegistry).entries();
+
+		OAuth2TokenProvider tokenProvider = mock(OAuth2TokenProvider.class);
+
+		OAuth2TokenClientSupplier tokenClientSupplier = (r, d) -> mock(AuthenticationTokenProvider.class);
+		doReturn(tokenProvider).when(mockRegistry).tokenProvider(any(), any());
+
+		BiConsumer<String, OAuth2TokenProvider> customizer = mock(BiConsumer.class);
+
+		OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.of(
+				mockRegistry,
+				tokenClientSupplier,
+				OAuth2TokenProviderRegistryTest::nameConverter,
+				convertedName -> !convertedName.equals(nameConverter(CLIENT_REGISTRATION_1)),
+				customizer);
+
+		registry.close();
+
+		String expectedName = nameConverter(CLIENT_REGISTRATION_2);
+
+		assertThat(registry.getProviders(), hasSize(1));
+		assertThat(registry.getProviderNames(), hasSize(1));
+		assertThat(registry.getProviderNames().getFirst(), equalTo(expectedName));
+
+		verify(mockRegistry).entries();
+		verify(mockRegistry, times(0)).tokenProvider(CLIENT_REGISTRATION_1, tokenClientSupplier);
+		verify(mockRegistry).tokenProvider(CLIENT_REGISTRATION_2, tokenClientSupplier);
 		verify(customizer).accept(expectedName, tokenProvider);
 	}
 

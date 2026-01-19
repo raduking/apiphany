@@ -141,6 +141,6 @@ public class OAuth2Registry {
 	 * @return a list of OAuth2 token providers based on this registry
 	 */
 	public List<OAuth2TokenProvider> tokenProviders(final OAuth2TokenClientSupplier tokenClientSupplier) {
-		return entries.keySet().stream().map(key -> tokenProvider(key, tokenClientSupplier)).toList();
+		return entries.keySet().stream().map(clientRegistrationName -> tokenProvider(clientRegistrationName, tokenClientSupplier)).toList();
 	}
 }
