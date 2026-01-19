@@ -24,7 +24,6 @@ import org.apiphany.security.token.TokenProperties;
 import org.apiphany.utils.security.JwtTokenValidator;
 import org.apiphany.utils.security.JwtTokenValidator.TokenValidationException;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -51,11 +50,6 @@ class TokenHttpExchangeClientTest {
 	private TokenHttpExchangeClient client;
 
 	private final ClientProperties clientProperties = new ClientProperties();
-
-	@BeforeEach
-	void setUp() {
-		// empty
-	}
 
 	@AfterEach
 	void tearDown() throws Exception {

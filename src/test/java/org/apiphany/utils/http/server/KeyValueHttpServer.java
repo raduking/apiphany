@@ -56,7 +56,7 @@ public class KeyValueHttpServer implements AutoCloseable {
 	private final ExecutorService executor;
 	private final int port;
 
-	private Map<String, String> map = new ConcurrentHashMap<>();
+	private final Map<String, String> map = new ConcurrentHashMap<>();
 
 	public KeyValueHttpServer(final int port) {
 		this.executor = Executors.newVirtualThreadPerTaskExecutor();

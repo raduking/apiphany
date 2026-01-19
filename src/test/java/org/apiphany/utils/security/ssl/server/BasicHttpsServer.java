@@ -37,7 +37,7 @@ public class BasicHttpsServer implements AutoCloseable {
 	private final int port;
 	private final SSLContextAdapter sslContext;
 
-	public BasicHttpsServer(final int port, final SSLProperties sslProperties, SecureRandom secureRandom) {
+	public BasicHttpsServer(final int port, final SSLProperties sslProperties, final SecureRandom secureRandom) {
 		this.executor = Executors.newVirtualThreadPerTaskExecutor();
 
 		this.sslContext = new SSLContextAdapter(SSLContexts.create(sslProperties));
@@ -72,7 +72,7 @@ public class BasicHttpsServer implements AutoCloseable {
 			HttpsServer httpsServer = HttpsServer.create(new InetSocketAddress(port), 0);
 			httpsServer.setHttpsConfigurator(new HttpsConfigurator(sslContext) {
 				@Override
-				public void configure(HttpsParameters params) {
+				public void configure(final HttpsParameters params) {
 					super.configure(params);
 					log(params);
 				}
@@ -83,7 +83,7 @@ public class BasicHttpsServer implements AutoCloseable {
 		}
 	}
 
-	public static void log(HttpsParameters params) {
+	public static void log(final HttpsParameters params) {
 		try {
 			LOGGER.debug("HTTPS parameters: {}", JsonBuilder.toJson(params));
 		} catch (Exception e) {

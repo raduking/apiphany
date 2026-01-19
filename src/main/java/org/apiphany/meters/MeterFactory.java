@@ -78,7 +78,7 @@ public class MeterFactory {
 	 * @param <U> an iterable of tags
 	 *
 	 * @param name the meter name (must not be {@code null})
-	 * @param tags the tags to associate with the meter (may be ignored)
+	 * @param tags the tags to associate with the meter (can be ignored)
 	 * @return a new timer instance
 	 */
 	public <T, U extends Iterable<T>> MeterTimer timer(final String name, final U tags) {
@@ -95,7 +95,7 @@ public class MeterFactory {
 	 *
 	 * @param prefix the prefix for the meter name
 	 * @param name the meter name (must not be {@code null})
-	 * @param tags the tags to associate with the meter (may be ignored)
+	 * @param tags the tags to associate with the meter (can be ignored)
 	 * @return a new timer instance
 	 */
 	public <T, U extends Iterable<T>> MeterTimer timer(final String prefix, final String name, final U tags) {
@@ -111,7 +111,7 @@ public class MeterFactory {
 	 * @param <U> an iterable of tags
 	 *
 	 * @param name the meter name (must not be {@code null})
-	 * @param tags the tags to associate with the meter (may be ignored)
+	 * @param tags the tags to associate with the meter (can be ignored)
 	 * @return a new counter instance
 	 */
 	public <T, U extends Iterable<T>> MeterCounter counter(final String name, final U tags) {
@@ -128,7 +128,7 @@ public class MeterFactory {
 	 *
 	 * @param prefix the prefix for the meter name
 	 * @param name the meter name (must not be {@code null})
-	 * @param tags the tags to associate with the meter (may be ignored)
+	 * @param tags the tags to associate with the meter (can be ignored)
 	 * @return a new counter instance
 	 */
 	public <T, U extends Iterable<T>> MeterCounter counter(final String prefix, final String name, final U tags) {
@@ -143,7 +143,7 @@ public class MeterFactory {
 	 * @param <T> the tag element type
 	 *
 	 * @param name the meter name (must not be {@code null})
-	 * @param tags the tags to associate with the meter (may be ignored)
+	 * @param tags the tags to associate with the meter (can be ignored)
 	 * @return a new timer instance
 	 */
 	@SuppressWarnings("unchecked")
@@ -159,7 +159,7 @@ public class MeterFactory {
 	 * @param <T> the tag element type
 	 *
 	 * @param name the meter name (must not be {@code null})
-	 * @param tags the tags to associate with the meter (may be ignored)
+	 * @param tags the tags to associate with the meter (can be ignored)
 	 * @return a new counter instance
 	 */
 	@SuppressWarnings("unchecked")

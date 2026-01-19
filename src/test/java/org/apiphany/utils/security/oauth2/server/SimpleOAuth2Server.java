@@ -52,7 +52,7 @@ public class SimpleOAuth2Server implements AutoCloseable {
 	private final String clientId;
 	private final String clientSecret;
 
-	private HttpServer httpServer;
+	private final HttpServer httpServer;
 
 	public SimpleOAuth2Server(final int port, final String clientId, final String clientSecret) {
 		this.httpServer = createHttpServer(port);
@@ -150,7 +150,7 @@ public class SimpleOAuth2Server implements AutoCloseable {
 			try {
 				return Duration.ofSeconds(Long.valueOf(value));
 			} catch (Exception e) {
-				LOGGER.info("Error reading 'expires_in': " + value + ", defaulting to: " + DEFAULT_EXPIRES_IN, e);
+				LOGGER.info("Error reading 'expires_in': {}, defaulting to: {}", value, DEFAULT_EXPIRES_IN, e);
 				return DEFAULT_EXPIRES_IN;
 			}
 		}

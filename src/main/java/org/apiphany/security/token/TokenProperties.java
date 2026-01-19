@@ -61,7 +61,7 @@ public class TokenProperties {
 	 *
 	 * @param authenticationScheme the authentication scheme to set
 	 */
-	public void setAuthenticationScheme(String authenticationScheme) {
+	public void setAuthenticationScheme(final String authenticationScheme) {
 		this.authenticationScheme = authenticationScheme;
 	}
 

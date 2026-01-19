@@ -53,7 +53,7 @@ class StringsTest {
 	}
 
 	@Test
-	void shouldReturnNnullWhenToStringCallenOnAnNullObject() {
+	void shouldReturnNullWhenToStringCalledOnAnNullObject() {
 		String result = Strings.safeToString(null);
 
 		assertThat(result, nullValue());
@@ -181,7 +181,7 @@ class StringsTest {
 	}
 
 	@Test
-	void shouldReturnStringFromAbsoultePathFile() {
+	void shouldReturnStringFromAbsolutePathFile() {
 		String currentDir = Paths.get("").toAbsolutePath().toString();
 		String result = Strings.fromFile(currentDir + "/src/test/resources/text-file.txt");
 

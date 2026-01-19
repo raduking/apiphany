@@ -19,12 +19,12 @@ public interface Wait {
 	 *
 	 * @author Radu Sebastian LAZIN
 	 */
-	public class Default {
+	class Default {
 
 		/**
 		 * Default sleep action used for waiting.
 		 */
-		public static final BiConsumer<Long, TimeUnit> SLEEP_ACTION = (interval, timeUnit) -> Threads.safeSleep(interval, timeUnit);
+		public static final BiConsumer<Long, TimeUnit> SLEEP_ACTION = Threads::safeSleep;
 
 		/**
 		 * Default interval for waiting.

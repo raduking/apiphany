@@ -31,7 +31,7 @@ class ApiMessageTest {
 	private static final String V3 = "v3";
 	private static final String V4 = "v4";
 
-	Map<String, List<String>> headers = new HashMap<>() {
+	private final Map<String, List<String>> headers = new HashMap<>() {
 		@Serial
 		private static final long serialVersionUID = 1L;
 		{
@@ -102,7 +102,7 @@ class ApiMessageTest {
 	}
 
 	@Test
-	void shouldReturnFalseOnHasBodyWhenTheApiMessageDoesntHaveABody() {
+	void shouldReturnFalseOnHasBodyWhenTheApiMessageDoesNotHaveABody() {
 		ApiMessage<String> message = new ApiMessage<>();
 
 		assertFalse(message.hasBody());
@@ -116,7 +116,7 @@ class ApiMessageTest {
 	}
 
 	@Test
-	void shouldReturnTrueOnHasNoBodyWhenTheApiMessageDoesntHaveABody() {
+	void shouldReturnTrueOnHasNoBodyWhenTheApiMessageDoesNotHaveABody() {
 		ApiMessage<String> message = new ApiMessage<>();
 
 		assertTrue(message.hasNoBody());

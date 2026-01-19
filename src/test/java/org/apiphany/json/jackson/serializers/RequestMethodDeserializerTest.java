@@ -34,7 +34,7 @@ class RequestMethodDeserializerTest {
 	@Mock
 	private JsonParser parser;
 
-	private RequestMethodDeserializer victim = new RequestMethodDeserializer();
+	private final RequestMethodDeserializer victim = new RequestMethodDeserializer();
 
 	@SuppressWarnings("resource")
 	@ParameterizedTest

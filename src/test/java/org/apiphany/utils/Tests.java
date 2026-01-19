@@ -17,7 +17,7 @@ import org.morphix.reflection.ReflectionException;
  */
 public interface Tests {
 
-	public static <T extends Throwable> T verifyDefaultConstructorThrows(final Class<?> cls) {
+	static <T extends Throwable> T verifyDefaultConstructorThrows(final Class<?> cls) {
 		ReflectionException reflectionException =
 				assertThrows(ReflectionException.class, () -> Constructors.IgnoreAccess.newInstance(cls));
 		InvocationTargetException invocationTargetException = JavaObjects.cast(reflectionException.getCause());

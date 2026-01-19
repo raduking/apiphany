@@ -34,7 +34,7 @@ class HeadersTest {
 
 	private static final String HEADER_VALUE = "headerValue";
 
-	Map<String, List<String>> headers = new HashMap<>() {
+	private final Map<String, List<String>> headers = new HashMap<>() {
 		@Serial
 		private static final long serialVersionUID = 1L;
 		{
@@ -157,7 +157,7 @@ class HeadersTest {
 	}
 
 	@Test
-	void shouldReturnHeaderWhenCaseDoesntMatch() {
+	void shouldReturnHeaderWhenCaseDoesNotMatch() {
 		Map<String, List<String>> mapHeaders = Map.of("some-header", List.of(HEADER_VALUE));
 
 		List<String> headerValues = Headers.get("Some-Header", mapHeaders);
