@@ -1,5 +1,9 @@
 ## Release Notes
 
+`1.0.26`
+
+---
+
 `1.0.25`
 
 - Added new `OAuth2TokenProviderRegistry.of` factory method which allows filtering out the creation of `OAuth2TokenProvider`s.
