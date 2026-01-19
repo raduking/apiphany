@@ -366,16 +366,20 @@ class OAuth2TokenProviderRegistryTest {
 
 		registry.close();
 
-		String expectedName = nameConverter(CLIENT_REGISTRATION_2);
+		String expectedRegistration1Name = nameConverter(CLIENT_REGISTRATION_1);
+		String expectedRegistration2Name = nameConverter(CLIENT_REGISTRATION_2);
 
 		assertThat(registry.getProviders(), hasSize(1));
 		assertThat(registry.getProviderNames(), hasSize(1));
-		assertThat(registry.getProviderNames().getFirst(), equalTo(expectedName));
+		assertThat(registry.getProviderNames().getFirst(), equalTo(expectedRegistration2Name));
 
 		verify(mockRegistry).entries();
+
 		verify(mockRegistry, times(0)).tokenProvider(CLIENT_REGISTRATION_1, tokenClientSupplier);
+		verify(customizer, times(0)).accept(expectedRegistration1Name, tokenProvider);
+
 		verify(mockRegistry).tokenProvider(CLIENT_REGISTRATION_2, tokenClientSupplier);
-		verify(customizer).accept(expectedName, tokenProvider);
+		verify(customizer).accept(expectedRegistration2Name, tokenProvider);
 	}
 
 	@SuppressWarnings("resource")
