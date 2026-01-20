@@ -2,20 +2,40 @@ package org.apiphany.client.http;
 
 import java.net.http.HttpClient.Version;
 
+import org.apiphany.client.ClientProperties;
 import org.apiphany.http.HttpMessages;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.annotation.Ignored;
 
 /**
- * Represents properties for configuring the Java.net HTTP client. This class includes nested properties for HTTP
- * request configurations.
+ * Represents properties for configuring the {@code java.net.http} HTTP client. This class includes nested properties
+ * for HTTP request configurations.
+ * <p>
+ * To configure these properties in the {@link ClientProperties} under the {@code custom} root, use the prefix
+ * {@code java-net-http} ({@link JavaNetHttpProperties#ROOT}). For example:
+ *
+ * <pre>
+ * my-client-properties.custom.java-net-http.request.version=HTTP/2
+ * </pre>
+ *
+ * or in YAML:
+ *
+ * <pre>
+ * my-client-properties:
+ *  custom:
+ *    java-net-http:
+ *      request:
+ *        version: HTTP/2
+ * </pre>
+ *
+ * The default HTTP version is HTTP/1.1 ({@link Request#DEFAULT_HTTP_VERSION}).
  *
  * @author Radu Sebastian LAZIN
  */
 public class JavaNetHttpProperties {
 
 	/**
-	 * The root key for Java.net HTTP client properties.
+	 * The root key for {@code java.net.http} HTTP client properties.
 	 */
 	public static final String ROOT = "java-net-http";
 

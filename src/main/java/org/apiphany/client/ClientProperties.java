@@ -276,7 +276,8 @@ public class ClientProperties {
 	}
 
 	/**
-	 * Retrieves custom properties mapped to the specified class using a static {@code ROOT} field as the prefix.
+	 * Retrieves custom properties mapped to the specified class using a static {@code ROOT} field defined in the custom
+	 * properties class as the prefix.
 	 *
 	 * @param <T> the type of the custom properties.
 	 * @param cls the class to map the properties to.
@@ -299,7 +300,7 @@ public class ClientProperties {
 		String prefix = Fields.IgnoreAccess.getStatic(cls, CUSTOM_PROPERTIES_PREFIX_FIELD_NAME);
 		if (null == prefix) {
 			throw new IllegalStateException("No static field named:" + CUSTOM_PROPERTIES_PREFIX_FIELD_NAME
-					+ " defined in: " + cls.getCanonicalName());
+					+ " defined in: " + cls.getCanonicalName() + " found to be used as custom properties prefix.");
 		}
 		return prefix;
 	}

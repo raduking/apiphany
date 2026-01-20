@@ -85,10 +85,10 @@ public interface ExchangeClient extends AutoCloseable {
 	default <T> String getHeadersAsString(final ApiMessage<T> apiMessage) {
 		return Maps.safe(apiMessage.getHeaders()).entrySet().stream().map(entry -> {
 			String headerName = entry.getKey();
-			List<String> headerValues = isRedactedHeader().test(headerName)
+			List<String> headerValues = isSensitiveHeader().test(headerName)
 					? Collections.singletonList(HeaderValues.REDACTED)
 					: entry.getValue();
-			return headerName + ":\"" + String.join(", ", headerValues) + "\"";
+			return HeaderValues.value(headerName, headerValues, ":");
 		}).toList().toString();
 	}
 
@@ -97,7 +97,7 @@ public interface ExchangeClient extends AutoCloseable {
 	 *
 	 * @return a predicate for the headers that should be redacted
 	 */
-	default Predicate<String> isRedactedHeader() {
+	default Predicate<String> isSensitiveHeader() {
 		return headerName -> false;
 	}
 
@@ -119,6 +119,23 @@ public interface ExchangeClient extends AutoCloseable {
 	 */
 	default Map<String, List<String>> getTracingHeaders() {
 		return Collections.emptyMap();
+	}
+
+	/**
+	 * Returns custom properties of the client. If no custom properties are set, it returns {@code null}.
+	 *
+	 * @param <T> the type of the custom properties
+	 *
+	 * @param propertiesClass the class of the custom properties
+	 * @return custom properties of the client
+	 * @see ClientProperties#getCustomProperties(Class)
+	 */
+	default <T> T getCustomProperties(final Class<T> propertiesClass) {
+		ClientProperties properties = getClientProperties();
+		if (null == properties) {
+			return null;
+		}
+		return properties.getCustomProperties(propertiesClass);
 	}
 
 	/**

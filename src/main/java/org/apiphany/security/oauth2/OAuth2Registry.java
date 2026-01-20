@@ -111,7 +111,7 @@ public class OAuth2Registry {
 	 */
 	public OAuth2TokenProvider tokenProvider(
 			final String clientRegistrationName,
-			final OAuth2TokenProviderOptions options,
+			final OAuth2TokenProviderProperties options,
 			final ScheduledExecutorService tokenRefreshScheduler,
 			final OAuth2TokenClientSupplier tokenClientSupplier) {
 		OAuth2ResolvedRegistration registration = get(clientRegistrationName);
@@ -128,7 +128,7 @@ public class OAuth2Registry {
 	 */
 	@SuppressWarnings("resource")
 	public OAuth2TokenProvider tokenProvider(final String clientRegistrationName, final OAuth2TokenClientSupplier tokenClientSupplier) {
-		OAuth2TokenProviderOptions options = OAuth2TokenProviderOptions.defaults();
+		OAuth2TokenProviderProperties options = OAuth2TokenProviderProperties.defaults();
 		ScheduledExecutorService tokenRefreshScheduler = Executors.newScheduledThreadPool(0, Thread.ofVirtual().factory());
 		return tokenProvider(clientRegistrationName, options, tokenRefreshScheduler, tokenClientSupplier);
 	}

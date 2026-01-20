@@ -92,7 +92,7 @@ public interface HttpExchangeClient extends ExchangeClient {
 	 * @return redacted headers predicate
 	 */
 	@Override
-	default Predicate<String> isRedactedHeader() {
+	default Predicate<String> isSensitiveHeader() {
 		return HttpHeader.AUTHORIZATION::matches;
 	}
 

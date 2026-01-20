@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
  * retrieval. The client is supplied using the {@link OAuth2TokenClientSupplier} functional interface.
  * <p>
  * The token refresh is done using a scheduled task that runs when the token is about to expire (based on the expiration
- * time minus an error margin defined in {@link OAuth2TokenProviderOptions}).
+ * time minus an error margin defined in {@link OAuth2TokenProviderProperties}).
  * <p>
  * TODO: implement refresh token functionality<br/>
  *
@@ -77,7 +77,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	/**
 	 * The specific options for this provider.
 	 */
-	private final OAuth2TokenProviderOptions options;
+	private final OAuth2TokenProviderProperties options;
 
 	/**
 	 * Creates a new authentication token provider.
@@ -88,7 +88,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 * @param tokenClientSupplier the supplier for the client that will make the actual token requests
 	 */
 	public OAuth2TokenProvider(
-			final OAuth2TokenProviderOptions options,
+			final OAuth2TokenProviderProperties options,
 			final OAuth2ResolvedRegistration registration,
 			final ScheduledExecutorService tokenRefreshScheduler,
 			final OAuth2TokenClientSupplier tokenClientSupplier) {
@@ -114,7 +114,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 * @param tokenClientSupplier the supplier for the client that will make the actual token requests
 	 */
 	public OAuth2TokenProvider(
-			final OAuth2TokenProviderOptions options,
+			final OAuth2TokenProviderProperties options,
 			final OAuth2Properties oAuth2Properties,
 			final String clientRegistrationName,
 			final ScheduledExecutorService tokenRefreshScheduler,
@@ -135,7 +135,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 			final String clientRegistrationName,
 			final ScheduledExecutorService tokenRefreshScheduler,
 			final OAuth2TokenClientSupplier tokenClientSupplier) {
-		this(OAuth2TokenProviderOptions.defaults(), oAuth2Properties, clientRegistrationName, tokenRefreshScheduler, tokenClientSupplier);
+		this(OAuth2TokenProviderProperties.defaults(), oAuth2Properties, clientRegistrationName, tokenRefreshScheduler, tokenClientSupplier);
 	}
 
 	/**
@@ -356,7 +356,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 *
 	 * @return the options for this token provider
 	 */
-	public OAuth2TokenProviderOptions getOptions() {
+	public OAuth2TokenProviderProperties getOptions() {
 		return options;
 	}
 }

@@ -252,7 +252,7 @@ class OAuth2TokenProviderTest {
 		assertTrue(tokenProvider.isSchedulerEnabled());
 		verify(expiration).minus(AuthenticationToken.EXPIRATION_ERROR_MARGIN);
 		verify(scheduledExecutorService).schedule(any(Runnable.class),
-				eq(OAuth2TokenProviderOptions.Default.MIN_REFRESH_INTERVAL.toMillis()), eq(TimeUnit.MILLISECONDS));
+				eq(OAuth2TokenProviderProperties.Default.MIN_REFRESH_INTERVAL.toMillis()), eq(TimeUnit.MILLISECONDS));
 	}
 
 	@SuppressWarnings("resource")
@@ -277,9 +277,9 @@ class OAuth2TokenProviderTest {
 		doReturn(scheduledFuture).when(scheduledExecutorService).schedule(any(Runnable.class), anyLong(), any());
 
 		Duration expirationErrorMargin = AuthenticationToken.EXPIRATION_ERROR_MARGIN.plusSeconds(1);
-		Duration minRefreshInterval = OAuth2TokenProviderOptions.Default.MIN_REFRESH_INTERVAL.plusMillis(66);
+		Duration minRefreshInterval = OAuth2TokenProviderProperties.Default.MIN_REFRESH_INTERVAL.plusMillis(66);
 
-		OAuth2TokenProviderOptions options = new OAuth2TokenProviderOptions();
+		OAuth2TokenProviderProperties options = new OAuth2TokenProviderProperties();
 		options.setExpirationErrorMargin(expirationErrorMargin);
 		options.setMinRefreshInterval(minRefreshInterval);
 
@@ -395,7 +395,7 @@ class OAuth2TokenProviderTest {
 		doReturn(scheduledFuture).when(scheduledExecutorService).schedule(any(Runnable.class), anyLong(), any());
 
 		int maxAttempts = 2;
-		OAuth2TokenProviderOptions options = OAuth2TokenProviderOptions.defaults();
+		OAuth2TokenProviderProperties options = OAuth2TokenProviderProperties.defaults();
 		options.setMaxTaskCloseAttempts(maxAttempts);
 
 		try (OAuth2TokenProvider localTokenProvider =
