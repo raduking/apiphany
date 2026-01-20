@@ -6,6 +6,7 @@
 - Added `ExchangeClient.getCustomProperties` which delegates to `ClientProperties.getCustomProperties`.
 - Changed `ExchangeClient.getHeadersAsString` to return a string easier to parse.
 - Renamed `ExchangeClient.isRedactedHeader` to `ExchangeClient.isSensitiveHeader`.
+- Added `HeaderValues.value(Object, Object, String)` with separator string between the l-value and r-value. 
 
 ---
 
