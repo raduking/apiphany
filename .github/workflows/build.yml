@@ -4,7 +4,7 @@ on:
   push:
     branches: [ master, develop ]
   pull_request:
-    types: [ opened, synchronize, reopened ]
+    #types: [ opened, synchronize, reopened ]
     branches: [ master, develop ]
 
 jobs:
@@ -25,3 +25,6 @@ jobs:
       - name: Build with Maven
         run: mvn -B clean verify
 
+concurrency:
+    group: build-${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
