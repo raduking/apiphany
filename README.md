@@ -49,7 +49,7 @@ Maven: add this dependency to your `pom.xml`
 </dependency>
 ```
 
-You can also use the latest development build but you need to build it yourself.
+You can also use the latest development build, but you need to build it yourself.
 
 ```
 git clone git@github.com:raduking/apiphany.git
@@ -94,4 +94,4 @@ void main() {
 
 ## Documentation
 
-See the [docs](docs/) directory for project specifications, architecture notes, and user guides.
+See the [docs](docs) directory for project specifications, architecture notes, and user guides.
