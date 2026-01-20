@@ -3,7 +3,6 @@ package org.apiphany.security.token.client;
 import java.time.Instant;
 import java.util.function.Supplier;
 
-import org.apiphany.client.ClientProperties;
 import org.apiphany.client.DecoratingExchangeClient;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.header.HeaderValues;
@@ -66,11 +65,7 @@ public class TokenHttpExchangeClient extends DecoratingExchangeClient implements
 	 * Initializes the client. We don't care if we have private methods with the same name in the base class.
 	 */
 	private void initialize() { // NOSONAR
-		ClientProperties clientProperties = getClientProperties();
-		if (null == clientProperties) {
-			return;
-		}
-		TokenProperties tokenProperties = clientProperties.getCustomProperties(TokenProperties.class);
+		TokenProperties tokenProperties = getCustomProperties(TokenProperties.class);
 		if (null == tokenProperties) {
 			return;
 		}

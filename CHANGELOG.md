@@ -2,6 +2,11 @@
 
 `1.0.26`
 
+- Renamed `OAuth2TokenProviderOptions` to `OAuth2TokenProviderProperties`.
+- Added `ExchangeClient.getCustomProperties` which delegates to `ClientProperties.getCustomProperties`.
+- Changed `ExchangeClient.getHeadersAsString` to return a string easier to parse.
+- Renamed `ExchangeClient.isRedactedHeader` to `ExchangeClient.isSensitiveHeader`.
+
 ---
 
 `1.0.25`

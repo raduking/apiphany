@@ -76,11 +76,7 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	 * Initializes the properties.
 	 */
 	private void initialize() {
-		ClientProperties properties = getClientProperties();
-		if (null == properties) {
-			return;
-		}
-		SSLProperties sslProperties = properties.getCustomProperties(SSLProperties.class);
+		SSLProperties sslProperties = getCustomProperties(SSLProperties.class);
 		if (null == sslProperties) {
 			return;
 		}

@@ -104,6 +104,21 @@ public class HeaderValues {
 	 * @return the header value
 	 */
 	public static <L, R> String value(final L lvalue, final R rvalue) {
-		return String.join(" ", Strings.safeToString(lvalue), Strings.safeToString(rvalue));
+		return value(lvalue, rvalue, " ");
+	}
+
+	/**
+	 * Builds the value for the header for the request by concatenating the two parameters with separator between them.
+	 *
+	 * @param <L> left value type
+	 * @param <R> right value type
+	 *
+	 * @param lvalue left value
+	 * @param rvalue right value
+	 * @param separator the separator to use between the two values
+	 * @return the header value
+	 */
+	public static <L, R> String value(final L lvalue, final R rvalue, final String separator) {
+		return String.join(separator, Strings.safeToString(lvalue), Strings.safeToString(rvalue));
 	}
 }

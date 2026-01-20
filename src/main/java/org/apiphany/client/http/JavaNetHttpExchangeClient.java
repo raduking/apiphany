@@ -102,7 +102,7 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	 * @param httpClientBuilder HTTP client builder
 	 */
 	private void customize(final HttpClient.Builder httpClientBuilder) {
-		JavaNetHttpProperties httpProperties = getClientProperties().getCustomProperties(JavaNetHttpProperties.class);
+		JavaNetHttpProperties httpProperties = getCustomProperties(JavaNetHttpProperties.class);
 		HttpClient.Version version = Nullables.notNull(httpProperties)
 				.thenYield(props -> props.getRequest().getHttpVersion())
 				.orElse(() -> JavaNetHttpProperties.Request.DEFAULT_HTTP_VERSION);
