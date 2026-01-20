@@ -77,22 +77,22 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	/**
 	 * The specific options for this provider.
 	 */
-	private final OAuth2TokenProviderProperties options;
+	private final OAuth2TokenProviderProperties properties;
 
 	/**
 	 * Creates a new authentication token provider.
 	 *
-	 * @param options the OAuth2 token provider options
+	 * @param properties the OAuth2 token provider properties
 	 * @param registration the OAuth2 resolved registration for this provider
 	 * @param tokenRefreshScheduler the token refresh scheduler
 	 * @param tokenClientSupplier the supplier for the client that will make the actual token requests
 	 */
 	public OAuth2TokenProvider(
-			final OAuth2TokenProviderProperties options,
+			final OAuth2TokenProviderProperties properties,
 			final OAuth2ResolvedRegistration registration,
 			final ScheduledExecutorService tokenRefreshScheduler,
 			final OAuth2TokenClientSupplier tokenClientSupplier) {
-		this.options = options;
+		this.properties = properties;
 		this.tokenRefreshScheduler = tokenRefreshScheduler;
 		this.defaultExpirationSupplier = Instant::now;
 		this.registration = registration;
@@ -107,19 +107,19 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	/**
 	 * Creates a new authentication token provider.
 	 *
-	 * @param options the OAuth2 token provider options
+	 * @param properties the OAuth2 token provider properties
 	 * @param oAuth2Properties the OAuth2 properties
 	 * @param clientRegistrationName the wanted client registration name
 	 * @param tokenRefreshScheduler the token refresh scheduler
 	 * @param tokenClientSupplier the supplier for the client that will make the actual token requests
 	 */
 	public OAuth2TokenProvider(
-			final OAuth2TokenProviderProperties options,
+			final OAuth2TokenProviderProperties properties,
 			final OAuth2Properties oAuth2Properties,
 			final String clientRegistrationName,
 			final ScheduledExecutorService tokenRefreshScheduler,
 			final OAuth2TokenClientSupplier tokenClientSupplier) {
-		this(options, OAuth2ResolvedRegistration.of(oAuth2Properties, clientRegistrationName), tokenRefreshScheduler, tokenClientSupplier);
+		this(properties, OAuth2ResolvedRegistration.of(oAuth2Properties, clientRegistrationName), tokenRefreshScheduler, tokenClientSupplier);
 	}
 
 	/**
@@ -184,7 +184,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	private void closeTokenRefreshScheduler() {
 		boolean cancelled = null == scheduledFuture;
 		if (!cancelled) {
-			Retry retry = Retry.of(WaitCounter.of(getOptions().getMaxTaskCloseAttempts(), Duration.ofMillis(200)));
+			Retry retry = Retry.of(WaitCounter.of(getProperties().getMaxTaskCloseAttempts(), Duration.ofMillis(200)));
 			cancelled = retry.until(() -> scheduledFuture.cancel(false), Boolean::booleanValue);
 		}
 		if (cancelled) {
@@ -290,10 +290,10 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 * Schedules the token update.
 	 */
 	private void scheduleTokenUpdate() {
-		Instant expiration = getTokenExpiration().minus(getOptions().getExpirationErrorMargin());
+		Instant expiration = getTokenExpiration().minus(getProperties().getExpirationErrorMargin());
 		Instant scheduled = Comparables.max(expiration, Instant.now());
 		Duration delay = Duration.between(Instant.now(), scheduled);
-		delay = Comparables.max(delay, getOptions().getMinRefreshInterval());
+		delay = Comparables.max(delay, getProperties().getMinRefreshInterval());
 		scheduledFuture = tokenRefreshScheduler.schedule(this::updateAuthenticationToken, delay.toMillis(), TimeUnit.MILLISECONDS);
 	}
 
@@ -356,7 +356,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 *
 	 * @return the options for this token provider
 	 */
-	public OAuth2TokenProviderProperties getOptions() {
-		return options;
+	public OAuth2TokenProviderProperties getProperties() {
+		return properties;
 	}
 }

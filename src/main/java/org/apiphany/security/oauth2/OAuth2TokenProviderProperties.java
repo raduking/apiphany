@@ -69,9 +69,9 @@ public class OAuth2TokenProviderProperties {
 	}
 
 	/**
-	 * Returns a new options object with all the defaults.
+	 * Returns a new OAuth2 token provider properties object with all the defaults.
 	 *
-	 * @return a new options object with all the defaults
+	 * @return a new properties object with all the defaults
 	 */
 	public static OAuth2TokenProviderProperties defaults() {
 		return new OAuth2TokenProviderProperties();

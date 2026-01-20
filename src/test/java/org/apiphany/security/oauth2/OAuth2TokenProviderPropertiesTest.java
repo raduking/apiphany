@@ -12,7 +12,7 @@ import org.morphix.reflection.Constructors;
  *
  * @author Radu Sebastian LAZIN
  */
-class OAuth2TokenProviderOptionsTest {
+class OAuth2TokenProviderPropertiesTest {
 
 	@Test
 	void shouldNotInstantiateDefaultClass() {
