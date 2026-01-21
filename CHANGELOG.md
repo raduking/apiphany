@@ -4,6 +4,9 @@
 
 - Renamed `OAuth2TokenProviderOptions` to `OAuth2TokenProviderProperties`.
 - Renamed `OAuth2TokenProvider.getOptions` to `OAuth2TokenProvider.getProperties`.
+- Added `OAuth2TokenProviderProperties.Default.CLOSE_TASK_RETRY_INTERVAL` which is the interval between close attempts when closing the scheduled task.
+- Added `OAuth2TokenProviderProperties.setCloseTaskRetryInterval` to set the interval between close attempts when closing the scheduled task.
+- Added `OAuth2TokenProviderProperties.getCloseTaskRetryInterval` to retrieve the configured the interval between close attempts when closing the scheduled task.
 - Added `ExchangeClient.getCustomProperties` which delegates to `ClientProperties.getCustomProperties`.
 - Changed `ExchangeClient.getHeadersAsString` to return a string easier to parse.
 - Renamed `ExchangeClient.isRedactedHeader` to `ExchangeClient.isSensitiveHeader`.

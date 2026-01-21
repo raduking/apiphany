@@ -35,6 +35,11 @@ public class OAuth2TokenProviderProperties {
 		public static final int MAX_TASK_CLOSE_ATTEMPTS = 10;
 
 		/**
+		 * The interval between close attempts when closing the scheduled task.
+		 */
+		public static final Duration CLOSE_TASK_RETRY_INTERVAL = Duration.ofMillis(200);
+
+		/**
 		 * Hide constructor.
 		 */
 		private Default() {
@@ -60,6 +65,11 @@ public class OAuth2TokenProviderProperties {
 	 * The maximum attempts to close the scheduled task when calling {@link OAuth2TokenProvider#close()}.
 	 */
 	private int maxTaskCloseAttempts = Default.MAX_TASK_CLOSE_ATTEMPTS;
+
+	/**
+	 * The interval between close attempts when closing the scheduled task.
+	 */
+	private Duration closeTaskRetryInterval = Default.CLOSE_TASK_RETRY_INTERVAL;
 
 	/**
 	 * Default constructor.
@@ -129,5 +139,23 @@ public class OAuth2TokenProviderProperties {
 	 */
 	public void setMaxTaskCloseAttempts(final int maxCloseAttempts) {
 		this.maxTaskCloseAttempts = maxCloseAttempts;
+	}
+
+	/**
+	 * Returns the close retry interval.
+	 *
+	 * @return the close retry interval
+	 */
+	public Duration getCloseTaskRetryInterval() {
+		return closeTaskRetryInterval;
+	}
+
+	/**
+	 * Sets the close retry interval.
+	 *
+	 * @param closeRetryInterval the close retry interval to set
+	 */
+	public void setCloseTaskRetryInterval(final Duration closeRetryInterval) {
+		this.closeTaskRetryInterval = closeRetryInterval;
 	}
 }

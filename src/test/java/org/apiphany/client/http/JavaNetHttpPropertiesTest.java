@@ -40,4 +40,34 @@ class JavaNetHttpPropertiesTest {
 		assertThat(result, equalTo(expected));
 	}
 
+	@Test
+	void shouldReturnDefaultHttpVersionForRequestIfNotSet() {
+		JavaNetHttpProperties.Request request = new JavaNetHttpProperties.Request();
+
+		assertThat(request.getHttpVersion(), equalTo(JavaNetHttpProperties.Request.DEFAULT_HTTP_VERSION));
+	}
+
+	@Test
+	void shouldReturnDefaultHttpVersionForRequestIfSetWithWrongValue() {
+		JavaNetHttpProperties.Request request = new JavaNetHttpProperties.Request();
+		request.setVersion("INVALID_HTTP_VERSION");
+
+		assertThat(request.getHttpVersion(), equalTo(JavaNetHttpProperties.Request.DEFAULT_HTTP_VERSION));
+	}
+
+	@Test
+	void shouldReadJavaNetHttpRequestPropertiesFromJson() {
+		String json = Strings.removeAllWhitespace(JAVA_NET_HTTP_PROPERTIES_JSON);
+
+		JavaNetHttpProperties javaNetHttpProperties = JsonBuilder.fromJson(json, JavaNetHttpProperties.class);
+
+		assertThat(javaNetHttpProperties.getRequest(), notNullValue());
+
+		String result = javaNetHttpProperties.getRequest().toString();
+
+		JavaNetHttpProperties.Request javaNetHttpPropertiesRequest = JsonBuilder.fromJson(result, JavaNetHttpProperties.Request.class);
+		String expected = javaNetHttpPropertiesRequest.toString();
+
+		assertThat(result, equalTo(expected));
+	}
 }
