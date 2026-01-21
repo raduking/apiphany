@@ -1,4 +1,4 @@
-package org.apiphany.security.oauth2.client;
+package org.apiphany.integration.security.oath2.client;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -21,6 +21,7 @@ import org.apiphany.security.JwsAlgorithm;
 import org.apiphany.security.oauth2.ClientAuthenticationMethod;
 import org.apiphany.security.oauth2.OAuth2ClientRegistration;
 import org.apiphany.security.oauth2.OAuth2ProviderDetails;
+import org.apiphany.security.oauth2.client.OAuth2ApiClient;
 import org.apiphany.utils.security.ssl.Keys;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
