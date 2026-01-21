@@ -31,8 +31,7 @@ public interface AuthenticationTokenProvider {
 	 * @throws AuthenticationException if the token is invalid.
 	 */
 	static AuthenticationToken valid(final AuthenticationToken authenticationToken) {
-		return Nullables.nonNullOrDefault(authenticationToken, () -> {
-			throw new AuthenticationException("Missing authentication token");
-		});
+		return Nullables.nonNullOrThrow(authenticationToken,
+				() -> new AuthenticationException("Missing authentication token"));
 	}
 }

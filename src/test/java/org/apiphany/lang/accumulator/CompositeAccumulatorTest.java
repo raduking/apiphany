@@ -76,7 +76,7 @@ class CompositeAccumulatorTest {
 	void shouldReturnDefaultValueWhenNoAccumulators() {
 		CompositeAccumulator victim = CompositeAccumulator.of();
 
-		String result = victim.accumulate(() -> VALUE, DEFAULT);
+		String result = victim.accumulate(() -> VALUE, () -> DEFAULT);
 
 		assertThat(victim.getAccumulators(), hasSize(0));
 		assertThat(victim.isEmpty(), equalTo(true));
@@ -120,7 +120,7 @@ class CompositeAccumulatorTest {
 	static class TestAccumulator extends Accumulator<Boolean> {
 
 		@Override
-		public <U> U accumulate(final Supplier<U> supplier, final U defaultReturn) {
+		public <U> U accumulate(final Supplier<U> supplier, final Supplier<U> defaultReturn) {
 			getInformationList().add(Boolean.TRUE);
 			return supplier.get();
 		}

@@ -156,15 +156,15 @@ public class ExceptionsAccumulator extends Accumulator<Exception> {
 	}
 
 	/**
-	 * @see Accumulator#accumulate(Supplier, Object)
+	 * @see Accumulator#accumulate(Supplier, Supplier)
 	 */
 	@Override
-	public <T> T accumulate(final Supplier<T> supplier, final T defaultReturn) {
+	public <T> T accumulate(final Supplier<T> supplier, final Supplier<T> defaultReturnSupplier) {
 		try {
 			return supplier.get();
 		} catch (Exception e) {
 			addException(e);
-			return defaultReturn;
+			return defaultReturnSupplier.get();
 		}
 	}
 

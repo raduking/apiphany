@@ -52,7 +52,7 @@ class DurationAccumulatorTest {
 		String result = accumulator.accumulate(() -> {
 			Threads.safeSleep(Duration.ofMillis(50));
 			return OK;
-		}, FAIL);
+		}, () -> FAIL);
 
 		assertThat(result, is(OK));
 		List<Double> durations = accumulator.durationsAsDouble();
@@ -67,7 +67,7 @@ class DurationAccumulatorTest {
 		try {
 			accumulator.accumulate(() -> {
 				throw new RuntimeException(FAIL);
-			}, DEFAULT);
+			}, () -> DEFAULT);
 		} catch (Exception e) {
 			exception = e;
 		}
