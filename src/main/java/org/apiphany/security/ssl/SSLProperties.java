@@ -1,5 +1,6 @@
 package org.apiphany.security.ssl;
 
+import org.apiphany.client.ClientProperties;
 import org.apiphany.json.JsonBuilder;
 
 /**
@@ -8,7 +9,26 @@ import org.apiphany.json.JsonBuilder;
  *
  * <p>
  * The default protocol is set to TLS 1.3 for maximum security.
- * </p>
+ *
+ * <p>
+ * To configure these properties in the {@link ClientProperties} under the {@code custom} root, use the prefix
+ * {@code ssl} as defined in {@link #ROOT}. For example:
+ *
+ * <pre>
+ * my-client-properties.custom.ssl.protocol=TLSv1.2
+ * </pre>
+ *
+ * or in YAML:
+ *
+ * <pre>
+ * my-client-properties:
+ *   custom:
+ *     ssl:
+ *       protocol: TLSv1.2
+ * </pre>
+ *
+ * This would set the SSL protocol to TLS 1.2.
+ *
  *
  * @author Radu Sebastian LAZIN
  */

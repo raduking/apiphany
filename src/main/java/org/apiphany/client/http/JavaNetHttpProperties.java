@@ -12,7 +12,7 @@ import org.apiphany.lang.annotation.Ignored;
  * for HTTP request configurations.
  * <p>
  * To configure these properties in the {@link ClientProperties} under the {@code custom} root, use the prefix
- * {@code java-net-http} ({@link JavaNetHttpProperties#ROOT}). For example:
+ * {@code java-net-http} (as defined in {@link #ROOT}). For example:
  *
  * <pre>
  * my-client-properties.custom.java-net-http.request.version=HTTP/2

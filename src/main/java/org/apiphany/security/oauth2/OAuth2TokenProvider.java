@@ -184,7 +184,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	private void closeTokenRefreshScheduler() {
 		boolean cancelled = null == scheduledFuture;
 		if (!cancelled) {
-			Retry retry = Retry.of(WaitCounter.of(getProperties().getMaxTaskCloseAttempts(), Duration.ofMillis(200)));
+			Retry retry = Retry.of(WaitCounter.of(getProperties().getMaxTaskCloseAttempts(), getProperties().getCloseTaskRetryInterval()));
 			cancelled = retry.until(() -> scheduledFuture.cancel(false), Boolean::booleanValue);
 		}
 		if (cancelled) {
