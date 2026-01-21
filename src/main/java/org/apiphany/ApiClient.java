@@ -17,6 +17,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.ExchangeClientBuilder;
 import org.apiphany.client.http.JavaNetHttpExchangeClient;
@@ -401,6 +402,16 @@ public class ApiClient implements AutoCloseable {
 	}
 
 	/**
+	 * Returns an exchange client builder with the default {@link JavaNetHttpExchangeClient} and given properties set.
+	 *
+	 * @param properties client properties
+	 * @return exchange client builder
+	 */
+	public static ExchangeClientBuilder with(final ClientProperties properties) {
+		return with(JavaNetHttpExchangeClient.class).properties(properties);
+	}
+
+	/**
 	 * API call for resource.
 	 *
 	 * @param <T> response type
@@ -543,7 +554,7 @@ public class ApiClient implements AutoCloseable {
 	 * @param authenticationType authentication type
 	 * @return an exchange client
 	 */
-	protected ExchangeClient getExchangeClient(final AuthenticationType authenticationType) {
+	public ExchangeClient getExchangeClient(final AuthenticationType authenticationType) {
 		return Nullables.apply(exchangeClientsMap.get(authenticationType), ScopedResource::unwrap, () -> {
 			throw new IllegalStateException("No ExchangeClient found for authentication type: " + authenticationType);
 		});

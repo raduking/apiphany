@@ -1,10 +1,8 @@
 package org.apiphany.security.oauth2.client;
 
-import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.ExchangeClientBuilder;
 import org.apiphany.lang.ScopedResource;
-import org.morphix.lang.JavaObjects;
 
 /**
  * OAuth2 exchange clients builder.
@@ -24,6 +22,11 @@ public class OAuth2HttpExchangeClientBuilder extends ExchangeClientBuilder {
 	private ExchangeClient tokenExchangeClient;
 
 	/**
+	 * The client registration name.
+	 */
+	private String registrationName;
+
+	/**
 	 * Hide constructor.
 	 */
 	private OAuth2HttpExchangeClientBuilder() {
@@ -41,6 +44,9 @@ public class OAuth2HttpExchangeClientBuilder extends ExchangeClientBuilder {
 
 	/**
 	 * Builds the OAuth2 exchange client based on the builder members.
+	 * <p>
+	 * This builder always creates an {@link OAuth2HttpExchangeClient} managed resource since it is a decorator over an
+	 * existing {@link ExchangeClient} even if the underlying client is not managed.
 	 *
 	 * @return a new exchange client pair with life cycle management information
 	 */
@@ -56,19 +62,8 @@ public class OAuth2HttpExchangeClientBuilder extends ExchangeClientBuilder {
 					.properties(clientProperties)
 					.build();
 		}
-		ExchangeClient exchangeClient = new OAuth2HttpExchangeClient(clientResource.unwrap(), tokenClientResource.unwrap());
-		return ScopedResource.of(exchangeClient, clientResource.isManaged());
-	}
-
-	/**
-	 * Sets the client properties.
-	 *
-	 * @param clientProperties client properties to set
-	 * @return this
-	 */
-	@Override
-	public OAuth2HttpExchangeClientBuilder properties(final ClientProperties clientProperties) {
-		return JavaObjects.cast(super.properties(clientProperties));
+		ExchangeClient exchangeClient = new OAuth2HttpExchangeClient(clientResource, tokenClientResource, registrationName);
+		return ScopedResource.managed(exchangeClient);
 	}
 
 	/**
@@ -90,6 +85,17 @@ public class OAuth2HttpExchangeClientBuilder extends ExchangeClientBuilder {
 	 */
 	public OAuth2HttpExchangeClientBuilder tokenClient(final ExchangeClient tokenClient) {
 		this.tokenExchangeClient = tokenClient;
+		return this;
+	}
+
+	/**
+	 * Sets the client registration name.
+	 *
+	 * @param clientRegistrationName the client registration name
+	 * @return this
+	 */
+	public OAuth2HttpExchangeClientBuilder registrationName(final String clientRegistrationName) {
+		this.registrationName = clientRegistrationName;
 		return this;
 	}
 }

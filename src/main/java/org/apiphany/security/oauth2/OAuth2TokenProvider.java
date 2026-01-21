@@ -3,6 +3,7 @@ package org.apiphany.security.oauth2;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -92,8 +93,8 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 			final OAuth2ResolvedRegistration registration,
 			final ScheduledExecutorService tokenRefreshScheduler,
 			final OAuth2TokenClientSupplier tokenClientSupplier) {
-		this.properties = properties;
-		this.tokenRefreshScheduler = tokenRefreshScheduler;
+		this.properties = Objects.requireNonNull(properties, "properties cannot be null");
+		this.tokenRefreshScheduler = Objects.requireNonNull(tokenRefreshScheduler, "tokenRefreshScheduler cannot be null");
 		this.defaultExpirationSupplier = Instant::now;
 		this.registration = registration;
 
@@ -139,6 +140,19 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	}
 
 	/**
+	 * Creates a new authentication token provider.
+	 *
+	 * @param registration the OAuth2 resolved registration for this provider
+	 * @param tokenClientSupplier the supplier for the client that will make the actual token requests
+	 */
+	@SuppressWarnings("resource")
+	public OAuth2TokenProvider(
+			final OAuth2ResolvedRegistration registration,
+			final OAuth2TokenClientSupplier tokenClientSupplier) {
+		this(OAuth2TokenProviderProperties.defaults(), registration, defaultSchedulerExecutorService(), tokenClientSupplier);
+	}
+
+	/**
 	 * Creates a new authentication token provider. The scheduler will use virtual threads for the scheduled tasks.
 	 *
 	 * @param oAuth2Properties the OAuth2 properties
@@ -150,8 +164,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 			final OAuth2Properties oAuth2Properties,
 			final String clientRegistrationName,
 			final OAuth2TokenClientSupplier tokenClientSupplier) {
-		this(oAuth2Properties, clientRegistrationName,
-				Executors.newScheduledThreadPool(0, Thread.ofVirtual().factory()), tokenClientSupplier);
+		this(oAuth2Properties, clientRegistrationName, defaultSchedulerExecutorService(), tokenClientSupplier);
 	}
 
 	/**
@@ -358,5 +371,14 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 */
 	public OAuth2TokenProviderProperties getProperties() {
 		return properties;
+	}
+
+	/**
+	 * Creates a scheduled executor service using virtual threads.
+	 *
+	 * @return the scheduled executor service
+	 */
+	protected static ScheduledExecutorService defaultSchedulerExecutorService() {
+		return Executors.newScheduledThreadPool(0, Thread.ofVirtual().factory());
 	}
 }

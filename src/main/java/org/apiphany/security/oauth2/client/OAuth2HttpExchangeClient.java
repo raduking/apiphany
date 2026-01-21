@@ -8,6 +8,7 @@ import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationTokenProvider;
 import org.apiphany.security.AuthenticationType;
 import org.apiphany.security.oauth2.OAuth2Properties;
+import org.apiphany.security.oauth2.OAuth2ResolvedRegistration;
 import org.apiphany.security.oauth2.OAuth2TokenProvider;
 import org.apiphany.security.token.client.TokenHttpExchangeClient;
 import org.slf4j.Logger;
@@ -36,16 +37,25 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	private final OAuth2Properties oAuth2Properties;
 
 	/**
+	 * The resolved registration.
+	 */
+	private OAuth2ResolvedRegistration resolvedRegistration;
+
+	/**
 	 * The token provider.
 	 */
 	private OAuth2TokenProvider tokenProvider;
 
 	/**
 	 * Decorates an exchange client with OAuth2 authentication.
+	 * <p>
+	 * If no client registration name is provided, the default one will be used, but only if there is exactly one
+	 * registration defined. Otherwise, an exception is thrown.
 	 *
 	 * @param exchangeClient decorated exchange client
 	 * @param tokenExchangeClient exchange client doing the token refresh
 	 * @param clientRegistrationName the wanted client registration name
+	 * @throws IllegalStateException if no valid client registration is found
 	 */
 	public OAuth2HttpExchangeClient(
 			final ScopedResource<ExchangeClient> exchangeClient,
@@ -55,9 +65,13 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 
 		this.tokenExchangeClient = ScopedResource.ensureSingleManager(tokenExchangeClient, exchangeClient);
 		this.oAuth2Properties = getClientProperties().getCustomProperties(OAuth2Properties.ROOT, OAuth2Properties.class);
+		this.resolvedRegistration = OAuth2ResolvedRegistration.of(oAuth2Properties, clientRegistrationName);
+		if (null == resolvedRegistration) {
+			throw new IllegalStateException("No valid client registration found!");
+		}
 
 		if (initialize()) {
-			this.tokenProvider = new OAuth2TokenProvider(oAuth2Properties, clientRegistrationName,
+			this.tokenProvider = new OAuth2TokenProvider(resolvedRegistration,
 					(clientRegistration, providerDetails) -> new OAuth2ApiClient(clientRegistration, providerDetails, tokenExchangeClient.unwrap()));
 		}
 		setAuthenticationScheme(HttpAuthScheme.BEARER);
