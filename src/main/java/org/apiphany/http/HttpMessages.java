@@ -2,6 +2,7 @@ package org.apiphany.http;
 
 import java.net.http.HttpClient.Version;
 
+import org.apiphany.lang.Require;
 import org.morphix.lang.Nullables;
 import org.morphix.reflection.Constructors;
 
@@ -50,9 +51,7 @@ public class HttpMessages {
 	public static String getRangeString(final Long rangeStart, final Long rangeEnd) throws IllegalArgumentException {
 		long actualRangeStart = Nullables.nonNullOrDefault(rangeStart, () -> 0L);
 		long actualRangeEnd = Nullables.nonNullOrDefault(rangeEnd, () -> 0L);
-		if (actualRangeEnd < actualRangeStart) {
-			throw new IllegalArgumentException("rangeEnd must be greater or equal to rangeStart");
-		}
+		Require.that(actualRangeStart <= actualRangeEnd, "rangeEnd must be greater or equal to rangeStart");
 		return "bytes=" + actualRangeStart + "-" + actualRangeEnd;
 	}
 

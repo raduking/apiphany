@@ -53,7 +53,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<!-- Dependencies versions -->
-		<morphix.version>1.0.18</morphix.version>
+		<morphix.version>1.0.19</morphix.version>
 
 		<!-- Publishing dependencies versions -->
 		<maven.gpg.plugin.version>3.2.8</maven.gpg.plugin.version>

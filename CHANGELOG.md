@@ -8,6 +8,8 @@
 - Changed `ExchangeClient.getHeadersAsString` to return a string easier to parse.
 - Renamed `ExchangeClient.isRedactedHeader` to `ExchangeClient.isSensitiveHeader`.
 - Added `HeaderValues.value(Object, Object, String)` with separator string between the l-value and r-value. 
+- Upgraded `morphix-all` to `1.0.19`.
+- Changed `Accumulator.accumulate(Supplier, Object)` to `Accumulator.accumulate(Supplier, Supplier)` to avoid computation of the default value if not needed.
 
 ---
 

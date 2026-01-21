@@ -60,7 +60,7 @@ public class DurationAccumulator extends Accumulator<Duration> {
 	 * @return the result of the operation or throws if an exception occurs
 	 */
 	@Override
-	public <U> U accumulate(final Supplier<U> supplier, final U defaultReturn) {
+	public <U> U accumulate(final Supplier<U> supplier, final Supplier<U> defaultReturn) {
 		Instant start = Instant.now();
 		try {
 			return supplier.get();

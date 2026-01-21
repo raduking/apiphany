@@ -49,18 +49,18 @@ public class CompositeAccumulator extends Accumulator<Object> {
 	}
 
 	/**
-	 * @see Accumulator#accumulate(Supplier, Object)
+	 * @see Accumulator#accumulate(Supplier, Supplier)
 	 */
 	@Override
-	public <U> U accumulate(final Supplier<U> supplier, final U defaultReturn) {
+	public <U> U accumulate(final Supplier<U> supplier, final Supplier<U> defaultReturnSupplier) {
 		if (Lists.isEmpty(accumulators)) {
-			return defaultReturn;
+			return defaultReturnSupplier.get();
 		}
 		Supplier<U> chainSupplier = supplier;
 		for (int i = accumulators.size() - 1; i > 0; --i) {
 			Accumulator<?> accumulator = accumulators.get(i);
 			Supplier<U> tempSupplier = chainSupplier;
-			chainSupplier = () -> accumulator.accumulate(tempSupplier, defaultReturn);
+			chainSupplier = () -> accumulator.accumulate(tempSupplier, defaultReturnSupplier);
 		}
 		return Lists.first(accumulators).accumulate(chainSupplier);
 	}

@@ -8,6 +8,7 @@ import org.apiphany.lang.collections.AlwaysEmptyList;
 import org.apiphany.lang.collections.Lists;
 import org.apiphany.lang.retry.Retry;
 import org.morphix.lang.function.Runnables;
+import org.morphix.lang.function.Suppliers;
 
 /**
  * Information accumulator abstract class.<br/>
@@ -46,15 +47,16 @@ public abstract class Accumulator<T> {
 	}
 
 	/**
-	 * Information accumulator method.
+	 * Information accumulator method. The second supplier is used to provide a default return value in case no information
+	 * was accumulated. It is a supplier to avoid unnecessary computation of the default return value.
 	 *
 	 * @param <U> supplier type
 	 *
 	 * @param supplier information supplier
-	 * @param defaultReturn default return
+	 * @param defaultReturnSupplier default return supplier
 	 * @return the supplier result or a default return
 	 */
-	public abstract <U> U accumulate(final Supplier<U> supplier, final U defaultReturn);
+	public abstract <U> U accumulate(final Supplier<U> supplier, final Supplier<U> defaultReturnSupplier);
 
 	/**
 	 * Information accumulator method.
@@ -62,7 +64,7 @@ public abstract class Accumulator<T> {
 	 * @param runnable action
 	 */
 	public void accumulate(final Runnable runnable) {
-		accumulate(Runnables.toSupplier(runnable), null);
+		accumulate(Runnables.toSupplier(runnable), Suppliers.supplyNull());
 	}
 
 	/**
@@ -74,7 +76,7 @@ public abstract class Accumulator<T> {
 	 * @return the supplier result
 	 */
 	public <U> U accumulate(final Supplier<U> supplier) {
-		return accumulate(supplier, null);
+		return accumulate(supplier, Suppliers.supplyNull());
 	}
 
 	/**
@@ -207,10 +209,10 @@ public abstract class Accumulator<T> {
 		}
 
 		/**
-		 * @see Accumulator#accumulate(Supplier, Object)
+		 * @see Accumulator#accumulate(Supplier, Supplier)
 		 */
 		@Override
-		public <U> U accumulate(final Supplier<U> supplier, final U defaultReturn) {
+		public <U> U accumulate(final Supplier<U> supplier, final Supplier<U> defaultReturn) {
 			return supplier.get();
 		}
 	}

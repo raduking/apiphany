@@ -24,7 +24,7 @@ class AccumulatorTest {
 	void shouldAccumulateInformation() {
 		TestAccumulator accumulator = new TestAccumulator();
 
-		accumulator.accumulate(() -> null, null);
+		accumulator.accumulate(() -> null, () -> null);
 
 		assertThat(accumulator.getInformationList().size(), equalTo(1));
 	}
@@ -53,7 +53,7 @@ class AccumulatorTest {
 	void shouldReturnSupplierValue() {
 		TestAccumulator accumulator = new TestAccumulator();
 
-		String result = accumulator.accumulate(() -> TEST_STRING, DEFAULT_STRING);
+		String result = accumulator.accumulate(() -> TEST_STRING, () -> DEFAULT_STRING);
 
 		assertThat(result, equalTo(TEST_STRING));
 		assertTrue(accumulator.isNotEmpty());
@@ -63,7 +63,7 @@ class AccumulatorTest {
 	void shouldReturnDefaultValue() {
 		TestAccumulator accumulator = new TestAccumulator();
 
-		String result = accumulator.accumulate(() -> CHECK_STRING, DEFAULT_STRING);
+		String result = accumulator.accumulate(() -> CHECK_STRING, () -> DEFAULT_STRING);
 
 		assertThat(result, equalTo(DEFAULT_STRING));
 		assertThat(accumulator.getInformationList().size(), equalTo(2));
@@ -75,7 +75,7 @@ class AccumulatorTest {
 	void shouldReturnFirstAndLastInformation() {
 		TestAccumulator accumulator = new TestAccumulator();
 
-		String result = accumulator.accumulate(() -> CHECK_STRING, DEFAULT_STRING);
+		String result = accumulator.accumulate(() -> CHECK_STRING, () -> DEFAULT_STRING);
 
 		assertThat(result, equalTo(DEFAULT_STRING));
 		assertThat(accumulator.firstInformation(), equalTo(Boolean.TRUE));
@@ -141,7 +141,7 @@ class AccumulatorTest {
 	void shouldNotAccumulateAnyInformationWhenUsingEmptyAccumulator() {
 		Accumulator<String> accumulator = Accumulator.empty();
 
-		String result = accumulator.accumulate(() -> TEST_STRING, DEFAULT_STRING);
+		String result = accumulator.accumulate(() -> TEST_STRING, () -> DEFAULT_STRING);
 		accumulator.accumulate(() -> {
 			// empty
 		});
@@ -165,13 +165,13 @@ class AccumulatorTest {
 	static class TestAccumulator extends Accumulator<Boolean> {
 
 		@Override
-		public <U> U accumulate(final Supplier<U> supplier, final U defaultReturn) {
+		public <U> U accumulate(final Supplier<U> supplier, final Supplier<U> defaultReturn) {
 			getInformationList().add(Boolean.TRUE);
 			U result = supplier.get();
 
 			if (CHECK_STRING.equals(result)) {
 				getInformationList().add(Boolean.FALSE);
-				return defaultReturn;
+				return defaultReturn.get();
 			}
 			return result;
 		}

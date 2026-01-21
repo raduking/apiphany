@@ -12,6 +12,7 @@ import org.apiphany.ApiResponse;
 import org.apiphany.header.HeaderValues;
 import org.apiphany.lang.collections.Maps;
 import org.apiphany.security.AuthenticationType;
+import org.morphix.lang.function.Predicates;
 
 /**
  * Interface for exchange clients.
@@ -98,7 +99,7 @@ public interface ExchangeClient extends AutoCloseable {
 	 * @return a predicate for the headers that should be redacted
 	 */
 	default Predicate<String> isSensitiveHeader() {
-		return headerName -> false;
+		return Predicates.alwaysFalse();
 	}
 
 	/**
