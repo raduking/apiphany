@@ -21,6 +21,11 @@ import org.morphix.reflection.Methods;
 public class ExchangeClientBuilder {
 
 	/**
+	 * Delegate exchange client builder. This is used when decorating builders and has priority over the other fields.
+	 */
+	protected ExchangeClientBuilder delegate;
+
+	/**
 	 * Exchange client class.
 	 */
 	private Class<? extends ExchangeClient> exchangeClientClass;
@@ -63,6 +68,9 @@ public class ExchangeClientBuilder {
 	 */
 	@SuppressWarnings("resource")
 	public ScopedResource<ExchangeClient> build() {
+		if (null != this.delegate) {
+			return delegate.build();
+		}
 		if (null != this.exchangeClient && null != this.exchangeClientClass) {
 			throw new IllegalStateException("Cannot set both exchange client instance and exchange client class");
 		}
@@ -126,15 +134,14 @@ public class ExchangeClientBuilder {
 	}
 
 	/**
-	 * Copies all fields from another builder.
+	 * Sets the delegate exchange client builder.
 	 *
-	 * @param exchangeClientBuilder the source builder
+	 * @param delegate delegate exchange client builder
 	 * @return this
 	 */
-	public ExchangeClientBuilder builder(final ExchangeClientBuilder exchangeClientBuilder) {
-		return client(exchangeClientBuilder.exchangeClient)
-				.client(exchangeClientBuilder.exchangeClientClass)
-				.properties(exchangeClientBuilder.clientProperties);
+	public ExchangeClientBuilder delegate(final ExchangeClientBuilder delegate) {
+		this.delegate = delegate;
+		return this;
 	}
 
 	/**
@@ -142,6 +149,8 @@ public class ExchangeClientBuilder {
 	 * <p>
 	 * The decorating builder class must have a static {@code create} method that returns a new instance of the decorating
 	 * builder.
+	 * <p>
+	 * The decorating builder is actually a new instance copies this builder and then applies the given customizer.
 	 *
 	 * @param <T> decorating builder type
 	 * @param decoratingBuilderClass decorating builder class
@@ -151,7 +160,8 @@ public class ExchangeClientBuilder {
 	public <T extends ExchangeClientBuilder> T decoratedWithBuilder(final Class<T> decoratingBuilderClass, final Consumer<T> decoratorCustomizer) {
 		Method createMethod = Methods.Safe.getOneDeclared("create", decoratingBuilderClass);
 		T decoratorBuilder = Methods.IgnoreAccess.invoke(createMethod, null);
-		decoratorBuilder.builder(this);
+		decoratorBuilder.delegate(this);
+		decoratorBuilder.properties(clientProperties);
 		decoratorCustomizer.accept(decoratorBuilder);
 		return decoratorBuilder;
 	}
@@ -161,6 +171,8 @@ public class ExchangeClientBuilder {
 	 * <p>
 	 * The decorating builder class must have a static {@code create} method that returns a new instance of the decorating
 	 * builder.
+	 * <p>
+	 * The decorating builder is actually a new instance copies this builder and then applies the given customizer.
 	 *
 	 * @param <T> decorating builder type
 	 * @param decoratingBuilderClass decorating builder class

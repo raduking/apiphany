@@ -89,7 +89,7 @@ public class OAuth2ResolvedRegistration {
 			Set<String> clientRegistrationNames = properties.getRegistration().keySet();
 			if (clientRegistrationNames.size() > 1) {
 				LOGGER.warn("[{}] Multiple OAuth2 client registrations provided in: {}.registration and the client registration name "
-						+ "was not given to the provider.", clientRegistrationName, OAuth2Properties.ROOT);
+						+ "was not given to the provider.", lookupName, OAuth2Properties.ROOT);
 			} else {
 				name = clientRegistrationNames.iterator().next();
 			}

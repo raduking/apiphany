@@ -7,10 +7,15 @@
 - Added `OAuth2TokenProviderProperties.Default.CLOSE_TASK_RETRY_INTERVAL` which is the interval between close attempts when closing the scheduled task.
 - Added `OAuth2TokenProviderProperties.setCloseTaskRetryInterval` to set the interval between close attempts when closing the scheduled task.
 - Added `OAuth2TokenProviderProperties.getCloseTaskRetryInterval` to retrieve the configured the interval between close attempts when closing the scheduled task.
+- Added `OAuth2ExchangeClientBuilder.registrationName` to configure the client registration name.
+- Changed `OAuth2HttpExchangeClient` to throw exception if no valid registration was found (multiple registrations exist and no client registration name given).
 - Added `ExchangeClient.getCustomProperties` which delegates to `ClientProperties.getCustomProperties`.
 - Changed `ExchangeClient.getHeadersAsString` to return a string easier to parse.
 - Renamed `ExchangeClient.isRedactedHeader` to `ExchangeClient.isSensitiveHeader`.
 - Added `HeaderValues.value(Object, Object, String)` with separator string between the l-value and r-value. 
+- Added `ApiClient.with(ClientProperties)` static method to initialize the client with default `JavaNetHttpExchangeClient` and given properties.
+- Changed visibility for `ApiClient.getExchangeClient(AuthenticationType)` from `protected` to `public`.
+- Changed `SecuredExchangeClientBuilder` to throw exception if no security was configured.
 - Upgraded `morphix-all` to `1.0.19`.
 - Changed `Accumulator.accumulate(Supplier, Object)` to `Accumulator.accumulate(Supplier, Supplier)` to avoid computation of the default value if not needed.
 

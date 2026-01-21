@@ -4,8 +4,12 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -15,16 +19,19 @@ import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.apiphany.ApiClient;
+import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.ExchangeClientBuilder;
 import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.http.HttpException;
+import org.apiphany.http.HttpStatus;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.ScopedResource;
 import org.apiphany.lang.Strings;
 import org.apiphany.net.Sockets;
 import org.apiphany.security.AuthenticationToken;
+import org.apiphany.security.AuthenticationTokenProvider;
 import org.apiphany.security.AuthenticationType;
 import org.apiphany.security.oauth2.ClientAuthenticationMethod;
 import org.apiphany.security.oauth2.OAuth2ClientRegistration;
@@ -94,6 +101,46 @@ class OAuth2HttpExchangeClientTest {
 
 	@Test
 	void shouldReturnValidAuthenticationTokenWithManagedApiClientWithOAuth2() throws Exception {
+		String result = null;
+		FullyManagedApiClientWithOAuth2 client = new FullyManagedApiClientWithOAuth2(clientProperties);
+		try (client) {
+			result = client.getName();
+		}
+
+		assertThat(result, equalTo(SimpleHttpServer.NAME));
+
+		verify(client.exchangeClient).close();
+		verify(client.tokenClient).close();
+		verify(client.oAuth2ExchangeClient).close();
+
+	}
+
+	@SuppressWarnings("resource")
+	@Test
+	void shouldNotCloseAnyUnmanagedClient() throws Exception {
+		JavaNetHttpExchangeClient tokenExchangeClient = mock(JavaNetHttpExchangeClient.class);
+		doReturn(AuthenticationType.NONE).when(tokenExchangeClient).getAuthenticationType();
+		doReturn("token-client").when(tokenExchangeClient).getName();
+
+		AuthenticationToken token = new AuthenticationToken();
+		token.setExpiresIn(300);
+		ApiResponse<AuthenticationToken> apiResponse = ApiResponse.create(token).status(HttpStatus.OK).build();
+		doReturn(apiResponse).when(tokenExchangeClient).exchange(any());
+
+		JavaNetHttpExchangeClient exchangeClient = mock(JavaNetHttpExchangeClient.class);
+		doReturn(clientProperties).when(exchangeClient).getClientProperties();
+		doReturn(AuthenticationType.NONE).when(exchangeClient).getAuthenticationType();
+
+		try (OAuth2HttpExchangeClient client = new OAuth2HttpExchangeClient(exchangeClient, tokenExchangeClient, MY_SIMPLE_APP)) {
+			// empty
+		}
+
+		verify(exchangeClient, times(0)).close();
+		verify(tokenExchangeClient, times(0)).close();
+	}
+
+	@Test
+	void shouldReturnValidAuthenticationTokenWithFullyManagedApiClientWithOAuth2AndCloseAllResources() throws Exception {
 		String result = null;
 		try (ManagedApiClientWithOAuth2 managedApiClientWithOAuth2 = new ManagedApiClientWithOAuth2(clientProperties)) {
 			result = managedApiClientWithOAuth2.getName();
@@ -274,6 +321,48 @@ class OAuth2HttpExchangeClientTest {
 		verify(exchangeClient).close();
 	}
 
+	@Test
+	void shouldReturnValidAuthenticationTokenWithApiClientManagedResourcesWithOAuth2v9() throws Exception {
+		IllegalStateException exception = null;
+		try (OAuth2v9ApiClient client = new OAuth2v9ApiClient(clientProperties)) {
+			// empty
+		} catch (IllegalStateException e) {
+			exception = e;
+		}
+		assertNotNull(exception);
+		assertThat(exception.getMessage(), equalTo("Client not secured with any mechanism"));
+	}
+
+	@Test
+	void shouldReturnValidAuthenticationTokenWithApiClientManagedResourcesAndMultipleRegistrationsOAuth2v10() throws Exception {
+		oAuth2Properties.setProvider(Map.of(PROVIDER_NAME, providerDetails, "another-provider", providerDetails));
+		oAuth2Properties.setRegistration(Map.of(MY_SIMPLE_APP, clientRegistration, "another-app", clientRegistration));
+		clientProperties.setCustomProperties(oAuth2Properties);
+
+		try (OAuth2v10ApiClient client = new OAuth2v10ApiClient(clientProperties)) {
+			String result = client.getName();
+
+			assertThat(result, equalTo(SimpleHttpServer.NAME));
+		}
+	}
+
+	@Test
+	void shouldFailWithApiClientManagedResourcesAndMultipleRegistrationsWhenRegistrationNotProvidedOAuth2v11() throws Exception {
+		oAuth2Properties.setProvider(Map.of(PROVIDER_NAME, providerDetails, "another-provider", providerDetails));
+		oAuth2Properties.setRegistration(Map.of(MY_SIMPLE_APP, clientRegistration, "another-app", clientRegistration));
+		clientProperties.setCustomProperties(oAuth2Properties);
+
+		IllegalStateException exception = null;
+		try (OAuth2v11ApiClient client = new OAuth2v11ApiClient(clientProperties)) {
+			// empty
+		} catch (IllegalStateException e) {
+			exception = e;
+		}
+
+		assertNotNull(exception);
+		assertThat(exception.getMessage(), equalTo("No valid client registration found!"));
+	}
+
 	@SuppressWarnings("resource")
 	@Test
 	void shouldReturnValidAuthenticationTokenWithManagedApiClientManagedWithOAuth2() throws Exception {
@@ -348,6 +437,42 @@ class OAuth2HttpExchangeClientTest {
 		public void close() throws Exception {
 			super.close();
 			getExchangeClient(AuthenticationType.OAUTH2).close();
+		}
+
+		@Override
+		public ExchangeClient getExchangeClient(final AuthenticationType authenticationType) {
+			return super.getExchangeClient(authenticationType);
+		}
+	}
+
+	/**
+	 * This class manages the client resources with separate exchange clients for API and token retrieval.
+	 */
+	static class FullyManagedApiClientWithOAuth2 extends BaseApiClient {
+
+		AutoCloseable tokenClient;
+		AutoCloseable oAuth2ExchangeClient;
+		AutoCloseable exchangeClient;
+
+		@SuppressWarnings("resource")
+		protected FullyManagedApiClientWithOAuth2(final ClientProperties properties) {
+			super(spy(new OAuth2HttpExchangeClient(spy(new JavaNetHttpExchangeClient(properties)), spy(new JavaNetHttpExchangeClient()))));
+		}
+
+		@Override
+		public void close() throws Exception {
+			super.close();
+			exchangeClient = getExchangeClient(AuthenticationType.OAUTH2);
+			if (exchangeClient instanceof OAuth2HttpExchangeClient oAuth2HttpExchangeClient) {
+				oAuth2ExchangeClient = oAuth2HttpExchangeClient;
+				AuthenticationTokenProvider tokenProvider = oAuth2HttpExchangeClient.getTokenClient();
+				if (tokenProvider instanceof OAuth2ApiClient apiClient) {
+					tokenClient = apiClient.getExchangeClient(AuthenticationType.NONE);
+					tokenClient.close();
+				}
+				oAuth2HttpExchangeClient.getExchangeClient().close();
+			}
+			exchangeClient.close();
 		}
 
 		@Override
@@ -473,6 +598,41 @@ class OAuth2HttpExchangeClientTest {
 		protected OAuth2v8ApiClient(final ExchangeClient exchangeClient) {
 			super(with(exchangeClient)
 					.decoratedWith(OAuth2HttpExchangeClient.class));
+		}
+	}
+
+	/**
+	 * In this client is invalid since no security mechanism is defined.
+	 */
+	static class OAuth2v9ApiClient extends BaseApiClient {
+
+		protected OAuth2v9ApiClient(final ClientProperties properties) {
+			super(with(properties)
+					.securedWith());
+		}
+	}
+
+	/**
+	 * In this client the {@link ApiClient} manages the resources, no need for {@link #close()}.
+	 */
+	static class OAuth2v10ApiClient extends BaseApiClient {
+
+		protected OAuth2v10ApiClient(final ClientProperties properties) {
+			super(with(properties)
+					.securedWith()
+					.oAuth2(oauth2 -> oauth2.registrationName(MY_SIMPLE_APP)));
+		}
+	}
+
+	/**
+	 * In this client the {@link ApiClient} manages the resources, no need for {@link #close()}.
+	 */
+	static class OAuth2v11ApiClient extends BaseApiClient {
+
+		protected OAuth2v11ApiClient(final ClientProperties properties) {
+			super(with(properties)
+					.securedWith()
+					.oAuth2());
 		}
 	}
 
