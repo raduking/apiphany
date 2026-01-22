@@ -4,6 +4,13 @@ import java.io.Serial;
 import java.security.SecureRandom;
 import java.security.SecureRandomParameters;
 
+/**
+ * A deterministic {@link SecureRandom} implementation for testing purposes.
+ * <p>
+ * WARNING: This implementation is NOT secure and MUST NOT be used in production systems.
+ *
+ * @author Radu Sebastian LAZIN
+ */
 public class DeterministicSecureRandom extends SecureRandom {
 
 	@Serial

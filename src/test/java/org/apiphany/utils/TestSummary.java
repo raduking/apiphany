@@ -13,7 +13,7 @@ import org.w3c.dom.NodeList;
  *
  * @author Radu Sebastian LAZIN
  */
-public class BuildTestSummary {
+public class TestSummary {
 
 	private static final String TITLE = "TEST SUMMARY";
 	private static final String LINE = Strings.repeat("-", 128);
