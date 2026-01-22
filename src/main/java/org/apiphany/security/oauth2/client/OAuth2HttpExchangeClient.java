@@ -40,12 +40,12 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	/**
 	 * The resolved registration.
 	 */
-	private OAuth2ResolvedRegistration resolvedRegistration;
+	private final OAuth2ResolvedRegistration resolvedRegistration;
 
 	/**
 	 * The token provider.
 	 */
-	private OAuth2TokenProvider tokenProvider;
+	private final OAuth2TokenProvider tokenProvider;
 
 	/**
 	 * Decorates an exchange client with OAuth2 authentication.
@@ -75,6 +75,8 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 							tokenExchangeClient.unwrap()))
 					.build();
 			this.tokenProvider = OAuth2TokenProvider.of(specification);
+		} else {
+			this.tokenProvider = null;
 		}
 		setAuthenticationScheme(HttpAuthScheme.BEARER);
 	}
@@ -203,20 +205,23 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	}
 
 	/**
-	 * Returns the token client.
+	 * Returns the client that retrieves the tokens.
 	 *
-	 * @return the token client
+	 * @return the client that retrieves the tokens
 	 */
-	protected AuthenticationTokenProvider getTokenClient() {
-		return tokenProvider.getTokenClient();
+	public AuthenticationTokenProvider getTokenClient() {
+		if (null != tokenProvider) {
+			return tokenProvider.getTokenClient();
+		}
+		return null;
 	}
 
 	/**
-	 * Returns the token provider.
+	 * Returns the OAuth2 token provider.
 	 *
-	 * @return the token provider
+	 * @return the OAuth2 token provider
 	 */
-	protected OAuth2TokenProvider getTokenProvider() {
+	public OAuth2TokenProvider getTokenProvider() {
 		return tokenProvider;
 	}
 }
