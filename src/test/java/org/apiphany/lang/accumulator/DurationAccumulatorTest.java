@@ -38,9 +38,7 @@ class DurationAccumulatorTest {
 
 	@Test
 	void shouldAccumulateDurationWhenRunnableIsExecuted() {
-		accumulator.accumulate(() -> {
-			Threads.safeSleep(Duration.ofMillis(50));
-		});
+		accumulator.accumulate(() -> Threads.safeSleep(Duration.ofMillis(50)));
 
 		List<Double> durations = accumulator.durationsAsDouble();
 		assertThat(durations, hasSize(1));

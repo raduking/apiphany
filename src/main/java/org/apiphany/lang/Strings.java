@@ -321,7 +321,7 @@ public interface Strings {
 	 *
 	 * @param input the input string to strip
 	 * @param ch the character to strip
-	 * @return stripped string from the start end end if it contains the given character
+	 * @return stripped string from the start and end if it contains the given character
 	 */
 	static String stripChar(final String input, final char ch) {
 		if (isEmpty(input)) {

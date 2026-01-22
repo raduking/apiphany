@@ -28,6 +28,12 @@ class ApiPredicatesTest {
 	}
 
 	@Test
+	void shouldThrowExceptionOnCallingExpectedConstructor() {
+		UnsupportedOperationException unsupportedOperationException = Tests.verifyDefaultConstructorThrows(ApiPredicates.Expected.class);
+		assertThat(unsupportedOperationException.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
+	}
+
+	@Test
 	void shouldValidateNonEmptyResponse() {
 		List<String> list = List.of(SOME_VALUE);
 

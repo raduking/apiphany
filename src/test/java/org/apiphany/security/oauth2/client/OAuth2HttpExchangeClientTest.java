@@ -59,24 +59,20 @@ class OAuth2HttpExchangeClientTest {
 
 	private static final SimpleHttpServer API_SERVER = new SimpleHttpServer(API_SERVER_PORT, JWT_TOKEN_VALIDATOR);
 
-	private OAuth2ClientRegistration clientRegistration;
-	private OAuth2ProviderDetails providerDetails;
-
 	private ClientProperties clientProperties;
-
-	private OAuth2Properties oAuth2Properties;
 
 	@BeforeEach
 	void setUp() {
 		String clientRegistrationJson = Strings.fromFile("security/oauth2/oauth2-client-registration.json");
-		clientRegistration = JsonBuilder.fromJson(clientRegistrationJson, OAuth2ClientRegistration.class);
+		OAuth2ClientRegistration clientRegistration = JsonBuilder.fromJson(clientRegistrationJson, OAuth2ClientRegistration.class);
 		clientRegistration.setProvider(PROVIDER_NAME);
 		clientRegistration.setClientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST);
 
-		providerDetails = JsonBuilder.fromJson(Strings.fromFile("security/oauth2/oauth2-provider-details.json"), OAuth2ProviderDetails.class);
+		OAuth2ProviderDetails providerDetails =
+				JsonBuilder.fromJson(Strings.fromFile("security/oauth2/oauth2-provider-details.json"), OAuth2ProviderDetails.class);
 		providerDetails.setTokenUri(OAUTH2_SERVER.getUrl() + "/token");
 
-		oAuth2Properties = new OAuth2Properties();
+		OAuth2Properties oAuth2Properties = new OAuth2Properties();
 		oAuth2Properties.setProvider(Map.of(PROVIDER_NAME, providerDetails));
 		oAuth2Properties.setRegistration(Map.of(MY_SIMPLE_APP, clientRegistration));
 

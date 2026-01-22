@@ -14,12 +14,50 @@ import org.slf4j.LoggerFactory;
  */
 public class ApiPredicates {
 
+	/**
+	 * The class logger.
+	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(ApiPredicates.class);
 
 	/**
-	 * Message logged for list predicates.
+	 * Name space class for logging messages.
+	 *
+	 * @author Radu Sebastian LAZIN
 	 */
-	private static final String LOG_EXPECTED_NON_EMPTY_LIST = "Expected non empty list.";
+	public static class Expected {
+
+		/**
+		 * Message logged for non-empty list.
+		 */
+		public static final String NON_EMPTY_LIST = "Expected non empty list.";
+
+		/**
+		 * Message logged when expecting list with a size.
+		 */
+		public static final String LIST_WITH_SIZE = "Expected list with size {}.";
+
+		/**
+		 * Message logged when expecting non-empty page.
+		 */
+		public static final String NON_EMPTY_PAGE = "Expected non empty page.";
+
+		/**
+		 * Message logged when expecting a page that has size greater than.
+		 */
+		public static final String PAGE_WITH_SIZE_GT = "Expected page with size greater than {}.";
+
+		/**
+		 * Message logged when expecting a non-null response.
+		 */
+		public static final String NON_NULL_RESPONSE = "Expected non null response.";
+
+		/**
+		 * Hide constructor.
+		 */
+		private Expected() {
+			throw Constructors.unsupportedOperationException();
+		}
+	}
 
 	/**
 	 * Predicate to be used only response must be a {@link java.util.List} and must not be empty
@@ -32,7 +70,7 @@ public class ApiPredicates {
 			boolean condition = List.class.isAssignableFrom(responseList.getClass()) &&
 					!((List<?>) responseList).isEmpty();
 			if (!condition) {
-				LOGGER.info(LOG_EXPECTED_NON_EMPTY_LIST);
+				LOGGER.info(Expected.NON_EMPTY_LIST);
 			}
 			return condition;
 		};
@@ -51,7 +89,7 @@ public class ApiPredicates {
 			boolean condition = List.class.isAssignableFrom(responseList.getClass()) &&
 					((List<?>) responseList).size() == listSize;
 			if (!condition) {
-				LOGGER.info(LOG_EXPECTED_NON_EMPTY_LIST);
+				LOGGER.info(Expected.LIST_WITH_SIZE, listSize);
 			}
 			return condition;
 		};
@@ -70,7 +108,7 @@ public class ApiPredicates {
 			boolean condition = ApiPage.class.isAssignableFrom(responsePage.getClass()) &&
 					((ApiPage<?>) responsePage).getContent().size() >= pageSize;
 			if (!condition) {
-				LOGGER.info("Expected pagination with size >= {}", pageSize);
+				LOGGER.info(Expected.PAGE_WITH_SIZE_GT, pageSize);
 			}
 			return condition;
 		};
@@ -86,7 +124,7 @@ public class ApiPredicates {
 		return response -> {
 			boolean condition = null != response;
 			if (!condition) {
-				LOGGER.info("Expected non null response.");
+				LOGGER.info(Expected.NON_NULL_RESPONSE);
 			}
 			return condition;
 		};
@@ -113,7 +151,7 @@ public class ApiPredicates {
 			boolean condition = ApiPage.class.isAssignableFrom(responsePage.getClass()) &&
 					!((ApiPage<?>) responsePage).getContent().isEmpty();
 			if (!condition) {
-				LOGGER.info(LOG_EXPECTED_NON_EMPTY_LIST);
+				LOGGER.info(Expected.NON_EMPTY_PAGE);
 			}
 			return condition;
 		};

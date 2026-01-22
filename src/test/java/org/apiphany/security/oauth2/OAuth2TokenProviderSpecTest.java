@@ -2,6 +2,7 @@ package org.apiphany.security.oauth2;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.time.Instant;
 import java.util.concurrent.Executors;
@@ -63,6 +64,6 @@ class OAuth2TokenProviderSpecTest {
 				new OAuth2ClientRegistration(),
 				new OAuth2ProviderDetails());
 
-		assertEquals(null, tokenProvider);
+		assertNull(tokenProvider);
 	}
 }

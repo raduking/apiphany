@@ -27,7 +27,7 @@ public class ApiMessage<T> {
 	/**
 	 * A map of headers to be included in the message. Each header can have multiple values.
 	 */
-	protected Map<String, List<String>> headers;
+	protected final Map<String, List<String>> headers;
 
 	/**
 	 * Constructs an API message object with the given body and headers. The headers must not be {@code null}.

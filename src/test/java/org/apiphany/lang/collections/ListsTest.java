@@ -62,7 +62,7 @@ class ListsTest {
 	}
 
 	@Test
-	void shouldReturnTheFirstElementFromAListIfListIsNotEmptyWitgDefaultValue() {
+	void shouldReturnTheFirstElementFromAListIfListIsNotEmptyWithDefaultValue() {
 		List<Integer> list = List.of(1, 2, 3);
 
 		Integer first = Lists.first(list, TEST_INT);

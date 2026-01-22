@@ -62,7 +62,7 @@ class ParameterFunctionTest {
 
 	static class A {
 
-		String s;
+		final String s;
 
 		A(final String s) {
 			this.s = s;
@@ -116,8 +116,8 @@ class ParameterFunctionTest {
 
 	static class Parameter implements ParameterFunction {
 
-		String name;
-		String value;
+		final String name;
+		final String value;
 
 		public Parameter(final String name, final String value) {
 			this.name = name;

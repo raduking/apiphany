@@ -581,9 +581,7 @@ class BasicMetersTest {
 	@Test
 	void shouldWrapButSendMetricsWithTagsWithDefaultMeterFactoryAndRunnable() {
 		String prefix = METRICS_PREFIX + "." + SOME_RANDOM_KEBAB_STRING;
-		BasicMeters.wrap(prefix, () -> {
-			Threads.safeSleep(Duration.ofMillis(10));
-		});
+		BasicMeters.wrap(prefix, () -> Threads.safeSleep(Duration.ofMillis(10)));
 
 		Collection<?> search = Metrics.globalRegistry.get(prefix + "." + BasicMeters.Name.LATENCY).meters();
 		assertThat(search, hasSize(1));

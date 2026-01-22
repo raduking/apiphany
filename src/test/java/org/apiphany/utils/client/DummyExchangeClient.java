@@ -19,7 +19,7 @@ public class DummyExchangeClient implements ExchangeClient {
 	}
 
 	@Override
-	public void close() throws Exception {
+	public void close() {
 		// empty
 	}
 

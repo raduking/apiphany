@@ -49,7 +49,7 @@ class MapsTest {
 	}
 
 	@Test
-	void shouldReturnDefaultValueIfMapDoesntHaveIt() {
+	void shouldReturnDefaultValueIfMapDoesNotHaveIt() {
 		var map = Map.of(KEY, VALUE);
 
 		Object value = Maps.getOrDefault(map, VALUE, v -> v, KEY);

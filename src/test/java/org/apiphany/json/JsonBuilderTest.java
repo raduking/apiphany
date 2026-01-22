@@ -173,7 +173,8 @@ class JsonBuilderTest {
 	}
 
 	static class B {
-		String id;
+
+		final String id;
 
 		public B(final Long id) {
 			this.id = id.toString();
