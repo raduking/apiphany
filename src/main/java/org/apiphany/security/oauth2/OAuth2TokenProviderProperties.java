@@ -64,7 +64,7 @@ public class OAuth2TokenProviderProperties {
 	/**
 	 * The maximum attempts to close the scheduled task when calling {@link OAuth2TokenProvider#close()}.
 	 */
-	private int maxTaskCloseAttempts = Default.MAX_TASK_CLOSE_ATTEMPTS;
+	private Integer maxTaskCloseAttempts = Default.MAX_TASK_CLOSE_ATTEMPTS;
 
 	/**
 	 * The interval between close attempts when closing the scheduled task.
@@ -128,7 +128,7 @@ public class OAuth2TokenProviderProperties {
 	 *
 	 * @return the maximum close attempts
 	 */
-	public int getMaxTaskCloseAttempts() {
+	public Integer getMaxTaskCloseAttempts() {
 		return maxTaskCloseAttempts;
 	}
 
@@ -137,7 +137,7 @@ public class OAuth2TokenProviderProperties {
 	 *
 	 * @param maxCloseAttempts the maximum close attempts to set
 	 */
-	public void setMaxTaskCloseAttempts(final int maxCloseAttempts) {
+	public void setMaxTaskCloseAttempts(final Integer maxCloseAttempts) {
 		this.maxTaskCloseAttempts = maxCloseAttempts;
 	}
 

@@ -79,9 +79,7 @@ public class ApiClientWithOAuth2Test {
 		providerDetails = JsonBuilder.fromJson(Strings.fromFile("security/oauth2/oauth2-provider-details.json"), OAuth2ProviderDetails.class);
 		providerDetails.setTokenUri(OAUTH2_SERVER.getUrl() + "/token");
 
-		oAuth2Properties = new OAuth2Properties();
-		oAuth2Properties.setProvider(Map.of(PROVIDER_NAME, providerDetails));
-		oAuth2Properties.setRegistration(Map.of(MY_SIMPLE_APP, clientRegistration));
+		oAuth2Properties = OAuth2Properties.of(Map.of(MY_SIMPLE_APP, clientRegistration), Map.of(PROVIDER_NAME, providerDetails));
 
 		clientProperties = new ClientProperties();
 		clientProperties.setCustomProperties(oAuth2Properties);
