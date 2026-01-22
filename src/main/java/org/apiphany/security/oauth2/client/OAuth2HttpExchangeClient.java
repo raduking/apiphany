@@ -10,6 +10,7 @@ import org.apiphany.security.AuthenticationType;
 import org.apiphany.security.oauth2.OAuth2Properties;
 import org.apiphany.security.oauth2.OAuth2ResolvedRegistration;
 import org.apiphany.security.oauth2.OAuth2TokenProvider;
+import org.apiphany.security.oauth2.OAuth2TokenProviderConfiguration;
 import org.apiphany.security.token.client.TokenHttpExchangeClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,8 +72,12 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 		}
 
 		if (initialize()) {
-			this.tokenProvider = new OAuth2TokenProvider(resolvedRegistration,
-					(clientRegistration, providerDetails) -> new OAuth2ApiClient(clientRegistration, providerDetails, tokenExchangeClient.unwrap()));
+			OAuth2TokenProviderConfiguration configuration = OAuth2TokenProviderConfiguration.builder()
+					.registration(resolvedRegistration)
+					.tokenClientSupplier((clientRegistration, providerDetails) -> new OAuth2ApiClient(clientRegistration, providerDetails,
+							tokenExchangeClient.unwrap()))
+					.build();
+			this.tokenProvider = new OAuth2TokenProvider(configuration);
 		}
 		setAuthenticationScheme(HttpAuthScheme.BEARER);
 	}

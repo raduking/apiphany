@@ -2,6 +2,10 @@
 
 `1.0.26`
 
+- Added `OAuth2TokenProviderConfiguration` record and builder to serve as an immutable configuration to build `OAuth2TokenProvider`s.
+- Added constructor for `OAuth2TokenProvider` with `OAuth2TokenProviderConfiguration`.
+- Removed all constructors from `OAuth2TokenProvider` except the one with `OAuth2TokenProviderConfiguration`.
+- Added `OAuth2TokenProvider.of(OAuth2TokenProviderConfiguration)` factory method.
 - Renamed `OAuth2TokenProviderOptions` to `OAuth2TokenProviderProperties`.
 - Renamed `OAuth2TokenProvider.getOptions` to `OAuth2TokenProvider.getProperties`.
 - Added `OAuth2TokenProviderProperties.Default.CLOSE_TASK_RETRY_INTERVAL` which is the interval between close attempts when closing the scheduled task.

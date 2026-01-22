@@ -3,8 +3,6 @@ package org.apiphany.security.oauth2;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -43,7 +41,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	/**
 	 * The client doing the token refresh.
 	 */
-	private AuthenticationTokenProvider tokenClient;
+	private final AuthenticationTokenProvider tokenClient;
 
 	/**
 	 * Token retrieval scheduler.
@@ -61,6 +59,16 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	private final OAuth2ResolvedRegistration registration;
 
 	/**
+	 * Supplies the default token expiration.
+	 */
+	private final Supplier<Instant> defaultExpirationSupplier;
+
+	/**
+	 * The specific options for this provider.
+	 */
+	private final OAuth2TokenProviderProperties properties;
+
+	/**
 	 * The scheduled future to stop.
 	 */
 	private ScheduledFuture<?> scheduledFuture;
@@ -71,113 +79,37 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	private AuthenticationToken authenticationToken;
 
 	/**
-	 * Supplies the default token expiration.
-	 */
-	private Supplier<Instant> defaultExpirationSupplier;
-
-	/**
-	 * The specific options for this provider.
-	 */
-	private final OAuth2TokenProviderProperties properties;
-
-	/**
 	 * Creates a new authentication token provider.
 	 *
-	 * @param properties the OAuth2 token provider properties
-	 * @param registration the OAuth2 resolved registration for this provider
-	 * @param tokenRefreshScheduler the token refresh scheduler
-	 * @param tokenClientSupplier the supplier for the client that will make the actual token requests
+	 * @param configuration the OAuth2 token provider configuration
 	 */
-	public OAuth2TokenProvider(
-			final OAuth2TokenProviderProperties properties,
-			final OAuth2ResolvedRegistration registration,
-			final ScheduledExecutorService tokenRefreshScheduler,
-			final OAuth2TokenClientSupplier tokenClientSupplier) {
-		this.properties = Objects.requireNonNull(properties, "properties cannot be null");
-		this.tokenRefreshScheduler = Objects.requireNonNull(tokenRefreshScheduler, "tokenRefreshScheduler cannot be null");
-		this.defaultExpirationSupplier = Instant::now;
-		this.registration = registration;
+	public OAuth2TokenProvider(final OAuth2TokenProviderConfiguration configuration) {
+		this.properties = configuration.properties();
+		this.registration = configuration.registration();
+		this.tokenRefreshScheduler = configuration.tokenRefreshScheduler();
+		this.defaultExpirationSupplier = configuration.defaultExpirationSupplier();
 
-		if (null != registration) {
+		if (null == registration) {
+			LOGGER.warn("No registration provided for OAuth2TokenProvider, token retrieval will be disabled.");
+			this.tokenClient = null;
+		} else {
+			OAuth2TokenClientSupplier supplier = configuration.tokenClientSupplier();
+			this.tokenClient = supplier.get(registration.getClientRegistration(), registration.getProviderDetails());
+		}
+		if (null != tokenClient) {
 			setSchedulerEnabled(true);
-			this.tokenClient = tokenClientSupplier.get(registration.getClientRegistration(), registration.getProviderDetails());
 			updateAuthenticationToken();
 		}
 	}
 
 	/**
-	 * Creates a new authentication token provider.
+	 * Builds a new OAuth2 token provider from the given configuration.
 	 *
-	 * @param properties the OAuth2 token provider properties
-	 * @param oAuth2Properties the OAuth2 properties
-	 * @param clientRegistrationName the wanted client registration name
-	 * @param tokenRefreshScheduler the token refresh scheduler
-	 * @param tokenClientSupplier the supplier for the client that will make the actual token requests
+	 * @param configuration the OAuth2 token provider configuration
+	 * @return a new OAuth2 token provider
 	 */
-	public OAuth2TokenProvider(
-			final OAuth2TokenProviderProperties properties,
-			final OAuth2Properties oAuth2Properties,
-			final String clientRegistrationName,
-			final ScheduledExecutorService tokenRefreshScheduler,
-			final OAuth2TokenClientSupplier tokenClientSupplier) {
-		this(properties, OAuth2ResolvedRegistration.of(oAuth2Properties, clientRegistrationName), tokenRefreshScheduler, tokenClientSupplier);
-	}
-
-	/**
-	 * Creates a new authentication token provider.
-	 *
-	 * @param oAuth2Properties the OAuth2 properties
-	 * @param clientRegistrationName the wanted client registration name
-	 * @param tokenRefreshScheduler the token refresh scheduler
-	 * @param tokenClientSupplier the supplier for the client that will make the actual token requests
-	 */
-	public OAuth2TokenProvider(
-			final OAuth2Properties oAuth2Properties,
-			final String clientRegistrationName,
-			final ScheduledExecutorService tokenRefreshScheduler,
-			final OAuth2TokenClientSupplier tokenClientSupplier) {
-		this(OAuth2TokenProviderProperties.defaults(), oAuth2Properties, clientRegistrationName, tokenRefreshScheduler, tokenClientSupplier);
-	}
-
-	/**
-	 * Creates a new authentication token provider.
-	 *
-	 * @param registration the OAuth2 resolved registration for this provider
-	 * @param tokenClientSupplier the supplier for the client that will make the actual token requests
-	 */
-	@SuppressWarnings("resource")
-	public OAuth2TokenProvider(
-			final OAuth2ResolvedRegistration registration,
-			final OAuth2TokenClientSupplier tokenClientSupplier) {
-		this(OAuth2TokenProviderProperties.defaults(), registration, defaultSchedulerExecutorService(), tokenClientSupplier);
-	}
-
-	/**
-	 * Creates a new authentication token provider. The scheduler will use virtual threads for the scheduled tasks.
-	 *
-	 * @param oAuth2Properties the OAuth2 properties
-	 * @param clientRegistrationName the wanted client registration name
-	 * @param tokenClientSupplier the supplier for the client that will make the actual token requests
-	 */
-	@SuppressWarnings("resource")
-	public OAuth2TokenProvider(
-			final OAuth2Properties oAuth2Properties,
-			final String clientRegistrationName,
-			final OAuth2TokenClientSupplier tokenClientSupplier) {
-		this(oAuth2Properties, clientRegistrationName, defaultSchedulerExecutorService(), tokenClientSupplier);
-	}
-
-	/**
-	 * Creates a new authentication token provider. The scheduler will use virtual threads for the scheduled tasks. This
-	 * will initialize the provider only if there is only one registration defined in OAuth2 properties.
-	 *
-	 * @param oAuth2Properties the OAuth2 properties
-	 * @param tokenClientSupplier the supplier for the client that will make the actual token requests
-	 */
-	public OAuth2TokenProvider(
-			final OAuth2Properties oAuth2Properties,
-			final OAuth2TokenClientSupplier tokenClientSupplier) {
-		this(oAuth2Properties, null, tokenClientSupplier);
+	public static OAuth2TokenProvider of(final OAuth2TokenProviderConfiguration configuration) {
+		return new OAuth2TokenProvider(configuration);
 	}
 
 	/**
@@ -224,15 +156,6 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 */
 	protected Instant getDefaultTokenExpiration() {
 		return defaultExpirationSupplier.get();
-	}
-
-	/**
-	 * Sets the default token expiration supplier to supply the value for {@link #getDefaultTokenExpiration()}.
-	 *
-	 * @param defaultExpirationSupplier default token expiration supplier
-	 */
-	protected void setDefaultTokenExpirationSupplier(final Supplier<Instant> defaultExpirationSupplier) {
-		this.defaultExpirationSupplier = defaultExpirationSupplier;
 	}
 
 	/**
@@ -371,14 +294,5 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 */
 	public OAuth2TokenProviderProperties getProperties() {
 		return properties;
-	}
-
-	/**
-	 * Creates a scheduled executor service using virtual threads.
-	 *
-	 * @return the scheduled executor service
-	 */
-	protected static ScheduledExecutorService defaultSchedulerExecutorService() {
-		return Executors.newScheduledThreadPool(0, Thread.ofVirtual().factory());
 	}
 }
