@@ -68,7 +68,7 @@ public class RequestParametersFromBenchmark {
 
 	static class A {
 
-		String name;
+		final String name;
 
 		A(final String name) {
 			this.name = name;

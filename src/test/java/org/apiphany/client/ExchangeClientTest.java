@@ -3,6 +3,7 @@ package org.apiphany.client;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -27,7 +28,7 @@ class ExchangeClientTest {
 	@Test
 	void shouldThrowExceptionOnGetClientProperties() {
 		UnsupportedOperationException exception = assertThrows(UnsupportedOperationException.class,
-				() -> exchangeClient.getClientProperties());
+				exchangeClient::getClientProperties);
 
 		assertEquals("getClientProperties", exception.getMessage());
 	}
@@ -71,7 +72,7 @@ class ExchangeClientTest {
 
 	@Test
 	void shouldReturnAlwaysFalsePredicateOnIsSensitiveHeader() {
-		assertEquals(false, exchangeClient.isSensitiveHeader().test("Any-Header-Value"));
+		assertFalse(exchangeClient.isSensitiveHeader().test("Any-Header-Value"));
 	}
 
 	@Test

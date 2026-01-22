@@ -28,12 +28,7 @@ class MeterTest {
 
 	@Test
 	void shouldThrowExceptionIfTheMeterClassIsWrong() {
-		Meter testMeter = new Meter() {
-			@Override
-			public String getName() {
-				return NAME;
-			}
-		};
+		Meter testMeter = () -> NAME;
 
 		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> testMeter.unwrap(TestMeter.class));
 

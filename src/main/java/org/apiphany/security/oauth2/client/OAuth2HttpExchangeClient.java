@@ -33,11 +33,6 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	private final ScopedResource<ExchangeClient> tokenExchangeClient;
 
 	/**
-	 * All OAuth2 properties.
-	 */
-	private final OAuth2Properties oAuth2Properties;
-
-	/**
 	 * The resolved registration.
 	 */
 	private final OAuth2ResolvedRegistration resolvedRegistration;
@@ -65,7 +60,7 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 		super(exchangeClient);
 
 		this.tokenExchangeClient = ScopedResource.ensureSingleManager(tokenExchangeClient, exchangeClient);
-		this.oAuth2Properties = getClientProperties().getCustomProperties(OAuth2Properties.ROOT, OAuth2Properties.class);
+		OAuth2Properties oAuth2Properties = getCustomProperties(OAuth2Properties.class);
 		this.resolvedRegistration = OAuth2ResolvedRegistration.of(oAuth2Properties, clientRegistrationName);
 
 		if (initialize()) {

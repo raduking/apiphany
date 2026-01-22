@@ -150,7 +150,7 @@
 `1.0.20`
 
 - Moved default values from `Sockets` class into `Sockets.Default` name space inner class.
-- Added `AuthenticationTokenClientSupplier` functional interface that provides an token client instead of using a generic `BiFunction`.
+- Added `AuthenticationTokenClientSupplier` functional interface that provides a token client instead of using a generic `BiFunction`.
 - Added `OAuth2Registry.of` method without parameters to create an empty `OAuth2Registry`.
 - Changed `OAuth2TokenProvider` to throw `AuthenticationException` if the token client returns a `null` token.
 - Changed `OAuth2TokenProvider` to throw `AuthenticationException` if the token client returns a token with invalid `expires_in` field.
@@ -210,8 +210,8 @@
 - Moved all map header method implementations to `Headers` and `MapHeaderValues` now delegates to them.
 - Renamed `HttpStatus.getMessage` to `HttpStatus.message` for consistency with other methods.
 - Renamed `HttpStatus.from` to `HttpStatus.fromCode` to better emphasize what the method does.
-- Added `HttpStatus.fromString` to build a HTTP status from a `String`.
-- Added `HttpStatus.fromMessage` to build a HTTP status from a HTTP `String` status message.
+- Added `HttpStatus.fromString` to build an HTTP status from a `String`.
+- Added `HttpStatus.fromMessage` to build an HTTP status from an HTTP `String` status message.
 - Renamed `HttpStatus.Type.from` to `HttpStatus.Type.fromCode` to better emphasize what the method does.
 - Changed `ContentConverter.getHeaderValues` parameter order, now the header name is the first parameter.
 
@@ -342,7 +342,7 @@ Changed `AuthenticationException` to extend `SecurityException`.
 
 `1.0.7`
 
-- Added `PRF` with utility methods to a apply pseudo-random function in TLS environments.
+- Added `PRF` with utility methods to apply pseudo-random function in TLS environments.
 - Added `KeyExchangeHandler` interface to be implemented in key exchanges.
 - Added `Sensitive` annotation to mark sensitive fields.
 - Changed `JacksonJsonBuilder` to read sensitive but not write `Sensitive` fields this is useful for passwords fields.
@@ -351,7 +351,7 @@ Changed `AuthenticationException` to extend `SecurityException`.
 - Added `@FieldOrder` annotation which is replacing Jackson's `@JsonPropertyOrder` and is JSON library agnostic.
 - Added `@AsValue` annotation which is replacing Jackson's `@JsonValue` and is JSON library agnostic.
 - Added `ApiphanyAnnotationIntrospector` which handles the newly added annotations when Jackson is present in the class path so that the JSON library is abstracted away.
-- Added `@Sensitive` annotation for sensitive fields that will deserialized but not serialized for security.
+- Added `@Sensitive` annotation for sensitive fields that will be deserialized but not serialized for security.
 - Added `SensitiveAnnotationIntrospector` that handles the `@Sensitive` annotation.
 - Changed `BasicMeters` class so that is metric library agnostic.
 - Added `Meter` base interface for meters.
@@ -423,7 +423,7 @@ Changed `AuthenticationException` to extend `SecurityException`.
 `1.0.3`
 
 - Added `Arrays` class for Java array utility methods.
-- Added `Strings.envelope` method to add a a string as both a prefix and a suffix to a given string.
+- Added `Strings.envelope` method to add a string as both a prefix and a suffix to a given string.
 - Added `Certificates` class for key stores and trust stores utility methods.
 - Added `CertificateStoreInfo` which holds all information to construct a key store or a trust store.
 - Renamed `HttpProperties` to `JavaNetHttpProperties`.
@@ -461,7 +461,7 @@ Changed `AuthenticationException` to extend `SecurityException`.
 - Added `ExchangeClientBuilder` for managed exchange clients in `ApiClient`.
 - Changed the default exchange client management to not managed when the `ApiClient` is built with direct `ExchangeClient` objects.
 - Added `ApiPage.of` to construct `ApiPage` objects.
-- Added `OAuth2ExchangeClientBuilder` to build exchange clients with built in OAuth2 functionality.
+- Added `OAuth2ExchangeClientBuilder` to build exchange clients with built-in OAuth2 functionality.
 - Added `Pair.toMap` to convert a `Pair` object to a `Map` object.
 - Changed the main constructor in `ApiClient` to have an exchange client map with for exchange client life cycle management information.
 - Added `ApiPage.of` factory method with `ApiPage` class and content.

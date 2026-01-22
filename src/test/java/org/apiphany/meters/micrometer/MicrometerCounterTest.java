@@ -25,9 +25,9 @@ class MicrometerCounterTest {
 		Counter counter = Metrics.globalRegistry.counter(COUNTER_NAME);
 		MicrometerCounter micrometerCounter = new MicrometerCounter(counter);
 
-		Counter unwraped = micrometerCounter.unwrap(Counter.class);
+		Counter unwrapped = micrometerCounter.unwrap(Counter.class);
 
-		assertThat(unwraped, equalTo(micrometerCounter.getCounter()));
+		assertThat(unwrapped, equalTo(micrometerCounter.getCounter()));
 	}
 
 	@Test
@@ -41,7 +41,7 @@ class MicrometerCounterTest {
 	}
 
 	@Test
-	void souldCallMicrometerInternalCountOnCount() {
+	void shouldCallMicrometerInternalCountOnCount() {
 		Counter counter = mock(Counter.class);
 		MicrometerCounter micrometerCounter = new MicrometerCounter(counter);
 

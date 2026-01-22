@@ -37,8 +37,8 @@ public record OAuth2TokenProviderSpec(
 	 */
 	@SuppressWarnings("resource")
 	public OAuth2TokenProviderSpec {
-		properties = Nullables.nonNullOrDefault(properties, () -> OAuth2TokenProviderProperties.defaults());
-		tokenRefreshScheduler = Nullables.nonNullOrDefault(tokenRefreshScheduler, () -> defaultSchedulerExecutor());
+		properties = Nullables.nonNullOrDefault(properties, OAuth2TokenProviderProperties::defaults);
+		tokenRefreshScheduler = Nullables.nonNullOrDefault(tokenRefreshScheduler, OAuth2TokenProviderSpec::defaultSchedulerExecutor);
 		tokenClientSupplier = Nullables.nonNullOrDefault(tokenClientSupplier, () -> (clientRegistration, providerDetails) -> null);
 		defaultExpirationSupplier = Nullables.nonNullOrDefault(defaultExpirationSupplier, () -> Instant::now);
 	}
@@ -46,7 +46,7 @@ public record OAuth2TokenProviderSpec(
 	/**
 	 * Constructor with builder.
 	 *
-	 * @param builder
+	 * @param builder the builder
 	 */
 	private OAuth2TokenProviderSpec(final Builder builder) {
 		this(

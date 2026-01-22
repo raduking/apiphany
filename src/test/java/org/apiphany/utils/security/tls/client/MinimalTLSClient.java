@@ -407,8 +407,8 @@ public class MinimalTLSClient implements AutoCloseable {
 				LOGGER.debug("HMAC (hex): {}", Hex.string(mac));
 
 				byte[] plaintextMac = Bytes.concatenate(plaintext, mac);
-				LOGGER.debug("Plaintext + MAC (hex): {}", Hex.string(plaintextMac));
-				LOGGER.debug("Plaintext + MAC length: {}", plaintextMac.length);
+				LOGGER.debug("[encrypt] Plaintext + MAC (hex): {}", Hex.string(plaintextMac));
+				LOGGER.debug("[encrypt] Plaintext + MAC length: {}", plaintextMac.length);
 
 				byte[] padded = Bytes.padPKCS7(plaintextMac, blockSize);
 				LOGGER.debug("Padded (hex): {}", Hex.string(padded));
@@ -484,8 +484,8 @@ public class MinimalTLSClient implements AutoCloseable {
 				int padLen = paddedPlaintext[paddedPlaintext.length - 1] & 0xFF;
 				int plaintextMacLen = paddedPlaintext.length - (padLen + 1);
 				byte[] plaintextWithMac = Arrays.copyOf(paddedPlaintext, plaintextMacLen);
-				LOGGER.debug("Plaintext + MAC length: {}", plaintextWithMac.length);
-				LOGGER.debug("Plaintext + MAC (hex): {}", Hex.string(plaintextWithMac));
+				LOGGER.debug("[decrypt] Plaintext + MAC length: {}", plaintextWithMac.length);
+				LOGGER.debug("[decrypt] Plaintext + MAC (hex): {}", Hex.string(plaintextWithMac));
 
 				int macLength = serverCipherSuite.messageDigest().digestLength();
 				int dataLength = plaintextWithMac.length - macLength;

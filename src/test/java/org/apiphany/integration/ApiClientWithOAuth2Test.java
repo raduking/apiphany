@@ -368,11 +368,6 @@ public class ApiClientWithOAuth2Test {
 			super.close();
 			getExchangeClient(AuthenticationType.OAUTH2).close();
 		}
-
-		@Override
-		public ExchangeClient getExchangeClient(final AuthenticationType authenticationType) {
-			return super.getExchangeClient(authenticationType);
-		}
 	}
 
 	/**
@@ -403,11 +398,6 @@ public class ApiClientWithOAuth2Test {
 				oAuth2HttpExchangeClient.getExchangeClient().close();
 			}
 			exchangeClient.close();
-		}
-
-		@Override
-		public ExchangeClient getExchangeClient(final AuthenticationType authenticationType) {
-			return super.getExchangeClient(authenticationType);
 		}
 	}
 

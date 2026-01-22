@@ -23,9 +23,9 @@ class MicrometerTimerTest {
 		Timer timer = Metrics.globalRegistry.timer(TIMER_NAME);
 		MicrometerTimer micrometerTimer = new MicrometerTimer(timer);
 
-		Timer unwraped = micrometerTimer.unwrap(Timer.class);
+		Timer unwrapped = micrometerTimer.unwrap(Timer.class);
 
-		assertThat(unwraped, equalTo(micrometerTimer.getTimer()));
+		assertThat(unwrapped, equalTo(micrometerTimer.getTimer()));
 	}
 
 	@Test

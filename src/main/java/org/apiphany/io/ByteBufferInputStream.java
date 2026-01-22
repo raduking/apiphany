@@ -145,7 +145,7 @@ public class ByteBufferInputStream extends InputStream {
 	 * @see InputStream#mark(int)
 	 */
 	@Override
-	public void mark(final int readlimit) {
+	public void mark(final int readLimit) {
 		byteBuffer.mark();
 	}
 

@@ -76,12 +76,7 @@ class MicrometerFactoryTest {
 
 	@Test
 	void shouldThrowExceptionOnToTagsIfInputIterableCannotBeConvertedToTags() {
-		Iterable<Object> iterable = new Iterable<>() {
-			@Override
-			public Iterator<Object> iterator() {
-				return null;
-			}
-		};
+		Iterable<Object> iterable = () -> null;
 		UnsupportedOperationException e = assertThrows(UnsupportedOperationException.class, () -> MicrometerFactory.toTags(iterable));
 
 		assertThat(e.getMessage(), equalTo("Tags class " + iterable.getClass() + " is not supported"));
