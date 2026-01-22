@@ -71,8 +71,8 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 		if (initialize()) {
 			OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
 					.registration(resolvedRegistration)
-					.tokenClientSupplier((clientRegistration, providerDetails) ->
-							new OAuth2ApiClient(clientRegistration, providerDetails, tokenExchangeClient.unwrap()))
+					.tokenClientSupplier((clientRegistration, providerDetails) -> new OAuth2ApiClient(clientRegistration, providerDetails,
+							tokenExchangeClient.unwrap()))
 					.build();
 			this.tokenProvider = OAuth2TokenProvider.of(specification);
 		}
