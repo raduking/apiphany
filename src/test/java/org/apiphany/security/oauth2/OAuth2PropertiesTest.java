@@ -51,7 +51,7 @@ class OAuth2PropertiesTest {
 
 	@Test
 	void shouldReturnNullOnGetProviderWhenProvidersMapIsEmpty() {
-		OAuth2Properties props = new OAuth2Properties();
+		OAuth2Properties props = OAuth2Properties.of();
 
 		OAuth2ProviderDetails result = props.getProviderDetails("test");
 
@@ -60,7 +60,7 @@ class OAuth2PropertiesTest {
 
 	@Test
 	void shouldReturnNullOnGetRegistrationWhenRegistrationMapIsEmpty() {
-		OAuth2Properties props = new OAuth2Properties();
+		OAuth2Properties props = OAuth2Properties.of();
 
 		OAuth2ClientRegistration result = props.getClientRegistration("test");
 

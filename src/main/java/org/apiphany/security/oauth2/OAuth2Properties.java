@@ -35,6 +35,37 @@ public class OAuth2Properties {
 	}
 
 	/**
+	 * Constructor with all properties.
+	 *
+	 * @param registration map of client registrations, keyed by registration ID
+	 * @param provider map of provider configurations, keyed by provider name
+	 */
+	public OAuth2Properties(final Map<String, OAuth2ClientRegistration> registration, final Map<String, OAuth2ProviderDetails> provider) {
+		this.registration = registration;
+		this.provider = provider;
+	}
+
+	/**
+	 * Creates an instance of OAuth2Properties with the given properties.
+	 *
+	 * @param registration map of client registrations, keyed by registration ID
+	 * @param provider map of provider configurations, keyed by provider name
+	 * @return the created OAuth2Properties instance
+	 */
+	public static OAuth2Properties of(final Map<String, OAuth2ClientRegistration> registration, final Map<String, OAuth2ProviderDetails> provider) {
+		return new OAuth2Properties(registration, provider);
+	}
+
+	/**
+	 * Creates an empty instance of OAuth2Properties.
+	 *
+	 * @return the created empty OAuth2Properties instance
+	 */
+	public static OAuth2Properties of() {
+		return new OAuth2Properties();
+	}
+
+	/**
 	 * Returns the string representation of this object as JSON.
 	 *
 	 * @return the string representation of this object as JSON

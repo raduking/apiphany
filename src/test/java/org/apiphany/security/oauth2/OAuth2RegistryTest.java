@@ -50,10 +50,7 @@ class OAuth2RegistryTest {
 				PROVIDER_1, provider1,
 				PROVIDER_2, provider2);
 
-		OAuth2Properties properties = new OAuth2Properties();
-		properties.setRegistration(registration);
-		properties.setProvider(provider);
-
+		OAuth2Properties properties = OAuth2Properties.of(registration, provider);
 		OAuth2Registry registry = OAuth2Registry.of(properties);
 
 		assertThat(registry.entries(), hasSize(2));
@@ -63,7 +60,7 @@ class OAuth2RegistryTest {
 
 	@Test
 	void shouldBuildEmptyRegistryFromEmptyProperties() {
-		OAuth2Properties properties = new OAuth2Properties();
+		OAuth2Properties properties = OAuth2Properties.of();
 
 		OAuth2Registry registry = OAuth2Registry.of(properties);
 
@@ -75,7 +72,7 @@ class OAuth2RegistryTest {
 		OAuth2ClientRegistration registration1 = buildRegistration(CLIENT_1, PROVIDER_1);
 		Map<String, OAuth2ClientRegistration> registration = Map.of(
 				REGISTRATION_1, registration1);
-		OAuth2Properties properties = new OAuth2Properties();
+		OAuth2Properties properties = OAuth2Properties.of();
 		properties.setRegistration(registration);
 
 		OAuth2Registry registry = OAuth2Registry.of(properties);
@@ -92,10 +89,7 @@ class OAuth2RegistryTest {
 		Map<String, OAuth2ProviderDetails> provider = Map.of(
 				PROVIDER_1, provider1);
 
-		OAuth2Properties properties = new OAuth2Properties();
-		properties.setRegistration(registration);
-		properties.setProvider(provider);
-
+		OAuth2Properties properties = OAuth2Properties.of(registration, provider);
 		OAuth2Registry registry = OAuth2Registry.of(properties);
 
 		assertThat(registry.entries(), hasSize(1));
@@ -116,10 +110,7 @@ class OAuth2RegistryTest {
 				PROVIDER_1, provider1,
 				PROVIDER_2, provider2);
 
-		OAuth2Properties properties = new OAuth2Properties();
-		properties.setRegistration(registration);
-		properties.setProvider(provider);
-
+		OAuth2Properties properties = OAuth2Properties.of(registration, provider);
 		OAuth2Registry registry = OAuth2Registry.of(properties);
 
 		List<OAuth2TokenProvider> tokenProviders = null;

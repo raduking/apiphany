@@ -16,6 +16,7 @@
 - Added `OAuth2ExchangeClientBuilder.registrationName` to configure the client registration name.
 - Changed `OAuth2HttpExchangeClient` to throw exception if no valid registration was found (multiple registrations exist and no client registration name given).
 - Added `ExchangeClient.getCustomProperties` which delegates to `ClientProperties.getCustomProperties`.
+- Added `OAuth2Properties.of` factory methods to construct OAuth2 properties objects.
 - Changed `ExchangeClient.getHeadersAsString` to return a string easier to parse.
 - Renamed `ExchangeClient.isRedactedHeader` to `ExchangeClient.isSensitiveHeader`.
 - Added `HeaderValues.value(Object, Object, String)` with separator string between the l-value and r-value. 
