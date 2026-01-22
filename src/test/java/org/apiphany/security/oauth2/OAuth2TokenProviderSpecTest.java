@@ -11,16 +11,16 @@ import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
 
 /**
- * Test class for {@link OAuth2TokenProviderConfiguration}.
+ * Test class for {@link OAuth2TokenProviderSpec}.
  *
  * @author Radu Sebastian LAZIN
  */
-class OAuth2TokenProviderConfigurationTest {
+class OAuth2TokenProviderSpecTest {
 
 	@SuppressWarnings("resource")
 	@Test
 	void shouldCreateWithDefaults() {
-		OAuth2TokenProviderConfiguration config = OAuth2TokenProviderConfiguration.builder().build();
+		OAuth2TokenProviderSpec config = OAuth2TokenProviderSpec.builder().build();
 
 		assertNotNull(config.properties());
 		assertNotNull(config.tokenRefreshScheduler());
@@ -40,7 +40,7 @@ class OAuth2TokenProviderConfigurationTest {
 		var defaultExpirationSupplier = (Supplier<Instant>) Instant::now;
 
 		try (ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor()) {
-			OAuth2TokenProviderConfiguration config = OAuth2TokenProviderConfiguration.builder()
+			OAuth2TokenProviderSpec config = OAuth2TokenProviderSpec.builder()
 					.properties(properties)
 					.registration(registration)
 					.tokenRefreshScheduler(scheduler)
@@ -57,7 +57,7 @@ class OAuth2TokenProviderConfigurationTest {
 
 	@Test
 	void shouldReturnNullAuthenticationTokenProviderWhenUsingDefaultSupplier() {
-		OAuth2TokenProviderConfiguration config = OAuth2TokenProviderConfiguration.builder().build();
+		OAuth2TokenProviderSpec config = OAuth2TokenProviderSpec.builder().build();
 
 		var tokenProvider = config.tokenClientSupplier().get(
 				new OAuth2ClientRegistration(),

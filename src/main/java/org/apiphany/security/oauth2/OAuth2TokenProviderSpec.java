@@ -8,7 +8,7 @@ import java.util.function.Supplier;
 import org.morphix.lang.Nullables;
 
 /**
- * OAuth2 token provider configuration.
+ * OAuth2 token provider specification.
  * <ul>
  * <li>If no properties are provided, default properties are used</li>
  * <li>If no scheduler is provided, a virtual-thread scheduler is created and owned by the provider</li>
@@ -24,7 +24,7 @@ import org.morphix.lang.Nullables;
  *
  * @author Radu Sebastian LAZIN
  */
-public record OAuth2TokenProviderConfiguration(
+public record OAuth2TokenProviderSpec(
 		OAuth2TokenProviderProperties properties,
 		OAuth2ResolvedRegistration registration,
 		ScheduledExecutorService tokenRefreshScheduler,
@@ -35,7 +35,7 @@ public record OAuth2TokenProviderConfiguration(
 	 * Compact constructor.
 	 */
 	@SuppressWarnings("resource")
-	public OAuth2TokenProviderConfiguration {
+	public OAuth2TokenProviderSpec {
 		properties = Nullables.nonNullOrDefault(properties, () -> OAuth2TokenProviderProperties.defaults());
 		tokenRefreshScheduler = Nullables.nonNullOrDefault(tokenRefreshScheduler, () -> defaultSchedulerExecutor());
 		tokenClientSupplier = Nullables.nonNullOrDefault(tokenClientSupplier, () -> (clientRegistration, providerDetails) -> null);
@@ -47,7 +47,7 @@ public record OAuth2TokenProviderConfiguration(
 	 *
 	 * @param builder
 	 */
-	private OAuth2TokenProviderConfiguration(final Builder builder) {
+	private OAuth2TokenProviderSpec(final Builder builder) {
 		this(
 				builder.properties,
 				builder.registration,
@@ -192,12 +192,12 @@ public record OAuth2TokenProviderConfiguration(
 		}
 
 		/**
-		 * Builds the OAuth2 token provider configuration.
+		 * Builds the OAuth2 token provider specification.
 		 *
-		 * @return the OAuth2 token provider configuration
+		 * @return the OAuth2 token provider specification
 		 */
-		public OAuth2TokenProviderConfiguration build() {
-			return new OAuth2TokenProviderConfiguration(this);
+		public OAuth2TokenProviderSpec build() {
+			return new OAuth2TokenProviderSpec(this);
 		}
 	}
 }

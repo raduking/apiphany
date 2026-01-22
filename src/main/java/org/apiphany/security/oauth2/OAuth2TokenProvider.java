@@ -81,19 +81,19 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	/**
 	 * Creates a new authentication token provider.
 	 *
-	 * @param configuration the OAuth2 token provider configuration
+	 * @param specification the OAuth2 token provider specification
 	 */
-	public OAuth2TokenProvider(final OAuth2TokenProviderConfiguration configuration) {
-		this.properties = configuration.properties();
-		this.registration = configuration.registration();
-		this.tokenRefreshScheduler = configuration.tokenRefreshScheduler();
-		this.defaultExpirationSupplier = configuration.defaultExpirationSupplier();
+	public OAuth2TokenProvider(final OAuth2TokenProviderSpec specification) {
+		this.properties = specification.properties();
+		this.registration = specification.registration();
+		this.tokenRefreshScheduler = specification.tokenRefreshScheduler();
+		this.defaultExpirationSupplier = specification.defaultExpirationSupplier();
 
 		if (null == registration) {
 			LOGGER.warn("No registration provided for OAuth2TokenProvider, token retrieval will be disabled.");
 			this.tokenClient = null;
 		} else {
-			OAuth2TokenClientSupplier supplier = configuration.tokenClientSupplier();
+			OAuth2TokenClientSupplier supplier = specification.tokenClientSupplier();
 			this.tokenClient = supplier.get(registration.getClientRegistration(), registration.getProviderDetails());
 		}
 		if (null != tokenClient) {
@@ -103,13 +103,13 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	}
 
 	/**
-	 * Builds a new OAuth2 token provider from the given configuration.
+	 * Builds a new OAuth2 token provider from the given specification.
 	 *
-	 * @param configuration the OAuth2 token provider configuration
+	 * @param specification the OAuth2 token provider specification
 	 * @return a new OAuth2 token provider
 	 */
-	public static OAuth2TokenProvider of(final OAuth2TokenProviderConfiguration configuration) {
-		return new OAuth2TokenProvider(configuration);
+	public static OAuth2TokenProvider of(final OAuth2TokenProviderSpec specification) {
+		return new OAuth2TokenProvider(specification);
 	}
 
 	/**

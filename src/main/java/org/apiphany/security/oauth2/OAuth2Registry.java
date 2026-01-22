@@ -99,22 +99,6 @@ public class OAuth2Registry {
 	}
 
 	/**
-	 * Returns a new OAuth2 token provider based on the given parameters.
-	 *
-	 * @param clientRegistrationName the client registration name
-	 * @param configurationBuilder the configuration builder
-	 * @return a new OAuth2 token provider
-	 */
-	public OAuth2TokenProvider tokenProvider(final String clientRegistrationName,
-			final OAuth2TokenProviderConfiguration.Builder configurationBuilder) {
-		OAuth2ResolvedRegistration registration = get(clientRegistrationName);
-		OAuth2TokenProviderConfiguration configuration = configurationBuilder
-				.registration(registration)
-				.build();
-		return new OAuth2TokenProvider(configuration);
-	}
-
-	/**
 	 * Returns a new OAuth2 token provider based on the given parameters. The caller is responsible for handling the life
 	 * cycle of the returned token provider.
 	 *
@@ -123,9 +107,12 @@ public class OAuth2Registry {
 	 * @return a new OAuth2 token provider
 	 */
 	public OAuth2TokenProvider tokenProvider(final String clientRegistrationName, final OAuth2TokenClientSupplier tokenClientSupplier) {
-		OAuth2TokenProviderConfiguration.Builder configurationBuilder = OAuth2TokenProviderConfiguration.builder()
-				.tokenClientSupplier(tokenClientSupplier);
-		return tokenProvider(clientRegistrationName, configurationBuilder);
+		OAuth2ResolvedRegistration registration = get(clientRegistrationName);
+		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
+				.registration(registration)
+				.tokenClientSupplier(tokenClientSupplier)
+				.build();
+		return OAuth2TokenProvider.of(specification);
 	}
 
 	/**
@@ -136,6 +123,6 @@ public class OAuth2Registry {
 	 * @return a list of OAuth2 token providers based on this registry
 	 */
 	public List<OAuth2TokenProvider> tokenProviders(final OAuth2TokenClientSupplier tokenClientSupplier) {
-		return entries.keySet().stream().map(clientRegistrationName -> tokenProvider(clientRegistrationName, tokenClientSupplier)).toList();
+		return entries.keySet().stream().map(registrationName -> tokenProvider(registrationName, tokenClientSupplier)).toList();
 	}
 }
