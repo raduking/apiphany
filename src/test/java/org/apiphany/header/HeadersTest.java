@@ -207,15 +207,13 @@ class HeadersTest {
 				HeaderFunction.header(N1, V1),
 				HeaderFunction.header(N2, V2));
 
-		assertThrows(UnsupportedOperationException.class, () ->
-				resultHeaders.put("new-header", List.of("new-value")));
+		assertThrows(UnsupportedOperationException.class, () -> resultHeaders.put("new-header", List.of("new-value")));
 	}
 
 	@Test
 	void shouldCreateImmutableHeadersMapWithNoHeaders() {
 		Map<String, List<String>> resultHeaders = Headers.of();
 
-		assertThrows(UnsupportedOperationException.class, () ->
-				resultHeaders.put("new-header", List.of("new-value")));
+		assertThrows(UnsupportedOperationException.class, () -> resultHeaders.put("new-header", List.of("new-value")));
 	}
 }
