@@ -1,6 +1,7 @@
 package org.apiphany.client;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -75,25 +76,6 @@ public interface ExchangeClient extends AutoCloseable {
 	}
 
 	/**
-	 * Returns all headers as {@link String}. This method helps log the headers of a message, and later implementations can
-	 * override this method to show only the wanted headers.
-	 *
-	 * @param <T> the message body type
-	 *
-	 * @param apiMessage the API message containing the headers
-	 * @return string representation of the message headers
-	 */
-	default <T> String getHeadersAsString(final ApiMessage<T> apiMessage) {
-		return Maps.safe(apiMessage.getHeaders()).entrySet().stream().map(entry -> {
-			String headerName = entry.getKey();
-			List<String> headerValues = isSensitiveHeader().test(headerName)
-					? Collections.singletonList(HeaderValues.REDACTED)
-					: entry.getValue();
-			return HeaderValues.value(headerName, headerValues, ":");
-		}).toList().toString();
-	}
-
-	/**
 	 * Returns a predicate for the headers that should be redacted. By default, nothing is redacted.
 	 *
 	 * @return a predicate for the headers that should be redacted
@@ -120,6 +102,32 @@ public interface ExchangeClient extends AutoCloseable {
 	 */
 	default Map<String, List<String>> getTracingHeaders() {
 		return Collections.emptyMap();
+	}
+
+	/**
+	 * Returns all headers from the given {@link ApiMessage} that can be displayed. This method replaces sensitive headers
+	 * with {@link HeaderValues#REDACTED}, useful when logging the headers of a message, and later implementations can
+	 * override this method to show only the wanted headers.
+	 *
+	 * @param <T> the message body type
+	 *
+	 * @param apiMessage the API message containing the headers
+	 * @return a map of headers with sensitive headers redacted
+	 */
+	default <T> Map<String, List<String>> getDisplayHeaders(final ApiMessage<T> apiMessage) {
+		if (null == apiMessage || Maps.isEmpty(apiMessage.getHeaders())) {
+			return Collections.emptyMap();
+		}
+		Map<String, List<String>> actualHeaders = apiMessage.getHeaders();
+		Map<String, List<String>> displayHeaders = HashMap.newHashMap(actualHeaders.size());
+		for (Map.Entry<String, List<String>> entry : actualHeaders.entrySet()) {
+			String headerName = entry.getKey();
+			List<String> headerValues = isSensitiveHeader().test(headerName)
+					? Collections.singletonList(HeaderValues.REDACTED)
+					: entry.getValue();
+			displayHeaders.put(headerName, headerValues);
+		}
+		return displayHeaders;
 	}
 
 	/**

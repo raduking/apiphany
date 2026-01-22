@@ -46,7 +46,7 @@ import org.morphix.lang.JavaObjects;
  *
  * @author Radu Sebastian LAZIN
  */
-public class ApiClientWithOAuth2Test {
+class ApiClientWithOAuth2Test {
 
 	private static final String CLIENT_SECRET = "apiphany-client-secret-more-than-32-characters";
 	private static final String CLIENT_ID = "apiphany-client";
@@ -289,6 +289,21 @@ public class ApiClientWithOAuth2Test {
 
 		assertNotNull(exception);
 		assertThat(exception.getMessage(), equalTo("No valid client registration found!"));
+	}
+
+	@Test
+	void shouldFailToAuthorizeWhenClientWasSecuredWithMultipleOAuth2WithApiClientManagedResourcesWithOAuth2v12() throws Exception {
+		HttpException exception = null;
+		try (OAuth2v12ApiClient client = new OAuth2v12ApiClient(clientProperties)) {
+			client.setBleedExceptions(true);
+			client.getName();
+		} catch (HttpException e) {
+			exception = e;
+		}
+
+		assertNotNull(exception);
+		// this is what our SimpleHttpServer returns when multiple Authorization headers are sent
+		assertThat(exception.getMessage(), equalTo("[401 Unauthorized] Only one Authorization header value accepted, got 2."));
 	}
 
 	@SuppressWarnings("resource")
@@ -549,6 +564,20 @@ public class ApiClientWithOAuth2Test {
 
 		protected OAuth2v11ApiClient(final ClientProperties properties) {
 			super(with(properties)
+					.securedWith()
+					.oAuth2());
+		}
+	}
+
+	/**
+	 * In this client the {@link ApiClient} manages the resources, no need for {@link #close()}.
+	 */
+	static class OAuth2v12ApiClient extends BaseApiClient {
+
+		protected OAuth2v12ApiClient(final ClientProperties properties) {
+			super(with(properties)
+					.securedWith()
+					.oAuth2()
 					.securedWith()
 					.oAuth2());
 		}

@@ -1,6 +1,6 @@
 package org.apiphany.client;
 
-import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -8,6 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import org.apiphany.ApiRequest;
 import org.apiphany.header.Header;
@@ -52,8 +54,13 @@ class ExchangeClientTest {
 	}
 
 	@Test
-	void shouldReturnHeadersAsStringFromApiMessage() {
-		assertEquals(Collections.emptyList().toString(), exchangeClient.getHeadersAsString(new ApiRequest<String>()));
+	void shouldReturnDisplayHeadersFromApiMessage() {
+		assertEquals(Collections.emptyMap(), exchangeClient.getDisplayHeaders(new ApiRequest<String>()));
+	}
+
+	@Test
+	void shouldReturnDisplayHeadersFromNullApiMessage() {
+		assertEquals(Collections.emptyMap(), exchangeClient.getDisplayHeaders(null));
 	}
 
 	@Test
@@ -64,10 +71,11 @@ class ExchangeClientTest {
 				Header.of("Accept", "application/json"));
 		request.addHeaders(headers);
 
-		String headersAsString = exchangeClient.getHeadersAsString(request);
+		Map<String, List<String>> headersForDisplay = exchangeClient.getDisplayHeaders(request);
 
-		assertThat(headersAsString, containsString("Content-Type:[application/json]"));
-		assertThat(headersAsString, containsString("Accept:[application/json]"));
+		assertThat(headersForDisplay, equalTo(Map.of(
+				"Content-Type", List.of("application/json"),
+				"Accept", List.of("application/json"))));
 	}
 
 	@Test

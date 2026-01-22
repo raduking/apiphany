@@ -24,6 +24,10 @@
 - Changed visibility for `ApiClient.getExchangeClient(AuthenticationType)` from `protected` to `public`.
 - Changed `SecuredExchangeClientBuilder` to throw exception if no security was configured.
 - Changed `Accumulator.accumulate(Supplier, Object)` to `Accumulator.accumulate(Supplier, Supplier)` to avoid computation of the default value if not needed.
+- Added `ApiMessage.getDisplayHeaders` which is used to retrieve the headers that can be displayed, logged, or serialized.
+- Removed `ApiMessage.getHeadersAsString` because it is no longer needed, the callers can use the newly added `getDisplayHeaders` and transform it to string as needed.
+- Added `ExchangeClient.getDisplayHeaders` which is used to retrieve the headers that can be displayed, logged, or serialized.
+- Removed `ExchangeClient.getHeadersAsString` because it is no longer needed, the callers can use the newly added `getDisplayHeaders` and transform it to string as needed.
 
 ---
 

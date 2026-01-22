@@ -178,7 +178,7 @@ class ApiClientTest {
 
 		doReturn(response).when(exchangeClient).exchange(any(ApiRequest.class));
 		doReturn(HttpMethod.GET).when(exchangeClient).get();
-		doReturn(headers.toString()).when(exchangeClient).getHeadersAsString(any(ApiRequest.class));
+		doReturn(headers).when(exchangeClient).getDisplayHeaders(any(ApiRequest.class));
 
 		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
 
@@ -884,7 +884,7 @@ class ApiClientTest {
 	}
 
 	@Test
-	void shouldThrowExceptionIfGenericClassIsNotParameterized() throws Exception {
+	void shouldThrowExceptionIfGenericClassIsNotParameterized() {
 		DummyExchangeClient exchangeClient = assertDoesNotThrow(DummyExchangeClient::new);
 
 		Executable executable = () -> new BadApiClient(BASE_URL, exchangeClient);
