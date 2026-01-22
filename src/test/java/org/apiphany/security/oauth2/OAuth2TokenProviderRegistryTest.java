@@ -313,7 +313,7 @@ class OAuth2TokenProviderRegistryTest {
 		OAuth2TokenProvider tokenProvider = mock(OAuth2TokenProvider.class);
 
 		OAuth2TokenClientSupplier tokenClientSupplier = (r, d) -> mock(AuthenticationTokenProvider.class);
-		doReturn(tokenProvider).when(mockRegistry).tokenProvider(eq(CLIENT_REGISTRATION_NAME), any());
+		doReturn(tokenProvider).when(mockRegistry).tokenProvider(eq(CLIENT_REGISTRATION_NAME), any(OAuth2TokenClientSupplier.class));
 
 		BiConsumer<String, OAuth2TokenProvider> customizer = mock(BiConsumer.class);
 
@@ -353,7 +353,7 @@ class OAuth2TokenProviderRegistryTest {
 		OAuth2TokenProvider tokenProvider = mock(OAuth2TokenProvider.class);
 
 		OAuth2TokenClientSupplier tokenClientSupplier = (r, d) -> mock(AuthenticationTokenProvider.class);
-		doReturn(tokenProvider).when(mockRegistry).tokenProvider(any(), any());
+		doReturn(tokenProvider).when(mockRegistry).tokenProvider(any(), any(OAuth2TokenClientSupplier.class));
 
 		BiConsumer<String, OAuth2TokenProvider> customizer = mock(BiConsumer.class);
 

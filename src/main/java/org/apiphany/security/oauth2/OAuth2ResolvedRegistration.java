@@ -9,7 +9,28 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class representing a complete OAuth2 client registration information.
+ * Class representing a complete OAuth2 client registration information. This is basically a wrapper over the client
+ * registration and provider details objects together with the registration name.
+ * <p>
+ * Given the following properties:
+ *
+ * <pre>
+ * oauth2:
+ *   registration:
+ *     my-client:
+ *       client-id: my-client-id
+ *       client-secret: my-client-secret
+ *       provider: my-provider
+ *   provider:
+ *     my-provider:
+ *       authorization-uri: https://example.com/oauth2/authorize
+ *       token-uri: https://example.com/oauth2/token
+ *       user-info-uri: https://example.com/oauth2/userinfo
+ *       jwk-set-uri: https://example.com/oauth2/keys
+ * </pre>
+ *
+ * an instance of this class can be built for the registration name {@code my-client} which will contain both the client
+ * registration and provider details.
  *
  * @author Radu Sebastian LAZIN
  */
