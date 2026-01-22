@@ -132,7 +132,7 @@ class OAuth2TokenProviderTest {
 	void shouldNotInitializeSchedulerIfTheRegistrationsMapIsNull() {
 		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder().build();
 
-		tokenProvider = new OAuth2TokenProvider(specification);
+		tokenProvider = OAuth2TokenProvider.of(specification);
 
 		assertFalse(tokenProvider.isSchedulerEnabled());
 	}
@@ -143,7 +143,7 @@ class OAuth2TokenProviderTest {
 				.registration((OAuth2Properties) null)
 				.build();
 
-		tokenProvider = new OAuth2TokenProvider(specification);
+		tokenProvider = OAuth2TokenProvider.of(specification);
 
 		assertFalse(tokenProvider.isSchedulerEnabled());
 	}
