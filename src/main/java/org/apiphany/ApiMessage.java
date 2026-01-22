@@ -7,6 +7,8 @@ import java.util.Objects;
 
 import org.apiphany.header.Headers;
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.lang.annotation.FieldName;
+import org.apiphany.lang.annotation.Ignored;
 import org.apiphany.lang.collections.Maps;
 
 /**
@@ -71,18 +73,20 @@ public class ApiMessage<T> {
 	 *
 	 * @return a map of headers, where each key is a header name and the value is a list of header values.
 	 */
+	@Ignored
 	public Map<String, List<String>> getHeaders() {
 		return headers;
 	}
 
 	/**
-	 * Returns all headers as {@link String}. This method helps log the headers of a message, and subsequent implementations
-	 * can override this method to show only the wanted headers.
+	 * Returns all headers for display purposes. This method can be overridden by subclasses to customize the headers
+	 * displayed.
 	 *
-	 * @return all headers as string
+	 * @return all headers for display
 	 */
-	public String getHeadersAsString() {
-		return Maps.safe(getHeaders()).toString();
+	@FieldName("headers")
+	public Map<String, List<String>> getDisplayHeaders() {
+		return Maps.safe(getHeaders());
 	}
 
 	/**

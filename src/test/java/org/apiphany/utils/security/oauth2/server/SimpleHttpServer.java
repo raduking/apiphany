@@ -118,8 +118,10 @@ public class SimpleHttpServer implements AutoCloseable {
 			if (Lists.isEmpty(authorizationHeaderValues)) {
 				return sendResponse(exchange, HttpStatus.UNAUTHORIZED, "Missing " + HttpHeader.AUTHORIZATION + " header.");
 			}
+			int authHeadersSize = authorizationHeaderValues.size();
 			if (authorizationHeaderValues.size() > 1) {
-				return sendResponse(exchange, HttpStatus.UNAUTHORIZED, "Only one " + HttpHeader.AUTHORIZATION + " header value accepted.");
+				return sendResponse(exchange, HttpStatus.UNAUTHORIZED,
+						"Only one " + HttpHeader.AUTHORIZATION + " header value accepted, got " + authHeadersSize + ".");
 			}
 			String authorizationHeaderValue = Lists.first(authorizationHeaderValues);
 			String[] pair = authorizationHeaderValue.split(" ");

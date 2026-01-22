@@ -6,6 +6,7 @@ import java.nio.charset.Charset;
 import java.util.Map;
 
 import org.apiphany.lang.Strings;
+import org.apiphany.lang.annotation.Ignored;
 import org.apiphany.lang.retry.Retry;
 import org.apiphany.meters.BasicMeters;
 import org.apiphany.security.AuthenticationType;
@@ -125,11 +126,14 @@ public class ApiRequest<T> extends ApiMessage<T> {
 
 	/**
 	 * Returns the generic response type for the request.
+	 * <p>
+	 * This can be ignored in serialization processes since it is already available in {@code responseType}.
 	 *
 	 * @param <U> the return type
 	 *
 	 * @return the generic response type
 	 */
+	@Ignored
 	public <U> GenericClass<U> getGenericResponseType() {
 		return JavaObjects.cast(genericResponseType);
 	}
@@ -145,11 +149,14 @@ public class ApiRequest<T> extends ApiMessage<T> {
 
 	/**
 	 * Returns the class response type for the request.
+	 * <p>
+	 * This can be ignored in serialization processes since it is already available in {@code responseType}.
 	 *
 	 * @param <U> the return type
 	 *
 	 * @return the class response type
 	 */
+	@Ignored
 	public <U> Class<U> getClassResponseType() {
 		return JavaObjects.cast(classResponseType);
 	}

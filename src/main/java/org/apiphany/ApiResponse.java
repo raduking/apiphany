@@ -339,14 +339,14 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	}
 
 	/**
-	 * @see ApiMessage#getHeadersAsString()
+	 * @see ApiMessage#getDisplayHeaders()
 	 */
 	@Override
-	public String getHeadersAsString() {
+	public Map<String, List<String>> getDisplayHeaders() {
 		if (null != exchangeClient) {
-			return exchangeClient.getHeadersAsString(this);
+			return exchangeClient.getDisplayHeaders(this);
 		}
-		return super.getHeadersAsString();
+		return super.getHeaders();
 	}
 
 	/**

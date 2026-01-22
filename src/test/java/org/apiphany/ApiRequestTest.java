@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.http.JavaNetHttpExchangeClient;
@@ -42,8 +43,8 @@ class ApiRequestTest {
 
 		ExchangeClient exchangeClient = new JavaNetHttpExchangeClient() {
 			@Override
-			public <T> String getHeadersAsString(final ApiMessage<T> apiMessage) {
-				return Maps.safe(apiMessage.getHeaders()).toString();
+			public <T> Map<String, List<String>> getDisplayHeaders(final ApiMessage<T> apiMessage) {
+				return Maps.safe(apiMessage.getHeaders());
 			}
 		};
 		ApiClient apiClient = ApiClient.of(ApiClient.EMPTY_BASE_URL, exchangeClient);

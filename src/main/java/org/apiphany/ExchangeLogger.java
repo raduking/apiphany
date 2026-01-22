@@ -94,10 +94,10 @@ public class ExchangeLogger {
 				apiRequest.getMethod(),
 				apiRequest.getUrl(),
 				apiRequest.getParams(),
-				apiRequest.getHeadersAsString(),
+				apiRequest.getDisplayHeaders(),
 				apiRequest.getBody(),
 				Nullables.apply(apiResponse, ApiResponse::getStatus),
-				Nullables.apply(apiResponse, ApiResponse::getHeadersAsString),
+				Nullables.apply(apiResponse, ApiResponse::getDisplayHeaders),
 				Nullables.apply(apiResponse, ApiResponse::getBody),
 				Temporals.toSeconds(duration.toMillis()));
 	}
@@ -125,7 +125,7 @@ public class ExchangeLogger {
 				apiRequest.getMethod(),
 				apiRequest.getUrl(),
 				apiRequest.getParams(),
-				apiRequest.getHeadersAsString(),
+				apiRequest.getDisplayHeaders(),
 				apiRequest.getBody(),
 				Nullables.apply(apiResponse, ApiResponse::getStatus),
 				exception,

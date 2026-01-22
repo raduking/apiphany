@@ -3,6 +3,7 @@ package org.apiphany;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -537,13 +538,13 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	}
 
 	/**
-	 * @see ApiMessage#getHeadersAsString()
-	 * @see ExchangeClient#getHeadersAsString(ApiMessage)
+	 * @see ApiMessage#getDisplayHeaders()
+	 * @see ExchangeClient#getDisplayHeaders(ApiMessage)
 	 */
 	@SuppressWarnings("resource")
 	@Override
-	public String getHeadersAsString() {
-		return getExchangeClient(ExchangeClient.class).getHeadersAsString(this);
+	public Map<String, List<String>> getDisplayHeaders() {
+		return getExchangeClient(ExchangeClient.class).getDisplayHeaders(this);
 	}
 
 	/**
