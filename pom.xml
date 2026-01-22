@@ -513,7 +513,7 @@
 							<goal>java</goal>
 						</goals>
 						<configuration>
-							<mainClass>org.apiphany.utils.BuildTestSummary</mainClass>
+							<mainClass>org.apiphany.utils.TestSummary</mainClass>
 							<classpathScope>test</classpathScope>
 						</configuration>
 					</execution>
