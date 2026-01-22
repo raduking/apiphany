@@ -10,7 +10,7 @@ import org.apiphany.security.AuthenticationType;
 import org.apiphany.security.oauth2.OAuth2Properties;
 import org.apiphany.security.oauth2.OAuth2ResolvedRegistration;
 import org.apiphany.security.oauth2.OAuth2TokenProvider;
-import org.apiphany.security.oauth2.OAuth2TokenProviderConfiguration;
+import org.apiphany.security.oauth2.OAuth2TokenProviderSpec;
 import org.apiphany.security.token.client.TokenHttpExchangeClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,17 +67,14 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 		this.tokenExchangeClient = ScopedResource.ensureSingleManager(tokenExchangeClient, exchangeClient);
 		this.oAuth2Properties = getClientProperties().getCustomProperties(OAuth2Properties.ROOT, OAuth2Properties.class);
 		this.resolvedRegistration = OAuth2ResolvedRegistration.of(oAuth2Properties, clientRegistrationName);
-		if (null == resolvedRegistration) {
-			throw new IllegalStateException("No valid client registration found!");
-		}
 
 		if (initialize()) {
-			OAuth2TokenProviderConfiguration configuration = OAuth2TokenProviderConfiguration.builder()
+			OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
 					.registration(resolvedRegistration)
-					.tokenClientSupplier((clientRegistration, providerDetails) -> new OAuth2ApiClient(clientRegistration, providerDetails,
-							tokenExchangeClient.unwrap()))
+					.tokenClientSupplier((clientRegistration, providerDetails) ->
+							new OAuth2ApiClient(clientRegistration, providerDetails, tokenExchangeClient.unwrap()))
 					.build();
-			this.tokenProvider = new OAuth2TokenProvider(configuration);
+			this.tokenProvider = OAuth2TokenProvider.of(specification);
 		}
 		setAuthenticationScheme(HttpAuthScheme.BEARER);
 	}
@@ -165,6 +162,9 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 		if (getExchangeClient().getClientProperties().isDisabled()) {
 			LOGGER.warn("[{}] OAuth2 client is disabled!", getName());
 			return false;
+		}
+		if (null == resolvedRegistration) {
+			throw new IllegalStateException("No valid client registration found!");
 		}
 		return true;
 	}
