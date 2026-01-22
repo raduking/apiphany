@@ -12,11 +12,11 @@ import org.morphix.lang.Nullables;
  * <ul>
  * <li>If no properties are provided, default properties are used</li>
  * <li>If no scheduler is provided, a virtual-thread scheduler is created and owned by the provider</li>
- * <li>The caller is responsible for shutting down the scheduler if a custom one is not provided</li>
  * <li>If no token client supplier is provided, a supplier that always supplies a {@code null} authentication token
  * provider is used</li>
  * <li>If no default expiration supplier is provided, the current instant supplier is used</li>
  * </ul>
+ * WARNING: The caller is responsible for shutting down the scheduler if a custom one is not provided.
  *
  * @param properties the OAuth2 token provider properties
  * @param registration the OAuth2 resolved registration for this provider
