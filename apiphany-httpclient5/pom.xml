@@ -158,9 +158,6 @@
 				</executions>
 				<configuration>
 					<argLine>${apiphanyHttpClient5ArgLine}</argLine>
-					<includes>
-						<include>**/*IT.java</include>
-					</includes>
 				</configuration>
 			</plugin>
 
@@ -321,12 +318,6 @@
 			</build>
 		</profile>
     	
-		<profile>
-			<id>eclipse</id>
-			<properties>
-				<jacocoArgLine></jacocoArgLine>
-			</properties>
-		</profile>
 	</profiles>
 
 	<reporting>
