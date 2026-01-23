@@ -1,14 +1,34 @@
 package org.apiphany.security.token;
 
+import org.apiphany.client.ClientProperties;
+
 /**
  * Properties specifying the bearer token.
+ * <p>
+ * To configure these properties in the {@link ClientProperties} under the {@code custom} root, use the prefix
+ * {@code ssl} as defined in {@link #ROOT}. For example:
+ *
+ * <pre>
+ * my-client-properties.custom.token.value=123456789abcdef
+ * </pre>
+ *
+ * or in YAML:
+ *
+ * <pre>
+ * my-client-properties:
+ *   custom:
+ *     token:
+ *       value: 123456789abcdef
+ * </pre>
+ *
+ * This would set the token value to {@code 123456789abcdef}, similarly for authentication scheme.
  *
  * @author Radu Sebastian LAZIN
  */
 public class TokenProperties {
 
 	/**
-	 * The root property prefix for bearer token configuration.
+	 * The root property prefix for token configuration.
 	 */
 	public static final String ROOT = "token";
 
