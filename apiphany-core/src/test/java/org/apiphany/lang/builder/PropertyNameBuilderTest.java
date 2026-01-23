@@ -33,7 +33,7 @@ class PropertyNameBuilderTest {
 
 	@Test
 	void shouldBuildADelimitedStringWithMultiplePathsAsSuffix() {
-		String result = PropertyNameBuilder.builder(DELIMITER)
+		String result = PropertyNameBuilder.builder()
 				.asSuffix()
 				.path("xxx", "yyy", "zzz")
 				.build();

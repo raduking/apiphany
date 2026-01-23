@@ -164,7 +164,7 @@ public class GZipKeyValueHttpServer implements AutoCloseable {
 			return Strings.toString(is, StandardCharsets.UTF_8);
 		}
 
-		private static <T> void sendResponse(final HttpExchange exchange, final HttpStatus status, final String response) throws IOException {
+		private static void sendResponse(final HttpExchange exchange, final HttpStatus status, final String response) throws IOException {
 			byte[] compressed = GZip.compress(response);
 			exchange.getResponseHeaders().set(HttpHeader.CONTENT_ENCODING.value(), ContentEncoding.GZIP.value());
 
