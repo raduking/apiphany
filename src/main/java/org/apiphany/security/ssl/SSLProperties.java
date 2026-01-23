@@ -27,8 +27,7 @@ import org.apiphany.json.JsonBuilder;
  *       protocol: TLSv1.2
  * </pre>
  *
- * This would set the SSL protocol to TLS 1.2.
- *
+ * This would set the SSL protocol to TLS 1.2 and similarly for key store and trust store configurations.
  *
  * @author Radu Sebastian LAZIN
  */
