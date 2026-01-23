@@ -39,14 +39,6 @@
 	</scm>
 
 	<properties>
-		<java.version>21</java.version>
-		<maven.compiler.source>${java.version}</maven.compiler.source>
-		<maven.compiler.target>${java.version}</maven.compiler.target>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-		<!-- Publishing dependencies versions -->
-		<maven.gpg.plugin.version>3.2.8</maven.gpg.plugin.version>
-		<central.publishing.maven.plugin.version>0.9.0</central.publishing.maven.plugin.version>
 
 		<!-- Testing dependencies versions -->
 		<pitest.maven.plugin.version>1.22.0</pitest.maven.plugin.version>
@@ -54,10 +46,11 @@
 		<jacoco.maven.plugin.version>0.8.14</jacoco.maven.plugin.version>
 		<maven.project.info.reports.plugin.version>3.9.0</maven.project.info.reports.plugin.version>
 
-		<!-- Publishing dependencies versions -->
-		<maven.gpg.plugin.version>3.2.8</maven.gpg.plugin.version>
-		<central.publishing.maven.plugin.version>0.9.0</central.publishing.maven.plugin.version>
-
+		<!--
+			The apiphanyHttpClient5ArgLine property is only used during the build process of the 
+			library and does not affect projects that consume your jar as a dependency. 
+			Each consuming project must define its own JVM arguments and build configurations.
+		-->
 		<apiphanyHttpClient5ArgLine>
 			-Djson-builder.to-json.indent-output=true
 			-XX:+EnableDynamicAgentLoading
@@ -198,7 +191,7 @@
 				</executions>
 			</plugin>
 
-			<!--Jacoco code coverage -->
+			<!-- Jacoco code coverage -->
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
@@ -255,6 +248,20 @@
 					<parseSurefireArgLine>false</parseSurefireArgLine>
 					<argLine>${apiphanyHttpClient5ArgLine}</argLine>
 				</configuration>
+			</plugin>
+
+	        <!-- Code formatting -->
+			<plugin>
+				<groupId>com.diffplug.spotless</groupId>
+				<artifactId>spotless-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>compile</phase>
+						<goals>
+							<goal>apply</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 
 		</plugins>
