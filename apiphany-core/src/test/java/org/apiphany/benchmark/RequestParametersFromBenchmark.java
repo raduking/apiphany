@@ -27,6 +27,8 @@ import org.openjdk.jmh.annotations.Warmup;
  * mvn jmh:benchmark -Pbenchmark -Djmh.benchmarks=org.apiphany.benchmark.RequestParametersFromBenchmark
  * </pre>
  *
+ * Must be run from the current module folder (apiphany-core).
+ *
  * @author Radu Sebastian LAZIN
  */
 @BenchmarkMode(Mode.AverageTime)
