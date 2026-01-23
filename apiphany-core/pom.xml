@@ -40,15 +40,6 @@
 
 	<properties>
 
-		<!-- Dependencies versions -->
-		<morphix.version>1.0.19</morphix.version>
-
-		<!-- Testing dependencies versions -->
-		<testcontainers.base.version>2.0.3</testcontainers.base.version>
-		<testcontainers.keycloak.version>4.1.0</testcontainers.keycloak.version>
-		<nimbus.jose.jwt.version>10.7</nimbus.jose.jwt.version>
-		<oauth2.oidc.sdk.version>11.31.1</oauth2.oidc.sdk.version>
-
 		<!-- Testing plugin versions -->
 		<pitest.maven.plugin.version>1.22.0</pitest.maven.plugin.version>
 		<pitest.junit5.plugin.version>1.2.3</pitest.junit5.plugin.version>
@@ -59,15 +50,10 @@
 		<!-- Other plugin versions -->
 		<properties.maven.plugin.version>1.2.1</properties.maven.plugin.version>
 
-		<!-- Benchmarking -->
-		<jmh.version>1.37</jmh.version>
-		<jmh.maven.plugin.version>0.2.2</jmh.maven.plugin.version>
-
 		<!-- Initialize the Jacoco arguments as empty by default -->
 		<jacocoArgLine />
 
 		<!-- Testing properties -->
-		<integration.tests.pattern>**/*IT.java</integration.tests.pattern>
 
 		<!--
 			The apiphanyArgLine property is only used during the build process of the library 
@@ -93,7 +79,6 @@
 		<dependency>
 			<groupId>io.github.raduking</groupId>
 			<artifactId>morphix-all</artifactId>
-			<version>${morphix.version}</version>
 		</dependency>
 
 		<!-- Logging -->
@@ -177,29 +162,24 @@
 		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>testcontainers</artifactId>
-			<!-- This version is needed because of the latest Docker changes -->
-			<version>${testcontainers.base.version}</version>
 			<scope>test</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>com.github.dasniko</groupId>
 			<artifactId>testcontainers-keycloak</artifactId>
-			<version>${testcontainers.keycloak.version}</version>
 			<scope>test</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>com.nimbusds</groupId>
 			<artifactId>nimbus-jose-jwt</artifactId>
-			<version>${nimbus.jose.jwt.version}</version>
 			<scope>test</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>com.nimbusds</groupId>
 			<artifactId>oauth2-oidc-sdk</artifactId>
-			<version>${oauth2.oidc.sdk.version}</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -212,14 +192,12 @@
 		<dependency>
 			<groupId>org.eclipse.jdt</groupId>
 			<artifactId>org.eclipse.jdt.core</artifactId>
-			<version>${org.eclipse.jdt.core.version}</version>
 			<scope>test</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>io.github.raduking</groupId>
 			<artifactId>code-format</artifactId>
-			<version>${code.format.version}</version>
 			<scope>test</scope>
         </dependency>
 
@@ -227,14 +205,12 @@
 		<dependency>
 			<groupId>org.openjdk.jmh</groupId>
 			<artifactId>jmh-core</artifactId>
-			<version>${jmh.version}</version>
 			<scope>test</scope>
 		</dependency>
 		
 		<dependency>
 			<groupId>org.openjdk.jmh</groupId>
 			<artifactId>jmh-generator-annprocess</artifactId>
-			<version>${jmh.version}</version>
 			<scope>test</scope>
 		</dependency>
 		
@@ -297,11 +273,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>${maven.compiler.source}</source>
-					<target>${maven.compiler.target}</target>
-					<release>${maven.compiler.release}</release>
-				</configuration>
 			</plugin>
 
 			<plugin>
@@ -309,9 +280,6 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
 					<argLine>${jacocoArgLine} ${apiphanyArgLine}</argLine>
-					<excludes>
-						<exclude>${integration.tests.pattern}</exclude>
-					</excludes>
 				</configuration>
 			</plugin>
 
@@ -328,9 +296,6 @@
 				</executions>
 				<configuration>
 					<argLine>${jacocoArgLine} ${apiphanyArgLine}</argLine>
-					<includes>
-						<include>${integration.tests.pattern}</include>
-					</includes>
 				</configuration>
 			</plugin>
 
@@ -582,7 +547,7 @@
 						<configuration>
 							<fork>${jmh.fork}</fork>
 							<resultFormat>JSON</resultFormat>
-							<resultsFile>target/jmh-result-${maven.build.timestamp}.json</resultsFile>
+							<resultsFile>target/benchmarks/jmh-result-${maven.build.timestamp}.json</resultsFile>
 						</configuration>
 					</plugin>					
 				</plugins>

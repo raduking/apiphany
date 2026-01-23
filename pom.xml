@@ -23,11 +23,15 @@
 
 	<properties>
 
+		<!-- Dependencies versions -->
+		<morphix.version>1.0.19</morphix.version>
+
         <!-- Java / Maven properties -->
 		<java.version>21</java.version>
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<maven.compiler.release>${java.version}</maven.compiler.release>
+		<maven.version>3.9</maven.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<!-- Publishing dependencies versions -->
@@ -40,7 +44,95 @@
 		<eclipse.formatter.version>4.38</eclipse.formatter.version>
 		<code.format.version>1.0.0</code.format.version>
 
+		<!-- Testing dependencies versions -->
+		<testcontainers.base.version>2.0.3</testcontainers.base.version>
+		<testcontainers.keycloak.version>4.1.0</testcontainers.keycloak.version>
+		<nimbus.jose.jwt.version>10.7</nimbus.jose.jwt.version>
+		<oauth2.oidc.sdk.version>11.31.1</oauth2.oidc.sdk.version>
+
+		<!-- Testing properties -->
+		<integration.tests.pattern>**/*IT.java</integration.tests.pattern>
+
+		<!-- Benchmarking -->
+		<jmh.version>1.37</jmh.version>
+		<jmh.maven.plugin.version>0.2.2</jmh.maven.plugin.version>
+
 	</properties>
+
+	<dependencyManagement>
+	    <dependencies>
+	    
+			<!-- MorphiX -->
+			<dependency>
+				<groupId>io.github.raduking</groupId>
+				<artifactId>morphix-all</artifactId>
+				<version>${morphix.version}</version>
+			</dependency>
+
+		    <!-- Testcontainers -->
+			<dependency>
+				<groupId>org.testcontainers</groupId>
+				<artifactId>testcontainers</artifactId>
+				<!-- This version is needed because of the latest Docker changes -->
+				<version>${testcontainers.base.version}</version>
+				<scope>test</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>com.github.dasniko</groupId>
+				<artifactId>testcontainers-keycloak</artifactId>
+				<version>${testcontainers.keycloak.version}</version>
+				<scope>test</scope>
+			</dependency>
+
+			<!-- Nimbus JOSE + JWT and OAuth2 OIDC SDK for testing -->
+			<dependency>
+				<groupId>com.nimbusds</groupId>
+				<artifactId>nimbus-jose-jwt</artifactId>
+				<version>${nimbus.jose.jwt.version}</version>
+				<scope>test</scope>
+			</dependency>
+	
+			<dependency>
+				<groupId>com.nimbusds</groupId>
+				<artifactId>oauth2-oidc-sdk</artifactId>
+				<version>${oauth2.oidc.sdk.version}</version>
+				<scope>test</scope>
+			</dependency>
+
+            <!-- Eclipse JDT Core for code formatting -->	
+			<dependency>
+				<groupId>org.eclipse.jdt</groupId>
+				<artifactId>org.eclipse.jdt.core</artifactId>
+				<version>${org.eclipse.jdt.core.version}</version>
+				<scope>test</scope>
+			</dependency>
+
+	        <!-- Code format rules -->
+			<dependency>
+				<groupId>io.github.raduking</groupId>
+				<artifactId>code-format</artifactId>
+				<version>${code.format.version}</version>
+				<scope>test</scope>
+	        </dependency>
+	        
+	        <!-- Benchmarking dependencies (scope=test so they don't affect the main build) -->
+			<dependency>
+				<groupId>org.openjdk.jmh</groupId>
+				<artifactId>jmh-core</artifactId>
+				<version>${jmh.version}</version>
+				<scope>test</scope>
+			</dependency>
+			
+			<dependency>
+				<groupId>org.openjdk.jmh</groupId>
+				<artifactId>jmh-generator-annprocess</artifactId>
+				<version>${jmh.version}</version>
+				<scope>test</scope>
+			</dependency>
+
+        </dependencies>
+	</dependencyManagement>
 
 	<build>
 	
@@ -49,6 +141,39 @@
 	-->
 		<pluginManagement>
 			<plugins>
+
+	            <!-- Compiler plugin -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<configuration>
+						<source>${maven.compiler.source}</source>
+						<target>${maven.compiler.target}</target>
+						<release>${maven.compiler.release}</release>
+					</configuration>
+				</plugin>
+
+				<!-- Unit testing -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<configuration>
+						<excludes>
+							<exclude>${integration.tests.pattern}</exclude>
+						</excludes>
+					</configuration>
+				</plugin>
+
+	            <!-- Integration testing -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-failsafe-plugin</artifactId>
+					<configuration>
+						<includes>
+							<include>${integration.tests.pattern}</include>
+						</includes>
+					</configuration>
+				</plugin>
 
 		        <!-- Code formatting -->
 				<plugin>
@@ -80,6 +205,28 @@
 							<trimTrailingWhitespace/>
 						</java>
 					</configuration>
+				</plugin>
+
+				<!-- Enforce version for Java -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-enforcer-plugin</artifactId>
+					<executions>
+						<execution>
+							<id>enforce</id>
+							<goals>
+								<goal>enforce</goal>
+							</goals>
+							<configuration>
+								<rules>
+									<requireJavaVersion>
+										<version>${java.version}</version>
+									</requireJavaVersion>
+									<requireUpperBoundDeps/>
+								</rules>
+							</configuration>
+						</execution>
+					</executions>
 				</plugin>
 
 			</plugins>
