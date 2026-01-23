@@ -393,7 +393,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 */
 	protected static <T> String toDebugString(final T obj) {
 		if (null == obj) {
-			return "{ \"type\":null, \"hash\":" + hexHash(obj) + " }";
+			return "{ \"type\":null, \"hash\":null }";
 		}
 		class FieldExtractor {
 			Long id;

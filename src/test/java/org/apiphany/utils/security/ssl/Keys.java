@@ -1,5 +1,6 @@
 package org.apiphany.utils.security.ssl;
 
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -96,6 +97,9 @@ public class Keys {
 
 		PrivateKey privateKey;
 		try (InputStream is = Keys.class.getResourceAsStream("/security/ssl/" + FileName.XDH_PRIVATE_KEY)) {
+			if (null == is) {
+				throw new FileNotFoundException("Resource not found: /security/ssl/" + FileName.XDH_PRIVATE_KEY);
+			}
 			byte[] privateKeyBytes = is.readAllBytes();
 			LOGGER.info("Loaded private key bytes:\n{}", Hex.dump(privateKeyBytes));
 			KeyFactory keyFactory = KeyFactory.getInstance(X25519Keys.ALGORITHM);
@@ -107,6 +111,9 @@ public class Keys {
 
 		PublicKey publicKey;
 		try (InputStream is = Keys.class.getResourceAsStream("/security/ssl/" + FileName.XDH_PUBLIC_KEY)) {
+			if (null == is) {
+				throw new FileNotFoundException("Resource not found: /security/ssl/" + FileName.XDH_PUBLIC_KEY);
+			}
 			byte[] publicKeyBytes = is.readAllBytes();
 			LOGGER.info("Loaded public key bytes:\n{}", Hex.dump(publicKeyBytes));
 			KeyFactory keyFactory = KeyFactory.getInstance(X25519Keys.ALGORITHM);
