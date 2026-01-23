@@ -20,7 +20,6 @@ import java.util.Objects;
 import javax.crypto.Cipher;
 import javax.net.ssl.SSLException;
 
-import org.apiphany.utils.http.HttpResponseParser;
 import org.apiphany.io.BinaryRepresentable;
 import org.apiphany.io.ByteBufferInputStream;
 import org.apiphany.io.ByteSizeable;
@@ -68,6 +67,7 @@ import org.apiphany.security.tls.SignatureAlgorithm;
 import org.apiphany.security.tls.TLSEncryptedObject;
 import org.apiphany.security.tls.TLSKeyExchange;
 import org.apiphany.security.tls.Version;
+import org.apiphany.utils.http.HttpResponseParser;
 import org.apiphany.utils.security.X25519Keys;
 import org.morphix.lang.Nullables;
 import org.morphix.lang.function.ThrowingConsumer;

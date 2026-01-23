@@ -1,10 +1,10 @@
 package org.apiphany.lang.retry;
 
-import org.morphix.reflection.Constructors;
-
 import java.time.Duration;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+
+import org.morphix.reflection.Constructors;
 
 /**
  * Counter wait implementation. After each iteration, the counter waits for the given interval. If the interval is 0,

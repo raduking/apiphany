@@ -486,6 +486,9 @@
 							<file>java-code-style.xml</file>
 							<version>${eclipse.formatter.version}</version>
 						</eclipse>
+						<importOrder>
+							<order>java,javax,jakarta,org,com</order>
+						</importOrder>
 						<removeUnusedImports/>
 						<trimTrailingWhitespace/>
 					</java>
