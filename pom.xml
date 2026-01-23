@@ -22,7 +22,68 @@
 	</modules>
 
 	<properties>
-		<!-- empty for now -->
+
+        <!-- Java / Maven properties -->
+		<java.version>21</java.version>
+		<maven.compiler.source>${java.version}</maven.compiler.source>
+		<maven.compiler.target>${java.version}</maven.compiler.target>
+		<maven.compiler.release>${java.version}</maven.compiler.release>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+		<!-- Publishing dependencies versions -->
+		<maven.gpg.plugin.version>3.2.8</maven.gpg.plugin.version>
+		<central.publishing.maven.plugin.version>0.9.0</central.publishing.maven.plugin.version>
+
+		<!-- Other plugin versions -->
+		<spotless.maven.plugin.version>3.1.0</spotless.maven.plugin.version>
+		<org.eclipse.jdt.core.version>3.44.0</org.eclipse.jdt.core.version>
+		<eclipse.formatter.version>4.38</eclipse.formatter.version>
+		<code.format.version>1.0.0</code.format.version>
+
 	</properties>
 
+	<build>
+	
+	<!-- 
+		Configure plugin management for child modules here.
+	-->
+		<pluginManagement>
+			<plugins>
+
+		        <!-- Code formatting -->
+				<plugin>
+					<groupId>com.diffplug.spotless</groupId>
+					<artifactId>spotless-maven-plugin</artifactId>
+					<version>${spotless.maven.plugin.version}</version>
+					<dependencies>
+						<dependency>
+							<groupId>org.eclipse.jdt</groupId>
+							<artifactId>org.eclipse.jdt.core</artifactId>
+							<version>${org.eclipse.jdt.core.version}</version>
+						</dependency>
+						<dependency>
+							<groupId>io.github.raduking</groupId>
+							<artifactId>code-format</artifactId>
+							<version>${code.format.version}</version>
+	                    </dependency>
+					</dependencies>
+					<configuration>
+						<java>
+							<eclipse>
+								<file>java-code-style.xml</file>
+								<version>${eclipse.formatter.version}</version>
+							</eclipse>
+							<importOrder>
+								<order>java,javax,jakarta,org,com</order>
+							</importOrder>
+							<removeUnusedImports/>
+							<trimTrailingWhitespace/>
+						</java>
+					</configuration>
+				</plugin>
+
+			</plugins>
+		</pluginManagement>
+
+	</build>
 </project>
