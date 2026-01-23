@@ -1,4 +1,12 @@
+# Compiled class files
 /target/
+
+# Eclipse IDE
+#/.settings
+#/.factorypath
+
+# IntelliJ IDEA
 /.idea
-/.factorypath
+
+# Visual Studio Code
 /.vscode
