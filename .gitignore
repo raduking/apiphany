@@ -1,5 +1,6 @@
 # Eclipse IDE
-#/.settings
+/.settings
+/.project
 
 # IntelliJ IDEA
 /.idea

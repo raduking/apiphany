@@ -2,8 +2,10 @@
 /target/
 
 # Eclipse IDE
-#/.settings
-#/.factorypath
+/.settings
+/.factorypath
+/.classpath
+/.project
 
 # IntelliJ IDEA
 /.idea
