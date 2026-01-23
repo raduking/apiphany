@@ -1,4 +1,8 @@
-/target/
+# Eclipse IDE
+#/.settings
+
+# IntelliJ IDEA
 /.idea
-/.factorypath
+
+# Visual Studio Code
 /.vscode
