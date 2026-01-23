@@ -1,0 +1,395 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>io.github.raduking</groupId>
+		<artifactId>apiphany-parent</artifactId>
+		<version>1.1.0</version>
+	</parent>
+
+	<artifactId>apiphany-httpclient5</artifactId>
+	<packaging>jar</packaging>
+
+	<name>${project.groupId}:${project.artifactId}</name>
+	<description>A plugin library for Apiphany adding Apache HttpClient 5 support.</description>
+	<url>https://github.com/raduking/apiphan</url>
+
+	<licenses>
+		<license>
+			<name>Apache License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<id>raduking</id>
+			<name>Radu Sebastian LAZIN</name>
+			<email>raduking@gmail.com</email>
+		</developer>
+	</developers>
+
+	<scm>
+		<connection>scm:git:git://github.com/raduking/apiphany.git</connection>
+		<developerConnection>scm:git:ssh://github.com:raduking/apiphany.git</developerConnection>
+		<url>https://github.com/raduking/apiphany/tree/master</url>
+	</scm>
+
+	<properties>
+		<java.version>21</java.version>
+		<maven.compiler.source>${java.version}</maven.compiler.source>
+		<maven.compiler.target>${java.version}</maven.compiler.target>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+		<!-- Publishing dependencies versions -->
+		<maven.gpg.plugin.version>3.2.8</maven.gpg.plugin.version>
+		<central.publishing.maven.plugin.version>0.9.0</central.publishing.maven.plugin.version>
+
+		<!-- Testing dependencies versions -->
+		<pitest.maven.plugin.version>1.22.0</pitest.maven.plugin.version>
+		<pitest.junit5.plugin.version>1.2.3</pitest.junit5.plugin.version>
+		<jacoco.maven.plugin.version>0.8.14</jacoco.maven.plugin.version>
+		<maven.project.info.reports.plugin.version>3.9.0</maven.project.info.reports.plugin.version>
+
+		<!-- Publishing dependencies versions -->
+		<maven.gpg.plugin.version>3.2.8</maven.gpg.plugin.version>
+		<central.publishing.maven.plugin.version>0.9.0</central.publishing.maven.plugin.version>
+
+		<apiphanyHttpClient5ArgLine>
+			-Djson-builder.to-json.indent-output=true
+			-XX:+EnableDynamicAgentLoading
+			-Xshare:off
+		</apiphanyHttpClient5ArgLine>
+	</properties>
+
+	<dependencies>
+
+		<!-- Apiphany -->
+		<dependency>
+			<groupId>io.github.raduking</groupId>
+			<artifactId>apiphany</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- HTTP Client -->
+		<dependency>
+			<groupId>org.apache.httpcomponents.client5</groupId>
+			<artifactId>httpclient5</artifactId>
+		</dependency>
+
+		<!-- Metrics/Tracing -->
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-core</artifactId>
+			<scope>provided</scope>
+			<optional>true</optional>
+		</dependency>
+
+		<!-- Testing -->
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-api</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-params</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-engine</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>${maven.compiler.source}</source>
+					<target>${maven.compiler.target}</target>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<argLine>${apiphanyHttpClient5ArgLine}</argLine>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<argLine>${apiphanyHttpClient5ArgLine}</argLine>
+					<includes>
+						<include>**/*IT.java</include>
+					</includes>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>jar-no-fork</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!--Jacoco code coverage -->
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>${jacoco.maven.plugin.version}</version>
+				<executions>
+					<execution>
+						<id>pre-unit-test</id>
+						<phase>test-compile</phase>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+						<configuration>
+							<destFile>${project.reporting.outputDirectory}/jacoco.exec</destFile>
+							<propertyName>jacocoArgLine</propertyName>
+						</configuration>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>test</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+						<configuration>
+							<dataFile>${project.reporting.outputDirectory}/jacoco.exec</dataFile>
+							<outputDirectory>${project.reporting.outputDirectory}</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- Mutation testing -->
+			<!-- mvn org.jacoco:jacoco-maven-plugin:prepare-agent org.pitest:pitest-maven:mutationCoverage -->
+			<!-- mvn -DwithHistory org.jacoco:jacoco-maven-plugin:prepare-agent org.pitest:pitest-maven:mutationCoverage -->
+			<plugin>
+				<groupId>org.pitest</groupId>
+				<artifactId>pitest-maven</artifactId>
+				<version>${pitest.maven.plugin.version}</version>
+				<!-- Allows it to work with JUnit 5 -->
+				<dependencies>
+					<dependency>
+						<groupId>org.pitest</groupId>
+						<artifactId>pitest-junit5-plugin</artifactId>
+						<version>${pitest.junit5.plugin.version}</version>
+					</dependency>
+				</dependencies>
+				<configuration>
+					<targetClasses>
+						<param>org.apiphany.*</param>
+					</targetClasses>
+					<targetTests>
+						<param>org.apiphany.*</param>
+					</targetTests>
+					<verbose>false</verbose>
+					<parseSurefireArgLine>false</parseSurefireArgLine>
+					<argLine>${apiphanyHttpClient5ArgLine}</argLine>
+				</configuration>
+			</plugin>
+
+		</plugins>
+	</build>
+
+	<profiles>
+		<profile>
+			<id>active-on-property-environment</id>
+			<activation>
+				<property>
+					<name>release</name>
+					<value>true</value>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<!--
+						Activate it with: -Drelease=true
+					-->
+					<!-- Artifact signing for publishing -->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>${maven.gpg.plugin.version}</version>
+						<executions>
+							<execution>
+							<id>sign-artifacts</id>
+							<phase>verify</phase>
+							<goals>
+								<goal>sign</goal>
+							</goals>
+							</execution>
+						</executions>
+						<configuration>
+							<keyname>${env.MAVEN_GPG_PLUGIN_KEY}</keyname>
+							<gpgArguments>
+								<argument>--pinentry-mode</argument>
+								<argument>loopback</argument>
+							</gpgArguments>
+						</configuration>
+					</plugin>
+				
+					<!-- Publish to Maven Central -->
+					<plugin>
+						<groupId>org.sonatype.central</groupId>
+						<artifactId>central-publishing-maven-plugin</artifactId>
+						<version>${central.publishing.maven.plugin.version}</version>
+						<extensions>true</extensions>
+						<configuration>
+							<autoPublish>true</autoPublish>
+							<deploymentName>release-${project.artifactId}-${project.version}</deploymentName>
+							<publishingServerId>central</publishingServerId>
+						</configuration>
+					</plugin>
+
+				</plugins>
+			</build>
+		</profile>
+    	
+		<profile>
+			<id>eclipse</id>
+			<properties>
+				<jacocoArgLine></jacocoArgLine>
+			</properties>
+		</profile>
+	</profiles>
+
+	<reporting>
+		<!-- mvn clean install org.pitest:pitest-maven:mutationCoverage site -->
+
+		<plugins>
+			<!-- Reports -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-project-info-reports-plugin</artifactId>
+				<version>${project.info.reports.plugin.version}</version>
+			</plugin>
+
+			<!--Jacoco code coverage -->
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>${jacoco.plugin.version}</version>
+				<reportSets>
+					<reportSet>
+						<reports>
+							<!-- select non-aggregate reports -->
+							<report>report</report>
+						</reports>
+					</reportSet>
+				</reportSets>
+			</plugin>
+
+			<!-- Mutation testing -->
+			<!-- mvn clean org.pitest:pitest-maven:mutationCoverage site -->
+			<plugin>
+				<groupId>org.pitest</groupId>
+				<artifactId>pitest-maven</artifactId>
+				<version>${pitest.plugin.version}</version>
+				<reportSets>
+					<reportSet>
+						<reports>
+							<report>report</report>
+						</reports>
+					</reportSet>
+				</reportSets>
+			</plugin>
+		</plugins>
+	</reporting>
+
+	<distributionManagement>
+		<snapshotRepository>
+			<id>central</id>
+			<name>Central Repository Snapshots</name>
+			<url>https://central.sonatype.com/repository/maven-snapshots</url>
+		</snapshotRepository>
+		<repository>
+			<id>central</id>
+			<name>Central Repository</name>
+			<url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+	</distributionManagement>
+
+	<repositories>
+		<repository>
+			<id>central-portal-snapshots</id>
+			<name>Central Portal Snapshots</name>
+			<url>https://central.sonatype.com/repository/maven-snapshots</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</repository>
+	</repositories>
+
+</project>

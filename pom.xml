@@ -18,6 +18,7 @@
 
 	<modules>
 		<module>apiphany-core</module>
+		<module>apiphany-httpclient5</module>
 	</modules>
 
 	<properties>
