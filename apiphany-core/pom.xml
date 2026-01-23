@@ -1,0 +1,700 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<!-- 
+		Using spring-boot-starter-parent to update dependencies easier and ensure that all dependencies work well together
+		this parent having most of the commonly used dependencies defined with tested versions across Java projects.
+	-->
+	<parent>
+		<groupId>io.github.raduking</groupId>
+		<artifactId>apiphany-parent</artifactId>
+		<version>1.1.0</version>
+	</parent>
+
+	<artifactId>apiphany</artifactId>
+	<packaging>jar</packaging>
+
+	<name>${project.groupId}:${project.artifactId}</name>
+	<description>A library to create easy REST APIs.</description>
+	<url>https://github.com/raduking/apiphany</url>
+
+	<licenses>
+		<license>
+			<name>Apache License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<id>raduking</id>
+			<name>Radu Sebastian LAZIN</name>
+			<email>raduking@gmail.com</email>
+		</developer>
+	</developers>
+
+	<scm>
+		<connection>scm:git:git://github.com/raduking/apiphany.git</connection>
+		<developerConnection>scm:git:ssh://github.com:raduking/apiphany.git</developerConnection>
+		<url>https://github.com/raduking/apiphany/tree/master</url>
+	</scm>
+
+	<properties>
+		<java.version>21</java.version>
+		<maven.compiler.source>${java.version}</maven.compiler.source>
+		<maven.compiler.target>${java.version}</maven.compiler.target>
+		<maven.compiler.release>${java.version}</maven.compiler.release>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+		<!-- Dependencies versions -->
+		<morphix.version>1.0.19</morphix.version>
+
+		<!-- Publishing dependencies versions -->
+		<maven.gpg.plugin.version>3.2.8</maven.gpg.plugin.version>
+		<central.publishing.maven.plugin.version>0.9.0</central.publishing.maven.plugin.version>
+
+		<!-- Testing dependencies versions -->
+		<testcontainers.base.version>2.0.3</testcontainers.base.version>
+		<testcontainers.keycloak.version>4.1.0</testcontainers.keycloak.version>
+		<nimbus.jose.jwt.version>10.7</nimbus.jose.jwt.version>
+		<oauth2.oidc.sdk.version>11.31.1</oauth2.oidc.sdk.version>
+
+		<!-- Testing plugin versions -->
+		<pitest.maven.plugin.version>1.22.0</pitest.maven.plugin.version>
+		<pitest.junit5.plugin.version>1.2.3</pitest.junit5.plugin.version>
+		<jacoco.maven.plugin.version>0.8.14</jacoco.maven.plugin.version>
+		<maven.project.info.reports.plugin.version>3.9.0</maven.project.info.reports.plugin.version>
+		<exec.maven.plugin.version>3.6.3</exec.maven.plugin.version>
+
+		<!-- Other plugin versions -->
+		<spotless.maven.plugin.version>3.1.0</spotless.maven.plugin.version>
+		<org.eclipse.jdt.core.version>3.44.0</org.eclipse.jdt.core.version>
+		<eclipse.formatter.version>4.38</eclipse.formatter.version>
+		<code.format.version>1.0.0</code.format.version>
+		<properties.maven.plugin.version>1.2.1</properties.maven.plugin.version>
+
+		<!-- Benchmarking -->
+		<jmh.version>1.37</jmh.version>
+		<jmh.maven.plugin.version>0.2.2</jmh.maven.plugin.version>
+
+		<!-- Initialize the Jacoco arguments as empty by default -->
+		<jacocoArgLine />
+
+		<!-- Testing properties -->
+		<integration.tests.pattern>**/*IT.java</integration.tests.pattern>
+
+		<!--
+			The apiphanyArgLine property is only used during the build process of the library 
+			and does not affect projects that consume your jar as a dependency. 
+			Each consuming project must define its own JVM arguments and build configurations.
+		-->
+		<apiphanyArgLine>
+			-Djson-builder.to-json.indent-output=true
+			-XX:+EnableDynamicAgentLoading
+			-Xshare:off
+			--add-opens java.base/javax.net.ssl=ALL-UNNAMED
+			--add-opens java.base/javax.crypto=ALL-UNNAMED
+			--add-opens java.base/com.sun.crypto.provider=ALL-UNNAMED
+			--add-opens java.base/sun.security.ssl=ALL-UNNAMED
+			--add-opens java.base/sun.security.internal.spec=ALL-UNNAMED
+			--add-opens jdk.httpserver/sun.net.httpserver=ALL-UNNAMED
+		</apiphanyArgLine>
+	</properties>
+
+	<dependencies>
+
+		<!-- MorphiX -->
+		<dependency>
+			<groupId>io.github.raduking</groupId>
+			<artifactId>morphix-all</artifactId>
+			<version>${morphix.version}</version>
+		</dependency>
+
+		<!-- Logging -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+		</dependency>
+
+		<!-- Metrics/Tracing -->
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-core</artifactId>
+			<scope>provided</scope>
+			<optional>true</optional>
+		</dependency>
+
+		<!-- JSON/XML -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-jsr310</artifactId>
+			<scope>provided</scope>
+			<optional>true</optional>
+		</dependency>
+
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-xml</artifactId>
+			<scope>provided</scope>
+			<optional>true</optional>
+		</dependency>
+
+		<!-- Testing -->
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-api</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-params</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-engine</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>testcontainers</artifactId>
+			<!-- This version is needed because of the latest Docker changes -->
+			<version>${testcontainers.base.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.github.dasniko</groupId>
+			<artifactId>testcontainers-keycloak</artifactId>
+			<version>${testcontainers.keycloak.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.nimbusds</groupId>
+			<artifactId>nimbus-jose-jwt</artifactId>
+			<version>${nimbus.jose.jwt.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.nimbusds</groupId>
+			<artifactId>oauth2-oidc-sdk</artifactId>
+			<version>${oauth2.oidc.sdk.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-oauth2-client</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.eclipse.jdt</groupId>
+			<artifactId>org.eclipse.jdt.core</artifactId>
+			<version>${org.eclipse.jdt.core.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>io.github.raduking</groupId>
+			<artifactId>code-format</artifactId>
+			<version>${code.format.version}</version>
+			<scope>test</scope>
+        </dependency>
+
+        <!-- Benchmarking dependencies (scope=test so they don't affect the main build) -->
+		<dependency>
+			<groupId>org.openjdk.jmh</groupId>
+			<artifactId>jmh-core</artifactId>
+			<version>${jmh.version}</version>
+			<scope>test</scope>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.openjdk.jmh</groupId>
+			<artifactId>jmh-generator-annprocess</artifactId>
+			<version>${jmh.version}</version>
+			<scope>test</scope>
+		</dependency>
+		
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-main-resources</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.outputDirectory}</outputDirectory>
+							<resources>
+								<resource>
+									<directory>src/main/resources</directory>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-test-resources</id>
+						<phase>process-test-resources</phase>
+						<goals>
+							<goal>testResources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.testOutputDirectory}</outputDirectory>
+							<resources>
+								<resource>
+									<directory>src/test/resources</directory>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-resources</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.outputDirectory}/static/docs</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${project.build.directory}/generated-docs</directory>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>${maven.compiler.source}</source>
+					<target>${maven.compiler.target}</target>
+					<release>${maven.compiler.release}</release>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<argLine>${jacocoArgLine} ${apiphanyArgLine}</argLine>
+					<excludes>
+						<exclude>${integration.tests.pattern}</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<argLine>${jacocoArgLine} ${apiphanyArgLine}</argLine>
+					<includes>
+						<include>${integration.tests.pattern}</include>
+					</includes>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>jar-no-fork</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<additionalOptions>-Xmaxwarns 10000</additionalOptions>
+				</configuration>
+			</plugin>
+
+			<!-- Writes all maven project properties to ${project.build.directory}/maven.properties -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>properties-maven-plugin</artifactId>
+				<version>${properties.maven.plugin.version}</version>
+				<executions>
+					<execution>
+						<phase>initialize</phase>
+						<goals>
+							<goal>write-project-properties</goal>
+						</goals>
+						<configuration>
+							<outputFile>${project.build.directory}/maven.properties</outputFile>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- Jacoco code coverage -->
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>${jacoco.maven.plugin.version}</version>
+				<executions>
+					<execution>
+						<id>pre-unit-test</id>
+						<phase>test-compile</phase>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+						<configuration>
+							<destFile>${project.reporting.outputDirectory}/jacoco.exec</destFile>
+							<propertyName>jacocoArgLine</propertyName>
+						</configuration>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>test</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+						<configuration>
+							<dataFile>${project.reporting.outputDirectory}/jacoco.exec</dataFile>
+							<outputDirectory>${project.reporting.outputDirectory}</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- Mutation testing -->
+			<!-- 
+				mvn org.jacoco:jacoco-maven-plugin:prepare-agent org.pitest:pitest-maven:mutationCoverage
+				mvn -DwithHistory org.jacoco:jacoco-maven-plugin:prepare-agent org.pitest:pitest-maven:mutationCoverage
+			-->
+			<plugin>
+				<groupId>org.pitest</groupId>
+				<artifactId>pitest-maven</artifactId>
+				<version>${pitest.maven.plugin.version}</version>
+				<!-- Allows it to work with JUnit 5 -->
+				<dependencies>
+					<dependency>
+						<groupId>org.pitest</groupId>
+						<artifactId>pitest-junit5-plugin</artifactId>
+						<version>${pitest.junit5.plugin.version}</version>
+					</dependency>
+				</dependencies>
+				<configuration>
+					<targetClasses>
+						<param>org.apiphany.*</param>
+					</targetClasses>
+					<targetTests>
+						<param>org.apiphany.*</param>
+					</targetTests>
+					<verbose>false</verbose>
+					<parseSurefireArgLine>false</parseSurefireArgLine>
+					<argLine>${apiphanyArgLine}</argLine>
+				</configuration>
+			</plugin>
+
+	        <!-- Code formatting -->
+			<plugin>
+				<groupId>com.diffplug.spotless</groupId>
+				<artifactId>spotless-maven-plugin</artifactId>
+				<version>${spotless.maven.plugin.version}</version>
+				<dependencies>
+					<dependency>
+						<groupId>org.eclipse.jdt</groupId>
+						<artifactId>org.eclipse.jdt.core</artifactId>
+						<version>${org.eclipse.jdt.core.version}</version>
+					</dependency>
+					<dependency>
+						<groupId>io.github.raduking</groupId>
+						<artifactId>code-format</artifactId>
+						<version>${code.format.version}</version>
+                    </dependency>
+				</dependencies>
+				<configuration>
+					<java>
+						<eclipse>
+							<file>java-code-style.xml</file>
+							<version>${eclipse.formatter.version}</version>
+						</eclipse>
+						<importOrder>
+							<order>java,javax,jakarta,org,com</order>
+						</importOrder>
+						<removeUnusedImports/>
+						<trimTrailingWhitespace/>
+					</java>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>compile</phase>
+						<goals>
+							<goal>apply</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+	        <!-- Build test summary after tests are run -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>${exec.maven.plugin.version}</version>
+				<executions>
+					<execution>
+						<id>build-test-summary</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>java</goal>
+						</goals>
+						<configuration>
+							<mainClass>org.apiphany.utils.TestSummary</mainClass>
+							<classpathScope>test</classpathScope>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+	<profiles>
+		<!--
+			Release profile, activate it with: -Drelease=true
+		-->
+		<profile>
+			<id>active-on-property-environment-release</id>
+			<activation>
+				<property>
+					<name>release</name>
+					<value>true</value>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<!-- Artifact signing for publishing -->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>${maven.gpg.plugin.version}</version>
+						<executions>
+							<execution>
+							<id>sign-artifacts</id>
+							<phase>verify</phase>
+							<goals>
+								<goal>sign</goal>
+							</goals>
+							</execution>
+						</executions>
+						<configuration>
+							<keyname>${env.MAVEN_GPG_PLUGIN_KEY}</keyname>
+							<gpgArguments>
+								<argument>--pinentry-mode</argument>
+								<argument>loopback</argument>
+							</gpgArguments>
+						</configuration>
+					</plugin>
+
+					<!-- Publish to Maven Central -->
+					<!-- 
+						Releases: https://central.sonatype.org/publish/publish-portal-guide/
+						Snapshots: https://central.sonatype.org/publish/publish-portal-snapshots/
+					-->
+					<plugin>
+						<groupId>org.sonatype.central</groupId>
+						<artifactId>central-publishing-maven-plugin</artifactId>
+						<version>${central.publishing.maven.plugin.version}</version>
+						<extensions>true</extensions>
+						<configuration>
+							<autoPublish>true</autoPublish>
+							<deploymentName>release-${project.artifactId}-${project.version}</deploymentName>
+							<publishingServerId>central</publishingServerId>
+						</configuration>
+					</plugin>
+
+				</plugins>
+			</build>
+		</profile>
+
+		<!--
+			Benchmarking profile, activate it with: -Pbenchmark
+		-->
+		<profile>
+			<id>benchmark</id>
+			<properties>
+				<annotation.processing>full</annotation.processing>
+				<jmh.fork>1</jmh.fork>
+				<maven.build.timestamp.format>yyyyMMdd-HHmmss</maven.build.timestamp.format>
+			</properties>
+			<build>
+				<plugins>
+
+					<!-- Benchmarking annotation processor (with JMH) -->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-compiler-plugin</artifactId>
+						<configuration>
+							<source>${maven.compiler.source}</source>
+							<target>${maven.compiler.target}</target>
+							<annotationProcessorPaths>
+								<path>
+									<groupId>org.openjdk.jmh</groupId>
+									<artifactId>jmh-generator-annprocess</artifactId>
+									<version>${jmh.version}</version>
+								</path>
+							</annotationProcessorPaths>
+							<proc>${annotation.processing}</proc>
+						</configuration>
+					</plugin>
+
+					<!-- Benchmarking plugin -->
+					<!--
+						GitHub: https://github.com/metlos/jmh-maven-plugin
+						Run benchmarks conditionally with 1 warmup forks and 2 run forks:
+
+						mvn jmh:benchmark -Pbenchmark -Djmh.wf=1 -Djmh.fork=2
+					-->
+					<plugin>
+						<groupId>pw.krejci</groupId>
+						<artifactId>jmh-maven-plugin</artifactId>
+						<version>${jmh.maven.plugin.version}</version>
+						<configuration>
+							<fork>${jmh.fork}</fork>
+							<resultFormat>JSON</resultFormat>
+							<resultsFile>target/jmh-result-${maven.build.timestamp}.json</resultsFile>
+						</configuration>
+					</plugin>					
+				</plugins>
+			</build>
+    	</profile>
+	</profiles>
+
+	<reporting>
+
+		<plugins>
+			<!-- Reports -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-project-info-reports-plugin</artifactId>
+				<version>${maven.project.info.reports.plugin.version}</version>
+			</plugin>
+
+			<!-- Jacoco code coverage -->
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>${jacoco.maven.plugin.version}</version>
+				<reportSets>
+					<reportSet>
+						<reports>
+							<!-- select non-aggregate reports -->
+							<report>report</report>
+						</reports>
+					</reportSet>
+				</reportSets>
+			</plugin>
+
+			<!-- Mutation testing -->
+			<!-- 
+				mvn clean org.pitest:pitest-maven:mutationCoverage site
+				mvn clean install org.pitest:pitest-maven:mutationCoverage site
+			-->
+			<plugin>
+				<groupId>org.pitest</groupId>
+				<artifactId>pitest-maven</artifactId>
+				<version>${pitest.plugin.version}</version>
+				<reportSets>
+					<reportSet>
+						<reports>
+							<report>report</report>
+						</reports>
+					</reportSet>
+				</reportSets>
+			</plugin>
+		</plugins>
+	</reporting>
+
+	<distributionManagement>
+		<snapshotRepository>
+			<id>central</id>
+			<name>Central Repository Snapshots</name>
+			<url>https://central.sonatype.com/repository/maven-snapshots</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</snapshotRepository>
+  		<repository>
+			<id>central</id>
+			<name>Central Repository</name>
+    		<url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+	</distributionManagement>
+
+	<repositories>
+	</repositories>
+
+</project>

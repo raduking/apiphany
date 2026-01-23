@@ -1,11 +1,13 @@
 package org.apiphany.utils;
 
 import java.io.File;
+import java.net.URL;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.testcontainers.shaded.com.google.common.base.Strings;
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
@@ -18,9 +20,37 @@ public class TestSummary {
 	private static final String TITLE = "TEST SUMMARY";
 	private static final String LINE = Strings.repeat("-", 128);
 
+	/**
+	 * ANSI color codes.
+	 */
+	public static final String RESET = "\u001B[0m";
+	public static final String BLACK = "\u001B[30m";
+	public static final String RED = "\u001B[31m";
+	public static final String GREEN = "\u001B[32m";
+	public static final String YELLOW = "\u001B[33m";
+	public static final String BLUE = "\u001B[34m";
+	public static final String PURPLE = "\u001B[35m";
+	public static final String CYAN = "\u001B[36m";
+	public static final String WHITE = "\u001B[37m";
+
+	/**
+	 * Background colors.
+	 */
+	public static final String BG_RED = "\u001B[41m";
+	public static final String BG_GREEN = "\u001B[42m";
+	public static final String BG_BLUE = "\u001B[44m";
+
 	public static void main(final String[] args) throws Exception {
-		File surefire = new File("target/surefire-reports");
-		File failsafe = new File("target/failsafe-reports");
+		// get the directory where the class is located
+		URL classLocation = TestSummary.class.getProtectionDomain().getCodeSource().getLocation();
+		String classPath = classLocation.getPath();
+		System.out.printf("[%sINFO%s] Class path: %s%n", BLUE, RESET, classPath);
+
+		// navigate from target/classes or target/test-classes to target directory
+		File targetDir = new File(classPath).getParentFile();
+
+		File surefire = new File(targetDir, "surefire-reports");
+		File failsafe = new File(targetDir, "failsafe-reports");
 
 		Summary unit = parseDir(surefire);
 		Summary integration = parseDir(failsafe);
@@ -44,6 +74,7 @@ public class TestSummary {
 	static Summary parseDir(final File dir) throws Exception {
 		Summary s = new Summary();
 		if (!dir.exists()) {
+			System.err.printf("[%sERROR%s] Directory %s does not exist%n", RED, RESET, dir.getAbsolutePath());
 			return s;
 		}
 
@@ -69,18 +100,20 @@ public class TestSummary {
 		return s;
 	}
 
-	static int getIntAttr(final org.w3c.dom.Node node, final String attr) {
+	static int getIntAttr(final Node node, final String attr) {
 		try {
 			return Integer.parseInt(node.getAttributes().getNamedItem(attr).getTextContent());
-		} catch (Exception ignored) {
+		} catch (Exception e) {
+			System.err.printf("[%sERROR%s] %s", RED, RESET, e.getMessage());
 			return 0;
 		}
 	}
 
-	static double getDoubleAttr(final org.w3c.dom.Node node, final String attr) {
+	static double getDoubleAttr(final Node node, final String attr) {
 		try {
 			return Double.parseDouble(node.getAttributes().getNamedItem(attr).getTextContent());
-		} catch (Exception ignored) {
+		} catch (Exception e) {
+			System.err.printf("[%sERROR%s] %s", RED, RESET, e.getMessage());
 			return 0;
 		}
 	}
