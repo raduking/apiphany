@@ -1,17 +1,22 @@
 package org.apiphany.test;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.morphix.reflection.Constructors;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
- * Build test summary utility.
+ * Test summary utility.
+ * <p>
+ * TODO: This is a rough implementation. Improve it later.
  *
  * @author Radu Sebastian LAZIN
  */
@@ -78,7 +83,7 @@ public class TestSummary {
 				totalTime, unit.tests + integration.tests);
 	}
 
-	static Summary parseDir(final File dir) throws Exception {
+	static Summary parseDir(final File dir) throws ParserConfigurationException, SAXException, IOException {
 		Summary s = new Summary();
 		if (!dir.exists()) {
 			System.err.printf("[%sERROR%s] Directory %s does not exist%n", RED, RESET, dir.getAbsolutePath());

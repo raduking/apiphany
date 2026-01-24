@@ -79,12 +79,6 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- Logging -->
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-		</dependency>
-
 		<!-- Testing -->
 		<dependency>
 			<groupId>ch.qos.logback</groupId>

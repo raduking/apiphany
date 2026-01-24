@@ -20,7 +20,7 @@ import java.util.Base64;
 import org.apiphany.io.BytesOrder;
 import org.apiphany.lang.Hex;
 import org.apiphany.lang.Strings;
-import org.apiphany.utils.security.X25519Keys;
+import org.apiphany.security.keys.X25519Keys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
