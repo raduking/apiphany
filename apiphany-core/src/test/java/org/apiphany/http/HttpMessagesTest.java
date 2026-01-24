@@ -1,5 +1,6 @@
 package org.apiphany.http;
 
+import static org.apiphany.test.Assertions.assertDefaultConstructorThrows;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -7,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.net.http.HttpClient.Version;
 import java.util.stream.Stream;
 
-import org.apiphany.utils.Tests;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -76,7 +76,7 @@ class HttpMessagesTest {
 
 	@Test
 	void shouldThrowExceptionWhenCallingConstructor() {
-		UnsupportedOperationException unsupportedOperationException = Tests.verifyDefaultConstructorThrows(HttpMessages.class);
+		UnsupportedOperationException unsupportedOperationException = assertDefaultConstructorThrows(HttpMessages.class);
 		assertThat(unsupportedOperationException.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
 	}
 }

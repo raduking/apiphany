@@ -109,6 +109,13 @@
 
 		<!-- Testing -->
 		<dependency>
+			<groupId>io.github.raduking</groupId>
+			<artifactId>apiphany-test</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		
+		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
 			<scope>test</scope>

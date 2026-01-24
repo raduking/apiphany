@@ -1,5 +1,6 @@
 package org.apiphany.meters;
 
+import static org.apiphany.test.Assertions.assertDefaultConstructorThrows;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -22,7 +23,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 import org.apiphany.lang.builder.PropertyNameBuilder;
-import org.apiphany.utils.Tests;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.morphix.lang.JavaObjects;
@@ -58,7 +58,7 @@ class BasicMetersTest {
 
 	@Test
 	void shouldThrowExceptionOnCallingNameConstructor() {
-		UnsupportedOperationException unsupportedOperationException = Tests.verifyDefaultConstructorThrows(BasicMeters.Name.class);
+		UnsupportedOperationException unsupportedOperationException = assertDefaultConstructorThrows(BasicMeters.Name.class);
 		assertThat(unsupportedOperationException.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
 	}
 

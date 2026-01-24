@@ -1,5 +1,6 @@
 package org.apiphany.net;
 
+import static org.apiphany.test.Assertions.assertDefaultConstructorThrows;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
@@ -11,7 +12,6 @@ import java.net.Socket;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Supplier;
 
-import org.apiphany.utils.Tests;
 import org.junit.jupiter.api.Test;
 import org.morphix.lang.function.ThrowingRunnable;
 import org.morphix.lang.thread.Threads;
@@ -32,13 +32,13 @@ class SocketsTest {
 
 	@Test
 	void shouldThrowExceptionOnCallingConstructor() {
-		UnsupportedOperationException unsupportedOperationException = Tests.verifyDefaultConstructorThrows(Sockets.class);
+		UnsupportedOperationException unsupportedOperationException = assertDefaultConstructorThrows(Sockets.class);
 		assertThat(unsupportedOperationException.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
 	}
 
 	@Test
 	void shouldThrowExceptionOnCallingDefaultClassConstructor() {
-		UnsupportedOperationException unsupportedOperationException = Tests.verifyDefaultConstructorThrows(Sockets.Default.class);
+		UnsupportedOperationException unsupportedOperationException = assertDefaultConstructorThrows(Sockets.Default.class);
 		assertThat(unsupportedOperationException.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
 	}
 

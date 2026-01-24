@@ -44,10 +44,22 @@
 
 	<dependencies>
 
+		<!-- MorphiX -->
+		<dependency>
+			<groupId>io.github.raduking</groupId>
+			<artifactId>morphix-all</artifactId>
+		</dependency>
+
 		<!-- Logging -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
+		</dependency>
+
+		<!-- JUnit -->
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-api</artifactId>
 		</dependency>
 
 	</dependencies>

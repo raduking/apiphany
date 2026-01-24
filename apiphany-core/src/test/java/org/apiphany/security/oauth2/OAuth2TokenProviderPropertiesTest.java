@@ -1,12 +1,12 @@
 package org.apiphany.security.oauth2;
 
+import static org.apiphany.test.Assertions.assertDefaultConstructorThrows;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import java.time.Duration;
 
 import org.apiphany.security.AuthenticationToken;
-import org.apiphany.utils.Tests;
 import org.junit.jupiter.api.Test;
 import org.morphix.reflection.Constructors;
 
@@ -25,7 +25,7 @@ class OAuth2TokenProviderPropertiesTest {
 	@Test
 	void shouldNotInstantiateDefaultClass() {
 		UnsupportedOperationException unsupportedOperationException =
-				Tests.verifyDefaultConstructorThrows(OAuth2TokenProviderProperties.Default.class);
+				assertDefaultConstructorThrows(OAuth2TokenProviderProperties.Default.class);
 		assertThat(unsupportedOperationException.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
 	}
 

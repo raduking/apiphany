@@ -1,5 +1,6 @@
 package org.apiphany;
 
+import static org.apiphany.test.Assertions.assertDefaultConstructorThrows;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -8,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.Collections;
 import java.util.List;
 
-import org.apiphany.utils.Tests;
 import org.junit.jupiter.api.Test;
 import org.morphix.reflection.Constructors;
 
@@ -23,13 +23,13 @@ class ApiPredicatesTest {
 
 	@Test
 	void shouldThrowExceptionOnCallingConstructor() {
-		UnsupportedOperationException unsupportedOperationException = Tests.verifyDefaultConstructorThrows(ApiPredicates.class);
+		UnsupportedOperationException unsupportedOperationException = assertDefaultConstructorThrows(ApiPredicates.class);
 		assertThat(unsupportedOperationException.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
 	}
 
 	@Test
 	void shouldThrowExceptionOnCallingExpectedConstructor() {
-		UnsupportedOperationException unsupportedOperationException = Tests.verifyDefaultConstructorThrows(ApiPredicates.Expected.class);
+		UnsupportedOperationException unsupportedOperationException = assertDefaultConstructorThrows(ApiPredicates.Expected.class);
 		assertThat(unsupportedOperationException.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
 	}
 

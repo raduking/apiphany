@@ -1,36 +1,32 @@
-package org.apiphany.utils;
+package org.apiphany.test;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.io.FileInputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Properties;
 
 import org.morphix.lang.JavaObjects;
 import org.morphix.reflection.Constructors;
 import org.morphix.reflection.ReflectionException;
 
 /**
- * Utility methods for tests.
+ * Assertion methods for tests.
  *
  * @author Radu Sebastian LAZIN
  */
-public interface Tests {
+public interface Assertions {
 
-	static <T extends Throwable> T verifyDefaultConstructorThrows(final Class<?> cls) {
+	/**
+	 * Verifies that the default constructor of the given class throws an exception.
+	 *
+	 * @param <T> the type of the exception expected to be thrown by the default constructor
+	 *
+	 * @param cls the class whose default constructor is to be tested
+	 * @return the exception thrown by the default constructor
+	 */
+	static <T extends Throwable> T assertDefaultConstructorThrows(final Class<?> cls) {
 		ReflectionException reflectionException =
 				assertThrows(ReflectionException.class, () -> Constructors.IgnoreAccess.newInstance(cls));
 		InvocationTargetException invocationTargetException = JavaObjects.cast(reflectionException.getCause());
 		return JavaObjects.cast(invocationTargetException.getCause());
-	}
-
-	static Properties loadProperties(final String filePath) {
-		try (FileInputStream input = new FileInputStream(filePath)) {
-			Properties properties = new Properties();
-			properties.load(input);
-			return properties;
-		} catch (Exception e) {
-			throw new RuntimeException("Failed to load project properties", e);
-		}
 	}
 }
