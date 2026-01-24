@@ -40,12 +40,6 @@
 
 	<properties>
 
-		<!-- Testing dependencies versions -->
-		<pitest.maven.plugin.version>1.22.0</pitest.maven.plugin.version>
-		<pitest.junit5.plugin.version>1.2.3</pitest.junit5.plugin.version>
-		<jacoco.maven.plugin.version>0.8.14</jacoco.maven.plugin.version>
-		<maven.project.info.reports.plugin.version>3.9.0</maven.project.info.reports.plugin.version>
-
 		<!--
 			The apiphanyHttpClient5ArgLine property is only used during the build process of the 
 			library and does not affect projects that consume your jar as a dependency. 
@@ -131,10 +125,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>${maven.compiler.source}</source>
-					<target>${maven.compiler.target}</target>
-				</configuration>
 			</plugin>
 
 			<plugin>
@@ -328,14 +318,14 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-project-info-reports-plugin</artifactId>
-				<version>${project.info.reports.plugin.version}</version>
+				<version>${maven.project.info.reports.plugin.version}</version>
 			</plugin>
 
 			<!--Jacoco code coverage -->
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>${jacoco.plugin.version}</version>
+				<version>${jacoco.maven.plugin.version}</version>
 				<reportSets>
 					<reportSet>
 						<reports>
@@ -351,7 +341,7 @@
 			<plugin>
 				<groupId>org.pitest</groupId>
 				<artifactId>pitest-maven</artifactId>
-				<version>${pitest.plugin.version}</version>
+				<version>${pitest.maven.plugin.version}</version>
 				<reportSets>
 					<reportSet>
 						<reports>
