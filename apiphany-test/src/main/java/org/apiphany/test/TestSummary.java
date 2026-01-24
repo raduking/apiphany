@@ -1,11 +1,11 @@
-package org.apiphany.utils;
+package org.apiphany.test;
 
 import java.io.File;
 import java.net.URL;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.testcontainers.shaded.com.google.common.base.Strings;
+import org.morphix.reflection.Constructors;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -18,7 +18,7 @@ import org.w3c.dom.NodeList;
 public class TestSummary {
 
 	private static final String TITLE = "TEST SUMMARY";
-	private static final String LINE = Strings.repeat("-", 128);
+	private static final String LINE = "-".repeat(128);
 
 	/**
 	 * ANSI color codes.
@@ -39,6 +39,13 @@ public class TestSummary {
 	public static final String BG_RED = "\u001B[41m";
 	public static final String BG_GREEN = "\u001B[42m";
 	public static final String BG_BLUE = "\u001B[44m";
+
+	/**
+	 * Private constructor to prevent instantiation.
+	 */
+	private TestSummary() {
+		throw Constructors.unsupportedOperationException();
+	}
 
 	public static void main(final String[] args) throws Exception {
 		// get the directory where the class is located
