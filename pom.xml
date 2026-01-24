@@ -19,6 +19,8 @@
 	<modules>
 		<module>apiphany-core</module>
 		<module>apiphany-httpclient5</module>
+		<module>apiphany-test</module>
+		<module>apiphany-integration-tests</module>
 	</modules>
 
 	<properties>
@@ -34,21 +36,31 @@
 		<maven.version>3.9</maven.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-		<!-- Publishing dependencies versions -->
-		<maven.gpg.plugin.version>3.2.8</maven.gpg.plugin.version>
-		<central.publishing.maven.plugin.version>0.9.0</central.publishing.maven.plugin.version>
-
-		<!-- Other plugin versions -->
-		<spotless.maven.plugin.version>3.1.0</spotless.maven.plugin.version>
-		<org.eclipse.jdt.core.version>3.44.0</org.eclipse.jdt.core.version>
-		<eclipse.formatter.version>4.38</eclipse.formatter.version>
-		<code.format.version>1.0.0</code.format.version>
-
 		<!-- Testing dependencies versions -->
 		<testcontainers.base.version>2.0.3</testcontainers.base.version>
 		<testcontainers.keycloak.version>4.1.0</testcontainers.keycloak.version>
 		<nimbus.jose.jwt.version>10.7</nimbus.jose.jwt.version>
 		<oauth2.oidc.sdk.version>11.31.1</oauth2.oidc.sdk.version>
+
+		<!-- Dependencies used by plugins versions -->
+		<org.eclipse.jdt.core.version>3.44.0</org.eclipse.jdt.core.version>
+		<eclipse.formatter.version>4.38</eclipse.formatter.version>
+		<code.format.version>1.0.0</code.format.version>
+
+		<!-- Publishing plugins versions -->
+		<maven.gpg.plugin.version>3.2.8</maven.gpg.plugin.version>
+		<central.publishing.maven.plugin.version>0.9.0</central.publishing.maven.plugin.version>
+
+		<!-- Testing plugins versions -->
+		<pitest.maven.plugin.version>1.22.0</pitest.maven.plugin.version>
+		<pitest.junit5.plugin.version>1.2.3</pitest.junit5.plugin.version>
+		<jacoco.maven.plugin.version>0.8.14</jacoco.maven.plugin.version>
+		<maven.project.info.reports.plugin.version>3.9.0</maven.project.info.reports.plugin.version>
+
+		<!-- Other plugin versions -->
+		<properties.maven.plugin.version>1.2.1</properties.maven.plugin.version>
+		<spotless.maven.plugin.version>3.1.0</spotless.maven.plugin.version>
+		<exec.maven.plugin.version>3.6.3</exec.maven.plugin.version>
 
 		<!-- Testing properties -->
 		<integration.tests.pattern>**/*IT.java</integration.tests.pattern>
@@ -56,6 +68,7 @@
 		<!-- Benchmarking -->
 		<jmh.version>1.37</jmh.version>
 		<jmh.maven.plugin.version>0.2.2</jmh.maven.plugin.version>
+		<jmh.fork>1</jmh.fork>
 
 	</properties>
 
@@ -81,6 +94,7 @@
 			<dependency>
 				<groupId>com.github.dasniko</groupId>
 				<artifactId>testcontainers-keycloak</artifactId>
+				<!-- This version is needed because of the latest Docker changes, remove it when the parent updates it -->
 				<version>${testcontainers.keycloak.version}</version>
 				<scope>test</scope>
 			</dependency>
@@ -135,10 +149,11 @@
 	</dependencyManagement>
 
 	<build>
-	
-	<!-- 
-		Configure plugin management for child modules here.
-	-->
+		<!--
+			Configure plugin management for child modules here.
+			These plugins can be used in child modules but only those defined here will have their versions and configurations managed.
+			No executions should be defined here, only in child modules.
+		-->
 		<pluginManagement>
 			<plugins>
 
@@ -205,6 +220,20 @@
 							<trimTrailingWhitespace/>
 						</java>
 					</configuration>
+				</plugin>
+
+				<!-- Writes all maven project properties to ${project.build.directory}/maven.properties -->
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>properties-maven-plugin</artifactId>
+					<version>${properties.maven.plugin.version}</version>
+				</plugin>
+
+				<!-- Execute arbitrary commands -->
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>exec-maven-plugin</artifactId>
+					<version>${exec.maven.plugin.version}</version>
 				</plugin>
 
 				<!-- Enforce version for Java -->
