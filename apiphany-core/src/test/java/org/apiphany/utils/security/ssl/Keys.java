@@ -11,8 +11,6 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
@@ -124,38 +122,6 @@ public class Keys {
 		LOGGER.info("Loaded public key:\n{}", Hex.dump(keys.toByteArray(publicKey, BytesOrder.LITTLE_ENDIAN)));
 
 		return new KeyPair(publicKey, privateKey);
-	}
-
-	public static RSAPrivateKey loadRSAPrivateKey(final String filePath) throws Exception {
-		String key = Strings.fromFile(filePath);
-
-		String privateKeyPEM = key
-				.replace(BEGIN_PRIVATE_KEY, "")
-				.replaceAll(Strings.EOL, "")
-				.replace(END_PRIVATE_KEY, "");
-
-		byte[] decoded = Base64.getMimeDecoder().decode(privateKeyPEM.getBytes());
-
-		KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-		PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(decoded);
-
-		return (RSAPrivateKey) keyFactory.generatePrivate(keySpec);
-	}
-
-	public static RSAPublicKey loadRSAPublicKey(final String filePath) throws Exception {
-		String key = Strings.fromFile(filePath);
-
-		String publicKeyPEM = key
-				.replace(BEGIN_PUBLIC_KEY, "")
-				.replaceAll(Strings.EOL, "")
-				.replace(END_PUBLIC_KEY, "");
-
-		byte[] decoded = Base64.getMimeDecoder().decode(publicKeyPEM.getBytes());
-
-		KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-		X509EncodedKeySpec keySpec = new X509EncodedKeySpec(decoded);
-
-		return (RSAPublicKey) keyFactory.generatePublic(keySpec);
 	}
 
 	public static void main(final String[] args) throws Exception {

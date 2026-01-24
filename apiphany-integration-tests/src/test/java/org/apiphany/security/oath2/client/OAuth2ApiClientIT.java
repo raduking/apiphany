@@ -1,4 +1,4 @@
-package org.apiphany.integration.security.oath2.client;
+package org.apiphany.security.oath2.client;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -18,11 +18,11 @@ import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.JwsAlgorithm;
+import org.apiphany.security.keys.RSAKeys;
 import org.apiphany.security.oauth2.ClientAuthenticationMethod;
 import org.apiphany.security.oauth2.OAuth2ClientRegistration;
 import org.apiphany.security.oauth2.OAuth2ProviderDetails;
 import org.apiphany.security.oauth2.client.OAuth2ApiClient;
-import org.apiphany.utils.security.ssl.Keys;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -90,10 +90,12 @@ class OAuth2ApiClientIT {
 
 	public static String convertToPem(final String x5cCert) {
 		StringBuilder pem = new StringBuilder();
-		pem.append("-----BEGIN PUBLIC KEY-----\n");
+		pem.append(RSAKeys.BEGIN_PUBLIC_KEY);
+		pem.append("\n");
 		String base64 = x5cCert.replaceAll("(.{64})", "$1\n");
 		pem.append(base64);
-		pem.append("\n-----END PUBLIC KEY-----");
+		pem.append("\n");
+		pem.append(RSAKeys.END_PUBLIC_KEY);
 		return pem.toString();
 	}
 
@@ -165,7 +167,7 @@ class OAuth2ApiClientIT {
 		String clientRegistrationJsonString = Strings.fromFile("security/oauth2/oauth2-client-registration-pk.json");
 		OAuth2ClientRegistration pkClientRegistration = JsonBuilder.fromJson(clientRegistrationJsonString, OAuth2ClientRegistration.class);
 
-		RSAPrivateKey privateKey = Keys.loadRSAPrivateKey("security/oauth2/rsa_private.pem");
+		RSAPrivateKey privateKey = RSAKeys.loadPEMPrivateKey("security/oauth2/rsa_private.pem");
 
 		JwsAlgorithm jwsAlgorithm = JwsAlgorithm.fromString(algorithm);
 		try (OAuth2ApiClient oAuth2ApiClient = new OAuth2ApiClient(pkClientRegistration, providerDetails, privateKey, jwsAlgorithm, exchangeClient)) {
@@ -181,7 +183,7 @@ class OAuth2ApiClientIT {
 		String clientRegistrationJsonString = Strings.fromFile("security/oauth2/oauth2-client-registration-pk.json");
 		OAuth2ClientRegistration pkClientRegistration = JsonBuilder.fromJson(clientRegistrationJsonString, OAuth2ClientRegistration.class);
 
-		RSAPrivateKey privateKey = Keys.loadRSAPrivateKey("security/oauth2/rsa_private.pem");
+		RSAPrivateKey privateKey = RSAKeys.loadPEMPrivateKey("security/oauth2/rsa_private.pem");
 
 		JwsAlgorithm jwsAlgorithm = JwsAlgorithm.fromString(algorithm);
 		ExchangeClientBuilder exchangeClientBuilder = ExchangeClientBuilder.create().client(JavaNetHttpExchangeClient.class);
