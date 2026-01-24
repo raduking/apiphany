@@ -2,6 +2,12 @@
 
 `1.1.0`
 
+- Split the project into multiple modules.
+- Added `apiphany-core` module which is the main library.
+- Added `apiphany-test` module with testing utilities used in all modules.
+- Added `apiphany-integration-test` module with integration tests.
+- Added `apiphany-httpclient5` module which adds a library Apache HTTP client 5 for Apiphany.
+
 ---
 
 `1.0.26`

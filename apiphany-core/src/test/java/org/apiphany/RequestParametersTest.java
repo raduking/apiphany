@@ -2,6 +2,7 @@ package org.apiphany;
 
 import static org.apiphany.ParameterFunction.parameter;
 import static org.apiphany.ParameterFunction.withCondition;
+import static org.apiphany.test.Assertions.assertDefaultConstructorThrows;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -13,7 +14,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import org.apiphany.utils.Tests;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -29,7 +29,7 @@ class RequestParametersTest {
 
 	@Test
 	void shouldThrowExceptionOnCallingConstructor() {
-		UnsupportedOperationException unsupportedOperationException = Tests.verifyDefaultConstructorThrows(RequestParameters.class);
+		UnsupportedOperationException unsupportedOperationException = assertDefaultConstructorThrows(RequestParameters.class);
 		assertThat(unsupportedOperationException.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
 	}
 

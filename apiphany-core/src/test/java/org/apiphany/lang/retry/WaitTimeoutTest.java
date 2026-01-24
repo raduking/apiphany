@@ -1,5 +1,6 @@
 package org.apiphany.lang.retry;
 
+import static org.apiphany.test.Assertions.assertDefaultConstructorThrows;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
@@ -13,7 +14,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 
 import org.apiphany.lang.Holder;
-import org.apiphany.utils.Tests;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.morphix.lang.thread.Threads;
@@ -270,7 +270,7 @@ class WaitTimeoutTest {
 
 	@Test
 	void shouldThrowExceptionWhenTryingToInstantiateWaitTimeoutDefaultConstructor() {
-		UnsupportedOperationException e = Tests.verifyDefaultConstructorThrows(WaitTimeout.Default.class);
+		UnsupportedOperationException e = assertDefaultConstructorThrows(WaitTimeout.Default.class);
 
 		assertThat(e.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
 	}

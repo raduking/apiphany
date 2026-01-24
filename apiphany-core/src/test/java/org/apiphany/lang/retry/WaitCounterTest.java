@@ -1,5 +1,6 @@
 package org.apiphany.lang.retry;
 
+import static org.apiphany.test.Assertions.assertDefaultConstructorThrows;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -10,7 +11,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-import org.apiphany.utils.Tests;
 import org.junit.jupiter.api.Test;
 import org.morphix.reflection.Constructors;
 
@@ -133,7 +133,7 @@ class WaitCounterTest {
 
 	@Test
 	void shouldThrowExceptionWhenTryingToInstantiateWaitCounterDefaultConstructor() {
-		UnsupportedOperationException e = Tests.verifyDefaultConstructorThrows(WaitCounter.Default.class);
+		UnsupportedOperationException e = assertDefaultConstructorThrows(WaitCounter.Default.class);
 
 		assertThat(e.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
 	}

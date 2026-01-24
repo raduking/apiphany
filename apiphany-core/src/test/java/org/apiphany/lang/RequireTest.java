@@ -1,11 +1,13 @@
 package org.apiphany.lang;
 
+import static org.apiphany.test.Assertions.assertDefaultConstructorThrows;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.apiphany.utils.Tests;
+import java.util.function.Predicate;
+
 import org.junit.jupiter.api.Test;
 import org.morphix.reflection.Constructors;
 
@@ -18,7 +20,7 @@ class RequireTest {
 
 	@Test
 	void shouldThrowExceptionOnCallingConstructor() {
-		UnsupportedOperationException unsupportedOperationException = Tests.verifyDefaultConstructorThrows(Require.class);
+		UnsupportedOperationException unsupportedOperationException = assertDefaultConstructorThrows(Require.class);
 		assertThat(unsupportedOperationException.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
 	}
 
@@ -55,8 +57,10 @@ class RequireTest {
 
 	@Test
 	void shouldThrowExceptionIfConditionIsNotMet() {
+		Predicate<String> condition = obj -> obj.length() != 4;
+		int length = "test".length();
 		IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
-				() -> Require.that("test", obj -> obj.length() != 4, "Length must not be 4 but was {}", "test".length()));
+				() -> Require.that("test", condition, "Length must not be 4 but was {}", length));
 
 		assertThat(e.getMessage(), equalTo("Length must not be 4 but was 4"));
 	}

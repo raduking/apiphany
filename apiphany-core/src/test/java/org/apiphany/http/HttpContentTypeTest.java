@@ -1,5 +1,6 @@
 package org.apiphany.http;
 
+import static org.apiphany.test.Assertions.assertDefaultConstructorThrows;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -11,7 +12,6 @@ import java.util.List;
 import java.util.Objects;
 
 import org.apiphany.io.ContentType;
-import org.apiphany.utils.Tests;
 import org.junit.jupiter.api.Test;
 import org.morphix.reflection.Constructors;
 
@@ -93,7 +93,7 @@ class HttpContentTypeTest {
 
 	@Test
 	void shouldThrowExceptionOnCallingParamConstructor() {
-		UnsupportedOperationException unsupportedOperationException = Tests.verifyDefaultConstructorThrows(HttpContentType.Param.class);
+		UnsupportedOperationException unsupportedOperationException = assertDefaultConstructorThrows(HttpContentType.Param.class);
 		assertThat(unsupportedOperationException.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
 	}
 

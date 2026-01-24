@@ -12,7 +12,7 @@ import java.nio.file.Path;
 import java.util.Properties;
 import java.util.stream.Stream;
 
-import org.apiphany.utils.Tests;
+import org.apiphany.test.Tests;
 import org.junit.jupiter.api.Test;
 import org.morphix.reflection.JavaClassFile;
 
