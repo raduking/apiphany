@@ -12,6 +12,7 @@
 - Added `Assertions.assertDefaultConstructorThrows` method to assert that the default constructor throws useful for utility classes.
 - Added `org.apiphany.security.keys` package for key exchange handlers and other key related operations.
 - Added `X25519Keys` key exchange handler to handle `XDH` keys.
+- Moved `OAuth2ApiClientIT` integration test and `testcontainers` dependencies to `apiphany-integration-test` including relevant resource files.
 
 ---
 

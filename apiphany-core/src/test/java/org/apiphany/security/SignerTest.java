@@ -10,7 +10,7 @@ import static org.mockito.Mockito.mock;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
-import org.apiphany.utils.security.ssl.Keys;
+import org.apiphany.security.keys.RSAKeys;
 import org.junit.jupiter.api.Test;
 import org.morphix.reflection.Constructors;
 
@@ -30,10 +30,10 @@ class SignerTest {
 	}
 
 	@Test
-	void shouldVerifySignature() throws Exception {
+	void shouldVerifySignature() {
 		byte[] data = TEXT.getBytes();
-		PrivateKey privateKey = Keys.loadRSAPrivateKey("security/oauth2/rsa_private.pem");
-		PublicKey publicKey = Keys.loadRSAPublicKey("security/oauth2/rsa_public.pem");
+		PrivateKey privateKey = RSAKeys.loadPEMPrivateKey("security/oauth2/rsa_private.pem");
+		PublicKey publicKey = RSAKeys.loadPEMPublicKey("security/oauth2/rsa_public.pem");
 
 		byte[] signature = Signer.sign(privateKey, JwsAlgorithm.PS256, data);
 
@@ -53,9 +53,9 @@ class SignerTest {
 	}
 
 	@Test
-	void shouldThrowSecurityExceptionIfVerifyingFails() throws Exception {
+	void shouldThrowSecurityExceptionIfVerifyingFails() {
 		byte[] data = TEXT.getBytes();
-		PrivateKey privateKey = Keys.loadRSAPrivateKey("security/oauth2/rsa_private.pem");
+		PrivateKey privateKey = RSAKeys.loadPEMPrivateKey("security/oauth2/rsa_private.pem");
 		PublicKey publicKey = mock(PublicKey.class);
 
 		byte[] signature = Signer.sign(privateKey, JwsAlgorithm.PS256, data);
