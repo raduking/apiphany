@@ -22,6 +22,7 @@ import org.morphix.lang.Nullables;
  * @param registration the OAuth2 resolved registration for this provider
  * @param tokenRefreshScheduler the token refresh scheduler
  * @param tokenClientSupplier the supplier for the client that will make the actual token requests
+ * @param defaultExpirationSupplier the supplier for the default expiration instant for tokens that do not provide one
  *
  * @author Radu Sebastian LAZIN
  */
