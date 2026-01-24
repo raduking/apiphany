@@ -1,4 +1,4 @@
-package org.apiphany.security;
+package org.apiphany.security.keys;
 
 import java.security.KeyPair;
 import java.security.PrivateKey;

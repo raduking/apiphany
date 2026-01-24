@@ -10,6 +10,8 @@
 - Moved `Tests` test class to `apiphany-test` module.
 - Added `Assertions` class to `apiphany-test` module with utility JUnit style assertions.
 - Added `Assertions.assertDefaultConstructorThrows` method to assert that the default constructor throws useful for utility classes.
+- Added `org.apiphany.security.keys` package for key exchange handlers and other key related operations.
+- Added `X25519Keys` key exchange handler to handle `XDH` keys.
 
 ---
 
