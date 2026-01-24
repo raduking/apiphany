@@ -1,4 +1,4 @@
-package org.apiphany.utils;
+package org.apiphany.test.fork;
 
 import java.io.InputStream;
 import java.lang.reflect.Method;
@@ -11,10 +11,26 @@ import org.junit.jupiter.api.extension.ReflectiveInvocationContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * JUnit 5 extension to run tests in a forked JVM.
+ *
+ * @author Radu Sebastian LAZIN
+ */
 public class ForkedJvmExtension implements InvocationInterceptor {
 
+	/**
+	 * Logger instance.
+	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(ForkedJvmExtension.class);
 
+	/**
+	 * Intercepts test method invocations to run them in a forked JVM if annotated with {@link ForkedJvmTest}.
+	 *
+	 * @param invocation the invocation to proceed with
+	 * @param context the reflective invocation context
+	 * @param extensionContext the extension context
+	 * @throws Throwable if an error occurs during invocation
+	 */
 	@Override
 	public void interceptTestMethod(
 			final Invocation<Void> invocation,
@@ -30,11 +46,12 @@ public class ForkedJvmExtension implements InvocationInterceptor {
 		String methodName = context.getExecutable().getName();
 		String[] jvmArgs = annotation.jvmArgs();
 
-		String[] cmd = getCommand(className, methodName, jvmArgs);
+		String[] cmd = buildCommand(className, methodName, jvmArgs);
 
 		boolean showCommand = "true".equals(System.getProperty("process.show.command"));
 		if (showCommand) {
-			LOGGER.info("[forked] command $ {}\n", String.join(" \\\n", cmd));
+			String commandLine = String.join(" \\\n", cmd);
+			LOGGER.info("[forked] command $ {}\n", commandLine);
 		}
 
 		ProcessBuilder pb = new ProcessBuilder(cmd)
@@ -51,7 +68,15 @@ public class ForkedJvmExtension implements InvocationInterceptor {
 		}
 	}
 
-	private static String[] getCommand(final String className, final String methodName, final String[] jvmArgs) {
+	/**
+	 * Constructs the command to run the specified test method in a forked JVM.
+	 *
+	 * @param className the name of the test class
+	 * @param methodName the name of the test method
+	 * @param jvmArgs the JVM arguments
+	 * @return the command as an array of strings
+	 */
+	private static String[] buildCommand(final String className, final String methodName, final String[] jvmArgs) {
 		ArrayList<String> command = new ArrayList<>();
 		command.add("java");
 		command.addAll(List.of(jvmArgs));

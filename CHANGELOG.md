@@ -7,6 +7,9 @@
 - Added `apiphany-test` module with testing utilities used in all modules.
 - Added `apiphany-integration-test` module with integration tests.
 - Added `apiphany-httpclient5` module which adds a library Apache HTTP client 5 for Apiphany.
+- Moved `Tests` test class to `apiphany-test` module.
+- Added `Assertions` class to `apiphany-test` module with utility JUnit style assertions.
+- Added `Assertions.assertDefaultConstructorThrows` method to assert that the default constructor throws useful for utility classes.
 
 ---
 

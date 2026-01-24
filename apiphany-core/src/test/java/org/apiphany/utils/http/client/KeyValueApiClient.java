@@ -24,7 +24,7 @@ public class KeyValueApiClient extends ApiClient {
 	private static final GenericClass<Map<String, String>> MAP_TYPE = typeObject();
 
 	public KeyValueApiClient(final String baseUrl, final ClientProperties properties) {
-		super(baseUrl, with(JavaNetHttpExchangeClient.class).properties(properties));
+		super(baseUrl, with(properties));
 	}
 
 	public String get(final String key) {
