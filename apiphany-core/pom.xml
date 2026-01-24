@@ -420,6 +420,9 @@
 						</goals>
 						<configuration>
 							<mainClass>org.apiphany.test.TestSummary</mainClass>
+							<arguments>
+								<argument>${project.build.directory}</argument>
+							</arguments>
 							<classpathScope>test</classpathScope>
 						</configuration>
 					</execution>
