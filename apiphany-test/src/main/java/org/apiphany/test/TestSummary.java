@@ -27,8 +27,10 @@ import org.xml.sax.SAXException;
  */
 public class TestSummary {
 
+	/**
+	 * Logger instance.
+	 */
 	private static final Logger LOGGER = Logger.getLogger(TestSummary.class.getName());
-
 	static {
 		// disable default console handler
 		LOGGER.setUseParentHandlers(false);
@@ -47,28 +49,15 @@ public class TestSummary {
 		LOGGER.setLevel(Level.ALL);
 	}
 
+	/**
+	 * Title constants.
+	 */
 	private static final String TITLE = "TEST SUMMARY";
+
+	/**
+	 * Line separator.
+	 */
 	private static final String LINE = "-".repeat(128);
-
-	/**
-	 * ANSI color codes.
-	 */
-	public static final String RESET = "\u001B[0m";
-	public static final String BLACK = "\u001B[30m";
-	public static final String RED = "\u001B[31m";
-	public static final String GREEN = "\u001B[32m";
-	public static final String YELLOW = "\u001B[33m";
-	public static final String BLUE = "\u001B[34m";
-	public static final String PURPLE = "\u001B[35m";
-	public static final String CYAN = "\u001B[36m";
-	public static final String WHITE = "\u001B[37m";
-
-	/**
-	 * Background colors.
-	 */
-	public static final String BG_RED = "\u001B[41m";
-	public static final String BG_GREEN = "\u001B[42m";
-	public static final String BG_BLUE = "\u001B[44m";
 
 	/**
 	 * Private constructor to prevent instantiation.
@@ -77,6 +66,12 @@ public class TestSummary {
 		throw Constructors.unsupportedOperationException();
 	}
 
+	/**
+	 * Main method.
+	 *
+	 * @param args command line arguments
+	 * @throws Exception if an error occurs
+	 */
 	public static void main(final String[] args) throws Exception {
 		File targetDir;
 		if (args.length == 1) {
@@ -107,20 +102,34 @@ public class TestSummary {
 				totalTime, unit.tests + integration.tests);
 	}
 
+	/**
+	 * Detects the target directory based on the class location.
+	 *
+	 * @return the target directory
+	 */
 	private static File detectTargetDirectory() {
 		// get the directory where the class is located
 		URL classLocation = TestSummary.class.getProtectionDomain().getCodeSource().getLocation();
 		String classPath = classLocation.getPath();
-		log("[%sINFO%s] Class path: %s%n", BLUE, RESET, classPath);
+		log("[%sINFO%s] Class path: %s%n", ANSIColor.BLUE, ANSIColor.RESET, classPath);
 
 		// navigate from target/classes or target/test-classes to target directory
 		return new File(classPath).getParentFile();
 	}
 
+	/**
+	 * Parses the test report XML files in the given directory.
+	 *
+	 * @param dir the directory containing the test report XML files
+	 * @return the summary of the test results
+	 * @throws ParserConfigurationException if a parser configuration error occurs
+	 * @throws SAXException if a SAX error occurs
+	 * @throws IOException if an I/O error occurs
+	 */
 	private static Summary parseDir(final File dir) throws ParserConfigurationException, SAXException, IOException {
 		Summary s = new Summary();
 		if (!dir.exists()) {
-			log("[%sERROR%s] Directory %s does not exist", RED, RESET, dir.getAbsolutePath());
+			log("[%sERROR%s] Directory %s does not exist", ANSIColor.RED, ANSIColor.RESET, dir.getAbsolutePath());
 			return s;
 		}
 
@@ -146,24 +155,44 @@ public class TestSummary {
 		return s;
 	}
 
+	/**
+	 * Retrieves an integer attribute from a DOM node.
+	 *
+	 * @param node the DOM node
+	 * @param attr the attribute name
+	 * @return the integer value of the attribute, or 0 if not found or invalid
+	 */
 	private static int getIntAttr(final Node node, final String attr) {
 		try {
 			return Integer.parseInt(node.getAttributes().getNamedItem(attr).getTextContent());
 		} catch (Exception e) {
-			log("[%sERROR%s] %s", RED, RESET, e.getMessage());
+			log("[%sERROR%s] %s", ANSIColor.RED, ANSIColor.RESET, e.getMessage());
 			return 0;
 		}
 	}
 
+	/**
+	 * Retrieves a double attribute from a DOM node.
+	 *
+	 * @param node the DOM node
+	 * @param attr the attribute name
+	 * @return the double value of the attribute, or 0.0 if not found or invalid
+	 */
 	private static double getDoubleAttr(final Node node, final String attr) {
 		try {
 			return Double.parseDouble(node.getAttributes().getNamedItem(attr).getTextContent());
 		} catch (Exception e) {
-			log("[%sERROR%s] %s", RED, RESET, e.getMessage());
+			log("[%sERROR%s] %s", ANSIColor.RED, ANSIColor.RESET, e.getMessage());
 			return 0;
 		}
 	}
 
+	/**
+	 * Creates a secure DocumentBuilderFactory to prevent XXE attacks.
+	 *
+	 * @return a secure DocumentBuilderFactory
+	 * @throws ParserConfigurationException if a parser configuration error occurs
+	 */
 	private static DocumentBuilderFactory createDocumentBuilderFactory() throws ParserConfigurationException {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
@@ -183,6 +212,12 @@ public class TestSummary {
 		return factory;
 	}
 
+	/**
+	 * Logs a formatted message.
+	 *
+	 * @param message the message format
+	 * @param args the message arguments
+	 */
 	private static void log(final String message, final Object... args) {
 		String formattedMessage = String.format(message, args);
 		LOGGER.info(formattedMessage);
@@ -190,19 +225,57 @@ public class TestSummary {
 
 	/**
 	 * Summary data class.
+	 *
+	 * @author Radu Sebastian LAZIN
 	 */
 	public static class Summary {
 
+		/**
+		 * Number of tests.
+		 */
 		int tests = 0;
+
+		/**
+		 * Number of failures.
+		 */
 		int failures = 0;
+
+		/**
+		 * Number of errors.
+		 */
 		int errors = 0;
+
+		/**
+		 * Number of skipped tests.
+		 */
 		int skipped = 0;
+
+		/**
+		 * Total time taken.
+		 */
 		double time = 0.0;
 
+		/**
+		 * Default constructor.
+		 */
+		public Summary() {
+			// empty
+		}
+
+		/**
+		 * Calculates the number of failed tests.
+		 *
+		 * @return the number of failed tests
+		 */
 		public int failed() {
 			return failures + errors;
 		}
 
+		/**
+		 * Calculates the number of passed tests.
+		 *
+		 * @return the number of passed tests
+		 */
 		public int passed() {
 			return tests - failed() - skipped;
 		}

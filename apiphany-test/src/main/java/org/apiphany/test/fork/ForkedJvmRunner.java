@@ -19,9 +19,35 @@ public class ForkedJvmRunner {
 	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(ForkedJvmRunner.class);
 
+	/**
+	 * Runner completed successfully.
+	 */
 	public static final int SUCCESS = 0;
-	public static final int ERROR_USAGE = 1;
-	public static final int ERROR_TEST = 666;
+
+	/**
+	 * Error codes used by the {@link ForkedJvmRunner}.
+	 *
+	 * @author Radu Sebastian LAZIN
+	 */
+	public static class Error {
+
+		/**
+		 * Error code for usage errors.
+		 */
+		public static final int USAGE = 1;
+
+		/**
+		 * Error code for test execution failures.
+		 */
+		public static final int TEST = 666;
+
+		/**
+		 * Private constructor to prevent instantiation.
+		 */
+		private Error() {
+			// empty
+		}
+	}
 
 	/**
 	 * Main method to run the test.
@@ -31,7 +57,7 @@ public class ForkedJvmRunner {
 	public static void main(final String[] args) {
 		if (args.length != 2) {
 			LOGGER.error("Usage: ForkedJvmRunner <testClass> <testMethod>");
-			System.exit(ERROR_USAGE);
+			System.exit(Error.USAGE);
 		}
 		String className = args[0];
 		String methodName = args[1];
@@ -43,7 +69,7 @@ public class ForkedJvmRunner {
 			System.exit(SUCCESS);
 		} catch (Throwable t) { // NOSONAR we want to catch all exceptions/errors from the test
 			LOGGER.error("Failed forked test: {}.{}", className, methodName, t);
-			System.exit(ERROR_TEST);
+			System.exit(Error.TEST);
 		}
 	}
 
