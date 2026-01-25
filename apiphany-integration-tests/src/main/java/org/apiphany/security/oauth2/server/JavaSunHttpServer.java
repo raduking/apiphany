@@ -24,16 +24,16 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
 /**
- * A simple HTTP server that has only one endpoint validated with OAuth2 with tokens generated from
- * {@link SimpleOAuth2Server} if a validator was provided.
+ * A simple HTTP server using Sun {@link HttpServer} that has only one endpoint validated with OAuth2 with tokens
+ * generated from {@link JavaSunOAuth2Server} if a validator was provided.
  * <p>
  * This server provides a single route: {@code /api/name} which returns the string {@code "Mumu"}.
  *
  * @author Radu Sebastian LAZIN
  */
-public class SimpleHttpServer implements AutoCloseable {
+public class JavaSunHttpServer implements AutoCloseable {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(SimpleHttpServer.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(JavaSunHttpServer.class);
 
 	public static final String ROUTE_API_NAME = "/api/name";
 
@@ -44,7 +44,7 @@ public class SimpleHttpServer implements AutoCloseable {
 	private final ExecutorService executor;
 	private final int port;
 
-	public SimpleHttpServer(final int port, final JwtTokenValidator tokenValidator) {
+	public JavaSunHttpServer(final int port, final JwtTokenValidator tokenValidator) {
 		this.executor = Executors.newVirtualThreadPerTaskExecutor();
 
 		this.httpServer = createHttpServer(port);
@@ -58,7 +58,7 @@ public class SimpleHttpServer implements AutoCloseable {
 		LOGGER.info("Server started on port: {}", port);
 	}
 
-	public SimpleHttpServer(final int port) {
+	public JavaSunHttpServer(final int port) {
 		this(port, null);
 	}
 
@@ -82,9 +82,9 @@ public class SimpleHttpServer implements AutoCloseable {
 
 	static class NameHandler implements HttpHandler {
 
-		private final SimpleHttpServer server;
+		private final JavaSunHttpServer server;
 
-		public NameHandler(final SimpleHttpServer server) {
+		public NameHandler(final JavaSunHttpServer server) {
 			this.server = server;
 		}
 
@@ -107,7 +107,7 @@ public class SimpleHttpServer implements AutoCloseable {
 		}
 
 		private static void handleGet(final HttpExchange exchange) throws IOException {
-			sendResponse(exchange, HttpStatus.OK, SimpleHttpServer.NAME);
+			sendResponse(exchange, HttpStatus.OK, JavaSunHttpServer.NAME);
 		}
 
 		private boolean isAuthorized(final HttpExchange exchange) throws IOException {

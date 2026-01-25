@@ -30,8 +30,6 @@ import org.apiphany.security.AuthenticationException;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationTokenProvider;
 import org.apiphany.security.token.client.TokenHttpExchangeClient;
-import org.apiphany.utils.security.JwtTokenValidator;
-import org.apiphany.utils.security.JwtTokenValidator.TokenValidationException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,7 +48,6 @@ class OAuth2TokenProviderTest {
 	private static final long NEGATIVE_EXPIRES_IN = -10;
 	private static final Instant DEFAULT_EXPIRATION = Instant.now();
 
-	private static final String SECRET = "a-string-secret-at-least-256-bits-long";
 	private static final String TOKEN = Strings.fromFile("security/oauth2/access-token.txt");
 
 	private static final String CLIENT_REGISTRATION_NAME = "bubu";
@@ -106,10 +103,7 @@ class OAuth2TokenProviderTest {
 	}
 
 	@Test
-	void shouldValidateTestTokenWithCorrectSecretAndReturnCorrectExpirationWhenTokenSet() throws TokenValidationException {
-		JwtTokenValidator tokenValidator = new JwtTokenValidator(SECRET);
-		tokenValidator.validateToken(TOKEN, false);
-
+	void shouldReturnCorrectExpirationWhenTokenSet() {
 		AuthenticationToken authenticationToken = new AuthenticationToken();
 		authenticationToken.setAccessToken(TOKEN);
 		authenticationToken.setExpiresIn(EXPIRES_IN);

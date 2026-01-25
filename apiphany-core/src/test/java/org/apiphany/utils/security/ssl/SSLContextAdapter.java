@@ -24,5 +24,4 @@ public class SSLContextAdapter extends SSLContext {
 	public void setSecureRandom(final SecureRandom secureRandom) {
 		Fields.IgnoreAccess.set(sslContextSpi, "secureRandom", secureRandom);
 	}
-
 }

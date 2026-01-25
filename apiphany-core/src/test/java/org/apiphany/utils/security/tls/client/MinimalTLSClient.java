@@ -68,7 +68,7 @@ import org.apiphany.security.tls.SignatureAlgorithm;
 import org.apiphany.security.tls.TLSEncryptedObject;
 import org.apiphany.security.tls.TLSKeyExchange;
 import org.apiphany.security.tls.Version;
-import org.apiphany.utils.http.HttpResponseParser;
+import org.apiphany.utils.http.BasicHttpResponseParser;
 import org.morphix.lang.Nullables;
 import org.morphix.lang.function.ThrowingConsumer;
 import org.slf4j.Logger;
@@ -342,7 +342,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		sendApplicationData(request);
 
 		String response = receiveApplicationData();
-		HttpResponseParser parser = new HttpResponseParser(response);
+		BasicHttpResponseParser parser = new BasicHttpResponseParser(response);
 		while (!parser.isComplete()) {
 			response = receiveApplicationData();
 			parser.appendData(response);
