@@ -32,5 +32,4 @@ public class DeterministicSecureRandom extends SecureRandom {
 	public void nextBytes(final byte[] bytes, final SecureRandomParameters params) {
 		nextBytes(bytes);
 	}
-
 }

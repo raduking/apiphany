@@ -37,13 +37,13 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
 /**
- * Simple OAuth2 server using Nimbus library.
+ * Simple OAuth2 server using Sun {@link HttpServer} and Nimbus library.
  *
  * @author Radu Sebastian LAZIN
  */
-public class SimpleOAuth2Server implements AutoCloseable {
+public class JavaSunOAuth2Server implements AutoCloseable {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(SimpleOAuth2Server.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(JavaSunOAuth2Server.class);
 
 	public static final Duration DEFAULT_EXPIRES_IN = Duration.ofHours(1);
 
@@ -54,7 +54,7 @@ public class SimpleOAuth2Server implements AutoCloseable {
 
 	private final HttpServer httpServer;
 
-	public SimpleOAuth2Server(final int port, final String clientId, final String clientSecret) {
+	public JavaSunOAuth2Server(final int port, final String clientId, final String clientSecret) {
 		this.httpServer = createHttpServer(port);
 		this.httpServer.createContext("/token", new TokenHandler(this));
 		this.httpServer.setExecutor(null);
@@ -104,13 +104,13 @@ public class SimpleOAuth2Server implements AutoCloseable {
 	 */
 	static class TokenHandler implements HttpHandler {
 
-		private static final Logger LOGGER = LoggerFactory.getLogger(SimpleOAuth2Server.class);
+		private static final Logger LOGGER = LoggerFactory.getLogger(JavaSunOAuth2Server.class);
 
 		private static final int DEFAULT_READ_BUFFER_SIZE = 10000;
 
-		private final SimpleOAuth2Server server;
+		private final JavaSunOAuth2Server server;
 
-		protected TokenHandler(final SimpleOAuth2Server server) {
+		protected TokenHandler(final JavaSunOAuth2Server server) {
 			this.server = server;
 		}
 

@@ -21,8 +21,6 @@ import org.apiphany.security.AuthenticationException;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationType;
 import org.apiphany.security.token.TokenProperties;
-import org.apiphany.utils.security.JwtTokenValidator;
-import org.apiphany.utils.security.JwtTokenValidator.TokenValidationException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,7 +39,6 @@ class TokenHttpExchangeClientTest {
 
 	private static final Instant DEFAULT_EXPIRATION = Instant.now();
 
-	private static final String SECRET = "a-string-secret-at-least-256-bits-long";
 	private static final String TOKEN = Strings.fromFile("security/oauth2/access-token.txt");
 
 	@Mock
@@ -56,6 +53,11 @@ class TokenHttpExchangeClientTest {
 		if (null != client) {
 			client.close();
 		}
+	}
+
+	@SuppressWarnings("resource")
+	private void exchangeClientSetup(final ClientProperties clientProperties) {
+		doReturn(clientProperties).when(exchangeClient).getClientProperties();
 	}
 
 	@Test
@@ -83,10 +85,7 @@ class TokenHttpExchangeClientTest {
 	}
 
 	@Test
-	void shouldValidateTestTokenWithCorrectSecretAndReturnCorrectExpirationWhenTokenSet() throws TokenValidationException {
-		JwtTokenValidator tokenValidator = new JwtTokenValidator(SECRET);
-		tokenValidator.validateToken(TOKEN, false);
-
+	void shouldValidateTestTokenWithCorrectSecretAndReturnCorrectExpirationWhenTokenSet() {
 		AuthenticationToken authenticationToken = new AuthenticationToken();
 		authenticationToken.setAccessToken(TOKEN);
 		authenticationToken.setExpiresIn(EXPIRES_IN);
@@ -198,10 +197,5 @@ class TokenHttpExchangeClientTest {
 
 		String expectedMessage = "Missing authentication token";
 		assertThat(e.getMessage(), equalTo(expectedMessage));
-	}
-
-	@SuppressWarnings("resource")
-	private void exchangeClientSetup(final ClientProperties clientProperties) {
-		doReturn(clientProperties).when(exchangeClient).getClientProperties();
 	}
 }

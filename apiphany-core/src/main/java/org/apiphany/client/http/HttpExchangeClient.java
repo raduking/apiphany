@@ -1,11 +1,19 @@
 package org.apiphany.client.http;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 
 import org.apiphany.RequestMethod;
 import org.apiphany.client.ExchangeClient;
+import org.apiphany.header.Header;
+import org.apiphany.header.Headers;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
+import org.apiphany.http.TracingHeader;
+import org.apiphany.lang.Strings;
+import org.slf4j.MDC;
 
 /**
  * Adds the HTTP methods to the {@link ExchangeClient} interface.
@@ -96,4 +104,22 @@ public interface HttpExchangeClient extends ExchangeClient {
 		return HttpHeader.AUTHORIZATION::matches;
 	}
 
+	/**
+	 * Returns the tracing headers for the current request.
+	 * <p>
+	 * TODO: make this more generic to support other tracing systems than B3
+	 *
+	 * @return the tracing headers
+	 */
+	@Override
+	default Map<String, List<String>> getTracingHeaders() {
+		String traceId = MDC.get("traceId");
+		if (Strings.isNotEmpty(traceId)) {
+			String spanId = MDC.get("spanId");
+			return Headers.of(
+					Header.of(TracingHeader.B3_TRACE_ID, traceId),
+					Header.of(TracingHeader.B3_SPAN_ID, spanId));
+		}
+		return Collections.emptyMap();
+	}
 }

@@ -3,7 +3,7 @@ package org.apiphany.utils.http;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class HttpResponseParser {
+public class BasicHttpResponseParser {
 
 	private final String statusLine;
 	private final Map<String, String> headers;
@@ -15,7 +15,7 @@ public class HttpResponseParser {
 
 	private boolean complete = false;
 
-	public HttpResponseParser(final String rawResponse) {
+	public BasicHttpResponseParser(final String rawResponse) {
 		String[] parts = rawResponse.split("\r?\n\r?\n", 2);
 
 		String[] headerLines = parts[0].split("\r?\n");
@@ -74,15 +74,15 @@ public class HttpResponseParser {
 
 	private void processChunks() {
 		while (true) {
-			int idx = buffer.indexOf("\r\n");
-			if (idx == -1) {
+			int endIndex = buffer.indexOf("\r\n");
+			if (endIndex == -1) {
 				return; // not enough data for size
 			}
 
-			String sizeStr = buffer.substring(0, idx).trim();
+			String sizeStr = buffer.substring(0, endIndex).trim();
 			int chunkSize = Integer.parseInt(sizeStr, 16);
 
-			if (buffer.length() < idx + 2 + chunkSize + 2) {
+			if (buffer.length() < endIndex + 2 + chunkSize + 2) {
 				return; // wait for more data
 			}
 
@@ -92,8 +92,8 @@ public class HttpResponseParser {
 				return;
 			}
 
-			bodyBuilder.append(buffer, idx + 2, idx + 2 + chunkSize);
-			buffer = buffer.substring(idx + 2 + chunkSize + 2);
+			bodyBuilder.append(buffer, endIndex + 2, endIndex + 2 + chunkSize);
+			buffer = buffer.substring(endIndex + 2 + chunkSize + 2);
 		}
 	}
 

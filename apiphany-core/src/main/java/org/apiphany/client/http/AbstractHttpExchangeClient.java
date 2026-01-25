@@ -1,9 +1,7 @@
 package org.apiphany.client.http;
 
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import javax.net.ssl.SSLContext;
 
@@ -11,21 +9,16 @@ import org.apiphany.ApiMimeType;
 import org.apiphany.ApiRequest;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ContentConverter;
-import org.apiphany.header.Header;
 import org.apiphany.header.HeaderValues;
-import org.apiphany.header.Headers;
 import org.apiphany.header.MapHeaderValues;
 import org.apiphany.http.HttpHeaderValues;
-import org.apiphany.http.TracingHeader;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.json.jackson.JacksonJsonHttpContentConverter;
-import org.apiphany.lang.Strings;
 import org.apiphany.security.ssl.SSLContexts;
 import org.apiphany.security.ssl.SSLProperties;
 import org.morphix.lang.JavaObjects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 /**
  * Abstract HTTP exchange client which holds all the common information needed to build an HTTP exchange client.
@@ -143,25 +136,6 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 		}
 		throw new UnsupportedOperationException("No content converter found to convert response to: " + apiRequest.getResponseType().getTypeName()
 				+ ", for the response content type: " + mimeType);
-	}
-
-	/**
-	 * Returns the tracing headers for the current request.
-	 * <p>
-	 * TODO: make this more generic to support other tracing systems than B3
-	 *
-	 * @return the tracing headers
-	 */
-	@Override
-	public Map<String, List<String>> getTracingHeaders() {
-		String traceId = MDC.get("traceId");
-		if (Strings.isNotEmpty(traceId)) {
-			String spanId = MDC.get("spanId");
-			return Headers.of(
-					Header.of(TracingHeader.B3_TRACE_ID, traceId),
-					Header.of(TracingHeader.B3_SPAN_ID, spanId));
-		}
-		return Collections.emptyMap();
 	}
 
 	/**
