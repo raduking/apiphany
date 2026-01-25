@@ -7,6 +7,7 @@
 - Added `apiphany-test` module with testing utilities used in all modules.
 - Added `apiphany-integration-test` module with integration tests.
 - Added `apiphany-httpclient5` module which adds a library Apache HTTP client 5 for Apiphany.
+- Upgraded `morphix-all` to `1.0.20`.
 - Moved `Tests` test class to `apiphany-test` module.
 - Added `Assertions` class to `apiphany-test` module with utility JUnit style assertions.
 - Added `Assertions.assertDefaultConstructorThrows` method to assert that the default constructor throws useful for utility classes.
@@ -15,7 +16,7 @@
 - Moved `OAuth2ApiClientIT` integration test and `testcontainers` dependencies to `apiphany-integration-test` including relevant resource files.
 - Added `Header.value` convenience static methods to build a header value which simply delegates to their equivalent `HeaderValues.value`.
 - Moved `AbstractHttpExchangeClient.getTracingHeaders` method to `HttpExchangeClient` interface as a default method.
-- Added `BasicHttpResponseParser` to easily parse HTTP respose strings.
+- Added `BasicHttpResponseParser` to easily parse HTTP response strings.
 
 ---
 

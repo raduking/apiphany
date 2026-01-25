@@ -42,4 +42,46 @@ class HeaderTest {
 		assertThat(params.entrySet(), hasSize(1));
 		assertThat(params.get(String.valueOf(HEADER_2)), equalTo(List.of(STRING_INTEGER_VALUE)));
 	}
+
+	@Test
+	void shouldAddMultipleHeadersWithSameName() {
+		var params = Headers.of(
+				Header.of(HEADER_1, "value1"),
+				Header.of(HEADER_1, "value2"));
+
+		assertThat(params.entrySet(), hasSize(1));
+		assertThat(params.get(HEADER_1), equalTo(List.of("value1", "value2")));
+	}
+
+	@Test
+	void shouldAddMultipleDifferentHeaders() {
+		var params = Headers.of(
+				Header.of(HEADER_1, "value1"),
+				Header.of(HEADER_2, "value2"));
+
+		assertThat(params.entrySet(), hasSize(2));
+		assertThat(params.get(HEADER_1), equalTo(List.of("value1")));
+		assertThat(params.get(String.valueOf(HEADER_2)), equalTo(List.of("value2")));
+	}
+
+	@Test
+	void shouldHandleEmptyHeaders() {
+		var params = Headers.of();
+
+		assertThat(params.entrySet(), hasSize(0));
+	}
+
+	@Test
+	void shouldBuildHeaderValueWithDefaultSeparator() {
+		String result = Header.value("Bearer", "tokenValue");
+
+		assertThat(result, equalTo("Bearer tokenValue"));
+	}
+
+	@Test
+	void shouldBuildHeaderValueWithCustomSeparator() {
+		String result = Header.value("value1", "value2", "; ");
+
+		assertThat(result, equalTo("value1; value2"));
+	}
 }

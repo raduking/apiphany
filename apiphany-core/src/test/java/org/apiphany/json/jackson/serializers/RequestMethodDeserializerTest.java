@@ -36,9 +36,9 @@ class RequestMethodDeserializerTest {
 
 	private final RequestMethodDeserializer victim = new RequestMethodDeserializer();
 
-	@SuppressWarnings("resource")
 	@ParameterizedTest
 	@EnumSource(HttpMethod.class)
+	@SuppressWarnings("resource")
 	void shouldSerializeValidRequestMethod(final HttpMethod method) throws IOException {
 		ObjectCodec codec = mock(ObjectCodec.class);
 		doReturn(codec).when(parser).getCodec();
@@ -51,8 +51,8 @@ class RequestMethodDeserializerTest {
 		assertThat(result, equalTo(method));
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldSerializeInvalidRequestMethod() throws IOException {
 		ObjectCodec codec = mock(ObjectCodec.class);
 		doReturn(codec).when(parser).getCodec();
@@ -64,5 +64,4 @@ class RequestMethodDeserializerTest {
 
 		assertThat(result, equalTo(ApiMethod.of(SOME_REQUEST_METHOD)));
 	}
-
 }

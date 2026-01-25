@@ -1,6 +1,7 @@
 package org.apiphany.lang;
 
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.morphix.lang.Messages;
@@ -35,6 +36,40 @@ public final class Require {
 	}
 
 	/**
+	 * Checks that the given condition is {@code true}. If not, throws an exception supplied by the exception instance
+	 * function with the given message.
+	 *
+	 * @param condition the condition to check
+	 * @param exceptionInstanceFunction function to create the exception instance
+	 * @param message the error message template
+	 * @throws E if {@code condition} is {@code false}
+	 */
+	public static <E extends RuntimeException> void that(final boolean condition, final Function<String, E> exceptionInstanceFunction,
+			final String message) {
+		if (!condition) {
+			throw exceptionInstanceFunction.apply(message);
+		}
+	}
+
+	/**
+	 * Checks that the given condition is {@code true}. If not, throws an exception supplied by the exception instance
+	 * function with a formatted message. The message formatting is done using {@link Messages#message(String, Object...)}.
+	 *
+	 * @param condition the condition to check
+	 * @param exceptionInstanceFunction function to create the exception instance
+	 * @param message the error message template
+	 * @param args optional arguments to format the message
+	 * @throws E if {@code condition} is {@code false}
+	 * @see Messages#message(String, Object...)
+	 */
+	public static <E extends RuntimeException> void that(final boolean condition, final Function<String, E> exceptionInstanceFunction,
+			final String message, final Object... args) {
+		if (!condition) {
+			throw exceptionInstanceFunction.apply(Messages.message(message, args));
+		}
+	}
+
+	/**
 	 * Checks that the given condition is {@code true}. If not, throws an {@link IllegalArgumentException} with a formatted
 	 * message. The message formatting is done using {@link Messages#message(String, Object...)}.
 	 *
@@ -45,9 +80,7 @@ public final class Require {
 	 * @see Messages#message(String, Object...)
 	 */
 	public static void that(final boolean condition, final String message, final Object... args) {
-		if (!condition) {
-			throw new IllegalArgumentException(Messages.message(message, args));
-		}
+		that(condition, IllegalArgumentException::new, message, args);
 	}
 
 	/**

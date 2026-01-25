@@ -55,8 +55,8 @@ class OAuth2TokenProviderRegistryTest {
 	private static final Instant DEFAULT_EXPIRATION = Instant.now();
 	private static final String TOKEN = Strings.fromFile("/security/oauth2/access-token.txt");
 
-	@SuppressWarnings({ "resource", "unchecked" })
 	@Test
+	@SuppressWarnings({ "resource", "unchecked" })
 	void shouldAddProviderAndRetrieveIt() throws Exception {
 		OAuth2Registry mockRegistry = mock(OAuth2Registry.class);
 		OAuth2TokenProvider provider = mock(OAuth2TokenProvider.class);
@@ -81,8 +81,8 @@ class OAuth2TokenProviderRegistryTest {
 		verify(resource).closeIfManaged(any());
 	}
 
-	@SuppressWarnings({ "resource", "unchecked" })
 	@Test
+	@SuppressWarnings({ "resource", "unchecked" })
 	void shouldReturnNullWhenRetrievingProviderThatDoesNotExist() throws Exception {
 		OAuth2Registry mockRegistry = mock(OAuth2Registry.class);
 		OAuth2TokenProvider provider = mock(OAuth2TokenProvider.class);
@@ -107,8 +107,8 @@ class OAuth2TokenProviderRegistryTest {
 		verify(resource).closeIfManaged(any());
 	}
 
-	@SuppressWarnings({ "resource", "unchecked" })
 	@Test
+	@SuppressWarnings({ "resource", "unchecked" })
 	void shouldRejectDuplicateProvider() {
 		OAuth2Registry mockRegistry = mock(OAuth2Registry.class);
 		OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.of(mockRegistry);
@@ -125,8 +125,8 @@ class OAuth2TokenProviderRegistryTest {
 		verify(second).closeIfManaged(any());
 	}
 
-	@SuppressWarnings({ "resource" })
 	@Test
+	@SuppressWarnings({ "resource" })
 	void shouldRejectDuplicateProviderEvenIfProviderCannotBeClosed() throws Exception {
 		OAuth2Registry mockRegistry = mock(OAuth2Registry.class);
 		OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.of(mockRegistry);
@@ -148,8 +148,8 @@ class OAuth2TokenProviderRegistryTest {
 		verify(secondProvider).close();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
+	@SuppressWarnings("unchecked")
 	void shouldRejectAddWhenRegistryClosing() throws Exception {
 		OAuth2Registry mockRegistry = mock(OAuth2Registry.class);
 		OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.of(mockRegistry);
@@ -165,8 +165,8 @@ class OAuth2TokenProviderRegistryTest {
 		verify(resource).closeIfManaged(any());
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldNotThrowExceptionWhenClosingProviderThrowsExceptionOndRejectAddWhenRegistryClosing() throws Exception {
 		OAuth2Registry mockRegistry = mock(OAuth2Registry.class);
 		OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.of(mockRegistry);
@@ -185,8 +185,8 @@ class OAuth2TokenProviderRegistryTest {
 		verify(provider).close();
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldCloseAllProvidersEvenIfSomeFail() throws Exception {
 		OAuth2Registry mockRegistry = mock(OAuth2Registry.class);
 		OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.of(mockRegistry);
@@ -208,8 +208,8 @@ class OAuth2TokenProviderRegistryTest {
 		verify(providerBad).close();
 	}
 
-	@SuppressWarnings({ "unchecked", "resource" })
 	@Test
+	@SuppressWarnings({ "unchecked", "resource" })
 	void shouldNotCallCloseOnAllProvidersEvenIfRegistryCloseIsCalledMultipleTimes() throws Exception {
 		OAuth2Registry mockRegistry = mock(OAuth2Registry.class);
 		OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.of(mockRegistry);
@@ -225,8 +225,8 @@ class OAuth2TokenProviderRegistryTest {
 		verify(tokenProvider).closeIfManaged(any());
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldCreateRegistryFromTokenSupplierFactories() throws Exception {
 		OAuth2Registry mockRegistry = mock(OAuth2Registry.class);
 		OAuth2TokenProvider tokenProvider = mock(OAuth2TokenProvider.class);
@@ -249,8 +249,8 @@ class OAuth2TokenProviderRegistryTest {
 		verify(mockRegistry).tokenProviders(tokenClientSupplier);
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldCreateRegistryFromTokenSupplierFactoriesWithoutNameConverters() throws Exception {
 		OAuth2Registry mockRegistry = mock(OAuth2Registry.class);
 		OAuth2TokenProvider tokenProvider = mock(OAuth2TokenProvider.class);
@@ -272,8 +272,8 @@ class OAuth2TokenProviderRegistryTest {
 		verify(mockRegistry).tokenProviders(tokenClientSupplier);
 	}
 
-	@SuppressWarnings({ "resource", "unchecked" })
 	@Test
+	@SuppressWarnings({ "resource", "unchecked" })
 	void shouldCreateRegistryFromTokenSupplierFactoriesWithCustomizer() throws Exception {
 		OAuth2Registry mockRegistry = mock(OAuth2Registry.class);
 		OAuth2TokenProvider tokenProvider = mock(OAuth2TokenProvider.class);
@@ -302,8 +302,8 @@ class OAuth2TokenProviderRegistryTest {
 		verify(customizer).accept(expectedName, tokenProvider);
 	}
 
-	@SuppressWarnings({ "resource", "unchecked" })
 	@Test
+	@SuppressWarnings({ "resource", "unchecked" })
 	void shouldCreateRegistryFromTokenSupplierFactoriesWithCustomizerAndNoFilter() throws Exception {
 		OAuth2Registry mockRegistry = mock(OAuth2Registry.class);
 		OAuth2ResolvedRegistration registration = mock(OAuth2ResolvedRegistration.class);
@@ -337,8 +337,8 @@ class OAuth2TokenProviderRegistryTest {
 		verify(customizer).accept(expectedName, tokenProvider);
 	}
 
-	@SuppressWarnings({ "resource", "unchecked" })
 	@Test
+	@SuppressWarnings({ "resource", "unchecked" })
 	void shouldCreateRegistryFromTokenSupplierFactoriesWithCustomizerAndFilterOutProviders() throws Exception {
 		OAuth2Registry mockRegistry = mock(OAuth2Registry.class);
 
@@ -382,8 +382,8 @@ class OAuth2TokenProviderRegistryTest {
 		verify(customizer).accept(expectedRegistration2Name, tokenProvider);
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldCreateRegistryFromProperties() throws Exception {
 		OAuth2Properties mockProperties = mock(OAuth2Properties.class);
 
@@ -425,8 +425,8 @@ class OAuth2TokenProviderRegistryTest {
 				containsInAnyOrder(nameConverter(CLIENT_REGISTRATION_1), nameConverter(CLIENT_REGISTRATION_2)));
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldCreateRegistryFromPropertiesWithoutNameConverter() throws Exception {
 		OAuth2Properties mockProperties = mock(OAuth2Properties.class);
 
@@ -467,8 +467,8 @@ class OAuth2TokenProviderRegistryTest {
 				containsInAnyOrder(CLIENT_REGISTRATION_1, CLIENT_REGISTRATION_2));
 	}
 
-	@SuppressWarnings({ "unchecked", "resource" })
 	@Test
+	@SuppressWarnings({ "unchecked", "resource" })
 	void shouldBeThreadSafeForConcurrentAddAndClose() throws Exception {
 		OAuth2Registry mockRegistry = mock(OAuth2Registry.class);
 		OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.of(mockRegistry);

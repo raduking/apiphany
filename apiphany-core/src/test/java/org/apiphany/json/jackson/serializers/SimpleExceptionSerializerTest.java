@@ -18,8 +18,8 @@ class SimpleExceptionSerializerTest {
 
 	private final SimpleExceptionSerializer victim = new SimpleExceptionSerializer();
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldWriteExceptionClassName() throws IOException {
 		JsonGenerator gen = mock(JsonGenerator.class);
 
@@ -27,5 +27,4 @@ class SimpleExceptionSerializerTest {
 
 		verify(gen).writeString(RuntimeException.class.getCanonicalName());
 	}
-
 }

@@ -34,14 +34,14 @@ public interface ExchangeClient extends AutoCloseable {
 	<T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest);
 
 	/**
-	 * Returns the client properties.
+	 * Returns the client properties, can be {@code null} if no properties are set.
 	 *
 	 * @param <T> client properties type
 	 *
 	 * @return the client properties
 	 */
 	default <T extends ClientProperties> T getClientProperties() {
-		throw new UnsupportedOperationException("getClientProperties");
+		return null;
 	}
 
 	/**

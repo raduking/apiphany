@@ -51,6 +51,30 @@ public class SecuredExchangeClientBuilder extends ExchangeClientBuilder {
 	}
 
 	/**
+	 * This builder always requires a security mechanism to be defined.
+	 *
+	 * @param clientClass exchange client class
+	 * @return never returns normally
+	 * @throws IllegalStateException always thrown to indicate no security mechanism was defined
+	 */
+	@Override
+	public SecuredExchangeClientBuilder client(final Class<? extends ExchangeClient> clientClass) {
+		throw new IllegalStateException("Cannot set exchange client class when securing an existing client");
+	}
+
+	/**
+	 * This builder always requires a security mechanism to be defined.
+	 *
+	 * @param client exchange client
+	 * @return never returns normally
+	 * @throws IllegalStateException always thrown to indicate no security mechanism was defined
+	 */
+	@Override
+	public SecuredExchangeClientBuilder client(final ExchangeClient client) {
+		throw new IllegalStateException("Cannot set exchange client when securing an existing client");
+	}
+
+	/**
 	 * Marks that a security mechanism was defined.
 	 *
 	 * @return this builder

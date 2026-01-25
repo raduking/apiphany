@@ -44,8 +44,8 @@ class ErrorObservingInputStreamTest {
 		return runnable::run;
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldObserveReadWithIOException() throws IOException {
 		doReturn(TEST_INT).doThrow(TEST_IO_EXCEPTION).when(mockInputStream).read();
 
@@ -74,8 +74,8 @@ class ErrorObservingInputStreamTest {
 		assertSame(TEST_IO_EXCEPTION, observedExceptions.getFirst());
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldObserveReadByteArrayWithIOException() throws IOException {
 		byte[] buffer = new byte[10];
 		doReturn(TEST_INT).doThrow(TEST_IO_EXCEPTION).when(mockInputStream).read(buffer);
@@ -91,8 +91,8 @@ class ErrorObservingInputStreamTest {
 		assertSame(TEST_IO_EXCEPTION, observedExceptions.getFirst());
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldObserveReadByteArrayOffsetLengthWithIOException() throws IOException {
 		byte[] buffer = new byte[10];
 		doReturn(TEST_INT).doThrow(TEST_IO_EXCEPTION).when(mockInputStream).read(buffer, 2, 5);
@@ -108,8 +108,8 @@ class ErrorObservingInputStreamTest {
 		assertSame(TEST_IO_EXCEPTION, observedExceptions.getFirst());
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldObserveReadNBytesWithIOException() throws IOException {
 		doReturn(TEST_BYTE_ARRAY).doThrow(TEST_IO_EXCEPTION).when(mockInputStream).readNBytes(LENGTH);
 
@@ -124,8 +124,8 @@ class ErrorObservingInputStreamTest {
 		assertSame(TEST_IO_EXCEPTION, observedExceptions.getFirst());
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldObserveReadNBytesByteArrayOffsetLengthWithIOException() throws IOException {
 		byte[] buffer = new byte[10];
 		doReturn(TEST_INT).doThrow(TEST_IO_EXCEPTION).when(mockInputStream).readNBytes(buffer, OFFSET, LENGTH);
@@ -141,8 +141,8 @@ class ErrorObservingInputStreamTest {
 		assertSame(TEST_IO_EXCEPTION, observedExceptions.getFirst());
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldObserveReadAllBytesWithIOException() throws IOException {
 		doReturn(TEST_BYTE_ARRAY).doThrow(TEST_IO_EXCEPTION).when(mockInputStream).readAllBytes();
 

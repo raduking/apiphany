@@ -18,8 +18,8 @@ import org.junit.jupiter.api.Test;
  */
 class ScopedResourceTest {
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldCreateAManagedResourceWithConstructor() {
 		TestResource resource = new TestResource();
 
@@ -32,8 +32,8 @@ class ScopedResourceTest {
 		assertFalse(scopedResource.isNotManaged());
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldCreateAnUnmanagedResourceWithConstructor() {
 		TestResource resource = new TestResource();
 
@@ -46,8 +46,8 @@ class ScopedResourceTest {
 		assertFalse(scopedResource.isManaged());
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldCreateAManagedResourceWithFactoryMethod() {
 		TestResource resource = new TestResource();
 
@@ -60,8 +60,8 @@ class ScopedResourceTest {
 		assertFalse(scopedResource.isNotManaged());
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldCreateAnUnmanagedResourceWithFactoryMethod() {
 		TestResource resource = new TestResource();
 
@@ -74,8 +74,8 @@ class ScopedResourceTest {
 		assertFalse(scopedResource.isManaged());
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldCloseManagedResource() throws Exception {
 		TestResource resource = new TestResource();
 
@@ -97,8 +97,8 @@ class ScopedResourceTest {
 		}
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldCloseManagedResourceWithExceptionHandler() {
 		TestResource resource = new TestResource();
 
@@ -124,8 +124,8 @@ class ScopedResourceTest {
 		}
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldCallExceptionHandlerWhenClosingManagedResourceFails() {
 		ScopedResource<TestResource> scopedResource = ScopedResource.managed(new TestResource() {
 			@Override
@@ -141,8 +141,8 @@ class ScopedResourceTest {
 		assertTrue(handlerCalled.get());
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldTransformToMapAManagedResource() {
 		TestResource resource = new TestResource();
 
@@ -154,8 +154,8 @@ class ScopedResourceTest {
 		assertThat(map.get(resource), equalTo(Boolean.TRUE));
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldTransformToMapAnUnmanagedResource() {
 		TestResource resource = new TestResource();
 
@@ -167,8 +167,8 @@ class ScopedResourceTest {
 		assertThat(map.get(resource), equalTo(Boolean.FALSE));
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldReturnUnmanagedWhenBothManagedAndSameResource() {
 		TestResource c = new TestResource();
 
@@ -181,8 +181,8 @@ class ScopedResourceTest {
 		assertTrue(result.isNotManaged());
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldReturnOriginalWhenResourcesAreDifferent() {
 		ScopedResource<TestResource> a = ScopedResource.managed(new TestResource());
 		ScopedResource<TestResource> b = ScopedResource.managed(new TestResource());
@@ -193,8 +193,8 @@ class ScopedResourceTest {
 		assertTrue(result.isManaged());
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldReturnOriginalWhenFirstIsAlreadyUnmanaged() {
 		ScopedResource<TestResource> a = ScopedResource.unmanaged(new TestResource());
 		ScopedResource<TestResource> b = ScopedResource.managed(new TestResource());
@@ -205,8 +205,8 @@ class ScopedResourceTest {
 		assertTrue(result.isNotManaged());
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldReturnOriginalWhenSecondIsAlreadyUnmanaged() {
 		ScopedResource<TestResource> a = ScopedResource.managed(new TestResource());
 		ScopedResource<TestResource> b = ScopedResource.unmanaged(new TestResource());
@@ -230,5 +230,4 @@ class ScopedResourceTest {
 			return closed;
 		}
 	}
-
 }

@@ -289,8 +289,8 @@ class OAuth2TokenProviderTest {
 		assertThat(tokenProvider.getClientRegistrationName(), equalTo(CLIENT_REGISTRATION_NAME));
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldInitializeSchedulerAndScheduleNewTokenRetrievalWithDefaultErrorMarginAndMinRefreshInterval() {
 		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
 		doReturn(clientRegistration).when(oAuth2Properties).getClientRegistration(CLIENT_REGISTRATION_NAME);
@@ -324,8 +324,8 @@ class OAuth2TokenProviderTest {
 				eq(OAuth2TokenProviderProperties.Default.MIN_REFRESH_INTERVAL.toMillis()), eq(TimeUnit.MILLISECONDS));
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldInitializeSchedulerAndScheduleNewTokenRetrievalWithConfiguredErrorMarginAndMinRefreshInterval() {
 		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
 		doReturn(clientRegistration).when(oAuth2Properties).getClientRegistration(CLIENT_REGISTRATION_NAME);
@@ -434,8 +434,8 @@ class OAuth2TokenProviderTest {
 		assertThat(e.getMessage(), equalTo("Missing authentication token"));
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldGetTokenAndCloseTheTokenProviderResource() throws Exception {
 		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
 		doReturn(clientRegistration).when(oAuth2Properties).getClientRegistration(CLIENT_REGISTRATION_NAME);
@@ -470,8 +470,8 @@ class OAuth2TokenProviderTest {
 		verify(localTokenClient).close();
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldCallShutdownOnSchedulerExecutorWhenScheduledTaskCannotBeClosed() throws Exception {
 		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
 		doReturn(clientRegistration).when(oAuth2Properties).getClientRegistration(CLIENT_REGISTRATION_NAME);
@@ -509,8 +509,8 @@ class OAuth2TokenProviderTest {
 		verify(localTokenClient).close();
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldNotCloseTheScheduledFutureIfNotInitialized() throws Exception {
 		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
 		doReturn(clientRegistration).when(oAuth2Properties).getClientRegistration(CLIENT_REGISTRATION_NAME);
@@ -533,8 +533,8 @@ class OAuth2TokenProviderTest {
 		verifyNoMoreInteractions(scheduledExecutorService);
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldThrowExceptionOnGettingTokenIfNotInitialized() throws Exception {
 		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
 		doReturn(clientRegistration).when(oAuth2Properties).getClientRegistration(CLIENT_REGISTRATION_NAME);

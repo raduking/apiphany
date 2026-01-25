@@ -61,8 +61,8 @@ class OAuth2HttpExchangeClientTest {
 		clientProperties.setCustomProperties(oAuth2Properties);
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldNotCloseAnyUnmanagedClient() throws Exception {
 		JavaNetHttpExchangeClient tokenExchangeClient = mock(JavaNetHttpExchangeClient.class);
 		doReturn(AuthenticationType.NONE).when(tokenExchangeClient).getAuthenticationType();
@@ -86,8 +86,8 @@ class OAuth2HttpExchangeClientTest {
 		verify(tokenExchangeClient, times(0)).close();
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldInitializeTokenRefreshScheduler() throws Exception {
 		JavaNetHttpExchangeClient exchangeClient = mock(JavaNetHttpExchangeClient.class);
 		doReturn(clientProperties).when(exchangeClient).getClientProperties();
