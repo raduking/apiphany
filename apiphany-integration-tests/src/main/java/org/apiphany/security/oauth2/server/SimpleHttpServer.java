@@ -1,4 +1,4 @@
-package org.apiphany.utils.security.oauth2.server;
+package org.apiphany.security.oauth2.server;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -15,7 +15,7 @@ import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Lists;
-import org.apiphany.utils.security.JwtTokenValidator;
+import org.apiphany.security.JwtTokenValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,4 +1,4 @@
-package org.apiphany.integration;
+package org.apiphany.security.oath2;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -26,6 +26,7 @@ import org.apiphany.net.Sockets;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationTokenProvider;
 import org.apiphany.security.AuthenticationType;
+import org.apiphany.security.JwtTokenValidator;
 import org.apiphany.security.oauth2.ClientAuthenticationMethod;
 import org.apiphany.security.oauth2.OAuth2ClientRegistration;
 import org.apiphany.security.oauth2.OAuth2Properties;
@@ -33,9 +34,8 @@ import org.apiphany.security.oauth2.OAuth2ProviderDetails;
 import org.apiphany.security.oauth2.client.OAuth2ApiClient;
 import org.apiphany.security.oauth2.client.OAuth2HttpExchangeClient;
 import org.apiphany.security.oauth2.client.OAuth2HttpExchangeClientBuilder;
-import org.apiphany.utils.security.JwtTokenValidator;
-import org.apiphany.utils.security.oauth2.server.SimpleHttpServer;
-import org.apiphany.utils.security.oauth2.server.SimpleOAuth2Server;
+import org.apiphany.security.oauth2.server.SimpleHttpServer;
+import org.apiphany.security.oauth2.server.SimpleOAuth2Server;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,7 +46,7 @@ import org.morphix.lang.JavaObjects;
  *
  * @author Radu Sebastian LAZIN
  */
-class ApiClientWithOAuth2Test {
+class ApiClientWithOAuth2IT {
 
 	private static final String CLIENT_SECRET = "apiphany-client-secret-more-than-32-characters";
 	private static final String CLIENT_ID = "apiphany-client";

@@ -4,6 +4,10 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
+	<!-- 
+		Using spring-boot-starter-parent to update dependencies easier and ensure that all dependencies work well together
+		this parent having most of the commonly used dependencies defined with tested versions across Java projects.
+	-->
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
@@ -73,6 +77,11 @@
 	</properties>
 
 	<dependencyManagement>
+	
+		<!--
+			None of these dependencied will be incluede by default in the child modules.
+			They just have their versions managed here and can be used when needed without specifying the version.
+		-->
 	    <dependencies>
 	    
 			<!-- MorphiX -->
@@ -104,14 +113,12 @@
 				<groupId>com.nimbusds</groupId>
 				<artifactId>nimbus-jose-jwt</artifactId>
 				<version>${nimbus.jose.jwt.version}</version>
-				<scope>test</scope>
 			</dependency>
 	
 			<dependency>
 				<groupId>com.nimbusds</groupId>
 				<artifactId>oauth2-oidc-sdk</artifactId>
 				<version>${oauth2.oidc.sdk.version}</version>
-				<scope>test</scope>
 			</dependency>
 
             <!-- Eclipse JDT Core for code formatting -->	
