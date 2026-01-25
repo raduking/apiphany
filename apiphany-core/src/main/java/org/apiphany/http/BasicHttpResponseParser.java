@@ -1,20 +1,57 @@
-package org.apiphany.utils.http;
+package org.apiphany.http;
 
 import java.util.Map;
 import java.util.TreeMap;
 
+/**
+ * A basic HTTP response parser that can handle status line, headers, and body, including chunked transfer encoding.
+ * <p>
+ * This parser is designed for simplicity and may not cover all edge cases of HTTP responses.
+ *
+ * @author Radu Sebastian LAZIN
+ */
 public class BasicHttpResponseParser {
 
+	/**
+	 * HTTP status line.
+	 */
 	private final String statusLine;
+
+	/**
+	 * HTTP headers as a simple map of strings.
+	 */
 	private final Map<String, String> headers;
+
+	/**
+	 * Indicates if the response uses chunked transfer encoding.
+	 */
 	private final boolean chunked;
+
+	/**
+	 * Content-Length of the response body, if specified.
+	 */
 	private final Integer contentLength;
 
+	/**
+	 * Builder for the response body.
+	 */
 	private final StringBuilder bodyBuilder = new StringBuilder();
+
+	/**
+	 * Buffer for incoming data.
+	 */
 	private String buffer = "";
 
+	/**
+	 * Indicates if the response body has been completely received.
+	 */
 	private boolean complete = false;
 
+	/**
+	 * Constructs a BasicHttpResponseParser with the given raw HTTP response string.
+	 *
+	 * @param rawResponse the raw HTTP response string
+	 */
 	public BasicHttpResponseParser(final String rawResponse) {
 		String[] parts = rawResponse.split("\r?\n\r?\n", 2);
 
@@ -42,26 +79,57 @@ public class BasicHttpResponseParser {
 		}
 	}
 
+	/**
+	 * Returns the HTTP status line.
+	 *
+	 * @return the HTTP status line
+	 */
 	public String getStatus() {
 		return statusLine;
 	}
 
+	/**
+	 * Returns the HTTP status code.
+	 *
+	 * @return the HTTP status code
+	 */
 	public int getStatusCode() {
 		return Integer.parseInt(statusLine.split(" ")[1]);
 	}
 
+	/**
+	 * Returns the value of the specified header.
+	 *
+	 * @param name the name of the header
+	 * @return the value of the header, or null if not present
+	 */
 	public String getHeader(final String name) {
 		return headers.get(name);
 	}
 
+	/**
+	 * Returns the response body as a string.
+	 *
+	 * @return the response body
+	 */
 	public String getBody() {
 		return bodyBuilder.toString();
 	}
 
+	/**
+	 * Indicates if the response body has been completely received.
+	 *
+	 * @return true if the response body is complete, false otherwise
+	 */
 	public boolean isComplete() {
 		return complete;
 	}
 
+	/**
+	 * Appends data to the response body.
+	 *
+	 * @param data the data to append
+	 */
 	public void appendData(final String data) {
 		buffer += data;
 		if (chunked) {
@@ -72,6 +140,9 @@ public class BasicHttpResponseParser {
 		}
 	}
 
+	/**
+	 * Processes chunked transfer encoding data.
+	 */
 	private void processChunks() {
 		while (true) {
 			int endIndex = buffer.indexOf("\r\n");
@@ -97,6 +168,9 @@ public class BasicHttpResponseParser {
 		}
 	}
 
+	/**
+	 * Checks if the response body is complete based on Content-Length.
+	 */
 	private void checkCompletion() {
 		if (contentLength != null && bodyBuilder.length() >= contentLength) {
 			complete = true;
