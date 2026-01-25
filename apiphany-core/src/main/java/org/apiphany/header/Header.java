@@ -31,4 +31,33 @@ public interface Header extends HeaderFunction {
 	static <T, U> Header of(final T name, final U value) {
 		return HeaderFunction.header(name, value)::addTo;
 	}
+
+	/**
+	 * Builds the value for the header for the request by concatenating the two parameters with whitespace between them.
+	 *
+	 * @param <L> left value type
+	 * @param <R> right value type
+	 *
+	 * @param lvalue left value
+	 * @param rvalue right value
+	 * @return the header value
+	 */
+	public static <L, R> String value(final L lvalue, final R rvalue) {
+		return HeaderValues.value(lvalue, rvalue);
+	}
+
+	/**
+	 * Builds the value for the header for the request by concatenating the two parameters with separator between them.
+	 *
+	 * @param <L> left value type
+	 * @param <R> right value type
+	 *
+	 * @param lvalue left value
+	 * @param rvalue right value
+	 * @param separator the separator to use between the two values
+	 * @return the header value
+	 */
+	public static <L, R> String value(final L lvalue, final R rvalue, final String separator) {
+		return HeaderValues.value(lvalue, rvalue, separator);
+	}
 }

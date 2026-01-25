@@ -48,9 +48,9 @@ import dasniko.testcontainers.keycloak.KeycloakContainer;
  */
 @Testcontainers
 @TestInstance(Lifecycle.PER_CLASS)
-class OAuth2ApiClientIT {
+class OAuth2ApiClientKeycloakIT {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(OAuth2ApiClientIT.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(OAuth2ApiClientKeycloakIT.class);
 
 	private static final String KEYCLOAK_TOKEN_PATH = "/realms/test-realm/protocol/openid-connect/token";
 	private static final String KEYCLOAK_REALM_NAME = "test-realm";

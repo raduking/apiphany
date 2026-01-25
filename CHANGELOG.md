@@ -13,6 +13,7 @@
 - Added `org.apiphany.security.keys` package for key exchange handlers and other key related operations.
 - Added `X25519Keys` key exchange handler to handle `XDH` keys.
 - Moved `OAuth2ApiClientIT` integration test and `testcontainers` dependencies to `apiphany-integration-test` including relevant resource files.
+- Added `Header.value` convenience static methods to build a header value which simply delegates to their equivalent `HeaderValues.value`.
 
 ---
 
