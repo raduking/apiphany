@@ -5,8 +5,8 @@ import java.security.SecureRandom;
 import java.security.SecureRandomParameters;
 
 /**
- * A deterministic {@link SecureRandom} implementation for testing purposes. This implementation
- * generates predictable sequences of bytes being filled with incremental byte values (0, 1, 2, ...).
+ * A deterministic {@link SecureRandom} implementation for testing purposes. This implementation generates predictable
+ * sequences of bytes being filled with incremental byte values (0, 1, 2, ...).
  * <p>
  * WARNING: This implementation is NOT secure and MUST NOT be used in production systems.
  *

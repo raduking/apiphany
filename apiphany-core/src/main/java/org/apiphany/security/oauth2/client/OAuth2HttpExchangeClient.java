@@ -1,5 +1,6 @@
 package org.apiphany.security.oauth2.client;
 
+import org.apiphany.client.ClientProperties;
 import org.apiphany.client.DecoratingExchangeClient;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.http.HttpAuthScheme;
@@ -154,9 +155,13 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	 *
 	 * @return true if the initialization was successful, false otherwise
 	 */
-	@SuppressWarnings("resource")
 	private boolean initialize() { // NOSONAR we don't care about the parent class private method
-		if (getExchangeClient().getClientProperties().isDisabled()) {
+		ClientProperties clientProperties = getClientProperties();
+		if (null == clientProperties) {
+			LOGGER.warn("[{}] No client properties defined!", getName());
+			return false;
+		}
+		if (clientProperties.isDisabled()) {
 			LOGGER.warn("[{}] OAuth2 client is disabled!", getName());
 			return false;
 		}

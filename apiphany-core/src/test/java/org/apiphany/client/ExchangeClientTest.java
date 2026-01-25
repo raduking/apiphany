@@ -5,6 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Collections;
@@ -12,10 +13,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.apiphany.ApiRequest;
+import org.apiphany.ApiResponse;
 import org.apiphany.header.Header;
 import org.apiphany.header.Headers;
 import org.apiphany.security.AuthenticationType;
-import org.apiphany.utils.client.DummyExchangeClient;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -25,14 +26,24 @@ import org.junit.jupiter.api.Test;
  */
 class ExchangeClientTest {
 
-	private final ExchangeClient exchangeClient = new DummyExchangeClient();
+	private final ExchangeClient exchangeClient = new ExchangeClient() {
+
+		@Override
+		public <T, U> ApiResponse<U> exchange(final ApiRequest<T> request) {
+			return null;
+		}
+
+		@Override
+		public void close() {
+			// empty
+		}
+	};
 
 	@Test
-	void shouldThrowExceptionOnGetClientProperties() {
-		UnsupportedOperationException exception = assertThrows(UnsupportedOperationException.class,
-				exchangeClient::getClientProperties);
+	void shouldReturnNullClientProperties() {
+		ClientProperties clientProperties = exchangeClient.getClientProperties();
 
-		assertEquals("getClientProperties", exception.getMessage());
+		assertNull(clientProperties);
 	}
 
 	@Test
@@ -50,7 +61,7 @@ class ExchangeClientTest {
 
 	@Test
 	void shouldReturnClassNameAsClientName() {
-		assertEquals(DummyExchangeClient.class.getSimpleName(), exchangeClient.getName());
+		assertEquals(exchangeClient.getClass().getSimpleName(), exchangeClient.getName());
 	}
 
 	@Test
@@ -94,11 +105,10 @@ class ExchangeClientTest {
 	}
 
 	@Test
-	void shouldThrowExceptionOnGetCustomProperties() {
-		UnsupportedOperationException exception = assertThrows(UnsupportedOperationException.class,
-				() -> exchangeClient.getCustomProperties(String.class));
+	void shouldReturnNullOnGetCustomProperties() {
+		String customProperties = exchangeClient.getCustomProperties(String.class);
 
-		assertEquals("getClientProperties", exception.getMessage());
+		assertNull(customProperties);
 	}
 
 	@Test

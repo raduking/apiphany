@@ -18,8 +18,8 @@ import org.junit.jupiter.api.Test;
  */
 class OAuth2TokenProviderSpecTest {
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldCreateWithDefaults() {
 		OAuth2TokenProviderSpec config = OAuth2TokenProviderSpec.builder().build();
 
@@ -29,8 +29,8 @@ class OAuth2TokenProviderSpecTest {
 		assertNotNull(config.defaultExpirationSupplier());
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldCreateWithCustomValues() {
 		OAuth2TokenProviderProperties properties = new OAuth2TokenProviderProperties();
 		OAuth2ResolvedRegistration registration = OAuth2ResolvedRegistration.of(

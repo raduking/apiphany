@@ -49,7 +49,6 @@ import org.apiphany.meters.MeterTimer;
 import org.apiphany.security.AuthenticationType;
 import org.apiphany.utils.TestDto;
 import org.apiphany.utils.client.DummyApiClient;
-import org.apiphany.utils.client.DummyExchangeClient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.ArgumentCaptor;
@@ -84,8 +83,8 @@ class ApiClientTest {
 
 	private static final int RETRY_COUNT = 3;
 
-	@SuppressWarnings({ "unchecked", "resource" })
 	@Test
+	@SuppressWarnings({ "unchecked", "resource" })
 	void shouldCallExchangeClientOnRetrieve() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
@@ -110,8 +109,8 @@ class ApiClientTest {
 		assertThat(result, equalTo(expected));
 	}
 
-	@SuppressWarnings({ "unchecked", "resource" })
 	@Test
+	@SuppressWarnings({ "unchecked", "resource" })
 	void shouldCallExchangeClientWithProvidedParametersOnGet() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
@@ -157,8 +156,8 @@ class ApiClientTest {
 		assertFalse(request.isUrlEncoded());
 	}
 
-	@SuppressWarnings({ "unchecked", "resource" })
 	@Test
+	@SuppressWarnings({ "unchecked", "resource" })
 	void shouldCallExchangeClientWithProvidedParametersOnGetWithHeadersAndRequestParametersSet() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
@@ -217,8 +216,8 @@ class ApiClientTest {
 		assertFalse(request.isUrlEncoded());
 	}
 
-	@SuppressWarnings({ "unchecked", "resource" })
 	@Test
+	@SuppressWarnings({ "unchecked", "resource" })
 	void shouldReturnEmptyIfCallExchangeClientWithProvidedParametersReturnsNull() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
@@ -240,8 +239,8 @@ class ApiClientTest {
 		assertThat(result, equalTo(TestDto.EMPTY));
 	}
 
-	@SuppressWarnings({ "unchecked", "resource" })
 	@Test
+	@SuppressWarnings({ "unchecked", "resource" })
 	void shouldCallTheCorrectExchangeClientWhenMoreArePresent() {
 		HttpExchangeClient exchangeClient1 = mock(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient1).getAuthenticationType();
@@ -282,8 +281,8 @@ class ApiClientTest {
 		assertThat(result2, equalTo(expected2));
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldCallExchangeClientWithTheCorrectParameters() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
@@ -317,8 +316,8 @@ class ApiClientTest {
 		assertThat(adapter.getUrl(), equalTo(BASE_URL + "/" + PATH_TEST));
 	}
 
-	@SuppressWarnings({ "unchecked", "resource" })
 	@Test
+	@SuppressWarnings({ "unchecked", "resource" })
 	void shouldReturnEmptyIfCallExchangeClientWithProvidedParametersThrowsException() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
@@ -337,8 +336,8 @@ class ApiClientTest {
 		assertThat(result, equalTo(TestDto.EMPTY));
 	}
 
-	@SuppressWarnings({ "unchecked", "resource" })
 	@Test
+	@SuppressWarnings({ "unchecked", "resource" })
 	void shouldReturnCorrectApiResponseIfCallExchangeClientWithProvidedParametersThrowsException() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
@@ -359,8 +358,8 @@ class ApiClientTest {
 		assertThat(Fields.IgnoreAccess.get(result, "exchangeClient"), equalTo(exchangeClient));
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldSetMetricsToThisMethod() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
@@ -382,8 +381,8 @@ class ApiClientTest {
 		assertThat(adapter.getMeters().latency().getName(), equalTo(metricStart + BasicMeters.Name.LATENCY));
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldSetMetricsToThisMethodWithTags() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
@@ -405,8 +404,8 @@ class ApiClientTest {
 		assertThat(adapter.getMeters().latency().getName(), equalTo(metricStart + BasicMeters.Name.LATENCY));
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldSetMetricsWithoutMethod() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
@@ -428,8 +427,8 @@ class ApiClientTest {
 		assertThat(adapter.getMeters().latency().getName(), equalTo(metricStart + BasicMeters.Name.LATENCY));
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldUseDefaultMetricsIfNoMetricsAreSetAndMetricsAreDisabled() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
@@ -451,8 +450,8 @@ class ApiClientTest {
 		assertThat(api.getActiveMeters(adapter).latency().getName(), equalTo(BasicMeters.Name.LATENCY));
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldUseDefaultMetricsEvenIfNoMetricsAreSetButMetricsAreDisabled() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
@@ -480,8 +479,8 @@ class ApiClientTest {
 		assertThat(api.getActiveMeters(adapter).latency().getName(), equalTo(BasicMeters.Name.LATENCY));
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldSetTheMeters() {
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
@@ -494,8 +493,8 @@ class ApiClientTest {
 		assertThat(result, sameInstance(basicMeters));
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldSetTheMeterRegistry() {
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
@@ -508,8 +507,8 @@ class ApiClientTest {
 		assertThat(result, sameInstance(meterFactory));
 	}
 
-	@SuppressWarnings({ "unchecked", "resource" })
 	@Test
+	@SuppressWarnings({ "unchecked", "resource" })
 	void shouldThrowExceptionIfCallExchangeClientWithProvidedParametersThrowsExceptionAndIsBleedExceptionsIsTrue() {
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
@@ -534,8 +533,8 @@ class ApiClientTest {
 		assertThat(result, notNullValue());
 	}
 
-	@SuppressWarnings({ "unchecked", "resource" })
 	@Test
+	@SuppressWarnings({ "unchecked", "resource" })
 	void shouldThrowExceptionWhenMoreExchangeClientsArePresent() {
 		ExchangeClient exchangeClient1 = mock(ExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient1).getAuthenticationType();
@@ -573,8 +572,8 @@ class ApiClientTest {
 		assertThat(result, notNullValue());
 	}
 
-	@SuppressWarnings({ "unchecked", "resource" })
 	@Test
+	@SuppressWarnings({ "unchecked", "resource" })
 	void shouldThrowExceptionWhenCreatingClientWithMoreExchangeClientsWithTheSameType() {
 		ExchangeClient exchangeClient1 = mock(ExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient1).getAuthenticationType();
@@ -626,8 +625,8 @@ class ApiClientTest {
 		assertThat(result, notNullValue());
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldThrowExceptionWhenTryingToReturnAuthClientWithNoAuthClientsSet() throws Exception {
 		Exception result = null;
 		try (ApiClient api = ApiClient.of(BASE_URL, List.of())) {
@@ -639,8 +638,8 @@ class ApiClientTest {
 		assertThat(result, notNullValue());
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldMakeGetCallWithTheCorrectUri() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
@@ -702,8 +701,8 @@ class ApiClientTest {
 		assertThat(field, notNullValue());
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldSetTheRetry() {
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
@@ -790,8 +789,8 @@ class ApiClientTest {
 		}
 	}
 
-	@SuppressWarnings({ "unchecked", "resource" })
 	@Test
+	@SuppressWarnings({ "unchecked", "resource" })
 	void shouldSetMetricsOnExchangeWhenThereAreNoExceptions() {
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
@@ -832,8 +831,8 @@ class ApiClientTest {
 		verifyNoInteractions(errors);
 	}
 
-	@SuppressWarnings({ "unchecked", "resource" })
 	@Test
+	@SuppressWarnings({ "unchecked", "resource" })
 	void shouldSetMetricsOnExchangeWhenThereAreExceptions() {
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
@@ -909,6 +908,19 @@ class ApiClientTest {
 			assertThat(exchangeClient, notNullValue());
 			assertThat(exchangeClient.getAuthenticationType(), equalTo(AuthenticationType.NONE));
 			assertThat(exchangeClient.getClass(), equalTo(JavaNetHttpExchangeClient.class));
+		}
+	}
+
+	static class DummyExchangeClient implements ExchangeClient {
+
+		@Override
+		public <T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest) {
+			return null;
+		}
+
+		@Override
+		public void close() {
+			// Do nothing
 		}
 	}
 }

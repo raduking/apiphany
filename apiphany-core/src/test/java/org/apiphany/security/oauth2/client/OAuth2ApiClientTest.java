@@ -136,8 +136,8 @@ class OAuth2ApiClientTest {
 		}
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldThrowExceptionIfExchangeClientThrowsWhileRetrievingToken() {
 		HttpExchangeClient exchangeClientMock = mock(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClientMock).getAuthenticationType();

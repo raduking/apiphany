@@ -18,7 +18,25 @@ class AuthorizationGrantTypeTest {
 	void shouldBuildWithFromStringWithValidValue(final AuthorizationGrantType authorizationGrantType) {
 		String stringValue = authorizationGrantType.value();
 		AuthorizationGrantType result = AuthorizationGrantType.fromString(stringValue);
+
 		assertThat(result, equalTo(authorizationGrantType));
 	}
 
+	@ParameterizedTest
+	@EnumSource(AuthorizationGrantType.class)
+	void shouldMatchValidValue(final AuthorizationGrantType authorizationGrantType) {
+		String stringValue = authorizationGrantType.value();
+		boolean result = authorizationGrantType.matches(stringValue);
+
+		assertThat(result, equalTo(true));
+	}
+
+	@ParameterizedTest
+	@EnumSource(AuthorizationGrantType.class)
+	void shouldNotMatchInvalidValue(final AuthorizationGrantType authorizationGrantType) {
+		String stringValue = "invalid-" + authorizationGrantType.value();
+		boolean result = authorizationGrantType.matches(stringValue);
+
+		assertThat(result, equalTo(false));
+	}
 }

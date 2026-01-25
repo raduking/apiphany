@@ -30,7 +30,7 @@
 	<properties>
 
 		<!-- Dependencies versions -->
-		<morphix.version>1.0.19</morphix.version>
+		<morphix.version>1.0.20</morphix.version>
 
         <!-- Java / Maven properties -->
 		<java.version>21</java.version>

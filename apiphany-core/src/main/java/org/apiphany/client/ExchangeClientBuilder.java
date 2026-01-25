@@ -6,9 +6,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
 
+import org.apiphany.lang.Require;
 import org.apiphany.lang.ScopedResource;
 import org.apiphany.security.client.SecuredExchangeClientBuilder;
-import org.morphix.lang.Nullables;
 import org.morphix.lang.function.Consumers;
 import org.morphix.reflection.Constructors;
 import org.morphix.reflection.Methods;
@@ -74,8 +74,11 @@ public class ExchangeClientBuilder {
 		if (null != this.exchangeClient && null != this.exchangeClientClass) {
 			throw new IllegalStateException("Cannot set both exchange client instance and exchange client class");
 		}
+		if (null == this.exchangeClient && null == this.exchangeClientClass) {
+			throw new IllegalStateException("Either exchange client instance or exchange client class must be set");
+		}
 		boolean managed = exchangeClient == null;
-		ExchangeClient client = managed ? build(exchangeClientClass, clientProperties) : exchangeClient;
+		ExchangeClient client = managed ? build(exchangeClientClass) : exchangeClient;
 
 		ScopedResource<ExchangeClient> scopedResource = ScopedResource.of(client, managed);
 		for (Class<? extends DecoratingExchangeClient> decoratorClientClass : decoratorClientClasses) {
@@ -84,6 +87,23 @@ public class ExchangeClientBuilder {
 			scopedResource = ScopedResource.managed(client);
 		}
 		return scopedResource;
+	}
+
+	/**
+	 * Builds an exchange client based on the client class and client properties. The exchange client class must have either
+	 * a default constructor or a constructor with one parameter of type {@link ClientProperties}.
+	 *
+	 * @param clientClass exchange client class
+	 * @return new exchange client
+	 */
+	protected ExchangeClient build(final Class<? extends ExchangeClient> clientClass) {
+		if (null != clientProperties) {
+			return build(clientClass, clientProperties);
+		}
+		Constructor<? extends ExchangeClient> constructor = Constructors.getDefault(clientClass);
+		Require.that(null != constructor, IllegalStateException::new,
+				"When client properties are not set exchange client class " + clientClass.getName() + " must have a default constructor");
+		return Constructors.IgnoreAccess.newInstance(constructor);
 	}
 
 	/**
@@ -96,8 +116,10 @@ public class ExchangeClientBuilder {
 	 */
 	protected static ExchangeClient build(final Class<? extends ExchangeClient> clientClass, final ClientProperties clientProperties) {
 		Constructor<? extends ExchangeClient> constructor = Constructors.getDeclared(clientClass, ClientProperties.class);
-		ClientProperties properties = Nullables.nonNullOrDefault(clientProperties, ClientProperties::new);
-		return Constructors.IgnoreAccess.newInstance(constructor, properties);
+		Require.that(null != constructor, IllegalStateException::new,
+				"When client properties are not set exchange client class " + clientClass.getName()
+						+ " must not have a constructor with one parameter of type " + ClientProperties.class.getName());
+		return Constructors.IgnoreAccess.newInstance(constructor, clientProperties);
 	}
 
 	/**

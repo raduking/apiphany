@@ -21,4 +21,11 @@ class JwsAlgorithmTest {
 		assertThat(value, equalTo(jwsAlgorithm.toString()));
 	}
 
+	@ParameterizedTest
+	@EnumSource(JwsAlgorithm.class)
+	void shouldReturnSameAlgorithmOnFromString(final JwsAlgorithm jwsAlgorithm) {
+		JwsAlgorithm fromStringAlgorithm = JwsAlgorithm.fromString(jwsAlgorithm.value());
+
+		assertThat(fromStringAlgorithm, equalTo(jwsAlgorithm));
+	}
 }

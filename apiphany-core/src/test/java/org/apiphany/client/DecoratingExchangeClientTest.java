@@ -17,8 +17,8 @@ import org.junit.jupiter.api.Test;
  */
 class DecoratingExchangeClientTest {
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldConstructWithUnmanagedExchangeClientInstance() throws Exception {
 		ExchangeClient delegate = mock(ExchangeClient.class);
 
@@ -30,8 +30,8 @@ class DecoratingExchangeClientTest {
 		}
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldConstructWithManagedExchangeClientInstance() throws Exception {
 		ExchangeClient delegate = mock(ExchangeClient.class);
 		ScopedResource<ExchangeClient> scopedDelegate = ScopedResource.managed(delegate);
@@ -42,8 +42,8 @@ class DecoratingExchangeClientTest {
 		verify(delegate).close();
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldDelegateExchangeCall() throws Exception {
 		ExchangeClient delegate = mock(ExchangeClient.class);
 		ApiRequest<String> request = new ApiRequest<>();
