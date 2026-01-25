@@ -33,17 +33,47 @@ import com.sun.net.httpserver.HttpServer;
  */
 public class JavaSunHttpServer implements AutoCloseable {
 
+	/**
+	 * Logger instance.
+	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(JavaSunHttpServer.class);
 
+	/**
+	 * API route for name retrieval.
+	 */
 	public static final String ROUTE_API_NAME = "/api/name";
 
+	/**
+	 * Name returned by the {@code /api/name} endpoint.
+	 */
 	public static final String NAME = "Mumu";
 
+	/**
+	 * JWT token validator.
+	 */
 	private final JwtTokenValidator tokenValidator;
+
+	/**
+	 * Underlying HTTP server.
+	 */
 	private final HttpServer httpServer;
+
+	/**
+	 * Executor service for handling requests.
+	 */
 	private final ExecutorService executor;
+
+	/**
+	 * Port on which the server is running.
+	 */
 	private final int port;
 
+	/**
+	 * Constructs a new {@link JavaSunHttpServer} instance.
+	 *
+	 * @param port the port on which the server will run
+	 * @param tokenValidator the JWT token validator for securing endpoints; if null, no validation is performed
+	 */
 	public JavaSunHttpServer(final int port, final JwtTokenValidator tokenValidator) {
 		this.executor = Executors.newVirtualThreadPerTaskExecutor();
 
@@ -58,20 +88,39 @@ public class JavaSunHttpServer implements AutoCloseable {
 		LOGGER.info("Server started on port: {}", port);
 	}
 
+	/**
+	 * Constructs a new {@link JavaSunHttpServer} instance without token validation.
+	 *
+	 * @param port the port on which the server will run
+	 */
 	public JavaSunHttpServer(final int port) {
 		this(port, null);
 	}
 
+	/**
+	 * Closes the server and releases resources.
+	 */
 	@Override
 	public void close() throws Exception {
 		httpServer.stop(0);
 		executor.close();
 	}
 
+	/**
+	 * Returns the port on which the server is running.
+	 *
+	 * @return the server port
+	 */
 	public int getPort() {
 		return port;
 	}
 
+	/**
+	 * Creates and configures an {@link HttpServer} instance.
+	 *
+	 * @param port the port on which the server will run
+	 * @return the configured {@link HttpServer} instance
+	 */
 	private static HttpServer createHttpServer(final int port) {
 		try {
 			return HttpServer.create(new InetSocketAddress(port), 0);
@@ -80,14 +129,33 @@ public class JavaSunHttpServer implements AutoCloseable {
 		}
 	}
 
+	/**
+	 * Handler for the {@code /api/name} endpoint.
+	 *
+	 * @author Radu Sebastian LAZIN
+	 */
 	static class NameHandler implements HttpHandler {
 
+		/**
+		 * Reference to the parent server.
+		 */
 		private final JavaSunHttpServer server;
 
+		/**
+		 * Constructs a new {@link NameHandler} instance.
+		 *
+		 * @param server the parent server
+		 */
 		public NameHandler(final JavaSunHttpServer server) {
 			this.server = server;
 		}
 
+		/**
+		 * Handles incoming HTTP requests.
+		 *
+		 * @param exchange the HTTP exchange containing request and response data
+		 * @throws IOException if an I/O error occurs
+		 */
 		@Override
 		public void handle(final HttpExchange exchange) throws IOException {
 			HttpMethod method;
@@ -106,10 +174,23 @@ public class JavaSunHttpServer implements AutoCloseable {
 			}
 		}
 
+		/**
+		 * Handles GET requests to the endpoint.
+		 *
+		 * @param exchange the HTTP exchange containing request and response data
+		 * @throws IOException if an I/O error occurs
+		 */
 		private static void handleGet(final HttpExchange exchange) throws IOException {
 			sendResponse(exchange, HttpStatus.OK, JavaSunHttpServer.NAME);
 		}
 
+		/**
+		 * Checks if the request is authorized using the token validator.
+		 *
+		 * @param exchange the HTTP exchange containing request and response data
+		 * @return true if authorized, false otherwise
+		 * @throws IOException if an I/O error occurs
+		 */
 		private boolean isAuthorized(final HttpExchange exchange) throws IOException {
 			if (null == server.tokenValidator) {
 				return true;
@@ -142,6 +223,16 @@ public class JavaSunHttpServer implements AutoCloseable {
 			}
 		}
 
+		/**
+		 * Sends an HTTP response with the specified status and response body.
+		 *
+		 * @param <T> the type of the response body
+		 * @param exchange the HTTP exchange containing request and response data
+		 * @param status the HTTP status to send
+		 * @param response the response body
+		 * @return true if the status is 2xx successful, false otherwise
+		 * @throws IOException if an I/O error occurs
+		 */
 		private static <T> boolean sendResponse(final HttpExchange exchange, final HttpStatus status, final T response) throws IOException {
 			String responseString = Strings.safeToString(response);
 			exchange.sendResponseHeaders(status.getCode(), responseString.length());
@@ -150,6 +241,5 @@ public class JavaSunHttpServer implements AutoCloseable {
 			os.close();
 			return status.is2xxSuccessful();
 		}
-
 	}
 }

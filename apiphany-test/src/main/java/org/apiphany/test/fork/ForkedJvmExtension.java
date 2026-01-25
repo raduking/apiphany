@@ -24,6 +24,13 @@ public class ForkedJvmExtension implements InvocationInterceptor {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ForkedJvmExtension.class);
 
 	/**
+	 * Default constructor.
+	 */
+	public ForkedJvmExtension() {
+		// empty
+	}
+
+	/**
 	 * Intercepts test method invocations to run them in a forked JVM if annotated with {@link ForkedJvmTest}.
 	 *
 	 * @param invocation the invocation to proceed with
