@@ -98,7 +98,7 @@ public class RSAKeys {
 
 		byte[] decoded = Base64.getMimeDecoder().decode(publicKeyPEM.getBytes());
 		try {
-			KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+			KeyFactory keyFactory = KeyFactory.getInstance(ALGORITHM);
 			X509EncodedKeySpec keySpec = new X509EncodedKeySpec(decoded);
 			return (RSAPublicKey) keyFactory.generatePublic(keySpec);
 		} catch (Exception e) {
