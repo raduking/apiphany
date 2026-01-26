@@ -25,6 +25,7 @@
 - Moved `AbstractHttpExchangeClient.getTracingHeaders` method to `HttpExchangeClient` interface as a default method.
 - Added `BasicHttpResponseParser` to easily parse HTTP response strings.
 - Added `KeyStoreType` enum with the supported key store types.
+- Added `Keys` utility interface with common key related methods.
 
 ---
 
