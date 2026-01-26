@@ -51,7 +51,7 @@ public final class SSLContexts {
 	}
 
 	/**
-	 * Initializes a {@link SSLContext}. See {@link SSLContext#init(KeyManager[], TrustManager[], SecureRandom)}.
+	 * Initializes a {@link SSLContext}.
 	 *
 	 * @param sslContext the SSL context to be initialized
 	 * @param keyManagers the key managers; cannot be null
@@ -69,7 +69,7 @@ public final class SSLContexts {
 	}
 
 	/**
-	 * Initializes a {@link SSLContext}. See {@link SSLContext#init(KeyManager[], TrustManager[], SecureRandom)}.
+	 * Initializes a {@link SSLContext}.
 	 *
 	 * @param sslContext the SSL context to be initialized
 	 * @param keyManagers the key managers; cannot be null
@@ -82,7 +82,7 @@ public final class SSLContexts {
 	}
 
 	/**
-	 * Initializes a {@link SSLContext}. See {@link SSLContext#init(KeyManager[], TrustManager[], SecureRandom)}.
+	 * Initializes a {@link SSLContext}.
 	 *
 	 * @param sslContext the SSL context to be initialized
 	 * @param keyStore key store information

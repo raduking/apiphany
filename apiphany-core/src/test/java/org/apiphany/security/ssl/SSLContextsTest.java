@@ -10,6 +10,10 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.UnrecoverableKeyException;
 
+import javax.net.ssl.SSLContext;
+
+import org.apiphany.json.JsonBuilder;
+import org.apiphany.lang.Strings;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -23,6 +27,17 @@ class SSLContextsTest {
 
 	private static final String KEYSTORE_PATH = "security/ssl/keystore.jks";
 	private static final String KEYSTORE_TYPE = "JKS";
+
+	private static final String SSL_PROPERTIES_JSON = Strings.fromFile("security/ssl/ssl-properties.json");
+
+	@Test
+	void shouldCreateSSLContextSuccessfully() {
+		SSLProperties sslProperties = JsonBuilder.fromJson(SSL_PROPERTIES_JSON, SSLProperties.class);
+
+		SSLContext sslContext = SSLContexts.create(sslProperties);
+
+		assertNotNull(sslContext);
+	}
 
 	@Test
 	void shouldThrowSecurityExceptionIfCreateFailsForAnyReason() {
