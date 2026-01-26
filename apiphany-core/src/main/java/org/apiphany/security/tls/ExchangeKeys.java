@@ -3,9 +3,7 @@ package org.apiphany.security.tls;
 import java.nio.ByteBuffer;
 
 import org.apiphany.json.JsonBuilder;
-import org.apiphany.lang.Hex;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apiphany.security.Sensitive;
 
 /**
  * Represents the set of keys derived from the TLS key block for a given {@link CipherSuite}.
@@ -25,42 +23,46 @@ import org.slf4j.LoggerFactory;
  */
 public class ExchangeKeys {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(ExchangeKeys.class);
-
 	/**
 	 * Client MAC key (BLOCK or STREAM ciphers).
 	 */
+	@Sensitive
 	private byte[] clientMacKey;
 
 	/**
 	 * Server MAC key (BLOCK or STREAM ciphers).
 	 */
+	@Sensitive
 	private byte[] serverMacKey;
 
 	/**
 	 * Client write key.
 	 */
+	@Sensitive
 	private byte[] clientWriteKey;
 
 	/**
 	 * Server write key.
 	 */
+	@Sensitive
 	private byte[] serverWriteKey;
 
 	/**
 	 * Client IV (AEAD or BLOCK ciphers).
 	 */
+	@Sensitive
 	private byte[] clientIV;
 
 	/**
 	 * Server IV (AEAD or BLOCK ciphers).
 	 */
+	@Sensitive
 	private byte[] serverIV;
 
 	/**
 	 * Hide constructor.
 	 */
-	private ExchangeKeys() {
+	protected ExchangeKeys() {
 		// empty
 	}
 
@@ -80,9 +82,6 @@ public class ExchangeKeys {
 	 * @return a new {@link ExchangeKeys} instance
 	 */
 	public static ExchangeKeys from(final byte[] keyBlock, final CipherSuite suite) {
-		LOGGER.debug("keyBlock: {}", Hex.stringSupplier(keyBlock));
-		LOGGER.debug("keyBlock length: {}", keyBlock.length);
-
 		BulkCipher bulkCipher = suite.bulkCipher();
 		CipherType type = bulkCipher.type();
 
@@ -125,12 +124,6 @@ public class ExchangeKeys {
 				// empty
 			}
 		}
-		LOGGER.debug("clientMacKey: {}", Hex.stringSupplier(exchangeKeys.clientMacKey));
-		LOGGER.debug("serverMacKey: {}", Hex.stringSupplier(exchangeKeys.serverMacKey));
-		LOGGER.debug("clientWriteKey: {}", Hex.stringSupplier(exchangeKeys.clientWriteKey));
-		LOGGER.debug("serverWriteKey: {}", Hex.stringSupplier(exchangeKeys.serverWriteKey));
-		LOGGER.debug("clientIV: {}", Hex.stringSupplier(exchangeKeys.clientIV));
-		LOGGER.debug("serverIV: {}", Hex.stringSupplier(exchangeKeys.serverIV));
 		return exchangeKeys;
 	}
 

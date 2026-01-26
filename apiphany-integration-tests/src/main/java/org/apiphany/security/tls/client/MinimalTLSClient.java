@@ -55,6 +55,7 @@ import org.apiphany.security.tls.ExchangeRandom;
 import org.apiphany.security.tls.Finished;
 import org.apiphany.security.tls.Handshake;
 import org.apiphany.security.tls.KeyExchangeAlgorithm;
+import org.apiphany.security.tls.LoggingExchangeKeys;
 import org.apiphany.security.tls.NamedCurve;
 import org.apiphany.security.tls.PRF;
 import org.apiphany.security.tls.PRFLabel;
@@ -269,7 +270,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		byte[] keyBlock = PRF.apply(masterSecret, PRFLabel.KEY_EXPANSION,
 				Bytes.concatenate(serverRandom, clientRandom), keyBlockLength, prfAlgorithm);
 		// Extract keys
-		exchangeKeys = ExchangeKeys.from(keyBlock, serverCipherSuite);
+		exchangeKeys = LoggingExchangeKeys.from(keyBlock, serverCipherSuite);
 
 		// 6. Send Client Change Cipher Spec
 		Record changeCypherSpecRecord = new Record(sslProtocol, new ChangeCipherSpec());
