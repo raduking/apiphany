@@ -16,6 +16,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Test class for {@link SSLContexts}.
+ *
+ * @author Radu Sebastian LAZIN
  */
 class SSLContextsTest {
 
@@ -64,5 +66,20 @@ class SSLContextsTest {
 		IOException ioException = (IOException) exception.getCause();
 		assertThat(ioException.getMessage(), equalTo("keystore password was incorrect"));
 		assertThat(ioException.getCause().getClass(), equalTo(UnrecoverableKeyException.class));
+	}
+
+	@Test
+	void shouldLoadKeyStoreSuccessfully() throws KeyStoreException {
+		char[] correctPassword = "keystorepassword123".toCharArray();
+		KeyStore keyStore = SSLContexts.keyStore(KEYSTORE_PATH, KEYSTORE_TYPE, correctPassword, false);
+
+		assertThat(keyStore.size(), equalTo(1));
+	}
+
+	@Test
+	void shouldLoadKeyWithNullPasswordIfAllowed() throws KeyStoreException {
+		KeyStore keyStore = SSLContexts.keyStore(KEYSTORE_PATH, KEYSTORE_TYPE, null, false);
+
+		assertThat(keyStore.size(), equalTo(1));
 	}
 }
