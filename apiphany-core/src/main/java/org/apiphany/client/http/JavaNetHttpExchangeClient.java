@@ -228,6 +228,7 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 		return ApiResponse.create(body)
 				.status(httpStatus)
 				.headers(headers)
+				.request(apiRequest)
 				.exchangeClient(this)
 				.build();
 	}

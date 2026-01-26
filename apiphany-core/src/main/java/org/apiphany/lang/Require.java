@@ -39,6 +39,8 @@ public final class Require {
 	 * Checks that the given condition is {@code true}. If not, throws an exception supplied by the exception instance
 	 * function with the given message.
 	 *
+	 * @param <E> the type of the exception to be thrown
+	 *
 	 * @param condition the condition to check
 	 * @param exceptionInstanceFunction function to create the exception instance
 	 * @param message the error message template
@@ -54,6 +56,8 @@ public final class Require {
 	/**
 	 * Checks that the given condition is {@code true}. If not, throws an exception supplied by the exception instance
 	 * function with a formatted message. The message formatting is done using {@link Messages#message(String, Object...)}.
+	 *
+	 * @param <E> the type of the exception to be thrown
 	 *
 	 * @param condition the condition to check
 	 * @param exceptionInstanceFunction function to create the exception instance
