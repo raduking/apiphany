@@ -434,10 +434,9 @@ public class ApiClient implements AutoCloseable {
 				e -> activeMeters.retries().increment(),
 				durationAccumulator);
 
-		if (isBleedExceptions() && apiResponse.hasException()) {
-			Unchecked.reThrow(apiResponse.getException());
-		}
-		return apiResponse;
+		return isBleedExceptions() && apiResponse.hasException()
+				? Unchecked.reThrow(apiResponse.getException())
+				: apiResponse;
 	}
 
 	/**
@@ -453,7 +452,7 @@ public class ApiClient implements AutoCloseable {
 	private <T> ApiResponse<T> exchange(final ApiRequest<T> apiRequest, final ExchangeClient exchangeClient, final BasicMeters activeMeters) {
 		return activeMeters.wrap(
 				() -> exchangeClient.exchange(apiRequest),
-				e -> getErrorResponse(e, exchangeClient));
+				e -> buildErrorResponse(e, apiRequest, exchangeClient));
 	}
 
 	/**
@@ -478,11 +477,13 @@ public class ApiClient implements AutoCloseable {
 	 * @param <T> response body type
 	 *
 	 * @param exception exception that represents the error
+	 * @param apiRequest the API request object that caused the error
 	 * @param exchangeClient the exchange client that made the failed request
 	 * @return API error response object
 	 */
-	protected <T> ApiResponse<T> getErrorResponse(final Exception exception, final ExchangeClient exchangeClient) {
+	protected <T> ApiResponse<T> buildErrorResponse(final Exception exception, ApiRequest<T> apiRequest, final ExchangeClient exchangeClient) {
 		return ApiResponse.<T>builder()
+				.request(apiRequest)
 				.exception(exception)
 				.errorMessagePrefix("Exchange error: ")
 				.exchangeClient(exchangeClient)

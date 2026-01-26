@@ -34,6 +34,11 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	private final Status status;
 
 	/**
+	 * Request associated with this response.
+	 */
+	private final ApiRequest<?> request;
+
+	/**
 	 * Response error message.
 	 */
 	private final String errorMessage;
@@ -56,6 +61,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	private ApiResponse(final Builder<T> builder) {
 		super(builder.body, builder.headers);
 		this.status = builder.status;
+		this.request = builder.request;
 		this.errorMessage = null != builder.errorMessage
 				? Nullables.nonNullOrDefault(builder.errorMessagePrefix, "") + builder.errorMessage
 				: null;
@@ -311,6 +317,16 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	}
 
 	/**
+	 * Returns the request associated with this response.
+	 *
+	 * @param <U> request body type
+	 * @return the request
+	 */
+	public <U> ApiRequest<U> getRequest() {
+		return JavaObjects.cast(request);
+	}
+
+	/**
 	 * Returns the exception in case of an error.
 	 *
 	 * @return the exception
@@ -395,6 +411,11 @@ public class ApiResponse<T> extends ApiMessage<T> {
 		private Status status;
 
 		/**
+		 * The request associated with the response.
+		 */
+		private ApiRequest<?> request;
+
+		/**
 		 * The error message for error responses.
 		 */
 		private String errorMessage;
@@ -465,6 +486,17 @@ public class ApiResponse<T> extends ApiMessage<T> {
 		 */
 		public <S extends Status> Builder<T> status(final int status, final IntFunction<S> statusCodeConverter) {
 			return status(statusCodeConverter.apply(status));
+		}
+
+		/**
+		 * Sets the request associated with this response.
+		 *
+		 * @param request the request
+		 * @return this builder instance
+		 */
+		public Builder<T> request(final ApiRequest<?> request) {
+			this.request = request;
+			return this;
 		}
 
 		/**
