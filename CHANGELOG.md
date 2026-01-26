@@ -23,6 +23,7 @@
 - Added `Header.value` convenience static methods to build a header value which simply delegates to their equivalent `HeaderValues.value`.
 - Moved `AbstractHttpExchangeClient.getTracingHeaders` method to `HttpExchangeClient` interface as a default method.
 - Added `BasicHttpResponseParser` to easily parse HTTP response strings.
+- Added `KeyStoreType` enum with the supported key store types.
 
 ---
 
