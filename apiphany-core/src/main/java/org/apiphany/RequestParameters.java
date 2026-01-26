@@ -13,6 +13,7 @@ import org.apiphany.lang.Require;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Maps;
 import org.morphix.convert.MapConversions;
+import org.morphix.convert.function.SimpleConverter;
 import org.morphix.lang.function.PutFunction;
 import org.morphix.reflection.Constructors;
 
@@ -162,6 +163,22 @@ public class RequestParameters {
 	 * @throws IllegalArgumentException if the provided object is not a POJO or a map.
 	 */
 	public static Map<String, String> from(final Object queryParams) {
+		return from(queryParams, String::valueOf);
+	}
+
+	/**
+	 * Converts an object into a map of request parameters. Each field of the object is treated as a parameter, with the
+	 * field name as the key and the field value as the value. This method uses reflection to access the fields of the
+	 * object.
+	 * <p>
+	 * Field values that are {@code null} are not included in the resulting map.
+	 *
+	 * @param queryParams the object to convert
+	 * @param fieldNameConverter a converter to transform field names
+	 * @return a map representation of the object's fields
+	 * @throws IllegalArgumentException if the provided object is not a POJO or a map.
+	 */
+	public static Map<String, String> from(final Object queryParams, SimpleConverter<String, String> fieldNameConverter) {
 		if (null == queryParams) {
 			return Collections.emptyMap();
 		}
@@ -170,8 +187,9 @@ public class RequestParameters {
 		Require.thatNot(queryParams.getClass().isArray(), "Cannot convert an Array into request parameters map. Expected a POJO or a Map.");
 
 		return switch (queryParams) {
-			case Map<?, ?> map -> MapConversions.convertMap(map, String::valueOf, RequestParameter::value, PutFunction.ifNotNullValue()).toMap();
-			default -> MapConversions.convertToMap(queryParams, String::valueOf, RequestParameter::value, PutFunction.ifNotNullValue());
+			case Map<?, ?> map -> MapConversions.convertMap(map,
+					k -> fieldNameConverter.convert(String.valueOf(k)), RequestParameter::value, PutFunction.ifNotNullValue()).toMap();
+			default -> MapConversions.convertToMap(queryParams, fieldNameConverter, RequestParameter::value, PutFunction.ifNotNullValue());
 		};
 	}
 

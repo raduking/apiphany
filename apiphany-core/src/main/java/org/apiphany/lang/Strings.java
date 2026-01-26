@@ -103,6 +103,29 @@ public interface Strings {
 	}
 
 	/**
+	 * Transforms a string from Lower Camel case to Snake case. The Lower Camel case is the Java convention for naming
+	 * methods. Example: <code>"someCoolName"</code> will be <code>"some_cool_name"</code>.
+	 *
+	 * @param str string to transform
+	 * @return snake case string
+	 */
+	static String fromLowerCamelToSnakeCase(final String str) {
+		String regex = "([a-z])([A-Z]+)";
+		String replacement = "$1_$2";
+		return str.replaceAll(regex, replacement).toLowerCase();
+	}
+
+	/**
+	 * Alias for {@link #fromLowerCamelToSnakeCase(String)}.
+	 *
+	 * @param str string to transform
+	 * @return kebab case string
+	 */
+	static String fromCamelToSnakeCase(final String str) {
+		return fromLowerCamelToSnakeCase(str);
+	}
+
+	/**
 	 * Transforms a string from Lower Camel case to Kebab case. The Lower Camel case is the Java convention for naming
 	 * methods. Example: <code>"someCoolName"</code> will be <code>"some-cool-name"</code>.
 	 *

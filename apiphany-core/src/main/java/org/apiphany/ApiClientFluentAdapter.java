@@ -16,6 +16,7 @@ import org.apiphany.lang.collections.Maps;
 import org.apiphany.lang.retry.Retry;
 import org.apiphany.meters.BasicMeters;
 import org.apiphany.security.AuthenticationType;
+import org.morphix.convert.function.SimpleConverter;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Nullables;
 import org.morphix.reflection.GenericClass;
@@ -332,6 +333,17 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 */
 	public ApiClientFluentAdapter params(final Object queryParams) {
 		return params(RequestParameters.from(queryParams));
+	}
+
+	/**
+	 * Sets the request parameters from the given object.
+	 *
+	 * @param queryParams request parameters object
+	 * @param keyConverter key converter which converts the object field names to request parameter names
+	 * @return this
+	 */
+	public ApiClientFluentAdapter params(final Object queryParams, SimpleConverter<String, String> keyConverter) {
+		return params(RequestParameters.from(queryParams, keyConverter));
 	}
 
 	/**
