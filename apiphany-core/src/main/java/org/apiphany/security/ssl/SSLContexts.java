@@ -176,8 +176,12 @@ public final class SSLContexts {
 	 * @return key store
 	 */
 	public static KeyStore keyStore(final String keyStoreLocation, final String keyStoreType, final char[] password, final boolean isExternal) {
-		if (Strings.isEmpty(keyStoreType)) {
+		if (Strings.isEmpty(keyStoreLocation)) {
 			LOGGER.warn("Location is empty. Key store type: {}, external: {}", keyStoreType, isExternal);
+			return null;
+		}
+		if (Strings.isEmpty(keyStoreType)) {
+			LOGGER.warn("Key store type is empty. Key store location: {}, external: {}", keyStoreLocation, isExternal);
 			return null;
 		}
 		char[] pass = password;

@@ -3,6 +3,7 @@ package org.apiphany.security.ssl;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
@@ -96,5 +97,33 @@ class SSLContextsTest {
 		KeyStore keyStore = SSLContexts.keyStore(KEYSTORE_PATH, KEYSTORE_TYPE, null, false);
 
 		assertThat(keyStore.size(), equalTo(1));
+	}
+
+	@Test
+	void shouldLoadKeyWithEmptyPasswordIfAllowed() throws KeyStoreException {
+		KeyStore keyStore = SSLContexts.keyStore(KEYSTORE_PATH, KEYSTORE_TYPE, new char[] { }, false);
+
+		assertThat(keyStore.size(), equalTo(1));
+	}
+
+	@Test
+	void shouldReturnNullIfKeyStoreTypeIsEmpty() {
+		KeyStore keyStore = SSLContexts.keyStore(KEYSTORE_PATH, "", null, false);
+
+		assertNull(keyStore);
+	}
+
+	@Test
+	void shouldReturnNullIfKeyStoreTypeIsNull() {
+		KeyStore keyStore = SSLContexts.keyStore(KEYSTORE_PATH, null, null, false);
+
+		assertNull(keyStore);
+	}
+
+	@Test
+	void shouldReturnNullIfKeyStoreLocationIsEmpty() {
+		KeyStore keyStore = SSLContexts.keyStore("", KEYSTORE_TYPE, null, false);
+
+		assertNull(keyStore);
 	}
 }
