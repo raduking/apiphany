@@ -249,6 +249,31 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	}
 
 	/**
+	 * Maps the response to another type if the request was 2xx successful, or returns the given default value.
+	 *
+	 * @param <U> return type
+	 *
+	 * @param responseMapper function to map the response
+	 * @param defaultValue default value to be returned
+	 * @return mapped response or default value
+	 */
+	public <U> U mapResultOrDefault(final Function<ApiResponse<T>, U> responseMapper, final U defaultValue) {
+		return isSuccessful() ? responseMapper.apply(this) : defaultValue;
+	}
+
+	/**
+	 * Maps the response to another type if the request was 2xx successful, or returns {@code null}.
+	 *
+	 * @param <U> return type
+	 *
+	 * @param responseMapper function to map the response
+	 * @return mapped response or null
+	 */
+	public <U> U mapResultOrNull(final Function<ApiResponse<T>, U> responseMapper) {
+		return mapResultOrDefault(responseMapper, null);
+	}
+
+	/**
 	 * Returns the body as an input stream. The caller is responsible for closing the input stream.
 	 *
 	 * @return the body as an input stream

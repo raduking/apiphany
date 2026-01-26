@@ -27,7 +27,7 @@ public record RequestParameter(String name, String value) implements ParameterFu
 	 */
 	public RequestParameter {
 		Require.notNull(name, "Parameter name cannot be null");
-		Require.that(name, Strings::isNotBlank, "Parameter name cannot be blank");
+		Require.thatObject(name, Strings::isNotBlank, "Parameter name cannot be blank");
 	}
 
 	/**

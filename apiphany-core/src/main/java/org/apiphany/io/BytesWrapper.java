@@ -45,7 +45,9 @@ public class BytesWrapper implements ByteSizeable, BinaryRepresentable {
 	private final byte[] bytes;
 
 	/**
-	 * Creates a new instance containing a copy of the specified bytes.
+	 * Creates a new instance containing a copy of the specified bytes. If the size of the input array is different than the
+	 * specified size, a slice starting from the given offset is taken otherwise the entire array is copied and the offset
+	 * is ignored.
 	 *
 	 * @param bytes the byte array to wrap (can be {@code null}, which is treated as empty)
 	 * @param offset the offset from where to create the wrapper
@@ -53,13 +55,13 @@ public class BytesWrapper implements ByteSizeable, BinaryRepresentable {
 	 */
 	public BytesWrapper(final byte[] bytes, final int offset, final int size) {
 		if (Bytes.isNotEmpty(bytes)) {
+			byte[] buffer = new byte[size];
 			if (size == bytes.length) {
-				this.bytes = bytes;
+				System.arraycopy(bytes, 0, buffer, 0, size);
 			} else {
-				byte[] buffer = new byte[size];
-				System.arraycopy(bytes, Math.max(0, offset), buffer, 0, size);
-				this.bytes = buffer;
+				System.arraycopy(bytes, Math.max(0, offset), buffer, 0, Math.min(size, bytes.length - offset));
 			}
+			this.bytes = buffer;
 		} else {
 			this.bytes = Bytes.EMPTY;
 		}

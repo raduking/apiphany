@@ -179,4 +179,9 @@ class UInt64Test {
 		assertThat(e.getMessage(), equalTo("Stream closed, need " + (UInt64.BYTES - 7) + " more bytes out of " + UInt64.BYTES));
 	}
 
+	@Test
+	void shouldReturnTheCorrectSize() {
+		assertThat(UInt64.BYTES, equalTo(8));
+		assertThat(UInt64.ZERO.sizeOf(), equalTo(UInt64.BYTES));
+	}
 }
