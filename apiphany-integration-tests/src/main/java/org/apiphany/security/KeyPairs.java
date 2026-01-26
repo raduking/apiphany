@@ -1,6 +1,7 @@
 package org.apiphany.security;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -56,7 +57,7 @@ public class KeyPairs {
 		}
 	}
 
-	public static void saveAsKey(final KeyPair keyPair, final String resourceDir) throws Exception {
+	public static void saveAsKey(final KeyPair keyPair, final String resourceDir) throws IOException {
 		Path dirPath = Paths.get(resourceDir);
 		if (!Files.exists(dirPath)) {
 			Files.createDirectories(dirPath);
@@ -73,7 +74,7 @@ public class KeyPairs {
 		LOGGER.info("Saved public key (KEY): {}", publicKeyPath);
 	}
 
-	public static void saveAsPem(final KeyPair keyPair, final String resourceDir) throws Exception {
+	public static void saveAsPem(final KeyPair keyPair, final String resourceDir) throws IOException {
 		Path dirPath = Paths.get(resourceDir);
 		if (!Files.exists(dirPath)) {
 			Files.createDirectories(dirPath);
@@ -94,32 +95,34 @@ public class KeyPairs {
 
 	public static KeyPair loadKeyPairFromResources() {
 		PrivateKey privateKey;
+		byte[] privateKeyBytes;
 		try (InputStream is = KeyPairs.class.getResourceAsStream("/security/ssl/" + FileName.XDH_PRIVATE_KEY)) {
 			if (null == is) {
 				throw new FileNotFoundException("Resource not found: /security/ssl/" + FileName.XDH_PRIVATE_KEY);
 			}
-			byte[] privateKeyBytes = is.readAllBytes();
-			LOGGER.info("Loaded private key bytes:\n{}", Hex.dump(privateKeyBytes));
+			privateKeyBytes = is.readAllBytes();
 			KeyFactory keyFactory = KeyFactory.getInstance(X25519Keys.ALGORITHM);
 			privateKey = keyFactory.generatePrivate(new PKCS8EncodedKeySpec(privateKeyBytes));
 		} catch (Exception e) {
 			throw new IllegalStateException("Cannot load " + FileName.XDH_PRIVATE_KEY, e);
 		}
-		LOGGER.info("Loaded private key:\n{}", Hex.dump(X25519Keys.INSTANCE.toByteArray(privateKey, BytesOrder.LITTLE_ENDIAN)));
+		LOGGER.debug("Loaded private key bytes:\n{}", Hex.dump(privateKeyBytes));
+		LOGGER.debug("Loaded private key XDH:\n{}", Hex.dump(X25519Keys.INSTANCE.toByteArray(privateKey, BytesOrder.LITTLE_ENDIAN)));
 
 		PublicKey publicKey;
+		byte[] publicKeyBytes;
 		try (InputStream is = KeyPairs.class.getResourceAsStream("/security/ssl/" + FileName.XDH_PUBLIC_KEY)) {
 			if (null == is) {
 				throw new FileNotFoundException("Resource not found: /security/ssl/" + FileName.XDH_PUBLIC_KEY);
 			}
-			byte[] publicKeyBytes = is.readAllBytes();
-			LOGGER.info("Loaded public key bytes:\n{}", Hex.dump(publicKeyBytes));
+			publicKeyBytes = is.readAllBytes();
 			KeyFactory keyFactory = KeyFactory.getInstance(X25519Keys.ALGORITHM);
 			publicKey = keyFactory.generatePublic(new X509EncodedKeySpec(publicKeyBytes));
 		} catch (Exception e) {
 			throw new IllegalStateException("Cannot load " + FileName.XDH_PUBLIC_KEY, e);
 		}
-		LOGGER.info("Loaded public key:\n{}", Hex.dump(X25519Keys.INSTANCE.toByteArray(publicKey, BytesOrder.LITTLE_ENDIAN)));
+		LOGGER.debug("Loaded public key bytes:\n{}", Hex.dump(publicKeyBytes));
+		LOGGER.debug("Loaded public key XDH:\n{}", Hex.dump(X25519Keys.INSTANCE.toByteArray(publicKey, BytesOrder.LITTLE_ENDIAN)));
 
 		return new KeyPair(publicKey, privateKey);
 	}
