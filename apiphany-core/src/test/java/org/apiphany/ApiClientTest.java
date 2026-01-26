@@ -48,7 +48,6 @@ import org.apiphany.meters.MeterFactory;
 import org.apiphany.meters.MeterTimer;
 import org.apiphany.security.AuthenticationType;
 import org.apiphany.utils.TestDto;
-import org.apiphany.utils.client.DummyApiClient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.ArgumentCaptor;
@@ -638,6 +637,30 @@ class ApiClientTest {
 		assertThat(result, notNullValue());
 	}
 
+	static class ApiClientWithGenericTypes extends ApiClient {
+
+		public static final GenericClass<List<String>> LIST_TYPE_1 = ApiClient.typeObject();
+
+		public static final GenericClass<List<String>> LIST_TYPE_2 = new GenericClass<>() {
+			// empty
+		};
+
+		public static final GenericClass<List<Map<String, Object>>> LIST_TYPE_3 = ApiClient.typeObject();
+
+		public ApiClientWithGenericTypes(final String baseUrl, final ExchangeClient apiAuthClient) {
+			super(baseUrl, apiAuthClient);
+		}
+
+		public TestDto getTest(final String... paths) {
+			return client()
+					.http()
+					.get()
+					.path(paths)
+					.retrieve(TestDto.class)
+					.orDefault(TestDto.EMPTY);
+		}
+	}
+
 	@Test
 	@SuppressWarnings("resource")
 	void shouldMakeGetCallWithTheCorrectUri() {
@@ -653,7 +676,7 @@ class ApiClientTest {
 		ArgumentCaptor<ApiRequest<?>> requestCaptor = ArgumentCaptor.forClass(ApiRequest.class);
 		doReturn(response).when(exchangeClient).exchange(requestCaptor.capture());
 
-		DummyApiClient api = new DummyApiClient(BASE_URL, exchangeClient);
+		ApiClientWithGenericTypes api = new ApiClientWithGenericTypes(BASE_URL, exchangeClient);
 
 		TestDto result = api.getTest(PATH_TEST, PATH_TEST);
 
@@ -667,19 +690,19 @@ class ApiClientTest {
 	@Test
 	void shouldInitializeParameterizedTypeReferences() throws Exception {
 		try (@SuppressWarnings("resource")
-		DummyApiClient apiClient = new DummyApiClient(BASE_URL, new DummyExchangeClient())) {
+		ApiClientWithGenericTypes apiClient = new ApiClientWithGenericTypes(BASE_URL, new DummyExchangeClient())) {
 			assertThat(apiClient.getBaseUrl(), equalTo(BASE_URL));
 		}
 
-		Type type1 = DummyApiClient.LIST_TYPE_1.getType();
+		Type type1 = ApiClientWithGenericTypes.LIST_TYPE_1.getType();
 
 		assertThat(type1.toString(), equalTo("java.util.List<java.lang.String>"));
 
-		Type type2 = DummyApiClient.LIST_TYPE_2.getType();
+		Type type2 = ApiClientWithGenericTypes.LIST_TYPE_2.getType();
 
 		assertThat(type2.toString(), equalTo("java.util.List<java.lang.String>"));
 
-		Type type3 = DummyApiClient.LIST_TYPE_3.getType();
+		Type type3 = ApiClientWithGenericTypes.LIST_TYPE_3.getType();
 
 		assertThat(type3.toString(), equalTo("java.util.List<java.util.Map<java.lang.String, java.lang.Object>>"));
 	}

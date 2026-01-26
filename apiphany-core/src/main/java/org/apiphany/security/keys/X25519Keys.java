@@ -28,6 +28,11 @@ import org.apiphany.lang.Bytes;
 public class X25519Keys implements KeyExchangeHandler {
 
 	/**
+	 * Canonical instance of X25519Keys.
+	 */
+	public static final X25519Keys INSTANCE = new X25519Keys();
+
+	/**
 	 * The standard name for X25519 algorithm in Java Cryptography Architecture.
 	 */
 	public static final String ALGORITHM = "XDH";
