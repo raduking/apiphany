@@ -4,13 +4,11 @@ import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.interfaces.XECPrivateKey;
 import java.security.interfaces.XECPublicKey;
-import java.security.spec.InvalidKeySpecException;
 import java.security.spec.NamedParameterSpec;
 import java.security.spec.XECPublicKeySpec;
 import java.util.Arrays;
@@ -45,7 +43,7 @@ public class X25519Keys implements KeyExchangeHandler {
 	/**
 	 * The size of X25519 public keys in bytes.
 	 */
-	private static final int PUBLIC_KEY_SIZE = 32;
+	public static final int PUBLIC_KEY_SIZE = 32;
 
 	/**
 	 * The KeyFactory instance for X25519 keys.
@@ -56,11 +54,16 @@ public class X25519Keys implements KeyExchangeHandler {
 	 * Constructs a new X25519Keys handler.
 	 */
 	public X25519Keys() {
-		try {
-			this.keyFactory = KeyFactory.getInstance(ALGORITHM);
-		} catch (NoSuchAlgorithmException e) {
-			throw new SecurityException("Error initializing " + ALGORITHM + " KeyFactory", e);
-		}
+		this.keyFactory = Keys.getKeyFactory(ALGORITHM);
+	}
+
+	/**
+	 * Returns the KeyFactory instance.
+	 *
+	 * @return the {@link KeyFactory}
+	 */
+	protected KeyFactory getKeyFactory() {
+		return keyFactory;
 	}
 
 	/**
@@ -72,12 +75,7 @@ public class X25519Keys implements KeyExchangeHandler {
 	 */
 	@Override
 	public KeyPair generateKeyPair() {
-		try {
-			KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(ALGORITHM);
-			return keyPairGenerator.generateKeyPair();
-		} catch (NoSuchAlgorithmException e) {
-			throw new SecurityException("Error generating key pair", e);
-		}
+		return Keys.generateKeyPair(ALGORITHM);
 	}
 
 	/**
@@ -86,19 +84,14 @@ public class X25519Keys implements KeyExchangeHandler {
 	 * @param publicKeyBytes the byte array representing the public key
 	 * @param bytesOrder the byte order of the input byte array
 	 * @return the corresponding {@link PublicKey} object
-	 * @throws SecurityException if the conversion fails
 	 * @see KeyExchangeHandler#publicKeyFrom(byte[], BytesOrder)
 	 */
 	@Override
 	public PublicKey publicKeyFrom(final byte[] publicKeyBytes, final BytesOrder bytesOrder) {
-		try {
-			return switch (bytesOrder) {
-				case LITTLE_ENDIAN -> fromLittleEndian(publicKeyBytes);
-				case BIG_ENDIAN -> fromBigEndian(publicKeyBytes);
-			};
-		} catch (InvalidKeySpecException e) {
-			throw new SecurityException("Error converting bytes to public key", e);
-		}
+		return switch (bytesOrder) {
+			case LITTLE_ENDIAN -> fromLittleEndian(publicKeyBytes);
+			case BIG_ENDIAN -> fromBigEndian(publicKeyBytes);
+		};
 	}
 
 	/**
@@ -106,9 +99,8 @@ public class X25519Keys implements KeyExchangeHandler {
 	 *
 	 * @param publicKeyBytes the little-endian byte array representing the public key
 	 * @return the corresponding {@link PublicKey} object
-	 * @throws InvalidKeySpecException if the conversion fails
 	 */
-	public PublicKey fromLittleEndian(final byte[] publicKeyBytes) throws InvalidKeySpecException {
+	public PublicKey fromLittleEndian(final byte[] publicKeyBytes) {
 		byte[] littleEndianBytes = Arrays.copyOf(publicKeyBytes, publicKeyBytes.length);
 		return fromBigEndian(Bytes.reverse(littleEndianBytes));
 	}
@@ -118,12 +110,11 @@ public class X25519Keys implements KeyExchangeHandler {
 	 *
 	 * @param publicKeyBytes the big-endian byte array representing the public key
 	 * @return the corresponding {@link PublicKey} object
-	 * @throws InvalidKeySpecException if the conversion fails
 	 */
-	public PublicKey fromBigEndian(final byte[] publicKeyBytes) throws InvalidKeySpecException {
+	public PublicKey fromBigEndian(final byte[] publicKeyBytes) {
 		BigInteger u = new BigInteger(1, publicKeyBytes);
 		XECPublicKeySpec pubKeySpec = new XECPublicKeySpec(CURVE, u);
-		return keyFactory.generatePublic(pubKeySpec);
+		return Keys.generatePublicKey(keyFactory, pubKeySpec);
 	}
 
 	/**

@@ -346,7 +346,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @param keyConverter key converter which converts the object field names to request parameter names
 	 * @return this
 	 */
-	public ApiClientFluentAdapter params(final Object queryParams, SimpleConverter<String, String> keyConverter) {
+	public ApiClientFluentAdapter params(final Object queryParams, final SimpleConverter<String, String> keyConverter) {
 		return params(RequestParameters.from(queryParams, keyConverter));
 	}
 
@@ -360,7 +360,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @param value parameter value
 	 * @return this
 	 */
-	public <N, V> ApiClientFluentAdapter param(N name, V value) {
+	public <N, V> ApiClientFluentAdapter param(final N name, final V value) {
 		return params(Parameter.of(name, value));
 	}
 
