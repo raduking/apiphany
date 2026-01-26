@@ -56,6 +56,16 @@ class BytesWrapperTest {
 	}
 
 	@Test
+	void shouldReturnEmptyInstanceWhenFromIsCalledWithZeroSize() throws Exception {
+		@SuppressWarnings("resource")
+		InputStream is = mock(InputStream.class);
+
+		BytesWrapper bytesWrapper = BytesWrapper.from(is, 0);
+
+		assertThat(bytesWrapper, equalTo(BytesWrapper.empty()));
+	}
+
+	@Test
 	void shouldConvertToReadOnlyByteBuffer() {
 		byte[] bytes = new byte[] { 1, 2, 3, 4, 5 };
 		BytesWrapper bytesWrapper = new BytesWrapper(bytes);
@@ -91,11 +101,166 @@ class BytesWrapperTest {
 	}
 
 	@Test
+	void shouldBeEqualWhenWrappedBytesAreTheSame() {
+		byte[] bytes = new byte[] { 1, 2, 3, 4, 5 };
+		BytesWrapper bytesWrapper1 = new BytesWrapper(bytes);
+		BytesWrapper bytesWrapper2 = new BytesWrapper(bytes);
+
+		boolean equal = bytesWrapper1.equals(bytesWrapper2);
+
+		assertTrue(equal);
+		assertThat(bytesWrapper1.hashCode(), equalTo(bytesWrapper2.hashCode()));
+	}
+
+	@Test
 	void shouldNotBeEqualToAnotherObject() {
 		BytesWrapper bytesWrapper = new BytesWrapper(SIZE);
 
 		boolean equal = bytesWrapper.equals(new Object());
 
 		assertFalse(equal);
+	}
+
+	@Test
+	void shouldNotBeEqualToNull() {
+		BytesWrapper bytesWrapper = new BytesWrapper(SIZE);
+
+		boolean equal = bytesWrapper.equals(null);
+
+		assertFalse(equal);
+	}
+
+	@Test
+	void shouldReturnEmptyInstanceWhenRequested() {
+		BytesWrapper empty = BytesWrapper.empty();
+
+		assertThat(empty.sizeOf(), equalTo(0));
+	}
+
+	@Test
+	void shouldReturnCorrectSizeOfWrappedBytes() {
+		byte[] bytes = new byte[] { 1, 2, 3, 4, 5 };
+		BytesWrapper bytesWrapper = new BytesWrapper(bytes);
+
+		int size = bytesWrapper.sizeOf();
+
+		assertThat(size, equalTo(bytes.length));
+	}
+
+	@Test
+	void shouldIdentifyAsEmptyWhenNoBytesWrapped() {
+		BytesWrapper emptyBytesWrapper = BytesWrapper.empty();
+
+		assertTrue(emptyBytesWrapper.isEmpty());
+	}
+
+	@Test
+	void shouldIdentifyAsNonEmptyWhenBytesAreWrapped() {
+		byte[] bytes = new byte[] { 1, 2, 3 };
+		BytesWrapper bytesWrapper = new BytesWrapper(bytes);
+
+		assertFalse(bytesWrapper.isEmpty());
+	}
+
+	@Test
+	void shouldReturnHexStringRepresentation() {
+		byte[] bytes = new byte[] { (byte) 0xAB, (byte) 0xCD, (byte) 0xEF };
+		BytesWrapper bytesWrapper = new BytesWrapper(bytes);
+
+		String hexString = bytesWrapper.toString();
+
+		assertThat(hexString, equalTo("ABCDEF"));
+	}
+
+	@Test
+	void shouldReturnCopyOfWrappedBytes() {
+		byte[] originalBytes = new byte[] { 1, 2, 3, 4, 5 };
+		BytesWrapper bytesWrapper = new BytesWrapper(originalBytes);
+
+		byte[] copiedBytes = bytesWrapper.toByteArray();
+
+		assertThat(copiedBytes.length, equalTo(originalBytes.length));
+		for (int i = 0; i < originalBytes.length; ++i) {
+			assertThat(copiedBytes[i], equalTo(originalBytes[i]));
+		}
+
+		// modify the copied array and ensure the original is unaffected
+		copiedBytes[0] = 99;
+		assertThat(originalBytes[0], equalTo((byte) 1));
+	}
+
+	@Test
+	void shouldReturnEmptyArrayWhenToByteArrayCalledOnEmptyInstance() {
+		BytesWrapper emptyBytesWrapper = BytesWrapper.empty();
+
+		byte[] bytes = emptyBytesWrapper.toByteArray();
+
+		assertThat(bytes.length, equalTo(0));
+	}
+
+	@Test
+	void shouldCreateBytesWrapperWithOffsetAndSize() {
+		byte[] bytes = new byte[] { 1, 2, 3, 4, 5 };
+		int offset = 1;
+		int size = 3;
+		BytesWrapper bytesWrapper = new BytesWrapper(bytes, offset, size);
+
+		byte[] wrappedBytes = bytesWrapper.toByteArray();
+
+		for (int i = offset; i < size + offset; ++i) {
+			assertThat(wrappedBytes[i - offset], equalTo(bytes[i]));
+		}
+	}
+
+	@Test
+	void shouldCreateBytesWrapperWithOffsetAndSizeGreaterThanLength() {
+		byte[] bytes = new byte[] { 1, 2, 3, 4, 5 };
+		int offset = 1;
+		int size = bytes.length * 2;
+		BytesWrapper bytesWrapper = new BytesWrapper(bytes, offset, size);
+
+		byte[] wrappedBytes = bytesWrapper.toByteArray();
+
+		for (int i = offset; i < size + offset; ++i) {
+			if (i >= bytes.length) {
+				assertThat(wrappedBytes[i - offset], equalTo((byte) 0));
+			} else {
+				assertThat(wrappedBytes[i - offset], equalTo(bytes[i]));
+			}
+		}
+	}
+
+	@Test
+	void shouldCreateSliceBytesWrapperWithOffsetAndSize() {
+		byte[] bytes = new byte[] { 1, 2, 3, 4, 5 };
+		BytesWrapper originalWrapper = new BytesWrapper(bytes);
+		int offset = 1;
+		int size = 3;
+		BytesWrapper bytesWrapper = originalWrapper.slice(offset, size);
+
+		byte[] wrappedBytes = bytesWrapper.toByteArray();
+
+		for (int i = offset; i < size + offset; ++i) {
+			assertThat(wrappedBytes[i - offset], equalTo(bytes[i]));
+		}
+	}
+
+	@Test
+	void shouldCreateSliceBytesWrapperWithOffsetAndSizeGreaterThanLength() {
+		byte[] bytes = new byte[] { 1, 2, 3, 4, 5 };
+		BytesWrapper originalWrapper = new BytesWrapper(bytes);
+		int offset = 1;
+		int size = bytes.length * 2;
+		BytesWrapper bytesWrapper = originalWrapper.slice(offset, size);
+
+		byte[] wrappedBytes = bytesWrapper.toByteArray();
+
+		for (int i = offset; i < size + offset; ++i) {
+			if (i >= bytes.length) {
+				assertThat(wrappedBytes[i - offset], equalTo((byte) 0));
+			} else {
+				assertThat(wrappedBytes[i - offset], equalTo(bytes[i]));
+			}
+		}
 	}
 }

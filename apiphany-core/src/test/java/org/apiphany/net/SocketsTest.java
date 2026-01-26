@@ -108,6 +108,13 @@ class SocketsTest {
 		assertThat(e.getMessage(), equalTo("Max port range must be greater than minimum port range"));
 	}
 
+	@Test
+	void shouldReturnFalseIfHostIsNullInCanConnectTo() {
+		boolean result = Sockets.canConnectTo(null, Sockets.Default.MIN_PORT);
+
+		assertFalse(result);
+	}
+
 	private static <T> T onOccupiedPort(final int port, final Supplier<T> resultSupplier) throws Exception {
 		LOGGER.debug("[ON-OCCUPIED-PORT] BEGIN");
 		Thread thread = null;

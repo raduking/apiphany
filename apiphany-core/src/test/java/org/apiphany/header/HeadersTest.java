@@ -175,6 +175,24 @@ class HeadersTest {
 	}
 
 	@Test
+	void shouldReturnEmptyListOnGetFromNullHeadersMap() {
+		List<String> headerValues = Headers.get("Some-Header", null);
+
+		assertThat(headerValues, notNullValue());
+		assertThat(headerValues, hasSize(0));
+	}
+
+	@Test
+	void shouldReturnEmptyListOnGetForNonExistingHeader() {
+		Map<String, List<String>> mapHeaders = Map.of("some-header", List.of(HEADER_VALUE));
+
+		List<String> headerValues = Headers.get("non-existing-header", mapHeaders);
+
+		assertThat(headerValues, notNullValue());
+		assertThat(headerValues, hasSize(0));
+	}
+
+	@Test
 	void shouldCreateHeadersMapWithAllHeaders() {
 		Map<String, List<String>> resultHeaders = Headers.of(
 				HeaderFunction.header(N1, V1),

@@ -115,6 +115,113 @@ class BytesTest {
 		}
 	}
 
+	@Test
+	void shouldPadOnPadRightIfBlockIsAlignedAndExtendIsTrue() {
+		int n = 10;
+		byte[] a = generateByteArray(n);
+
+		byte[] result = Bytes.padRightToBlockSize(a, n, BYTE_ZERO, true);
+
+		assertThat(result.length, equalTo(n * 2));
+		for (int i = n; i < result.length; ++i) {
+			assertThat(result[i], equalTo(BYTE_ZERO));
+		}
+	}
+
+	@Test
+	void shouldReturnTrueOnIsEmptyForNullArray() {
+		assertThat(Bytes.isEmpty(null), equalTo(true));
+	}
+
+	@Test
+	void shouldReturnTrueOnIsEmptyForEmptyArray() {
+		assertThat(Bytes.isEmpty(Bytes.EMPTY), equalTo(true));
+	}
+
+	@Test
+	void shouldReturnTrueOnIsEmptyForNewEmptyArray() {
+		assertThat(Bytes.isEmpty(new byte[] { }), equalTo(true));
+	}
+
+	@Test
+	void shouldReturnFalseOnIsEmptyForNonEmptyArray() {
+		byte[] a = generateByteArray(5);
+
+		assertThat(Bytes.isEmpty(a), equalTo(false));
+	}
+
+	@Test
+	void shouldReturnFalseOnIsNotEmptyForNullArray() {
+		assertThat(Bytes.isNotEmpty(null), equalTo(false));
+	}
+
+	@Test
+	void shouldReturnFalseOnIsNotEmptyForEmptyArray() {
+		assertThat(Bytes.isNotEmpty(Bytes.EMPTY), equalTo(false));
+	}
+
+	@Test
+	void shouldReturnFalseOnIsNotEmptyForNewEmptyArray() {
+		assertThat(Bytes.isNotEmpty(new byte[] { }), equalTo(false));
+	}
+
+	@Test
+	void shouldReturnTrueOnIsNotEmptyForNonEmptyArray() {
+		byte[] a = generateByteArray(5);
+
+		assertThat(Bytes.isNotEmpty(a), equalTo(true));
+	}
+
+	@Test
+	void shouldReturnEmptyArrayWhenFromHexIsCalledWithEmptyString() {
+		byte[] result = Bytes.fromHex("");
+
+		assertThat(result, equalTo(Bytes.EMPTY));
+	}
+
+	@Test
+	void shouldReturnEmptyArrayWhenFromHexIsCalledWithWhitespaceString() {
+		byte[] result = Bytes.fromHex("    \n\t  ");
+
+		assertThat(result, equalTo(Bytes.EMPTY));
+	}
+
+	@Test
+	void shouldThrowExceptionWhenFromHexIsCalledWithNullString() {
+		NullPointerException e = assertThrows(NullPointerException.class, () -> Bytes.fromHex(null));
+
+		assertThat(e.getMessage(), equalTo("Hex string cannot be null"));
+	}
+
+	@Test
+	void shouldThrowExceptionWhenReverseIsCalledWithNullArray() {
+		NullPointerException e = assertThrows(NullPointerException.class, () -> Bytes.reverse(null));
+
+		assertThat(e.getMessage(), equalTo("Byte array cannot be null"));
+	}
+
+	@Test
+	void shouldReverseByteArray() {
+		byte[] input = new byte[] { 1, 2, 3, 4, 5 };
+		byte[] expected = new byte[] { 5, 4, 3, 2, 1 };
+
+		byte[] result = Bytes.reverse(input);
+
+		assertThat(result, equalTo(expected));
+	}
+
+	@Test
+	void shouldPadPKCS7() {
+		byte[] input = new byte[] { 1, 2, 3, 4, 5 };
+		byte padByte = 10;
+		int blockSize = 16;
+		byte[] expected =
+				new byte[] { 1, 2, 3, 4, 5, padByte, padByte, padByte, padByte, padByte, padByte, padByte, padByte, padByte, padByte, padByte };
+		byte[] result = Bytes.padPKCS7(input, blockSize);
+
+		assertThat(result, equalTo(expected));
+	}
+
 	public static byte[] generateByteArray(final int n) {
 		byte[] result = new byte[n];
 		for (int i = 0; i < n; i++) {

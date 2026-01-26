@@ -9,6 +9,7 @@
 - Added `apiphany-httpclient5` module which adds a library Apache HTTP client 5 for Apiphany.
 - Upgraded `morphix-all` to `1.0.20`.
 - Added `ApiResponse.getRequest` to return the `ApiRequest` that generated the `ApiResponse`.
+- Added `Require.that(boolean, Function, String, Object...)` which provides a function to build the exception. 
 - Added `Strings.fromCamelToSnakeCase` to transform a string from Camel case to Snake case.
 - Added `Strings.fromLowerCamelToSnakeCase` which is just an alias for `fromCamelToSnakeCase`.
 - Added `RequestParameters.from(Object, SimpleConverter)` to build request parameters from an object given the field name to parameter name converter.

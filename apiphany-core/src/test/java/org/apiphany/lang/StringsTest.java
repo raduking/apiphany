@@ -40,6 +40,7 @@ class StringsTest {
 
 	private static final String CAMEL_SOME_COOL_NAME = "someCoolName";
 	private static final String KEBAB_SOME_COOL_NAME = "some-cool-name";
+	private static final String SNAKE_SOME_COOL_NAME = "some_cool_name";
 
 	private static final String TEXT_FILE_CONTENT = """
 			This is line one
@@ -267,10 +268,24 @@ class StringsTest {
 	}
 
 	@Test
-	void shouldTransformCamelToKebabCaseWhenTheStringIsKebabCase() {
+	void shouldTransformCamelToSnakeCaseWhenTheStringIsKebabCase() {
 		String result = Strings.fromCamelToKebabCase(CAMEL_SOME_COOL_NAME);
 
 		assertThat(result, equalTo(KEBAB_SOME_COOL_NAME));
+	}
+
+	@Test
+	void shouldTransformLowerCamelToSnakeCaseWhenTheStringIsKebabCase() {
+		String result = Strings.fromLowerCamelToSnakeCase(CAMEL_SOME_COOL_NAME);
+
+		assertThat(result, equalTo(SNAKE_SOME_COOL_NAME));
+	}
+
+	@Test
+	void shouldTransformCamelToKebabCaseWhenTheStringIsKebabCase() {
+		String result = Strings.fromCamelToSnakeCase(CAMEL_SOME_COOL_NAME);
+
+		assertThat(result, equalTo(SNAKE_SOME_COOL_NAME));
 	}
 
 	@ParameterizedTest

@@ -25,24 +25,38 @@ class RequireTest {
 	}
 
 	@Test
-	void shouldThrowExceptionIfConditionIsFalseOnThatArgument() {
+	void shouldThrowExceptionIfConditionIsFalseOnThat() {
 		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> Require.that(false, "{}", 1));
 
 		assertThat(e.getMessage(), equalTo("1"));
 	}
 
 	@Test
-	void shouldNotThrowExceptionIfConditionIsTrueOnThatArgument() {
+	void shouldThrowExceptionIfConditionIsFalseOnThatWithSpecifiedException() {
+		IllegalStateException e = assertThrows(IllegalStateException.class, () -> Require.that(false, IllegalStateException::new, "{}", 1));
+
+		assertThat(e.getMessage(), equalTo("1"));
+	}
+
+	@Test
+	void shouldThrowExceptionIfConditionIsFalseOnThatWithSpecifiedExceptionAndNoFormatting() {
+		IllegalStateException e = assertThrows(IllegalStateException.class, () -> Require.that(false, IllegalStateException::new, "{}"));
+
+		assertThat(e.getMessage(), equalTo("{}"));
+	}
+
+	@Test
+	void shouldNotThrowExceptionIfConditionIsTrueOnThat() {
 		assertDoesNotThrow(() -> Require.that(true, "This should not throw"));
 	}
 
 	@Test
-	void shouldNotThrowExceptionIfConditionIsFalseOnThatNotArgument() {
+	void shouldNotThrowExceptionIfConditionIsFalseOnThatNot() {
 		assertDoesNotThrow(() -> Require.thatNot(false, "This should not throw"));
 	}
 
 	@Test
-	void shouldThrowExceptionIfConditionIsTrueOnThatNotArgument() {
+	void shouldThrowExceptionIfConditionIsTrueOnThatNot() {
 		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> Require.thatNot(true, "{}", 1));
 
 		assertThat(e.getMessage(), equalTo("1"));
@@ -50,7 +64,7 @@ class RequireTest {
 
 	@Test
 	void shouldReturnObjectIfConditionIsMet() {
-		String result = Require.that("test", obj -> obj.length() == 4, "Length must be 4 but was {}", "test".length());
+		String result = Require.thatObject("test", obj -> obj.length() == 4, "Length must be 4 but was {}", "test".length());
 
 		assertThat(result, equalTo("test"));
 	}
@@ -60,7 +74,7 @@ class RequireTest {
 		Predicate<String> condition = obj -> obj.length() != 4;
 		int length = "test".length();
 		IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
-				() -> Require.that("test", condition, "Length must not be 4 but was {}", length));
+				() -> Require.thatObject("test", condition, "Length must not be 4 but was {}", length));
 
 		assertThat(e.getMessage(), equalTo("Length must not be 4 but was 4"));
 	}

@@ -101,7 +101,7 @@ public final class Require {
 	 * @return the object if the condition is met
 	 * @see Messages#message(String, Object...)
 	 */
-	public static <T> T that(final T object, final Predicate<T> condition, final String message, final Object... args) {
+	public static <T> T thatObject(final T object, final Predicate<T> condition, final String message, final Object... args) {
 		Require.that(condition.test(Objects.requireNonNull(object, "object cannot be null")), message, args);
 		return object;
 	}
