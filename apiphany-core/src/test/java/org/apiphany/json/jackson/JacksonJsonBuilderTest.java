@@ -2,6 +2,7 @@ package org.apiphany.json.jackson;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -10,6 +11,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -211,6 +213,21 @@ class JacksonJsonBuilderTest {
 	}
 
 	@Test
+	void shouldCallOnErrorConsumerWhenBuildingFromPropertiesMapWithInvalidData() {
+		Map<String, Object> props = Map.of(
+				"elements", Map.of(
+						"customer-one", "invalid-data"));
+
+		final List<Throwable> errors = new ArrayList<>();
+
+		A result = jsonBuilder.fromPropertiesMap(props, A.class, errors::add);
+
+		assertThat(result, equalTo(null));
+		assertThat(errors.size(), equalTo(1));
+		assertThat(errors.get(0).getMessage(), startsWith("Cannot construct instance of `" + B.class.getName() + "`"));
+	}
+
+	@Test
 	void shouldBuildFromPropertiesMapByKeepingNonKebabStringKeysForMaps() {
 		Map<String, Object> props = Map.of(
 				"elements", Map.of(
@@ -223,6 +240,16 @@ class JacksonJsonBuilderTest {
 		assertThat(result.getElements().get(CUSTOMER_ONE).tenantId, equalTo(TENANT_ID1));
 		assertThat(result.getElements().get(CUSTOMER_TWO).customerId, equalTo(CUSTOMER_ID2));
 		assertThat(result.getElements().get(CUSTOMER_TWO).tenantId, equalTo(TENANT_ID2));
+	}
+
+	@Test
+	void shouldCallOnErrorWhenConvertingToPropertiesMapWithInvalidData() {
+		final List<Throwable> errors = new ArrayList<>();
+
+		Map<String, Object> result = jsonBuilder.toPropertiesMap("some properties", errors::add);
+
+		assertThat(result, equalTo(Collections.emptyMap()));
+		assertThat(errors.size(), equalTo(1));
 	}
 
 	@Test

@@ -14,6 +14,7 @@
 - Added `Strings.fromLowerCamelToSnakeCase` which is just an alias for `fromCamelToSnakeCase`.
 - Added `RequestParameters.from(Object, SimpleConverter)` to build request parameters from an object given the field name to parameter name converter.
 - Added `ApiClientFluentAdapter.params(Object, SimpleConverter)` to build request parameters from an object given the field name to parameter name converter.
+- Added `ApiClientFluentAdapter.param` to add a single request parameter.
 - Moved `Tests` test class to `apiphany-test` module.
 - Added `Assertions` class to `apiphany-test` module with utility JUnit style assertions.
 - Added `Assertions.assertDefaultConstructorThrows` method to assert that the default constructor throws useful for utility classes.
