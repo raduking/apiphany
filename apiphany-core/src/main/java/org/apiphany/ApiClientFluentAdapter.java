@@ -3,6 +3,7 @@ package org.apiphany;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -301,7 +302,10 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 */
 	public ApiClientFluentAdapter params(final Map<String, String> requestParams) {
 		Objects.requireNonNull(getUrl(), "Request parameters must be set after URL/URI");
-		this.params = Maps.safe(requestParams);
+		if (null == params) {
+			this.params = new HashMap<>();
+		}
+		this.params.putAll(Maps.safe(requestParams));
 		return this;
 	}
 
@@ -344,6 +348,20 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 */
 	public ApiClientFluentAdapter params(final Object queryParams, SimpleConverter<String, String> keyConverter) {
 		return params(RequestParameters.from(queryParams, keyConverter));
+	}
+
+	/**
+	 * Adds a request parameter.
+	 *
+	 * @param <N> parameter name type
+	 * @param <V> parameter value type
+	 *
+	 * @param name parameter name
+	 * @param value parameter value
+	 * @return this
+	 */
+	public <N, V> ApiClientFluentAdapter param(N name, V value) {
+		return params(Parameter.of(name, value));
 	}
 
 	/**
