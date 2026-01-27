@@ -32,13 +32,29 @@ import com.sun.net.httpserver.HttpServer;
  */
 public class KeyValueHttpServer implements AutoCloseable {
 
+	/**
+	 * Logger instance.
+	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(KeyValueHttpServer.class);
 
+	/**
+	 * API route for keys.
+	 */
 	public static final String ROUTE_API_KEYS = "/api/keys";
 
+	/**
+	 * Default key.
+	 */
 	public static final String DEFAULT_KEY = "Mumu";
+
+	/**
+	 * Default value.
+	 */
 	public static final String DEFAULT_VALUE = "Cucu";
 
+	/**
+	 * List of allowed HTTP methods.
+	 */
 	public static final List<HttpMethod> ALLOW = List.of(
 			HttpMethod.GET,
 			HttpMethod.PUT,
@@ -48,16 +64,41 @@ public class KeyValueHttpServer implements AutoCloseable {
 			HttpMethod.HEAD,
 			HttpMethod.OPTIONS);
 
+	/**
+	 * Comma-separated string of allowed HTTP methods for the Allow header.
+	 */
 	public static final String ALLOW_HEADER_VALUE = String.join(", ", ALLOW.stream().map(HttpMethod::toString).toList());
 
+	/**
+	 * Constant indicating no body in the response.
+	 */
 	private static final int NO_BODY = -1;
 
+	/**
+	 * The underlying HTTP server.
+	 */
 	private final HttpServer httpServer;
+
+	/**
+	 * Executor service for handling requests.
+	 */
 	private final ExecutorService executor;
+
+	/**
+	 * The port on which the server is running.
+	 */
 	private final int port;
 
+	/**
+	 * The in-memory key-value store.
+	 */
 	private final Map<String, String> map = new ConcurrentHashMap<>();
 
+	/**
+	 * Constructs and starts the key-value HTTP server on the specified port.
+	 *
+	 * @param port the port number
+	 */
 	public KeyValueHttpServer(final int port) {
 		this.executor = Executors.newVirtualThreadPerTaskExecutor();
 
@@ -73,16 +114,30 @@ public class KeyValueHttpServer implements AutoCloseable {
 		LOGGER.info("Server started on port: {}", port);
 	}
 
+	/**
+	 * Stops the server and releases resources.
+	 */
 	@Override
 	public void close() throws Exception {
 		httpServer.stop(0);
 		executor.close();
 	}
 
+	/**
+	 * Returns the port on which the server is running.
+	 *
+	 * @return the port number
+	 */
 	public int getPort() {
 		return port;
 	}
 
+	/**
+	 * Creates an HTTP server bound to the specified port.
+	 *
+	 * @param port the port number
+	 * @return the created HTTP server
+	 */
 	private static HttpServer createHttpServer(final int port) {
 		try {
 			return HttpServer.create(new InetSocketAddress(port), 0);
@@ -91,14 +146,33 @@ public class KeyValueHttpServer implements AutoCloseable {
 		}
 	}
 
+	/**
+	 * Handler for managing key-value pairs via HTTP methods.
+	 *
+	 * @author Radu Sebastian LAZIN
+	 */
 	static class KeysHandler implements HttpHandler {
 
+		/**
+		 * Reference to the parent server.
+		 */
 		private final KeyValueHttpServer server;
 
+		/**
+		 * Constructs a KeysHandler with a reference to the parent server.
+		 *
+		 * @param server the parent KeyValueHttpServer
+		 */
 		public KeysHandler(final KeyValueHttpServer server) {
 			this.server = server;
 		}
 
+		/**
+		 * Handles incoming HTTP requests and routes them to the appropriate method handler.
+		 *
+		 * @param exchange the HTTP exchange object
+		 * @throws IOException if an I/O error occurs
+		 */
 		@Override
 		public void handle(final HttpExchange exchange) throws IOException {
 			HttpMethod method;
@@ -121,6 +195,12 @@ public class KeyValueHttpServer implements AutoCloseable {
 			}
 		}
 
+		/**
+		 * Handles GET requests to retrieve values by key or all key-value pairs.
+		 *
+		 * @param exchange the HTTP exchange object
+		 * @throws IOException if an I/O error occurs
+		 */
 		private void handleGet(final HttpExchange exchange) throws IOException {
 			String key = getKeyFromPath(exchange);
 			if (null == key) {
@@ -135,6 +215,12 @@ public class KeyValueHttpServer implements AutoCloseable {
 			}
 		}
 
+		/**
+		 * Handles PUT requests to add or update a key-value pair.
+		 *
+		 * @param exchange the HTTP exchange object
+		 * @throws IOException if an I/O error occurs
+		 */
 		private void handlePut(final HttpExchange exchange) throws IOException {
 			String key = getKeyFromPath(exchange);
 			@SuppressWarnings("resource")
@@ -143,6 +229,12 @@ public class KeyValueHttpServer implements AutoCloseable {
 			sendResponse(exchange, HttpStatus.OK, body);
 		}
 
+		/**
+		 * Handles POST requests to add a new key-value pair.
+		 *
+		 * @param exchange the HTTP exchange object
+		 * @throws IOException if an I/O error occurs
+		 */
 		private void handlePost(final HttpExchange exchange) throws IOException {
 			@SuppressWarnings("resource")
 			String body = Strings.toString(exchange.getRequestBody(), StandardCharsets.UTF_8);
@@ -151,12 +243,24 @@ public class KeyValueHttpServer implements AutoCloseable {
 			sendResponse(exchange, HttpStatus.OK, pair[1]);
 		}
 
+		/**
+		 * Handles DELETE requests to remove a key-value pair by key.
+		 *
+		 * @param exchange the HTTP exchange object
+		 * @throws IOException if an I/O error occurs
+		 */
 		private void handleDelete(final HttpExchange exchange) throws IOException {
 			String key = getKeyFromPath(exchange);
 			String value = server.map.remove(key);
 			sendResponse(exchange, HttpStatus.OK, value);
 		}
 
+		/**
+		 * Handles PATCH requests to append data to an existing value by key.
+		 *
+		 * @param exchange the HTTP exchange object
+		 * @throws IOException if an I/O error occurs
+		 */
 		private void handlePatch(final HttpExchange exchange) throws IOException {
 			String key = getKeyFromPath(exchange);
 			@SuppressWarnings("resource")
@@ -167,6 +271,12 @@ public class KeyValueHttpServer implements AutoCloseable {
 			sendResponse(exchange, HttpStatus.OK, newValue);
 		}
 
+		/**
+		 * Handles HEAD requests to retrieve metadata about a value by key.
+		 *
+		 * @param exchange the HTTP exchange object
+		 * @throws IOException if an I/O error occurs
+		 */
 		private void handleHead(final HttpExchange exchange) throws IOException {
 			String key = getKeyFromPath(exchange);
 			if (server.map.containsKey(key)) {
@@ -181,6 +291,12 @@ public class KeyValueHttpServer implements AutoCloseable {
 			}
 		}
 
+		/**
+		 * Handles OPTIONS requests to provide allowed HTTP methods and CORS headers.
+		 *
+		 * @param exchange the HTTP exchange object
+		 * @throws IOException if an I/O error occurs
+		 */
 		private static void handleOptions(final HttpExchange exchange) throws IOException {
 			// set CORS headers to allow requests from any origin and the methods the server supports
 			exchange.getResponseHeaders().set(HttpHeader.ALLOW.value(), ALLOW_HEADER_VALUE);
@@ -191,6 +307,12 @@ public class KeyValueHttpServer implements AutoCloseable {
 			exchange.sendResponseHeaders(HttpStatus.OK.value(), NO_BODY);
 		}
 
+		/**
+		 * Handles TRACE requests to echo back the received request.
+		 *
+		 * @param exchange the HTTP exchange object
+		 * @throws IOException if an I/O error occurs
+		 */
 		private static void handleTrace(final HttpExchange exchange) throws IOException {
 			// reconstruct the request to echo back
 			StringBuilder requestBuilder = new StringBuilder();
@@ -210,6 +332,15 @@ public class KeyValueHttpServer implements AutoCloseable {
 			sendResponse(exchange, HttpStatus.OK, responseBody);
 		}
 
+		/**
+		 * Sends a response with the specified status and body.
+		 *
+		 * @param <T> the type of the response body
+		 * @param exchange the HTTP exchange object
+		 * @param status the HTTP status to send
+		 * @param response the response body
+		 * @throws IOException if an I/O error occurs
+		 */
 		private static <T> void sendResponse(final HttpExchange exchange, final HttpStatus status, final T response) throws IOException {
 			String responseString = Strings.safeToString(response);
 			exchange.sendResponseHeaders(status.getCode(), responseString.length());
@@ -218,6 +349,12 @@ public class KeyValueHttpServer implements AutoCloseable {
 			}
 		}
 
+		/**
+		 * Extracts the key from the request path.
+		 *
+		 * @param exchange the HTTP exchange object
+		 * @return the extracted key, or null if no key is specified
+		 */
 		private static String getKeyFromPath(final HttpExchange exchange) {
 			String fullPath = exchange.getRequestURI().getPath();
 			if (ROUTE_API_KEYS.equals(fullPath)) {

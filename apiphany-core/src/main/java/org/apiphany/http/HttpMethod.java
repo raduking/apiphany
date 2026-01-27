@@ -1,6 +1,7 @@
 package org.apiphany.http;
 
 import java.util.Map;
+import java.util.Objects;
 
 import org.apiphany.RequestMethod;
 import org.morphix.lang.Enums;
@@ -92,7 +93,7 @@ public enum HttpMethod implements RequestMethod {
 	 * @param value string value
 	 */
 	HttpMethod(final String value) {
-		this.value = value;
+		this.value = value.toUpperCase();
 	}
 
 	/**
@@ -120,7 +121,7 @@ public enum HttpMethod implements RequestMethod {
 	 * @return an HTTP method enum
 	 */
 	public static HttpMethod fromString(final String method) {
-		return Enums.fromString(method, NAME_MAP, values());
+		return Enums.fromString(Objects.requireNonNull(method, "method cannot be null").toUpperCase(), NAME_MAP, values());
 	}
 
 	/**
