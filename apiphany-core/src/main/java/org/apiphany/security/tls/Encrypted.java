@@ -3,6 +3,7 @@ package org.apiphany.security.tls;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.Objects;
 
 import org.apiphany.io.BytesWrapper;
 
@@ -81,6 +82,33 @@ public class Encrypted implements TLSObject {
 	@Override
 	public int sizeOf() {
 		return data.sizeOf();
+	}
+
+	/**
+	 * Compares this Encrypted object to another for equality.
+	 *
+	 * @param obj the other object to compare
+	 * @return true if both Encrypted objects have the same data, false otherwise
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof Encrypted that) {
+			return Objects.equals(this.data, that.data);
+		}
+		return false;
+	}
+
+	/**
+	 * Returns the hash code for this Encrypted object.
+	 *
+	 * @return hash code based on the encrypted data
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hash(data);
 	}
 
 	/**

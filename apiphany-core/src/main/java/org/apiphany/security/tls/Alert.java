@@ -3,6 +3,7 @@ package org.apiphany.security.tls;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.Objects;
 
 import org.apiphany.io.UInt8;
 
@@ -94,6 +95,34 @@ public class Alert implements TLSObject {
 	}
 
 	/**
+	 * Compares this Alert to another object for equality.
+	 *
+	 * @param obj the object to compare with
+	 * @return true if both are Alerts with the same level and description, false otherwise
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof Alert that) {
+			return Objects.equals(this.level, that.level)
+					&& Objects.equals(this.description, that.description);
+		}
+		return false;
+	}
+
+	/**
+	 * Returns the hash code for this Alert.
+	 *
+	 * @return hash code based on level and description
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hash(level, description);
+	}
+
+	/**
 	 * Returns the alert level.
 	 *
 	 * @return the AlertLevel enum value
@@ -103,11 +132,20 @@ public class Alert implements TLSObject {
 	}
 
 	/**
+	 * Returns the alert description.
+	 *
+	 * @return the AlertDescription enum value
+	 */
+	public AlertDescription getDescription() {
+		return description;
+	}
+
+	/**
 	 * Returns the alert description as a string.
 	 *
 	 * @return string representation of the alert description
 	 */
-	public String getDescription() {
+	public String getDisplayDescription() {
 		return description.toString();
 	}
 }

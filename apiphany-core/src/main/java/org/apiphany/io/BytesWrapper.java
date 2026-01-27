@@ -188,12 +188,12 @@ public class BytesWrapper implements ByteSizeable, BinaryRepresentable {
 	 * @see Object#equals(Object)
 	 */
 	@Override
-	public boolean equals(final Object that) {
-		if (this == that) {
+	public boolean equals(final Object obj) {
+		if (this == obj) {
 			return true;
 		}
-		if (that instanceof BytesWrapper bytesWrapper) {
-			return Arrays.equals(bytes, bytesWrapper.bytes);
+		if (obj instanceof BytesWrapper that) {
+			return Arrays.equals(this.bytes, that.bytes);
 		}
 		return false;
 	}

@@ -1,5 +1,7 @@
 package org.apiphany.security.tls;
 
+import java.util.Objects;
+
 /**
  * Base abstract class for all objects that contain an {@link Encrypted} object in TLS protocol communication.
  *
@@ -49,6 +51,33 @@ public abstract class TLSEncryptedObject implements TLSObject {
 	@Override
 	public int sizeOf() {
 		return encrypted.sizeOf();
+	}
+
+	/**
+	 * Checks equality based on the encrypted payload.
+	 *
+	 * @param obj the object to compare with
+	 * @return {@code true} if equal, {@code false} otherwise
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof TLSEncryptedObject that) {
+			return Objects.equals(this.encrypted, that.encrypted);
+		}
+		return false;
+	}
+
+	/**
+	 * Returns the hash code based on the encrypted payload.
+	 *
+	 * @return hash code of the encrypted data
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hash(encrypted);
 	}
 
 	/**

@@ -2,6 +2,7 @@ package org.apiphany.security.tls;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Objects;
 
 import org.apiphany.io.UInt16;
 import org.apiphany.lang.annotation.AsValue;
@@ -92,6 +93,33 @@ public class Version implements TLSObject {
 	@Override
 	public int sizeOf() {
 		return BYTES;
+	}
+
+	/**
+	 * Compares this Version to another object for equality.
+	 *
+	 * @param obj the object to compare with
+	 * @return {@code true} if the other object is a Version with the same protocol, {@code false} otherwise
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof Version that) {
+			return Objects.equals(this.protocol, that.protocol);
+		}
+		return false;
+	}
+
+	/**
+	 * Returns the hash code for this Version.
+	 *
+	 * @return the hash code based on the protocol
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hash(protocol);
 	}
 
 	/**

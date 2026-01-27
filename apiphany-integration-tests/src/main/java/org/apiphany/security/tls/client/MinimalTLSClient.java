@@ -175,7 +175,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		LOGGER.debug("Received TLS Record {}:{}", String.join(",", tlsRecord.getFragmentNames()), tlsRecord);
 		if (tlsRecord.getHeader().getType() == RecordContentType.ALERT) {
 			Alert alert = tlsRecord.getFragment(Alert.class);
-			LOGGER.error("Received alert: level={}, description={}", alert.getLevel(), alert.getDescription());
+			LOGGER.error("Received alert: level={}, description={}", alert.getLevel(), alert.getDisplayDescription());
 		}
 		return tlsRecord;
 	}

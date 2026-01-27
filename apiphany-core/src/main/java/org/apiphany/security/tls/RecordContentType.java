@@ -1,5 +1,7 @@
 package org.apiphany.security.tls;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 
 import org.apiphany.io.UInt8;
@@ -110,6 +112,18 @@ public enum RecordContentType implements TLSObject {
 			case EncryptedAlert encryptedAlert -> ALERT;
 			default -> throw new UnsupportedOperationException("Unknown TLS object type: " + tlsObject.getClass());
 		};
+	}
+
+	/**
+	 * Parses a RecordContentType from an input stream.
+	 *
+	 * @param is the input stream containing the content type byte
+	 * @return the parsed RecordContentType
+	 * @throws IOException if an I/O error occurs
+	 */
+	public static RecordContentType from(final InputStream is) throws IOException {
+		UInt8 contentTypeByte = UInt8.from(is);
+		return fromValue(contentTypeByte.getValue());
 	}
 
 	/**
