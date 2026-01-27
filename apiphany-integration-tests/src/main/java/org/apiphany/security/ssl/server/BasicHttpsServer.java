@@ -28,15 +28,44 @@ import com.sun.net.httpserver.HttpsServer;
  */
 public class BasicHttpsServer implements AutoCloseable {
 
+	/**
+	 * Logger instance.
+	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(BasicHttpsServer.class);
 
+	/**
+	 * API route for name endpoint.
+	 */
 	public static final String ROUTE_API_NAME = "/api/name";
 
+	/**
+	 * Underlying HTTPS server.
+	 */
 	private final HttpsServer httpsServer;
+
+	/**
+	 * Executor service for handling requests.
+	 */
 	private final ExecutorService executor;
+
+	/**
+	 * Port on which the server is running.
+	 */
 	private final int port;
+
+	/**
+	 * SSL context for the server.
+	 */
 	private final SSLContextAdapter sslContext;
 
+	/**
+	 * Constructor to create and start the HTTPS server on the specified port with the given SSL properties and secure
+	 * random.
+	 *
+	 * @param port the port number on which the server will listen
+	 * @param sslProperties the SSL properties for configuring the SSL context
+	 * @param secureRandom the secure random instance for SSL context
+	 */
 	public BasicHttpsServer(final int port, final SSLProperties sslProperties, final SecureRandom secureRandom) {
 		this.executor = Executors.newVirtualThreadPerTaskExecutor();
 
@@ -53,20 +82,41 @@ public class BasicHttpsServer implements AutoCloseable {
 		LOGGER.info("Server started on port: {}", port);
 	}
 
+	/**
+	 * Constructor to create and start the HTTPS server on the specified port with the given SSL properties.
+	 *
+	 * @param port the port number on which the server will listen
+	 * @param sslProperties the SSL properties for configuring the SSL context
+	 */
 	public BasicHttpsServer(final int port, final SSLProperties sslProperties) {
 		this(port, sslProperties, new SecureRandom());
 	}
 
+	/**
+	 * @see AutoCloseable#close()
+	 */
 	@Override
 	public void close() throws Exception {
 		httpsServer.stop(0);
 		executor.close();
 	}
 
+	/**
+	 * Gets the SSL context used by the server.
+	 *
+	 * @return the SSL context
+	 */
 	public int getPort() {
 		return port;
 	}
 
+	/**
+	 * Creates an HTTPS server on the specified port with the given SSL context.
+	 *
+	 * @param port the port number
+	 * @param sslContext the SSL context
+	 * @return the created HTTPS server
+	 */
 	private static HttpsServer createHttpsServer(final int port, final SSLContext sslContext) {
 		try {
 			HttpsServer httpsServer = HttpsServer.create(new InetSocketAddress(port), 0);
@@ -83,6 +133,11 @@ public class BasicHttpsServer implements AutoCloseable {
 		}
 	}
 
+	/**
+	 * Logs the HTTPS parameters.
+	 *
+	 * @param params the HTTPS parameters
+	 */
 	public static void log(final HttpsParameters params) {
 		try {
 			LOGGER.debug("HTTPS parameters: {}", JsonBuilder.toJson(params));
