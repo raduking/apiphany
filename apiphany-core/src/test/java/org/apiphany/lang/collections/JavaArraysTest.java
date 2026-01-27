@@ -33,6 +33,22 @@ class JavaArraysTest {
 	}
 
 	@Test
+	void shouldReturnNullWhenEmptyArrayProvided() {
+		Integer[] input = new Integer[] { };
+		Integer[] result = JavaArrays.nullIfEmpty(input);
+
+		assertThat(result, equalTo(null));
+	}
+
+	@Test
+	void shouldReturnSameArrayWhenNonEmptyArrayProvided() {
+		Integer[] input = new Integer[] { 1, 2, 3 };
+		Integer[] result = JavaArrays.nullIfEmpty(input);
+
+		assertThat(result, equalTo(input));
+	}
+
+	@Test
 	void shouldConvertNullInputToNullArray() {
 		Object[] result = JavaArrays.toArray(null);
 

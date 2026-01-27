@@ -17,6 +17,7 @@ import javax.net.ssl.TrustManagerFactory;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.JavaArrays;
 import org.morphix.lang.Nullables;
+import org.morphix.reflection.Constructors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,9 +64,7 @@ public final class SSLContexts {
 			final SecureRandom random) throws GeneralSecurityException {
 		Objects.requireNonNull(keyManagers, "keyManagers array cannot be null");
 		Objects.requireNonNull(keyManagers, "trustManagers array cannot be null");
-		KeyManager[] actualKeyManagers = keyManagers.length == 0 ? null : keyManagers;
-		TrustManager[] actualTrustManagers = trustManagers.length == 0 ? null : trustManagers;
-		sslContext.init(actualKeyManagers, actualTrustManagers, random);
+		sslContext.init(JavaArrays.nullIfEmpty(keyManagers), JavaArrays.nullIfEmpty(trustManagers), random);
 	}
 
 	/**
@@ -219,6 +218,6 @@ public final class SSLContexts {
 	 * Private constructor.
 	 */
 	private SSLContexts() {
-		// empty
+		throw Constructors.unsupportedOperationException();
 	}
 }
