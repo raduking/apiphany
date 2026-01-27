@@ -1,10 +1,8 @@
 package org.apiphany.security.keys;
 
 import java.math.BigInteger;
-import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.interfaces.XECPrivateKey;
@@ -12,8 +10,6 @@ import java.security.interfaces.XECPublicKey;
 import java.security.spec.NamedParameterSpec;
 import java.security.spec.XECPublicKeySpec;
 import java.util.Arrays;
-
-import javax.crypto.KeyAgreement;
 
 import org.apiphany.io.BytesOrder;
 import org.apiphany.lang.Bytes;
@@ -129,14 +125,7 @@ public class X25519Keys implements KeyExchangeHandler {
 	@Override
 	public byte[] getSharedSecret(final PrivateKey privateKey, final PublicKey publicKey) {
 		// X25519 is only used with ECDHE
-		try {
-			KeyAgreement ka = KeyAgreement.getInstance(ALGORITHM);
-			ka.init(privateKey);
-			ka.doPhase(publicKey, true);
-			return ka.generateSecret();
-		} catch (NoSuchAlgorithmException | InvalidKeyException e) {
-			throw new SecurityException("Error generating shared secret", e);
-		}
+		return Keys.generateSecret(ALGORITHM, publicKey, privateKey);
 	}
 
 	/**
@@ -171,7 +160,8 @@ public class X25519Keys implements KeyExchangeHandler {
 			if (bigEndian.length == PUBLIC_KEY_SIZE + 1 && bigEndian[0] == 0x00) {
 				System.arraycopy(bigEndian, 1, beNormalized, 0, PUBLIC_KEY_SIZE);
 			} else {
-				throw new IllegalArgumentException("BigInteger too large: " + bigEndian.length);
+				throw new SecurityException("Error converting public key to big-endian byte array,"
+						+ " bigInteger too large: " + bigEndian.length);
 			}
 		} else {
 			System.arraycopy(bigEndian, 0, beNormalized, PUBLIC_KEY_SIZE - bigEndian.length, bigEndian.length);

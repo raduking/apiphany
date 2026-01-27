@@ -5,7 +5,11 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 
+import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.PublicKey;
 import java.security.interfaces.XECPrivateKey;
@@ -137,7 +141,7 @@ class X25519KeysTest {
 	}
 
 	@Test
-	void shouldCorrectlyConvertToBigEndianByteArrayInternally() {
+	void shouldCorrectlyConvertPublicKeyToBigEndianByteArrayInternally() {
 		KeyPair keyPair = X25519Keys.INSTANCE.generateKeyPair();
 
 		byte[] bytes = X25519Keys.INSTANCE.toByteArrayBigEndian(keyPair.getPublic());
@@ -147,7 +151,59 @@ class X25519KeysTest {
 	}
 
 	@Test
-	void shouldCorrectlyConvertToLittleEndianByteArrayInternally() {
+	void shouldCorrectlyConvertPublicKeyToBigEndianByteArrayWhenByteArrayIsSigned() {
+		byte[] bigEndianBytes = new byte[33];
+		bigEndianBytes[0] = 0x00;
+		bigEndianBytes[1] = (byte) 0x80; // binary: 10000000 (bit 7 = 1)
+		bigEndianBytes[32] = 0x02;
+
+		BigInteger u = new BigInteger(bigEndianBytes);
+
+		XECPublicKey publicKey = mock(XECPublicKey.class);
+		doReturn(u).when(publicKey).getU();
+
+		byte[] bytes = X25519Keys.INSTANCE.toByteArrayBigEndian(publicKey);
+
+		assertThat(bytes, is(notNullValue()));
+		assertThat(bytes.length, is(32));
+	}
+
+	@Test
+	void shouldThrowExceptionWhenConvertingPublicKeyToBigEndianByteArrayWhenByteArrayIsSignedAndFirstByteIsNotZero() {
+		byte[] bigEndianBytes = new byte[33];
+		bigEndianBytes[0] = 0x01;
+		bigEndianBytes[1] = (byte) 0x80; // binary: 10000000 (bit 7 = 1)
+		bigEndianBytes[32] = 0x02;
+
+		BigInteger u = new BigInteger(bigEndianBytes);
+
+		XECPublicKey publicKey = mock(XECPublicKey.class);
+		doReturn(u).when(publicKey).getU();
+
+		SecurityException e = assertThrows(SecurityException.class, () -> X25519Keys.INSTANCE.toByteArrayBigEndian(publicKey));
+
+		assertThat(e.getMessage(), is("Error converting public key to big-endian byte array, bigInteger too large: " + bigEndianBytes.length));
+	}
+
+	@Test
+	void shouldThrowExceptionWhenConvertingPublicKeyToBigEndianByteArrayWhenByteArrayIsSignedAndIsTooBig() {
+		byte[] bigEndianBytes = new byte[34];
+		bigEndianBytes[0] = 0x00;
+		bigEndianBytes[1] = (byte) 0x80; // binary: 10000000 (bit 7 = 1)
+		bigEndianBytes[33] = 0x02;
+
+		BigInteger u = new BigInteger(bigEndianBytes);
+
+		XECPublicKey publicKey = mock(XECPublicKey.class);
+		doReturn(u).when(publicKey).getU();
+
+		SecurityException e = assertThrows(SecurityException.class, () -> X25519Keys.INSTANCE.toByteArrayBigEndian(publicKey));
+
+		assertThat(e.getMessage(), is("Error converting public key to big-endian byte array, bigInteger too large: " + bigEndianBytes.length));
+	}
+
+	@Test
+	void shouldCorrectlyConvertPublicKeyToLittleEndianByteArrayInternally() {
 		KeyPair keyPair = X25519Keys.INSTANCE.generateKeyPair();
 
 		byte[] bytes = X25519Keys.INSTANCE.toByteArrayLittleEndian(keyPair.getPublic());
@@ -177,7 +233,7 @@ class X25519KeysTest {
 	}
 
 	@Test
-	void shouldCorrectlyConvertPrivateToLittleEndianByteArrayInternally() {
+	void shouldCorrectlyConvertPrivateKeyToLittleEndianByteArrayInternally() {
 		KeyPair keyPair = X25519Keys.INSTANCE.generateKeyPair();
 
 		byte[] bytes = X25519Keys.INSTANCE.toByteArrayLittleEndian(keyPair.getPrivate());
@@ -187,7 +243,7 @@ class X25519KeysTest {
 	}
 
 	@Test
-	void shouldCorrectlyConvertPrivateToBigEndianByteArrayInternally() {
+	void shouldCorrectlyConvertPrivateKeyToBigEndianByteArrayInternally() {
 		KeyPair keyPair = X25519Keys.INSTANCE.generateKeyPair();
 
 		byte[] bytes = X25519Keys.INSTANCE.toByteArrayBigEndian(keyPair.getPrivate());

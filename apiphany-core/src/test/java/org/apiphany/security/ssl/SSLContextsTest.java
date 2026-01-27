@@ -7,6 +7,10 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.UnrecoverableKeyException;
@@ -15,9 +19,11 @@ import javax.net.ssl.SSLContext;
 
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
+import org.apiphany.test.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.morphix.reflection.Constructors;
 
 /**
  * Test class for {@link SSLContexts}.
@@ -93,6 +99,39 @@ class SSLContextsTest {
 	}
 
 	@Test
+	void shouldLoadKeyStoreWithAbsolutePathSuccessfully() throws KeyStoreException, URISyntaxException {
+		URL fileUrl = getClass().getClassLoader().getResource(KEYSTORE_PATH);
+		Path path = Paths.get(fileUrl.toURI());
+		Path absolutePath = path.toAbsolutePath();
+
+		char[] correctPassword = "keystorepassword123".toCharArray();
+
+		KeyStore keyStore = SSLContexts.keyStore(absolutePath.toString(), KEYSTORE_TYPE, correctPassword, true);
+
+		assertThat(keyStore.size(), equalTo(1));
+	}
+
+	@Test
+	void shouldThrowSecurityExceptionIfKeyStoreFileNotFound() {
+		String invalidPath = "invalid/path/to/keystore.jks";
+
+		SecurityException exception =
+				assertThrows(SecurityException.class, () -> SSLContexts.keyStore(invalidPath, KEYSTORE_TYPE, null, false));
+
+		assertThat(exception.getMessage(), equalTo("Error loading key store: " + invalidPath));
+	}
+
+	@Test
+	void shouldThrowSecurityExceptionIfKeyStoreFileNotFoundFromExternalLocation() {
+		String invalidPath = "/invalid/absolute/path/to/keystore.jks";
+
+		SecurityException exception =
+				assertThrows(SecurityException.class, () -> SSLContexts.keyStore(invalidPath, KEYSTORE_TYPE, null, true));
+
+		assertThat(exception.getMessage(), equalTo("Error loading key store: " + invalidPath));
+	}
+
+	@Test
 	void shouldLoadKeyWithNullPasswordIfAllowed() throws KeyStoreException {
 		KeyStore keyStore = SSLContexts.keyStore(KEYSTORE_PATH, KEYSTORE_TYPE, null, false);
 
@@ -125,5 +164,12 @@ class SSLContextsTest {
 		KeyStore keyStore = SSLContexts.keyStore("", KEYSTORE_TYPE, null, false);
 
 		assertNull(keyStore);
+	}
+
+	@Test
+	void shouldThrowExceptionWhenTryingToInstantiateClass() {
+		UnsupportedOperationException exception = Assertions.assertDefaultConstructorThrows(SSLContexts.class);
+
+		assertThat(exception.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
 	}
 }

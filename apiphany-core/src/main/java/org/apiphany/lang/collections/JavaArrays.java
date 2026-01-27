@@ -26,6 +26,18 @@ public interface JavaArrays {
 	}
 
 	/**
+	 * Returns {@code null} if the given array is empty, the array itself otherwise.
+	 *
+	 * @param <T> the component type of the array
+	 *
+	 * @param array the provided array
+	 * @return {@code null} if the given array is empty, the array itself otherwise
+	 */
+	static <T> T[] nullIfEmpty(final T[] array) {
+		return (array != null && array.length == 0) ? null : array;
+	}
+
+	/**
 	 * Converts the given value into an Object array. This method is useful for handling various input types uniformly as
 	 * arrays in scenarios such as processing method arguments, handling collections, or dealing with variable-length
 	 * inputs, it simplifies the handling of different input types by providing a consistent array representation.
