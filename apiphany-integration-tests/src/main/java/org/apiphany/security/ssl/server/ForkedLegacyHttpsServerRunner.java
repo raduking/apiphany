@@ -23,11 +23,26 @@ import org.slf4j.LoggerFactory;
  */
 public class ForkedLegacyHttpsServerRunner {
 
+	/**
+	 * Logger instance.
+	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(ForkedLegacyHttpsServerRunner.class);
 
+	/**
+	 * Error code for usage errors.
+	 */
 	public static final int ERROR_USAGE = 1;
+
+	/**
+	 * Error code for execution errors.
+	 */
 	public static final int ERROR_EXECUTION = 666;
 
+	/**
+	 * Main method to start the server.
+	 *
+	 * @param args command line arguments: {@code <port> <sslPropertiesJsonPath>}
+	 */
 	public static void main(final String[] args) {
 		if (args.length != 2) {
 			LOGGER.error("Usage: ForkedServerRunner <port> <sslPropertiesJsonPath>");
@@ -49,6 +64,19 @@ public class ForkedLegacyHttpsServerRunner {
 		}
 	}
 
+	/**
+	 * Run statements on a forked legacy HTTPS server.
+	 *
+	 * @param <T> the type of the result
+	 *
+	 * @param sslPropertiesJsonFile the SSL properties JSON file
+	 * @param host the host
+	 * @param socketTimeout the socket timeout
+	 * @param sslDebugInfo whether to enable SSL debug info
+	 * @param statements the statements to execute
+	 * @return the result of the statements
+	 * @throws Exception if an error occurs
+	 */
 	public static <T> T on(final String sslPropertiesJsonFile, final String host, final Duration socketTimeout, final boolean sslDebugInfo,
 			final ThrowingBiFunction<String, Integer, T> statements) throws Exception {
 		int port = Sockets.findAvailableTcpPort();
@@ -63,6 +91,17 @@ public class ForkedLegacyHttpsServerRunner {
 		}
 	}
 
+	/**
+	 * Starts a forked legacy HTTPS server.
+	 *
+	 * @param sslPropertiesJsonFile the SSL properties JSON file
+	 * @param host the host
+	 * @param port the port
+	 * @param socketTimeout the socket timeout
+	 * @param sslDebugInfo whether to enable SSL debug info
+	 * @return a pair containing the server process and the logging thread
+	 * @throws Exception if an error occurs
+	 */
 	public static Pair<Process, Thread> start(final String sslPropertiesJsonFile, final String host, final int port, final Duration socketTimeout,
 			final boolean sslDebugInfo) throws Exception {
 		List<String> cmd = new ArrayList<>();
@@ -104,6 +143,13 @@ public class ForkedLegacyHttpsServerRunner {
 		return Pair.of(serverProcess, loggingThread);
 	}
 
+	/**
+	 * Stops the forked legacy HTTPS server.
+	 *
+	 * @param serverProcess the server process
+	 * @param loggingThread the logging thread
+	 * @throws Exception if an error occurs
+	 */
 	public static void stop(final Process serverProcess, final Thread loggingThread) throws Exception {
 		if (null != serverProcess) {
 			serverProcess.destroy();
@@ -113,6 +159,12 @@ public class ForkedLegacyHttpsServerRunner {
 		}
 	}
 
+	/**
+	 * Stops the forked legacy HTTPS server.
+	 *
+	 * @param serverInfo a pair containing the server process and the logging thread
+	 * @throws Exception if an error occurs
+	 */
 	public static void stop(final Pair<Process, Thread> serverInfo) throws Exception {
 		stop(serverInfo.left(), serverInfo.right());
 	}
