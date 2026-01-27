@@ -1,6 +1,9 @@
 package org.apiphany.security.tls;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.Objects;
 
 import org.apiphany.io.UInt16;
 import org.apiphany.io.UInt64;
@@ -62,7 +65,7 @@ public class AdditionalAuthenticatedData implements TLSObject {
 	 */
 	public AdditionalAuthenticatedData(final long sequenceNumber, final RecordContentType type,
 			final SSLProtocol protocol, final short length) {
-		this(UInt64.of(sequenceNumber), type, new Version(protocol), UInt16.of(length));
+		this(UInt64.of(sequenceNumber), type, Version.of(protocol), UInt16.of(length));
 	}
 
 	/**
@@ -78,6 +81,22 @@ public class AdditionalAuthenticatedData implements TLSObject {
 		buffer.put(protocolVersion.toByteArray());
 		buffer.put(length.toByteArray());
 		return buffer.array();
+	}
+
+	/**
+	 * Parses AAD from an input stream.
+	 *
+	 * @param is the input stream containing AAD data
+	 * @return the parsed AdditionalAuthenticatedData object
+	 * @throws IOException if an I/O error occurs
+	 */
+	public static AdditionalAuthenticatedData from(final InputStream is) throws IOException {
+		UInt64 sequenceNumber = UInt64.from(is);
+		RecordContentType type = RecordContentType.from(is);
+		Version protocolVersion = Version.from(is);
+		UInt16 length = UInt16.from(is);
+
+		return new AdditionalAuthenticatedData(sequenceNumber, type, protocolVersion, length);
 	}
 
 	/**
@@ -101,6 +120,36 @@ public class AdditionalAuthenticatedData implements TLSObject {
 				+ type.sizeOf()
 				+ protocolVersion.sizeOf()
 				+ length.sizeOf();
+	}
+
+	/**
+	 * Compares this AAD with another object for equality.
+	 *
+	 * @param obj the object to compare with
+	 * @return true if equal, false otherwise
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof AdditionalAuthenticatedData that) {
+			return Objects.equals(this.sequenceNumber, that.sequenceNumber)
+					&& Objects.equals(this.type, that.type)
+					&& Objects.equals(this.protocolVersion, that.protocolVersion)
+					&& Objects.equals(this.length, that.length);
+		}
+		return false;
+	}
+
+	/**
+	 * Returns the hash code for this AAD.
+	 *
+	 * @return hash code based on all fields
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hash(sequenceNumber, type, protocolVersion, length);
 	}
 
 	/**

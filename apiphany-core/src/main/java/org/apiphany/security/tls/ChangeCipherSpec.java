@@ -3,6 +3,7 @@ package org.apiphany.security.tls;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.Objects;
 
 import org.apiphany.io.UInt8;
 
@@ -89,6 +90,33 @@ public class ChangeCipherSpec implements TLSObject {
 	@Override
 	public String toString() {
 		return TLSObject.serialize(this);
+	}
+
+	/**
+	 * Checks equality based on the payload.
+	 *
+	 * @param obj the object to compare with
+	 * @return {@code true} if equal, {@code false} otherwise
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof ChangeCipherSpec that) {
+			return Objects.equals(this.payload, that.payload);
+		}
+		return false;
+	}
+
+	/**
+	 * Returns the hash code based on the payload.
+	 *
+	 * @return hash code of the payload
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hash(payload);
 	}
 
 	/**

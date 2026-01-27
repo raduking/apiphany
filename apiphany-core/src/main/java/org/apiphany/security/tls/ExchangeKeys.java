@@ -120,9 +120,6 @@ public class ExchangeKeys {
 			case NO_ENCRYPTION -> {
 				// no keys or IVs at all
 			}
-			default -> {
-				// empty
-			}
 		}
 		return exchangeKeys;
 	}
@@ -139,7 +136,11 @@ public class ExchangeKeys {
 			return new byte[0];
 		}
 		byte[] b = new byte[len];
-		buf.get(b);
+		try {
+			buf.get(b);
+		} catch (Exception e) {
+			throw new IllegalArgumentException("Insufficient data in key block to read " + len + " bytes", e);
+		}
 		return b;
 	}
 

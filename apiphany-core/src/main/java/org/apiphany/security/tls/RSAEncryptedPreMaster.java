@@ -3,6 +3,7 @@ package org.apiphany.security.tls;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.Objects;
 
 import org.apiphany.io.BytesWrapper;
 import org.apiphany.io.UInt16;
@@ -94,6 +95,44 @@ public class RSAEncryptedPreMaster implements TLSKeyExchange {
 	}
 
 	/**
+	 * Returns the total size when serialized.
+	 *
+	 * @return size in bytes of length field plus encrypted data
+	 */
+	@Override
+	public int sizeOf() {
+		return length.sizeOf() + bytes.sizeOf();
+	}
+
+	/**
+	 * Compares this RSAEncryptedPreMaster to another object for equality.
+	 *
+	 * @param obj the object to compare with
+	 * @return true if both objects are equal, false otherwise
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof RSAEncryptedPreMaster that) {
+			return Objects.equals(this.length, that.length)
+					&& Objects.equals(this.bytes, that.bytes);
+		}
+		return false;
+	}
+
+	/**
+	 * Returns the hash code based on length and bytes.
+	 *
+	 * @return hash code of the object
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hash(length, bytes);
+	}
+
+	/**
 	 * Returns the length of encrypted data.
 	 *
 	 * @return the UInt16 wrapper containing length
@@ -109,15 +148,5 @@ public class RSAEncryptedPreMaster implements TLSKeyExchange {
 	 */
 	public BytesWrapper getBytes() {
 		return bytes;
-	}
-
-	/**
-	 * Returns the total size when serialized.
-	 *
-	 * @return size in bytes of length field plus encrypted data
-	 */
-	@Override
-	public int sizeOf() {
-		return length.sizeOf() + bytes.sizeOf();
 	}
 }
