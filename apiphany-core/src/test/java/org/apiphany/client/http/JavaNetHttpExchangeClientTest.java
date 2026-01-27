@@ -375,6 +375,61 @@ class JavaNetHttpExchangeClientTest {
 	}
 
 	@Test
+	void shouldReturnDtoOnBuildResponseWhenResponseTypeIsDtoAndContentTypeIsApplicationJson() throws Exception {
+		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+		exchangeClient.close();
+
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+				.url(URL)
+				.method(HttpMethod.GET)
+				.responseType(TestDto.class);
+
+		Map<String, List<String>> headers = Map.of(
+				"Content-Type", List.of("application/json"));
+
+		TestDto expectedDto = TestDto.of("someId", 10);
+
+		HttpResponse<?> httpResponse = mock(HttpResponse.class);
+		doReturn(HttpStatus.OK.value()).when(httpResponse).statusCode();
+		doReturn(expectedDto.toString()).when(httpResponse).body();
+		doReturn(HttpHeaders.of(headers, (v1, v2) -> true)).when(httpResponse).headers();
+
+		ApiResponse<TestDto> apiResponse = exchangeClient.buildResponse(request, httpResponse);
+
+		assertThat(apiResponse.getRequest(), equalTo(request));
+		assertThat(apiResponse.getBody(), equalTo(expectedDto));
+	}
+
+	@Test
+	void shouldReturnDtoOnBuildResponseWhenResponseTypeIsGenericClassAndContentTypeIsApplicationJson() throws Exception {
+		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+		exchangeClient.close();
+
+		GenericClass<Map<String, TestDto>> genericResponseType = GenericClass.of(
+				GenericType.of(Map.class, GenericType.Arguments.of(String.class, TestDto.class)));
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+				.url(URL)
+				.method(HttpMethod.GET)
+				.responseType(genericResponseType);
+
+		Map<String, List<String>> headers = Map.of(
+				"Content-Type", List.of("application/json"));
+
+		TestDto expectedInnerDto = TestDto.of("someId", 10);
+		Map<String, TestDto> expectedDto = Map.of("key", expectedInnerDto);
+
+		HttpResponse<?> httpResponse = mock(HttpResponse.class);
+		doReturn(HttpStatus.OK.value()).when(httpResponse).statusCode();
+		doReturn(JsonBuilder.toJson(expectedDto)).when(httpResponse).body();
+		doReturn(HttpHeaders.of(headers, (v1, v2) -> true)).when(httpResponse).headers();
+
+		ApiResponse<Map<String, TestDto>> apiResponse = exchangeClient.buildResponse(request, httpResponse);
+
+		assertThat(apiResponse.getRequest(), equalTo(request));
+		assertThat(apiResponse.getBody(), equalTo(expectedDto));
+	}
+
+	@Test
 	void shouldThrowExceptionOnBuildResponseWhenResponseTypeIsDtoAndContentTypeIsApplicationJsonButResponseIsNotJson() throws Exception {
 		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
 		exchangeClient.close();
