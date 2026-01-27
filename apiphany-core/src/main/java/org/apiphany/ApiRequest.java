@@ -25,6 +25,11 @@ import org.morphix.reflection.GenericClass;
 public class ApiRequest<T> extends ApiMessage<T> {
 
 	/**
+	 * Constant for unknown response type.
+	 */
+	public static final String UNKNOWN_RESPONSE_TYPE = "<unknown-reponse-type>";
+
+	/**
 	 * The method to be used for the request (e.g., GET, POST, PUT, etc.).
 	 */
 	protected RequestMethod method;
@@ -171,6 +176,16 @@ public class ApiRequest<T> extends ApiMessage<T> {
 			return genericResponseType.getType();
 		}
 		return classResponseType;
+	}
+
+	/**
+	 * Returns the name of the response type.
+	 *
+	 * @return the response type name
+	 */
+	public String getResponseTypeName() {
+		Type responseType = getResponseType();
+		return null != responseType ? responseType.getTypeName() : UNKNOWN_RESPONSE_TYPE;
 	}
 
 	/**

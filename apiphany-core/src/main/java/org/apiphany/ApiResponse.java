@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -14,6 +13,7 @@ import java.util.function.Supplier;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Lists;
+import org.apiphany.lang.collections.Maps;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Nullables;
 import org.morphix.lang.Unchecked;
@@ -486,7 +486,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 		 * @throws NullPointerException if headers map is null
 		 */
 		public Builder<T> headers(final Map<String, List<String>> headers) {
-			this.headers = Objects.requireNonNull(headers, "headers cannot be null");
+			this.headers = Maps.safe(headers);
 			return this;
 		}
 
