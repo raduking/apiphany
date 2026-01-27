@@ -186,4 +186,11 @@ public class KeyPairs {
 
 		saveAsPem(keyPair, "src/test/resources/security/oauth2");
 	}
+
+	/**
+	 * Hide constructor.
+	 */
+	private KeyPairs() {
+		// empty
+	}
 }

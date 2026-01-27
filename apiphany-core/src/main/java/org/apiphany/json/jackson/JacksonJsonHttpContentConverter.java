@@ -6,6 +6,7 @@ import org.apiphany.client.ContentConverter;
 import org.apiphany.client.http.HttpContentConverter;
 import org.apiphany.header.HeaderValues;
 import org.apiphany.io.ContentType;
+import org.morphix.convert.ObjectConverterException;
 import org.morphix.reflection.GenericClass;
 
 /**
@@ -40,7 +41,11 @@ public class JacksonJsonHttpContentConverter<T> implements HttpContentConverter<
 	 */
 	@Override
 	public T from(final Object obj, final ApiMimeType mimeType, final Class<T> targetClass) {
-		return JacksonJsonBuilder.fromJson(obj, targetClass);
+		T result = JacksonJsonBuilder.fromJson(obj, targetClass);
+		if (null == result && null != obj) {
+			throw new ObjectConverterException("Error converting JSON response to " + targetClass.getName());
+		}
+		return result;
 	}
 
 	/**
@@ -56,7 +61,11 @@ public class JacksonJsonHttpContentConverter<T> implements HttpContentConverter<
 	 */
 	@Override
 	public T from(final Object obj, final ApiMimeType mimeType, final GenericClass<T> targetGenericClass) {
-		return JacksonJsonBuilder.fromJson(obj, targetGenericClass);
+		T result = JacksonJsonBuilder.fromJson(obj, targetGenericClass);
+		if (null == result && null != obj) {
+			throw new ObjectConverterException("Error converting JSON response to " + targetGenericClass.getType().getTypeName());
+		}
+		return result;
 	}
 
 	/**
