@@ -27,6 +27,7 @@ import org.apiphany.http.client.KeyValueApiClient;
 import org.apiphany.http.server.KeyValueHttpServer;
 import org.apiphany.io.ContentType;
 import org.apiphany.net.Sockets;
+import org.apiphany.test.http.ByteBufferBodySubscriber;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 
@@ -130,7 +131,7 @@ class JavaNetHttpExchangeClientIT {
 
 		assertThat(bodyPublisher.contentLength(), equalTo((long) BYTES.length));
 
-		TestBodySubscriber subscriber = new TestBodySubscriber();
+		ByteBufferBodySubscriber subscriber = new ByteBufferBodySubscriber();
 		bodyPublisher.subscribe(subscriber);
 		subscriber.awaitCompletion();
 
@@ -148,7 +149,7 @@ class JavaNetHttpExchangeClientIT {
 
 		BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
 
-		TestBodySubscriber subscriber = new TestBodySubscriber();
+		ByteBufferBodySubscriber subscriber = new ByteBufferBodySubscriber();
 		bodyPublisher.subscribe(subscriber);
 		subscriber.awaitCompletion();
 
@@ -167,7 +168,7 @@ class JavaNetHttpExchangeClientIT {
 
 		BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
 
-		TestBodySubscriber subscriber = new TestBodySubscriber();
+		ByteBufferBodySubscriber subscriber = new ByteBufferBodySubscriber();
 		bodyPublisher.subscribe(subscriber);
 		subscriber.awaitCompletion();
 
@@ -185,7 +186,7 @@ class JavaNetHttpExchangeClientIT {
 
 		assertThat(bodyPublisher.contentLength(), equalTo((long) NEW_VALUE_1.length()));
 
-		TestBodySubscriber subscriber = new TestBodySubscriber();
+		ByteBufferBodySubscriber subscriber = new ByteBufferBodySubscriber();
 		bodyPublisher.subscribe(subscriber);
 		subscriber.awaitCompletion();
 
