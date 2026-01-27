@@ -72,6 +72,9 @@ public class StringHttpContentConverter implements HttpContentConverter<String> 
 	 * @return converted object to string
 	 */
 	public static String from(final Object obj, final ApiMimeType mimeType) {
+		if (null == obj) {
+			return null;
+		}
 		if (obj instanceof String string) {
 			return string;
 		}

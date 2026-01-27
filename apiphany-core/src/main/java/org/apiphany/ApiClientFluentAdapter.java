@@ -11,6 +11,8 @@ import java.util.function.Supplier;
 
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.http.HttpClientFluentAdapter;
+import org.apiphany.header.Header;
+import org.apiphany.header.HeaderFunction;
 import org.apiphany.header.Headers;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Maps;
@@ -294,7 +296,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	}
 
 	/**
-	 * Sets the request parameters. If the input request parameters is {@code null} then the request parameters will be set
+	 * Adds the request parameters. If the input request parameters is {@code null} then the request parameters will be set
 	 * to an empty map.
 	 *
 	 * @param requestParams request parameters
@@ -310,7 +312,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	}
 
 	/**
-	 * Sets the request parameters.
+	 * Adds the request parameters.
 	 *
 	 * @param paramFunctions request parameter functions
 	 * @return this
@@ -320,7 +322,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	}
 
 	/**
-	 * Sets the request parameters.
+	 * Adds the request parameters.
 	 *
 	 * @param paramFunction request parameter function
 	 * @return this
@@ -330,7 +332,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	}
 
 	/**
-	 * Sets the request parameters from the given object.
+	 * Adds the request parameters from the given object.
 	 *
 	 * @param queryParams request parameters object
 	 * @return this
@@ -340,7 +342,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	}
 
 	/**
-	 * Sets the request parameters from the given object.
+	 * Adds the request parameters from the given object.
 	 *
 	 * @param queryParams request parameters object
 	 * @param keyConverter key converter which converts the object field names to request parameter names
@@ -365,7 +367,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	}
 
 	/**
-	 * Sets the headers.
+	 * Adds the headers.
 	 *
 	 * @param <N> header name type
 	 * @param <H> header value type
@@ -379,7 +381,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	}
 
 	/**
-	 * Sets the headers if the condition is true.
+	 * Adds the headers if the condition is true.
 	 *
 	 * @param <N> header name type
 	 * @param <H> header value type
@@ -435,6 +437,26 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 */
 	public <N, H> ApiClientFluentAdapter headerWhen(final boolean condition, final N headerName, final Supplier<H> headerValueSupplier) {
 		return condition ? header(headerName, headerValueSupplier.get()) : this;
+	}
+
+	/**
+	 * Adds the given headers.
+	 *
+	 * @param headers headers
+	 * @return this
+	 */
+	public ApiClientFluentAdapter headers(final Header... headers) {
+		return headers(Headers.of(headers));
+	}
+
+	/**
+	 * Adds the given headers given as header functions.
+	 *
+	 * @param headerFunctions header functions
+	 * @return this
+	 */
+	public ApiClientFluentAdapter headers(final HeaderFunction... headerFunctions) {
+		return headers(Headers.of(headerFunctions));
 	}
 
 	/**

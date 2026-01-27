@@ -5,6 +5,7 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 import org.apiphany.json.JsonBuilder;
@@ -75,6 +76,34 @@ public class ClientProperties {
 	@Override
 	public String toString() {
 		return JsonBuilder.toJson(this);
+	}
+
+	/**
+	 * @see Object#equals(Object)
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null || getClass() != obj.getClass()) {
+			return false;
+		}
+		ClientProperties that = (ClientProperties) obj;
+		return enabled == that.enabled
+				&& Objects.equals(timeout, that.timeout)
+				&& Objects.equals(connection, that.connection)
+				&& Objects.equals(compression, that.compression)
+				&& Objects.equals(client, that.client)
+				&& Objects.equals(custom, that.custom);
+	}
+
+	/**
+	 * @see Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hash(enabled, timeout, connection, compression, client, custom);
 	}
 
 	/**
@@ -360,6 +389,31 @@ public class ClientProperties {
 		}
 
 		/**
+		 * @see Object#equals(Object)
+		 */
+		@Override
+		public boolean equals(final Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (obj == null || getClass() != obj.getClass()) {
+				return false;
+			}
+			Connection that = (Connection) obj;
+			return maxTotal == that.maxTotal
+					&& maxPerRoute == that.maxPerRoute
+					&& Objects.equals(timeToLive, that.timeToLive);
+		}
+
+		/**
+		 * @see Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			return Objects.hash(maxTotal, maxPerRoute, timeToLive);
+		}
+
+		/**
 		 * Returns the maximum per route connections.
 		 *
 		 * @return the maximum per route connections.
@@ -472,6 +526,31 @@ public class ClientProperties {
 		@Override
 		public String toString() {
 			return JsonBuilder.toJson(this);
+		}
+
+		/**
+		 * @see Object#equals(Object)
+		 */
+		@Override
+		public boolean equals(final Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (obj == null || getClass() != obj.getClass()) {
+				return false;
+			}
+			Timeout that = (Timeout) obj;
+			return Objects.equals(connect, that.connect)
+					&& Objects.equals(connectionRequest, that.connectionRequest)
+					&& Objects.equals(socket, that.socket);
+		}
+
+		/**
+		 * @see Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			return Objects.hash(connect, connectionRequest, socket);
 		}
 
 		/**
@@ -663,6 +742,39 @@ public class ClientProperties {
 		}
 
 		/**
+		 * Returns a JSON representation of this {@link Compression} object.
+		 *
+		 * @return a JSON string representing this object.
+		 */
+		@Override
+		public String toString() {
+			return JsonBuilder.toJson(this);
+		}
+
+		/**
+		 * @see Object#equals(Object)
+		 */
+		@Override
+		public boolean equals(final Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (obj == null || getClass() != obj.getClass()) {
+				return false;
+			}
+			Compression that = (Compression) obj;
+			return Objects.equals(gzip, that.gzip);
+		}
+
+		/**
+		 * @see Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			return Objects.hash(gzip);
+		}
+
+		/**
 		 * Returns whether GZIP compression is enabled.
 		 *
 		 * @return true if GZIP compression is enabled, false otherwise.
@@ -678,16 +790,6 @@ public class ClientProperties {
 		 */
 		public void setGzip(final Boolean gzip) {
 			this.gzip = gzip;
-		}
-
-		/**
-		 * Returns a JSON representation of this {@link Compression} object.
-		 *
-		 * @return a JSON string representing this object.
-		 */
-		@Override
-		public String toString() {
-			return JsonBuilder.toJson(this);
 		}
 	}
 

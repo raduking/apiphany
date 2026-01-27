@@ -1,6 +1,7 @@
 package org.apiphany.http;
 
 import java.net.http.HttpHeaders;
+import java.util.Collections;
 import java.util.List;
 
 import org.apiphany.header.HeaderValues;
@@ -42,6 +43,9 @@ public class HttpHeaderValues extends HeaderValues {
 	 */
 	@Override
 	public <N> List<String> get(final N header, final Object headers) {
+		if (null == headers) {
+			return Collections.emptyList();
+		}
 		return switch (headers) {
 			case HttpHeaders httpHeaders -> get(header, httpHeaders);
 			default -> getNext().get(header, headers);

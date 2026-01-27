@@ -134,7 +134,7 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 				return ContentConverter.convertBody(typeConverter, apiRequest, mimeType, body);
 			}
 		}
-		throw new UnsupportedOperationException("No content converter found to convert response to: " + apiRequest.getResponseType().getTypeName()
+		throw new UnsupportedOperationException("No content converter found to convert response to: " + apiRequest.getResponseTypeName()
 				+ ", for the response content type: " + mimeType);
 	}
 

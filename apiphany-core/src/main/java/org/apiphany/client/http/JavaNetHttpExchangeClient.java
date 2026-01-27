@@ -51,7 +51,7 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	 * to see the defaults.
 	 */
 	public JavaNetHttpExchangeClient() {
-		this(new ClientProperties());
+		this(null);
 	}
 
 	/**
@@ -74,6 +74,19 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	public JavaNetHttpExchangeClient(final ClientProperties clientProperties) {
 		super(clientProperties);
 		this.httpClient = createClient(this::customize);
+	}
+
+	/**
+	 * Initialize the client with the given underlying HTTP client.
+	 * <p>
+	 * This constructor can be used when more advanced customization of the underlying HTTP client is needed but only by
+	 * deriving from this class.
+	 *
+	 * @param httpClient underlying HTTP client
+	 */
+	protected JavaNetHttpExchangeClient(final ClientProperties clientProperties, final HttpClient httpClient) {
+		super(clientProperties);
+		this.httpClient = httpClient;
 	}
 
 	/**
@@ -119,9 +132,22 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 		apiRequest.addHeaders(getTracingHeaders());
 
 		HttpRequest httpRequest = buildRequest(apiRequest);
-		HttpResponse<?> httpResponse = HttpException.ifThrows(
-				() -> httpClient.send(httpRequest, getBodyHandler(apiRequest)));
+		HttpResponse<?> httpResponse = sendRequest(apiRequest, httpRequest);
 		return buildResponse(apiRequest, httpResponse);
+	}
+
+	/**
+	 * Sends the given HTTP request and returns the HTTP response.
+	 *
+	 * @param <T> request body type
+	 * @param <R> HTTP response body type
+	 *
+	 * @param apiRequest API request
+	 * @param httpRequest HTTP request
+	 * @return HTTP response
+	 */
+	protected <T, R> HttpResponse<R> sendRequest(final ApiRequest<T> apiRequest, final HttpRequest httpRequest) {
+		return HttpException.ifThrows(() -> httpClient.send(httpRequest, getResponseBodyHandler(apiRequest)));
 	}
 
 	/**
@@ -137,7 +163,7 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 				.uri(apiRequest.getUri());
 		addHeaders(httpRequestBuilder, apiRequest.getHeaders());
 
-		HttpMethod httpMethod = apiRequest.getMethod();
+		HttpMethod httpMethod = HttpException.ifThrows(() -> apiRequest.getMethod(), HttpStatus.BAD_REQUEST);
 		switch (httpMethod) {
 			case GET -> httpRequestBuilder.GET();
 			case PUT -> httpRequestBuilder.PUT(toBodyPublisher(apiRequest));
@@ -149,51 +175,6 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 			default -> throw new HttpException(HttpStatus.BAD_REQUEST, "HTTP method " + httpMethod + " is not supported!");
 		}
 		return httpRequestBuilder.build();
-	}
-
-	/**
-	 * Creates a {@link BodyPublisher} from the given API request. It checks for the body common types to create the
-	 * appropriate publisher.
-	 *
-	 * @param <T> body type
-	 * @param apiRequest the API request object
-	 * @return a body publisher needed in building the HTTP request
-	 */
-	public static <T> BodyPublisher toBodyPublisher(final ApiRequest<T> apiRequest) {
-		T body = apiRequest.getBody();
-		if (body == null) {
-			return BodyPublishers.noBody();
-		}
-		Charset charset = Nullables.nonNullOrDefault(apiRequest.getCharset(), Strings.DEFAULT_CHARSET);
-		return switch (body) {
-			case String str -> BodyPublishers.ofString(str, charset);
-			case byte[] bytes -> BodyPublishers.ofByteArray(bytes);
-			case InputStream is -> BodyPublishers.ofInputStream(() -> is);
-			case Supplier<?> supplier when supplier.get() instanceof InputStream is -> BodyPublishers.ofInputStream(() -> is);
-			case Path path -> HttpException.ifThrows(() -> BodyPublishers.ofFile(path), HttpStatus.BAD_REQUEST);
-			case Object obj when apiRequest.containsHeader(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_JSON) -> BodyPublishers
-					.ofString(JsonBuilder.toJson(obj), charset);
-			default -> BodyPublishers.ofString(Strings.safeToString(body), charset);
-		};
-	}
-
-	/**
-	 * Returns the body handler based on the request.
-	 *
-	 * @param <T> request body type
-	 * @param <U> body handler type
-	 *
-	 * @param apiRequest the API request object
-	 * @return the body handler based on the request
-	 */
-	public static <T, U> BodyHandler<U> getBodyHandler(final ApiRequest<T> apiRequest) {
-		BodyHandler<?> bodyHandler;
-		if (apiRequest.isStream()) {
-			bodyHandler = BodyHandlers.ofInputStream();
-		} else {
-			bodyHandler = BodyHandlers.ofByteArray();
-		}
-		return JavaObjects.cast(bodyHandler);
 	}
 
 	/**
@@ -231,6 +212,51 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 				.request(apiRequest)
 				.exchangeClient(this)
 				.build();
+	}
+
+	/**
+	 * Creates a {@link BodyPublisher} from the given API request. It checks for the body common types to create the
+	 * appropriate publisher.
+	 *
+	 * @param <T> body type
+	 * @param apiRequest the API request object
+	 * @return a body publisher needed in building the HTTP request
+	 */
+	public static <T> BodyPublisher toBodyPublisher(final ApiRequest<T> apiRequest) {
+		T body = apiRequest.getBody();
+		if (body == null) {
+			return BodyPublishers.noBody();
+		}
+		Charset charset = Nullables.nonNullOrDefault(apiRequest.getCharset(), Strings.DEFAULT_CHARSET);
+		return switch (body) {
+			case String str -> BodyPublishers.ofString(str, charset);
+			case byte[] bytes -> BodyPublishers.ofByteArray(bytes);
+			case InputStream is -> BodyPublishers.ofInputStream(() -> is);
+			case Supplier<?> supplier when supplier.get() instanceof InputStream is -> BodyPublishers.ofInputStream(() -> is);
+			case Path path -> HttpException.ifThrows(() -> BodyPublishers.ofFile(path), HttpStatus.BAD_REQUEST);
+			case Object obj when apiRequest.containsHeader(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_JSON) -> BodyPublishers
+					.ofString(JsonBuilder.toJson(obj), charset);
+			default -> BodyPublishers.ofString(Strings.safeToString(body), charset);
+		};
+	}
+
+	/**
+	 * Returns the body handler based on the request.
+	 *
+	 * @param <T> request body type
+	 * @param <U> body handler type
+	 *
+	 * @param apiRequest the API request object
+	 * @return the body handler based on the request
+	 */
+	public static <T, U> BodyHandler<U> getResponseBodyHandler(final ApiRequest<T> apiRequest) {
+		BodyHandler<?> bodyHandler;
+		if (apiRequest.isStream()) {
+			bodyHandler = BodyHandlers.ofInputStream();
+		} else {
+			bodyHandler = BodyHandlers.ofByteArray();
+		}
+		return JavaObjects.cast(bodyHandler);
 	}
 
 	/**
