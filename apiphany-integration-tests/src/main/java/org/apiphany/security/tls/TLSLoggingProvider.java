@@ -38,11 +38,20 @@ import org.slf4j.LoggerFactory;
  */
 public final class TLSLoggingProvider extends Provider {
 
+	/**
+	 * Logger instance.
+	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(TLSLoggingProvider.class);
 
+	/**
+	 * Serial version UID.
+	 */
 	@Serial
 	private static final long serialVersionUID = -2570888245931771474L;
 
+	/**
+	 * Default constructor.
+	 */
 	public TLSLoggingProvider() {
 		super("ApiphanyTLSLoggingProvider", "1.0", "TLS key material logger");
 		// register our wrapper for TLS 1.2 key material
@@ -50,6 +59,9 @@ public final class TLSLoggingProvider extends Provider {
 		put("KeyGenerator.SunTls12MasterSecret", LoggingTlsMasterSecretGenerator.class.getName());
 	}
 
+	/**
+	 * Install the TLS logging provider at priority 1 (before SunJCE).
+	 */
 	public static void install() {
 		TLSLoggingProvider provider = new TLSLoggingProvider();
 		safeMarkAsVerified(provider);
@@ -57,6 +69,11 @@ public final class TLSLoggingProvider extends Provider {
 		Security.insertProviderAt(provider, 1);
 	}
 
+	/**
+	 * Safely mark the given provider as verified in the JCE security internals.
+	 *
+	 * @param provider provider to mark as verified
+	 */
 	public static void safeMarkAsVerified(final Provider provider) {
 		try {
 			markAsVerified(provider);
@@ -65,6 +82,11 @@ public final class TLSLoggingProvider extends Provider {
 		}
 	}
 
+	/**
+	 * Mark the given provider as verified in the JCE security internals.
+	 *
+	 * @param provider provider to mark as verified
+	 */
 	private static void markAsVerified(final Provider provider) {
 		Class<?> jceSecurityClass = Classes.getOne("javax.crypto.JceSecurity");
 		Map<Object, Object> verificationResults = Fields.IgnoreAccess.getStatic(jceSecurityClass, "verificationResults");
@@ -92,29 +114,56 @@ public final class TLSLoggingProvider extends Provider {
 		verificationResults.put(wrapperInstance, providerVerified);
 	}
 
-	public abstract static class LoggingWrapper extends KeyGeneratorSpi {
+	/**
+	 * Key generator wrapper that logs generated key material.
+	 *
+	 * @author Radu Sebastian LAZIN
+	 */
+	public abstract static class LoggingKeyGeneratorSpi extends KeyGeneratorSpi {
 
+		/**
+		 * Delegate key generator.
+		 */
 		private final KeyGenerator delegate;
 
-		protected LoggingWrapper(final String algo) throws NoSuchAlgorithmException, NoSuchProviderException {
+		/**
+		 * Constructor.
+		 *
+		 * @param algo algorithm name
+		 * @throws NoSuchAlgorithmException if the algorithm is not found
+		 * @throws NoSuchProviderException if the provider is not found
+		 */
+		protected LoggingKeyGeneratorSpi(final String algo) throws NoSuchAlgorithmException, NoSuchProviderException {
 			this.delegate = KeyGenerator.getInstance(algo, "SunJCE");
 		}
 
+		/**
+		 * @see KeyGeneratorSpi#engineInit(SecureRandom)
+		 */
 		@Override
 		protected void engineInit(final SecureRandom random) {
 			delegate.init(random);
 		}
 
+		/**
+		 * @see KeyGeneratorSpi#engineInit(int, SecureRandom)
+		 */
 		@Override
 		protected void engineInit(final int keySize, final SecureRandom random) {
 			delegate.init(keySize, random);
 		}
 
+		/**
+		 * @see KeyGeneratorSpi#engineInit(AlgorithmParameterSpec, SecureRandom)
+		 */
 		@Override
 		protected void engineInit(final AlgorithmParameterSpec params, final SecureRandom random) throws InvalidAlgorithmParameterException {
 			delegate.init(params, random);
 		}
 
+		/**
+		 * @see KeyGeneratorSpi#engineGenerateKey()
+		 */
 		@Override
 		protected SecretKey engineGenerateKey() {
 			SecretKey key = delegate.generateKey();
@@ -151,33 +200,70 @@ public final class TLSLoggingProvider extends Provider {
 			}
 			return key;
 		}
-	}
 
-	private static void logKeyField(final Object obj, final String fieldName) {
-		Field keyField = Fields.getOneDeclaredInHierarchy(obj, fieldName);
-		if (null != keyField) {
-			SecretKey key = Fields.IgnoreAccess.get(obj, keyField);
-			logKey(key, fieldName);
+		/**
+		 * Log the given key field from the given object.
+		 *
+		 * @param obj object containing the field
+		 * @param fieldName field name
+		 */
+		private static void logKeyField(final Object obj, final String fieldName) {
+			Field keyField = Fields.getOneDeclaredInHierarchy(obj, fieldName);
+			if (null != keyField) {
+				SecretKey key = Fields.IgnoreAccess.get(obj, keyField);
+				logKey(key, fieldName);
+			}
+		}
+
+		/**
+		 * Log the given key.
+		 *
+		 * @param key secret key
+		 */
+		private static void logKey(final SecretKey key) {
+			logKey(key, "<none>");
+		}
+
+		/**
+		 * Log the given key with the given field name.
+		 *
+		 * @param key secret key
+		 * @param fieldName field name
+		 */
+		private static void logKey(final SecretKey key, final String fieldName) {
+			LOGGER.debug("Generated {} (field:{}): {}", key.getAlgorithm(), fieldName, Hex.string(key.getEncoded()));
 		}
 	}
 
-	private static void logKey(final SecretKey key) {
-		logKey(key, "<none>");
-	}
+	/**
+	 * Logging TLS key material generator.
+	 *
+	 * @author Radu Sebastian LAZIN
+	 */
+	public static final class LoggingTlsKeyMaterialGenerator extends LoggingKeyGeneratorSpi {
 
-	private static void logKey(final SecretKey key, final String fieldName) {
-		LOGGER.debug("Generated {} (field:{}): {}", key.getAlgorithm(), fieldName, Hex.string(key.getEncoded()));
-	}
-
-	public static final class LoggingTlsKeyMaterialGenerator extends LoggingWrapper {
-
+		/**
+		 * Constructor.
+		 *
+		 * @throws Exception if an error occurs
+		 */
 		public LoggingTlsKeyMaterialGenerator() throws Exception {
 			super("SunTls12KeyMaterial");
 		}
 	}
 
-	public static final class LoggingTlsMasterSecretGenerator extends LoggingWrapper {
+	/**
+	 * Logging TLS master secret generator.
+	 *
+	 * @author Radu Sebastian LAZIN
+	 */
+	public static final class LoggingTlsMasterSecretGenerator extends LoggingKeyGeneratorSpi {
 
+		/**
+		 * Constructor.
+		 *
+		 * @throws Exception if an error occurs
+		 */
 		public LoggingTlsMasterSecretGenerator() throws Exception {
 			super("SunTls12MasterSecret");
 		}

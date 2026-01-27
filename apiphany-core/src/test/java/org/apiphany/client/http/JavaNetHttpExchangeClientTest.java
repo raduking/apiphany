@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 
 import java.io.ByteArrayInputStream;
@@ -36,7 +37,9 @@ import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
+import org.apiphany.json.JsonBuilder;
 import org.apiphany.test.http.ByteBufferBodySubscriber;
+import org.apiphany.utils.TestDto;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -55,6 +58,8 @@ class JavaNetHttpExchangeClientTest {
 
 	private static final String STRING = "Juju";
 	private static final byte[] BYTES = new byte[] { 0x01, 0x02, 0x03 };
+
+	private static final String EXPECTED_CONNECTION_ERROR = "Expected connection error";
 
 	@Mock
 	private ApiClient apiClient;
@@ -389,6 +394,54 @@ class JavaNetHttpExchangeClientTest {
 	}
 
 	@Test
+	@SuppressWarnings({ "resource", "unchecked" })
+	void shouldThrowExceptionWhenHttpClientThrowsExceptionOnSendRequest() throws Exception {
+		HttpClient httpClient = mock(HttpClient.class);
+
+		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient(null, httpClient);
+		exchangeClient.close();
+
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+				.url(URL)
+				.method(HttpMethod.GET)
+				.responseType(String.class);
+
+		RuntimeException exceptionToThrow = new RuntimeException(EXPECTED_CONNECTION_ERROR);
+		doThrow(exceptionToThrow).when(httpClient).send(any(HttpRequest.class), any(BodyHandler.class));
+
+		HttpException exception = assertThrows(HttpException.class,
+				() -> exchangeClient.sendRequest(request, exchangeClient.buildRequest(request)));
+
+		assertThat(exception.getStatus(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
+		assertThat(exception.getMessage(), equalTo(HttpException.message(HttpStatus.INTERNAL_SERVER_ERROR, EXPECTED_CONNECTION_ERROR)));
+	}
+
+	@Test
+	@SuppressWarnings({ "resource", "unchecked" })
+	void shouldExchangeApiRequestAndReturnApiResponse() throws Exception {
+		HttpClient httpClient = mock(HttpClient.class);
+
+		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient(null, httpClient);
+		exchangeClient.close();
+
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+				.url(URL)
+				.method(HttpMethod.GET)
+				.responseType(String.class);
+
+		HttpResponse<?> mockedHttpResponse = mock(HttpResponse.class);
+		doReturn(200).when(mockedHttpResponse).statusCode();
+		doReturn("OK").when(mockedHttpResponse).body();
+
+		doReturn(mockedHttpResponse).when(httpClient).send(any(HttpRequest.class), any(BodyHandler.class));
+
+		ApiResponse<?> apiResponse = exchangeClient.exchange(request);
+
+		assertThat(apiResponse.getRequest(), equalTo(request));
+		assertThat(apiResponse.getBody(), equalTo("OK"));
+	}
+
+	@Test
 	void shouldReturnByteArrayBodyHandlerWhenNoStreamIsProvided() {
 		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
 				.stream(false)
@@ -524,14 +577,57 @@ class JavaNetHttpExchangeClientTest {
 
 		BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
 
+		ByteBufferBodySubscriber subscriber = new ByteBufferBodySubscriber();
+		bodyPublisher.subscribe(subscriber);
+		subscriber.awaitCompletion();
+
 		assertThat(bodyPublisher.contentLength(), equalTo((long) STRING.length()));
+		assertTrue(subscriber.isCompleted());
+		assertNull(subscriber.getError());
+		assertThat(STRING.getBytes(StandardCharsets.UTF_8), equalTo(subscriber.getReceivedBytes()));
+	}
+
+	@Test
+	void shouldConvertObjectToJsonStringBodyPublisherWhenContentTypeIsApplicationJson() {
+		TestDto expectedDto = TestDto.of("someId1", 5);
+
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+				.header(HttpHeader.CONTENT_TYPE, "application/json")
+				.body(expectedDto);
+
+		BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+
+		String expectedJson = JsonBuilder.toJson(expectedDto);
 
 		ByteBufferBodySubscriber subscriber = new ByteBufferBodySubscriber();
 		bodyPublisher.subscribe(subscriber);
 		subscriber.awaitCompletion();
 
+		assertThat(bodyPublisher.contentLength(), equalTo((long) expectedJson.length()));
 		assertTrue(subscriber.isCompleted());
 		assertNull(subscriber.getError());
-		assertThat(STRING.getBytes(StandardCharsets.UTF_8), equalTo(subscriber.getReceivedBytes()));
+		assertThat(expectedJson.getBytes(StandardCharsets.UTF_8), equalTo(subscriber.getReceivedBytes()));
+	}
+
+	@Test
+	void shouldConvertObjectToStringBodyPublisherWhenContentTypeIsNotApplicationJson() {
+		TestDto expectedDto = TestDto.of("someId2", 10);
+
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+				.header(HttpHeader.CONTENT_TYPE, "text/plain")
+				.body(expectedDto);
+
+		BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+
+		String expectedString = expectedDto.toString();
+
+		ByteBufferBodySubscriber subscriber = new ByteBufferBodySubscriber();
+		bodyPublisher.subscribe(subscriber);
+		subscriber.awaitCompletion();
+
+		assertThat(bodyPublisher.contentLength(), equalTo((long) expectedString.length()));
+		assertTrue(subscriber.isCompleted());
+		assertNull(subscriber.getError());
+		assertThat(expectedString.getBytes(StandardCharsets.UTF_8), equalTo(subscriber.getReceivedBytes()));
 	}
 }

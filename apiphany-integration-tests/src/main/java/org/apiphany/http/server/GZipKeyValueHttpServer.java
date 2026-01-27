@@ -36,20 +36,44 @@ import com.sun.net.httpserver.HttpServer;
  */
 public class GZipKeyValueHttpServer implements AutoCloseable {
 
+	/**
+	 * Logger instance.
+	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(GZipKeyValueHttpServer.class);
 
+	/**
+	 * API route for key-value operations.
+	 */
+	public static final String ROUTE_API_KEYS = "/api/keys";
+
+	/**
+	 * Default key.
+	 */
+	public static final String DEFAULT_KEY = "Mumu";
+
+	/**
+	 * Default value.
+	 */
+	public static final String DEFAULT_VALUE = "Cucu";
+
+	/**
+	 * Constant indicating no body in response.
+	 */
+	private static final int NO_BODY = -1;
+
+	/**
+	 * Underlying HTTP server.
+	 */
 	private final HttpServer server;
 	private final ExecutorService executor;
 	private final int port;
 	private final Map<String, String> map = new ConcurrentHashMap<>();
 
-	public static final String ROUTE_API_KEYS = "/api/keys";
-
-	public static final String DEFAULT_KEY = "Mumu";
-	public static final String DEFAULT_VALUE = "Cucu";
-
-	private static final int NO_BODY = -1;
-
+	/**
+	 * Initializes and starts the GZIP-aware key-value HTTP server on the given port.
+	 *
+	 * @param port port to start the server on
+	 */
 	public GZipKeyValueHttpServer(final int port) {
 		this.port = port;
 		this.executor = Executors.newVirtualThreadPerTaskExecutor();
@@ -64,6 +88,12 @@ public class GZipKeyValueHttpServer implements AutoCloseable {
 		LOGGER.info("GZip-aware server started on port {}", port);
 	}
 
+	/**
+	 * Creates an HTTP server bound to the specified port.
+	 *
+	 * @param port port to bind the server to
+	 * @return created HTTP server
+	 */
 	private static HttpServer createServer(final int port) {
 		try {
 			return HttpServer.create(new java.net.InetSocketAddress(port), 0);
@@ -72,18 +102,34 @@ public class GZipKeyValueHttpServer implements AutoCloseable {
 		}
 	}
 
+	/**
+	 * Stops the server and releases resources.
+	 */
 	@Override
 	public void close() {
 		server.stop(0);
 		executor.shutdown();
 	}
 
+	/**
+	 * Returns the port the server is running on.
+	 *
+	 * @return the port the server is running on
+	 */
 	public int getPort() {
 		return port;
 	}
 
+	/**
+	 * HTTP handler for key-value operations with GZIP support.
+	 *
+	 * @author Radu Sebastian LAZIN
+	 */
 	class GZipKeysHandler implements HttpHandler {
 
+		/**
+		 * @see HttpHandler#handle(HttpExchange)
+		 */
 		@Override
 		public void handle(final HttpExchange exchange) throws IOException {
 			HttpMethod method;
@@ -104,6 +150,12 @@ public class GZipKeyValueHttpServer implements AutoCloseable {
 			}
 		}
 
+		/**
+		 * Handles GET requests.
+		 *
+		 * @param exchange the HTTP exchange
+		 * @throws IOException if an I/O error occurs
+		 */
 		private void handleGet(final HttpExchange exchange) throws IOException {
 			String key = getKeyFromPath(exchange);
 			String response = null == key ? null : map.getOrDefault(key, null);
@@ -115,6 +167,12 @@ public class GZipKeyValueHttpServer implements AutoCloseable {
 			sendResponse(exchange, HttpStatus.OK, response);
 		}
 
+		/**
+		 * Handles PUT requests.
+		 *
+		 * @param exchange the HTTP exchange
+		 * @throws IOException if an I/O error occurs
+		 */
 		private void handlePut(final HttpExchange exchange) throws IOException {
 			String key = getKeyFromPath(exchange);
 			String body = readRequestBody(exchange);
@@ -123,6 +181,12 @@ public class GZipKeyValueHttpServer implements AutoCloseable {
 			sendResponse(exchange, HttpStatus.OK, body);
 		}
 
+		/**
+		 * Handles POST requests.
+		 *
+		 * @param exchange the HTTP exchange
+		 * @throws IOException if an I/O error occurs
+		 */
 		private void handlePost(final HttpExchange exchange) throws IOException {
 			String body = readRequestBody(exchange);
 
@@ -132,6 +196,12 @@ public class GZipKeyValueHttpServer implements AutoCloseable {
 			sendResponse(exchange, HttpStatus.OK, pair[1]);
 		}
 
+		/**
+		 * Handles DELETE requests.
+		 *
+		 * @param exchange the HTTP exchange
+		 * @throws IOException if an I/O error occurs
+		 */
 		private void handleDelete(final HttpExchange exchange) throws IOException {
 			String key = getKeyFromPath(exchange);
 			String value = map.remove(key);
@@ -139,6 +209,12 @@ public class GZipKeyValueHttpServer implements AutoCloseable {
 			sendResponse(exchange, HttpStatus.OK, value);
 		}
 
+		/**
+		 * Handles PATCH requests.
+		 *
+		 * @param exchange the HTTP exchange
+		 * @throws IOException if an I/O error occurs
+		 */
 		private void handlePatch(final HttpExchange exchange) throws IOException {
 			String key = getKeyFromPath(exchange);
 			String body = readRequestBody(exchange);
@@ -150,6 +226,13 @@ public class GZipKeyValueHttpServer implements AutoCloseable {
 			sendResponse(exchange, HttpStatus.OK, newValue);
 		}
 
+		/**
+		 * Reads the request body, de-compressing if necessary.
+		 *
+		 * @param exchange the HTTP exchange
+		 * @return the request body as a string
+		 * @throws IOException if an I/O error occurs
+		 */
 		@SuppressWarnings("resource")
 		private static String readRequestBody(final HttpExchange exchange) throws IOException {
 			InputStream is = exchange.getRequestBody();
@@ -164,6 +247,14 @@ public class GZipKeyValueHttpServer implements AutoCloseable {
 			return Strings.toString(is, StandardCharsets.UTF_8);
 		}
 
+		/**
+		 * Sends a GZIP-compressed response.
+		 *
+		 * @param exchange the HTTP exchange
+		 * @param status the HTTP status
+		 * @param response the response body
+		 * @throws IOException if an I/O error occurs
+		 */
 		private static void sendResponse(final HttpExchange exchange, final HttpStatus status, final String response) throws IOException {
 			byte[] compressed = GZip.compress(response);
 			exchange.getResponseHeaders().set(HttpHeader.CONTENT_ENCODING.value(), ContentEncoding.GZIP.value());
@@ -177,6 +268,12 @@ public class GZipKeyValueHttpServer implements AutoCloseable {
 			}
 		}
 
+		/**
+		 * Extracts the key from the request path.
+		 *
+		 * @param exchange the HTTP exchange
+		 * @return the extracted key
+		 */
 		private static String getKeyFromPath(final HttpExchange exchange) {
 			String path = exchange.getRequestURI().getPath();
 			if (ROUTE_API_KEYS.equals(path)) {

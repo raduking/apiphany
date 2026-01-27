@@ -37,6 +37,13 @@ public class ByteBufferBodySubscriber implements Subscriber<ByteBuffer> {
 	private boolean completed = false;
 
 	/**
+	 * Default constructor.
+	 */
+	public ByteBufferBodySubscriber() {
+		// empty
+	}
+
+	/**
 	 * @see Subscriber#onSubscribe(Subscription)
 	 */
 	@Override

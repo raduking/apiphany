@@ -11,6 +11,9 @@ import org.slf4j.LoggerFactory;
  */
 public class LoggingExchangeKeys {
 
+	/**
+	 * Logger instance.
+	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(LoggingExchangeKeys.class);
 
 	/**

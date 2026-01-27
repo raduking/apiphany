@@ -42,21 +42,51 @@ import org.slf4j.LoggerFactory;
  */
 public class KeyPairs {
 
+	/**
+	 * Logger instance.
+	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(KeyPairs.class);
 
+	/**
+	 * File names for the keys.
+	 */
 	public static class FileName {
 
+		/**
+		 * XDH key files in raw KEY format.
+		 */
 		public static final String XDH_PRIVATE_KEY = "xdh_private.key";
+
+		/**
+		 * XDH key files in raw KEY format.
+		 */
 		public static final String XDH_PUBLIC_KEY = "xdh_public.key";
 
+		/**
+		 * RSA key files in PEM format.
+		 */
 		public static final String RSA_PRIVATE_PEM = "rsa_private.pem";
+
+		/**
+		 * RSA key files in PEM format.
+		 */
 		public static final String RSA_PUBLIC_PEM = "rsa_public.pem";
 
+		/**
+		 * Hide constructor.
+		 */
 		private FileName() {
 			// hide constructor
 		}
 	}
 
+	/**
+	 * Saves the given key pair in raw KEY format files in the given resource directory.
+	 *
+	 * @param keyPair the key pair to save
+	 * @param resourceDir the resource directory where to save the keys
+	 * @throws IOException if an I/O error occurs
+	 */
 	public static void saveAsKey(final KeyPair keyPair, final String resourceDir) throws IOException {
 		Path dirPath = Paths.get(resourceDir);
 		if (!Files.exists(dirPath)) {
@@ -74,6 +104,13 @@ public class KeyPairs {
 		LOGGER.info("Saved public key (KEY): {}", publicKeyPath);
 	}
 
+	/**
+	 * Saves the given key pair in raw KEY format files in the given resource directory.
+	 *
+	 * @param keyPair the key pair to save
+	 * @param resourceDir the resource directory where to save the keys
+	 * @throws IOException if an I/O error occurs
+	 */
 	public static void saveAsPem(final KeyPair keyPair, final String resourceDir) throws IOException {
 		Path dirPath = Paths.get(resourceDir);
 		if (!Files.exists(dirPath)) {
@@ -93,6 +130,11 @@ public class KeyPairs {
 		LOGGER.info("Saved public key (PEM): {}", publicKeyPath);
 	}
 
+	/**
+	 * Loads the XDH key pair from the resources.
+	 *
+	 * @return the loaded key pair
+	 */
 	public static KeyPair loadKeyPairFromResources() {
 		PrivateKey privateKey;
 		byte[] privateKeyBytes;
@@ -127,6 +169,12 @@ public class KeyPairs {
 		return new KeyPair(publicKey, privateKey);
 	}
 
+	/**
+	 * Main method to generate new key pairs for testing.
+	 *
+	 * @param args command line arguments
+	 * @throws Exception if an error occurs
+	 */
 	public static void main(final String[] args) throws Exception {
 		KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(X25519Keys.ALGORITHM);
 		KeyPair keyPair = keyPairGenerator.generateKeyPair();
