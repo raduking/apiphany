@@ -75,7 +75,7 @@ class ExchangeClientTest {
 	}
 
 	@Test
-	void shouldReturnHeadersAsStringFromApiMessageWithHeaders() {
+	void shouldReturnDisplayHeadersFromApiMessageWithHeaders() {
 		ApiRequest<String> request = new ApiRequest<>();
 		var headers = Headers.of(
 				Header.of("Content-Type", "application/json"),

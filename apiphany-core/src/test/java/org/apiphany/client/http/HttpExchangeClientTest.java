@@ -13,6 +13,9 @@ import java.util.function.Predicate;
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
 import org.apiphany.RequestMethod;
+import org.apiphany.header.Header;
+import org.apiphany.header.HeaderValues;
+import org.apiphany.header.Headers;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.security.AuthenticationType;
@@ -139,6 +142,24 @@ class HttpExchangeClientTest {
 		client.close();
 
 		assertThat(client.getName(), equalTo(DummyHttpExchangeClient.class.getSimpleName()));
+	}
+
+	@Test
+	void shouldReturnDisplayHeadersWithRedactedAuthorizationFromApiMessageWithHeaders() throws Exception {
+		HttpExchangeClient client = new DummyHttpExchangeClient();
+		client.close();
+
+		ApiRequest<String> request = new ApiRequest<>();
+		var headers = Headers.of(
+				Header.of("Content-Type", "application/json"),
+				Header.of("Authorization", "1234567890"));
+		request.addHeaders(headers);
+
+		Map<String, List<String>> headersForDisplay = client.getDisplayHeaders(request);
+
+		assertThat(headersForDisplay, equalTo(Map.of(
+				"Content-Type", List.of("application/json"),
+				"Authorization", List.of(HeaderValues.REDACTED))));
 	}
 
 	static class DummyHttpExchangeClient implements HttpExchangeClient {
