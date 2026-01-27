@@ -17,7 +17,17 @@ public class LoggingExchangeKeys {
 	private static final Logger LOGGER = LoggerFactory.getLogger(LoggingExchangeKeys.class);
 
 	/**
-	 * @see ExchangeKeys#from(byte[], CipherSuite)
+	 * Hide constructor.
+	 */
+	private LoggingExchangeKeys() {
+		// empty
+	}
+
+	/**
+	 * Parses the given TLS key block according to the given cipher suite, logging all derived keys.
+	 *
+	 * @param keyBlock TLS key block
+	 * @param suite cipher suite
 	 */
 	public static ExchangeKeys from(final byte[] keyBlock, final CipherSuite suite) {
 		LOGGER.debug("keyBlock: {}", Hex.stringSupplier(keyBlock));

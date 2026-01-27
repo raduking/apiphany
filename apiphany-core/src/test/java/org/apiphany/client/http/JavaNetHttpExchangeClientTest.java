@@ -22,6 +22,7 @@ import java.net.http.HttpRequest.BodyPublisher;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandler;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Flow.Subscriber;
@@ -38,6 +39,7 @@ import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.lang.Strings;
 import org.apiphany.test.http.ByteBufferBodySubscriber;
 import org.apiphany.utils.TestDto;
 import org.junit.jupiter.api.Test;
@@ -45,6 +47,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.morphix.convert.MapConversions;
+import org.morphix.convert.ObjectConverterException;
+import org.morphix.reflection.GenericClass;
+import org.morphix.reflection.GenericType;
 
 /**
  * Test class for {@link JavaNetHttpExchangeClient}.
@@ -58,6 +63,7 @@ class JavaNetHttpExchangeClientTest {
 
 	private static final String STRING = "Juju";
 	private static final byte[] BYTES = new byte[] { 0x01, 0x02, 0x03 };
+	private static final String TEXT_FILE_TXT = "text-file.txt";
 
 	private static final String EXPECTED_CONNECTION_ERROR = "Expected connection error";
 
@@ -369,6 +375,56 @@ class JavaNetHttpExchangeClientTest {
 	}
 
 	@Test
+	void shouldThrowExceptionOnBuildResponseWhenResponseTypeIsDtoAndContentTypeIsApplicationJsonButResponseIsNotJson() throws Exception {
+		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+		exchangeClient.close();
+
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+				.url(URL)
+				.method(HttpMethod.GET)
+				.responseType(TestDto.class);
+
+		Map<String, List<String>> headers = Map.of(
+				"Content-Type", List.of("application/json"));
+
+		HttpResponse<?> httpResponse = mock(HttpResponse.class);
+		doReturn(HttpStatus.OK.value()).when(httpResponse).statusCode();
+		doReturn(STRING).when(httpResponse).body();
+		doReturn(HttpHeaders.of(headers, (v1, v2) -> true)).when(httpResponse).headers();
+
+		ObjectConverterException exception = assertThrows(ObjectConverterException.class,
+				() -> exchangeClient.buildResponse(request, httpResponse));
+
+		assertThat(exception.getMessage(), equalTo("Error converting JSON response to " + TestDto.class.getName()));
+	}
+
+	@Test
+	void shouldThrowExceptionOnBuildResponseWhenResponseTypeIsGenericTypeAndContentTypeIsApplicationJsonButResponseIsNotJson() throws Exception {
+		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+		exchangeClient.close();
+
+		GenericClass<Map<String, TestDto>> genericResponseType = GenericClass.of(
+				GenericType.of(Map.class, GenericType.Arguments.of(String.class, TestDto.class)));
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+				.url(URL)
+				.method(HttpMethod.GET)
+				.responseType(genericResponseType);
+
+		Map<String, List<String>> headers = Map.of(
+				"Content-Type", List.of("application/json"));
+
+		HttpResponse<?> httpResponse = mock(HttpResponse.class);
+		doReturn(HttpStatus.OK.value()).when(httpResponse).statusCode();
+		doReturn(STRING).when(httpResponse).body();
+		doReturn(HttpHeaders.of(headers, (v1, v2) -> true)).when(httpResponse).headers();
+
+		ObjectConverterException exception = assertThrows(ObjectConverterException.class,
+				() -> exchangeClient.buildResponse(request, httpResponse));
+
+		assertThat(exception.getMessage(), equalTo("Error converting JSON response to " + genericResponseType.getType().getTypeName()));
+	}
+
+	@Test
 	@SuppressWarnings({ "resource", "unchecked" })
 	void shouldSendRequestAndReturnHttpResponse() throws Exception {
 		HttpClient httpClient = mock(HttpClient.class);
@@ -630,4 +686,36 @@ class JavaNetHttpExchangeClientTest {
 		assertNull(subscriber.getError());
 		assertThat(expectedString.getBytes(StandardCharsets.UTF_8), equalTo(subscriber.getReceivedBytes()));
 	}
+
+	@Test
+	void shouldConvertFileToFileBodyPublisher() {
+		String fileContent = Strings.fromFile(TEXT_FILE_TXT);
+
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+				.body(Path.of("src/test/resources/" + TEXT_FILE_TXT));
+
+		BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+
+		ByteBufferBodySubscriber subscriber = new ByteBufferBodySubscriber();
+		bodyPublisher.subscribe(subscriber);
+		subscriber.awaitCompletion();
+
+		assertThat(bodyPublisher.contentLength(), equalTo((long) fileContent.getBytes(StandardCharsets.UTF_8).length));
+		assertTrue(subscriber.isCompleted());
+		assertNull(subscriber.getError());
+		assertThat(fileContent.getBytes(StandardCharsets.UTF_8), equalTo(subscriber.getReceivedBytes()));
+	}
+
+	@Test
+	void shouldThrowExceptionIfFileNotFoundWhenTryingToBuildFileBodyPublisher() {
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+				.body(Path.of(TEXT_FILE_TXT));
+
+		HttpException exception = assertThrows(HttpException.class, () -> JavaNetHttpExchangeClient.toBodyPublisher(request));
+
+		assertThat(exception.getStatus(), equalTo(HttpStatus.BAD_REQUEST));
+		assertThat(exception.getMessage(), equalTo(
+				HttpException.message(HttpStatus.BAD_REQUEST, TEXT_FILE_TXT + " not found")));
+	}
+
 }
