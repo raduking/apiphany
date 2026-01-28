@@ -202,6 +202,21 @@
 					<version>${jacoco.maven.plugin.version}</version>
 				</plugin>
 
+				<!-- Mutation testing -->
+				<plugin>
+					<groupId>org.pitest</groupId>
+					<artifactId>pitest-maven</artifactId>
+					<version>${pitest.maven.plugin.version}</version>
+					<!-- Allows it to work with JUnit 5 -->
+					<dependencies>
+						<dependency>
+							<groupId>org.pitest</groupId>
+							<artifactId>pitest-junit5-plugin</artifactId>
+							<version>${pitest.junit5.plugin.version}</version>
+						</dependency>
+					</dependencies>
+				</plugin>
+
 				<!-- Code formatting -->
 				<plugin>
 					<groupId>com.diffplug.spotless</groupId>
@@ -284,6 +299,14 @@
 						</gpgArguments>
 					</configuration>
 				</plugin>
+
+		        <!-- Publishing to Maven Central -->
+				<plugin>
+					<groupId>org.sonatype.central</groupId>
+					<artifactId>central-publishing-maven-plugin</artifactId>
+					<version>${central.publishing.maven.plugin.version}</version>
+				</plugin>
+
 			</plugins>
 		</pluginManagement>
 
@@ -330,8 +353,6 @@
 					<plugin>
 						<groupId>org.sonatype.central</groupId>
 						<artifactId>central-publishing-maven-plugin</artifactId>
-						<version>${central.publishing.maven.plugin.version}</version>
-						<extensions>true</extensions>
 						<configuration>
 							<autoPublish>true</autoPublish>
 							<deploymentName>release-${project.artifactId}-${project.version}</deploymentName>

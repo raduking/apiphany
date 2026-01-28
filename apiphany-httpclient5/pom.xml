@@ -223,15 +223,6 @@
 			<plugin>
 				<groupId>org.pitest</groupId>
 				<artifactId>pitest-maven</artifactId>
-				<version>${pitest.maven.plugin.version}</version>
-				<!-- Allows it to work with JUnit 5 -->
-				<dependencies>
-					<dependency>
-						<groupId>org.pitest</groupId>
-						<artifactId>pitest-junit5-plugin</artifactId>
-						<version>${pitest.junit5.plugin.version}</version>
-					</dependency>
-				</dependencies>
 				<configuration>
 					<targetClasses>
 						<param>org.apiphany.*</param>

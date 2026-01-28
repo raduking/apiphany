@@ -2,6 +2,8 @@
 
 `1.1.1`
 
+- Added Maven plugin management to parent `pom.xml` with default configurations - no executions in parent `pluginManagement`.
+
 ---
 
 `1.1.0`
