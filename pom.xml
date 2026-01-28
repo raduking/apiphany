@@ -130,7 +130,8 @@
 			Configure plugin management for child modules here.
 			These plugins can be used in child modules but only those defined here will have their versions and configurations
 		managed.
-			No executions should be defined here, only in child modules.
+			No executions should be defined here except ones relevant to the main build
+			Only child modules should define executions for their specific needs.
 		-->
 		<pluginManagement>
 			<plugins>
@@ -300,7 +301,7 @@
 					</configuration>
 				</plugin>
 
-		        <!-- Publishing to Maven Central -->
+				<!-- Publishing to Maven Central -->
 				<plugin>
 					<groupId>org.sonatype.central</groupId>
 					<artifactId>central-publishing-maven-plugin</artifactId>

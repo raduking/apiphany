@@ -370,6 +370,29 @@
 				</executions>
 			</plugin>
 
+			<!-- Build test summary after tests are run -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>build-test-summary</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>java</goal>
+						</goals>
+						<configuration>
+							<mainClass>org.apiphany.test.TestSummary</mainClass>
+							<arguments>
+								<argument>${project.build.directory}/../../apiphany-core/target</argument>
+								<argument>${project.build.directory}</argument>
+							</arguments>
+							<classpathScope>test</classpathScope>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
 		</plugins>
 	</build>
 
