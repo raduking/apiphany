@@ -82,11 +82,31 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	 * This constructor can be used when more advanced customization of the underlying HTTP client is needed but only by
 	 * deriving from this class.
 	 *
+	 * @param clientProperties client properties
 	 * @param httpClient underlying HTTP client
 	 */
 	protected JavaNetHttpExchangeClient(final ClientProperties clientProperties, final HttpClient httpClient) {
 		super(clientProperties);
 		this.httpClient = httpClient;
+	}
+
+	/**
+	 * Initialize the client with the given HTTP client builder.
+	 * <p>
+	 * This constructor can be used when more advanced customization of the underlying HTTP client is needed but only by
+	 * deriving from this class.
+	 *
+	 * @param clientProperties client properties
+	 * @param httpClientBuilder HTTP client builder
+	 * @param applyCustomization whether to apply the default customization or not
+	 */
+	protected JavaNetHttpExchangeClient(final ClientProperties clientProperties, final HttpClient.Builder httpClientBuilder,
+			final boolean applyCustomization) {
+		super(clientProperties);
+		if (applyCustomization) {
+			customize(httpClientBuilder);
+		}
+		this.httpClient = httpClientBuilder.build();
 	}
 
 	/**
@@ -117,7 +137,8 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	private void customize(final HttpClient.Builder httpClientBuilder) {
 		JavaNetHttpProperties httpProperties = getCustomProperties(JavaNetHttpProperties.class);
 		HttpClient.Version version = Nullables.notNull(httpProperties)
-				.thenYield(props -> props.getRequest().getHttpVersion())
+				.andNotNull(JavaNetHttpProperties::getRequest)
+				.thenNotNull(JavaNetHttpProperties.Request::getHttpVersion)
 				.orElse(() -> JavaNetHttpProperties.Request.DEFAULT_HTTP_VERSION);
 		httpClientBuilder.version(version);
 		Nullables.notNull(getSslContext()).then(httpClientBuilder::sslContext);
