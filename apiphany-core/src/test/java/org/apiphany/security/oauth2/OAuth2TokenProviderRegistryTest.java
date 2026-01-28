@@ -12,7 +12,7 @@ import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import java.time.Instant;
@@ -375,8 +375,8 @@ class OAuth2TokenProviderRegistryTest {
 
 		verify(mockRegistry).entries();
 
-		verify(mockRegistry, times(0)).tokenProvider(CLIENT_REGISTRATION_1, tokenClientSupplier);
-		verify(customizer, times(0)).accept(expectedRegistration1Name, tokenProvider);
+		verify(mockRegistry, never()).tokenProvider(CLIENT_REGISTRATION_1, tokenClientSupplier);
+		verify(customizer, never()).accept(expectedRegistration1Name, tokenProvider);
 
 		verify(mockRegistry).tokenProvider(CLIENT_REGISTRATION_2, tokenClientSupplier);
 		verify(customizer).accept(expectedRegistration2Name, tokenProvider);

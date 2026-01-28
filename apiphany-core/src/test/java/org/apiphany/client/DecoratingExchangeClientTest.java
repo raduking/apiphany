@@ -3,7 +3,7 @@ package org.apiphany.client;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import org.apiphany.ApiRequest;
@@ -25,7 +25,7 @@ class DecoratingExchangeClientTest {
 		try (DecoratingExchangeClient client = new DecoratingExchangeClient(delegate)) {
 			assertThat(client.getExchangeClient(), equalTo(delegate));
 		} finally {
-			verify(delegate, times(0)).close();
+			verify(delegate, never()).close();
 			delegate.close();
 		}
 	}

@@ -3,6 +3,7 @@
 `1.1.1`
 
 - Added Maven plugin management to parent `pom.xml` with default configurations - no executions in parent `pluginManagement`.
+- Added `ClientCustomization` enum with two values `DEFAULT` and `NONE` to allow specific modes of client customizations and avoid using flags.
 
 ---
 
