@@ -1,2 +1,11 @@
 #!/bin/sh
-mvn clean deploy -Drelease=true -Dtest.tls.chunked=true
+
+# Exit immediately if a command exits with a non-zero status
+set -e
+
+# Run full build with tests
+mvn clean verify -Dtest.tls.chunked=true
+
+# If we get here, all tests passed
+echo "All tests passed. Deploying apiphany module..."
+mvn deploy -Drelease=true -pl apiphany
