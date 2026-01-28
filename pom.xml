@@ -9,6 +9,31 @@
 	<version>1.1.0</version>
 	<packaging>pom</packaging>
 
+	<name>${project.groupId}:${project.artifactId}</name>
+	<description>Apiphany Library parent</description>
+	<url>https://github.com/raduking/apiphany</url>
+
+	<licenses>
+		<license>
+			<name>Apache License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<id>raduking</id>
+			<name>Radu Sebastian LAZIN</name>
+			<email>raduking@gmail.com</email>
+		</developer>
+	</developers>
+
+	<scm>
+		<connection>scm:git:git://github.com/raduking/apiphany.git</connection>
+		<developerConnection>scm:git:ssh://github.com:raduking/apiphany.git</developerConnection>
+		<url>https://github.com/raduking/apiphany/tree/master</url>
+	</scm>
+
 	<modules>
 		<module>apiphany-core</module>
 		<module>apiphany-httpclient5</module>
