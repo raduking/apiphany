@@ -233,26 +233,23 @@
 					</executions>
 				</plugin>
 
+				<!-- Artifact signing for publishing -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-gpg-plugin</artifactId>
+					<version>${maven.gpg.plugin.version}</version>
+					<configuration>
+						<keyname>${env.MAVEN_GPG_PLUGIN_KEY}</keyname>
+						<gpgArguments>
+							<argument>--pinentry-mode</argument>
+							<argument>loopback</argument>
+						</gpgArguments>
+					</configuration>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 
 	</build>
-
-	<distributionManagement>
-		<snapshotRepository>
-			<id>central</id>
-			<name>Central Repository Snapshots</name>
-			<url>https://central.sonatype.com/repository/maven-snapshots</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</snapshotRepository>
-  		<repository>
-			<id>central</id>
-			<name>Central Repository</name>
-    		<url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-		</repository>
-	</distributionManagement>
 
 	<profiles>
 		<!--
@@ -272,7 +269,6 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-gpg-plugin</artifactId>
-						<version>${maven.gpg.plugin.version}</version>
 						<executions>
 							<execution>
 							<id>sign-artifacts</id>
@@ -282,13 +278,6 @@
 							</goals>
 							</execution>
 						</executions>
-						<configuration>
-							<keyname>${env.MAVEN_GPG_PLUGIN_KEY}</keyname>
-							<gpgArguments>
-								<argument>--pinentry-mode</argument>
-								<argument>loopback</argument>
-							</gpgArguments>
-						</configuration>
 					</plugin>
 
 					<!-- Publish to Maven Central -->
@@ -312,5 +301,21 @@
 			</build>
 		</profile>
 	</profiles>
+
+	<distributionManagement>
+		<snapshotRepository>
+			<id>central</id>
+			<name>Central Repository Snapshots</name>
+			<url>https://central.sonatype.com/repository/maven-snapshots</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</snapshotRepository>
+  		<repository>
+			<id>central</id>
+			<name>Central Repository</name>
+    		<url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+	</distributionManagement>
 
 </project>
