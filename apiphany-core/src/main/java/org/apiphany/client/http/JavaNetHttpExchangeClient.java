@@ -18,6 +18,7 @@ import java.util.function.Supplier;
 
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
+import org.apiphany.client.ClientCustomization;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ContentConverter;
 import org.apiphany.client.ExchangeClient;
@@ -82,11 +83,31 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	 * This constructor can be used when more advanced customization of the underlying HTTP client is needed but only by
 	 * deriving from this class.
 	 *
+	 * @param clientProperties client properties
 	 * @param httpClient underlying HTTP client
 	 */
 	protected JavaNetHttpExchangeClient(final ClientProperties clientProperties, final HttpClient httpClient) {
 		super(clientProperties);
 		this.httpClient = httpClient;
+	}
+
+	/**
+	 * Initialize the client with the given HTTP client builder.
+	 * <p>
+	 * This constructor can be used when more advanced customization of the underlying HTTP client is needed but only by
+	 * deriving from this class.
+	 *
+	 * @param clientProperties client properties
+	 * @param httpClientBuilder HTTP client builder
+	 * @param clientCustomization whether to apply the default customization or not
+	 */
+	protected JavaNetHttpExchangeClient(final ClientProperties clientProperties, final HttpClient.Builder httpClientBuilder,
+			final ClientCustomization clientCustomization) {
+		super(clientProperties);
+		this.httpClient = switch (clientCustomization) {
+			case DEFAULT -> customize(httpClientBuilder).build();
+			case NONE -> httpClientBuilder.build();
+		};
 	}
 
 	/**
@@ -113,14 +134,17 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	 * Customizes the HTTP client builder.
 	 *
 	 * @param httpClientBuilder HTTP client builder
+	 * @return the customized HTTP client builder
 	 */
-	private void customize(final HttpClient.Builder httpClientBuilder) {
+	private HttpClient.Builder customize(final HttpClient.Builder httpClientBuilder) {
 		JavaNetHttpProperties httpProperties = getCustomProperties(JavaNetHttpProperties.class);
 		HttpClient.Version version = Nullables.notNull(httpProperties)
-				.thenYield(props -> props.getRequest().getHttpVersion())
+				.andNotNull(JavaNetHttpProperties::getRequest)
+				.thenNotNull(JavaNetHttpProperties.Request::getHttpVersion)
 				.orElse(() -> JavaNetHttpProperties.Request.DEFAULT_HTTP_VERSION);
 		httpClientBuilder.version(version);
 		Nullables.notNull(getSslContext()).then(httpClientBuilder::sslContext);
+		return httpClientBuilder;
 	}
 
 	/**

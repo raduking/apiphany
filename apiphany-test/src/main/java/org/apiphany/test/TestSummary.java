@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -32,6 +33,11 @@ public class TestSummary {
 	 */
 	private static final Logger LOGGER = Logger.getLogger(TestSummary.class.getName());
 	static {
+		Logger root = Logger.getLogger("");
+		for (Handler existingHandler : root.getHandlers()) {
+			root.removeHandler(existingHandler);
+		}
+
 		// disable default console handler
 		LOGGER.setUseParentHandlers(false);
 
@@ -73,15 +79,21 @@ public class TestSummary {
 	 * @throws Exception if an error occurs
 	 */
 	public static void main(final String[] args) throws Exception {
-		File targetDir;
+		File surefireTargetDir;
+		File failsafeTargetDir;
 		if (args.length == 1) {
-			targetDir = new File(args[0]);
+			surefireTargetDir = new File(args[0]);
+			failsafeTargetDir = surefireTargetDir;
+		} else if (args.length == 2) {
+			surefireTargetDir = new File(args[0]);
+			failsafeTargetDir = new File(args[1]);
 		} else {
-			targetDir = detectTargetDirectory();
+			surefireTargetDir = detectTargetDirectory();
+			failsafeTargetDir = surefireTargetDir;
 		}
 
-		File surefire = new File(targetDir, "surefire-reports");
-		File failsafe = new File(targetDir, "failsafe-reports");
+		File surefire = new File(surefireTargetDir, "surefire-reports");
+		File failsafe = new File(failsafeTargetDir, "failsafe-reports");
 
 		Summary unit = parseDir(surefire);
 		Summary integration = parseDir(failsafe);

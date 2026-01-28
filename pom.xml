@@ -4,9 +4,15 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
+	<!--
+		Increasing the version will require:
+		> mvn clean install
+		before IDEs will be able to correctly see the child module dependencies (ex: apiphany-core depending on apiphany-test)  
+	-->
+
 	<groupId>io.github.raduking</groupId>
 	<artifactId>apiphany-parent</artifactId>
-	<version>1.1.0</version>
+	<version>1.1.1</version>
 	<packaging>pom</packaging>
 
 	<name>${project.groupId}:${project.artifactId}</name>
@@ -51,7 +57,7 @@
 
 		<httpclient5.version>5.5.1</httpclient5.version>
 
-        <!-- Java / Maven properties -->
+		<!-- Java / Maven properties -->
 		<java.version>21</java.version>
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
@@ -115,20 +121,29 @@
 			They just have their versions managed here and can be used when needed without specifying the version.
 		-->
 		<dependencies>
-			<!-- No dependencies defined in the parent pom.xml because only child modules will be deployed -->
+			<!-- Prefer child modules to define versions -->
 		</dependencies>
 	</dependencyManagement>
 
 	<build>
 		<!--
 			Configure plugin management for child modules here.
-			These plugins can be used in child modules but only those defined here will have their versions and configurations managed.
-			No executions should be defined here, only in child modules.
+			These plugins can be used in child modules but only those defined here will have their versions and configurations
+		managed.
+			No executions should be defined here except ones relevant to the main build
+			Only child modules should define executions for their specific needs.
 		-->
 		<pluginManagement>
 			<plugins>
 
-	            <!-- Compiler plugin -->
+				<!-- Resources plugin to be able to configure resource filtering in child modules -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-resources-plugin</artifactId>
+					<version>${maven.resources.plugin.version}</version>
+				</plugin>
+
+				<!-- Compiler plugin -->
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
@@ -152,7 +167,7 @@
 					</configuration>
 				</plugin>
 
-	            <!-- Integration testing -->
+				<!-- Integration testing -->
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-failsafe-plugin</artifactId>
@@ -164,7 +179,46 @@
 					</configuration>
 				</plugin>
 
-		        <!-- Code formatting -->
+				<!-- Source code jar -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-source-plugin</artifactId>
+					<version>${maven.source.plugin.version}</version>
+				</plugin>
+
+				<!-- JavaDoc -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>${maven.javadoc.plugin.version}</version>
+					<configuration>
+						<additionalOptions>-Xmaxwarns 10000</additionalOptions>
+					</configuration>
+				</plugin>
+
+				<!-- Code coverage -->
+				<plugin>
+					<groupId>org.jacoco</groupId>
+					<artifactId>jacoco-maven-plugin</artifactId>
+					<version>${jacoco.maven.plugin.version}</version>
+				</plugin>
+
+				<!-- Mutation testing -->
+				<plugin>
+					<groupId>org.pitest</groupId>
+					<artifactId>pitest-maven</artifactId>
+					<version>${pitest.maven.plugin.version}</version>
+					<!-- Allows it to work with JUnit 5 -->
+					<dependencies>
+						<dependency>
+							<groupId>org.pitest</groupId>
+							<artifactId>pitest-junit5-plugin</artifactId>
+							<version>${pitest.junit5.plugin.version}</version>
+						</dependency>
+					</dependencies>
+				</plugin>
+
+				<!-- Code formatting -->
 				<plugin>
 					<groupId>com.diffplug.spotless</groupId>
 					<artifactId>spotless-maven-plugin</artifactId>
@@ -179,7 +233,7 @@
 							<groupId>io.github.raduking</groupId>
 							<artifactId>code-format</artifactId>
 							<version>${code.format.version}</version>
-	                    </dependency>
+						</dependency>
 					</dependencies>
 					<configuration>
 						<java>
@@ -190,8 +244,8 @@
 							<importOrder>
 								<order>java,javax,jakarta,org,com</order>
 							</importOrder>
-							<removeUnusedImports/>
-							<trimTrailingWhitespace/>
+							<removeUnusedImports />
+							<trimTrailingWhitespace />
 						</java>
 					</configuration>
 				</plugin>
@@ -226,33 +280,38 @@
 									<requireJavaVersion>
 										<version>${java.version}</version>
 									</requireJavaVersion>
-									<requireUpperBoundDeps/>
+									<requireUpperBoundDeps />
 								</rules>
 							</configuration>
 						</execution>
 					</executions>
 				</plugin>
 
+				<!-- Artifact signing for publishing -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-gpg-plugin</artifactId>
+					<version>${maven.gpg.plugin.version}</version>
+					<configuration>
+						<keyname>${env.MAVEN_GPG_PLUGIN_KEY}</keyname>
+						<gpgArguments>
+							<argument>--pinentry-mode</argument>
+							<argument>loopback</argument>
+						</gpgArguments>
+					</configuration>
+				</plugin>
+
+				<!-- Publishing to Maven Central -->
+				<plugin>
+					<groupId>org.sonatype.central</groupId>
+					<artifactId>central-publishing-maven-plugin</artifactId>
+					<version>${central.publishing.maven.plugin.version}</version>
+				</plugin>
+
 			</plugins>
 		</pluginManagement>
 
 	</build>
-
-	<distributionManagement>
-		<snapshotRepository>
-			<id>central</id>
-			<name>Central Repository Snapshots</name>
-			<url>https://central.sonatype.com/repository/maven-snapshots</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</snapshotRepository>
-  		<repository>
-			<id>central</id>
-			<name>Central Repository</name>
-    		<url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-		</repository>
-	</distributionManagement>
 
 	<profiles>
 		<!--
@@ -266,29 +325,25 @@
 					<value>true</value>
 				</property>
 			</activation>
+
 			<build>
 				<plugins>
-					<!-- Artifact signing for publishing -->
+					<!--
+						Artifact signing for publishing.
+						This needs execution section in each module configuration being in pluginManagement above.
+					-->
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-gpg-plugin</artifactId>
-						<version>${maven.gpg.plugin.version}</version>
 						<executions>
 							<execution>
-							<id>sign-artifacts</id>
-							<phase>verify</phase>
-							<goals>
-								<goal>sign</goal>
-							</goals>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
 							</execution>
 						</executions>
-						<configuration>
-							<keyname>${env.MAVEN_GPG_PLUGIN_KEY}</keyname>
-							<gpgArguments>
-								<argument>--pinentry-mode</argument>
-								<argument>loopback</argument>
-							</gpgArguments>
-						</configuration>
 					</plugin>
 
 					<!-- Publish to Maven Central -->
@@ -299,8 +354,6 @@
 					<plugin>
 						<groupId>org.sonatype.central</groupId>
 						<artifactId>central-publishing-maven-plugin</artifactId>
-						<version>${central.publishing.maven.plugin.version}</version>
-						<extensions>true</extensions>
 						<configuration>
 							<autoPublish>true</autoPublish>
 							<deploymentName>release-${project.artifactId}-${project.version}</deploymentName>
@@ -310,7 +363,24 @@
 
 				</plugins>
 			</build>
+
 		</profile>
 	</profiles>
+
+	<distributionManagement>
+		<snapshotRepository>
+			<id>central</id>
+			<name>Central Repository Snapshots</name>
+			<url>https://central.sonatype.com/repository/maven-snapshots</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</snapshotRepository>
+		<repository>
+			<id>central</id>
+			<name>Central Repository</name>
+			<url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+	</distributionManagement>
 
 </project>

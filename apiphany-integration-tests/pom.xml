@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>io.github.raduking</groupId>
 		<artifactId>apiphany-parent</artifactId>
-		<version>1.1.0</version>
+		<version>1.1.1</version>
 	</parent>
 
 	<artifactId>apiphany-integration-tests</artifactId>
@@ -39,9 +39,8 @@
 	</scm>
 
 	<properties>
-
 		<!-- JaCoco VM arguments empty by default -->
-		<jacocoArgLine/>
+		<jacocoArgLine />
 
 		<!--
 			The apiphanyArgLine property is only used during the build process of the library 
@@ -188,16 +187,16 @@
 			<artifactId>code-format</artifactId>
 			<version>${code.format.version}</version>
 			<scope>test</scope>
-        </dependency>
+		</dependency>
 
-        <!-- Benchmarking dependencies (scope=test so they don't affect the main build) -->
+		<!-- Benchmarking dependencies (scope=test so they don't affect the main build) -->
 		<dependency>
 			<groupId>org.openjdk.jmh</groupId>
 			<artifactId>jmh-core</artifactId>
 			<version>${jmh.version}</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.openjdk.jmh</groupId>
 			<artifactId>jmh-generator-annprocess</artifactId>
@@ -210,9 +209,9 @@
 	<build>
 		<plugins>
 			<plugin>
+				<!-- Resource copying -->
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-resources-plugin</artifactId>
-				<version>${maven.resources.plugin.version}</version>
 				<executions>
 					<execution>
 						<id>copy-main-resources</id>
@@ -286,7 +285,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>${maven.javadoc.plugin.version}</version>
 				<executions>
 					<execution>
 						<id>attach-javadocs</id>
@@ -300,7 +298,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
-				<version>${maven.source.plugin.version}</version>
 				<executions>
 					<execution>
 						<id>attach-sources</id>
@@ -333,7 +330,6 @@
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>${jacoco.maven.plugin.version}</version>
 				<executions>
 					<execution>
 						<id>pre-unit-test</id>
@@ -360,7 +356,7 @@
 				</executions>
 			</plugin>
 
-	        <!-- Code formatting -->
+			<!-- Code formatting -->
 			<plugin>
 				<groupId>com.diffplug.spotless</groupId>
 				<artifactId>spotless-maven-plugin</artifactId>
@@ -374,15 +370,29 @@
 				</executions>
 			</plugin>
 
-			<!-- Skip deployment for this module -->
+			<!-- Build test summary after tests are run -->
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-deploy-plugin</artifactId>
-				<version>${maven.deploy.plugin.version}</version>
-				<configuration>
-					<skip>true</skip>
-				</configuration>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>build-test-summary</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>java</goal>
+						</goals>
+						<configuration>
+							<mainClass>org.apiphany.test.TestSummary</mainClass>
+							<arguments>
+								<argument>${project.build.directory}/../../apiphany-core/target</argument>
+								<argument>${project.build.directory}</argument>
+							</arguments>
+							<classpathScope>test</classpathScope>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
+
 		</plugins>
 	</build>
 
@@ -397,29 +407,13 @@
 			</activation>
 			<build>
 				<plugins>
-					<!--
-						Activate it with: -Drelease=true
-					-->
-					<!-- Artifact signing for publishing -->
+					<!-- Do not publish to Maven Central -->
 					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-gpg-plugin</artifactId>
-						<version>${maven.gpg.plugin.version}</version>
-						<executions>
-							<execution>
-							<id>sign-artifacts</id>
-							<phase>verify</phase>
-							<goals>
-								<goal>sign</goal>
-							</goals>
-							</execution>
-						</executions>
+						<groupId>org.sonatype.central</groupId>
+						<artifactId>central-publishing-maven-plugin</artifactId>
 						<configuration>
-							<keyname>${env.MAVEN_GPG_PLUGIN_KEY}</keyname>
-							<gpgArguments>
-								<argument>--pinentry-mode</argument>
-								<argument>loopback</argument>
-							</gpgArguments>
+							<autoPublish>false</autoPublish>
+							<skipPublishing>true</skipPublishing>
 						</configuration>
 					</plugin>
 				</plugins>
@@ -471,10 +465,10 @@
 							<resultFormat>JSON</resultFormat>
 							<resultsFile>target/benchmarks/jmh-result-${maven.build.timestamp}.json</resultsFile>
 						</configuration>
-					</plugin>					
+					</plugin>
 				</plugins>
 			</build>
-    	</profile>
+		</profile>
 
 	</profiles>
 

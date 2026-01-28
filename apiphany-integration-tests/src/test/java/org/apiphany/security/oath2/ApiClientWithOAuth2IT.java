@@ -6,8 +6,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.util.Map;
@@ -201,7 +201,7 @@ class ApiClientWithOAuth2IT extends ITWithJavaSunOAuth2Server {
 			try (OAuth2v6ApiClient client = new OAuth2v6ApiClient(exchangeClient)) {
 				// empty
 			}
-			verify(exchangeClient, times(0)).close();
+			verify(exchangeClient, never()).close();
 		}
 		verify(exchangeClient).close();
 	}
@@ -223,7 +223,7 @@ class ApiClientWithOAuth2IT extends ITWithJavaSunOAuth2Server {
 			try (OAuth2v8ApiClient client = new OAuth2v8ApiClient(exchangeClient)) {
 				// empty
 			}
-			verify(exchangeClient, times(0)).close();
+			verify(exchangeClient, never()).close();
 		}
 		verify(exchangeClient).close();
 	}
@@ -295,7 +295,7 @@ class ApiClientWithOAuth2IT extends ITWithJavaSunOAuth2Server {
 				assertThat(result, equalTo(JavaSunHttpServer.NAME));
 			}
 
-			verify(tokenClient, times(0)).close();
+			verify(tokenClient, never()).close();
 		}
 	}
 
