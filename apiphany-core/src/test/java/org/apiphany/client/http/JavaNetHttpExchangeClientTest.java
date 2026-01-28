@@ -12,10 +12,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.http.HttpClient;
+import java.net.http.HttpClient.Version;
 import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublisher;
@@ -48,6 +50,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.morphix.convert.MapConversions;
 import org.morphix.convert.ObjectConverterException;
+import org.morphix.lang.Nullables;
 import org.morphix.reflection.GenericClass;
 import org.morphix.reflection.GenericType;
 
@@ -76,6 +79,31 @@ class JavaNetHttpExchangeClientTest {
 		exchangeClient.close();
 
 		assertThat(exchangeClient.getClientProperties(), nullValue());
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldSetDefaultVersionIfProvidedVersionIsNull() throws Exception {
+		HttpClient.Builder httpClientBuilder = mock(HttpClient.Builder.class);
+		HttpClient httpClient = mock(HttpClient.class);
+		doReturn(httpClient).when(httpClientBuilder).build();
+
+		ClientProperties properties = new ClientProperties();
+		JavaNetHttpProperties javaNetHttpProperties = new JavaNetHttpProperties();
+		javaNetHttpProperties.getRequest().setVersion(null);
+		properties.setCustomProperties(JavaNetHttpProperties.ROOT, javaNetHttpProperties);
+
+		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient(properties, httpClientBuilder, true);
+		exchangeClient.close();
+
+		// also check the chain
+		HttpClient.Version version = Nullables.notNull(javaNetHttpProperties)
+				.andNotNull(JavaNetHttpProperties::getRequest)
+				.thenNotNull(JavaNetHttpProperties.Request::getHttpVersion)
+				.orElse(() -> JavaNetHttpProperties.Request.DEFAULT_HTTP_VERSION);
+
+		assertThat(version, equalTo(Version.HTTP_1_1));
+		verify(httpClientBuilder).version(Version.HTTP_1_1);
 	}
 
 	@Test
