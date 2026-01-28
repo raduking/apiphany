@@ -4,6 +4,12 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
+	<!--
+		Increasing the version will require:
+		> mvn clean install
+		before IDEs will be able to correctly see the child module dependencies (ex: apiphany-core depending on apiphany-test)  
+	-->
+
 	<groupId>io.github.raduking</groupId>
 	<artifactId>apiphany-parent</artifactId>
 	<version>1.1.1</version>
@@ -115,7 +121,7 @@
 			They just have their versions managed here and can be used when needed without specifying the version.
 		-->
 		<dependencies>
-			<!-- No dependencies defined in the parent pom.xml because only child modules will be deployed -->
+			<!-- Prefer child modules to define versions -->
 		</dependencies>
 	</dependencyManagement>
 
@@ -127,6 +133,13 @@
 		-->
 		<pluginManagement>
 			<plugins>
+
+				<!-- Resources plugin to be able to configure resource filtering in child modules -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-resources-plugin</artifactId>
+					<version>${maven.resources.plugin.version}</version>
+				</plugin>
 
 	            <!-- Compiler plugin -->
 				<plugin>
@@ -162,6 +175,30 @@
 							<include>${integration.tests.pattern}</include>
 						</includes>
 					</configuration>
+				</plugin>
+
+	            <!-- Source code jar -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-source-plugin</artifactId>
+					<version>${maven.source.plugin.version}</version>
+				</plugin>
+                	            
+	            <!-- JavaDoc -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>${maven.javadoc.plugin.version}</version>
+					<configuration>
+						<additionalOptions>-Xmaxwarns 10000</additionalOptions>
+					</configuration>
+				</plugin>
+
+				<!-- Code coverage -->
+				<plugin>
+					<groupId>org.jacoco</groupId>
+					<artifactId>jacoco-maven-plugin</artifactId>
+					<version>${jacoco.maven.plugin.version}</version>
 				</plugin>
 
 		        <!-- Code formatting -->
@@ -263,9 +300,13 @@
 					<value>true</value>
 				</property>
 			</activation>
+			
 			<build>
 				<plugins>
-					<!-- Artifact signing for publishing -->
+					<!--
+						Artifact signing for publishing.
+						This needs execution section in each module configuration being in pluginManagement above.
+					-->
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-gpg-plugin</artifactId>
@@ -299,6 +340,7 @@
 
 				</plugins>
 			</build>
+
 		</profile>
 	</profiles>
 

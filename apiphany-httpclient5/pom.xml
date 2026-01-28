@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>io.github.raduking</groupId>
 		<artifactId>apiphany-parent</artifactId>
-		<version>1.1.0</version>
+		<version>1.1.1</version>
 	</parent>
 
 	<artifactId>apiphany-httpclient5</artifactId>
@@ -163,7 +163,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
-				<version>${maven.source.plugin.version}</version>
 				<executions>
 					<execution>
 						<id>attach-sources</id>
@@ -178,7 +177,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>${maven.javadoc.plugin.version}</version>
 				<executions>
 					<execution>
 						<id>attach-javadocs</id>
@@ -193,7 +191,6 @@
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>${jacoco.maven.plugin.version}</version>
 				<executions>
 					<execution>
 						<id>pre-unit-test</id>
@@ -266,8 +263,11 @@
 	</build>
 
 	<profiles>
+		<!--
+			Release profile, activate it with: -Drelease=true
+		-->
 		<profile>
-			<id>active-on-property-environment</id>
+			<id>active-on-property-environment-release</id>
 			<activation>
 				<property>
 					<name>release</name>
@@ -276,14 +276,10 @@
 			</activation>
 			<build>
 				<plugins>
-					<!--
-						Activate it with: -Drelease=true
-					-->
 					<!-- Artifact signing for publishing -->
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-gpg-plugin</artifactId>
-						<version>${maven.gpg.plugin.version}</version>
 						<executions>
 							<execution>
 							<id>sign-artifacts</id>
@@ -293,26 +289,6 @@
 							</goals>
 							</execution>
 						</executions>
-						<configuration>
-							<keyname>${env.MAVEN_GPG_PLUGIN_KEY}</keyname>
-							<gpgArguments>
-								<argument>--pinentry-mode</argument>
-								<argument>loopback</argument>
-							</gpgArguments>
-						</configuration>
-					</plugin>
-				
-					<!-- Publish to Maven Central -->
-					<plugin>
-						<groupId>org.sonatype.central</groupId>
-						<artifactId>central-publishing-maven-plugin</artifactId>
-						<version>${central.publishing.maven.plugin.version}</version>
-						<extensions>true</extensions>
-						<configuration>
-							<autoPublish>true</autoPublish>
-							<deploymentName>release-${project.artifactId}-${project.version}</deploymentName>
-							<publishingServerId>central</publishingServerId>
-						</configuration>
 					</plugin>
 
 				</plugins>
