@@ -57,7 +57,7 @@
 
 		<httpclient5.version>5.5.1</httpclient5.version>
 
-        <!-- Java / Maven properties -->
+		<!-- Java / Maven properties -->
 		<java.version>21</java.version>
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
@@ -128,7 +128,8 @@
 	<build>
 		<!--
 			Configure plugin management for child modules here.
-			These plugins can be used in child modules but only those defined here will have their versions and configurations managed.
+			These plugins can be used in child modules but only those defined here will have their versions and configurations
+		managed.
 			No executions should be defined here, only in child modules.
 		-->
 		<pluginManagement>
@@ -141,7 +142,7 @@
 					<version>${maven.resources.plugin.version}</version>
 				</plugin>
 
-	            <!-- Compiler plugin -->
+				<!-- Compiler plugin -->
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
@@ -165,7 +166,7 @@
 					</configuration>
 				</plugin>
 
-	            <!-- Integration testing -->
+				<!-- Integration testing -->
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-failsafe-plugin</artifactId>
@@ -177,14 +178,14 @@
 					</configuration>
 				</plugin>
 
-	            <!-- Source code jar -->
+				<!-- Source code jar -->
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-source-plugin</artifactId>
 					<version>${maven.source.plugin.version}</version>
 				</plugin>
-                	            
-	            <!-- JavaDoc -->
+
+				<!-- JavaDoc -->
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-javadoc-plugin</artifactId>
@@ -201,7 +202,7 @@
 					<version>${jacoco.maven.plugin.version}</version>
 				</plugin>
 
-		        <!-- Code formatting -->
+				<!-- Code formatting -->
 				<plugin>
 					<groupId>com.diffplug.spotless</groupId>
 					<artifactId>spotless-maven-plugin</artifactId>
@@ -216,7 +217,7 @@
 							<groupId>io.github.raduking</groupId>
 							<artifactId>code-format</artifactId>
 							<version>${code.format.version}</version>
-	                    </dependency>
+						</dependency>
 					</dependencies>
 					<configuration>
 						<java>
@@ -227,8 +228,8 @@
 							<importOrder>
 								<order>java,javax,jakarta,org,com</order>
 							</importOrder>
-							<removeUnusedImports/>
-							<trimTrailingWhitespace/>
+							<removeUnusedImports />
+							<trimTrailingWhitespace />
 						</java>
 					</configuration>
 				</plugin>
@@ -263,7 +264,7 @@
 									<requireJavaVersion>
 										<version>${java.version}</version>
 									</requireJavaVersion>
-									<requireUpperBoundDeps/>
+									<requireUpperBoundDeps />
 								</rules>
 							</configuration>
 						</execution>
@@ -300,7 +301,7 @@
 					<value>true</value>
 				</property>
 			</activation>
-			
+
 			<build>
 				<plugins>
 					<!--
@@ -312,11 +313,11 @@
 						<artifactId>maven-gpg-plugin</artifactId>
 						<executions>
 							<execution>
-							<id>sign-artifacts</id>
-							<phase>verify</phase>
-							<goals>
-								<goal>sign</goal>
-							</goals>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
 							</execution>
 						</executions>
 					</plugin>
@@ -353,10 +354,10 @@
 				<enabled>true</enabled>
 			</snapshots>
 		</snapshotRepository>
-  		<repository>
+		<repository>
 			<id>central</id>
 			<name>Central Repository</name>
-    		<url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+			<url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
 		</repository>
 	</distributionManagement>
 

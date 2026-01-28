@@ -40,7 +40,7 @@
 
 	<properties>
 		<!-- JaCoco VM arguments empty by default -->
-		<jacocoArgLine/>
+		<jacocoArgLine />
 
 		<!--
 			The apiphanyArgLine property is only used during the build process of the library 
@@ -187,16 +187,16 @@
 			<artifactId>code-format</artifactId>
 			<version>${code.format.version}</version>
 			<scope>test</scope>
-        </dependency>
+		</dependency>
 
-        <!-- Benchmarking dependencies (scope=test so they don't affect the main build) -->
+		<!-- Benchmarking dependencies (scope=test so they don't affect the main build) -->
 		<dependency>
 			<groupId>org.openjdk.jmh</groupId>
 			<artifactId>jmh-core</artifactId>
 			<version>${jmh.version}</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.openjdk.jmh</groupId>
 			<artifactId>jmh-generator-annprocess</artifactId>
@@ -356,7 +356,7 @@
 				</executions>
 			</plugin>
 
-	        <!-- Code formatting -->
+			<!-- Code formatting -->
 			<plugin>
 				<groupId>com.diffplug.spotless</groupId>
 				<artifactId>spotless-maven-plugin</artifactId>
@@ -390,7 +390,7 @@
 						<artifactId>central-publishing-maven-plugin</artifactId>
 						<version>${central.publishing.maven.plugin.version}</version>
 						<configuration>
-						    <skipPublishing>true</skipPublishing>
+							<skipPublishing>true</skipPublishing>
 						</configuration>
 					</plugin>
 				</plugins>
@@ -442,10 +442,10 @@
 							<resultFormat>JSON</resultFormat>
 							<resultsFile>target/benchmarks/jmh-result-${maven.build.timestamp}.json</resultsFile>
 						</configuration>
-					</plugin>					
+					</plugin>
 				</plugins>
 			</build>
-    	</profile>
+		</profile>
 
 	</profiles>
 

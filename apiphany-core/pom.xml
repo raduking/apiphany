@@ -118,7 +118,7 @@
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
@@ -202,16 +202,16 @@
 			<artifactId>code-format</artifactId>
 			<version>${code.format.version}</version>
 			<scope>test</scope>
-        </dependency>
+		</dependency>
 
-        <!-- Benchmarking dependencies (scope=test so they don't affect the main build) -->
+		<!-- Benchmarking dependencies (scope=test so they don't affect the main build) -->
 		<dependency>
 			<groupId>org.openjdk.jmh</groupId>
 			<artifactId>jmh-core</artifactId>
 			<version>${jmh.version}</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.openjdk.jmh</groupId>
 			<artifactId>jmh-generator-annprocess</artifactId>
@@ -275,7 +275,7 @@
 					</execution>
 				</executions>
 			</plugin>
-		
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -331,7 +331,7 @@
 					</execution>
 				</executions>
 			</plugin>
-			
+
 			<!-- Writes all maven project properties to ${project.build.directory}/maven.properties -->
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
@@ -409,7 +409,7 @@
 				</configuration>
 			</plugin>
 
-	        <!-- Code formatting -->
+			<!-- Code formatting -->
 			<plugin>
 				<groupId>com.diffplug.spotless</groupId>
 				<artifactId>spotless-maven-plugin</artifactId>
@@ -423,7 +423,7 @@
 				</executions>
 			</plugin>
 
-	        <!-- Build test summary after tests are run -->
+			<!-- Build test summary after tests are run -->
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
@@ -467,11 +467,11 @@
 						<artifactId>maven-gpg-plugin</artifactId>
 						<executions>
 							<execution>
-							<id>sign-artifacts</id>
-							<phase>verify</phase>
-							<goals>
-								<goal>sign</goal>
-							</goals>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
 							</execution>
 						</executions>
 					</plugin>
@@ -525,10 +525,10 @@
 							<resultFormat>JSON</resultFormat>
 							<resultsFile>target/benchmarks/jmh-result-${maven.build.timestamp}.json</resultsFile>
 						</configuration>
-					</plugin>					
+					</plugin>
 				</plugins>
 			</build>
-    	</profile>
+		</profile>
 	</profiles>
 
 	<reporting>
