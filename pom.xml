@@ -85,82 +85,13 @@
 	</properties>
 
 	<dependencyManagement>
-	
 		<!--
 			None of these dependencied will be incluede by default in the child modules.
 			They just have their versions managed here and can be used when needed without specifying the version.
 		-->
-	    <dependencies>
-	    
-			<!-- MorphiX -->
-			<dependency>
-				<groupId>io.github.raduking</groupId>
-				<artifactId>morphix-all</artifactId>
-				<version>${morphix.version}</version>
-			</dependency>
-
-		    <!-- Testcontainers -->
-			<dependency>
-				<groupId>org.testcontainers</groupId>
-				<artifactId>testcontainers</artifactId>
-				<!-- This version is needed because of the latest Docker changes -->
-				<version>${testcontainers.base.version}</version>
-				<scope>test</scope>
-			</dependency>
-
-			<dependency>
-				<groupId>com.github.dasniko</groupId>
-				<artifactId>testcontainers-keycloak</artifactId>
-				<!-- This version is needed because of the latest Docker changes, remove it when the parent updates it -->
-				<version>${testcontainers.keycloak.version}</version>
-				<scope>test</scope>
-			</dependency>
-
-			<!-- Nimbus JOSE + JWT and OAuth2 OIDC SDK for testing -->
-			<dependency>
-				<groupId>com.nimbusds</groupId>
-				<artifactId>nimbus-jose-jwt</artifactId>
-				<version>${nimbus.jose.jwt.version}</version>
-			</dependency>
-	
-			<dependency>
-				<groupId>com.nimbusds</groupId>
-				<artifactId>oauth2-oidc-sdk</artifactId>
-				<version>${oauth2.oidc.sdk.version}</version>
-			</dependency>
-
-            <!-- Eclipse JDT Core for code formatting -->	
-			<dependency>
-				<groupId>org.eclipse.jdt</groupId>
-				<artifactId>org.eclipse.jdt.core</artifactId>
-				<version>${org.eclipse.jdt.core.version}</version>
-				<scope>test</scope>
-			</dependency>
-
-	        <!-- Code format rules -->
-			<dependency>
-				<groupId>io.github.raduking</groupId>
-				<artifactId>code-format</artifactId>
-				<version>${code.format.version}</version>
-				<scope>test</scope>
-	        </dependency>
-	        
-	        <!-- Benchmarking dependencies (scope=test so they don't affect the main build) -->
-			<dependency>
-				<groupId>org.openjdk.jmh</groupId>
-				<artifactId>jmh-core</artifactId>
-				<version>${jmh.version}</version>
-				<scope>test</scope>
-			</dependency>
-			
-			<dependency>
-				<groupId>org.openjdk.jmh</groupId>
-				<artifactId>jmh-generator-annprocess</artifactId>
-				<version>${jmh.version}</version>
-				<scope>test</scope>
-			</dependency>
-
-        </dependencies>
+		<dependencies>
+			<!-- No dependencies defined in the parent pom.xml because only child modules will be deployed -->
+		</dependencies>
 	</dependencyManagement>
 
 	<build>
