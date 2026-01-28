@@ -10,7 +10,7 @@ mvn clean verify -Dtest.tls.chunked=true
 echo "All tests passed. Deploying apiphany module..."
 
 mvn deploy -Drelease=true \
-	-pl apiphany \
+	-pl apiphany-core \
 	-am \
 	-DskipTests
 
