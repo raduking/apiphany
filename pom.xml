@@ -4,17 +4,6 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<!-- 
-		Using spring-boot-starter-parent to update dependencies easier and ensure that all dependencies work well together
-		this parent having most of the commonly used dependencies defined with tested versions across Java projects.
-	-->
-	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.9</version>
-		<relativePath />
-	</parent>
-
 	<groupId>io.github.raduking</groupId>
 	<artifactId>apiphany-parent</artifactId>
 	<version>1.1.0</version>
@@ -31,6 +20,11 @@
 
 		<!-- Dependencies versions -->
 		<morphix.version>1.0.20</morphix.version>
+		<micrometer.version>1.15.7</micrometer.version>
+		<jackson2.version>2.19.4</jackson2.version>
+		<slf4j.version>2.0.17</slf4j.version>
+
+		<httpclient5.version>5.5.1</httpclient5.version>
 
         <!-- Java / Maven properties -->
 		<java.version>21</java.version>
@@ -41,7 +35,13 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<!-- Testing dependencies versions -->
+		<hamcrest.version>3.0</hamcrest.version>
+		<junit.jupiter.version>5.12.2</junit.jupiter.version>
+		<mockito.version>5.17.0</mockito.version>
+		<logback.version>1.5.22</logback.version>
+		<spring.security.version>6.5.7</spring.security.version>
 		<testcontainers.base.version>2.0.3</testcontainers.base.version>
+		<testcontainers.junit.version>1.21.4</testcontainers.junit.version>
 		<testcontainers.keycloak.version>4.1.0</testcontainers.keycloak.version>
 		<nimbus.jose.jwt.version>10.7</nimbus.jose.jwt.version>
 		<oauth2.oidc.sdk.version>11.31.1</oauth2.oidc.sdk.version>
@@ -62,9 +62,17 @@
 		<maven.project.info.reports.plugin.version>3.9.0</maven.project.info.reports.plugin.version>
 
 		<!-- Other plugin versions -->
+		<maven.compiler.plugin.version>3.14.1</maven.compiler.plugin.version>
+		<maven.surefire.plugin.version>3.5.4</maven.surefire.plugin.version>
+		<maven.failsafe.plugin.version>3.5.4</maven.failsafe.plugin.version>
+		<maven.resources.plugin.version>3.3.1</maven.resources.plugin.version>
 		<properties.maven.plugin.version>1.2.1</properties.maven.plugin.version>
+		<maven.source.plugin.version>3.3.1</maven.source.plugin.version>
+		<maven.javadoc.plugin.version>3.11.3</maven.javadoc.plugin.version>
+		<maven.deploy.plugin.version>3.1.4</maven.deploy.plugin.version>
 		<spotless.maven.plugin.version>3.1.0</spotless.maven.plugin.version>
 		<exec.maven.plugin.version>3.6.3</exec.maven.plugin.version>
+		<maven.enforcer.plugin.version>3.5.0</maven.enforcer.plugin.version>
 
 		<!-- Testing properties -->
 		<integration.tests.pattern>**/*IT.java</integration.tests.pattern>
@@ -168,6 +176,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
+					<version>${maven.compiler.plugin.version}</version>
 					<configuration>
 						<source>${maven.compiler.source}</source>
 						<target>${maven.compiler.target}</target>
@@ -179,6 +188,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
+					<version>${maven.surefire.plugin.version}</version>
 					<configuration>
 						<excludes>
 							<exclude>${integration.tests.pattern}</exclude>
@@ -190,6 +200,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-failsafe-plugin</artifactId>
+					<version>${maven.failsafe.plugin.version}</version>
 					<configuration>
 						<includes>
 							<include>${integration.tests.pattern}</include>
@@ -247,6 +258,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-enforcer-plugin</artifactId>
+					<version>${maven.enforcer.plugin.version}</version>
 					<executions>
 						<execution>
 							<id>enforce</id>
@@ -269,6 +281,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-deploy-plugin</artifactId>
+					<version>${maven.deploy.plugin.version}</version>
 					<configuration>
 						<skip>true</skip>
 					</configuration>
