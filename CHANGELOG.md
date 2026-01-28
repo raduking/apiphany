@@ -1,5 +1,9 @@
 ## Release Notes
 
+`1.1.1`
+
+---
+
 `1.1.0`
 
 - Split the project into multiple modules.
