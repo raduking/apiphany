@@ -39,6 +39,8 @@
 	</scm>
 
 	<properties>
+		<!-- This module will be deployed -->
+		<maven.deploy.skip>false</maven.deploy.skip>
 
 		<!-- Testing plugin versions -->
 		<pitest.maven.plugin.version>1.22.0</pitest.maven.plugin.version>
