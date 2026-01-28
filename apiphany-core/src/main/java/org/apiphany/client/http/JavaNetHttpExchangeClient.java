@@ -18,6 +18,7 @@ import java.util.function.Supplier;
 
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
+import org.apiphany.client.ClientCustomization;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ContentConverter;
 import org.apiphany.client.ExchangeClient;
@@ -98,15 +99,15 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	 *
 	 * @param clientProperties client properties
 	 * @param httpClientBuilder HTTP client builder
-	 * @param applyCustomization whether to apply the default customization or not
+	 * @param clientCustomization whether to apply the default customization or not
 	 */
 	protected JavaNetHttpExchangeClient(final ClientProperties clientProperties, final HttpClient.Builder httpClientBuilder,
-			final boolean applyCustomization) {
+			final ClientCustomization clientCustomization) {
 		super(clientProperties);
-		if (applyCustomization) {
-			customize(httpClientBuilder);
-		}
-		this.httpClient = httpClientBuilder.build();
+		this.httpClient = switch (clientCustomization) {
+			case DEFAULT -> customize(httpClientBuilder).build();
+			case NONE -> httpClientBuilder.build();
+		};
 	}
 
 	/**
@@ -133,8 +134,9 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	 * Customizes the HTTP client builder.
 	 *
 	 * @param httpClientBuilder HTTP client builder
+	 * @return the customized HTTP client builder
 	 */
-	private void customize(final HttpClient.Builder httpClientBuilder) {
+	private HttpClient.Builder customize(final HttpClient.Builder httpClientBuilder) {
 		JavaNetHttpProperties httpProperties = getCustomProperties(JavaNetHttpProperties.class);
 		HttpClient.Version version = Nullables.notNull(httpProperties)
 				.andNotNull(JavaNetHttpProperties::getRequest)
@@ -142,6 +144,7 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 				.orElse(() -> JavaNetHttpProperties.Request.DEFAULT_HTTP_VERSION);
 		httpClientBuilder.version(version);
 		Nullables.notNull(getSslContext()).then(httpClientBuilder::sslContext);
+		return httpClientBuilder;
 	}
 
 	/**

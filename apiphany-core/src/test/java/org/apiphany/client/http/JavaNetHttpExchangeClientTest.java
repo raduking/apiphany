@@ -12,6 +12,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import java.io.ByteArrayInputStream;
@@ -35,6 +36,7 @@ import org.apiphany.ApiClientFluentAdapter;
 import org.apiphany.ApiMethod;
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
+import org.apiphany.client.ClientCustomization;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
@@ -93,7 +95,7 @@ class JavaNetHttpExchangeClientTest {
 		javaNetHttpProperties.getRequest().setVersion(null);
 		properties.setCustomProperties(JavaNetHttpProperties.ROOT, javaNetHttpProperties);
 
-		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient(properties, httpClientBuilder, true);
+		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient(properties, httpClientBuilder, ClientCustomization.DEFAULT);
 		exchangeClient.close();
 
 		// also check the chain
@@ -104,6 +106,24 @@ class JavaNetHttpExchangeClientTest {
 
 		assertThat(version, equalTo(Version.HTTP_1_1));
 		verify(httpClientBuilder).version(Version.HTTP_1_1);
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldNotSetDefaultVersionIfProvidedVersionIsNullAndClientCustomizationIsNone() throws Exception {
+		HttpClient.Builder httpClientBuilder = mock(HttpClient.Builder.class);
+		HttpClient httpClient = mock(HttpClient.class);
+		doReturn(httpClient).when(httpClientBuilder).build();
+
+		ClientProperties properties = new ClientProperties();
+		JavaNetHttpProperties javaNetHttpProperties = new JavaNetHttpProperties();
+		javaNetHttpProperties.getRequest().setVersion(null);
+		properties.setCustomProperties(JavaNetHttpProperties.ROOT, javaNetHttpProperties);
+
+		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient(properties, httpClientBuilder, ClientCustomization.NONE);
+		exchangeClient.close();
+
+		verify(httpClientBuilder, never()).version(Version.HTTP_1_1);
 	}
 
 	@Test
