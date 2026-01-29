@@ -2,6 +2,7 @@ package org.apiphany.security.tls;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Objects;
 
 import org.apiphany.io.BytesWrapper;
 
@@ -72,15 +73,6 @@ public class KeyExchangeData implements TLSKeyExchange {
 	}
 
 	/**
-	 * Returns the key exchange data.
-	 *
-	 * @return the BytesWrapper containing key exchange bytes
-	 */
-	public BytesWrapper getBytes() {
-		return bytes;
-	}
-
-	/**
 	 * Returns the size of the key exchange data.
 	 *
 	 * @return size in bytes of the key exchange data
@@ -88,5 +80,41 @@ public class KeyExchangeData implements TLSKeyExchange {
 	@Override
 	public int sizeOf() {
 		return bytes.sizeOf();
+	}
+
+	/**
+	 * Compares this {@link KeyExchangeData} object to another for equality.
+	 *
+	 * @param obj the other object to compare
+	 * @return true if both {@link KeyExchangeData} objects have the same data, false otherwise
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof KeyExchangeData that) {
+			return Objects.equals(this.bytes, that.bytes);
+		}
+		return false;
+	}
+
+	/**
+	 * Returns the hash code for this {@link KeyExchangeData} object.
+	 *
+	 * @return hash code based on the encrypted data
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hash(bytes);
+	}
+
+	/**
+	 * Returns the key exchange data.
+	 *
+	 * @return the BytesWrapper containing key exchange bytes
+	 */
+	public BytesWrapper getBytes() {
+		return bytes;
 	}
 }

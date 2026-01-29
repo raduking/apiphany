@@ -85,10 +85,10 @@ public class Encrypted implements TLSObject {
 	}
 
 	/**
-	 * Compares this Encrypted object to another for equality.
+	 * Compares this {@link Encrypted} object to another for equality.
 	 *
 	 * @param obj the other object to compare
-	 * @return true if both Encrypted objects have the same data, false otherwise
+	 * @return true if both {@link Encrypted} objects have the same data, false otherwise
 	 */
 	@Override
 	public boolean equals(final Object obj) {
@@ -102,7 +102,7 @@ public class Encrypted implements TLSObject {
 	}
 
 	/**
-	 * Returns the hash code for this Encrypted object.
+	 * Returns the hash code for this {@link Encrypted} object.
 	 *
 	 * @return hash code based on the encrypted data
 	 */

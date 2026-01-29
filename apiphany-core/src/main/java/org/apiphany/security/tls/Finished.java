@@ -3,6 +3,7 @@ package org.apiphany.security.tls;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.Objects;
 
 import org.apiphany.io.BytesWrapper;
 
@@ -82,6 +83,33 @@ public class Finished implements TLSHandshakeBody {
 	@Override
 	public int sizeOf() {
 		return verifyData.sizeOf();
+	}
+
+	/**
+	 * Compares this {@link Finished} message to another object for equality.
+	 *
+	 * @param obj the object to compare with
+	 * @return true if both objects are {@link Finished} messages with the same verify data, false otherwise
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof Finished that) {
+			return Objects.equals(this.verifyData, that.verifyData);
+		}
+		return false;
+	}
+
+	/**
+	 * Returns the hash code for this {@link Finished} message.
+	 *
+	 * @return hash code based on verify data
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hash(verifyData);
 	}
 
 	/**
