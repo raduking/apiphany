@@ -54,6 +54,7 @@ public class LegacyHttpsServer implements AutoCloseable {
 	/**
 	 * Supported legacy cipher suites.
 	 */
+	@SuppressWarnings("deprecation")
 	public static final List<CipherSuite> SUPPORTED_CIPHER_SUITES = List.of(
 			CipherSuite.TLS_RSA_WITH_RC4_128_SHA,
 			CipherSuite.TLS_RSA_WITH_AES_256_GCM_SHA384,

@@ -4,6 +4,8 @@
 
 - Added Maven plugin management to parent `pom.xml` with default configurations - no executions in parent `pluginManagement`.
 - Added `ClientCustomization` enum with two values `DEFAULT` and `NONE` to allow specific modes of client customizations and avoid using flags.
+- Added `BulkCipherAlgorithm` enum with supported bulk cipher algorithms.
+- Updated `CipherType` to reflect what it uses and what it provides via flags.
 
 ---
 

@@ -91,6 +91,7 @@ public class MinimalTLSClient implements AutoCloseable {
 	public static final List<NamedCurve> SUPPORTED_NAMED_CURVES = List.of(
 			NamedCurve.X25519);
 
+	@SuppressWarnings("deprecation")
 	public static final List<CipherSuite> SUPPORTED_CIPHER_SUITES = List.of(
 			CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
 			CipherSuite.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,

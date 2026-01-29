@@ -10,6 +10,7 @@ package org.apiphany.security.tls;
  * Unlike {@code BulkCipher}, this record contains no behavior; it is purely descriptive.
  *
  * @param algorithm the base algorithm name (e.g., "AES", "CHACHA20")
+ * @param transformation the JCA transformation string (e.g., "AES/GCM/NoPadding")
  * @param keyLength the length of the encryption key in bytes
  * @param blockSize the block size in bytes (for block ciphers, otherwise -1)
  * @param fixedIvLength the length of the fixed IV portion in bytes (used in AEAD modes)
@@ -21,7 +22,8 @@ package org.apiphany.security.tls;
  * @author Radu Sebastian LAZIN
  */
 public record BulkCipherInfo(
-		String algorithm,
+		BulkCipherAlgorithm algorithm,
+		String transformation,
 		int keyLength,
 		int blockSize,
 		int fixedIvLength,
@@ -34,6 +36,7 @@ public record BulkCipherInfo(
 	 * Factory method to construct the information object.
 	 *
 	 * @param algorithm the base algorithm name (e.g., "AES", "CHACHA20")
+	 * @param transformation the JCA transformation string
 	 * @param keyLength the length of the encryption key in bytes
 	 * @param blockSize the block size in bytes (for block ciphers, otherwise -1)
 	 * @param fixedIvLength the length of the fixed IV portion in bytes (used in AEAD modes)
@@ -44,7 +47,8 @@ public record BulkCipherInfo(
 	 * @return a new bulk cipher info object
 	 */
 	public static BulkCipherInfo of(
-			final String algorithm,
+			final BulkCipherAlgorithm algorithm,
+			final String transformation,
 			final int keyLength,
 			final int blockSize,
 			final int fixedIvLength,
@@ -54,6 +58,7 @@ public record BulkCipherInfo(
 			final int tagLength) {
 		return new BulkCipherInfo(
 				algorithm,
+				transformation,
 				keyLength,
 				blockSize,
 				fixedIvLength,
