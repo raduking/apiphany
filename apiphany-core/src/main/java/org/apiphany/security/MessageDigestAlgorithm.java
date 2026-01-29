@@ -197,19 +197,6 @@ public enum MessageDigestAlgorithm {
 	}
 
 	/**
-	 * Returns the PRF algorithm name (for TLS 1.2 it can only be HMAC-SHA256 or HMAC-SHA384, if it is not one of those it
-	 * defaults to HMAC-SHA256).
-	 *
-	 * @return the PRF algorithm name
-	 */
-	public String prfHmacAlgorithmName() {
-		return switch (this) {
-			case SHA256, SHA384 -> hmacAlgorithmName();
-			default -> SHA256.hmacAlgorithmName();
-		};
-	}
-
-	/**
 	 * Returns the sanitized digest algorithm name.
 	 *
 	 * @return the sanitized digest algorithm name

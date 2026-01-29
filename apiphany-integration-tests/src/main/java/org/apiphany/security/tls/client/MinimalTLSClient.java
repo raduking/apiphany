@@ -203,7 +203,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		LOGGER.debug("Server random: {}", Hex.string(serverRandom));
 		this.serverCipherSuite = serverHello.getCipherSuite();
 		MessageDigestAlgorithm messageDigest = serverCipherSuite.messageDigest();
-		String prfAlgorithm = messageDigest.prfHmacAlgorithmName();
+		String prfAlgorithm = PRF.algorithmName(messageDigest);
 
 		// 2b. Server Certificates
 		if (tlsRecord.hasNoHandshake(Certificates.class)) {
