@@ -300,12 +300,14 @@ public enum CipherSuite implements TLSObject {
 	/**
 	 * RSA export with RC4-56 legacy cipher suite.
 	 */
+	@Deprecated
 	TLS_RSA_EXPORT1024_WITH_RC4_56_SHA((short) 0x0040,
 			KeyExchangeAlgorithm.RSA, BulkCipher.RC4_56, MessageDigestAlgorithm.SHA1),
 
 	/**
 	 * RSA with RC4-128 legacy cipher suite.
 	 */
+	@Deprecated
 	TLS_RSA_WITH_RC4_128_SHA((short) 0x0005,
 			KeyExchangeAlgorithm.RSA, BulkCipher.RC4_128, MessageDigestAlgorithm.SHA1),
 

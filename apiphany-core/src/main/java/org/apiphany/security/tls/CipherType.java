@@ -19,43 +19,75 @@ public enum CipherType {
 	/**
 	 * Authenticated encryption (AES-GCM, ChaCha20).
 	 */
-	AEAD("AES/GCM/NoPadding"),
+	AEAD(true, false, false),
 
 	/**
 	 * Block cipher (AES-CBC).
 	 */
-	BLOCK("AES/CBC/NoPadding"),
+	BLOCK(false, true, true),
 
 	/**
 	 * Stream cipher (RC4).
 	 */
-	STREAM("RC4"),
+	STREAM(false, true, false),
 
 	/**
 	 * No encryption.
 	 */
-	NO_ENCRYPTION("");
+	NO_ENCRYPTION(false, true, false);
 
 	/**
-	 * The default transformation.
+	 * Indicates whether the cipher type provides authentication.
 	 */
-	private final String defaultTransformation;
+	private final boolean authenticated;
 
 	/**
-	 * Constructor.
+	 * Indicates whether the cipher type uses a MAC for authentication.
+	 */
+	private final boolean usesMac;
+
+	/**
+	 * Indicates whether the cipher type uses padding.
+	 */
+	private final boolean usesPadding;
+
+	/**
+	 * Constructs a {@link CipherType} with the specified properties.
 	 *
-	 * @param defaultTransformation the default transformation.
+	 * @param authenticated whether the cipher type provides authentication
+	 * @param usesMac whether the cipher type uses a MAC for authentication
+	 * @param usesPadding whether the cipher type uses padding
 	 */
-	CipherType(final String defaultTransformation) {
-		this.defaultTransformation = defaultTransformation;
+	CipherType(final boolean authenticated, final boolean usesMac, final boolean usesPadding) {
+		this.authenticated = authenticated;
+		this.usesMac = usesMac;
+		this.usesPadding = usesPadding;
 	}
 
 	/**
-	 * Returns the default transformation.
+	 * Returns whether the cipher type provides authentication.
 	 *
-	 * @return the default transformation
+	 * @return true if authenticated, false otherwise
 	 */
-	public String transformation() {
-		return defaultTransformation;
+	public boolean authenticated() {
+		return authenticated;
+	}
+
+	/**
+	 * Returns whether the cipher type uses a MAC for authentication.
+	 *
+	 * @return true if uses MAC, false otherwise
+	 */
+	public boolean usesMac() {
+		return usesMac;
+	}
+
+	/**
+	 * Returns whether the cipher type uses padding.
+	 *
+	 * @return true if uses padding, false otherwise
+	 */
+	public boolean usesPadding() {
+		return usesPadding;
 	}
 }

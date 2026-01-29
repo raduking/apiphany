@@ -72,6 +72,7 @@ class TLSObjectLegacyCipherIT {
 				"--add-opens", "java.base/com.sun.crypto.provider=ALL-UNNAMED",
 				"--add-opens", "jdk.httpserver/sun.net.httpserver=ALL-UNNAMED",
 				"--add-opens", "java.base/sun.security.ssl=ALL-UNNAMED" })
+	@SuppressWarnings("deprecation")
 	void shouldPerformTLS12HandshakeWithRC4128SHA() throws Exception {
 		int port = Sockets.findAvailableTcpPort();
 
@@ -94,8 +95,9 @@ class TLSObjectLegacyCipherIT {
 		assertNotNull(serverFinished);
 	}
 
-	@Disabled("This test is here to debug errors, the same is tested in shouldPerformTLS12HandshakeWithUnsupportedCipherSuitesWithResetSSL")
 	@Test
+	@SuppressWarnings("deprecation")
+	@Disabled("This test is here to debug errors, the same is tested in shouldPerformTLS12HandshakeWithUnsupportedCipherSuitesWithResetSSL")
 	void shouldPerformTLS12HandshakeWithRC4128SHAWithResetSSL() throws Exception {
 		byte[] serverFinished = ForkedLegacyHttpsServerRunner.on(SSL_PROPERTIES_JSON_FILE, LOCALHOST, DEBUG_SOCKET_TIMEOUT, true, (host, port) -> {
 			List<CipherSuite> cipherSuites = List.of(CipherSuite.TLS_RSA_WITH_RC4_128_SHA);
@@ -107,6 +109,7 @@ class TLSObjectLegacyCipherIT {
 		assertNotNull(serverFinished);
 	}
 
+	@SuppressWarnings("deprecation")
 	private static Stream<Arguments> provideUnsupportedCipherSuites() {
 		return Stream.of(
 				Arguments.of(CipherSuite.TLS_RSA_WITH_RC4_128_SHA),
