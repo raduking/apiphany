@@ -396,6 +396,9 @@
 	</build>
 
 	<profiles>
+		<!--
+			Release profile, activate it with: -Drelease=true
+		-->
 		<profile>
 			<id>active-on-property-environment</id>
 			<activation>
