@@ -3,6 +3,7 @@ package org.apiphany.security.tls;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.Objects;
 
 /**
  * Represents the Client Key Exchange message in TLS handshake protocol.
@@ -81,6 +82,33 @@ public class ClientKeyExchange implements TLSHandshakeBody {
 	@Override
 	public HandshakeType getType() {
 		return HandshakeType.CLIENT_KEY_EXCHANGE;
+	}
+
+	/**
+	 * Compares this {@link ClientKeyExchange} message to another object for equality.
+	 *
+	 * @param obj the object to compare with
+	 * @return true if both objects are {@link ClientKeyExchange} messages with the same verify data, false otherwise
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof ClientKeyExchange that) {
+			return Objects.equals(this.key, that.key);
+		}
+		return false;
+	}
+
+	/**
+	 * Returns the hash code for this {@link ClientKeyExchange} message.
+	 *
+	 * @return hash code based on verify data
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hash(key);
 	}
 
 	/**
