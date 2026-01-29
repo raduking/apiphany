@@ -214,7 +214,9 @@ public class ApacheHC5ExchangeClient extends AbstractHttpExchangeClient {
 	 * @param headers map of headers to add to the request
 	 */
 	public static void addHeaders(final HttpUriRequest httpUriRequest, final Map<String, List<String>> headers) {
-		Maps.safe(headers).forEach((k, v) -> v.forEach(h -> httpUriRequest.addHeader(k, h)));
+		Maps.safe(headers)
+				.forEach((headerName, headerValues) -> Lists.safe(headerValues)
+						.forEach(headerValue -> httpUriRequest.addHeader(headerName, headerValue)));
 	}
 
 	/**

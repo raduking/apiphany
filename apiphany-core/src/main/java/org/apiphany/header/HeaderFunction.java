@@ -50,6 +50,6 @@ public interface HeaderFunction extends Consumer<Map<String, List<String>>> {
 	 * @return a {@link HeaderFunction} that inserts the key-value pair into the map
 	 */
 	static <T, U> HeaderFunction header(final T name, final U value) {
-		return header(String.valueOf(name), String.valueOf(value));
+		return map -> Headers.addTo(map, name, value);
 	}
 }

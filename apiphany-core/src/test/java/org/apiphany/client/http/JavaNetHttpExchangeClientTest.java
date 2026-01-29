@@ -14,6 +14,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -38,6 +39,8 @@ import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientCustomization;
 import org.apiphany.client.ClientProperties;
+import org.apiphany.header.Header;
+import org.apiphany.header.Headers;
 import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
@@ -821,4 +824,25 @@ class JavaNetHttpExchangeClientTest {
 				HttpException.message(HttpStatus.BAD_REQUEST, TEXT_FILE_TXT + " not found")));
 	}
 
+	@Test
+	void shouldNotFailWhenHeadersAreNullOnAddHeaders() {
+		HttpRequest.Builder requestBuilder = mock(HttpRequest.Builder.class);
+
+		JavaNetHttpExchangeClient.addHeaders(requestBuilder, null);
+
+		verifyNoInteractions(requestBuilder);
+	}
+
+	@Test
+	void shouldNotFailWhenHeadersContainNullValuesListOnAddHeaders() {
+		HttpRequest.Builder requestBuilder = mock(HttpRequest.Builder.class);
+		Map<String, List<String>> headers = Headers.of(
+				Header.of("X-Header-1", null),
+				Header.of("X-Header-2", List.of("Value1", "Value2")));
+
+		JavaNetHttpExchangeClient.addHeaders(requestBuilder, headers);
+
+		verify(requestBuilder).header("X-Header-2", "Value1");
+		verify(requestBuilder).header("X-Header-2", "Value2");
+	}
 }

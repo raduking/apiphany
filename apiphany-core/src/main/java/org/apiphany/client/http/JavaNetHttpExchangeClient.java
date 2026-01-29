@@ -31,6 +31,7 @@ import org.apiphany.http.HttpStatus;
 import org.apiphany.io.ContentType;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
+import org.apiphany.lang.collections.Lists;
 import org.apiphany.lang.collections.Maps;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Nullables;
@@ -290,6 +291,8 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	 * @param headers map of headers to add to the request builder
 	 */
 	public static void addHeaders(final HttpRequest.Builder httpRequestBuilder, final Map<String, List<String>> headers) {
-		Maps.safe(headers).forEach((key, value) -> value.forEach(header -> httpRequestBuilder.header(key, header)));
+		Maps.safe(headers)
+				.forEach((headerName, headerValues) -> Lists.safe(headerValues)
+						.forEach(headerValue -> httpRequestBuilder.header(headerName, headerValue)));
 	}
 }
