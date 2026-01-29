@@ -29,7 +29,30 @@ import org.xml.sax.SAXException;
 public class TestSummary {
 
 	/**
-	 * Logger instance.
+	 * The console handler for logging.
+	 *
+	 * @author Radu Sebastian LAZIN
+	 */
+	private static class LogHandler extends ConsoleHandler {
+
+		/**
+		 * Constructor that configures the log handler.
+		 */
+		public LogHandler() {
+			super();
+
+			setLevel(Level.ALL);
+			setFormatter(new SimpleFormatter() {
+				@Override
+				public synchronized String format(final LogRecord lr) {
+					return lr.getMessage() + System.lineSeparator();
+				}
+			});
+		}
+	}
+
+	/**
+	 * Logger instance and configuration.
 	 */
 	private static final Logger LOGGER = Logger.getLogger(TestSummary.class.getName());
 	static {
@@ -37,22 +60,24 @@ public class TestSummary {
 		for (Handler existingHandler : root.getHandlers()) {
 			root.removeHandler(existingHandler);
 		}
+		root.setUseParentHandlers(false);
 
 		// disable default console handler
 		LOGGER.setUseParentHandlers(false);
 
-		ConsoleHandler handler = new ConsoleHandler();
-		handler.setLevel(Level.ALL);
-
-		handler.setFormatter(new SimpleFormatter() {
-			@Override
-			public synchronized String format(final LogRecord lr) {
-				return lr.getMessage() + "\n";
+		ConsoleHandler handler = new LogHandler();
+		boolean shouldAddHandler = true;
+		for (Handler existingHandler : LOGGER.getHandlers()) {
+			if (existingHandler.getClass().getName().contains("TestSummary$LogHandler")) {
+				shouldAddHandler = false;
+				break;
 			}
-		});
+		}
 
-		LOGGER.addHandler(handler);
-		LOGGER.setLevel(Level.ALL);
+		if (shouldAddHandler) {
+			LOGGER.addHandler(handler);
+			LOGGER.setLevel(Level.ALL);
+		}
 	}
 
 	/**
