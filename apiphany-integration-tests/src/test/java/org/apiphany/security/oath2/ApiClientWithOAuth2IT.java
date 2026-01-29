@@ -25,6 +25,7 @@ import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationTokenProvider;
 import org.apiphany.security.AuthenticationType;
 import org.apiphany.security.oauth2.ClientAuthenticationMethod;
+import org.apiphany.security.oauth2.ITWithJavaSunOAuth2Server;
 import org.apiphany.security.oauth2.OAuth2ClientRegistration;
 import org.apiphany.security.oauth2.OAuth2Properties;
 import org.apiphany.security.oauth2.OAuth2ProviderDetails;

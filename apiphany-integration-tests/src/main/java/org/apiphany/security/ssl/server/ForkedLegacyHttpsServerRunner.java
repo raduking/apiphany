@@ -39,6 +39,13 @@ public class ForkedLegacyHttpsServerRunner {
 	public static final int ERROR_EXECUTION = 666;
 
 	/**
+	 * Default constructor.
+	 */
+	public ForkedLegacyHttpsServerRunner() {
+		// empty
+	}
+
+	/**
 	 * Main method to start the server.
 	 *
 	 * @param args command line arguments: {@code <port> <sslPropertiesJsonPath>}

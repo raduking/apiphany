@@ -24,8 +24,8 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
 /**
- * A simple HTTP server using Sun {@link HttpServer} that has only one endpoint validated with OAuth2 with tokens
- * generated from {@link JavaSunOAuth2Server} if a validator was provided.
+ * A simple immutable HTTP server using Sun {@link HttpServer} that has only one endpoint validated with OAuth2 with
+ * tokens generated from {@link JavaSunOAuth2Server} if a validator was provided.
  * <p>
  * This server provides a single route: {@code /api/name} which returns the string {@code "Mumu"}.
  *

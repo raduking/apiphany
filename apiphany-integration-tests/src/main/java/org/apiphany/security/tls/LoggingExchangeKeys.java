@@ -28,6 +28,7 @@ public class LoggingExchangeKeys {
 	 *
 	 * @param keyBlock TLS key block
 	 * @param suite cipher suite
+	 * @return the derived exchange keys
 	 */
 	public static ExchangeKeys from(final byte[] keyBlock, final CipherSuite suite) {
 		LOGGER.debug("keyBlock: {}", Hex.stringSupplier(keyBlock));
