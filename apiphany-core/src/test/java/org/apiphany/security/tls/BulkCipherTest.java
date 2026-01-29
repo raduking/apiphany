@@ -5,6 +5,8 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -83,29 +85,20 @@ class BulkCipherTest {
 		assertThat(exception.getCause(), is(instanceOf(GeneralSecurityException.class)));
 	}
 
-	static Stream<BulkCipher> encryptingCiphers() {
+	private static Stream<BulkCipher> encryptingCiphers() {
 		return EnumSet.allOf(BulkCipher.class).stream()
 				.filter(c -> c.type() != CipherType.NO_ENCRYPTION);
 	}
 
-	static Stream<BulkCipher> aeadCiphers() {
+	private static Stream<BulkCipher> aeadCiphers() {
 		return encryptingCiphers()
 				.filter(c -> c.type() == CipherType.AEAD);
 	}
 
-	static Stream<BulkCipher> ciphersThatAllowNullSpec() {
+	private static Stream<BulkCipher> ciphersThatAllowNullSpec() {
 		return EnumSet.allOf(BulkCipher.class).stream()
 				.filter(c -> c.type() == CipherType.BLOCK || c.type() == CipherType.STREAM)
-				.filter(BulkCipherTest::isCipherSupported);
-	}
-
-	private static boolean isCipherSupported(final BulkCipher cipher) {
-		try {
-			Cipher.getInstance(cipher.info().transformation());
-			return true;
-		} catch (Exception e) {
-			return false;
-		}
+				.filter(BulkCipher::isTransformationSupported);
 	}
 
 	@ParameterizedTest(name = "{0} should create cipher when spec is null")
@@ -125,6 +118,7 @@ class BulkCipherTest {
 		byte[] iv = new byte[bulkCipher.fixedIvLength() + bulkCipher.explicitNonceLength()];
 		try {
 			AlgorithmParameterSpec spec = bulkCipher.spec(iv);
+
 			Cipher cipher = bulkCipher.cipher(Cipher.ENCRYPT_MODE, key, spec);
 
 			assertThat(cipher, is(notNullValue()));
@@ -152,11 +146,25 @@ class BulkCipherTest {
 			case NO_ENCRYPTION -> throw new IllegalArgumentException("No encryption ciphers should not be tested here");
 		};
 
-		SecurityException exception = assertThrows(
-				SecurityException.class,
+		SecurityException exception = assertThrows(SecurityException.class,
 				() -> bulkCipher.cipher(Cipher.ENCRYPT_MODE, invalidKey, spec));
 
 		assertThat(exception.getMessage(), startsWith("Error building cipher from: "));
 		assertThat(exception.getCause(), is(instanceOf(GeneralSecurityException.class)));
+	}
+
+	@ParameterizedTest
+	@EnumSource(BulkCipher.class)
+	void shouldMatchUnsupportedTransformations(final BulkCipher bulkCipher) {
+		boolean supportsTransformation = true;
+		try {
+			Cipher.getInstance(bulkCipher.info().transformation());
+		} catch (GeneralSecurityException e) {
+			supportsTransformation = false;
+		}
+		assertThat(bulkCipher.isTransformationSupported(), is(supportsTransformation));
+		if (supportsTransformation) {
+			assertThat(BulkCipher.UNSUPPORTED_SUN_JCE_BULK_CIPHERS, not(contains(bulkCipher)));
+		}
 	}
 }

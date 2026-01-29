@@ -2,7 +2,6 @@ package org.apiphany.security;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 
 import javax.crypto.Mac;
@@ -84,12 +83,18 @@ public enum MessageDigestAlgorithm {
 	/**
 	 * MD5 algorithm (RFC 1321). Note: Considered cryptographically broken.
 	 */
+	@Deprecated
 	MD5("MD5", 16),
 
 	/**
 	 * Indicates no message digest algorithm is used.
 	 */
 	NONE("NONE", 0);
+
+	/**
+	 * The HMAC prefix for HMAC algorithm names.
+	 */
+	public static final String HMAC_PREFIX = "Hmac";
 
 	/**
 	 * The name map for easy {@link #fromValue(String)} implementation.
@@ -155,7 +160,7 @@ public enum MessageDigestAlgorithm {
 		try {
 			MessageDigest digest = MessageDigest.getInstance(algorithm);
 			return digest.digest(input);
-		} catch (NoSuchAlgorithmException e) {
+		} catch (Exception e) {
 			throw new SecurityException("Error digesting input", e);
 		}
 	}
@@ -184,10 +189,11 @@ public enum MessageDigestAlgorithm {
 	 * @return the HMAC string value associated with this message digest algorithm
 	 */
 	public String hmacAlgorithmName() {
-		if (NONE == this || MD2 == this || MD5 == this) { // NOSONAR
-			throw new SecurityException("Invalid digest algorithm for HMAC PRF: " + this);
-		}
-		return "Hmac" + value().replace("-", "");
+		return switch (this) {
+			case NONE, MD2, MD5 -> throw new SecurityException("Invalid digest algorithm for HMAC PRF: " + this);
+			case GOST3411, GOST3411_2012_256, GOST3411_2012_512, SM3 -> HMAC_PREFIX + value();
+			default -> HMAC_PREFIX + value().replace("-", "");
+		};
 	}
 
 	/**
@@ -197,10 +203,10 @@ public enum MessageDigestAlgorithm {
 	 * @return the PRF algorithm name
 	 */
 	public String prfHmacAlgorithmName() {
-		if (SHA256 == this || SHA384 == this) {
-			return hmacAlgorithmName();
-		}
-		return SHA256.hmacAlgorithmName();
+		return switch (this) {
+			case SHA256, SHA384 -> hmacAlgorithmName();
+			default -> SHA256.hmacAlgorithmName();
+		};
 	}
 
 	/**
