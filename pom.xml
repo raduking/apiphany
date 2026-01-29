@@ -361,6 +361,14 @@
 						</configuration>
 					</plugin>
 
+					<!-- Skip deployment plugin, the release is done with Central's publishing plugin -->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-deploy-plugin</artifactId>
+						<configuration>
+							<skip>true</skip>
+						</configuration>
+					</plugin>
 				</plugins>
 			</build>
 
