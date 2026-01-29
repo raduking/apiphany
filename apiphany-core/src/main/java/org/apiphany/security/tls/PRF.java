@@ -7,6 +7,7 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apiphany.lang.Bytes;
+import org.apiphany.security.MessageDigestAlgorithm;
 
 /**
  * Generates pseudo-random functions (PRF) for TLS key expansion and derivation. Implements the TLS PRF function using
@@ -15,6 +16,22 @@ import org.apiphany.lang.Bytes;
  * @author Radu Sebastian LAZIN
  */
 public interface PRF {
+
+	/**
+	 * Returns the PRF algorithm name for the given message digest algorithm (for TLS 1.2 it can only be HMAC-SHA256 or
+	 * HMAC-SHA384, if it is not one of those it defaults to HMACSHA256).
+	 * <p>
+	 * TODO: Extend this method to support TLS 1.3 PRF algorithms as well.
+	 *
+	 * @param digestAlgorithm the message digest algorithm
+	 * @return the corresponding HMAC algorithm name
+	 */
+	static String algorithmName(final MessageDigestAlgorithm digestAlgorithm) {
+		return switch (digestAlgorithm) {
+			case SHA256, SHA384 -> digestAlgorithm.hmacAlgorithmName();
+			default -> MessageDigestAlgorithm.SHA256.hmacAlgorithmName();
+		};
+	}
 
 	/**
 	 * Applies the PRF function using a string label.

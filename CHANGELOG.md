@@ -6,6 +6,7 @@
 - Added `ClientCustomization` enum with two values `DEFAULT` and `NONE` to allow specific modes of client customizations and avoid using flags.
 - Added `BulkCipherAlgorithm` enum with supported bulk cipher algorithms.
 - Updated `CipherType` to reflect what it uses and what it provides via flags.
+- Moved `MessageDigestAlgorithm.prfHmacAlgorithmName` to `PRF.algorithmName(MessageDigestAlgorithm)` because it is only used for TLS for now.
 
 ---
 
