@@ -3,6 +3,7 @@ package org.apiphany.security.tls;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.Objects;
 
 import org.apiphany.io.UInt24;
 import org.morphix.lang.JavaObjects;
@@ -103,6 +104,34 @@ public class Handshake implements TLSObject {
 	@Override
 	public int sizeOf() {
 		return header.sizeOf() + body.sizeOf();
+	}
+
+	/**
+	 * Compares this {@link Handshake} to another object for equality.
+	 *
+	 * @param obj the object to compare with
+	 * @return true if both are Handshake objects with equal header and body
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof Handshake that) {
+			return Objects.equals(this.header, that.header) &&
+					Objects.equals(this.body, that.body);
+		}
+		return false;
+	}
+
+	/**
+	 * Returns the hash code for this {@link Handshake}.
+	 *
+	 * @return hash code based on header and body
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hash(header, body);
 	}
 
 	/**

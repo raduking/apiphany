@@ -6,6 +6,7 @@ import java.nio.ByteBuffer;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.Objects;
 
 import org.apiphany.io.ByteBufferInputStream;
 import org.apiphany.io.BytesWrapper;
@@ -115,6 +116,34 @@ public class Certificate implements TLSObject {
 	@Override
 	public int sizeOf() {
 		return length.sizeOf() + data.sizeOf();
+	}
+
+	/**
+	 * Compares this {@link Certificate} to another object for equality.
+	 *
+	 * @param obj the object to compare with
+	 * @return true if both objects are Certificates with equal length and data, false otherwise
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof Certificate that) {
+			return Objects.equals(this.length, that.length)
+					&& Objects.equals(this.data, that.data);
+		}
+		return false;
+	}
+
+	/**
+	 * Returns the hash code for this {@link Certificate}.
+	 *
+	 * @return hash code based on length and data
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hash(length, data);
 	}
 
 	/**

@@ -3,6 +3,7 @@ package org.apiphany.security.tls;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -11,6 +12,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apiphany.io.BytesWrapper;
 import org.apiphany.lang.Bytes;
 import org.apiphany.security.ssl.SSLProtocol;
 import org.junit.jupiter.api.Test;
@@ -49,6 +51,78 @@ class RecordTest {
 		for (int i = 0; i < CERTIFICATE_SIZE; ++i) {
 			assertThat(result[i], equalTo(CERTIFICATE_BYTE));
 		}
+	}
+
+	@Test
+	void shouldReturnFragmentsFromRecord() throws IOException {
+		@SuppressWarnings("resource")
+		InputStream is = createCertificateStream();
+		Record tlsRecord = Record.from(is);
+
+		Certificate certificate = new Certificate(CERTIFICATE_BYTES);
+		Certificates certificates = new Certificates(List.of(certificate));
+		Handshake handshake = new Handshake(certificates);
+
+		List<Handshake> handshakes = tlsRecord.getFragments(Handshake.class);
+
+		assertThat(handshakes.size(), equalTo(1));
+		assertThat(handshakes.getFirst(), equalTo(handshake));
+	}
+
+	@Test
+	void shouldReturnFragmentFromRecord() throws IOException {
+		@SuppressWarnings("resource")
+		InputStream is = createCertificateStream();
+		Record tlsRecord = Record.from(is);
+
+		Certificate certificate = new Certificate(CERTIFICATE_BYTES);
+		Certificates certificates = new Certificates(List.of(certificate));
+		Handshake expectedHandshake = new Handshake(certificates);
+
+		Handshake handshake = tlsRecord.getFragment(Handshake.class);
+
+		assertThat(handshake, equalTo(expectedHandshake));
+	}
+
+	@Test
+	void shouldReturnFirstHandshakeFromRecord() throws IOException {
+		@SuppressWarnings("resource")
+		InputStream is = createCertificateStream();
+		Record tlsRecord = Record.from(is);
+
+		Certificate certificate = new Certificate(CERTIFICATE_BYTES);
+		Certificates certificates = new Certificates(List.of(certificate));
+		Handshake expectedHandshake = new Handshake(certificates);
+
+		Handshake handshake = tlsRecord.getFirstHandshake();
+
+		assertThat(handshake, equalTo(expectedHandshake));
+	}
+
+	@Test
+	void shouldReturnTrueForExistingHandshake() throws IOException {
+		@SuppressWarnings("resource")
+		InputStream is = createCertificateStream();
+		Record tlsRecord = Record.from(is);
+
+		boolean hasHandshake = tlsRecord.hasHandshake(Certificates.class);
+
+		assertTrue(hasHandshake);
+	}
+
+	@Test
+	void shouldReadServerFinishedRecord() throws IOException {
+		Finished finished = new Finished(new BytesWrapper(Bytes.fromHex("0102030405")));
+		Record tlsRecord = new Record(RecordContentType.HANDSHAKE, SSLProtocol.TLS_1_2, finished);
+
+		InputStream is = new ByteArrayInputStream(tlsRecord.toByteArray());
+
+		Record recordFinished = Record.from(is, Finished::from);
+
+		Finished receivedFinished = recordFinished.getFragment(Finished.class);
+
+		assertThat(recordFinished, notNullValue());
+		assertThat(receivedFinished, equalTo(finished));
 	}
 
 	@Test

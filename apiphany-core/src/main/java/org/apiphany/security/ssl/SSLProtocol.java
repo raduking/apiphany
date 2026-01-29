@@ -114,13 +114,25 @@ public enum SSLProtocol {
 	private final short handshakeVersion;
 
 	/**
+	 * The major version byte.
+	 */
+	private final byte majorVersion;
+
+	/**
+	 * The minor version byte.
+	 */
+	private final byte minorVersion;
+
+	/**
 	 * Constructs an enumeration.
 	 *
 	 * @param value string value
 	 */
-	SSLProtocol(final String value, final byte handshakeVersionMajor, final byte handshakeVersionMinor) {
+	SSLProtocol(final String value, final byte majorVersion, final byte minorVersion) {
 		this.value = value;
-		this.handshakeVersion = (short) (((short) (handshakeVersionMajor << 8)) + (handshakeVersionMinor & 0xFF));
+		this.majorVersion = majorVersion;
+		this.minorVersion = minorVersion;
+		this.handshakeVersion = (short) (((short) (majorVersion << 8)) + (minorVersion & 0xFF));
 	}
 
 	/**
@@ -150,6 +162,24 @@ public enum SSLProtocol {
 	}
 
 	/**
+	 * Returns the major version byte.
+	 *
+	 * @return the major version byte
+	 */
+	public byte majorVersion() {
+		return majorVersion;
+	}
+
+	/**
+	 * Returns the minor version byte.
+	 *
+	 * @return the minor version byte
+	 */
+	public byte minorVersion() {
+		return minorVersion;
+	}
+
+	/**
 	 * Returns a {@link SSLProtocol} enum from a {@link String}.
 	 *
 	 * @param value the SSL protocol as string
@@ -168,5 +198,4 @@ public enum SSLProtocol {
 	public static SSLProtocol fromVersion(final short version) {
 		return Enums.from(version, VERSION_MAP, values());
 	}
-
 }

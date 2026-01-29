@@ -63,6 +63,7 @@ import org.apiphany.security.tls.RSAEncryptedPreMaster;
 import org.apiphany.security.tls.Record;
 import org.apiphany.security.tls.RecordContentType;
 import org.apiphany.security.tls.RecordHeader;
+import org.apiphany.security.tls.ServerFinished;
 import org.apiphany.security.tls.ServerHello;
 import org.apiphany.security.tls.ServerHelloDone;
 import org.apiphany.security.tls.ServerKeyExchange;
@@ -298,7 +299,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		Record serverChangeCipherSpec = receiveRecord();
 
 		// 9. Receive Server Finished Record
-		Record serverFinishedRecord = Record.from(in, EncryptedHandshake::from);
+		Record serverFinishedRecord = Record.from(in, ServerFinished::from);
 
 		// 10. Decrypt finished
 		byte[] decrypted = decrypt(serverFinishedRecord, exchangeKeys);

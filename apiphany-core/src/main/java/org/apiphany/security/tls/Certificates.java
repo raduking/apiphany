@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.apiphany.io.ByteSizeable;
 import org.apiphany.io.UInt24;
@@ -112,6 +113,34 @@ public class Certificates implements TLSHandshakeBody {
 	@Override
 	public HandshakeType getType() {
 		return HandshakeType.CERTIFICATE;
+	}
+
+	/**
+	 * Compares this {@link Certificates} object to another for equality.
+	 *
+	 * @param obj the object to compare with
+	 * @return true if both objects are equal, false otherwise
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof Certificates that) {
+			return Objects.equals(this.length, that.length)
+					&& Objects.equals(this.list, that.list);
+		}
+		return false;
+	}
+
+	/**
+	 * Returns the hash code for this {@link Certificates} object.
+	 *
+	 * @return the hash code
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hash(length, list);
 	}
 
 	/**
