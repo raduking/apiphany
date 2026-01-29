@@ -7,6 +7,7 @@
 - Added `BulkCipherAlgorithm` enum with supported bulk cipher algorithms.
 - Updated `CipherType` to reflect what it uses and what it provides via flags.
 - Moved `MessageDigestAlgorithm.prfHmacAlgorithmName` to `PRF.algorithmName(MessageDigestAlgorithm)` because it is only used for TLS for now.
+- Added missing `ServerFinished` TLS object to be used instead of a too generic `EncryptedHandshake` object.
 
 ---
 

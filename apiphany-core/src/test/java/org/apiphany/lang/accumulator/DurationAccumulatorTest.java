@@ -211,9 +211,9 @@ class DurationAccumulatorTest {
 
 	@Test
 	void shouldReturnCorrectPercentilesForOddNumberOfDurations() {
-		accumulator.accumulate(() -> Threads.safeSleep(Duration.ofMillis(10)));
-		accumulator.accumulate(() -> Threads.safeSleep(Duration.ofMillis(20)));
-		accumulator.accumulate(() -> Threads.safeSleep(Duration.ofMillis(30)));
+		accumulator.getInformationList().add(Duration.ofMillis(10));
+		accumulator.getInformationList().add(Duration.ofMillis(20));
+		accumulator.getInformationList().add(Duration.ofMillis(30));
 
 		double p50 = accumulator.percentile(50.0); // median
 		double p95 = accumulator.percentile(95.0);

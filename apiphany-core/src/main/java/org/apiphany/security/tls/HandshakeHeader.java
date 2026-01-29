@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.Objects;
 
 import org.apiphany.io.UInt24;
 import org.apiphany.io.UInt8;
@@ -109,6 +110,34 @@ public class HandshakeHeader implements TLSObject {
 	@Override
 	public String toString() {
 		return TLSObject.serialize(this);
+	}
+
+	/**
+	 * Compares this {@link HandshakeHeader} to another object for equality.
+	 *
+	 * @param obj the object to compare with
+	 * @return true if the objects are equal, false otherwise
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof HandshakeHeader that) {
+			return Objects.equals(this.type, that.type) &&
+					Objects.equals(this.length, that.length);
+		}
+		return false;
+	}
+
+	/**
+	 * Returns the hash code for this {@link HandshakeHeader}.
+	 *
+	 * @return the hash code
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hash(type, length);
 	}
 
 	/**

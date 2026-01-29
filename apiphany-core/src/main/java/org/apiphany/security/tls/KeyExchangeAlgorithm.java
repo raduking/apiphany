@@ -57,7 +57,7 @@ public enum KeyExchangeAlgorithm {
 	NONE;
 
 	/**
-	 * The name map for easy {@link #fromValue(String)} implementation.
+	 * The name map for easy {@link #fromString(String)} implementation.
 	 */
 	private static final Map<String, KeyExchangeAlgorithm> NAME_MAP = Enums.buildNameMap(values());
 
@@ -68,7 +68,7 @@ public enum KeyExchangeAlgorithm {
 	 * @return the corresponding enum constant, or {@code null} if no match is found.
 	 * @throws IllegalArgumentException If {@code value} is {@code null} (if enforced by {@link Enums#fromString}).
 	 */
-	public static KeyExchangeAlgorithm fromValue(final String value) {
+	public static KeyExchangeAlgorithm fromString(final String value) {
 		return Enums.fromString(value, NAME_MAP, values());
 	}
 }
