@@ -13,7 +13,10 @@ echo "All tests passed. Deploying apiphany module..."
 # -am to also build any dependencies (also make)
 # -DskipTests to skip tests during deployment
 
-mvn deploy -Drelease=true \
+# Deploy the apiphany-core module to Maven Central using the central-publishing plugin
+# We do not use 'mvn deploy' directly to ensure proper signing and publishing steps are followed
+
+mvn -Drelease=true central-publishing:publish \
 	-pl apiphany-core \
 	-am \
 	-DskipTests
