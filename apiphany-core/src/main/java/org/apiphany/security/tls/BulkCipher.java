@@ -3,6 +3,7 @@ package org.apiphany.security.tls;
 import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
 import java.security.spec.AlgorithmParameterSpec;
+import java.util.List;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
@@ -43,87 +44,160 @@ public enum BulkCipher {
 	/**
 	 * AES-128 in GCM (AEAD) mode. Tag length: 16. Nonce = 4-byte fixed IV + 8-byte explicit per-record IV.
 	 */
-	AES_128_GCM(BulkCipherInfo.of(BulkCipherAlgorithm.AES, "AES/GCM/NoPadding", 16, 16, 4, 8, CipherType.AEAD, -1, 16)),
+	AES_128_GCM(BulkCipherInfo.of(
+			BulkCipherAlgorithm.AES, "AES/GCM/NoPadding",
+			16, 16, 4, 8,
+			CipherType.AEAD,
+			-1, 16)),
 
 	/**
 	 * AES-256 in GCM (AEAD) mode. Tag length: 16. Nonce = 4-byte fixed IV + 8-byte explicit per-record IV.
 	 */
-	AES_256_GCM(BulkCipherInfo.of(BulkCipherAlgorithm.AES, "AES/GCM/NoPadding", 32, 16, 4, 8, CipherType.AEAD, -1, 16)),
+	AES_256_GCM(BulkCipherInfo.of(
+			BulkCipherAlgorithm.AES, "AES/GCM/NoPadding",
+			32, 16, 4, 8,
+			CipherType.AEAD,
+			-1, 16)),
 
 	/**
 	 * ChaCha20-Poly1305 AEAD. Nonce = 12-byte fixed IV, no explicit nonce. Tag length: 16.
 	 */
-	CHACHA20_POLY1305(
-			BulkCipherInfo.of(BulkCipherAlgorithm.CHACHA20_POLY1305, "ChaCha20-Poly1305/None/NoPadding", 32, 0, 12, 0, CipherType.AEAD, -1, 16)),
+	CHACHA20_POLY1305(BulkCipherInfo.of(
+			BulkCipherAlgorithm.CHACHA20_POLY1305, "ChaCha20-Poly1305/None/NoPadding",
+			32, 0, 12, 0,
+			CipherType.AEAD,
+			-1, 16)),
 
 	/**
 	 * AES-128 in CCM (AEAD) mode. Tag length: 16. Nonce = 4-byte fixed IV + 8-byte explicit per-record IV.
 	 */
-	AES_128_CCM(BulkCipherInfo.of(BulkCipherAlgorithm.AES, "AES/GCM/NoPadding", 16, 16, 4, 8, CipherType.AEAD, -1, 16)),
+	AES_128_CCM(BulkCipherInfo.of(
+			BulkCipherAlgorithm.AES, "AES/GCM/NoPadding",
+			16, 16, 4, 8,
+			CipherType.AEAD,
+			-1, 16)),
 
 	/**
 	 * AES-256 in CCM (AEAD) mode. Tag length: 16.
 	 */
-	AES_256_CCM(BulkCipherInfo.of(BulkCipherAlgorithm.AES, "AES/GCM/NoPadding", 32, 16, 4, 8, CipherType.AEAD, -1, 16)),
+	AES_256_CCM(BulkCipherInfo.of(
+			BulkCipherAlgorithm.AES, "AES/GCM/NoPadding",
+			32, 16, 4, 8,
+			CipherType.AEAD,
+			-1, 16)),
 
 	/**
 	 * AES-128 in CCM with 8-byte tag (RFC 6655).
 	 */
-	AES_128_CCM_8(BulkCipherInfo.of(BulkCipherAlgorithm.AES, "AES/CCM/NoPadding", 16, 16, 4, 8, CipherType.AEAD, -1, 8)),
+	AES_128_CCM_8(BulkCipherInfo.of(
+			BulkCipherAlgorithm.AES, "AES/CCM/NoPadding",
+			16, 16, 4, 8,
+			CipherType.AEAD,
+			-1, 8)),
 
 	/**
 	 * AES-256 in CCM with 8-byte tag.
 	 */
-	AES_256_CCM_8(BulkCipherInfo.of(BulkCipherAlgorithm.AES, "AES/CCM/NoPadding", 32, 16, 4, 8, CipherType.AEAD, -1, 8)),
+	AES_256_CCM_8(BulkCipherInfo.of(
+			BulkCipherAlgorithm.AES, "AES/CCM/NoPadding",
+			32, 16, 4, 8,
+			CipherType.AEAD,
+			-1, 8)),
 
 	/**
 	 * AES-128 in CBC mode (non-AEAD). IV length: 16.
 	 */
-	AES_128_CBC(BulkCipherInfo.of(BulkCipherAlgorithm.AES, "AES/CBC/NoPadding", 16, 16, 16, 0, CipherType.BLOCK, -1, 0)),
+	AES_128_CBC(BulkCipherInfo.of(
+			BulkCipherAlgorithm.AES, "AES/CBC/NoPadding",
+			16, 16, 16, 0,
+			CipherType.BLOCK,
+			-1, 0)),
 
 	/**
 	 * AES-256 in CBC mode (non-AEAD). IV length: 16.
 	 */
-	AES_256_CBC(BulkCipherInfo.of(BulkCipherAlgorithm.AES, "AES/CBC/NoPadding", 32, 16, 16, 0, CipherType.BLOCK, -1, 0)),
+	AES_256_CBC(BulkCipherInfo.of(
+			BulkCipherAlgorithm.AES, "AES/CBC/NoPadding",
+			32, 16, 16, 0,
+			CipherType.BLOCK,
+			-1, 0)),
 
 	/**
 	 * Triple-DES (3DES) in CBC mode (legacy). IV length: 8.
 	 * <p>
 	 * Note: 3DES is considered weak by modern standards and is included here only for compatibility with legacy systems.
 	 */
-	TRIPLE_DES_EDE_CBC(BulkCipherInfo.of(BulkCipherAlgorithm.DES_EDE, "DESede/CBC/PKCS5Padding", 24, 8, 8, 0, CipherType.BLOCK, -1, 0)),
+	TRIPLE_DES_EDE_CBC(BulkCipherInfo.of(
+			BulkCipherAlgorithm.DES_EDE, "DESede/CBC/PKCS5Padding",
+			24, 8, 8, 0,
+			CipherType.BLOCK,
+			-1, 0)),
 
 	/**
 	 * GOST R 34.12-2015 (Kuznyechik) in CTR mode. IV length: 16.
 	 */
-	KUZNYECHIK_CTR(BulkCipherInfo.of(BulkCipherAlgorithm.KUZNYECHIK, "Kuznyechik/CTR/NoPadding", 32, 16, 16, 0, CipherType.BLOCK, -1, 0)),
+	KUZNYECHIK_CTR(BulkCipherInfo.of(
+			BulkCipherAlgorithm.KUZNYECHIK, "Kuznyechik/CTR/NoPadding",
+			32, 16, 16, 0,
+			CipherType.BLOCK,
+			-1, 0)),
 
 	/**
 	 * GOST 28147-89 in CTR mode. IV length: 8.
 	 */
-	MAGMA_CTR(BulkCipherInfo.of(BulkCipherAlgorithm.GOST_28147, "", 32, 8, 8, 0, CipherType.BLOCK, -1, 0)),
+	MAGMA_CTR(BulkCipherInfo.of(
+			BulkCipherAlgorithm.GOST_28147, "GOST28147/CTR/NoPadding",
+			32, 8, 8, 0,
+			CipherType.BLOCK,
+			-1, 0)),
 
 	/**
 	 * GOST 28147 CNT variant. IV length: 8.
 	 */
-	GOST_28147_CNT(BulkCipherInfo.of(BulkCipherAlgorithm.GOST_28147, "", 32, 8, 8, 0, CipherType.BLOCK, -1, 0)),
+	GOST_28147_CNT(BulkCipherInfo.of(
+			BulkCipherAlgorithm.GOST_28147, "GOST28147/CTR/NoPadding",
+			32, 8, 8, 0,
+			CipherType.BLOCK,
+			-1, 0)),
 
 	/**
 	 * RC4 with 128-bit key (legacy, insecure). No IV.
 	 */
 	@Deprecated
-	RC4_128(BulkCipherInfo.of(BulkCipherAlgorithm.RC4, "RC4", 16, 0, 0, 0, CipherType.STREAM, -1, 0)),
+	RC4_128(BulkCipherInfo.of(
+			BulkCipherAlgorithm.RC4, "RC4",
+			16, 0, 0, 0,
+			CipherType.STREAM,
+			-1, 0)),
 
 	/**
 	 * RC4 with 56-bit key (export legacy). No IV.
 	 */
 	@Deprecated
-	RC4_56(BulkCipherInfo.of(BulkCipherAlgorithm.RC4, "RC4", 7, 0, 0, 0, CipherType.STREAM, -1, 0)),
+	RC4_56(BulkCipherInfo.of(
+			BulkCipherAlgorithm.RC4, "RC4",
+			7, 0, 0, 0,
+			CipherType.STREAM,
+			-1, 0)),
 
 	/**
 	 * Un-encrypted cipher (NULL cipher). No key, no IV, no tag.
 	 */
-	UNENCRYPTED(BulkCipherInfo.of(BulkCipherAlgorithm.NONE, "", 0, 0, 0, 0, CipherType.NO_ENCRYPTION, 0, 0));
+	UNENCRYPTED(BulkCipherInfo.of(
+			BulkCipherAlgorithm.NONE, "None",
+			0, 0, 0, 0,
+			CipherType.NO_ENCRYPTION,
+			0, 0));
+
+	/**
+	 * List of bulk ciphers that are not supported by the default SunJCE provider.
+	 */
+	public static final List<BulkCipher> UNSUPPORTED_SUN_JCE_BULK_CIPHERS = List.of(
+			AES_128_CCM_8,
+			AES_256_CCM_8,
+			MAGMA_CTR,
+			GOST_28147_CNT,
+			KUZNYECHIK_CTR);
 
 	/**
 	 * Secure random number generator for IV generation.
@@ -235,14 +309,15 @@ public enum BulkCipher {
 	 * @return the AlgorithmParameterSpec, or null if not required
 	 */
 	public AlgorithmParameterSpec spec(final byte[] fullIV) {
-		if (this == AES_128_CCM_8 || this == AES_256_CCM_8) {
+		if (UNSUPPORTED_SUN_JCE_BULK_CIPHERS.contains(this)) {
+			// TODO: see if we can support these via BouncyCastle or another provider
 			throw new SecurityException("SunJCE does not support: " + info.transformation());
 		}
 		return switch (type()) {
 			case AEAD -> switch (info.algorithm()) {
 				case AES -> new GCMParameterSpec(tagLength() * 8, fullIV);
 				case CHACHA20_POLY1305 -> new IvParameterSpec(fullIV);
-				default -> throw new IllegalStateException("Unknown AEAD algorithm: " + info.algorithm());
+				default -> throw new SecurityException("Unknown " + type() + " algorithm: " + info.algorithm());
 			};
 			case BLOCK -> new IvParameterSpec(fullIV);
 			case STREAM, NO_ENCRYPTION -> null;
@@ -320,5 +395,19 @@ public enum BulkCipher {
 			}
 			case STREAM, NO_ENCRYPTION -> Bytes.isNotEmpty(keyIV) ? keyIV.clone() : Bytes.EMPTY;
 		};
+	}
+
+	/**
+	 * Checks if the transformation is supported by the current JCA provider.
+	 *
+	 * @return true if supported, false otherwise
+	 */
+	public boolean isTransformationSupported() {
+		try {
+			Cipher.getInstance(info.transformation());
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
 	}
 }
