@@ -4,6 +4,9 @@
 
 - Renamed `ServerFinished` to `ServerFinishedEncrypted` to better describe the TLS object.
 - Added `ClientFinishedEncrypted` for TLS client finished encrypted handshake.
+- Renamed `Record.getHandshake` to `getHandshakeBody` where the return type is `TLSHandshakeBody`.
+- Renamed `Record.hasHandshake` to `hasHandshakeBody`.
+- Renamed `Record.hasNoHandshake` to `hasNoHandshakeBody`.
 
 ---
 
