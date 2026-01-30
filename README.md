@@ -58,6 +58,9 @@ git checkout develop
 mvn clean install
 ```
 
+The project being in active development. Expect class name changes, method name changes, and other similar changes between versions.
+All such changes are documented in [CHANGELOG.md](CHANGELOG.md).
+
 ### How to use
 
 To make a simple HTTP GET request to `http://my.awesome.domain/api/info`:
