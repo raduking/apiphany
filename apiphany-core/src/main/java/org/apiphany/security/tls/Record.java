@@ -281,6 +281,18 @@ public class Record implements TLSObject {
 	}
 
 	/**
+	 * Returns the first handshake fragment in this record.
+	 *
+	 * @return the first Handshake fragment
+	 * @throws IndexOutOfBoundsException If there are no fragments
+	 * @throws ClassCastException If the first fragment is not a Handshake
+	 */
+	@Ignored
+	public Handshake getFirstHandshake() {
+		return getHandshake(0);
+	}
+
+	/**
 	 * Returns all fragments of a specific type.
 	 *
 	 * @param <T> the type of fragments to filter for
@@ -328,18 +340,6 @@ public class Record implements TLSObject {
 	}
 
 	/**
-	 * Returns the first handshake fragment in this record.
-	 *
-	 * @return the first Handshake fragment
-	 * @throws IndexOutOfBoundsException If there are no fragments
-	 * @throws ClassCastException If the first fragment is not a Handshake
-	 */
-	@Ignored
-	public Handshake getFirstHandshake() {
-		return getHandshake(0);
-	}
-
-	/**
 	 * Checks if this record contains a specific type of handshake message.
 	 *
 	 * @param <T> the type of handshake message to check for
@@ -347,7 +347,7 @@ public class Record implements TLSObject {
 	 * @param tlsHandshakeClass the class object of the handshake type to check for
 	 * @return true if the record contains a matching handshake message
 	 */
-	public <T extends TLSHandshakeBody> boolean hasHandshake(final Class<T> tlsHandshakeClass) {
+	public <T extends TLSHandshakeBody> boolean hasHandshakeBody(final Class<T> tlsHandshakeClass) {
 		for (TLSObject fragment : fragments) {
 			if (Handshake.class.isAssignableFrom(fragment.getClass())) {
 				Handshake handshake = JavaObjects.cast(fragment);
@@ -367,8 +367,8 @@ public class Record implements TLSObject {
 	 * @param tlsHandshakeClass the class object of the handshake type to check for
 	 * @return true if the record does not contain a matching handshake message
 	 */
-	public <T extends TLSHandshakeBody> boolean hasNoHandshake(final Class<T> tlsHandshakeClass) {
-		return !hasHandshake(tlsHandshakeClass);
+	public <T extends TLSHandshakeBody> boolean hasNoHandshakeBody(final Class<T> tlsHandshakeClass) {
+		return !hasHandshakeBody(tlsHandshakeClass);
 	}
 
 	/**
@@ -380,7 +380,7 @@ public class Record implements TLSObject {
 	 * @return the matching handshake message
 	 * @throws IllegalArgumentException If no matching handshake is found
 	 */
-	public <T extends TLSHandshakeBody> T getHandshake(final Class<T> tlsHandshakeClass) {
+	public <T extends TLSHandshakeBody> T getHandshakeBody(final Class<T> tlsHandshakeClass) {
 		for (TLSObject fragment : fragments) {
 			if (Handshake.class.isAssignableFrom(fragment.getClass())) {
 				Handshake handshake = JavaObjects.cast(fragment);
@@ -394,6 +394,8 @@ public class Record implements TLSObject {
 
 	/**
 	 * Returns an array of {@link String}s with all fragment names contained in this record.
+	 * <p>
+	 * If a fragment is a handshake, its body class name is returned.
 	 *
 	 * @return an array of strings with all fragment names contained in this record
 	 */

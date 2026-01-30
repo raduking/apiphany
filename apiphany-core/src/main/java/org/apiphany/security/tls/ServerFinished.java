@@ -7,7 +7,7 @@ import java.io.InputStream;
  * Represents the Server Finished message in a TLS connection.
  * <p>
  * This class encapsulates the encrypted handshake data sent by the server to indicate the completion of the handshake
- * process.
+ * process and is just an encrypted version of the {@link Finished} message.
  *
  * @author Radu Sebastian LAZIN
  */

@@ -47,7 +47,7 @@ class RecordTest {
 
 		assertThat(tlsRecord, notNullValue());
 
-		byte[] result = tlsRecord.getHandshake(Certificates.class).first().getData().toByteArray();
+		byte[] result = tlsRecord.getHandshakeBody(Certificates.class).first().getData().toByteArray();
 		for (int i = 0; i < CERTIFICATE_SIZE; ++i) {
 			assertThat(result[i], equalTo(CERTIFICATE_BYTE));
 		}
@@ -105,7 +105,7 @@ class RecordTest {
 		InputStream is = createCertificateStream();
 		Record tlsRecord = Record.from(is);
 
-		boolean hasHandshake = tlsRecord.hasHandshake(Certificates.class);
+		boolean hasHandshake = tlsRecord.hasHandshakeBody(Certificates.class);
 
 		assertTrue(hasHandshake);
 	}
@@ -134,7 +134,7 @@ class RecordTest {
 
 		assertThat(tlsRecord, notNullValue());
 
-		byte[] result = tlsRecord.getHandshake(Certificates.class).first().getData().toByteArray();
+		byte[] result = tlsRecord.getHandshakeBody(Certificates.class).first().getData().toByteArray();
 		for (int i = 0; i < CERTIFICATE_SIZE; ++i) {
 			assertThat(result[i], equalTo(CERTIFICATE_BYTE));
 		}
@@ -149,7 +149,7 @@ class RecordTest {
 
 		assertThat(tlsRecord, notNullValue());
 
-		byte[] result = tlsRecord.getHandshake(Certificates.class).first().getData().toByteArray();
+		byte[] result = tlsRecord.getHandshakeBody(Certificates.class).first().getData().toByteArray();
 		for (int i = 0; i < CERTIFICATE_SIZE; ++i) {
 			assertThat(result[i], equalTo(CERTIFICATE_BYTE));
 		}
