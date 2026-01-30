@@ -391,6 +391,15 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	}
 
 	/**
+	 * Returns the exchange client that generated this response.
+	 *
+	 * @return the exchange client
+	 */
+	protected ExchangeClient getExchangeClient() {
+		return exchangeClient;
+	}
+
+	/**
 	 * Returns the API response builder.
 	 *
 	 * @param <T> response body type

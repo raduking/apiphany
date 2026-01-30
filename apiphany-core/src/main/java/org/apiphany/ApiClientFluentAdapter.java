@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
 
+import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.http.HttpClientFluentAdapter;
 import org.apiphany.header.Header;
@@ -151,6 +152,9 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @return this
 	 */
 	public ApiClientFluentAdapter url(final String url) {
+		if (Strings.isEmpty(url)) {
+			throw new IllegalArgumentException("url cannot be null or empty");
+		}
 		this.url = url;
 		return this;
 	}
@@ -201,13 +205,20 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	}
 
 	/**
-	 * Sets the URL by concatenating the {@link ApiClient#getBaseUrl()} with the given path segments.
+	 * Sets the URL by concatenating the baseUrl configured in either {@link ClientProperties#getBaseUrl()} or
+	 * {@link ApiClient#getBaseUrl()} with the given path segments.
+	 * <p>
+	 * If you need a specific base URL for this request use {@link #url(String, String...)} instead.
 	 *
 	 * @param pathSegments the path segments to append to the URL
 	 * @return this
 	 */
 	public ApiClientFluentAdapter path(final String... pathSegments) {
-		String baseUrl = apiClient.getBaseUrl();
+		ClientProperties properties = Nullables.apply(exchangeClient, ExchangeClient::getClientProperties);
+		String baseUrl = Nullables.apply(properties, ClientProperties::getBaseUrl);
+		if (Strings.isEmpty(baseUrl)) {
+			baseUrl = apiClient.getBaseUrl();
+		}
 		if (ApiClient.EMPTY_BASE_URL.equals(baseUrl)) {
 			baseUrl = url;
 		}
