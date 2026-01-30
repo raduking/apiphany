@@ -12,6 +12,8 @@ import org.apiphany.io.BytesWrapper;
  * <p>
  * This is the final message in the TLS handshake, containing verify data that proves the integrity of the handshake
  * process.
+ * <p>
+ * This class can be used for both client and server Finished messages since their structure is identical.
  *
  * @author Radu Sebastian LAZIN
  */

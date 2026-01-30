@@ -49,7 +49,6 @@ import org.apiphany.security.tls.ClientKeyExchange;
 import org.apiphany.security.tls.ECDHEPublicKey;
 import org.apiphany.security.tls.Encrypted;
 import org.apiphany.security.tls.EncryptedAlert;
-import org.apiphany.security.tls.EncryptedHandshake;
 import org.apiphany.security.tls.ExchangeKeys;
 import org.apiphany.security.tls.ExchangeRandom;
 import org.apiphany.security.tls.Finished;
@@ -63,7 +62,6 @@ import org.apiphany.security.tls.RSAEncryptedPreMaster;
 import org.apiphany.security.tls.Record;
 import org.apiphany.security.tls.RecordContentType;
 import org.apiphany.security.tls.RecordHeader;
-import org.apiphany.security.tls.ServerFinished;
 import org.apiphany.security.tls.ServerHello;
 import org.apiphany.security.tls.ServerHelloDone;
 import org.apiphany.security.tls.ServerKeyExchange;
@@ -71,6 +69,8 @@ import org.apiphany.security.tls.SignatureAlgorithm;
 import org.apiphany.security.tls.TLSEncryptedObject;
 import org.apiphany.security.tls.TLSKeyExchange;
 import org.apiphany.security.tls.Version;
+import org.apiphany.security.tls.opt.ClientFinishedEncrypted;
+import org.apiphany.security.tls.opt.ServerFinishedEncrypted;
 import org.morphix.lang.Nullables;
 import org.morphix.lang.function.ThrowingConsumer;
 import org.slf4j.Logger;
@@ -291,7 +291,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		Handshake clientFinishedHandshake = new Handshake(new Finished(clientVerifyData));
 
 		Encrypted encrypted = encrypt(clientFinishedHandshake, RecordContentType.HANDSHAKE, exchangeKeys);
-		Record clientFinished = new Record(sslProtocol, new EncryptedHandshake(encrypted));
+		Record clientFinished = new Record(sslProtocol, new ClientFinishedEncrypted(encrypted));
 		sendRecord(clientFinished);
 
 		// 8. Receive ChangeCipherSpec and Finished
@@ -299,7 +299,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		Record serverChangeCipherSpec = receiveRecord();
 
 		// 9. Receive Server Finished Record
-		Record serverFinishedRecord = Record.from(in, ServerFinished::from);
+		Record serverFinishedRecord = Record.from(in, ServerFinishedEncrypted::from);
 
 		// 10. Decrypt finished
 		byte[] decrypted = decrypt(serverFinishedRecord, exchangeKeys);

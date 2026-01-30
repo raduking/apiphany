@@ -1,37 +1,38 @@
-package org.apiphany.security.tls;
+package org.apiphany.security.tls.opt;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.ByteArrayInputStream;
 
+import org.apiphany.security.tls.Encrypted;
 import org.junit.jupiter.api.Test;
 
 /**
- * Test class for {@link ServerFinished}.
+ * Test class for {@link ClientFinishedEncrypted}.
  *
  * @author Radu Sebastian LAZIN
  */
-class ServerFinishedTest {
+class ClientFinishedEncryptedTest {
 
 	private static final byte[] ENCRYPTED_PAYLOAD = new byte[] {
 			0x0A, 0x0B, 0x0C, 0x0D
 	};
 
 	@Test
-	void shouldCreateServerFinishedWithEncryptedPayload() {
+	void shouldCreateClientFinishedWithEncryptedPayload() {
 		Encrypted encryptedPayload = new Encrypted(ENCRYPTED_PAYLOAD);
-		ServerFinished serverFinished = new ServerFinished(encryptedPayload);
+		ClientFinishedEncrypted clientFinished = new ClientFinishedEncrypted(encryptedPayload);
 
-		assertArrayEquals(encryptedPayload.toByteArray(), serverFinished.toByteArray());
-		assertArrayEquals(ENCRYPTED_PAYLOAD, serverFinished.toByteArray());
-		assertEquals(ENCRYPTED_PAYLOAD.length, serverFinished.sizeOf());
+		assertArrayEquals(encryptedPayload.toByteArray(), clientFinished.toByteArray());
+		assertArrayEquals(ENCRYPTED_PAYLOAD, clientFinished.toByteArray());
+		assertEquals(ENCRYPTED_PAYLOAD.length, clientFinished.sizeOf());
 	}
 
 	@Test
-	void shouldCreateServerFinishedFromInputStream() throws Exception {
+	void shouldCreateClientFinishedFromInputStream() throws Exception {
 		Encrypted encryptedPayload = new Encrypted(ENCRYPTED_PAYLOAD);
-		ServerFinished serverFinished = ServerFinished.from(
+		ClientFinishedEncrypted serverFinished = ClientFinishedEncrypted.from(
 				new ByteArrayInputStream(ENCRYPTED_PAYLOAD),
 				ENCRYPTED_PAYLOAD.length);
 
