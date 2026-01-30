@@ -2,6 +2,7 @@
 
 `1.1.2`
 
+- Added `ClientProperties.setBaseUrl` and `ClientProperties.setBaseUrl` to be able to configure the base URL per exchange client.
 - Renamed `ServerFinished` to `ServerFinishedEncrypted` to better describe the TLS object.
 - Added `ClientFinishedEncrypted` for TLS client finished encrypted handshake.
 - Renamed `Record.getHandshake` to `getHandshakeBody` where the return type is `TLSHandshakeBody`.

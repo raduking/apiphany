@@ -7,29 +7,19 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Type;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
@@ -41,21 +31,11 @@ import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
 import org.apiphany.io.ContentType;
 import org.apiphany.lang.retry.Retry;
-import org.apiphany.lang.retry.WaitCounter;
-import org.apiphany.meters.BasicMeters;
-import org.apiphany.meters.MeterCounter;
-import org.apiphany.meters.MeterFactory;
-import org.apiphany.meters.MeterTimer;
 import org.apiphany.security.AuthenticationType;
 import org.apiphany.utils.TestDto;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
 import org.mockito.ArgumentCaptor;
 import org.morphix.lang.JavaObjects;
-import org.morphix.reflection.Fields;
-import org.morphix.reflection.GenericClass;
-
-import io.micrometer.core.instrument.Tags;
 
 /**
  * Test class for {@link ApiClient}.
@@ -65,35 +45,38 @@ import io.micrometer.core.instrument.Tags;
 class ApiClientTest {
 
 	private static final String APIPHANY = "Apiphany";
+
 	private static final String BASE_URL = "http://localhost";
+	private static final String DIFFERENT_BASE_URL = "http://different-base-url.com";
+
 	private static final String PATH_TEST = "test";
+
 	private static final String PARAM_ID = "id";
+
 	private static final String ID1 = "someTestId1";
 	private static final String ID2 = "someTestId2";
+
 	private static final int COUNT1 = 666;
 	private static final int COUNT2 = 777;
+
 	private static final String SOME_ERROR_MESSAGE = "someErrorMessage";
-	private static final String METRICS_PREFIX = "test.metrics";
+
 	private static final String EXCHANGE_CLIENT_NAME_1 = "ThisIsTheName1";
 	private static final String EXCHANGE_CLIENT_NAME_2 = "ThisIsTheName2";
 
 	private static final int HTTP_STATUS_OK = 200;
 	private static final int HTTP_STATUS_BAD_REQUEST = 400;
 
-	private static final int RETRY_COUNT = 3;
-
 	@Test
 	@SuppressWarnings({ "unchecked", "resource" })
 	void shouldCallExchangeClientOnRetrieve() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
-
 		TestDto expected = TestDto.of(ID1, COUNT1);
 		ApiResponse<TestDto> response = ApiResponse.create(expected)
 				.status(HTTP_STATUS_OK, HttpStatus::fromCode)
 				.exchangeClient(exchangeClient)
 				.build();
-
 		doReturn(response).when(exchangeClient).exchange(any(ApiRequest.class));
 
 		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
@@ -113,15 +96,12 @@ class ApiClientTest {
 	void shouldCallExchangeClientWithProvidedParametersOnGet() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
-
 		TestDto expected = TestDto.of(ID1, COUNT1);
 		ApiResponse<TestDto> response = ApiResponse.create(expected)
 				.status(HTTP_STATUS_OK, HttpStatus::fromCode)
 				.exchangeClient(exchangeClient)
 				.build();
-
 		ArgumentCaptor<?> requestCaptor = ArgumentCaptor.forClass(ApiRequest.class);
-
 		doReturn(response).when(exchangeClient).exchange(any(ApiRequest.class));
 		doReturn(HttpMethod.GET).when(exchangeClient).get();
 
@@ -151,6 +131,7 @@ class ApiClientTest {
 		assertThat(request.getHeaders(), is(anEmptyMap()));
 		assertThat(request.getBody(), nullValue());
 		assertThat(request.getResponseType(), equalTo(TestDto.class));
+		assertThat(request.getClassResponseType(), equalTo(TestDto.class));
 		assertFalse(request.isStream());
 		assertFalse(request.isUrlEncoded());
 	}
@@ -163,7 +144,7 @@ class ApiClientTest {
 
 		TestDto expected = TestDto.of(ID1, COUNT1);
 		ApiResponse<TestDto> response = ApiResponse.create(expected)
-				.status(HTTP_STATUS_OK, HttpStatus::fromCode)
+				.status(HttpStatus.OK)
 				.exchangeClient(exchangeClient)
 				.build();
 
@@ -211,13 +192,14 @@ class ApiClientTest {
 		assertThat(request.getHeaders(), equalTo(headers));
 		assertThat(request.getParams(), equalTo(params));
 		assertThat(request.getResponseType(), equalTo(TestDto.class));
+		assertThat(request.getClassResponseType(), equalTo(TestDto.class));
 		assertFalse(request.isStream());
 		assertFalse(request.isUrlEncoded());
 	}
 
 	@Test
 	@SuppressWarnings({ "unchecked", "resource" })
-	void shouldReturnEmptyIfCallExchangeClientWithProvidedParametersReturnsNull() {
+	void shouldReturnDefaultIfCallExchangeClientWithProvidedParametersReturnsNull() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 		ApiResponse<TestDto> response = ApiResponse.<TestDto>builder()
@@ -316,6 +298,44 @@ class ApiClientTest {
 	}
 
 	@Test
+	@SuppressWarnings("resource")
+	void shouldCallExchangeClientWithBaseUrlFromExchangeClientPropertiesEvenIfBaseUrlIsSet() {
+		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
+		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
+		ClientProperties clientProperties = new ClientProperties();
+		clientProperties.setBaseUrl(DIFFERENT_BASE_URL);
+		doReturn(clientProperties).when(exchangeClient).getClientProperties();
+
+		TestDto expected = TestDto.of(ID1, COUNT1);
+		ApiResponse<TestDto> response = ApiResponse.create(expected)
+				.status(HttpStatus.OK)
+				.exchangeClient(exchangeClient)
+				.build();
+
+		ArgumentCaptor<ApiRequest<?>> requestCaptor = ArgumentCaptor.forClass(ApiRequest.class);
+
+		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
+		doReturn(response).when(exchangeClient).exchange(requestCaptor.capture());
+		doReturn(HttpMethod.GET).when(exchangeClient).get();
+
+		TestDto result = api.client()
+				.http()
+				.get()
+				.path(PATH_TEST)
+				.retrieve(TestDto.class)
+				.orDefault(TestDto.EMPTY);
+
+		assertThat(result, equalTo(expected));
+
+		assertInstanceOf(ApiClientFluentAdapter.class, requestCaptor.getValue());
+		ApiClientFluentAdapter adapter = JavaObjects.cast(requestCaptor.getValue());
+
+		assertThat(adapter.getMethod(), equalTo(HttpMethod.GET));
+		assertThat(adapter.getClassResponseType(), equalTo(TestDto.class));
+		assertThat(adapter.getUrl(), equalTo(DIFFERENT_BASE_URL + "/" + PATH_TEST));
+	}
+
+	@Test
 	@SuppressWarnings({ "unchecked", "resource" })
 	void shouldReturnEmptyIfCallExchangeClientWithProvidedParametersThrowsException() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
@@ -354,156 +374,7 @@ class ApiClientTest {
 		assertThat(result.getBody(), nullValue());
 		assertThat(result.getException(), equalTo(e));
 		assertThat(result.getErrorMessage(), equalTo("Exchange error: " + SOME_ERROR_MESSAGE));
-		assertThat(Fields.IgnoreAccess.get(result, "exchangeClient"), equalTo(exchangeClient));
-	}
-
-	@Test
-	@SuppressWarnings("resource")
-	void shouldSetMetricsToThisMethod() {
-		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
-		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
-
-		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
-
-		ApiClientFluentAdapter adapter = api
-				.client()
-				.http()
-				.get()
-				.path(PATH_TEST)
-				.metersOnMethod(METRICS_PREFIX);
-
-		String metricStart = METRICS_PREFIX + ".should-set-metrics-to-this-method.";
-
-		assertThat(adapter.getMeters().latency().getName(), equalTo(metricStart + BasicMeters.Name.LATENCY));
-		assertThat(adapter.getMeters().requests().getName(), equalTo(metricStart + BasicMeters.Name.REQUEST));
-		assertThat(adapter.getMeters().errors().getName(), equalTo(metricStart + BasicMeters.Name.ERROR));
-		assertThat(adapter.getMeters().latency().getName(), equalTo(metricStart + BasicMeters.Name.LATENCY));
-	}
-
-	@Test
-	@SuppressWarnings("resource")
-	void shouldSetMetricsToThisMethodWithTags() {
-		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
-		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
-
-		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
-
-		ApiClientFluentAdapter adapter = api
-				.client()
-				.http()
-				.get()
-				.path(PATH_TEST)
-				.metersOnMethod(METRICS_PREFIX, Tags.empty());
-
-		String metricStart = METRICS_PREFIX + ".should-set-metrics-to-this-method-with-tags.";
-
-		assertThat(adapter.getMeters().latency().getName(), equalTo(metricStart + BasicMeters.Name.LATENCY));
-		assertThat(adapter.getMeters().requests().getName(), equalTo(metricStart + BasicMeters.Name.REQUEST));
-		assertThat(adapter.getMeters().errors().getName(), equalTo(metricStart + BasicMeters.Name.ERROR));
-		assertThat(adapter.getMeters().latency().getName(), equalTo(metricStart + BasicMeters.Name.LATENCY));
-	}
-
-	@Test
-	@SuppressWarnings("resource")
-	void shouldSetMetricsWithoutMethod() {
-		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
-		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
-
-		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
-
-		ApiClientFluentAdapter adapter = api
-				.client()
-				.http()
-				.get()
-				.path(PATH_TEST)
-				.meters(METRICS_PREFIX);
-
-		String metricStart = METRICS_PREFIX + ".";
-
-		assertThat(adapter.getMeters().latency().getName(), equalTo(metricStart + BasicMeters.Name.LATENCY));
-		assertThat(adapter.getMeters().requests().getName(), equalTo(metricStart + BasicMeters.Name.REQUEST));
-		assertThat(adapter.getMeters().errors().getName(), equalTo(metricStart + BasicMeters.Name.ERROR));
-		assertThat(adapter.getMeters().latency().getName(), equalTo(metricStart + BasicMeters.Name.LATENCY));
-	}
-
-	@Test
-	@SuppressWarnings("resource")
-	void shouldUseDefaultMetricsIfNoMetricsAreSetAndMetricsAreDisabled() {
-		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
-		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
-
-		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
-		api.setMetricsEnabled(false);
-
-		ApiClientFluentAdapter adapter = api
-				.client()
-				.http()
-				.get()
-				.path(PATH_TEST);
-
-		assertThat(adapter.getMeters(), nullValue());
-
-		assertThat(api.getActiveMeters(adapter).latency().getName(), equalTo(BasicMeters.Name.LATENCY));
-		assertThat(api.getActiveMeters(adapter).requests().getName(), equalTo(BasicMeters.Name.REQUEST));
-		assertThat(api.getActiveMeters(adapter).errors().getName(), equalTo(BasicMeters.Name.ERROR));
-		assertThat(api.getActiveMeters(adapter).latency().getName(), equalTo(BasicMeters.Name.LATENCY));
-	}
-
-	@Test
-	@SuppressWarnings("resource")
-	void shouldUseDefaultMetricsEvenIfNoMetricsAreSetButMetricsAreDisabled() {
-		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
-		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
-
-		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
-		api.setMetricsEnabled(false);
-
-		ApiClientFluentAdapter adapter = api
-				.client()
-				.http()
-				.get()
-				.path(PATH_TEST)
-				.meters(METRICS_PREFIX);
-
-		String metricStart = METRICS_PREFIX + ".";
-
-		assertThat(adapter.getMeters().latency().getName(), equalTo(metricStart + BasicMeters.Name.LATENCY));
-		assertThat(adapter.getMeters().requests().getName(), equalTo(metricStart + BasicMeters.Name.REQUEST));
-		assertThat(adapter.getMeters().errors().getName(), equalTo(metricStart + BasicMeters.Name.ERROR));
-		assertThat(adapter.getMeters().latency().getName(), equalTo(metricStart + BasicMeters.Name.LATENCY));
-
-		assertThat(api.getActiveMeters(adapter).latency().getName(), equalTo(BasicMeters.Name.LATENCY));
-		assertThat(api.getActiveMeters(adapter).requests().getName(), equalTo(BasicMeters.Name.REQUEST));
-		assertThat(api.getActiveMeters(adapter).errors().getName(), equalTo(BasicMeters.Name.ERROR));
-		assertThat(api.getActiveMeters(adapter).latency().getName(), equalTo(BasicMeters.Name.LATENCY));
-	}
-
-	@Test
-	@SuppressWarnings("resource")
-	void shouldSetTheMeters() {
-		ExchangeClient exchangeClient = mock(ExchangeClient.class);
-		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
-		BasicMeters basicMeters = mock(BasicMeters.class);
-		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
-		api.setMeters(basicMeters);
-
-		BasicMeters result = api.getMeters();
-
-		assertThat(result, sameInstance(basicMeters));
-	}
-
-	@Test
-	@SuppressWarnings("resource")
-	void shouldSetTheMeterRegistry() {
-		ExchangeClient exchangeClient = mock(ExchangeClient.class);
-		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
-		MeterFactory meterFactory = mock(MeterFactory.class);
-		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
-		api.setMeterFactory(meterFactory);
-
-		MeterFactory result = api.getMeterFactory();
-
-		assertThat(result, sameInstance(meterFactory));
+		assertThat(result.getExchangeClient(), equalTo(exchangeClient));
 	}
 
 	@Test
@@ -600,12 +471,12 @@ class ApiClientTest {
 		} catch (IllegalStateException e) {
 			result = e;
 			assertThat(result.getMessage(), equalTo("Failed to instantiate "
-					+ "[" + ApiClient.class + "]: "
-					+ "For authentication type "
+					+ "[" + ApiClient.class.getName() + "]. "
+					+ "Client entry for authentication type: ["
 					+ AuthenticationType.OAUTH2
 					+ ", "
 					+ EXCHANGE_CLIENT_NAME_1
-					+ " already exists"));
+					+ "] already exists"));
 		}
 
 		assertThat(result, notNullValue());
@@ -637,93 +508,6 @@ class ApiClientTest {
 		assertThat(result, notNullValue());
 	}
 
-	static class ApiClientWithGenericTypes extends ApiClient {
-
-		public static final GenericClass<List<String>> LIST_TYPE_1 = ApiClient.typeObject();
-
-		public static final GenericClass<List<String>> LIST_TYPE_2 = new GenericClass<>() {
-			// empty
-		};
-
-		public static final GenericClass<List<Map<String, Object>>> LIST_TYPE_3 = ApiClient.typeObject();
-
-		public ApiClientWithGenericTypes(final String baseUrl, final ExchangeClient apiAuthClient) {
-			super(baseUrl, apiAuthClient);
-		}
-
-		public TestDto getTest(final String... paths) {
-			return client()
-					.http()
-					.get()
-					.path(paths)
-					.retrieve(TestDto.class)
-					.orDefault(TestDto.EMPTY);
-		}
-	}
-
-	@Test
-	@SuppressWarnings("resource")
-	void shouldMakeGetCallWithTheCorrectUri() {
-		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
-		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
-
-		TestDto expected = TestDto.of(ID1, COUNT1);
-		ApiResponse<TestDto> response = ApiResponse.create(expected)
-				.status(HttpStatus.OK)
-				.exchangeClient(exchangeClient)
-				.build();
-
-		ArgumentCaptor<ApiRequest<?>> requestCaptor = ArgumentCaptor.forClass(ApiRequest.class);
-		doReturn(response).when(exchangeClient).exchange(requestCaptor.capture());
-
-		ApiClientWithGenericTypes api = new ApiClientWithGenericTypes(BASE_URL, exchangeClient);
-
-		TestDto result = api.getTest(PATH_TEST, PATH_TEST);
-
-		assertInstanceOf(ApiClientFluentAdapter.class, requestCaptor.getValue());
-		ApiClientFluentAdapter adapter = JavaObjects.cast(requestCaptor.getValue());
-
-		assertThat(result, equalTo(expected));
-		assertThat(adapter.getUrl(), equalTo(BASE_URL + "/" + PATH_TEST + "/" + PATH_TEST));
-	}
-
-	@Test
-	void shouldInitializeParameterizedTypeReferences() throws Exception {
-		try (@SuppressWarnings("resource")
-		ApiClientWithGenericTypes apiClient = new ApiClientWithGenericTypes(BASE_URL, new DummyExchangeClient())) {
-			assertThat(apiClient.getBaseUrl(), equalTo(BASE_URL));
-		}
-
-		Type type1 = ApiClientWithGenericTypes.LIST_TYPE_1.getType();
-
-		assertThat(type1.toString(), equalTo("java.util.List<java.lang.String>"));
-
-		Type type2 = ApiClientWithGenericTypes.LIST_TYPE_2.getType();
-
-		assertThat(type2.toString(), equalTo("java.util.List<java.lang.String>"));
-
-		Type type3 = ApiClientWithGenericTypes.LIST_TYPE_3.getType();
-
-		assertThat(type3.toString(), equalTo("java.util.List<java.util.Map<java.lang.String, java.lang.Object>>"));
-	}
-
-	@Test
-	void shouldThrowExceptionIfTypeObjectIsInitializedWithANonGenericType() {
-		Supplier<ApiClient> clientInstanceSupplier = () -> new ApiClient(BASE_URL, new DummyExchangeClient()) {
-			@SuppressWarnings("unused")
-			public static final GenericClass<String> WRONG_TYPE = ApiClient.typeObject();
-		};
-		IllegalArgumentException iae = assertThrows(IllegalArgumentException.class, clientInstanceSupplier::get);
-		assertThat(iae.getMessage(), notNullValue());
-	}
-
-	@Test
-	void shouldReturnNonNullTypeFieldInGenericClass() {
-		Field field = Fields.getOneDeclaredInHierarchy(GenericClass.class, "type");
-
-		assertThat(field, notNullValue());
-	}
-
 	@Test
 	@SuppressWarnings("resource")
 	void shouldSetTheRetry() {
@@ -738,191 +522,8 @@ class ApiClientTest {
 		assertThat(result, sameInstance(retry));
 	}
 
-	static class SomeExchangeClient implements ExchangeClient {
-
-		final ClientProperties clientProperties;
-		boolean closed = false;
-
-		public SomeExchangeClient(final ClientProperties clientProperties) {
-			this.clientProperties = clientProperties;
-		}
-
-		@Override
-		public void close() {
-			this.closed = true;
-		}
-
-		@Override
-		public <T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest) {
-			return null;
-		}
-
-		public boolean isClosed() {
-			return closed;
-		}
-	}
-
 	@Test
-	@SuppressWarnings("resource")
-	void shouldCallCloseOnManagedExchangeClients() throws Exception {
-		ClientProperties clientProperties = new ClientProperties();
-
-		ApiClient api = ApiClient.of(BASE_URL, ExchangeClient.builder()
-				.client(SomeExchangeClient.class)
-				.properties(clientProperties));
-
-		api.close();
-
-		SomeExchangeClient exchangeClient = JavaObjects.cast(api.getExchangeClient(AuthenticationType.NONE));
-
-		assertTrue(exchangeClient.isClosed());
-	}
-
-	@Test
-	@SuppressWarnings("resource")
-	void shouldCallCloseOnManagedExchangeClientsBuiltWithApiClientExchangeClientMethod() throws Exception {
-		ClientProperties clientProperties = new ClientProperties();
-
-		ApiClient api = ApiClient.of(BASE_URL, ApiClient
-				.withClient(SomeExchangeClient.class)
-				.properties(clientProperties));
-
-		SomeExchangeClient exchangeClient = JavaObjects.cast(api.getExchangeClient(AuthenticationType.NONE));
-
-		assertFalse(exchangeClient.isClosed());
-
-		api.close();
-
-		assertTrue(exchangeClient.isClosed());
-	}
-
-	@Test
-	void shouldNotCallCloseOnNonManagedExchangeClients() throws Exception {
-		ClientProperties clientProperties = new ClientProperties();
-
-		SomeExchangeClient exchangeClient = new SomeExchangeClient(clientProperties);
-		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
-
-		api.close();
-
-		try {
-			assertFalse(exchangeClient.isClosed());
-		} finally {
-			exchangeClient.close();
-		}
-	}
-
-	@Test
-	@SuppressWarnings({ "unchecked", "resource" })
-	void shouldSetMetricsOnExchangeWhenThereAreNoExceptions() {
-		ExchangeClient exchangeClient = mock(ExchangeClient.class);
-		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
-
-		MeterFactory meterFactory = mock(MeterFactory.class);
-		MeterTimer latency = mock(MeterTimer.class);
-		MeterCounter requests = mock(MeterCounter.class);
-		MeterCounter errors = mock(MeterCounter.class);
-		MeterCounter retries = mock(MeterCounter.class);
-		doReturn(latency).when(meterFactory).timer(eq(METRICS_PREFIX), eq(BasicMeters.Name.LATENCY), any(List.class));
-		doReturn(requests).when(meterFactory).counter(eq(METRICS_PREFIX), eq(BasicMeters.Name.REQUEST), any(List.class));
-		doReturn(errors).when(meterFactory).counter(eq(METRICS_PREFIX), eq(BasicMeters.Name.ERROR), any(List.class));
-		doReturn(retries).when(meterFactory).counter(eq(METRICS_PREFIX), eq(BasicMeters.Name.RETRY), any(List.class));
-
-		BasicMeters meters = BasicMeters.of(meterFactory, METRICS_PREFIX);
-
-		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
-		api.setMetricsEnabled(true);
-		api.setMeters(meters);
-
-		Retry retry = Retry.of(WaitCounter.of(RETRY_COUNT, Duration.ofMillis(10)));
-		api.setRetry(retry);
-
-		ApiRequest<?> request = mock(ApiRequest.class);
-		doReturn(AuthenticationType.OAUTH2).when(request).getAuthenticationType();
-
-		ApiResponse<?> response = mock(ApiResponse.class);
-		doReturn(false).when(response).isSuccessful();
-		doReturn(response).when(exchangeClient).exchange(request);
-
-		ApiResponse<?> result = api.exchange(request);
-
-		assertThat(result, sameInstance(response));
-
-		verify(retries, times(RETRY_COUNT)).increment();
-		verify(requests, times(RETRY_COUNT)).increment();
-		verify(latency, times(RETRY_COUNT)).record(any(Duration.class));
-		verifyNoInteractions(errors);
-	}
-
-	@Test
-	@SuppressWarnings({ "unchecked", "resource" })
-	void shouldSetMetricsOnExchangeWhenThereAreExceptions() {
-		ExchangeClient exchangeClient = mock(ExchangeClient.class);
-		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
-
-		MeterFactory meterFactory = mock(MeterFactory.class);
-		MeterTimer latency = mock(MeterTimer.class);
-		MeterCounter requests = mock(MeterCounter.class);
-		MeterCounter errors = mock(MeterCounter.class);
-		MeterCounter retries = mock(MeterCounter.class);
-		doReturn(latency).when(meterFactory).timer(eq(METRICS_PREFIX), eq(BasicMeters.Name.LATENCY), any(List.class));
-		doReturn(requests).when(meterFactory).counter(eq(METRICS_PREFIX), eq(BasicMeters.Name.REQUEST), any(List.class));
-		doReturn(errors).when(meterFactory).counter(eq(METRICS_PREFIX), eq(BasicMeters.Name.ERROR), any(List.class));
-		doReturn(retries).when(meterFactory).counter(eq(METRICS_PREFIX), eq(BasicMeters.Name.RETRY), any(List.class));
-
-		BasicMeters meters = BasicMeters.of(meterFactory, METRICS_PREFIX);
-
-		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
-		api.setMetricsEnabled(true);
-		api.setMeters(meters);
-
-		Retry retry = Retry.of(WaitCounter.of(RETRY_COUNT, Duration.ofMillis(10)));
-		api.setRetry(retry);
-
-		ApiRequest<?> request = mock(ApiRequest.class);
-		doReturn(AuthenticationType.OAUTH2).when(request).getAuthenticationType();
-
-		RuntimeException exception = new RuntimeException(SOME_ERROR_MESSAGE);
-		doThrow(exception).when(exchangeClient).exchange(request);
-
-		ApiResponse<?> result = api.exchange(request);
-
-		assertThat(result.getException(), sameInstance(exception));
-
-		verify(retries, times(RETRY_COUNT)).increment();
-		verify(requests, times(RETRY_COUNT)).increment();
-		verify(latency, times(RETRY_COUNT)).record(any(Duration.class));
-		verify(errors, times(RETRY_COUNT)).increment();
-	}
-
-	static class BadApiClient extends ApiClient {
-
-		public static final GenericClass<String> WRONG_TYPE = ApiClient.typeObject();
-
-		public BadApiClient(final String baseUrl, final ExchangeClient exchangeClient) {
-			super(baseUrl, exchangeClient);
-		}
-
-	}
-
-	@Test
-	void shouldThrowExceptionIfGenericClassIsNotParameterized() {
-		DummyExchangeClient exchangeClient = assertDoesNotThrow(DummyExchangeClient::new);
-
-		Executable executable = () -> new BadApiClient(BASE_URL, exchangeClient);
-		IllegalArgumentException iae = assertThrows(IllegalArgumentException.class, executable);
-
-		exchangeClient.close();
-
-		Field typeObjectField = Fields.getOneDeclared(BadApiClient.class, "WRONG_TYPE");
-
-		assertThat(iae.getMessage(), equalTo("The typeObject method should only be used for generic types, current type: "
-				+ String.class.getTypeName() + " is not a generic type for static field: "
-				+ typeObjectField.getName()));
-	}
-
-	@Test
-	void shouldBuildApiClientWithUrlWithDefaultExchangeClient() throws Exception {
+	void shouldBuildApiClientWithUrlUsingDefaultExchangeClient() throws Exception {
 		try (ApiClient apiClient = new ApiClient(BASE_URL)) {
 			@SuppressWarnings("resource")
 			ExchangeClient exchangeClient = apiClient.getExchangeClient(AuthenticationType.NONE);
@@ -931,19 +532,21 @@ class ApiClientTest {
 			assertThat(exchangeClient, notNullValue());
 			assertThat(exchangeClient.getAuthenticationType(), equalTo(AuthenticationType.NONE));
 			assertThat(exchangeClient.getClass(), equalTo(JavaNetHttpExchangeClient.class));
+			assertThat(exchangeClient.getClientProperties(), nullValue());
 		}
 	}
 
-	static class DummyExchangeClient implements ExchangeClient {
+	@Test
+	void shouldBuildApiClientWithUrlAndClientPropertiesUsingDefaultExchangeClient() throws Exception {
+		try (ApiClient apiClient = new ApiClient(BASE_URL, ApiClient.with(new ClientProperties()))) {
+			@SuppressWarnings("resource")
+			ExchangeClient exchangeClient = apiClient.getExchangeClient(AuthenticationType.NONE);
 
-		@Override
-		public <T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest) {
-			return null;
-		}
-
-		@Override
-		public void close() {
-			// Do nothing
+			assertThat(apiClient.getBaseUrl(), equalTo(BASE_URL));
+			assertThat(exchangeClient, notNullValue());
+			assertThat(exchangeClient.getAuthenticationType(), equalTo(AuthenticationType.NONE));
+			assertThat(exchangeClient.getClass(), equalTo(JavaNetHttpExchangeClient.class));
+			assertThat(exchangeClient.getClientProperties(), notNullValue());
 		}
 	}
 }

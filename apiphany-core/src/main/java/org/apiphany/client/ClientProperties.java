@@ -37,6 +37,11 @@ public class ClientProperties {
 	private boolean enabled = true;
 
 	/**
+	 * The base URL for the client, every path will be relative to this URL, can be null or empty.
+	 */
+	private String baseUrl;
+
+	/**
 	 * Configuration for client timeouts.
 	 */
 	private Timeout timeout = new Timeout();
@@ -132,6 +137,24 @@ public class ClientProperties {
 	@Ignored
 	public boolean isDisabled() {
 		return !isEnabled();
+	}
+
+	/**
+	 * Returns the base URL for the client.
+	 *
+	 * @return the base URL.
+	 */
+	public String getBaseUrl() {
+		return baseUrl;
+	}
+
+	/**
+	 * Sets the base URL for the client.
+	 *
+	 * @param baseUrl the base URL to set.
+	 */
+	public void setBaseUrl(final String baseUrl) {
+		this.baseUrl = baseUrl;
 	}
 
 	/**

@@ -57,6 +57,16 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	}
 
 	/**
+	 * Initialize the client with the given client properties.
+	 *
+	 * @param clientProperties client properties
+	 */
+	public JavaNetHttpExchangeClient(final ClientProperties clientProperties) {
+		super(clientProperties);
+		this.httpClient = createClient(this::customize);
+	}
+
+	/**
 	 * Initialize the client from the given client properties that reside at the given path built from the given prefix and
 	 * client name.
 	 *
@@ -66,16 +76,6 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	 */
 	public JavaNetHttpExchangeClient(final ClientProperties clientProperties, final String prefix, final String clientName) {
 		this(clientProperties.getClientProperties(prefix, clientName));
-	}
-
-	/**
-	 * Initialize the client with the given client properties.
-	 *
-	 * @param clientProperties client properties
-	 */
-	public JavaNetHttpExchangeClient(final ClientProperties clientProperties) {
-		super(clientProperties);
-		this.httpClient = createClient(this::customize);
 	}
 
 	/**
