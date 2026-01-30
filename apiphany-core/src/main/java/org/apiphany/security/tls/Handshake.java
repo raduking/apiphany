@@ -11,8 +11,8 @@ import org.morphix.lang.JavaObjects;
 /**
  * Represents a TLS Handshake protocol message.
  * <p>
- * This class encapsulates both the handshake header and body, providing type-safe access to various handshake message
- * types (ClientHello, ServerHello, etc.).
+ * This class encapsulates both the handshake header and the handshake body, providing type-safe access to various
+ * handshake message types (ClientHello, ServerHello, etc.).
  *
  * @author Radu Sebastian LAZIN
  */

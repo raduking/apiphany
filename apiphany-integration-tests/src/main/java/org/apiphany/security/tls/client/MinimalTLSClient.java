@@ -199,7 +199,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		accumulateHandshakes(tlsRecord.getFragments(Handshake.class));
 
 		// 2a. Server Hello
-		ServerHello serverHello = tlsRecord.getHandshake(ServerHello.class);
+		ServerHello serverHello = tlsRecord.getHandshakeBody(ServerHello.class);
 		byte[] serverRandom = serverHello.getServerRandom().toByteArray();
 		LOGGER.debug("Server random: {}", Hex.string(serverRandom));
 		this.serverCipherSuite = serverHello.getCipherSuite();
@@ -207,26 +207,26 @@ public class MinimalTLSClient implements AutoCloseable {
 		String prfAlgorithm = PRF.algorithmName(messageDigest);
 
 		// 2b. Server Certificates
-		if (tlsRecord.hasNoHandshake(Certificates.class)) {
+		if (tlsRecord.hasNoHandshakeBody(Certificates.class)) {
 			tlsRecord = receiveRecord();
 			accumulateHandshakes(tlsRecord.getFragments(Handshake.class));
 		}
-		Certificates certificates = tlsRecord.getHandshake(Certificates.class);
+		Certificates certificates = tlsRecord.getHandshakeBody(Certificates.class);
 		X509Certificate x509Certificate = certificates.getList().getFirst().toX509Certificate();
 		LOGGER.debug("Received Server X509Certificate: {}", x509Certificate);
 
 		// 2b. Server Key Exchange (RSA cipher suites don't have a server key exchange)
 		ServerKeyExchange serverKeyExchange = null;
 		if (KeyExchangeAlgorithm.ECDHE == serverCipherSuite.keyExchange()) {
-			if (tlsRecord.hasNoHandshake(ServerKeyExchange.class)) {
+			if (tlsRecord.hasNoHandshakeBody(ServerKeyExchange.class)) {
 				tlsRecord = receiveRecord();
 				accumulateHandshakes(tlsRecord.getFragments(Handshake.class));
 			}
-			serverKeyExchange = tlsRecord.getHandshake(ServerKeyExchange.class);
+			serverKeyExchange = tlsRecord.getHandshakeBody(ServerKeyExchange.class);
 		}
 
 		// 2b. Server Hello Done
-		if (tlsRecord.hasNoHandshake(ServerHelloDone.class)) {
+		if (tlsRecord.hasNoHandshakeBody(ServerHelloDone.class)) {
 			tlsRecord = receiveRecord();
 			accumulateHandshakes(tlsRecord.getFragments(Handshake.class));
 		}
