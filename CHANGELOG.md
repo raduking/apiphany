@@ -1,5 +1,9 @@
 ## Release Notes
 
+`1.1.2`
+
+---
+
 `1.1.1`
 
 - Added Maven plugin management to parent `pom.xml` with default configurations - no executions in parent `pluginManagement`.
