@@ -2,6 +2,9 @@
 
 `1.1.2`
 
+- Renamed `ServerFinished` to `ServerFinishedEncrypted` to better describe the TLS object.
+- Added `ClientFinishedEncrypted` for TLS client finished encrypted handshake.
+
 ---
 
 `1.1.1`
