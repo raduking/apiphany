@@ -205,22 +205,30 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	}
 
 	/**
-	 * Sets the URL by concatenating the baseUrl configured in either {@link ClientProperties#getBaseUrl()} or
-	 * {@link ApiClient#getBaseUrl()} with the given path segments.
+	 * Sets the URL as the base URL and concatenates the given path segemts to form the complete URL.
 	 * <p>
-	 * If you need a specific base URL for this request use {@link #url(String, String...)} instead.
+	 * If you need a specific base URL for this request use any of the methods that set the URL before calling this one or
+	 * just use {@link #url(String, String...)} or {@link #uri(URI, String...)} otherwise the base URL will be resolved as
+	 * follows:
+	 * <ul>
+	 * <li>If the URL is already set via {@link #url(String)} or {@link #uri(URI)} it will be used as the base URL.</li>
+	 * <li>If the URL is not set it will try to get the {@code baseUrl} from the {@link ClientProperties} configured on the
+	 * underlying {@link ExchangeClient}.</li>
+	 * <li>If the {@code baseUrl} is not configured on the {@link ClientProperties} it will use the {@code baseUrl} from the
+	 * {@link ApiClient}.</li>
+	 * </ul>
 	 *
 	 * @param pathSegments the path segments to append to the URL
 	 * @return this
 	 */
 	public ApiClientFluentAdapter path(final String... pathSegments) {
-		ClientProperties properties = Nullables.apply(exchangeClient, ExchangeClient::getClientProperties);
-		String baseUrl = Nullables.apply(properties, ClientProperties::getBaseUrl);
+		String baseUrl = url;
+		if (Strings.isEmpty(url)) {
+			ClientProperties properties = Nullables.apply(exchangeClient, ExchangeClient::getClientProperties);
+			baseUrl = Nullables.apply(properties, ClientProperties::getBaseUrl);
+		}
 		if (Strings.isEmpty(baseUrl)) {
 			baseUrl = apiClient.getBaseUrl();
-		}
-		if (ApiClient.EMPTY_BASE_URL.equals(baseUrl)) {
-			baseUrl = url;
 		}
 		return url(baseUrl, pathSegments);
 	}
