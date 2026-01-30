@@ -33,24 +33,24 @@ ESCAPED_NEW=$(printf '%s\n' "$NEW_VERSION" | sed -e 's/[\/&]/\\&/g')
 echo "Updating version references in other files..."
 echo "Replacing $ESCAPED_OLD with $ESCAPED_NEW"
 
-for file in "${FILES[@]}"; do
-    if [ -f "$file" ]; then
-        echo "Processing $file..."
+for FILE in "${FILES[@]}"; do
+    if [ -f "$FILE" ]; then
+        echo "Processing $FILE..."
 
         # check if we're on macOS or Linux
         if [[ "$(uname)" == "Darwin" ]]; then
             # we are on macOS/BSD 
             # sed requires an empty string for in-place without backup
-            sed -i '' "s/$ESCAPED_OLD/$ESCAPED_NEW/g" "$file"
+            sed -i '' "s/$ESCAPED_OLD/$ESCAPED_NEW/g" "$FILE"
         else
             # we are on Linux/GNU
             # sed in-place without backup
-            sed -i "s/$ESCAPED_OLD/$ESCAPED_NEW/g" "$file"
+            sed -i "s/$ESCAPED_OLD/$ESCAPED_NEW/g" "$FILE"
         fi
 
-        echo "  Updated $file"
+        echo "  Updated $FILE"
     else
-        echo "  Warning: $file not found"
+        echo "  Warning: $FILE not found"
     fi
 done
 
