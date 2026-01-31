@@ -2,6 +2,11 @@ package org.apiphany.security.tls;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.cert.X509Certificate;
 
 import org.junit.jupiter.api.Test;
 
@@ -41,5 +46,20 @@ class CertificateTest {
 		assertNotEquals(aad1, aad2);
 		assertNotEquals(aad1, null);
 		assertNotEquals(aad2, "not-an-aad");
+	}
+
+	@Test
+	void shouldParseX509Certificate() throws Exception {
+		// to generate the test certificate files, you can read the docs/security/ssl/key-transformations.md
+		byte[] certBytes = Files.readAllBytes(
+				Path.of("src/test/resources/security/ssl/rsa_certificate.der"));
+
+		Certificate certificate = new Certificate(certBytes);
+
+		X509Certificate x509 = certificate.toX509Certificate();
+
+		assertNotNull(x509);
+		assertEquals("X.509", x509.getType());
+		assertNotNull(x509.getPublicKey());
 	}
 }
