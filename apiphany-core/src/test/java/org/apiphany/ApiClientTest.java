@@ -46,8 +46,8 @@ class ApiClientTest {
 
 	private static final String APIPHANY = "Apiphany";
 
-	private static final String BASE_URL = "http://localhost";
-	private static final String DIFFERENT_BASE_URL = "http://different-base-url.com";
+	private static final String BASE_URL = "https://localhost";
+	private static final String DIFFERENT_BASE_URL = "https://different-base-url.com";
 
 	private static final String PATH_TEST = "test";
 

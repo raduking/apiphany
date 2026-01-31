@@ -540,7 +540,7 @@ class ApiResponseTest {
 
 		@Test
 		void shouldThrowExceptionWhenBodyCannotBeConvertedToInputStream() {
-			ApiResponse<Object> response = ApiResponse.create((Object) null)
+			ApiResponse<Object> response = ApiResponse.create(null)
 					.status(HttpStatus.OK)
 					.build();
 

@@ -8,7 +8,7 @@ import org.apiphany.security.tls.EncryptedHandshake;
 import org.apiphany.security.tls.Finished;
 
 /**
- * Represents the Server Finished message in a TLS connection. This is an optional class and it can be used
+ * Represents the Server Finished message in a TLS connection. This is an optional class, and it can be used
  * interchangeably with the standard {@link EncryptedHandshake} class and is present for code clarity purposes.
  * <p>
  * This class encapsulates the encrypted handshake data sent by the server to indicate the completion of the handshake

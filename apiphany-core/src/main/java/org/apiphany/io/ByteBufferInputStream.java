@@ -1,7 +1,6 @@
 package org.apiphany.io;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Objects;
@@ -172,7 +171,7 @@ public class ByteBufferInputStream extends InputStream {
 	 * @see InputStream#close()
 	 */
 	@Override
-	public void close() throws IOException {
+	public void close() {
 		// empty
 	}
 
