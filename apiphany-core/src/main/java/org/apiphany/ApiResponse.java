@@ -225,7 +225,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @return null if the response has no errors or re-throws the exception
 	 */
 	public T orRethrow() {
-		return hasException() ? orThrow(getException()) : getBody();
+		return orThrow(getException());
 	}
 
 	/**
@@ -245,7 +245,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @return error handling function result
 	 */
 	public T orHandleError(final Function<? super Exception, T> onError) {
-		return onError.apply(getException());
+		return hasException() ? onError.apply(getException()) : getBody();
 	}
 
 	/**
@@ -291,7 +291,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 */
 	public InputStream inputStream(final Function<T, InputStream> inputStreamConverter) {
 		if (hasNoBody()) {
-			throw new IllegalStateException("Cannot transform null body to input stream.");
+			throw new IllegalStateException("Cannot convert null body to InputStream");
 		}
 		return inputStreamConverter.apply(getBody());
 	}
@@ -388,6 +388,15 @@ public class ApiResponse<T> extends ApiMessage<T> {
 			return exchangeClient.getDisplayHeaders(this);
 		}
 		return super.getHeaders();
+	}
+
+	/**
+	 * Returns the exchange client that generated this response.
+	 *
+	 * @return the exchange client
+	 */
+	protected ExchangeClient getExchangeClient() {
+		return exchangeClient;
 	}
 
 	/**

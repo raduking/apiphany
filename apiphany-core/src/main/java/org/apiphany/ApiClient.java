@@ -105,10 +105,22 @@ public class ApiClient implements AutoCloseable {
 	private final Map<AuthenticationType, ScopedResource<ExchangeClient>> exchangeClientsMap = new ConcurrentHashMap<>();
 
 	/**
-	 * Constructor with exchange clients.
+	 * Constructor with exchange clients. The {@link ApiClient} can have multiple exchange clients for different
+	 * authentication types.
+	 * <p>
+	 * Base URL is used as the root URL to which all paths will be appended when making requests.
+	 * <ul>
+	 * <li>If no base URL is specified, an empty base URL is used meaning that each request must provide the full URL.</li>
+	 * <li>If a base URL is specified, all request paths will be appended to the base URL.</li>
+	 * <li>If exchange clients provide the base URL in their properties they will override the base URL provided here for
+	 * requests done with that client (or for that authentication type)</li>
+	 * </ul>
+	 * <p>
+	 * If multiple exchange
 	 *
 	 * @param baseUrl base URL to which all paths will be appended
 	 * @param exchangeClients map of exchange clients with life cycle information
+	 * @throws IllegalStateException if multiple exchange clients are provided for the same authentication type
 	 */
 	@SuppressWarnings("resource")
 	protected ApiClient(final String baseUrl, final Map<ExchangeClient, Boolean> exchangeClients) {
@@ -119,8 +131,9 @@ public class ApiClient implements AutoCloseable {
 			ExchangeClient exchangeClient = entry.getKey();
 			AuthenticationType authenticationType = exchangeClient.getAuthenticationType();
 			this.exchangeClientsMap.merge(authenticationType, ScopedResource.of(exchangeClient, entry.getValue()), (oldValue, newValue) -> {
-				throw new IllegalStateException("Failed to instantiate [" + getClass()
-						+ "]: For authentication type " + authenticationType + ", " + oldValue.unwrap().getName() + " already exists");
+				throw new IllegalStateException("Failed to instantiate [" + getClass().getName()
+						+ "]. Client entry for authentication type: [" + authenticationType + ", "
+						+ oldValue.unwrap().getName() + "] already exists");
 			});
 		}
 		initializeTypeObjects(this);
@@ -481,7 +494,7 @@ public class ApiClient implements AutoCloseable {
 	 * @param exchangeClient the exchange client that made the failed request
 	 * @return API error response object
 	 */
-	protected <T> ApiResponse<T> buildErrorResponse(final Exception exception, ApiRequest<T> apiRequest, final ExchangeClient exchangeClient) {
+	protected <T> ApiResponse<T> buildErrorResponse(final Exception exception, final ApiRequest<T> apiRequest, final ExchangeClient exchangeClient) {
 		return ApiResponse.<T>builder()
 				.request(apiRequest)
 				.exception(exception)

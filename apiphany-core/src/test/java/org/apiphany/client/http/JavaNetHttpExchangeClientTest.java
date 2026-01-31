@@ -67,7 +67,7 @@ import org.morphix.reflection.GenericType;
 @ExtendWith(MockitoExtension.class)
 class JavaNetHttpExchangeClientTest {
 
-	private static final String URL = "http://example.com";
+	private static final String URL = "https://example.com";
 
 	private static final String STRING = "Juju";
 	private static final byte[] BYTES = new byte[] { 0x01, 0x02, 0x03 };

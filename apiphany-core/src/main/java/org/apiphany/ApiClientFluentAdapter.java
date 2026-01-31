@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
 
+import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.http.HttpClientFluentAdapter;
 import org.apiphany.header.Header;
@@ -151,6 +152,9 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @return this
 	 */
 	public ApiClientFluentAdapter url(final String url) {
+		if (Strings.isEmpty(url)) {
+			throw new IllegalArgumentException("url cannot be null or empty");
+		}
 		this.url = url;
 		return this;
 	}
@@ -201,15 +205,30 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	}
 
 	/**
-	 * Sets the URL by concatenating the {@link ApiClient#getBaseUrl()} with the given path segments.
+	 * Sets the URL as the base URL and concatenates the given path segemts to form the complete URL.
+	 * <p>
+	 * If you need a specific base URL for this request use any of the methods that set the URL before calling this one or
+	 * just use {@link #url(String, String...)} or {@link #uri(URI, String...)} otherwise the base URL will be resolved as
+	 * follows:
+	 * <ul>
+	 * <li>If the URL is already set via {@link #url(String)} or {@link #uri(URI)} it will be used as the base URL.</li>
+	 * <li>If the URL is not set it will try to get the {@code baseUrl} from the {@link ClientProperties} configured on the
+	 * underlying {@link ExchangeClient}.</li>
+	 * <li>If the {@code baseUrl} is not configured on the {@link ClientProperties} it will use the {@code baseUrl} from the
+	 * {@link ApiClient}.</li>
+	 * </ul>
 	 *
 	 * @param pathSegments the path segments to append to the URL
 	 * @return this
 	 */
 	public ApiClientFluentAdapter path(final String... pathSegments) {
-		String baseUrl = apiClient.getBaseUrl();
-		if (ApiClient.EMPTY_BASE_URL.equals(baseUrl)) {
-			baseUrl = url;
+		String baseUrl = url;
+		if (Strings.isEmpty(url)) {
+			ClientProperties properties = Nullables.apply(exchangeClient, ExchangeClient::getClientProperties);
+			baseUrl = Nullables.apply(properties, ClientProperties::getBaseUrl);
+		}
+		if (Strings.isEmpty(baseUrl)) {
+			baseUrl = apiClient.getBaseUrl();
 		}
 		return url(baseUrl, pathSegments);
 	}

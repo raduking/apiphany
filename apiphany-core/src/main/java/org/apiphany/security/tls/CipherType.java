@@ -76,7 +76,7 @@ public enum CipherType {
 	/**
 	 * Returns whether the cipher type uses a MAC for authentication.
 	 *
-	 * @return true if uses MAC, false otherwise
+	 * @return true if it uses MAC, false otherwise
 	 */
 	public boolean usesMac() {
 		return usesMac;
@@ -85,7 +85,7 @@ public enum CipherType {
 	/**
 	 * Returns whether the cipher type uses padding.
 	 *
-	 * @return true if uses padding, false otherwise
+	 * @return true if it uses padding, false otherwise
 	 */
 	public boolean usesPadding() {
 		return usesPadding;

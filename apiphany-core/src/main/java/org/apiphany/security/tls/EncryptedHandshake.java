@@ -7,6 +7,8 @@ import java.io.InputStream;
  * Represents encrypted handshake data in a TLS connection.
  * <p>
  * This class encapsulates the encrypted handshake exchanged between client and server.
+ * <p>
+ * This class can be used for both client and server encrypted handshakes since their structure is identical.
  *
  * @author Radu Sebastian LAZIN
  */

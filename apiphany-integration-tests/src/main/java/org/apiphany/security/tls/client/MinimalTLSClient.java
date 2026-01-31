@@ -49,7 +49,6 @@ import org.apiphany.security.tls.ClientKeyExchange;
 import org.apiphany.security.tls.ECDHEPublicKey;
 import org.apiphany.security.tls.Encrypted;
 import org.apiphany.security.tls.EncryptedAlert;
-import org.apiphany.security.tls.EncryptedHandshake;
 import org.apiphany.security.tls.ExchangeKeys;
 import org.apiphany.security.tls.ExchangeRandom;
 import org.apiphany.security.tls.Finished;
@@ -63,7 +62,6 @@ import org.apiphany.security.tls.RSAEncryptedPreMaster;
 import org.apiphany.security.tls.Record;
 import org.apiphany.security.tls.RecordContentType;
 import org.apiphany.security.tls.RecordHeader;
-import org.apiphany.security.tls.ServerFinished;
 import org.apiphany.security.tls.ServerHello;
 import org.apiphany.security.tls.ServerHelloDone;
 import org.apiphany.security.tls.ServerKeyExchange;
@@ -71,6 +69,8 @@ import org.apiphany.security.tls.SignatureAlgorithm;
 import org.apiphany.security.tls.TLSEncryptedObject;
 import org.apiphany.security.tls.TLSKeyExchange;
 import org.apiphany.security.tls.Version;
+import org.apiphany.security.tls.opt.ClientFinishedEncrypted;
+import org.apiphany.security.tls.opt.ServerFinishedEncrypted;
 import org.morphix.lang.Nullables;
 import org.morphix.lang.function.ThrowingConsumer;
 import org.slf4j.Logger;
@@ -199,7 +199,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		accumulateHandshakes(tlsRecord.getFragments(Handshake.class));
 
 		// 2a. Server Hello
-		ServerHello serverHello = tlsRecord.getHandshake(ServerHello.class);
+		ServerHello serverHello = tlsRecord.getHandshakeBody(ServerHello.class);
 		byte[] serverRandom = serverHello.getServerRandom().toByteArray();
 		LOGGER.debug("Server random: {}", Hex.string(serverRandom));
 		this.serverCipherSuite = serverHello.getCipherSuite();
@@ -207,26 +207,26 @@ public class MinimalTLSClient implements AutoCloseable {
 		String prfAlgorithm = PRF.algorithmName(messageDigest);
 
 		// 2b. Server Certificates
-		if (tlsRecord.hasNoHandshake(Certificates.class)) {
+		if (tlsRecord.hasNoHandshakeBody(Certificates.class)) {
 			tlsRecord = receiveRecord();
 			accumulateHandshakes(tlsRecord.getFragments(Handshake.class));
 		}
-		Certificates certificates = tlsRecord.getHandshake(Certificates.class);
+		Certificates certificates = tlsRecord.getHandshakeBody(Certificates.class);
 		X509Certificate x509Certificate = certificates.getList().getFirst().toX509Certificate();
 		LOGGER.debug("Received Server X509Certificate: {}", x509Certificate);
 
 		// 2b. Server Key Exchange (RSA cipher suites don't have a server key exchange)
 		ServerKeyExchange serverKeyExchange = null;
 		if (KeyExchangeAlgorithm.ECDHE == serverCipherSuite.keyExchange()) {
-			if (tlsRecord.hasNoHandshake(ServerKeyExchange.class)) {
+			if (tlsRecord.hasNoHandshakeBody(ServerKeyExchange.class)) {
 				tlsRecord = receiveRecord();
 				accumulateHandshakes(tlsRecord.getFragments(Handshake.class));
 			}
-			serverKeyExchange = tlsRecord.getHandshake(ServerKeyExchange.class);
+			serverKeyExchange = tlsRecord.getHandshakeBody(ServerKeyExchange.class);
 		}
 
 		// 2b. Server Hello Done
-		if (tlsRecord.hasNoHandshake(ServerHelloDone.class)) {
+		if (tlsRecord.hasNoHandshakeBody(ServerHelloDone.class)) {
 			tlsRecord = receiveRecord();
 			accumulateHandshakes(tlsRecord.getFragments(Handshake.class));
 		}
@@ -291,7 +291,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		Handshake clientFinishedHandshake = new Handshake(new Finished(clientVerifyData));
 
 		Encrypted encrypted = encrypt(clientFinishedHandshake, RecordContentType.HANDSHAKE, exchangeKeys);
-		Record clientFinished = new Record(sslProtocol, new EncryptedHandshake(encrypted));
+		Record clientFinished = new Record(sslProtocol, new ClientFinishedEncrypted(encrypted));
 		sendRecord(clientFinished);
 
 		// 8. Receive ChangeCipherSpec and Finished
@@ -299,7 +299,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		Record serverChangeCipherSpec = receiveRecord();
 
 		// 9. Receive Server Finished Record
-		Record serverFinishedRecord = Record.from(in, ServerFinished::from);
+		Record serverFinishedRecord = Record.from(in, ServerFinishedEncrypted::from);
 
 		// 10. Decrypt finished
 		byte[] decrypted = decrypt(serverFinishedRecord, exchangeKeys);

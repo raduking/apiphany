@@ -58,7 +58,7 @@ class HttpExchangeClientTest {
 	}
 
 	@Test
-	void shouldBeAutoCloseable() throws Exception {
+	void shouldBeAutoCloseable() {
 		DummyHttpExchangeClient client = new DummyHttpExchangeClient();
 		try (client) {
 			// empty

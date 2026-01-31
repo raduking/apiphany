@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 
 import org.apiphany.http.HttpContentType;
 import org.apiphany.io.ContentType;
+import org.apiphany.lang.Strings;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -34,4 +35,42 @@ class ApiMimeTypeTest {
 		assertThat(result, equalTo(StandardCharsets.UTF_16BE));
 	}
 
+	@Test
+	void shouldReturnDefaultCharsetWhenMimeTypeIsNull() {
+		Charset result = ApiMimeType.charset(null);
+
+		assertThat(result, equalTo(Strings.DEFAULT_CHARSET));
+	}
+
+	@Test
+	void shouldReturnDefaultCharsetWhenMimeTypeHasNoCharset() {
+		ApiMimeType ct = new ApiMimeType() {
+
+			@Override
+			public String value() {
+				return ContentType.APPLICATION_JSON.value();
+			}
+
+			@Override
+			public Charset charset() {
+				return null;
+			}
+
+			@Override
+			public ContentType contentType() {
+				return ContentType.APPLICATION_JSON;
+			}
+		};
+
+		Charset result = ApiMimeType.charset(ct);
+
+		assertThat(result, equalTo(Strings.DEFAULT_CHARSET));
+	}
+
+	@Test
+	void shouldParseCharsetSuccessfully() {
+		Charset charset = ApiMimeType.parseCharset("UTF-8");
+
+		assertThat(charset, equalTo(StandardCharsets.UTF_8));
+	}
 }

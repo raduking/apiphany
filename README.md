@@ -35,7 +35,7 @@ This is a simple wrapper over the `java.net.http` library to be able to use a fl
 
 ### Releases
 
-Current release `1.1.1`
+Current release `1.1.2`
 
 ### Getting Started
 
@@ -45,7 +45,7 @@ Maven: add this dependency to your `pom.xml`
 <dependency>
     <groupId>io.github.raduking</groupId>
     <artifactId>apiphany</artifactId>
-    <version>1.1.1</version>
+    <version>1.1.2</version>
 </dependency>
 ```
 
@@ -57,6 +57,9 @@ cd apiphany
 git checkout develop
 mvn clean install
 ```
+
+The project being in active development. Expect class name changes, method name changes, and other similar changes between versions.
+All such changes are documented in [CHANGELOG.md](CHANGELOG.md).
 
 ### How to use
 

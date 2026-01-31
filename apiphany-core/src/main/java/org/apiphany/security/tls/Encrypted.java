@@ -11,6 +11,14 @@ import org.apiphany.io.BytesWrapper;
  * Represents encrypted data in TLS protocol messages.
  * <p>
  * This class encapsulates encrypted payloads used in TLS, including the nonce/IV and the actual encrypted data.
+ * <p>
+ * Note: for AEAD ciphers in TLS 1.2, this contains:
+ *
+ * <pre>
+ * explicit_nonce || ciphertext || authentication_tag
+ * </pre>
+ *
+ * The fixed IV is NOT included and must be derived from the key block.
  *
  * @author Radu Sebastian LAZIN
  */
@@ -121,7 +129,9 @@ public class Encrypted implements TLSObject {
 	}
 
 	/**
-	 * Returns the nonce/initialization vector.
+	 * Returns the explicit per-record nonce or initialization vector.
+	 * <p>
+	 * For AEAD ciphers, this is the explicit nonce transmitted with the record, not the full IV used for encryption.
 	 *
 	 * @param cipher the bulk cipher
 	 * @return the BytesWrapper containing nonce bytes
