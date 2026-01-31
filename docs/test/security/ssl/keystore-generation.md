@@ -82,17 +82,29 @@ openssl pkcs12 \
 Verify Key-Cert Match:
 
 ```bash
-openssl x509 -noout -modulus -in server.crt | openssl md5
+openssl x509 \
+  -noout \
+  -modulus \
+  -in server.crt | openssl md5
 ```
 
 ```bash
-openssl rsa -noout -modulus -in server.key | openssl md5
+openssl rsa \
+  -noout \
+  -modulus \
+  -in server.key | openssl md5
 ```
 
 # Keycloak certificate
 
 ```bash
-openssl req -new -x509 -key rsa_private.pem -out rsa_certificate.pem -days 36500 -subj "/CN=apiphany-client-pk"
+openssl req \
+  -new \
+  -x509 \
+  -key rsa_private.pem \
+  -out rsa_certificate.pem \
+  -days 36500 \
+  -subj "/CN=apiphany-client-pk"
 ```
 
 To add this to the `keycloak-realm-config.json` in the `..."jwt.credential.certificate"` field you will need a text editor to replace <b>every new line</b> with the actual string `"\n"`.
