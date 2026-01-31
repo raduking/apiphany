@@ -3,7 +3,9 @@ package org.apiphany.security.tls;
 import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
 import java.security.spec.AlgorithmParameterSpec;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.stream.Stream;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
@@ -72,7 +74,7 @@ public enum BulkCipher {
 	 * AES-128 in CCM (AEAD) mode. Tag length: 16. Nonce = 4-byte fixed IV + 8-byte explicit per-record IV.
 	 */
 	AES_128_CCM(BulkCipherInfo.of(
-			BulkCipherAlgorithm.AES, "AES/GCM/NoPadding",
+			BulkCipherAlgorithm.AES, "AES/CCM/NoPadding",
 			16, 16, 4, 8,
 			CipherType.AEAD,
 			-1, 16)),
@@ -81,7 +83,7 @@ public enum BulkCipher {
 	 * AES-256 in CCM (AEAD) mode. Tag length: 16.
 	 */
 	AES_256_CCM(BulkCipherInfo.of(
-			BulkCipherAlgorithm.AES, "AES/GCM/NoPadding",
+			BulkCipherAlgorithm.AES, "AES/CCM/NoPadding",
 			32, 16, 4, 8,
 			CipherType.AEAD,
 			-1, 16)),
@@ -192,7 +194,9 @@ public enum BulkCipher {
 	/**
 	 * List of bulk ciphers that are not supported by the default SunJCE provider.
 	 */
-	public static final List<BulkCipher> UNSUPPORTED_SUN_JCE_BULK_CIPHERS = List.of(
+	public static final EnumSet<BulkCipher> UNSUPPORTED_SUN_JCE_BULK_CIPHERS = EnumSet.of(
+			AES_128_CCM,
+			AES_256_CCM,
 			AES_128_CCM_8,
 			AES_256_CCM_8,
 			MAGMA_CTR,
@@ -232,7 +236,7 @@ public enum BulkCipher {
 	 *
 	 * @return the algorithm
 	 */
-	public String algorithm() {
+	public String jcaKeyAlgorithm() {
 		return info.algorithm().jcaName();
 	}
 
@@ -358,7 +362,7 @@ public enum BulkCipher {
 	 */
 	public Cipher cipher(final int mode, final byte[] key, final AlgorithmParameterSpec spec) {
 		try {
-			SecretKeySpec secret = new SecretKeySpec(key, algorithm());
+			SecretKeySpec secret = new SecretKeySpec(key, jcaKeyAlgorithm());
 			Cipher cipher = Cipher.getInstance(info.transformation());
 			if (null != spec) {
 				cipher.init(mode, secret, spec);
@@ -381,8 +385,16 @@ public enum BulkCipher {
 	public byte[] fullIV(final byte[] keyIV, final byte[] explicitNonce) {
 		return switch (type()) {
 			case AEAD -> {
+				if (Bytes.isEmpty(keyIV) && explicitNonceLength() > 0) {
+					throw new SecurityException("keyIV cannot be null or empty for AEAD ciphers with explicit nonce");
+				}
+				if (explicitNonceLength() > 0 && Bytes.isEmpty(explicitNonce)) {
+					throw new SecurityException("explicitNonce cannot be null or empty for AEAD ciphers with explicit nonce");
+				}
 				byte[] iv = new byte[fixedIvLength() + explicitNonceLength()];
-				System.arraycopy(keyIV, 0, iv, 0, fixedIvLength());
+				if (Bytes.isNotEmpty(keyIV)) {
+					System.arraycopy(keyIV, 0, iv, 0, fixedIvLength());
+				}
 				if (explicitNonceLength() > 0) {
 					System.arraycopy(explicitNonce, 0, iv, fixedIvLength(), explicitNonceLength());
 				}
@@ -409,5 +421,64 @@ public enum BulkCipher {
 		} catch (Exception e) {
 			return false;
 		}
+	}
+
+	/**
+	 * Returns the list of {@link CipherType#AEAD} ciphers.
+	 *
+	 * @return the list of AEAD ciphers
+	 */
+	public static List<BulkCipher> aeadCiphers() {
+		return encryptingCiphers(CipherType.AEAD);
+	}
+
+	/**
+	 * Returns the list of {@link CipherType#STREAM} ciphers.
+	 *
+	 * @return the list of STREAM ciphers
+	 */
+	public static List<BulkCipher> streamCiphers() {
+		return encryptingCiphers(CipherType.STREAM);
+	}
+
+	/**
+	 * Returns the list of {@link CipherType#BLOCK} ciphers.
+	 *
+	 * @return the list of BLOCK ciphers
+	 */
+	public static List<BulkCipher> blockCiphers() {
+		return encryptingCiphers(CipherType.BLOCK);
+	}
+
+	/**
+	 * Returns the list of all encrypting ciphers (excluding {@link CipherType#NO_ENCRYPTION}).
+	 *
+	 * @return the list of all encrypting ciphers
+	 */
+	public static List<BulkCipher> encryptingCiphers() {
+		return encryptingCiphersStream()
+				.toList();
+	}
+
+	/**
+	 * Returns the list of encrypting ciphers of the given type (excluding {@link CipherType#NO_ENCRYPTION}).
+	 *
+	 * @param type the cipher type
+	 * @return the list of encrypting ciphers of the given type
+	 */
+	public static List<BulkCipher> encryptingCiphers(final CipherType type) {
+		return encryptingCiphersStream()
+				.filter(c -> c.type() == type)
+				.toList();
+	}
+
+	/**
+	 * Returns a stream of all encrypting ciphers (excluding {@link CipherType#NO_ENCRYPTION}).
+	 *
+	 * @return a stream of all encrypting ciphers
+	 */
+	public static Stream<BulkCipher> encryptingCiphersStream() {
+		return EnumSet.allOf(BulkCipher.class).stream()
+				.filter(c -> c.type() != CipherType.NO_ENCRYPTION);
 	}
 }

@@ -8,6 +8,12 @@
 - Renamed `Record.getHandshake` to `getHandshakeBody` where the return type is `TLSHandshakeBody`.
 - Renamed `Record.hasHandshake` to `hasHandshakeBody`.
 - Renamed `Record.hasNoHandshake` to `hasNoHandshakeBody`.
+- Renamed `BulkCipher.algorithm` to `jcaKeyAlgorithm` to better emphasize its purpose.
+- Added `BulkCipher.aeadCiphers` static method to return all AEAD ciphers.
+- Added `BulkCipher.blockCiphers` static method to return all BLOCK ciphers.
+- Added `BulkCipher.streamCiphers` static method to return all STREAM ciphers.
+- Added `BulkCipher.encryptingCiphers` static method to return all encrypting ciphers.
+- Added `BulkCipher.encryptingCiphers(CipherType)` static method to return all encrypting ciphers filtered by the given cipher type.
 
 ---
 
