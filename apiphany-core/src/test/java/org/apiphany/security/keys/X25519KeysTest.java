@@ -87,7 +87,7 @@ class X25519KeysTest {
 	}
 
 	@Test
-	void shouldCorrectlyConvertFromLittleEndian() throws Exception {
+	void shouldCorrectlyConvertFromLittleEndian() {
 		byte[] littleEndianBytes = new byte[32];
 		littleEndianBytes[0] = 0x01;
 		littleEndianBytes[31] = 0x02;
@@ -99,7 +99,7 @@ class X25519KeysTest {
 	}
 
 	@Test
-	void shouldCorrectlyConvertFromBigEndian() throws Exception {
+	void shouldCorrectlyConvertFromBigEndian() {
 		byte[] bigEndianBytes = new byte[32];
 		bigEndianBytes[0] = 0x01;
 		bigEndianBytes[31] = 0x02;

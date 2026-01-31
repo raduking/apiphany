@@ -19,7 +19,7 @@ public class ApiClientCloseTest {
 
 	private static final String BASE_URL = "http://localhost";
 
-	private ClientProperties clientProperties = new ClientProperties();
+	private final ClientProperties clientProperties = new ClientProperties();
 
 	static class SomeExchangeClient implements ExchangeClient {
 
