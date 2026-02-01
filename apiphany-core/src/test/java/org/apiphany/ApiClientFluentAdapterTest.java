@@ -1,6 +1,7 @@
 package org.apiphany;
 
 import static org.apiphany.ParameterFunction.parameter;
+import static org.apiphany.header.HeaderFunction.header;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -22,7 +23,9 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import org.apiphany.client.ExchangeClient;
+import org.apiphany.header.Header;
 import org.apiphany.http.HttpMethod;
+import org.apiphany.lang.Strings;
 import org.apiphany.lang.retry.Retry;
 import org.apiphany.lang.retry.WaitCounter;
 import org.apiphany.meters.BasicMeters;
@@ -118,6 +121,15 @@ class ApiClientFluentAdapterTest {
 	}
 
 	@Test
+	void shouldThrowExceptionWhenSettingURLAsNull() {
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient);
+
+		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> request.url(null));
+
+		assertThat(e.getMessage(), equalTo("url cannot be null or empty"));
+	}
+
+	@Test
 	@SuppressWarnings("resource")
 	void shouldEncodeParamsOnRetrieveWhenEncodingIsEnabled() {
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
@@ -162,6 +174,30 @@ class ApiClientFluentAdapterTest {
 		assertThat(request.getParams(), equalTo(expected));
 	}
 
+	static class ParamObjectUnconverted {
+		@SuppressWarnings("unused")
+		private final String someFieldName = "1+2+3";
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldEncodeParamsOnRetrieveWhenEncodingIsEnabledForObjectParameterThatNeedsConversion() {
+		ExchangeClient exchangeClient = mock(ExchangeClient.class);
+		doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
+
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+				.authenticationType(AuthenticationType.SESSION)
+				.url(URL)
+				.params(new ParamObjectUnconverted(), Strings::fromCamelToSnakeCase)
+				.urlEncoded();
+
+		request.retrieve();
+
+		var expected = RequestParameters.of(parameter("some_field_name", "1%2B2%2B3"));
+
+		assertThat(request.getParams(), equalTo(expected));
+	}
+
 	@Test
 	@SuppressWarnings("resource")
 	void shouldEncodeParamsOnRetrieveWhenEncodingIsEnabledWithDirectParameterFunction() {
@@ -172,6 +208,27 @@ class ApiClientFluentAdapterTest {
 				.authenticationType(AuthenticationType.SESSION)
 				.url(URL)
 				.params(parameter("sum", "1+2+3"))
+				.urlEncoded();
+
+		request.retrieve();
+
+		var expected = RequestParameters.of(parameter("sum", "1%2B2%2B3"));
+
+		assertThat(request.getParams(), equalTo(expected));
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldEncodeParamsOnRetrieveWhenEncodingIsEnabledForParameterNameAndValueAsObjects() {
+		ExchangeClient exchangeClient = mock(ExchangeClient.class);
+		doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
+		Object parameterName = "sum";
+		Object parameterValue = "1+2+3";
+
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+				.authenticationType(AuthenticationType.SESSION)
+				.url(URL)
+				.param(parameterName, parameterValue)
 				.urlEncoded();
 
 		request.retrieve();
@@ -390,6 +447,22 @@ class ApiClientFluentAdapterTest {
 			assertThat(tag.getKey(), equalTo(tagsList.get(0)));
 			assertThat(tag.getValue(), equalTo(tagsList.get(1)));
 		}
+	}
+
+	@Test
+	void shouldPopulateHeadersOnHeadersWithHeaderObjects() {
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+				.headers(Header.of(HEADER_NAME, HEADER_VALUE));
+
+		assertThat(request.getHeaders(), equalTo(Map.of(HEADER_NAME, List.of(HEADER_VALUE))));
+	}
+
+	@Test
+	void shouldPopulateHeadersOnHeadersWithHeaderFunctionObjects() {
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+				.headers(header(HEADER_NAME, HEADER_VALUE));
+
+		assertThat(request.getHeaders(), equalTo(Map.of(HEADER_NAME, List.of(HEADER_VALUE))));
 	}
 
 	@Test
