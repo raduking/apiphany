@@ -4,6 +4,7 @@
 
 - Added `ClientProperties.setBaseUrl` and `ClientProperties.setBaseUrl` to be able to configure the base URL per exchange client.
 - Changed `ApiClient` to not allow construction without an `ExchangeClient` because that would cause an inconsistent state.
+- Added `ExchangeClient.requireAuthenticationType` to check if an exchange client has the authentication type set.
 - Renamed `ServerFinished` to `ServerFinishedEncrypted` to better describe the TLS object.
 - Added `ClientFinishedEncrypted` for TLS client finished encrypted handshake.
 - Renamed `Record.getHandshake` to `getHandshakeBody` where the return type is `TLSHandshakeBody`.

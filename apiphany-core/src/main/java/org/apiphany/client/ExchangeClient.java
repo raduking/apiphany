@@ -155,4 +155,21 @@ public interface ExchangeClient extends AutoCloseable {
 	static ExchangeClientBuilder builder() {
 		return ExchangeClientBuilder.create();
 	}
+
+	/**
+	 * Requires that the given exchange client has an authentication type set, otherwise throws an
+	 * {@link IllegalStateException}.
+	 *
+	 * @param exchangeClient the exchange client
+	 * @return the authentication type of the exchange client
+	 * @throws IllegalStateException if the exchange client has no authentication type set
+	 */
+	static AuthenticationType requireAuthenticationType(final ExchangeClient exchangeClient) {
+		AuthenticationType authenticationType = exchangeClient.getAuthenticationType();
+		if (null == authenticationType) {
+			throw new IllegalStateException("ExchangeClient: [" + exchangeClient.getName() + "]"
+					+ " has no " + AuthenticationType.class.getSimpleName() + " set");
+		}
+		return authenticationType;
+	}
 }

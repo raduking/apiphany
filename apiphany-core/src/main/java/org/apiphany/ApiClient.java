@@ -220,40 +220,48 @@ public class ApiClient implements AutoCloseable {
 	 * Builds the exchange clients map based on authentication type. This method ensures that there is only one exchange
 	 * client per authentication type and, in case of error, closes all managed exchange clients.
 	 *
-	 * @param exchangeClients list of exchange clients
+	 * @param exchangeClientResources list of exchange client resources
 	 * @return map of exchange clients based on authentication type
 	 * @throws IllegalStateException if no exchange clients are provided
 	 * @throws IllegalStateException if multiple exchange clients are provided for the same authentication type
 	 */
 	@SuppressWarnings("resource")
 	private static Map<AuthenticationType, ScopedResource<ExchangeClient>> buildExchangeClientsMap(
-			final List<ScopedResource<ExchangeClient>> exchangeClients) {
-		if (Lists.isEmpty(exchangeClients)) {
+			final List<ScopedResource<ExchangeClient>> exchangeClientResources) {
+		if (Lists.isEmpty(exchangeClientResources)) {
 			throw new IllegalStateException("At least one: " + ExchangeClient.class.getName()
 					+ " must be provided to instantiate: " + ApiClient.class.getName());
 		}
+		Map<AuthenticationType, ScopedResource<ExchangeClient>> result = new LinkedHashMap<>();
 		try {
-			Map<AuthenticationType, ScopedResource<ExchangeClient>> result = new LinkedHashMap<>();
-			for (ScopedResource<ExchangeClient> scopedResource : exchangeClients) {
-				ExchangeClient client = scopedResource.unwrap();
-				AuthenticationType authenticationType = client.getAuthenticationType();
-				if (null == authenticationType) {
-					throw new IllegalStateException("ExchangeClient: [" + client.getName() + "]"
-							+ " has no " + AuthenticationType.class.getSimpleName() + " set");
+			for (ScopedResource<ExchangeClient> exchangeClientResource : exchangeClientResources) {
+				ExchangeClient newClient = exchangeClientResource.unwrap();
+				AuthenticationType authenticationType = ExchangeClient.requireAuthenticationType(newClient);
+				ScopedResource<ExchangeClient> existingResource = result.putIfAbsent(authenticationType, exchangeClientResource);
+				if (null != existingResource) {
+					handleDuplicateAuthenticationType(authenticationType, existingResource.unwrap(), newClient);
 				}
-				if (result.containsKey(authenticationType)) {
-					ExchangeClient existingClient = result.get(authenticationType).unwrap();
-					throw new IllegalStateException("Failed to instantiate [" + ApiClient.class.getName()
-							+ "]. Client entry for authentication type: [" + authenticationType + ", "
-							+ existingClient.getName() + "] already exists");
-				}
-				result.put(authenticationType, scopedResource);
 			}
 			return Collections.unmodifiableMap(result);
 		} catch (Exception e) {
-			closeExchangeClients(exchangeClients);
+			closeExchangeClients(exchangeClientResources);
 			return Unchecked.reThrow(e);
 		}
+	}
+
+	/**
+	 * Handles the case when multiple exchange clients are provided for the same authentication type.
+	 *
+	 * @param authenticationType authentication type
+	 * @param existingClient existing exchange client
+	 * @param newClient new exchange client
+	 * @throws IllegalStateException always
+	 */
+	protected static void handleDuplicateAuthenticationType(final AuthenticationType authenticationType,
+			final ExchangeClient existingClient, final ExchangeClient newClient) {
+		throw new IllegalStateException("Failed to instantiate [" + ApiClient.class.getName() + "]."
+				+ " Client entry for authentication type: [" + authenticationType + ", " + existingClient.getName() + "]"
+				+ " already exists when trying to add client: [" + newClient.getName() + "]");
 	}
 
 	/**
