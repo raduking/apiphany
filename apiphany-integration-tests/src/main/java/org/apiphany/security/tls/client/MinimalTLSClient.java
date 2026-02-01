@@ -236,7 +236,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		byte[] preMasterSecret;
 		switch (serverCipherSuite.keyExchange()) {
 			case ECDHE -> {
-				byte[] serverPublicLittleEndian = Objects.requireNonNull(serverKeyExchange).getPublicKey().getValue().toByteArray();
+				byte[] serverPublicLittleEndian = Objects.requireNonNull(serverKeyExchange).getPublicKey().getData().toByteArray();
 				LOGGER.debug("Server public key (raw bytes from key exchange):\n{}", Hex.dump(serverPublicLittleEndian));
 				X25519Keys keys = new X25519Keys();
 				byte[] clientPublicBytes = getClientPublicBytes(serverKeyExchange, keys);
@@ -533,7 +533,7 @@ public class MinimalTLSClient implements AutoCloseable {
 	}
 
 	public byte[] getClientPublicBytes(final ServerKeyExchange ske, final KeyExchangeHandler keys) {
-		byte[] serverPubBytes = ske.getPublicKey().getValue().toByteArray();
+		byte[] serverPubBytes = ske.getPublicKey().getData().toByteArray();
 		this.serverPublicKey = keys.publicKeyFrom(serverPubBytes, BytesOrder.LITTLE_ENDIAN);
 		if (null == clientKeyPair) {
 			this.clientKeyPair = keys.generateKeyPair();

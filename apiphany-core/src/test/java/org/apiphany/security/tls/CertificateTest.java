@@ -1,10 +1,12 @@
 package org.apiphany.security.tls;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.cert.X509Certificate;
@@ -75,5 +77,20 @@ class CertificateTest {
 		SecurityException exception = assertThrows(SecurityException.class, certificate::toX509Certificate);
 
 		assertEquals("Failed to parse X.509 certificate", exception.getMessage());
+	}
+
+	@Test
+	void shouldReadCertificateFromInputStream() throws Exception {
+		byte[] bytes = new byte[] {
+				// length: 3 bytes
+				0x00, 0x00, 0x04,
+				// data: 4 bytes
+				0x01, 0x02, 0x03, 0x04
+		};
+		Certificate cert = Certificate.from(new ByteArrayInputStream(bytes));
+
+		assertEquals(bytes.length, cert.sizeOf());
+		assertArrayEquals(bytes, cert.toByteArray());
+		assertEquals(cert.getData().sizeOf(), cert.sizeOf() - cert.getLength().sizeOf());
 	}
 }

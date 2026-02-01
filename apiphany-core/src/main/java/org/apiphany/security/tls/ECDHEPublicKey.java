@@ -3,6 +3,7 @@ package org.apiphany.security.tls;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.Objects;
 
 import org.apiphany.io.BytesWrapper;
 import org.apiphany.io.UInt8;
@@ -24,17 +25,17 @@ public class ECDHEPublicKey implements TLSKeyExchange {
 	/**
 	 * The actual public key bytes.
 	 */
-	private final BytesWrapper value;
+	private final BytesWrapper data;
 
 	/**
 	 * Constructs an ECDHEPublicKey with length wrapper and value wrapper.
 	 *
 	 * @param length the length of public key
-	 * @param value the wrapped public key bytes
+	 * @param data the wrapped public key bytes
 	 */
-	public ECDHEPublicKey(final UInt8 length, final BytesWrapper value) {
+	public ECDHEPublicKey(final UInt8 length, final BytesWrapper data) {
 		this.length = length;
-		this.value = value;
+		this.data = data;
 	}
 
 	/**
@@ -75,8 +76,8 @@ public class ECDHEPublicKey implements TLSKeyExchange {
 	 */
 	public static ECDHEPublicKey from(final InputStream is) throws IOException {
 		UInt8 length = UInt8.from(is);
-		BytesWrapper value = BytesWrapper.from(is, length.getValue());
-		return new ECDHEPublicKey(length, value);
+		BytesWrapper data = BytesWrapper.from(is, length.getValue());
+		return new ECDHEPublicKey(length, data);
 	}
 
 	/**
@@ -88,7 +89,7 @@ public class ECDHEPublicKey implements TLSKeyExchange {
 	public byte[] toByteArray() {
 		ByteBuffer buffer = ByteBuffer.allocate(sizeOf());
 		buffer.put(length.toByteArray());
-		buffer.put(value.toByteArray());
+		buffer.put(data.toByteArray());
 		return buffer.array();
 	}
 
@@ -100,6 +101,44 @@ public class ECDHEPublicKey implements TLSKeyExchange {
 	@Override
 	public String toString() {
 		return TLSObject.serialize(this);
+	}
+
+	/**
+	 * Returns the total size when serialized.
+	 *
+	 * @return size in bytes of length field plus key data
+	 */
+	@Override
+	public int sizeOf() {
+		return length.sizeOf() + data.sizeOf();
+	}
+
+	/**
+	 * Compares this {@link ECDHEPublicKey} to another object for equality.
+	 *
+	 * @param obj the object to compare with
+	 * @return true if both objects are ECDHEPublicKeys with equal length and data, false otherwise
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof ECDHEPublicKey that) {
+			return Objects.equals(this.length, that.length)
+					&& Objects.equals(this.data, that.data);
+		}
+		return false;
+	}
+
+	/**
+	 * Returns the hash code for this {@link ECDHEPublicKey}.
+	 *
+	 * @return hash code based on length and data
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hash(length, data);
 	}
 
 	/**
@@ -116,17 +155,7 @@ public class ECDHEPublicKey implements TLSKeyExchange {
 	 *
 	 * @return the BytesWrapper containing key bytes
 	 */
-	public BytesWrapper getValue() {
-		return value;
-	}
-
-	/**
-	 * Returns the total size when serialized.
-	 *
-	 * @return size in bytes of length field plus key data
-	 */
-	@Override
-	public int sizeOf() {
-		return length.sizeOf() + value.sizeOf();
+	public BytesWrapper getData() {
+		return data;
 	}
 }

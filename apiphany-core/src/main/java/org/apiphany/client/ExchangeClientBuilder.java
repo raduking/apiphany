@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
 
+import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.lang.Require;
 import org.apiphany.lang.ScopedResource;
 import org.apiphany.security.client.SecuredExchangeClientBuilder;
@@ -145,6 +146,15 @@ public class ExchangeClientBuilder {
 	}
 
 	/**
+	 * Sets the default exchange client class ({@link JavaNetHttpExchangeClient}).
+	 *
+	 * @return this
+	 */
+	public ExchangeClientBuilder withDefaultClient() {
+		return client(JavaNetHttpExchangeClient.class);
+	}
+
+	/**
 	 * Sets the client properties.
 	 *
 	 * @param clientProperties client properties to set
@@ -227,4 +237,5 @@ public class ExchangeClientBuilder {
 	public SecuredExchangeClientBuilder securedWith() {
 		return decoratedWithBuilder(SecuredExchangeClientBuilder.class);
 	}
+
 }
