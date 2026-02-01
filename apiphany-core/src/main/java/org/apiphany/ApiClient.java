@@ -19,7 +19,6 @@ import java.util.function.Predicate;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.ExchangeClientBuilder;
-import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.lang.ScopedResource;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.accumulator.DurationAccumulator;
@@ -206,7 +205,7 @@ public class ApiClient implements AutoCloseable {
 	}
 
 	/**
-	 * Constructor with base URL and a default exchange client {@link JavaNetHttpExchangeClient}.
+	 * Constructor with base URL and a default exchange client.
 	 * <p>
 	 * This constructor should be used only for quick tests or prototyping. For production code, it is recommended to use
 	 * one of the other constructors that allow more fine tuning of the exchange client.
@@ -214,7 +213,7 @@ public class ApiClient implements AutoCloseable {
 	 * @param baseUrl base URL
 	 */
 	protected ApiClient(final String baseUrl) {
-		this(baseUrl, with(JavaNetHttpExchangeClient.class));
+		this(baseUrl, withDefaultClient());
 	}
 
 	/**
@@ -444,13 +443,22 @@ public class ApiClient implements AutoCloseable {
 	}
 
 	/**
-	 * Returns an exchange client builder with the default {@link JavaNetHttpExchangeClient} and given properties set.
+	 * Returns an exchange client builder with the default exchange client and given properties set.
 	 *
 	 * @param properties client properties
 	 * @return exchange client builder
 	 */
 	public static ExchangeClientBuilder with(final ClientProperties properties) {
-		return with(JavaNetHttpExchangeClient.class).properties(properties);
+		return withDefaultClient().properties(properties);
+	}
+
+	/**
+	 * Returns an exchange client builder with the default client.
+	 *
+	 * @return exchange client builder
+	 */
+	public static ExchangeClientBuilder withDefaultClient() {
+		return ExchangeClient.builder().withDefaultClient();
 	}
 
 	/**

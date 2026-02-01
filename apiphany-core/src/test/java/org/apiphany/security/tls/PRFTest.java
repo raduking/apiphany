@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.stream.Stream;
 
 import org.apiphany.lang.Hex;
@@ -48,13 +49,16 @@ class PRFTest {
 		assertFalse(isAllZero(out1));
 	}
 
-	private static boolean isAllZero(final byte[] data) {
-		for (byte b : data) {
-			if (b != 0) {
-				return false;
-			}
-		}
-		return true;
+	@ParameterizedTest
+	@MethodSource("supportedAlgorithms")
+	void shouldReturnAlgorithmNameForSupportedDigestAlgorithms(final MessageDigestAlgorithm algorithm) {
+		assertThat(PRF.algorithmName(algorithm), equalTo(algorithm.hmacAlgorithmName()));
+	}
+
+	@ParameterizedTest
+	@MethodSource("unsupportedAlgorithms")
+	void shouldReturnSHA256AlgorithmNameForUnsupportedDigestAlgorithms(final MessageDigestAlgorithm algorithm) {
+		assertThat(PRF.algorithmName(algorithm), equalTo(MessageDigestAlgorithm.SHA256.hmacAlgorithmName()));
 	}
 
 	@Test
@@ -98,6 +102,25 @@ class PRFTest {
 		LOGGER.info("PRF Expect: {}", expectedSingleLine);
 
 		assertThat(hexOutput, equalTo(expectedSingleLine));
+	}
+
+	private static boolean isAllZero(final byte[] data) {
+		for (byte b : data) {
+			if (b != 0) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private static Stream<MessageDigestAlgorithm> supportedAlgorithms() {
+		return Stream.of(MessageDigestAlgorithm.SHA256, MessageDigestAlgorithm.SHA384);
+	}
+
+	private static Stream<MessageDigestAlgorithm> unsupportedAlgorithms() {
+		return EnumSet.allOf(MessageDigestAlgorithm.class).stream()
+				.filter(alg -> alg != MessageDigestAlgorithm.SHA256)
+				.filter(alg -> alg != MessageDigestAlgorithm.SHA384);
 	}
 
 	private static Stream<Arguments> providePRFArguments() {

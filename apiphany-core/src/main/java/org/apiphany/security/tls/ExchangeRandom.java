@@ -36,7 +36,7 @@ public class ExchangeRandom extends BytesWrapper implements TLSObject {
 	public ExchangeRandom(final byte[] random) {
 		super(random);
 		if (random.length != BYTES) {
-			throw new IllegalArgumentException("ExchangeRandom must be exactly " + BYTES + " bytes");
+			throw new IllegalArgumentException("ExchangeRandom must be exactly " + BYTES + " bytes long");
 		}
 	}
 
@@ -80,7 +80,7 @@ public class ExchangeRandom extends BytesWrapper implements TLSObject {
 	}
 
 	/**
-	 * Returns the raw random bytes.
+	 * Returns the raw random bytes, alias from {@link #toByteArray()}.
 	 *
 	 * @return a copy of the 32-byte random array
 	 */
