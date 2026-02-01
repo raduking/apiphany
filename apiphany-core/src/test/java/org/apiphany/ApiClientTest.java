@@ -476,7 +476,8 @@ class ApiClientTest {
 					+ AuthenticationType.OAUTH2
 					+ ", "
 					+ EXCHANGE_CLIENT_NAME_1
-					+ "] already exists"));
+					+ "] already exists when trying to add client: ["
+					+ EXCHANGE_CLIENT_NAME_2 + "]"));
 		}
 
 		assertThat(result, notNullValue());
