@@ -172,8 +172,11 @@ public class Certificate implements TLSObject {
 	 */
 	@SuppressWarnings("resource")
 	public X509Certificate toX509Certificate() throws CertificateException {
-		CertificateFactory factory = CertificateFactory.getInstance("X.509");
-		return (X509Certificate) factory.generateCertificate(ByteBufferInputStream.of(data.toByteArray()));
+		try {
+			CertificateFactory factory = CertificateFactory.getInstance("X.509");
+			return (X509Certificate) factory.generateCertificate(ByteBufferInputStream.of(data.toByteArray()));
+		} catch (CertificateException e) {
+			throw new SecurityException("Failed to parse X.509 certificate", e);
+		}
 	}
-
 }

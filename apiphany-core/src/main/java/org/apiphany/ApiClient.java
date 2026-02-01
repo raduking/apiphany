@@ -31,6 +31,7 @@ import org.apiphany.security.AuthenticationType;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Nullables;
 import org.morphix.lang.Unchecked;
+import org.morphix.lang.function.BinaryOperators;
 import org.morphix.lang.function.ThrowingBiConsumer;
 import org.morphix.reflection.Fields;
 import org.morphix.reflection.GenericClass;
@@ -151,7 +152,7 @@ public class ApiClient implements AutoCloseable {
 				Collectors.toMap(
 						Function.identity(),
 						value -> managed,
-						(existing, replacement) -> existing,
+						BinaryOperators.first(),
 						() -> new LinkedHashMap<>())));
 	}
 
@@ -453,6 +454,20 @@ public class ApiClient implements AutoCloseable {
 	}
 
 	/**
+	 * Asynchronous API call for resource.
+	 * <p>
+	 * TODO: implement proper async handling with non-blocking IO in the exchange clients.
+	 *
+	 * @param <T> response type
+	 *
+	 * @param apiRequest API request object
+	 * @return API response object
+	 */
+	public <T> CompletableFuture<ApiResponse<T>> asyncExchange(final ApiRequest<T> apiRequest) {
+		return CompletableFuture.supplyAsync(() -> exchange(apiRequest));
+	}
+
+	/**
 	 * API call for resource with meters on the given exchange client.
 	 *
 	 * @param <T> request body type
@@ -527,20 +542,6 @@ public class ApiClient implements AutoCloseable {
 	 */
 	protected <T> Retry getActiveRetry(final ApiRequest<T> apiRequest) {
 		return Nullables.nonNullOrDefault(apiRequest.getRetry(), this::getRetry);
-	}
-
-	/**
-	 * Asynchronous API call for resource.
-	 *
-	 * @param <T> response type
-	 *
-	 * @param apiRequest API request object
-	 * @return API response object
-	 */
-	@SuppressWarnings("resource")
-	public <T> CompletableFuture<ApiResponse<T>> asyncExchange(final ApiRequest<T> apiRequest) {
-		ExchangeClient exchangeClient = getExchangeClient(apiRequest.getAuthenticationType());
-		return exchangeClient.asyncExchange(apiRequest);
 	}
 
 	/**

@@ -3,6 +3,7 @@ package org.apiphany.security.tls;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -61,5 +62,18 @@ class CertificateTest {
 		assertNotNull(x509);
 		assertEquals("X.509", x509.getType());
 		assertNotNull(x509.getPublicKey());
+	}
+
+	@Test
+	void shouldNotParsePublicKey() throws Exception {
+		// to generate the test certificate files, you can read the docs/security/ssl/key-transformations.md
+		byte[] certBytes = Files.readAllBytes(
+				Path.of("src/test/resources/security/ssl/rsa_public.der"));
+
+		Certificate certificate = new Certificate(certBytes);
+
+		SecurityException exception = assertThrows(SecurityException.class, certificate::toX509Certificate);
+
+		assertEquals("Failed to parse X.509 certificate", exception.getMessage());
 	}
 }

@@ -5,7 +5,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
@@ -97,7 +96,7 @@ class ByteBufferInputStreamTest {
 	}
 
 	@Test
-	void shouldSkipAheadByteBufferOnSkip() throws IOException {
+	void shouldSkipAheadByteBufferOnSkip() {
 		try (ByteBufferInputStream bis = ByteBufferInputStream.of(BYTES)) {
 			long result = bis.skip(1);
 
