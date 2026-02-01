@@ -42,6 +42,11 @@ public class OAuth2ResolvedRegistration {
 	private static final Logger LOGGER = LoggerFactory.getLogger(OAuth2ResolvedRegistration.class);
 
 	/**
+	 * The unknown registration name constant.
+	 */
+	public static final String UNKNOWN_REGISTRATION_NAME = "<unknown>";
+
+	/**
 	 * The client registration name.
 	 */
 	private final String clientRegistrationName;
@@ -96,7 +101,7 @@ public class OAuth2ResolvedRegistration {
 	 * @return a new OAuth2 registry entry, or null if validation fails
 	 */
 	public static OAuth2ResolvedRegistration of(final OAuth2Properties properties, final String clientRegistrationName) {
-		String lookupName = Nullables.nonNullOrDefault(clientRegistrationName, "unknown");
+		String lookupName = Nullables.nonNullOrDefault(clientRegistrationName, UNKNOWN_REGISTRATION_NAME);
 		if (null == properties) {
 			LOGGER.error("[{}] No OAuth2 properties provided in: {}", lookupName, OAuth2Properties.ROOT);
 			return null;
@@ -105,47 +110,49 @@ public class OAuth2ResolvedRegistration {
 			LOGGER.warn("[{}] No OAuth2 client registrations provided in: {}.registration", lookupName, OAuth2Properties.ROOT);
 			return null;
 		}
-		String name = clientRegistrationName;
-		if (Strings.isEmpty(name)) {
+		String resolvedName = clientRegistrationName;
+		if (Strings.isEmpty(resolvedName)) {
 			Set<String> clientRegistrationNames = properties.getRegistration().keySet();
 			if (clientRegistrationNames.size() > 1) {
-				LOGGER.warn("[{}] Multiple OAuth2 client registrations provided in: {}.registration and the client registration name "
-						+ "was not given to the provider.", lookupName, OAuth2Properties.ROOT);
+				LOGGER.warn("[{}] Multiple OAuth2 client registrations present in: {}.registration, but the client registration name"
+						+ " was not specified (when building the OAuth2TokenProvider).", lookupName, OAuth2Properties.ROOT);
 			} else {
-				name = clientRegistrationNames.iterator().next();
+				resolvedName = clientRegistrationNames.iterator().next();
 			}
 		}
-		if (Strings.isEmpty(name)) {
+		if (Strings.isEmpty(resolvedName)) {
 			return null;
 		}
 		if (Maps.isEmpty(properties.getProvider())) {
-			LOGGER.warn("[{}] No OAuth2 providers provided in: {}.provider", clientRegistrationName, OAuth2Properties.ROOT);
+			LOGGER.warn("[{}] No OAuth2 provider provided in: {}.provider for: {}.registration.{}",
+					resolvedName, OAuth2Properties.ROOT, OAuth2Properties.ROOT, resolvedName);
 			return null;
 		}
 
-		OAuth2ClientRegistration registration = properties.getClientRegistration(name);
+		OAuth2ClientRegistration registration = properties.getClientRegistration(resolvedName);
 		if (null == registration) {
-			LOGGER.warn("[{}] No OAuth2 client provided for client registration in {}.registration.{}",
-					clientRegistrationName, OAuth2Properties.ROOT, clientRegistrationName);
+			LOGGER.warn("[{}] No OAuth2 client provided for client registration in: {}.registration.{}",
+					resolvedName, OAuth2Properties.ROOT, resolvedName);
 			return null;
 		}
 		if (!registration.hasClientId()) {
-			LOGGER.warn("[{}] No OAuth2 client-id provided in {}.registration.{}",
-					clientRegistrationName, OAuth2Properties.ROOT, clientRegistrationName);
+			LOGGER.warn("[{}] No OAuth2 client-id provided in: {}.registration.{}",
+					resolvedName, OAuth2Properties.ROOT, resolvedName);
 			return null;
 		}
 		if (!registration.hasClientSecret()) {
-			LOGGER.warn("[{}] No OAuth2 client-secret provided in {}.registration.{}",
-					clientRegistrationName, OAuth2Properties.ROOT, clientRegistrationName);
+			LOGGER.warn("[{}] No OAuth2 client-secret provided in: {}.registration.{}",
+					resolvedName, OAuth2Properties.ROOT, resolvedName);
 			return null;
 		}
 		OAuth2ProviderDetails providerDetails = properties.getProviderDetails(registration);
 		if (null == providerDetails) {
-			LOGGER.warn("[{}] No OAuth2 provider named '{}' for found in in {}.provider",
-					clientRegistrationName, registration.getProvider(), OAuth2Properties.ROOT);
+			String provider = registration.getProvider();
+			LOGGER.warn("[{}] No OAuth2 provider named '{}' for found in in: {}.provider for: {}.registration.{}",
+					resolvedName, provider, OAuth2Properties.ROOT, OAuth2Properties.ROOT, resolvedName);
 			return null;
 		}
-		return OAuth2ResolvedRegistration.of(name, registration, providerDetails);
+		return OAuth2ResolvedRegistration.of(resolvedName, registration, providerDetails);
 	}
 
 	/**
