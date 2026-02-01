@@ -30,6 +30,7 @@ import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
 import org.apiphany.io.ContentType;
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.lang.ScopedResource;
 import org.apiphany.lang.Strings;
 import org.apiphany.security.AuthenticationException;
 import org.apiphany.security.AuthenticationToken;
@@ -167,7 +168,7 @@ class OAuth2ApiClientTest {
 
 	@Test
 	@SuppressWarnings({ "resource", "unchecked" })
-	void shouldReturnAuthenticationWithClientSecretBasic() {
+	void shouldReturnAuthenticationWithClientSecretBasic() throws Exception {
 		doReturn(AuthenticationType.NONE).when(exchangeClient).getAuthenticationType();
 		doReturn(MAIN_EXCHANGE_CLIENT).when(exchangeClient).getName();
 		doReturn(HttpMethod.POST).when(exchangeClient).post();
@@ -179,7 +180,7 @@ class OAuth2ApiClientTest {
 		ArgumentCaptor<ApiRequest<String>> requestCaptor = ArgumentCaptor.forClass(ApiRequest.class);
 		doReturn(apiResponse).when(exchangeClient).exchange(requestCaptor.capture());
 
-		oAuth2ApiClient = new OAuth2ApiClient(clientRegistration, providerDetails, exchangeClient);
+		oAuth2ApiClient = new OAuth2ApiClient(clientRegistration, providerDetails, ScopedResource.managed(exchangeClient));
 
 		AuthenticationToken token = oAuth2ApiClient.getAuthenticationToken(ClientAuthenticationMethod.CLIENT_SECRET_BASIC);
 

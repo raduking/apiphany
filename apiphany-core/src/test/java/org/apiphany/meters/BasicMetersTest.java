@@ -607,7 +607,10 @@ class BasicMetersTest {
 	@Test
 	void shouldWrapButSendMetricsWithTagsWithDefaultMeterFactoryAndSupplier() {
 		String prefix = METRICS_PREFIX + "." + SOME_RANDOM_KEBAB_STRING;
-		BasicMeters.wrap(prefix, () -> SOME_STRING);
+		BasicMeters.wrap(prefix, () -> {
+			Threads.safeSleep(Duration.ofMillis(10));
+			return SOME_STRING;
+		});
 
 		Collection<?> search = Metrics.globalRegistry.get(prefix + "." + BasicMeters.Name.LATENCY).meters();
 		assertThat(search, hasSize(1));

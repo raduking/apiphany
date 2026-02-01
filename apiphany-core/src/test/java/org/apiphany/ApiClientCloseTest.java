@@ -1,7 +1,12 @@
 package org.apiphany;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.List;
 
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
@@ -42,6 +47,13 @@ public class ApiClientCloseTest {
 
 		public boolean isClosed() {
 			return closed;
+		}
+	}
+
+	static class SomeOtherExchangeClient extends SomeExchangeClient {
+
+		public SomeOtherExchangeClient(final ClientProperties clientProperties) {
+			super(clientProperties);
 		}
 	}
 
@@ -116,5 +128,23 @@ public class ApiClientCloseTest {
 		api.close();
 
 		assertTrue(exchangeClient.isClosed());
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldCallClonseOnManagedExchangeClientsEvenIfConstructingApiClientFails() throws Exception {
+		SomeExchangeClient exchangeClient1 = new SomeExchangeClient(clientProperties);
+		SomeOtherExchangeClient exchangeClient2 = new SomeOtherExchangeClient(clientProperties);
+		ScopedResource<ExchangeClient> scopedResource1 = ScopedResource.managed(exchangeClient1);
+		ScopedResource<ExchangeClient> scopedResource2 = ScopedResource.managed(exchangeClient2);
+
+		IllegalStateException e = assertThrows(IllegalStateException.class,
+				() -> new ApiClient(List.of(scopedResource1, scopedResource2)));
+
+		assertThat(e.getMessage(), equalTo("Failed to instantiate [" + ApiClient.class.getName()
+				+ "]. Client entry for authentication type: [" + AuthenticationType.NONE + ", "
+				+ exchangeClient1.getName() + "] already exists"));
+		assertTrue(exchangeClient1.isClosed());
+		assertTrue(exchangeClient2.isClosed());
 	}
 }

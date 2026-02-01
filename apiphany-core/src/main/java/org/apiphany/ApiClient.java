@@ -5,6 +5,7 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.time.Duration;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -13,9 +14,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
@@ -24,6 +23,7 @@ import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.lang.ScopedResource;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.accumulator.DurationAccumulator;
+import org.apiphany.lang.collections.Lists;
 import org.apiphany.lang.retry.Retry;
 import org.apiphany.meters.BasicMeters;
 import org.apiphany.meters.MeterFactory;
@@ -31,8 +31,6 @@ import org.apiphany.security.AuthenticationType;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Nullables;
 import org.morphix.lang.Unchecked;
-import org.morphix.lang.function.BinaryOperators;
-import org.morphix.lang.function.ThrowingBiConsumer;
 import org.morphix.reflection.Fields;
 import org.morphix.reflection.GenericClass;
 import org.morphix.reflection.predicates.MemberPredicates;
@@ -106,8 +104,8 @@ public class ApiClient implements AutoCloseable {
 	private final Map<AuthenticationType, ScopedResource<ExchangeClient>> exchangeClientsMap = new ConcurrentHashMap<>();
 
 	/**
-	 * Constructor with exchange clients. The {@link ApiClient} can have multiple exchange clients for different
-	 * authentication types.
+	 * Constructor with exchange clients. Constructing the {@link ApiClient} with multiple exchange clients allows handling
+	 * multiple authentication types in the same client.
 	 * <p>
 	 * Base URL is used as the root URL to which all paths will be appended when making requests.
 	 * <ul>
@@ -116,92 +114,38 @@ public class ApiClient implements AutoCloseable {
 	 * <li>If exchange clients provide the base URL in their properties they will override the base URL provided here for
 	 * requests done with that client (or for that authentication type)</li>
 	 * </ul>
-	 * <p>
-	 * If multiple exchange
 	 *
 	 * @param baseUrl base URL to which all paths will be appended
-	 * @param exchangeClients map of exchange clients with life cycle information
+	 * @param exchangeClientsMap map of exchange clients with life cycle information based on authentication type
 	 * @throws IllegalStateException if multiple exchange clients are provided for the same authentication type
 	 */
-	@SuppressWarnings("resource")
-	protected ApiClient(final String baseUrl, final Map<ExchangeClient, Boolean> exchangeClients) {
+	protected ApiClient(final String baseUrl, final Map<AuthenticationType, ScopedResource<ExchangeClient>> exchangeClientsMap) {
 		LOGGER.debug("Initializing: {}(baseUrl: {})", getClass().getSimpleName(), Strings.isEmpty(baseUrl) ? "<no-base-url>" : baseUrl);
 		this.baseUrl = baseUrl;
+		this.exchangeClientsMap.putAll(exchangeClientsMap);
 
-		for (Map.Entry<ExchangeClient, Boolean> entry : exchangeClients.entrySet()) {
-			ExchangeClient exchangeClient = entry.getKey();
-			AuthenticationType authenticationType = exchangeClient.getAuthenticationType();
-			this.exchangeClientsMap.merge(authenticationType, ScopedResource.of(exchangeClient, entry.getValue()), (oldValue, newValue) -> {
-				throw new IllegalStateException("Failed to instantiate [" + getClass().getName()
-						+ "]. Client entry for authentication type: [" + authenticationType + ", "
-						+ oldValue.unwrap().getName() + "] already exists");
-			});
-		}
 		initializeTypeObjects(this);
 	}
 
 	/**
-	 * Constructor with exchange clients and managed flag.
-	 *
-	 * @param baseUrl base URL to which all paths will be appended
-	 * @param exchangeClients list of exchange clients
-	 * @param managed true if all exchange clients are managed by this API client
-	 */
-	protected ApiClient(final String baseUrl, final List<ExchangeClient> exchangeClients, final boolean managed) {
-		this(baseUrl, exchangeClients.stream().collect(
-				Collectors.toMap(
-						Function.identity(),
-						value -> managed,
-						BinaryOperators.first(),
-						() -> new LinkedHashMap<>())));
-	}
-
-	/**
-	 * Constructor with exchange clients.
+	 * Constructor with a list of exchange clients with life cycle information. The {@link ApiClient} can have multiple
+	 * exchange clients for different authentication types.
 	 *
 	 * @param baseUrl base URL to which all paths will be appended
 	 * @param exchangeClients list of exchange clients
 	 */
-	protected ApiClient(final String baseUrl, final List<ExchangeClient> exchangeClients) {
-		this(baseUrl, exchangeClients, false);
+	protected ApiClient(final String baseUrl, final List<ScopedResource<ExchangeClient>> exchangeClients) {
+		this(baseUrl, buildExchangeClientsMap(exchangeClients));
 	}
 
 	/**
-	 * Constructor with only one exchange client.
+	 * Constructor with a list of exchange clients with life cycle information. The {@link ApiClient} can have multiple
+	 * exchange clients for different authentication types.
 	 *
-	 * @param baseUrl base URL to which all paths will be appended
-	 * @param exchangeClient exchange client
+	 * @param exchangeClients list of exchange clients
 	 */
-	protected ApiClient(final String baseUrl, final ExchangeClient exchangeClient) {
-		this(baseUrl, Collections.singletonList(exchangeClient));
-	}
-
-	/**
-	 * Constructor with only one exchange client and no base URL.
-	 *
-	 * @param exchangeClient exchange client
-	 */
-	protected ApiClient(final ExchangeClient exchangeClient) {
-		this(EMPTY_BASE_URL, Collections.singletonList(exchangeClient));
-	}
-
-	/**
-	 * Constructor with base URL and exchange client builder, the built exchange client will be managed by this client.
-	 *
-	 * @param baseUrl base URL
-	 * @param exchangeClientBuilder exchange client builder
-	 */
-	protected ApiClient(final String baseUrl, final ExchangeClientBuilder exchangeClientBuilder) {
-		this(baseUrl, exchangeClientBuilder.build().toMap());
-	}
-
-	/**
-	 * Constructor with exchange client builder, this client will manage the built exchange client.
-	 *
-	 * @param exchangeClientBuilder exchange client builder
-	 */
-	protected ApiClient(final ExchangeClientBuilder exchangeClientBuilder) {
-		this(EMPTY_BASE_URL, exchangeClientBuilder);
+	protected ApiClient(final List<ScopedResource<ExchangeClient>> exchangeClients) {
+		this(EMPTY_BASE_URL, exchangeClients);
 	}
 
 	/**
@@ -210,9 +154,8 @@ public class ApiClient implements AutoCloseable {
 	 * @param baseUrl base URL
 	 * @param clientResource scoped exchange client
 	 */
-	@SuppressWarnings("resource")
 	protected ApiClient(final String baseUrl, final ScopedResource<ExchangeClient> clientResource) {
-		this(baseUrl, Collections.singletonMap(clientResource.unwrap(), clientResource.isManaged()));
+		this(baseUrl, Collections.singletonList(clientResource));
 	}
 
 	/**
@@ -222,6 +165,44 @@ public class ApiClient implements AutoCloseable {
 	 */
 	protected ApiClient(final ScopedResource<ExchangeClient> clientResource) {
 		this(EMPTY_BASE_URL, clientResource);
+	}
+
+	/**
+	 * Constructor with only one exchange client.
+	 *
+	 * @param baseUrl base URL to which all paths will be appended
+	 * @param exchangeClient exchange client
+	 */
+	protected ApiClient(final String baseUrl, final ExchangeClient exchangeClient) {
+		this(baseUrl, ScopedResource.unmanaged(exchangeClient));
+	}
+
+	/**
+	 * Constructor with only one exchange client and no base URL.
+	 *
+	 * @param exchangeClient exchange client
+	 */
+	protected ApiClient(final ExchangeClient exchangeClient) {
+		this(EMPTY_BASE_URL, exchangeClient);
+	}
+
+	/**
+	 * Constructor with base URL and exchange client builder, the built exchange client will be managed by this client.
+	 *
+	 * @param baseUrl base URL
+	 * @param exchangeClientBuilder exchange client builder
+	 */
+	protected ApiClient(final String baseUrl, final ExchangeClientBuilder exchangeClientBuilder) {
+		this(baseUrl, exchangeClientBuilder.build());
+	}
+
+	/**
+	 * Constructor with exchange client builder, this client will manage the built exchange client.
+	 *
+	 * @param exchangeClientBuilder exchange client builder
+	 */
+	protected ApiClient(final ExchangeClientBuilder exchangeClientBuilder) {
+		this(EMPTY_BASE_URL, exchangeClientBuilder);
 	}
 
 	/**
@@ -237,15 +218,65 @@ public class ApiClient implements AutoCloseable {
 	}
 
 	/**
-	 * @see AutoCloseable#close()
+	 * Builds the exchange clients map based on authentication type. This method ensures that there is only one exchange
+	 * client per authentication type and, in case of error, closes all managed exchange clients.
+	 *
+	 * @param exchangeClients list of exchange clients
+	 * @return map of exchange clients based on authentication type
+	 * @throws IllegalStateException if no exchange clients are provided
+	 * @throws IllegalStateException if multiple exchange clients are provided for the same authentication type
 	 */
 	@SuppressWarnings("resource")
+	private static Map<AuthenticationType, ScopedResource<ExchangeClient>> buildExchangeClientsMap(
+			final List<ScopedResource<ExchangeClient>> exchangeClients) {
+		if (Lists.isEmpty(exchangeClients)) {
+			throw new IllegalStateException("At least one: " + ExchangeClient.class.getName()
+					+ " must be provided to instantiate: " + ApiClient.class.getName());
+		}
+		try {
+			Map<AuthenticationType, ScopedResource<ExchangeClient>> result = new LinkedHashMap<>();
+			for (ScopedResource<ExchangeClient> scopedResource : exchangeClients) {
+				ExchangeClient client = scopedResource.unwrap();
+				AuthenticationType authenticationType = client.getAuthenticationType();
+				if (null == authenticationType) {
+					throw new IllegalStateException("ExchangeClient: [" + client.getName() + "]"
+							+ " has no " + AuthenticationType.class.getSimpleName() + " set");
+				}
+				if (result.containsKey(authenticationType)) {
+					ExchangeClient existingClient = result.get(authenticationType).unwrap();
+					throw new IllegalStateException("Failed to instantiate [" + ApiClient.class.getName()
+							+ "]. Client entry for authentication type: [" + authenticationType + ", "
+							+ existingClient.getName() + "] already exists");
+				}
+				result.put(authenticationType, scopedResource);
+			}
+			return Collections.unmodifiableMap(result);
+		} catch (Exception e) {
+			closeExchangeClients(exchangeClients);
+			return Unchecked.reThrow(e);
+		}
+	}
+
+	/**
+	 * @see AutoCloseable#close()
+	 */
 	@Override
 	public void close() throws Exception {
-		exchangeClientsMap.forEach(ThrowingBiConsumer.unchecked((key, value) -> {
-			LOGGER.debug("Closing: [{}] for [AuthenticationType:{}]", value.unwrap().getName(), key);
-			value.closeIfManaged();
-		}));
+		closeExchangeClients(exchangeClientsMap.values());
+	}
+
+	/**
+	 * Closes all managed exchange clients in the given collection.
+	 *
+	 * @param exchangeClients collection of scoped exchange clients
+	 */
+	@SuppressWarnings("resource")
+	protected static void closeExchangeClients(final Collection<ScopedResource<ExchangeClient>> exchangeClients) {
+		for (ScopedResource<ExchangeClient> scopedResource : exchangeClients) {
+			String exchangeClientName = scopedResource.unwrap().getName();
+			LOGGER.debug("Closing: [{}] for [" + AuthenticationType.class.getSimpleName() + ":{}]", exchangeClientName);
+			scopedResource.closeIfManaged(e -> LOGGER.error("Error closing: [{}]", exchangeClientName, e));
+		}
 	}
 
 	/**
@@ -267,7 +298,7 @@ public class ApiClient implements AutoCloseable {
 	 * @return a new ApiClient object
 	 */
 	public static ApiClient of(final String baseUrl, final List<ExchangeClient> exchangeClients) {
-		return new ApiClient(baseUrl, exchangeClients);
+		return new ApiClient(baseUrl, Lists.safe(exchangeClients).stream().map(ScopedResource::unmanaged).toList());
 	}
 
 	/**
@@ -373,9 +404,6 @@ public class ApiClient implements AutoCloseable {
 	 */
 	private AuthenticationType computeAuthenticationType() {
 		Set<AuthenticationType> authenticationTypes = exchangeClientsMap.keySet();
-		if (authenticationTypes.isEmpty()) {
-			throw new IllegalStateException("No ExchangeClient has been set before calling client()");
-		}
 		if (authenticationTypes.size() > 1) {
 			throw new IllegalStateException("Client has multiple ExchangeClient objects please call client(AuthenticationType)");
 		}
