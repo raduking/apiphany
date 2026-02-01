@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,9 +82,10 @@ public class OAuth2Registry {
 	 * @return a resolved registration based on the given client registration name
 	 */
 	public OAuth2ResolvedRegistration get(final String clientRegistrationName) {
-		OAuth2ResolvedRegistration registration = entries.get(clientRegistrationName);
+		OAuth2ResolvedRegistration registration =
+				entries.get(Objects.requireNonNull(clientRegistrationName, "clientRegistrationName must not be null"));
 		if (null == registration) {
-			LOGGER.warn("[{}] No OAuth2 client provided for client registration in {}.registration.{}",
+			LOGGER.warn("[{}] No OAuth2 client provided for client registration in: {}.registration.{}",
 					clientRegistrationName, OAuth2Properties.ROOT, clientRegistrationName);
 		}
 		return registration;
