@@ -103,6 +103,20 @@ public class ApiClientCloseTest {
 	}
 
 	@Test
+	void shouldNotCallCloseOnNonManagedExchangeClientsWhenNoBaseUrlProvided() throws Exception {
+		SomeExchangeClient exchangeClient = new SomeExchangeClient(clientProperties);
+		ApiClient api = new ApiClient(exchangeClient);
+
+		api.close();
+
+		try {
+			assertFalse(exchangeClient.isClosed());
+		} finally {
+			exchangeClient.close();
+		}
+	}
+
+	@Test
 	@SuppressWarnings("resource")
 	void shouldCallCloseOnExchangeClientWhenApiClientIsInitializedWithUrlAndScopedResource() throws Exception {
 		SomeExchangeClient exchangeClient = new SomeExchangeClient(clientProperties);
@@ -146,5 +160,23 @@ public class ApiClientCloseTest {
 				+ exchangeClient1.getName() + "] already exists"));
 		assertTrue(exchangeClient1.isClosed());
 		assertTrue(exchangeClient2.isClosed());
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldNotCallCloseOnNonManagedExchangeClientsEvenIfConstructingApiClientFails() throws Exception {
+		SomeExchangeClient exchangeClient1 = new SomeExchangeClient(clientProperties);
+		SomeOtherExchangeClient exchangeClient2 = new SomeOtherExchangeClient(clientProperties);
+		ScopedResource<ExchangeClient> scopedResource1 = ScopedResource.unmanaged(exchangeClient1);
+		ScopedResource<ExchangeClient> scopedResource2 = ScopedResource.unmanaged(exchangeClient2);
+
+		IllegalStateException e = assertThrows(IllegalStateException.class,
+				() -> new ApiClient(List.of(scopedResource1, scopedResource2)));
+
+		assertThat(e.getMessage(), equalTo("Failed to instantiate [" + ApiClient.class.getName()
+				+ "]. Client entry for authentication type: [" + AuthenticationType.NONE + ", "
+				+ exchangeClient1.getName() + "] already exists"));
+		assertFalse(exchangeClient1.isClosed());
+		assertFalse(exchangeClient2.isClosed());
 	}
 }
