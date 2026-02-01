@@ -18,6 +18,7 @@ import org.apiphany.http.HttpAuthScheme;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.io.ContentType;
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.lang.ScopedResource;
 import org.apiphany.lang.Strings;
 import org.apiphany.security.AuthenticationException;
 import org.apiphany.security.AuthenticationToken;
@@ -74,10 +75,22 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 	 * @param httpExchangeClient the HTTP exchange client to use for requests
 	 */
 	public OAuth2ApiClient(final OAuth2ClientRegistration clientRegistration, final OAuth2ProviderDetails providerDetails,
-			final ExchangeClient httpExchangeClient) {
+			final ScopedResource<ExchangeClient> httpExchangeClient) {
 		super(httpExchangeClient);
 		this.clientRegistration = clientRegistration;
 		this.providerDetails = providerDetails;
+	}
+
+	/**
+	 * Constructs a new OAuth2 API client with the specified configurations.
+	 *
+	 * @param clientRegistration the OAuth2 client registration details
+	 * @param providerDetails the OAuth2 provider configuration details
+	 * @param httpExchangeClient the HTTP exchange client to use for requests
+	 */
+	public OAuth2ApiClient(final OAuth2ClientRegistration clientRegistration, final OAuth2ProviderDetails providerDetails,
+			final ExchangeClient httpExchangeClient) {
+		this(clientRegistration, providerDetails, ScopedResource.unmanaged(httpExchangeClient));
 	}
 
 	/**
@@ -89,9 +102,23 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 	 */
 	public OAuth2ApiClient(final OAuth2ClientRegistration clientRegistration, final OAuth2ProviderDetails providerDetails,
 			final ExchangeClientBuilder exchangeClientBuilder) {
-		super(exchangeClientBuilder);
-		this.clientRegistration = clientRegistration;
-		this.providerDetails = providerDetails;
+		this(clientRegistration, providerDetails, exchangeClientBuilder.build());
+	}
+
+	/**
+	 * Constructs a new OAuth2 API client with the specified configurations.
+	 *
+	 * @param clientRegistration the OAuth2 client registration details
+	 * @param privateKey the private key used when authorizing with {@code private_key_jwt}
+	 * @param signingAlgorithm the signing algorithm used to sign the client assertion
+	 * @param providerDetails the OAuth2 provider configuration details
+	 * @param httpExchangeClient the HTTP exchange client to use for requests
+	 */
+	public OAuth2ApiClient(final OAuth2ClientRegistration clientRegistration, final OAuth2ProviderDetails providerDetails,
+			final PrivateKey privateKey, final JwsAlgorithm signingAlgorithm, final ScopedResource<ExchangeClient> httpExchangeClient) {
+		this(clientRegistration, providerDetails, httpExchangeClient);
+		this.privateKey = privateKey;
+		this.signingAlgorithm = signingAlgorithm;
 	}
 
 	/**
@@ -105,9 +132,7 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 	 */
 	public OAuth2ApiClient(final OAuth2ClientRegistration clientRegistration, final OAuth2ProviderDetails providerDetails,
 			final PrivateKey privateKey, final JwsAlgorithm signingAlgorithm, final ExchangeClient httpExchangeClient) {
-		this(clientRegistration, providerDetails, httpExchangeClient);
-		this.privateKey = privateKey;
-		this.signingAlgorithm = signingAlgorithm;
+		this(clientRegistration, providerDetails, privateKey, signingAlgorithm, ScopedResource.unmanaged(httpExchangeClient));
 	}
 
 	/**
@@ -121,9 +146,7 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 	 */
 	public OAuth2ApiClient(final OAuth2ClientRegistration clientRegistration, final OAuth2ProviderDetails providerDetails,
 			final PrivateKey privateKey, final JwsAlgorithm signingAlgorithm, final ExchangeClientBuilder exchangeClientBuilder) {
-		this(clientRegistration, providerDetails, exchangeClientBuilder);
-		this.privateKey = privateKey;
-		this.signingAlgorithm = signingAlgorithm;
+		this(clientRegistration, providerDetails, privateKey, signingAlgorithm, exchangeClientBuilder.build());
 	}
 
 	/**

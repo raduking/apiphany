@@ -489,7 +489,8 @@ class ApiClientTest {
 			apiClient.client();
 		} catch (IllegalStateException e) {
 			result = e;
-			assertThat(result.getMessage(), equalTo("No ExchangeClient has been set before calling client()"));
+			assertThat(result.getMessage(), equalTo("At least one: " + ExchangeClient.class.getName()
+					+ " must be provided to instantiate: " + ApiClient.class.getName()));
 		}
 
 		assertThat(result, notNullValue());
@@ -497,9 +498,28 @@ class ApiClientTest {
 
 	@Test
 	@SuppressWarnings("resource")
-	void shouldThrowExceptionWhenTryingToReturnAuthClientWithNoAuthClientsSet() throws Exception {
+	void shouldThrowExceptionWhenTryingToAddExchangeClientWithNoAuthenticationType() throws Exception {
+		ExchangeClient exchangeClient = mock(ExchangeClient.class);
+		doReturn(EXCHANGE_CLIENT_NAME_1).when(exchangeClient).getName();
 		Exception result = null;
-		try (ApiClient api = ApiClient.of(BASE_URL, List.of())) {
+		try (ApiClient api = ApiClient.of(BASE_URL, List.of(exchangeClient))) {
+			api.getExchangeClient(AuthenticationType.OAUTH2);
+		} catch (IllegalStateException e) {
+			result = e;
+			assertThat(result.getMessage(), equalTo("ExchangeClient: [" + EXCHANGE_CLIENT_NAME_1 + "]"
+					+ " has no " + AuthenticationType.class.getSimpleName() + " set"));
+		}
+		assertThat(result, notNullValue());
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldThrowExceptionWhenTryingToReturnAuthClientWithNoRequiredAuthClientsSet() throws Exception {
+		ExchangeClient exchangeClient = mock(ExchangeClient.class);
+		doReturn(AuthenticationType.SSL).when(exchangeClient).getAuthenticationType();
+		doReturn(EXCHANGE_CLIENT_NAME_1).when(exchangeClient).getName();
+		Exception result = null;
+		try (ApiClient api = ApiClient.of(BASE_URL, List.of(exchangeClient))) {
 			api.getExchangeClient(AuthenticationType.OAUTH2);
 		} catch (IllegalStateException e) {
 			result = e;
