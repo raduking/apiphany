@@ -188,7 +188,7 @@ public class ForkedHttpsServerRunner {
 
 		Thread loggingThread = Thread.ofVirtual().start(() -> {
 			try (InputStream is = serverProcess.getInputStream()) {
-				is.transferTo(System.out);
+				is.transferTo(System.out); // NOSONAR this is fine for a test utility
 			} catch (Exception e) {
 				LOGGER.error("Error logging", e);
 			}
