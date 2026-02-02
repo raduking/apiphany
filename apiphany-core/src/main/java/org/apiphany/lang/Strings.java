@@ -270,9 +270,9 @@ public interface Strings {
 	 */
 	static String fromFile(final String path, final Charset encoding, final int bufferSize, final Consumer<Exception> onError) {
 		try {
-			Path fsPath = Paths.get(path);
-			if (fsPath.isAbsolute()) {
-				return Files.readString(fsPath, encoding);
+			Path filePath = Paths.get(path);
+			if (filePath.isAbsolute()) {
+				return Files.readString(filePath, encoding);
 			}
 			try (InputStream inputStream = Strings.class.getClassLoader().getResourceAsStream(path)) {
 				if (null == inputStream) {
