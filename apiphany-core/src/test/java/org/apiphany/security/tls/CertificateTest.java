@@ -2,6 +2,7 @@ package org.apiphany.security.tls;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -11,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.cert.X509Certificate;
 
+import org.apiphany.lang.Strings;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -26,29 +28,29 @@ class CertificateTest {
 
 	@Test
 	void shouldEqualSameValuesAndSameReference() {
-		Certificate aad1 = new Certificate(DATA);
-		Certificate aad2 = new Certificate(DATA);
+		Certificate cert1 = new Certificate(DATA);
+		Certificate cert2 = new Certificate(DATA);
 
 		// same reference
-		assertEquals(aad1, aad1);
+		assertEquals(cert1, cert1);
 
 		// different instance, same values
-		assertEquals(aad1, aad2);
-		assertEquals(aad2, aad1);
+		assertEquals(cert1, cert2);
+		assertEquals(cert2, cert1);
 
 		// hashCode contract (important for coverage + correctness)
-		assertEquals(aad1.hashCode(), aad2.hashCode());
+		assertEquals(cert1.hashCode(), cert2.hashCode());
 	}
 
 	@Test
 	void shouldNotEqualIfDifferentObjects() {
-		Certificate aad1 = new Certificate(DATA);
-		Certificate aad2 = new Certificate(new byte[] { 0x05, 0x06, 0x07 });
+		Certificate cert1 = new Certificate(DATA);
+		Certificate cert2 = new Certificate(new byte[] { 0x05, 0x06, 0x07 });
 
 		// different objects
-		assertNotEquals(aad1, aad2);
-		assertNotEquals(aad1, null);
-		assertNotEquals(aad2, "not-an-aad");
+		assertNotEquals(cert1, cert2);
+		assertNotEquals(cert1, null);
+		assertNotEquals(cert2, "not-an-aad");
 	}
 
 	@Test
@@ -92,5 +94,15 @@ class CertificateTest {
 		assertEquals(bytes.length, cert.sizeOf());
 		assertArrayEquals(bytes, cert.toByteArray());
 		assertEquals(cert.getData().sizeOf(), cert.sizeOf() - cert.getLength().sizeOf());
+	}
+
+	@Test
+	void shouldSerializeToString() {
+		Certificate cert = new Certificate(DATA);
+
+		String result = cert.toString();
+
+		assertNotNull(result);
+		assertFalse(Strings.isBlank(result));
 	}
 }

@@ -2,7 +2,9 @@ package org.apiphany.security.tls;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.ByteArrayInputStream;
 import java.util.EnumSet;
@@ -10,6 +12,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 import org.apiphany.io.BytesWrapper;
+import org.apiphany.lang.Strings;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -136,6 +139,17 @@ class EncryptedTest {
 				"Non-AEAD ciphers must not expose a nonce");
 		assertArrayEquals(data, encrypted.getEncryptedData(cipher).toByteArray(),
 				"Encrypted data must be returned as-is");
+	}
+
+	@Test
+	void shouldSerializeToString() {
+		BytesWrapper dataPayload = new BytesWrapper(DATA);
+		Encrypted appData = new Encrypted(dataPayload);
+
+		String result = appData.toString();
+
+		assertNotNull(result);
+		assertFalse(Strings.isBlank(result));
 	}
 
 	private static Stream<BulkCipher> nonAeadCiphers() {

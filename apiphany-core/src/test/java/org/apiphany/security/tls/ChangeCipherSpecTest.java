@@ -2,12 +2,15 @@ package org.apiphany.security.tls;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.ByteArrayInputStream;
 import java.util.Objects;
 
 import org.apiphany.io.UInt8;
+import org.apiphany.lang.Strings;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -76,5 +79,15 @@ class ChangeCipherSpecTest {
 		int expectedHashCode = Objects.hash(ccs.getPayload());
 
 		assertEquals(expectedHashCode, ccs.hashCode());
+	}
+
+	@Test
+	void shouldSerializeToString() {
+		ChangeCipherSpec ccs = new ChangeCipherSpec();
+
+		String result = ccs.toString();
+
+		assertNotNull(result);
+		assertFalse(Strings.isBlank(result));
 	}
 }

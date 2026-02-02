@@ -3,11 +3,14 @@ package org.apiphany.security.tls;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
+import org.apiphany.lang.Strings;
 import org.apiphany.security.ssl.SSLProtocol;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -61,5 +64,15 @@ class VersionTest {
 		// different types
 		assertNotEquals(version1, null);
 		assertNotEquals(version2, "some string");
+	}
+
+	@Test
+	void shouldSerializeToString() {
+		Version version = new Version(SSLProtocol.TLS_1_2);
+
+		String result = version.toString();
+
+		assertNotNull(result);
+		assertFalse(Strings.isBlank(result));
 	}
 }

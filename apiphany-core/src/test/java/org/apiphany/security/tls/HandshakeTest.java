@@ -5,11 +5,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 
+import org.apiphany.lang.Strings;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -131,5 +133,16 @@ class HandshakeTest {
 
 		assertThat(e.getMessage(), equalTo("Cannot cast TLS handshake body from " +
 				finished.getClass() + " to " + ClientHello.class));
+	}
+
+	@Test
+	void shouldSerializeToString() {
+		Finished finished = new Finished(DATA);
+		Handshake handshake = new Handshake(finished);
+
+		String result = handshake.toString();
+
+		assertNotNull(result);
+		assertFalse(Strings.isBlank(result));
 	}
 }

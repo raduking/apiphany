@@ -314,18 +314,18 @@ public class Record implements TLSObject {
 	}
 
 	/**
-	 * Returns a fragment of a specific type. If there are none or more than one fragments of the same type a
-	 * {@link IllegalStateException} is thrown.
+	 * Returns a fragment of a specific type, or {@code null} if no fragments of the specified type are present. If there
+	 * are more than one fragments of the same type a {@link IllegalStateException} is thrown.
 	 *
 	 * @param <T> the type of fragments to filter for
 	 *
 	 * @param tlsObjectClass the class object of the fragment type to filter for
-	 * @return a matching fragment
+	 * @return a matching fragment or null
 	 * @throws IllegalStateException if there are none or more than one fragments of the required type present
 	 */
 	public <T extends TLSObject> T getFragment(final Class<T> tlsObjectClass) {
 		if (Lists.isEmpty(fragments)) {
-			throw new IllegalStateException("No fragments of type " + tlsObjectClass + " are present in the record.");
+			return null;
 		}
 		T result = null;
 		for (TLSObject fragment : fragments) {
@@ -347,7 +347,7 @@ public class Record implements TLSObject {
 	 * @param tlsHandshakeClass the class object of the handshake type to check for
 	 * @return true if the record contains a matching handshake message
 	 */
-	public <T extends TLSHandshakeBody> boolean hasHandshakeBody(final Class<T> tlsHandshakeClass) {
+	public <T extends TLSHandshakeBody> boolean containsHandshakeBody(final Class<T> tlsHandshakeClass) {
 		for (TLSObject fragment : fragments) {
 			if (Handshake.class.isAssignableFrom(fragment.getClass())) {
 				Handshake handshake = JavaObjects.cast(fragment);
@@ -367,8 +367,8 @@ public class Record implements TLSObject {
 	 * @param tlsHandshakeClass the class object of the handshake type to check for
 	 * @return true if the record does not contain a matching handshake message
 	 */
-	public <T extends TLSHandshakeBody> boolean hasNoHandshakeBody(final Class<T> tlsHandshakeClass) {
-		return !hasHandshakeBody(tlsHandshakeClass);
+	public <T extends TLSHandshakeBody> boolean doesNotContainHandshakeBody(final Class<T> tlsHandshakeClass) {
+		return !containsHandshakeBody(tlsHandshakeClass);
 	}
 
 	/**

@@ -4,12 +4,15 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.ByteArrayInputStream;
 import java.util.Objects;
 
 import org.apiphany.io.BytesWrapper;
+import org.apiphany.lang.Strings;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -102,5 +105,16 @@ class FinishedTest {
 		int expectedHashCode = Objects.hash(finished.getVerifyData());
 
 		assertEquals(expectedHashCode, finished.hashCode());
+	}
+
+	@Test
+	void shouldSerializeToString() {
+		BytesWrapper verifyDataPayload = new BytesWrapper(VERIFY_DATA_PAYLOAD);
+		Finished finished = new Finished(verifyDataPayload);
+
+		String result = finished.toString();
+
+		assertNotNull(result);
+		assertFalse(Strings.isBlank(result));
 	}
 }

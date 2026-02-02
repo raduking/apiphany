@@ -2,13 +2,16 @@ package org.apiphany.security.tls;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.ByteArrayInputStream;
 import java.util.Objects;
 
 import org.apiphany.io.UInt16;
 import org.apiphany.io.UInt64;
+import org.apiphany.lang.Strings;
 import org.apiphany.security.ssl.SSLProtocol;
 import org.junit.jupiter.api.Test;
 
@@ -126,5 +129,20 @@ class AdditionalAuthenticatedDataTest {
 				aad.getLength());
 
 		assertEquals(expectedHash, aad.hashCode());
+	}
+
+	@Test
+	void shouldSerializeToString() {
+		AdditionalAuthenticatedData aad =
+				new AdditionalAuthenticatedData(
+						1L,
+						RecordContentType.APPLICATION_DATA,
+						SSLProtocol.TLS_1_2,
+						(short) 42);
+
+		String result = aad.toString();
+
+		assertNotNull(result);
+		assertFalse(Strings.isBlank(result));
 	}
 }

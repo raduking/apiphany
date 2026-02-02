@@ -2,7 +2,12 @@ package org.apiphany.security.tls;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
@@ -14,6 +19,7 @@ import java.util.List;
 
 import org.apiphany.io.BytesWrapper;
 import org.apiphany.lang.Bytes;
+import org.apiphany.lang.Strings;
 import org.apiphany.security.ssl.SSLProtocol;
 import org.junit.jupiter.api.Test;
 
@@ -54,6 +60,16 @@ class RecordTest {
 	}
 
 	@Test
+	void shouldSerializeToString() {
+		Record tlsRecord = new Record(SSLProtocol.TLS_1_2, new ApplicationData(new Encrypted(Bytes.EMPTY)));
+
+		String result = tlsRecord.toString();
+
+		assertNotNull(result);
+		assertFalse(Strings.isBlank(result));
+	}
+
+	@Test
 	void shouldReturnFragmentsFromRecord() throws IOException {
 		@SuppressWarnings("resource")
 		InputStream is = createCertificateStream();
@@ -70,7 +86,7 @@ class RecordTest {
 	}
 
 	@Test
-	void shouldReturnFragmentFromRecord() throws IOException {
+	void shouldReturnCertificateFragmentFromRecord() throws IOException {
 		@SuppressWarnings("resource")
 		InputStream is = createCertificateStream();
 		Record tlsRecord = Record.from(is);
@@ -85,13 +101,10 @@ class RecordTest {
 	}
 
 	@Test
-	void shouldReturnFirstHandshakeFromRecord() throws IOException {
-		@SuppressWarnings("resource")
-		InputStream is = createCertificateStream();
-		Record tlsRecord = Record.from(is);
-
+	void shouldReturnFirstHandshakeFromRecord() {
 		Certificate certificate = new Certificate(CERTIFICATE_BYTES);
 		Certificates certificates = new Certificates(List.of(certificate));
+		Record tlsRecord = new Record(SSLProtocol.TLS_1_2, certificates);
 		Handshake expectedHandshake = new Handshake(certificates);
 
 		Handshake handshake = tlsRecord.getFirstHandshake();
@@ -100,29 +113,160 @@ class RecordTest {
 	}
 
 	@Test
-	void shouldReturnTrueForExistingHandshake() throws IOException {
+	void shouldCheckForExistingHandshakeBody() throws IOException {
 		@SuppressWarnings("resource")
 		InputStream is = createCertificateStream();
 		Record tlsRecord = Record.from(is);
 
-		boolean hasHandshake = tlsRecord.hasHandshakeBody(Certificates.class);
+		boolean hasHandshake = tlsRecord.containsHandshakeBody(Certificates.class);
+		boolean doedNotHaveHandshake = tlsRecord.doesNotContainHandshakeBody(Certificates.class);
 
 		assertTrue(hasHandshake);
+		assertFalse(doedNotHaveHandshake);
 	}
 
 	@Test
-	void shouldReadServerFinishedRecord() throws IOException {
+	void shouldCheckForNonExistingHandshakeBody() throws IOException {
+		@SuppressWarnings("resource")
+		InputStream is = createCertificateStream();
+		Record tlsRecord = Record.from(is);
+
+		boolean hasHandshake = tlsRecord.containsHandshakeBody(Finished.class);
+		boolean doedNotHaveHandshake = tlsRecord.doesNotContainHandshakeBody(Finished.class);
+
+		assertFalse(hasHandshake);
+		assertTrue(doedNotHaveHandshake);
+	}
+
+	@Test
+	void shouldCheckForNonExistingHandshakeBodyWhenRecordIsNotHandshake() {
+		Record tlsRecord = new Record(SSLProtocol.TLS_1_2, new ApplicationData(new Encrypted(Bytes.EMPTY)));
+
+		boolean doedNotHaveHandshake = tlsRecord.containsHandshakeBody(Finished.class);
+
+		assertFalse(doedNotHaveHandshake);
+	}
+
+	@Test
+	void shouldThrowExceptionIfRecordHasNoHandshakeFragmentWhenTryingToRetrieveOne() {
+		Record tlsRecord = new Record(SSLProtocol.TLS_1_2, new ApplicationData(new Encrypted(Bytes.EMPTY)));
+
+		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> tlsRecord.getHandshakeBody(Certificates.class));
+
+		assertThat(e.getMessage(), equalTo("No handhsake of type " + Certificates.class + " found in record"));
+	}
+
+	@Test
+	void shouldThrowExceptionIfRecordHasMultipleFragmentsOfTheRequiredTypeOnGetFragment() {
+		ApplicationData fragment1 = new ApplicationData(new Encrypted(Bytes.EMPTY));
+		ApplicationData fragment2 = new ApplicationData(new Encrypted(Bytes.EMPTY));
+		Record tlsRecord = new Record(
+				new RecordHeader(RecordContentType.APPLICATION_DATA, SSLProtocol.TLS_1_2),
+				List.of(fragment1, fragment2));
+
+		IllegalStateException e = assertThrows(IllegalStateException.class, () -> tlsRecord.getFragment(ApplicationData.class));
+
+		assertThat(e.getMessage(), equalTo("More than one fragments of type " + ApplicationData.class + " are present in the record."));
+	}
+
+	@Test
+	void shouldReturnNullIfRecordHasNoFragmentsOnGetFragment() {
+		Record tlsRecord = new Record(
+				new RecordHeader(RecordContentType.APPLICATION_DATA, SSLProtocol.TLS_1_2),
+				List.of());
+
+		TLSObject fragment = tlsRecord.getFragment(ApplicationData.class);
+
+		assertNull(fragment);
+	}
+
+	@Test
+	void shouldReturnNullIfRecordHasNoFragmentsOfTheRequiredTypeOnGetFragment() {
+		ApplicationData fragment1 = new ApplicationData(new Encrypted(Bytes.EMPTY));
+		ApplicationData fragment2 = new ApplicationData(new Encrypted(Bytes.EMPTY));
+		Record tlsRecord = new Record(
+				new RecordHeader(RecordContentType.APPLICATION_DATA, SSLProtocol.TLS_1_2),
+				List.of(fragment1, fragment2));
+
+		TLSObject fragment = tlsRecord.getFragment(Certificates.class);
+
+		assertNull(fragment);
+	}
+
+	@Test
+	void shouldReturnAllMatchingFragmentsOnGetFragment() {
+		Finished finished = new Finished(new BytesWrapper(Bytes.fromHex("0102030405")));
+		ApplicationData fragment1 = new ApplicationData(new Encrypted(Bytes.EMPTY));
+		ApplicationData fragment2 = new ApplicationData(new Encrypted(Bytes.EMPTY));
+		Record tlsRecord = new Record(
+				new RecordHeader(RecordContentType.APPLICATION_DATA, SSLProtocol.TLS_1_2),
+				List.of(finished, fragment1, fragment2));
+		List<ApplicationData> expected = List.of(fragment1, fragment2);
+
+		List<ApplicationData> fragments = tlsRecord.getFragments(ApplicationData.class);
+
+		assertThat(fragments, hasSize(2));
+		assertThat(fragments, equalTo(expected));
+	}
+
+	@Test
+	void shouldReturnEmptyListIfRecordHasNoFragmentsOnGetFragments() {
+		Record tlsRecord = new Record(
+				new RecordHeader(RecordContentType.APPLICATION_DATA, SSLProtocol.TLS_1_2),
+				List.of());
+
+		List<ApplicationData> fragments = tlsRecord.getFragments(ApplicationData.class);
+
+		assertThat(fragments, hasSize(0));
+	}
+
+	@Test
+	void shouldReturnFinishedFragmentFromRecord() throws IOException {
 		Finished finished = new Finished(new BytesWrapper(Bytes.fromHex("0102030405")));
 		Record tlsRecord = new Record(RecordContentType.HANDSHAKE, SSLProtocol.TLS_1_2, finished);
-
 		InputStream is = new ByteArrayInputStream(tlsRecord.toByteArray());
-
 		Record recordFinished = Record.from(is, Finished::from);
 
 		Finished receivedFinished = recordFinished.getFragment(Finished.class);
 
 		assertThat(recordFinished, notNullValue());
 		assertThat(receivedFinished, equalTo(finished));
+	}
+
+	@Test
+	void shouldBuildRecordHeaderForFinished() {
+		Finished finished = new Finished(new BytesWrapper(Bytes.fromHex("0102030405")));
+		Record tlsRecord = new Record(RecordContentType.HANDSHAKE, SSLProtocol.TLS_1_2, finished);
+
+		RecordHeader header = tlsRecord.getHeader();
+
+		assertThat(header.getLength().toUnsignedInt(), equalTo(finished.sizeOf()));
+		assertThat(header.getVersion().getProtocol(), equalTo(SSLProtocol.TLS_1_2));
+		assertThat(header.getType(), equalTo(RecordContentType.HANDSHAKE));
+	}
+
+	@Test
+	void shouldBuildRecordHeaderForAlert() {
+		Alert alert = new Alert(AlertLevel.WARNING, AlertDescription.ACCESS_DENIED);
+		Record tlsRecord = new Record(SSLProtocol.TLS_1_2, alert);
+
+		RecordHeader header = tlsRecord.getHeader();
+
+		assertThat(header.getLength().toUnsignedInt(), equalTo(alert.sizeOf()));
+		assertThat(header.getVersion().getProtocol(), equalTo(SSLProtocol.TLS_1_2));
+		assertThat(header.getType(), equalTo(RecordContentType.ALERT));
+	}
+
+	@Test
+	void shouldReadAlertRecord() throws IOException {
+		Alert alert = new Alert(AlertLevel.WARNING, AlertDescription.ACCESS_DENIED);
+		Record tlsRecord = new Record(SSLProtocol.TLS_1_2, alert);
+
+		tlsRecord = Record.from(new ByteArrayInputStream(tlsRecord.toByteArray()));
+
+		assertThat(tlsRecord.getHeader().getLength().toUnsignedInt(), equalTo(alert.sizeOf()));
+		assertThat(tlsRecord.getHeader().getVersion().getProtocol(), equalTo(SSLProtocol.TLS_1_2));
+		assertThat(tlsRecord.getHeader().getType(), equalTo(RecordContentType.ALERT));
 	}
 
 	@Test
@@ -153,6 +297,36 @@ class RecordTest {
 		for (int i = 0; i < CERTIFICATE_SIZE; ++i) {
 			assertThat(result[i], equalTo(CERTIFICATE_BYTE));
 		}
+	}
+
+	@Test
+	void shouldReturnFragmentNames() {
+		Finished fragment1 = new Finished(new BytesWrapper(Bytes.EMPTY));
+		ApplicationData fragment2 = new ApplicationData(new Encrypted(Bytes.EMPTY));
+		Record tlsRecord = new Record(
+				new RecordHeader(RecordContentType.APPLICATION_DATA, SSLProtocol.TLS_1_2),
+				List.of(fragment1, fragment2));
+		String[] expectedNames = new String[] {
+				Finished.class.getSimpleName(),
+				ApplicationData.class.getSimpleName()
+		};
+
+		String[] names = tlsRecord.getFragmentNames();
+
+		assertThat(names, equalTo(expectedNames));
+	}
+
+	@Test
+	void shouldReturnHandshakeBodyFragmentNames() {
+		Finished fragment = new Finished(new BytesWrapper(Bytes.EMPTY));
+		Record tlsRecord = new Record(SSLProtocol.TLS_1_2, new Handshake(fragment));
+		String[] expectedNames = new String[] {
+				Finished.class.getSimpleName()
+		};
+
+		String[] names = tlsRecord.getFragmentNames();
+
+		assertThat(names, equalTo(expectedNames));
 	}
 
 	private static InputStream createCertificateStream() {
