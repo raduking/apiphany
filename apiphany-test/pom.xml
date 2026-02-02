@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>io.github.raduking</groupId>
 		<artifactId>apiphany-parent</artifactId>
-		<version>1.1.2</version>
+		<version>1.1.3</version>
 	</parent>
 
 	<artifactId>apiphany-test</artifactId>
