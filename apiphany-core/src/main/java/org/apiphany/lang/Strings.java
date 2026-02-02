@@ -181,23 +181,30 @@ public interface Strings {
 
 	/**
 	 * Transforms an input stream to a string. If the input stream cannot be converted to string with the given parameters,
-	 * the result will be null.
+	 * the result will be {@code null}.
 	 *
-	 * @param inputStream input stream
+	 * @param inputStream the input stream
 	 * @param encoding character encoding
+	 * @param maxSize maximum size in bytes to read from the input stream
 	 * @param bufferSize buffer size
 	 * @param onError on error handler
 	 * @return the input stream as string
 	 */
-	static String toString(final InputStream inputStream, final Charset encoding, final int bufferSize, final Consumer<Exception> onError) {
+	static String toString(final InputStream inputStream, final Charset encoding, final int maxSize, final int bufferSize,
+			final Consumer<Exception> onError) {
 		final char[] buffer = new char[bufferSize];
 		final StringBuilder out = new StringBuilder();
 		try (Reader in = new InputStreamReader(inputStream, encoding)) {
+			long totalRead = 0;
 			int s = 0;
 			while (s >= 0) {
 				s = in.read(buffer, 0, buffer.length);
 				if (s >= 0) {
 					out.append(buffer, 0, s);
+				}
+				totalRead += s;
+				if (totalRead >= maxSize) {
+					throw new IOException("Input stream exceeds maximum size of " + maxSize + " bytes");
 				}
 			}
 		} catch (IOException e) {
@@ -209,7 +216,23 @@ public interface Strings {
 
 	/**
 	 * Transforms an input stream to a string. If the input stream cannot be converted to string with the given parameters,
-	 * the result will be null.
+	 * the result will be {@code null}. This method is not intended for large streams and is also limited to read up to
+	 * {@code Integer.MAX_VALUE} bytes from the input stream.
+	 *
+	 * @param inputStream input stream
+	 * @param encoding character encoding
+	 * @param bufferSize buffer size
+	 * @param onError on error handler
+	 * @return the input stream as string
+	 */
+	static String toString(final InputStream inputStream, final Charset encoding, final int bufferSize, final Consumer<Exception> onError) {
+		return toString(inputStream, encoding, Integer.MAX_VALUE, bufferSize, onError);
+	}
+
+	/**
+	 * Transforms an input stream to a string. If the input stream cannot be converted to string with the given parameters,
+	 * the result will be null. This method is not intended for large streams and is also limited to read up to
+	 * {@code Integer.MAX_VALUE} bytes from the input stream.
 	 *
 	 * @param inputStream input stream
 	 * @param encoding character encoding
@@ -222,7 +245,8 @@ public interface Strings {
 
 	/**
 	 * Transforms an input stream to a string. If the input stream cannot be converted to string with the given parameters,
-	 * the result will be null.
+	 * the result will be null. This method is not intended for large streams and is also limited to read up to
+	 * {@code Integer.MAX_VALUE} bytes from the input stream.
 	 *
 	 * @param inputStream input stream
 	 * @param encoding character encoding

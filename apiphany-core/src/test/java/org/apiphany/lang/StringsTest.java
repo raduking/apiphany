@@ -13,12 +13,14 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -46,197 +48,309 @@ class StringsTest {
 			This is line one
 			and this is line two""";
 
-	@Test
-	void shouldSafelyCallToStringOnAnObject() {
-		String result = Strings.safeToString(TEST_INTEGER);
+	/**
+	 * Tests for:
+	 * <ul>
+	 * <li>{@link Strings#safeToString(Object)}</li>
+	 * </ul>
+	 */
+	@Nested
+	class SafeToStringTests {
 
-		assertThat(result, equalTo(TEST_INTEGER_STRING));
-	}
+		@Test
+		void shouldSafelyCallToStringOnANullObject() {
+			String result = Strings.safeToString(null);
 
-	@Test
-	void shouldReturnNullWhenToStringCalledOnAnNullObject() {
-		String result = Strings.safeToString(null);
+			assertThat(result, nullValue());
+		}
 
-		assertThat(result, nullValue());
-	}
+		@Test
+		void shouldSafelyCallToStringOnAnObject() {
+			String result = Strings.safeToString(TEST_INTEGER);
 
-	@Test
-	void shouldReturnTheSameStringOnSafeWhenParameterIsNotNull() {
-		String result = Strings.safe(TEST_STRING);
+			assertThat(result, equalTo(TEST_INTEGER_STRING));
+		}
 
-		assertThat(result, equalTo(TEST_STRING));
-	}
+		@Test
+		void shouldSafelyCallToStringOnAStringObject() {
+			String result = Strings.safeToString(TEST_STRING);
 
-	@Test
-	void shouldReturnEmptyStringOnSafeWhenParameterIsNull() {
-		String result = Strings.safe(null);
-
-		assertThat(result, equalTo(""));
-	}
-
-	@Test
-	void shouldReturnTrueForNullValueOnIsEmpty() {
-		assertTrue(Strings.isEmpty(null));
-	}
-
-	@Test
-	void shouldReturnTrueForEmptyStringOnIsEmpty() {
-		assertTrue(Strings.isEmpty(""));
-	}
-
-	@Test
-	void shouldReturnFalseForNonEmptyStringOnIsEmpty() {
-		assertFalse(Strings.isEmpty(TEST_STRING));
-	}
-
-	@Test
-	void shouldReturnFalseForNullValueOnIsNotEmpty() {
-		assertFalse(Strings.isNotEmpty(null));
-	}
-
-	@Test
-	void shouldReturnFalseForEmptyStringOnIsNotEmpty() {
-		assertFalse(Strings.isNotEmpty(""));
-	}
-
-	@Test
-	void shouldReturnTrueForNonEmptyStringOnIsNotEmpty() {
-		assertTrue(Strings.isNotEmpty(TEST_STRING));
-	}
-
-	@Test
-	void shouldReturnTrueForStringWithOnlySpacesOnIsBlank() {
-		assertTrue(Strings.isBlank(BLANK_STRING));
-	}
-
-	@Test
-	void shouldReturnFalseForStringWithNonSpaceCharactersOnIsBlank() {
-		assertFalse(Strings.isBlank(NOT_BLANK_STRING));
-	}
-
-	@Test
-	void shouldReturnTrueForNullValueOnIsBlank() {
-		assertTrue(Strings.isBlank(null));
-	}
-
-	@Test
-	void shouldReturnFalseForStringWithOnlySpacesOnIsNotBlank() {
-		assertFalse(Strings.isNotBlank(BLANK_STRING));
-	}
-
-	@Test
-	void shouldReturnTrueForStringWithNonSpaceCharactersOnIsNotBlank() {
-		assertTrue(Strings.isNotBlank(NOT_BLANK_STRING));
-	}
-
-	@Test
-	void shouldReturnFalseForNullValueOnIsNotBlank() {
-		assertFalse(Strings.isNotBlank(null));
-	}
-
-	@Test
-	void shouldReadATextFileWithFileInputStreamAndSpecifiedCharsetAndBuffer() throws IOException {
-		try (FileInputStream fileInputStream = new FileInputStream("src/test/resources/text-file.txt")) {
-			String result = Strings.toString(fileInputStream, StandardCharsets.UTF_8, 10);
-
-			assertThat(result, equalTo(TEXT_FILE_CONTENT));
+			assertThat(result, equalTo(TEST_STRING));
 		}
 	}
 
-	@Test
-	void shouldReadATextFileWithFileInputStreamAndSpecifiedCharset() throws IOException {
-		try (FileInputStream fileInputStream = new FileInputStream("src/test/resources/text-file.txt")) {
-			String result = Strings.toString(fileInputStream, StandardCharsets.UTF_8);
+	/**
+	 * Tests for:
+	 * <ul>
+	 * <li>{@link Strings#safe(String)}</li>
+	 * </ul>
+	 */
+	@Nested
+	class SafeTests {
 
-			assertThat(result, equalTo(TEXT_FILE_CONTENT));
+		@Test
+		void shouldReturnTheSameStringOnSafeWhenParameterIsNotNull() {
+			String result = Strings.safe(TEST_STRING);
+
+			assertThat(result, equalTo(TEST_STRING));
+		}
+
+		@Test
+		void shouldReturnEmptyStringOnSafeWhenParameterIsNull() {
+			String result = Strings.safe(null);
+
+			assertThat(result, equalTo(""));
 		}
 	}
 
-	@Test
-	void shouldDelegateErrorToOnErrorConsumerWhenToStringWithInputStreamThrowsException() {
-		Runnable runnable = mock(Runnable.class);
-		Consumer<Exception> onError = e -> {
-			runnable.run();
-			assertThat(e, instanceOf(IOException.class));
-			assertThat(e.getMessage(), equalTo(SIMULATED_ERROR));
-		};
-		@SuppressWarnings("resource")
-		InputStream throwingStream = new InputStream() {
-			@Override
-			public int read() throws IOException {
-				throw new IOException(SIMULATED_ERROR);
+	/**
+	 * Tests for:
+	 * <ul>
+	 * <li>{@link Strings#isEmpty(String)}</li>
+	 * </ul>
+	 */
+	@Nested
+	class IsEmptyTests {
+
+		@Test
+		void shouldReturnTrueForNullValueOnIsEmpty() {
+			assertTrue(Strings.isEmpty(null));
+		}
+
+		@Test
+		void shouldReturnTrueForEmptyStringOnIsEmpty() {
+			assertTrue(Strings.isEmpty(""));
+		}
+
+		@Test
+		void shouldReturnFalseForNonEmptyStringOnIsEmpty() {
+			assertFalse(Strings.isEmpty(TEST_STRING));
+		}
+	}
+
+	/**
+	 * Tests for:
+	 * <ul>
+	 * <li>{@link Strings#isNotEmpty(String)}</li>
+	 * </ul>
+	 */
+	@Nested
+	class IsNotEmptyTests {
+
+		@Test
+		void shouldReturnFalseForNullValueOnIsNotEmpty() {
+			assertFalse(Strings.isNotEmpty(null));
+		}
+
+		@Test
+		void shouldReturnFalseForEmptyStringOnIsNotEmpty() {
+			assertFalse(Strings.isNotEmpty(""));
+		}
+
+		@Test
+		void shouldReturnTrueForNonEmptyStringOnIsNotEmpty() {
+			assertTrue(Strings.isNotEmpty(TEST_STRING));
+		}
+	}
+
+	/**
+	 * Tests for:
+	 * <ul>
+	 * <li>{@link Strings#isBlank(String)}</li>
+	 * </ul>
+	 */
+	@Nested
+	class IsBlankTests {
+
+		@Test
+		void shouldReturnTrueForStringWithOnlySpacesOnIsBlank() {
+			assertTrue(Strings.isBlank(BLANK_STRING));
+		}
+
+		@Test
+		void shouldReturnFalseForStringWithNonSpaceCharactersOnIsBlank() {
+			assertFalse(Strings.isBlank(NOT_BLANK_STRING));
+		}
+
+		@Test
+		void shouldReturnTrueForNullValueOnIsBlank() {
+			assertTrue(Strings.isBlank(null));
+		}
+	}
+
+	/**
+	 * Tests for:
+	 * <ul>
+	 * <li>{@link Strings#isNotBlank(String)}</li>
+	 * </ul>
+	 */
+	@Nested
+	class IsNotBlankTests {
+
+		@Test
+		void shouldReturnFalseForStringWithOnlySpacesOnIsNotBlank() {
+			assertFalse(Strings.isNotBlank(BLANK_STRING));
+		}
+
+		@Test
+		void shouldReturnTrueForStringWithNonSpaceCharactersOnIsNotBlank() {
+			assertTrue(Strings.isNotBlank(NOT_BLANK_STRING));
+		}
+
+		@Test
+		void shouldReturnFalseForNullValueOnIsNotBlank() {
+			assertFalse(Strings.isNotBlank(null));
+		}
+	}
+
+	/**
+	 * Tests for:
+	 * <ul>
+	 * <li>{@link Strings#toString(InputStream, Charset)}</li>
+	 * <li>{@link Strings#toString(InputStream, Charset, int)}</li>
+	 * <li>{@link Strings#toString(InputStream, Charset, int, Consumer)}</li>
+	 * <li>{@link Strings#toString(InputStream, Charset, int, int, Consumer)}</li>
+	 * </ul>
+	 */
+	@Nested
+	class ToStringTests {
+
+		@Test
+		void shouldReadATextFileWithFileInputStreamAndSpecifiedCharsetAndBuffer() throws IOException {
+			try (FileInputStream fileInputStream = new FileInputStream("src/test/resources/text-file.txt")) {
+				String result = Strings.toString(fileInputStream, StandardCharsets.UTF_8, 10);
+
+				assertThat(result, equalTo(TEXT_FILE_CONTENT));
 			}
-		};
+		}
 
-		String result = Strings.toString(throwingStream, StandardCharsets.UTF_8, 10, onError);
+		@Test
+		void shouldReadATextFileWithFileInputStreamAndSpecifiedCharset() throws IOException {
+			try (FileInputStream fileInputStream = new FileInputStream("src/test/resources/text-file.txt")) {
+				String result = Strings.toString(fileInputStream, StandardCharsets.UTF_8);
 
-		assertThat(result, nullValue());
-		verify(runnable).run();
+				assertThat(result, equalTo(TEXT_FILE_CONTENT));
+			}
+		}
+
+		@Test
+		void shouldDelegateErrorToOnErrorConsumerWhenToStringWithInputStreamThrowsException() {
+			Runnable runnable = mock(Runnable.class);
+			Consumer<Exception> onError = e -> {
+				runnable.run();
+				assertThat(e, instanceOf(IOException.class));
+				assertThat(e.getMessage(), equalTo(SIMULATED_ERROR));
+			};
+			@SuppressWarnings("resource")
+			InputStream throwingStream = new InputStream() {
+				@Override
+				public int read() throws IOException {
+					throw new IOException(SIMULATED_ERROR);
+				}
+			};
+
+			String result = Strings.toString(throwingStream, StandardCharsets.UTF_8, 10, onError);
+
+			assertThat(result, nullValue());
+			verify(runnable).run();
+		}
+
+		@Test
+		void shouldDelegateErrorToOnErrorConsumerWhenToStringWithInputStreamAndSizeThrowsException() throws IOException {
+			int maxSize = 10;
+			Runnable runnable = mock(Runnable.class);
+			Consumer<Exception> onError = e -> {
+				runnable.run();
+				assertThat(e, instanceOf(IOException.class));
+				assertThat(e.getMessage(), equalTo("Input stream exceeds maximum size of " + maxSize + " bytes"));
+			};
+
+			String result;
+			try (FileInputStream fileInputStream = new FileInputStream("src/test/resources/text-file.txt")) {
+				result = Strings.toString(fileInputStream, StandardCharsets.UTF_8, maxSize, 10, onError);
+			}
+
+			assertThat(result, nullValue());
+			verify(runnable).run();
+		}
 	}
 
-	@Test
-	void shouldReturnStringFromFile() {
-		String result = Strings.fromFile("text-file.txt", StandardCharsets.UTF_8, 1000);
+	/**
+	 * Tests for:
+	 * <ul>
+	 * <li>{@link Strings#fromFile(String)}</li>
+	 * <li>{@link Strings#fromFile(String, Charset, int)}</li>
+	 * <li>{@link Strings#fromFile(String, Consumer)}</li>
+	 * <li>{@link Strings#fromFile(String, Charset, int, Consumer)}</li>
+	 * </ul>
+	 */
+	@Nested
+	class FromFileTests {
 
-		assertThat(result, equalTo(TEXT_FILE_CONTENT));
-	}
+		@Test
+		void shouldReturnStringFromFile() {
+			String result = Strings.fromFile("text-file.txt", StandardCharsets.UTF_8, 1000);
 
-	@Test
-	void shouldReturnStringFromAbsolutePathFile() {
-		String currentDir = Paths.get("").toAbsolutePath().toString();
-		String result = Strings.fromFile(currentDir + "/src/test/resources/text-file.txt");
+			assertThat(result, equalTo(TEXT_FILE_CONTENT));
+		}
 
-		assertThat(result, equalTo(TEXT_FILE_CONTENT));
-	}
+		@Test
+		void shouldReturnStringFromAbsolutePathFile() {
+			String currentDir = Paths.get("").toAbsolutePath().toString();
+			String result = Strings.fromFile(currentDir + "/src/test/resources/text-file.txt");
 
-	@Test
-	void shouldDelegateErrorToOnErrorConsumerWhenFromStringThrowsExceptionWhenCalledWithNameCharsetSize() {
-		Runnable runnable = mock(Runnable.class);
-		Consumer<Exception> onError = e -> {
-			runnable.run();
-			assertThat(e, instanceOf(NoSuchFileException.class));
-		};
+			assertThat(result, equalTo(TEXT_FILE_CONTENT));
+		}
 
-		String result = Strings.fromFile("/unknown-file.txt", StandardCharsets.UTF_8, 10, onError);
+		@Test
+		void shouldDelegateErrorToOnErrorConsumerWhenFromStringThrowsExceptionWhenCalledWithNameCharsetSize() {
+			Runnable runnable = mock(Runnable.class);
+			Consumer<Exception> onError = e -> {
+				runnable.run();
+				assertThat(e, instanceOf(NoSuchFileException.class));
+			};
 
-		assertThat(result, nullValue());
-		verify(runnable).run();
-	}
+			String result = Strings.fromFile("/unknown-file.txt", StandardCharsets.UTF_8, 10, onError);
 
-	@Test
-	void shouldDelegateErrorToOnErrorConsumerWhenFromStringThrowsExceptionWhenCalledWithName() {
-		Runnable runnable = mock(Runnable.class);
-		Consumer<Exception> onError = e -> {
-			runnable.run();
-			assertThat(e, instanceOf(NoSuchFileException.class));
-		};
+			assertThat(result, nullValue());
+			verify(runnable).run();
+		}
 
-		String result = Strings.fromFile("/unknown-file.txt", onError);
+		@Test
+		void shouldDelegateErrorToOnErrorConsumerWhenFromStringThrowsExceptionWhenCalledWithName() {
+			Runnable runnable = mock(Runnable.class);
+			Consumer<Exception> onError = e -> {
+				runnable.run();
+				assertThat(e, instanceOf(NoSuchFileException.class));
+			};
 
-		assertThat(result, nullValue());
-		verify(runnable).run();
-	}
+			String result = Strings.fromFile("/unknown-file.txt", onError);
 
-	@Test
-	void shouldDelegateErrorToOnErrorConsumerWhenFromStringThrowsExceptionWhenCalledWithClasspathPath() {
-		Runnable runnable = mock(Runnable.class);
-		Consumer<Exception> onError = e -> {
-			runnable.run();
-			assertThat(e, instanceOf(FileNotFoundException.class));
-			assertThat(e.getMessage(), equalTo("Classpath resource not found: unknown-file.txt"));
-		};
+			assertThat(result, nullValue());
+			verify(runnable).run();
+		}
 
-		String result = Strings.fromFile("unknown-file.txt", onError);
+		@Test
+		void shouldDelegateErrorToOnErrorConsumerWhenFromStringThrowsExceptionWhenCalledWithClasspathPath() {
+			Runnable runnable = mock(Runnable.class);
+			Consumer<Exception> onError = e -> {
+				runnable.run();
+				assertThat(e, instanceOf(FileNotFoundException.class));
+				assertThat(e.getMessage(), equalTo("Classpath resource not found: unknown-file.txt"));
+			};
 
-		assertThat(result, nullValue());
-		verify(runnable).run();
-	}
+			String result = Strings.fromFile("unknown-file.txt", onError);
 
-	@Test
-	void shouldReturnStringFromFileWithOnlyPathParameter() {
-		String result = Strings.fromFile("text-file.txt");
+			assertThat(result, nullValue());
+			verify(runnable).run();
+		}
 
-		assertThat(result, equalTo(TEXT_FILE_CONTENT));
+		@Test
+		void shouldReturnStringFromFileWithOnlyPathParameter() {
+			String result = Strings.fromFile("text-file.txt");
+
+			assertThat(result, equalTo(TEXT_FILE_CONTENT));
+		}
 	}
 
 	@Test
