@@ -12,9 +12,9 @@ import org.apiphany.lang.Pair;
 import org.apiphany.lang.Strings;
 import org.apiphany.net.Sockets;
 import org.apiphany.security.KeyPairs;
+import org.apiphany.security.ssl.ForkedHttpsServerRunner;
 import org.apiphany.security.ssl.SSLProperties;
 import org.apiphany.security.ssl.SSLProtocol;
-import org.apiphany.security.ssl.server.ForkedLegacyHttpsServerRunner;
 import org.apiphany.security.ssl.server.LegacyHttpsServer;
 import org.apiphany.security.tls.client.MinimalTLSClient;
 import org.apiphany.test.fork.ForkedJvmExtension;
@@ -48,12 +48,12 @@ class TLSObjectLegacyCipherIT {
 
 	@BeforeAll
 	static void setUpAll() throws Exception {
-		serverInfo = ForkedLegacyHttpsServerRunner.start(SSL_PROPERTIES_JSON_FILE, LOCALHOST, PORT, DEBUG_SOCKET_TIMEOUT, false);
+		serverInfo = ForkedHttpsServerRunner.start(LegacyHttpsServer.class, SSL_PROPERTIES_JSON_FILE, LOCALHOST, PORT, DEBUG_SOCKET_TIMEOUT, false);
 	}
 
 	@AfterAll
 	static void tearDownAll() throws Exception {
-		ForkedLegacyHttpsServerRunner.stop(serverInfo);
+		ForkedHttpsServerRunner.stop(serverInfo);
 	}
 
 	@Test
@@ -99,12 +99,13 @@ class TLSObjectLegacyCipherIT {
 	@SuppressWarnings("deprecation")
 	@Disabled("This test is here to debug errors, the same is tested in shouldPerformTLS12HandshakeWithUnsupportedCipherSuitesWithResetSSL")
 	void shouldPerformTLS12HandshakeWithRC4128SHAWithResetSSL() throws Exception {
-		byte[] serverFinished = ForkedLegacyHttpsServerRunner.on(SSL_PROPERTIES_JSON_FILE, LOCALHOST, DEBUG_SOCKET_TIMEOUT, true, (host, port) -> {
-			List<CipherSuite> cipherSuites = List.of(CipherSuite.TLS_RSA_WITH_RC4_128_SHA);
-			try (MinimalTLSClient client = new MinimalTLSClient(host, port, DEBUG_SOCKET_TIMEOUT, CLIENT_KEY_PAIR, cipherSuites)) {
-				return client.performHandshake();
-			}
-		});
+		byte[] serverFinished =
+				ForkedHttpsServerRunner.on(LegacyHttpsServer.class, SSL_PROPERTIES_JSON_FILE, LOCALHOST, DEBUG_SOCKET_TIMEOUT, true, (host, port) -> {
+					List<CipherSuite> cipherSuites = List.of(CipherSuite.TLS_RSA_WITH_RC4_128_SHA);
+					try (MinimalTLSClient client = new MinimalTLSClient(host, port, DEBUG_SOCKET_TIMEOUT, CLIENT_KEY_PAIR, cipherSuites)) {
+						return client.performHandshake();
+					}
+				});
 
 		assertNotNull(serverFinished);
 	}
