@@ -1,8 +1,15 @@
 package org.apiphany.lang;
 
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.function.Consumer;
 
+import org.morphix.lang.function.Consumers;
 import org.morphix.reflection.Constructors;
 
 /**
@@ -174,6 +181,46 @@ public final class Bytes {
 		final byte paddingByte = (byte) (paddingLength - 1);
 
 		return padRightToBlockSize(bytes, blockSize, paddingByte, true);
+	}
+
+	/**
+	 * Reads all bytes from a file located at the given path. If the path is absolute, it reads from the file system;
+	 * otherwise, it attempts to read the file as a class path resource.
+	 *
+	 * @param path the file path (absolute or class path resource)
+	 * @param onError a consumer to handle exceptions that may occur during file reading
+	 * @return a byte array containing the file's contents, or null if an error occurred
+	 * @throws NullPointerException if the path is null
+	 */
+	public static byte[] fromFile(final String path, final Consumer<Exception> onError) {
+		Objects.requireNonNull(path, "File path cannot be null");
+		try {
+			Path fsPath = Paths.get(path);
+			if (fsPath.isAbsolute()) {
+				return Files.readAllBytes(fsPath);
+			}
+			try (InputStream inputStream = Bytes.class.getClassLoader().getResourceAsStream(path)) {
+				if (null == inputStream) {
+					throw new FileNotFoundException("Classpath resource not found: " + path);
+				}
+				return inputStream.readAllBytes();
+			}
+		} catch (Exception e) {
+			onError.accept(e);
+			return EMPTY;
+		}
+	}
+
+	/**
+	 * Reads all bytes from a file located at the given path. If the path is absolute, it reads from the file system;
+	 * otherwise, it attempts to read the file as a class path resource.
+	 *
+	 * @param path the file path (absolute or class path resource)
+	 * @return a byte array containing the file's contents, or an empty array if an error occurred
+	 * @throws NullPointerException if the path is null
+	 */
+	public static byte[] fromFile(final String path) {
+		return fromFile(path, Consumers.consumeNothing());
 	}
 
 	/**

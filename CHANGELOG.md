@@ -2,6 +2,8 @@
 
 `1.1.3`
 
+- Fixed `Strings.fromPath` to work on absolute paths that do not start with `/`.
+- Added `Bytes.fromFile` to read a byte array from a given file.
 - Renamed `ForkedLegacyHttpsServerRunner` to `ForkedHttpsServerRunner`.
 - Changed `ForkedHttpsServerRunner` to run any HTTPS server that has a constructor like `MyHttpsServer(int, SSLProperties)` in a separate process so that it can have a separate SSL context.
 

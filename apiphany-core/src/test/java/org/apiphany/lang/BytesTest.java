@@ -1,11 +1,20 @@
 package org.apiphany.lang;
 
 import static org.apiphany.test.Assertions.assertDefaultConstructorThrows;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
+import java.io.FileNotFoundException;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Paths;
+import java.util.function.Consumer;
+
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.morphix.reflection.Constructors;
 
@@ -220,6 +229,76 @@ class BytesTest {
 		byte[] result = Bytes.padPKCS7(input, blockSize);
 
 		assertThat(result, equalTo(expected));
+	}
+
+	/**
+	 * Tests for
+	 * <ul>
+	 * <li>{@link Bytes#fromFile(String)}</li>
+	 * <li>{@link Bytes#fromFile(String, Consumer)}</li>
+	 * </ul>
+	 */
+	@Nested
+	class FromFileTests {
+
+		/**
+		 * To easily create a binary file with this content run the following command once:
+		 *
+		 * <pre>
+		 * echo "000102030405060708090A0B0C0D0E0F" | xxd -r -p > binary-file.bin
+		 * </pre>
+		 */
+		private static final byte[] BINARY_FILE_CONTENT = new byte[] {
+				0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+				0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F
+		};
+
+		private static final String BINARY_FILE_NAME = "binary-file.bin";
+		private static final String WRONG_FILE_NAME = "non-existing-file.bin";
+
+		@Test
+		void shouldReturnBytesFromFile() {
+			byte[] result = Bytes.fromFile(BINARY_FILE_NAME);
+
+			assertThat(result, equalTo(BINARY_FILE_CONTENT));
+		}
+
+		@Test
+		void shouldReturnStringFromAbsolutePathFile() {
+			String currentDir = Paths.get("").toAbsolutePath().toString();
+			byte[] result = Bytes.fromFile(currentDir + "/src/test/resources/" + BINARY_FILE_NAME);
+
+			assertThat(result, equalTo(BINARY_FILE_CONTENT));
+		}
+
+		@Test
+		void shouldDelegateErrorToOnErrorConsumerWhenFromStringThrowsExceptionWhenCalledWithNameCharsetSize() {
+			Runnable runnable = mock(Runnable.class);
+			Consumer<Exception> onError = e -> {
+				runnable.run();
+				assertThat(e, instanceOf(NoSuchFileException.class));
+			};
+
+			byte[] result = Bytes.fromFile("/" + WRONG_FILE_NAME, onError);
+
+			assertThat(result, equalTo(Bytes.EMPTY));
+			verify(runnable).run();
+		}
+
+		@Test
+		void shouldDelegateErrorToOnErrorConsumerWhenFromStringThrowsExceptionWhenCalledWithClasspathPath() {
+			Runnable runnable = mock(Runnable.class);
+			Consumer<Exception> onError = e -> {
+				runnable.run();
+				assertThat(e, instanceOf(FileNotFoundException.class));
+				assertThat(e.getMessage(), equalTo("Classpath resource not found: " + WRONG_FILE_NAME));
+			};
+
+			byte[] result = Bytes.fromFile(WRONG_FILE_NAME, onError);
+
+			assertThat(result, equalTo(Bytes.EMPTY));
+			verify(runnable).run();
+		}
 	}
 
 	public static byte[] generateByteArray(final int n) {
