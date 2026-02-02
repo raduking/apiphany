@@ -2,7 +2,7 @@
 
 `1.1.2`
 
-- Added `ClientProperties.setBaseUrl` and `ClientProperties.setBaseUrl` to be able to configure the base URL per exchange client.
+- Added `ClientProperties.setBaseUrl` and `ClientProperties.getBaseUrl` to be able to configure the base URL per exchange client.
 - Changed `ApiClient` to not allow construction without an `ExchangeClient` because that would cause an inconsistent state.
 - Added `ExchangeClient.requireAuthenticationType` to check if an exchange client has the authentication type set.
 - Renamed `ServerFinished` to `ServerFinishedEncrypted` to better describe the TLS object.
@@ -16,6 +16,8 @@
 - Added `BulkCipher.streamCiphers` static method to return all STREAM ciphers.
 - Added `BulkCipher.encryptingCiphers` static method to return all encrypting ciphers.
 - Added `BulkCipher.encryptingCiphers(CipherType)` static method to return all encrypting ciphers filtered by the given cipher type.
+- Renamed `Record.hasHandshakeBody` method to `containsHandshakeBody`.
+- Renamed `Record.hasNoHandshakeBody` method to `doesNotContainHandshakeBody`.
 
 ---
 
