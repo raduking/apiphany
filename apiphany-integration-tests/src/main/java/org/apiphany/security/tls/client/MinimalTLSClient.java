@@ -207,7 +207,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		String prfAlgorithm = PRF.algorithmName(messageDigest);
 
 		// 2b. Server Certificates
-		if (tlsRecord.hasNoHandshakeBody(Certificates.class)) {
+		if (tlsRecord.doesNotContainHandshakeBody(Certificates.class)) {
 			tlsRecord = receiveRecord();
 			accumulateHandshakes(tlsRecord.getFragments(Handshake.class));
 		}
@@ -218,7 +218,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		// 2b. Server Key Exchange (RSA cipher suites don't have a server key exchange)
 		ServerKeyExchange serverKeyExchange = null;
 		if (KeyExchangeAlgorithm.ECDHE == serverCipherSuite.keyExchange()) {
-			if (tlsRecord.hasNoHandshakeBody(ServerKeyExchange.class)) {
+			if (tlsRecord.doesNotContainHandshakeBody(ServerKeyExchange.class)) {
 				tlsRecord = receiveRecord();
 				accumulateHandshakes(tlsRecord.getFragments(Handshake.class));
 			}
@@ -226,7 +226,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		}
 
 		// 2b. Server Hello Done
-		if (tlsRecord.hasNoHandshakeBody(ServerHelloDone.class)) {
+		if (tlsRecord.doesNotContainHandshakeBody(ServerHelloDone.class)) {
 			tlsRecord = receiveRecord();
 			accumulateHandshakes(tlsRecord.getFragments(Handshake.class));
 		}

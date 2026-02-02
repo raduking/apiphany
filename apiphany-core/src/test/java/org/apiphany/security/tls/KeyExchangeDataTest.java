@@ -4,7 +4,9 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -12,6 +14,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 import org.apiphany.io.BytesWrapper;
+import org.apiphany.lang.Strings;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -107,5 +110,16 @@ class KeyExchangeDataTest {
 		int expectedHashCode = Objects.hash(keyExchangeData.getBytes());
 
 		assertEquals(expectedHashCode, keyExchangeData.hashCode());
+	}
+
+	@Test
+	void shouldSerializeToString() {
+		BytesWrapper data = new BytesWrapper(DATA);
+		KeyExchangeData keyExchangeData = new KeyExchangeData(data);
+
+		String result = keyExchangeData.toString();
+
+		assertNotNull(result);
+		assertFalse(Strings.isBlank(result));
 	}
 }

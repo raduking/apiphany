@@ -2,11 +2,14 @@ package org.apiphany.security.tls;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.ByteArrayInputStream;
 import java.util.Objects;
 
+import org.apiphany.lang.Strings;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -90,5 +93,15 @@ class AlertTest {
 		String expectedDescription = AlertDescription.HANDSHAKE_FAILURE.toString();
 
 		assertEquals(expectedDescription, alert.getDisplayDescription());
+	}
+
+	@Test
+	void shouldSerializeToString() {
+		Alert alert = new Alert(AlertLevel.FATAL, AlertDescription.HANDSHAKE_FAILURE);
+
+		String result = alert.toString();
+
+		assertNotNull(result);
+		assertFalse(Strings.isBlank(result));
 	}
 }

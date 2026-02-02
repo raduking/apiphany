@@ -2,12 +2,17 @@ package org.apiphany.security.tls;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.lang.reflect.Field;
+
+import org.apiphany.lang.Strings;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.morphix.reflection.Fields;
 
 /**
  * Test class for {@link ExchangeKeys}.
@@ -114,6 +119,34 @@ class ExchangeKeysTest {
 		assertNotNull(exchangeKeys);
 	}
 
+	@Test
+	void shouldSerializeToString() {
+		// AEAD
+		byte[] exchangeKeysBytes = new byte[] {
+				// client write key (16 bytes)
+				0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
+				// server write key (16 bytes)
+				0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F,
+				// client write IV (4 bytes)
+				0x20, 0x21, 0x22, 0x23,
+				// server write IV (4 bytes)
+				0x30, 0x31, 0x32, 0x33,
+		};
+
+		CipherSuite cipherSuite = CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256;
+
+		ExchangeKeys exchangeKeys = ExchangeKeys.from(exchangeKeysBytes, cipherSuite);
+
+		String result = exchangeKeys.toString();
+
+		assertNotNull(result);
+		assertFalse(Strings.isBlank(result));
+		// all fields are sensitive
+		for (Field field : Fields.getAllDeclared(ExchangeKeys.class)) {
+			assertFalse(result.contains(field.getName()));
+		}
+	}
+
 	private static byte[] buildExchangeKeysBytesForCipherSuite(final CipherSuite suite) {
 		BulkCipher bulkCipher = suite.bulkCipher();
 		CipherType type = bulkCipher.type();
@@ -134,5 +167,4 @@ class ExchangeKeysTest {
 		}
 		return exchangeKeysBytes;
 	}
-
 }
