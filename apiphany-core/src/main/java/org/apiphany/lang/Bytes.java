@@ -185,7 +185,8 @@ public final class Bytes {
 
 	/**
 	 * Reads all bytes from a file located at the given path. If the path is absolute, it reads from the file system;
-	 * otherwise, it attempts to read the file as a class path resource.
+	 * otherwise, it attempts to read the file as a class path resource. This method is not intended for large streams and
+	 * is also limited to read up to {@code Integer.MAX_VALUE} bytes from the file.
 	 *
 	 * @param path the file path (absolute or class path resource)
 	 * @param onError a consumer to handle exceptions that may occur during file reading
@@ -213,7 +214,8 @@ public final class Bytes {
 
 	/**
 	 * Reads all bytes from a file located at the given path. If the path is absolute, it reads from the file system;
-	 * otherwise, it attempts to read the file as a class path resource.
+	 * otherwise, it attempts to read the file as a class path resource. This method is not intended for large streams and
+	 * is also limited to read up to {@code Integer.MAX_VALUE} bytes from the file.
 	 *
 	 * @param path the file path (absolute or class path resource)
 	 * @return a byte array containing the file's contents, or an empty array if an error occurred
