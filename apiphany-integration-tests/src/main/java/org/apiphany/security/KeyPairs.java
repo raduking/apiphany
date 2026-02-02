@@ -1,8 +1,6 @@
 package org.apiphany.security;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,6 +15,7 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
 import org.apiphany.io.BytesOrder;
+import org.apiphany.lang.Bytes;
 import org.apiphany.lang.Hex;
 import org.apiphany.lang.Strings;
 import org.apiphany.security.keys.RSAKeys;
@@ -137,12 +136,8 @@ public class KeyPairs {
 	 */
 	public static KeyPair loadKeyPairFromResources() {
 		PrivateKey privateKey;
-		byte[] privateKeyBytes;
-		try (InputStream is = KeyPairs.class.getResourceAsStream("/security/ssl/" + FileName.XDH_PRIVATE_KEY)) {
-			if (null == is) {
-				throw new FileNotFoundException("Resource not found: /security/ssl/" + FileName.XDH_PRIVATE_KEY);
-			}
-			privateKeyBytes = is.readAllBytes();
+		byte[] privateKeyBytes = Bytes.fromFile("security/ssl/" + FileName.XDH_PRIVATE_KEY);
+		try {
 			KeyFactory keyFactory = KeyFactory.getInstance(X25519Keys.ALGORITHM);
 			privateKey = keyFactory.generatePrivate(new PKCS8EncodedKeySpec(privateKeyBytes));
 		} catch (Exception e) {
@@ -152,12 +147,8 @@ public class KeyPairs {
 		LOGGER.debug("Loaded private key XDH:\n{}", Hex.dump(X25519Keys.INSTANCE.toByteArray(privateKey, BytesOrder.LITTLE_ENDIAN)));
 
 		PublicKey publicKey;
-		byte[] publicKeyBytes;
-		try (InputStream is = KeyPairs.class.getResourceAsStream("/security/ssl/" + FileName.XDH_PUBLIC_KEY)) {
-			if (null == is) {
-				throw new FileNotFoundException("Resource not found: /security/ssl/" + FileName.XDH_PUBLIC_KEY);
-			}
-			publicKeyBytes = is.readAllBytes();
+		byte[] publicKeyBytes = Bytes.fromFile("security/ssl/" + FileName.XDH_PUBLIC_KEY);
+		try {
 			KeyFactory keyFactory = KeyFactory.getInstance(X25519Keys.ALGORITHM);
 			publicKey = keyFactory.generatePublic(new X509EncodedKeySpec(publicKeyBytes));
 		} catch (Exception e) {

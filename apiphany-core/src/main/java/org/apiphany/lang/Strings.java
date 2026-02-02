@@ -246,8 +246,8 @@ public interface Strings {
 	 */
 	static String fromFile(final String path, final Charset encoding, final int bufferSize, final Consumer<Exception> onError) {
 		try {
-			if (path.startsWith("/")) {
-				Path fsPath = Paths.get(path);
+			Path fsPath = Paths.get(path);
+			if (fsPath.isAbsolute()) {
 				return Files.readString(fsPath, encoding);
 			}
 			try (InputStream inputStream = Strings.class.getClassLoader().getResourceAsStream(path)) {
