@@ -189,7 +189,7 @@ public final class Bytes {
 	 *
 	 * @param path the file path (absolute or class path resource)
 	 * @param onError a consumer to handle exceptions that may occur during file reading
-	 * @return a byte array containing the file's contents, or null if an error occurred
+	 * @return a byte array containing the file's contents, or an empty array if an error occurred
 	 * @throws NullPointerException if the path is null
 	 */
 	public static byte[] fromFile(final String path, final Consumer<Exception> onError) {
