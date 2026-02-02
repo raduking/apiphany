@@ -1,5 +1,9 @@
 ## Release Notes
 
+`1.1.3`
+
+---
+
 `1.1.2`
 
 - Added `ClientProperties.setBaseUrl` and `ClientProperties.getBaseUrl` to be able to configure the base URL per exchange client.

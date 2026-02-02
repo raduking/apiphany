@@ -281,7 +281,7 @@ public class ApiClient implements AutoCloseable {
 	protected static void closeExchangeClients(final Collection<ScopedResource<ExchangeClient>> exchangeClients) {
 		for (ScopedResource<ExchangeClient> scopedResource : exchangeClients) {
 			String exchangeClientName = scopedResource.unwrap().getName();
-			LOGGER.debug("Closing: [{}] for [" + AuthenticationType.class.getSimpleName() + ":{}]", exchangeClientName);
+			LOGGER.debug("Closing: [{}] for [{}:{}]", exchangeClientName, AuthenticationType.class.getSimpleName(), exchangeClientName);
 			scopedResource.closeIfManaged(e -> LOGGER.error("Error closing: [{}]", exchangeClientName, e));
 		}
 	}
