@@ -196,9 +196,9 @@ public final class Bytes {
 	public static byte[] fromFile(final String path, final Consumer<Exception> onError) {
 		Objects.requireNonNull(path, "File path cannot be null");
 		try {
-			Path fsPath = Paths.get(path);
-			if (fsPath.isAbsolute()) {
-				return Files.readAllBytes(fsPath);
+			Path filePath = Paths.get(path);
+			if (filePath.isAbsolute()) {
+				return Files.readAllBytes(filePath);
 			}
 			try (InputStream inputStream = Bytes.class.getClassLoader().getResourceAsStream(path)) {
 				if (null == inputStream) {
