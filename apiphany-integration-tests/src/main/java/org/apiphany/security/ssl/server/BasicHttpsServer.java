@@ -140,7 +140,8 @@ public class BasicHttpsServer implements AutoCloseable {
 	 */
 	public static void log(final HttpsParameters params) {
 		try {
-			LOGGER.debug("HTTPS parameters: {}", JsonBuilder.toJson(params));
+			String httpParameters = JsonBuilder.toJson(params);
+			LOGGER.debug("HTTPS parameters: {}", httpParameters);
 		} catch (Exception e) {
 			LOGGER.debug("Module not open. Add --add-opens jdk.httpserver/sun.net.httpserver=ALL-UNNAMED", e);
 		}

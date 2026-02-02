@@ -118,21 +118,7 @@ public class LegacyHttpsServer implements AutoCloseable {
 
 		// remove RC4 from disabled algorithms
 		this.originalDisabledAlgorithms = Security.getProperty(PROPERTY_JDK_TLS_DISABLED_ALGORITHMS);
-		String disabled = this.originalDisabledAlgorithms;
-		LOGGER.info("Disabled algorithms before: {}", disabled);
-
-		List<String> disabledAlgorithms = new ArrayList<>();
-		for (String legacyAlgorithm : LEGACY_ALGORITHMS) {
-			if (disabled.contains(legacyAlgorithm)) {
-				disabled = disabled.replace(legacyAlgorithm + ", ", "").replace(legacyAlgorithm, "");
-				LOGGER.warn("'{}' was re-enabled for TLS (INSECURE).", legacyAlgorithm);
-				disabledAlgorithms.add(legacyAlgorithm);
-			}
-		}
-		if (Lists.isNotEmpty(disabledAlgorithms)) {
-			Security.setProperty(PROPERTY_JDK_TLS_DISABLED_ALGORITHMS, disabled);
-		}
-		LOGGER.info("Disabled algorithms after: {}", disabled);
+		removeDisabledAlgorithms(originalDisabledAlgorithms, LEGACY_ALGORITHMS);
 
 		this.sslContext = new SSLContextAdapter(SSLContexts.create(sslProperties));
 		this.sslContext.setSecureRandom(secureRandom);
@@ -145,7 +131,33 @@ public class LegacyHttpsServer implements AutoCloseable {
 		this.port = port;
 
 		LOGGER.info("Legacy TLS Server started on port: {}", port);
-		LOGGER.info("Enabled ciphers: {}", Arrays.toString(LEGACY_CIPHER_SUITES));
+		String enabledCiphers = Arrays.toString(LEGACY_CIPHER_SUITES);
+		LOGGER.info("Enabled ciphers: {}", enabledCiphers);
+	}
+
+	/**
+	 * Removes the specified legacy algorithms from the disabled algorithms list.
+	 *
+	 * @param currentDisabledAlgorithms the current disabled algorithms
+	 * @param legacyAlgorithms the legacy algorithms to be removed
+	 */
+	private static String removeDisabledAlgorithms(final String currentDisabledAlgorithms, final List<String> legacyAlgorithms) {
+		String disabled = currentDisabledAlgorithms;
+		LOGGER.info("Disabled algorithms before: {}", disabled);
+
+		List<String> disabledAlgorithms = new ArrayList<>();
+		for (String legacyAlgorithm : legacyAlgorithms) {
+			if (disabled.contains(legacyAlgorithm)) {
+				disabled = disabled.replace(legacyAlgorithm + ", ", "").replace(legacyAlgorithm, "");
+				LOGGER.warn("'{}' was re-enabled for TLS (INSECURE).", legacyAlgorithm);
+				disabledAlgorithms.add(legacyAlgorithm);
+			}
+		}
+		if (Lists.isNotEmpty(disabledAlgorithms)) {
+			Security.setProperty(PROPERTY_JDK_TLS_DISABLED_ALGORITHMS, disabled);
+		}
+		LOGGER.info("Disabled algorithms after: {}", disabled);
+		return disabled;
 	}
 
 	/**

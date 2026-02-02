@@ -96,14 +96,13 @@
 			<version>${junit.jupiter.version}</version>
 		</dependency>
 
-		<!-- Testing -->
 		<dependency>
 			<groupId>io.github.raduking</groupId>
 			<artifactId>apiphany-test</artifactId>
 			<version>${project.version}</version>
-			<scope>test</scope>
 		</dependency>
 
+		<!-- Testing -->
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
