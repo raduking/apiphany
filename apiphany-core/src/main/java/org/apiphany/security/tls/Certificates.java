@@ -52,6 +52,15 @@ public class Certificates implements TLSHandshakeBody {
 	}
 
 	/**
+	 * Constructs a Certificates message from an array of certificates.
+	 *
+	 * @param certificates the array of certificates
+	 */
+	public Certificates(final Certificate... certificates) {
+		this(List.of(certificates));
+	}
+
+	/**
 	 * Parses a Certificates message from an input stream.
 	 *
 	 * @param is the input stream containing certificate data

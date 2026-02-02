@@ -11,6 +11,7 @@ import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.cert.X509Certificate;
+import java.util.Objects;
 
 import org.apiphany.lang.Strings;
 import org.junit.jupiter.api.Test;
@@ -49,8 +50,22 @@ class CertificateTest {
 
 		// different objects
 		assertNotEquals(cert1, cert2);
+		assertNotEquals(cert2, cert1);
+
+		// different types
 		assertNotEquals(cert1, null);
 		assertNotEquals(cert2, "not-an-aad");
+	}
+
+	@Test
+	void shouldBuildHashcodeWithAllFields() {
+		Certificate cert = new Certificate(DATA);
+
+		int expectedHash = Objects.hash(
+				cert.getLength(),
+				cert.getData());
+
+		assertEquals(expectedHash, cert.hashCode());
 	}
 
 	@Test

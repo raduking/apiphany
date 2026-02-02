@@ -3,6 +3,7 @@ package org.apiphany.security.tls;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.Objects;
 
 import org.apiphany.io.BytesWrapper;
 import org.apiphany.io.UInt16;
@@ -67,6 +68,15 @@ public class Signature implements TLSObject {
 	}
 
 	/**
+	 * Constructs a Signature with raw bytes.
+	 *
+	 * @param bytes the raw signature bytes
+	 */
+	public Signature(final byte[] bytes) {
+		this((short) bytes.length, bytes);
+	}
+
+	/**
 	 * Parses a Signature from an input stream.
 	 *
 	 * @param is the input stream containing signature data
@@ -112,6 +122,35 @@ public class Signature implements TLSObject {
 	@Override
 	public int sizeOf() {
 		return reserved.sizeOf() + length.sizeOf() + value.sizeOf();
+	}
+
+	/**
+	 * Compares this {@link Signature} to another object for equality.
+	 *
+	 * @param obj the object to compare with
+	 * @return true if equal, false otherwise
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof Signature that) {
+			return Objects.equals(this.reserved, that.reserved)
+					&& Objects.equals(this.length, that.length)
+					&& Objects.equals(this.value, that.value);
+		}
+		return false;
+	}
+
+	/**
+	 * Returns the hash code for this {@link Signature}.
+	 *
+	 * @return hash code based on all fields
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hash(reserved, length, value);
 	}
 
 	/**
