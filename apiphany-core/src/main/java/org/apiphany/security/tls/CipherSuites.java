@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.apiphany.io.ByteSizeable;
 import org.apiphany.io.UInt16;
@@ -132,6 +133,34 @@ public class CipherSuites implements TLSObject {
 	@Override
 	public int sizeOf() {
 		return size.sizeOf() + ByteSizeable.sizeOf(suites, CipherSuite.BYTES);
+	}
+
+	/**
+	 * Compares this {@link CipherSuites} object to another for equality.
+	 *
+	 * @param obj the object to compare with
+	 * @return true if both objects are equal, false otherwise
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof CipherSuites that) {
+			return Objects.equals(this.size, that.size)
+					&& Objects.equals(this.suites, that.suites);
+		}
+		return false;
+	}
+
+	/**
+	 * Returns the hash code for this {@link CipherSuites} object.
+	 *
+	 * @return the hash code
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hash(size, suites);
 	}
 
 	/**

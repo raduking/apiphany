@@ -100,6 +100,34 @@ public class RawHandshakeBody implements TLSHandshakeBody {
 	}
 
 	/**
+	 * Compares this {@link RawHandshakeBody} to another object for equality.
+	 *
+	 * @param obj the object to compare with
+	 * @return true if both objects are Certificates with equal length and data, false otherwise
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof RawHandshakeBody that) {
+			return Objects.equals(this.type, that.type)
+					&& Objects.equals(this.bytes, that.bytes);
+		}
+		return false;
+	}
+
+	/**
+	 * Returns the hash code for this {@link RawHandshakeBody}.
+	 *
+	 * @return hash code based on length and data
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hash(type, bytes);
+	}
+
+	/**
 	 * Returns the raw bytes of this handshake message body.
 	 *
 	 * @return the bytes wrapper containing the raw message data

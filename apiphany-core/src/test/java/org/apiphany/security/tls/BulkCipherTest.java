@@ -23,8 +23,10 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
 
+import org.apiphany.security.MessageDigestAlgorithm;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -137,6 +139,21 @@ class BulkCipherTest {
 
 		assertThat(exception.getMessage(), startsWith("Error building cipher from: "));
 		assertThat(exception.getCause(), is(instanceOf(GeneralSecurityException.class)));
+	}
+
+	@ParameterizedTest(name = "{0} should create cipher when IV is null")
+	@EnumSource(
+		mode = EnumSource.Mode.INCLUDE,
+		names = {
+				"RC4_128",
+				"RC4_56"
+		})
+	void shouldCreateCipherWhenIVIsNull(final BulkCipher bulkCipher) {
+		byte[] key = new byte[Math.max(1, bulkCipher.keyLength())];
+
+		Cipher cipher = bulkCipher.cipher(Cipher.ENCRYPT_MODE, key);
+
+		assertThat(cipher, is(notNullValue()));
 	}
 
 	@ParameterizedTest
@@ -268,6 +285,34 @@ class BulkCipherTest {
 		assertThat(actualEncryptingCiphers, is(expectedEncryptingCiphers));
 	}
 
+	@ParameterizedTest(name = "{0} should build spec for BLOCK ciphers")
+	@MethodSource("blockCiphers")
+	void shouldBuildSpecForBlockCiphers(final BulkCipher bulkCipher) {
+		byte[] iv = new byte[bulkCipher.fixedIvLength() + bulkCipher.explicitNonceLength()];
+
+		if (!bulkCipher.isTransformationSupported()) {
+			return;
+		}
+		AlgorithmParameterSpec spec = bulkCipher.spec(iv);
+
+		assertThat(spec, is(instanceOf(IvParameterSpec.class)));
+		assertThat(((IvParameterSpec) spec).getIV(), is(iv));
+	}
+
+	@ParameterizedTest
+	@MethodSource("derivedMacLengthCiphers")
+	void shouldReturnDigestLengthWhenMacKeyIsDerived(final BulkCipher cipher, final MessageDigestAlgorithm digest) {
+		assertThat(cipher.macKeyLength(digest), is(digest.digestLength()));
+	}
+
+	@ParameterizedTest
+	@MethodSource("fixedMacLengthCiphers")
+	void shouldReturnFixedMacKeyLengthRegardlessOfDigest(final BulkCipher cipher, final int expectedMacLength) {
+		for (MessageDigestAlgorithm digest : MessageDigestAlgorithm.values()) {
+			assertThat(cipher.macKeyLength(digest), is(expectedMacLength));
+		}
+	}
+
 	private static Stream<BulkCipher> aeadCiphers() {
 		return encryptingCiphers(CipherType.AEAD);
 	}
@@ -295,5 +340,21 @@ class BulkCipherTest {
 		return EnumSet.allOf(BulkCipher.class).stream()
 				.filter(c -> c.type() == CipherType.BLOCK || c.type() == CipherType.STREAM)
 				.filter(BulkCipher::isTransformationSupported);
+	}
+
+	private static Stream<Arguments> derivedMacLengthCiphers() {
+		return EnumSet.allOf(BulkCipher.class).stream()
+				.filter(c -> c.info().macKeyLength() == -1)
+				.flatMap(c -> Stream.of(
+						Arguments.of(c, MessageDigestAlgorithm.SHA1),
+						Arguments.of(c, MessageDigestAlgorithm.SHA256),
+						Arguments.of(c, MessageDigestAlgorithm.SHA384)));
+	}
+
+	private static Stream<Arguments> fixedMacLengthCiphers() {
+		return Stream.of(
+				Arguments.of(BulkCipher.UNENCRYPTED, 0)
+		// add more here *only if* you introduce fixed-MAC ciphers later
+		);
 	}
 }

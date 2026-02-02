@@ -319,9 +319,8 @@ public enum BulkCipher {
 		}
 		return switch (type()) {
 			case AEAD -> switch (info.algorithm()) {
-				case AES -> new GCMParameterSpec(tagLength() * 8, fullIV);
+				default -> new GCMParameterSpec(tagLength() * 8, fullIV);
 				case CHACHA20_POLY1305 -> new IvParameterSpec(fullIV);
-				default -> throw new SecurityException("Unknown " + type() + " algorithm: " + info.algorithm());
 			};
 			case BLOCK -> new IvParameterSpec(fullIV);
 			case STREAM, NO_ENCRYPTION -> null;
@@ -342,7 +341,10 @@ public enum BulkCipher {
 
 	/**
 	 * Returns a new cipher with the given parameters it delegates to {@link #cipher(int, byte[], byte[])} with the fullIV
-	 * as {@code null}.
+	 * as {@code null}. This method is useful for stream ciphers or ciphers that do not require an IV.
+	 * <p>
+	 * Note: For AEAD and BLOCK ciphers, it is recommended to use the other {@code cipher} method that accepts the fullIV
+	 * parameter to ensure proper initialization.
 	 *
 	 * @param mode the cipher mode {@link Cipher#ENCRYPT_MODE} or {@link Cipher#DECRYPT_MODE}
 	 * @param key the cipher key
