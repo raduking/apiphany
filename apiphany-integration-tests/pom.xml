@@ -502,24 +502,6 @@
 					</reportSet>
 				</reportSets>
 			</plugin>
-
-			<!-- Mutation testing -->
-			<!--
-				mvn clean org.pitest:pitest-maven:mutationCoverage site
-				mvn clean install org.pitest:pitest-maven:mutationCoverage site
-			-->
-			<plugin>
-				<groupId>org.pitest</groupId>
-				<artifactId>pitest-maven</artifactId>
-				<version>${pitest.maven.plugin.version}</version>
-				<reportSets>
-					<reportSet>
-						<reports>
-							<report>report</report>
-						</reports>
-					</reportSet>
-				</reportSets>
-			</plugin>
 		</plugins>
 	</reporting>
 
