@@ -18,6 +18,20 @@ import org.morphix.lang.function.Consumers;
 
 /**
  * {@link String} utility methods.
+ * <p>
+ * This class prefers to return {@code null} instead of throwing exceptions when an error occurs, so it is the caller's
+ * responsibility to handle the errors by checking for null values and using the provided onError handlers.
+ * <p>
+ * This design choice is made to provide a more functional programming style and to allow the caller to decide how to
+ * handle errors, whether by logging, throwing custom exceptions, or using default values and to avoid the need for
+ * try-catch blocks in the calling code, thus promoting cleaner and more readable code. The other major reason is
+ * performance, as throwing exceptions can be costly in terms of performance, especially in cases where errors are
+ * expected to occur frequently. By returning null, we can avoid the overhead associated with exception handling and
+ * allow the caller to handle errors in a more efficient way.
+ * <p>
+ * However, it is important to note that this approach may lead to null pointer exceptions if the caller does not
+ * properly handle the null values, so it is crucial to always check for null returns when using these methods and to
+ * use the onError handlers to manage exceptions appropriately.
  *
  * @author Radu Sebastian LAZIN
  */
@@ -183,35 +197,38 @@ public interface Strings {
 	 * Transforms an input stream to a string. If the input stream cannot be converted to string with the given parameters,
 	 * the result will be {@code null}.
 	 *
-	 * @param inputStream the input stream
-	 * @param encoding character encoding
+	 * @param inputStream the input stream to read from
+	 * @param encoding character encoding to use when reading the input stream
 	 * @param maxSize maximum size in bytes to read from the input stream
-	 * @param bufferSize buffer size
-	 * @param onError on error handler
+	 * @param bufferSize buffer size to use when reading the input stream
+	 * @param onError on error handler, must not be null
 	 * @return the input stream as string
 	 */
 	static String toString(final InputStream inputStream, final Charset encoding, final int maxSize, final int bufferSize,
 			final Consumer<Exception> onError) {
-		final char[] buffer = new char[bufferSize];
-		final StringBuilder out = new StringBuilder();
-		try (Reader in = new InputStreamReader(inputStream, encoding)) {
-			long totalRead = 0;
-			int s = 0;
-			while (s >= 0) {
-				s = in.read(buffer, 0, buffer.length);
-				if (s >= 0) {
+		try {
+			Objects.requireNonNull(onError, "On error handler cannot be null");
+			Require.that(maxSize > 0, "Maximum size must be strictly positive");
+			Require.that(bufferSize > 0, "Buffer size must be strictly positive");
+
+			final StringBuilder out = new StringBuilder();
+			try (Reader in = new InputStreamReader(inputStream, encoding)) {
+				final char[] buffer = new char[bufferSize];
+				long totalRead = 0;
+				int s = 0;
+				while ((s = in.read(buffer, 0, buffer.length)) >= 0) {
 					out.append(buffer, 0, s);
-				}
-				totalRead += s;
-				if (totalRead >= maxSize) {
-					throw new IOException("Input stream exceeds maximum size of " + maxSize + " bytes");
+					totalRead += s;
+					if (totalRead > maxSize) {
+						throw new IOException("Input stream exceeds maximum size of " + maxSize + " bytes");
+					}
 				}
 			}
-		} catch (IOException e) {
+			return out.toString();
+		} catch (Exception e) {
 			onError.accept(e);
 			return null;
 		}
-		return out.toString();
 	}
 
 	/**
@@ -262,7 +279,7 @@ public interface Strings {
 	 * If the given path starts with a slash ("/"), it is considered a file system path otherwise, it is considered a
 	 * classpath resource.
 	 *
-	 * @param path path to the file
+	 * @param path path to the file, must not be null
 	 * @param encoding the file encoding
 	 * @param bufferSize the size of the buffer while reading the file
 	 * @param onError on error handler
@@ -270,6 +287,9 @@ public interface Strings {
 	 */
 	static String fromFile(final String path, final Charset encoding, final int bufferSize, final Consumer<Exception> onError) {
 		try {
+			Objects.requireNonNull(path, "File path cannot be null");
+			Objects.requireNonNull(onError, "onError handler cannot be null");
+
 			Path filePath = Paths.get(path);
 			if (filePath.isAbsolute()) {
 				return Files.readString(filePath, encoding);

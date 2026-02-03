@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
+import org.apiphany.lang.ScopedResource;
 import org.apiphany.lang.retry.Retry;
 import org.apiphany.lang.retry.WaitCounter;
 import org.apiphany.security.AuthenticationException;
@@ -46,7 +47,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	/**
 	 * Token retrieval scheduler.
 	 */
-	private final ScheduledExecutorService tokenRefreshScheduler;
+	private final ScopedResource<ScheduledExecutorService> tokenRefreshScheduler;
 
 	/**
 	 * Scheduler enabled flag.
@@ -84,16 +85,16 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 * @param specification the OAuth2 token provider specification
 	 */
 	public OAuth2TokenProvider(final OAuth2TokenProviderSpec specification) {
-		this.properties = specification.properties();
-		this.registration = specification.registration();
-		this.tokenRefreshScheduler = specification.tokenRefreshScheduler();
-		this.defaultExpirationSupplier = specification.defaultExpirationSupplier();
+		this.properties = specification.getTokenProviderProperties();
+		this.registration = specification.getResolvedRegistration();
+		this.tokenRefreshScheduler = specification.getTokenRefreshScheduler();
+		this.defaultExpirationSupplier = specification.getDefaultExpirationSupplier();
 
 		if (null == registration) {
 			LOGGER.warn("No registration provided for OAuth2TokenProvider, token retrieval will be disabled.");
 			this.tokenClient = null;
 		} else {
-			OAuth2TokenClientSupplier supplier = specification.tokenClientSupplier();
+			OAuth2TokenClientSupplier supplier = specification.getTokenClientSupplier();
 			this.tokenClient = supplier.get(registration.getClientRegistration(), registration.getProviderDetails());
 		}
 		if (null != tokenClient) {
@@ -126,16 +127,21 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	/**
 	 * Safely closes the token refresh scheduler.
 	 */
+	@SuppressWarnings("resource")
 	private void closeTokenRefreshScheduler() {
+		if (tokenRefreshScheduler.isNotManaged()) {
+			return;
+		}
+		ScheduledExecutorService scheduler = tokenRefreshScheduler.unwrap();
 		boolean cancelled = null == scheduledFuture;
 		if (!cancelled) {
 			Retry retry = Retry.of(WaitCounter.of(getProperties().getMaxTaskCloseAttempts(), getProperties().getCloseTaskRetryInterval()));
 			cancelled = retry.until(() -> scheduledFuture.cancel(false), Boolean::booleanValue);
 		}
 		if (cancelled) {
-			tokenRefreshScheduler.close();
+			scheduler.close();
 		} else {
-			List<Runnable> runningTasks = tokenRefreshScheduler.shutdownNow();
+			List<Runnable> runningTasks = scheduler.shutdownNow();
 			LOGGER.warn("Still running tasks count: {}", runningTasks.size());
 		}
 	}
@@ -225,12 +231,13 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	/**
 	 * Schedules the token update.
 	 */
+	@SuppressWarnings("resource")
 	private void scheduleTokenUpdate() {
 		Instant expiration = getTokenExpiration().minus(getProperties().getExpirationErrorMargin());
 		Instant scheduled = Comparables.max(expiration, Instant.now());
 		Duration delay = Duration.between(Instant.now(), scheduled);
 		delay = Comparables.max(delay, getProperties().getMinRefreshInterval());
-		scheduledFuture = tokenRefreshScheduler.schedule(this::updateAuthenticationToken, delay.toMillis(), TimeUnit.MILLISECONDS);
+		scheduledFuture = tokenRefreshScheduler.unwrap().schedule(this::updateAuthenticationToken, delay.toMillis(), TimeUnit.MILLISECONDS);
 	}
 
 	/**

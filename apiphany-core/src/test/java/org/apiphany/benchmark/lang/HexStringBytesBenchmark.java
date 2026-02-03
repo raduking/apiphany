@@ -19,7 +19,7 @@ import org.openjdk.jmh.annotations.Warmup;
  *
  * <ul>
  * <li>char array building</li>
- * <li>SpringBuilder building</li>
+ * <li>StringBuilder building</li>
  * </ul>
  *
  * <pre>

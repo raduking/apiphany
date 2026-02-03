@@ -5,10 +5,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Supplier;
 
+import org.apiphany.lang.ScopedResource;
 import org.morphix.lang.Nullables;
 
 /**
- * OAuth2 token provider specification.
+ * OAuth2 token provider specification. Holds the configuration needed to create an OAuth2 token provider.
+ * <p>
+ * This class uses the builder pattern for construction. The following default values are used:
  * <ul>
  * <li>If no properties are provided, default properties are used</li>
  * <li>If no scheduler is provided, a virtual-thread scheduler is created and owned by the provider</li>
@@ -16,33 +19,42 @@ import org.morphix.lang.Nullables;
  * provider is used</li>
  * <li>If no default expiration supplier is provided, the current instant supplier is used</li>
  * </ul>
- * WARNING: The caller is responsible for shutting down the scheduler if a custom one is not provided.
- *
- * @param properties the OAuth2 token provider properties
- * @param registration the OAuth2 resolved registration for this provider
- * @param tokenRefreshScheduler the token refresh scheduler
- * @param tokenClientSupplier the supplier for the client that will make the actual token requests
- * @param defaultExpirationSupplier the supplier for the default expiration instant for tokens that do not provide one
+ * WARNING: The caller is responsible for shutting down the scheduler if a custom one is provided.
+ * <p>
+ * The token provider needs a single OAuth2 resolved registration to function. If multiple registrations are needed,
+ * multiple token providers must be created.
+ * <p>
+ * The resolved registration can be provided directly or built from OAuth2 properties and/or a client registration name.
+ * If no client registration name is provided, the properties must contain only one client registration.
  *
  * @author Radu Sebastian LAZIN
  */
-public record OAuth2TokenProviderSpec(
-		OAuth2TokenProviderProperties properties,
-		OAuth2ResolvedRegistration registration,
-		ScheduledExecutorService tokenRefreshScheduler,
-		OAuth2TokenClientSupplier tokenClientSupplier,
-		Supplier<Instant> defaultExpirationSupplier) {
+public class OAuth2TokenProviderSpec {
 
 	/**
-	 * Compact constructor.
+	 * the OAuth2 token provider properties.
 	 */
-	@SuppressWarnings("resource")
-	public OAuth2TokenProviderSpec {
-		properties = Nullables.nonNullOrDefault(properties, OAuth2TokenProviderProperties::defaults);
-		tokenRefreshScheduler = Nullables.nonNullOrDefault(tokenRefreshScheduler, OAuth2TokenProviderSpec::defaultSchedulerExecutor);
-		tokenClientSupplier = Nullables.nonNullOrDefault(tokenClientSupplier, () -> (clientRegistration, providerDetails) -> null);
-		defaultExpirationSupplier = Nullables.nonNullOrDefault(defaultExpirationSupplier, () -> Instant::now);
-	}
+	private final OAuth2TokenProviderProperties properties;
+
+	/**
+	 * The OAuth2 resolved registration.
+	 */
+	private final OAuth2ResolvedRegistration registration;
+
+	/**
+	 * The token client supplier.
+	 */
+	private final OAuth2TokenClientSupplier tokenClientSupplier;
+
+	/**
+	 * The token refresh scheduler.
+	 */
+	private final ScopedResource<ScheduledExecutorService> tokenRefreshScheduler;
+
+	/**
+	 * The default expiration supplier.
+	 */
+	private final Supplier<Instant> defaultExpirationSupplier;
 
 	/**
 	 * Constructor with builder.
@@ -50,12 +62,14 @@ public record OAuth2TokenProviderSpec(
 	 * @param builder the builder
 	 */
 	private OAuth2TokenProviderSpec(final Builder builder) {
-		this(
-				builder.properties,
-				builder.registration,
-				builder.tokenRefreshScheduler,
-				builder.tokenClientSupplier,
-				builder.defaultExpirationSupplier);
+		this.properties = Nullables.nonNullOrDefault(builder.properties, OAuth2TokenProviderProperties::defaults);
+		this.registration = builder.registration;
+		this.tokenClientSupplier = Nullables.nonNullOrDefault(builder.tokenClientSupplier,
+				() -> (clientRegistration, providerDetails) -> null);
+		this.tokenRefreshScheduler = Nullables.nonNullOrDefault(builder.tokenRefreshScheduler,
+				() -> ScopedResource.managed(OAuth2TokenProviderSpec.defaultSchedulerExecutor()));
+		this.defaultExpirationSupplier = Nullables.nonNullOrDefault(builder.defaultExpirationSupplier,
+				() -> Instant::now);
 	}
 
 	/**
@@ -79,6 +93,51 @@ public record OAuth2TokenProviderSpec(
 	}
 
 	/**
+	 * Returns the OAuth2 token provider properties.
+	 *
+	 * @return the properties
+	 */
+	public OAuth2TokenProviderProperties getTokenProviderProperties() {
+		return properties;
+	}
+
+	/**
+	 * Returns the OAuth2 resolved registration.
+	 *
+	 * @return the registration
+	 */
+	public OAuth2ResolvedRegistration getResolvedRegistration() {
+		return registration;
+	}
+
+	/**
+	 * Returns the token client supplier.
+	 *
+	 * @return the token client supplier
+	 */
+	public OAuth2TokenClientSupplier getTokenClientSupplier() {
+		return tokenClientSupplier;
+	}
+
+	/**
+	 * Returns the token refresh scheduler.
+	 *
+	 * @return the token refresh scheduler
+	 */
+	public ScopedResource<ScheduledExecutorService> getTokenRefreshScheduler() {
+		return tokenRefreshScheduler;
+	}
+
+	/**
+	 * Returns the default expiration supplier.
+	 *
+	 * @return the default expiration supplier
+	 */
+	public Supplier<Instant> getDefaultExpirationSupplier() {
+		return defaultExpirationSupplier;
+	}
+
+	/**
 	 * Builder for OAuth2 token provider specification.
 	 *
 	 * @author Radu Sebastian LAZIN
@@ -96,14 +155,14 @@ public record OAuth2TokenProviderSpec(
 		private OAuth2ResolvedRegistration registration;
 
 		/**
-		 * The token refresh scheduler.
-		 */
-		private ScheduledExecutorService tokenRefreshScheduler;
-
-		/**
 		 * The token client supplier.
 		 */
 		private OAuth2TokenClientSupplier tokenClientSupplier;
+
+		/**
+		 * The token refresh scheduler.
+		 */
+		private ScopedResource<ScheduledExecutorService> tokenRefreshScheduler;
 
 		/**
 		 * The default expiration supplier.
@@ -152,14 +211,14 @@ public record OAuth2TokenProviderSpec(
 		}
 
 		/**
-		 * Sets the registration from the given OAuth2 properties.
+		 * Sets the registration from the given OAuth2 properties. The OAuth2 properties must contain only one client
+		 * registration. If multiple registrations are present use {@link #registration(OAuth2Properties, String)} instead.
 		 *
 		 * @param oAuth2Properties the OAuth2 properties
 		 * @return the builder
 		 */
 		public Builder registration(final OAuth2Properties oAuth2Properties) {
-			this.registration = OAuth2ResolvedRegistration.of(oAuth2Properties, null);
-			return this;
+			return registration(oAuth2Properties, null);
 		}
 
 		/**
@@ -169,6 +228,16 @@ public record OAuth2TokenProviderSpec(
 		 * @return the builder
 		 */
 		public Builder tokenRefreshScheduler(final ScheduledExecutorService tokenRefreshScheduler) {
+			return tokenRefreshScheduler(ScopedResource.unmanaged(tokenRefreshScheduler));
+		}
+
+		/**
+		 * Sets the token refresh scheduler.
+		 *
+		 * @param tokenRefreshScheduler the token refresh scheduler
+		 * @return the builder
+		 */
+		public Builder tokenRefreshScheduler(final ScopedResource<ScheduledExecutorService> tokenRefreshScheduler) {
 			this.tokenRefreshScheduler = tokenRefreshScheduler;
 			return this;
 		}

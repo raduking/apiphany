@@ -23,10 +23,10 @@ class OAuth2TokenProviderSpecTest {
 	void shouldCreateWithDefaults() {
 		OAuth2TokenProviderSpec config = OAuth2TokenProviderSpec.builder().build();
 
-		assertNotNull(config.properties());
-		assertNotNull(config.tokenRefreshScheduler());
-		assertNotNull(config.tokenClientSupplier());
-		assertNotNull(config.defaultExpirationSupplier());
+		assertNotNull(config.getTokenProviderProperties());
+		assertNotNull(config.getTokenRefreshScheduler());
+		assertNotNull(config.getTokenClientSupplier());
+		assertNotNull(config.getDefaultExpirationSupplier());
 	}
 
 	@Test
@@ -49,10 +49,10 @@ class OAuth2TokenProviderSpecTest {
 					.defaultExpirationSupplier(defaultExpirationSupplier)
 					.build();
 
-			assertEquals(properties, config.properties());
-			assertEquals(scheduler, config.tokenRefreshScheduler());
-			assertEquals(tokenClientSupplier, config.tokenClientSupplier());
-			assertEquals(defaultExpirationSupplier, config.defaultExpirationSupplier());
+			assertEquals(properties, config.getTokenProviderProperties());
+			assertEquals(scheduler, config.getTokenRefreshScheduler().unwrap());
+			assertEquals(tokenClientSupplier, config.getTokenClientSupplier());
+			assertEquals(defaultExpirationSupplier, config.getDefaultExpirationSupplier());
 		}
 	}
 
@@ -60,7 +60,7 @@ class OAuth2TokenProviderSpecTest {
 	void shouldReturnNullAuthenticationTokenProviderWhenUsingDefaultSupplier() {
 		OAuth2TokenProviderSpec config = OAuth2TokenProviderSpec.builder().build();
 
-		var tokenProvider = config.tokenClientSupplier().get(
+		var tokenProvider = config.getTokenClientSupplier().get(
 				new OAuth2ClientRegistration(),
 				new OAuth2ProviderDetails());
 
