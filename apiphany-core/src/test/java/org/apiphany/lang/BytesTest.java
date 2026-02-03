@@ -10,7 +10,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import java.io.FileNotFoundException;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.util.function.Consumer;
 
@@ -276,7 +275,7 @@ class BytesTest {
 			Runnable runnable = mock(Runnable.class);
 			Consumer<Exception> onError = e -> {
 				runnable.run();
-				assertThat(e, instanceOf(NoSuchFileException.class));
+				assertThat(e, instanceOf(FileNotFoundException.class));
 			};
 
 			byte[] result = Bytes.fromFile("/" + WRONG_FILE_NAME, onError);
