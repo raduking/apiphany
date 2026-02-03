@@ -255,7 +255,8 @@ class StringsTest {
 		void shouldDelegateErrorToOnErrorConsumerWhenToStringWithInputStreamAndSizeThrowsException() throws IOException {
 			int maxSize = 10;
 			Runnable runnable = mock(Runnable.class);
-			Consumer<Exception> onError = onErrorHandler(runnable, IOException.class, "Input stream exceeds maximum size of " + maxSize + " bytes");
+			Consumer<Exception> onError =
+					onErrorHandler(runnable, IOException.class, "Input stream exceeds maximum size of " + maxSize + " characters");
 
 			String result;
 			try (FileInputStream fileInputStream = new FileInputStream("src/test/resources/text-file.txt")) {
@@ -382,6 +383,92 @@ class StringsTest {
 		}
 	}
 
+	/**
+	 * Tests for:
+	 * <ul>
+	 * <li>{@link Strings#fromKebabToLowerCamelCase(String)}</li>
+	 * <li>{@link Strings#fromKebabToCamelCase(String)}</li>
+	 * <li>{@link Strings#fromLowerCamelToKebabCase(String)}</li>
+	 * <li>{@link Strings#fromCamelToKebabCase(String)}</li>
+	 * </ul>
+	 */
+	@Nested
+	class KebabAndCamelCaseConversionTests {
+
+		@Test
+		void shouldTransformKebabToLowerCamelCaseWhenTheStringIsKebabCase() {
+			String result = Strings.fromKebabToLowerCamelCase(KEBAB_SOME_COOL_NAME);
+
+			assertThat(result, equalTo(CAMEL_SOME_COOL_NAME));
+		}
+
+		@Test
+		void shouldTransformKebabToCamelCaseWhenTheStringIsKebabCase() {
+			String result = Strings.fromKebabToCamelCase(KEBAB_SOME_COOL_NAME);
+
+			assertThat(result, equalTo(CAMEL_SOME_COOL_NAME));
+		}
+
+		@Test
+		void shouldTransformLowerCamelToKebabCaseWhenTheStringIsKebabCase() {
+			String result = Strings.fromLowerCamelToKebabCase(CAMEL_SOME_COOL_NAME);
+
+			assertThat(result, equalTo(KEBAB_SOME_COOL_NAME));
+		}
+
+		@Test
+		void shouldTransformCamelToSnakeCaseWhenTheStringIsKebabCase() {
+			String result = Strings.fromCamelToKebabCase(CAMEL_SOME_COOL_NAME);
+
+			assertThat(result, equalTo(KEBAB_SOME_COOL_NAME));
+		}
+	}
+
+	/**
+	 * Tests for:
+	 * <ul>
+	 * <li>{@link Strings#fromLowerCamelToSnakeCase(String)}</li>
+	 * <li>{@link Strings#fromCamelToSnakeCase(String)}</li>
+	 * </ul>
+	 */
+	@Nested
+	class CamelAndSnakeCaseConversionTests {
+
+		@Test
+		void shouldTransformLowerCamelToSnakeCaseWhenTheStringIsKebabCase() {
+			String result = Strings.fromLowerCamelToSnakeCase(CAMEL_SOME_COOL_NAME);
+
+			assertThat(result, equalTo(SNAKE_SOME_COOL_NAME));
+		}
+
+		@Test
+		void shouldTransformCamelToSnakeCaseWhenTheStringIsCamelCase() {
+			String result = Strings.fromCamelToSnakeCase(CAMEL_SOME_COOL_NAME);
+
+			assertThat(result, equalTo(SNAKE_SOME_COOL_NAME));
+		}
+
+		@ParameterizedTest
+		@MethodSource("provideValuesForCamelToSnakeCase")
+		void shouldTransformCamelToSnakeCaseVariousInputs(final String input, final String expectedOutput) {
+			String result = Strings.fromCamelToSnakeCase(input);
+
+			assertThat(result, equalTo(expectedOutput));
+		}
+
+		private static Stream<Arguments> provideValuesForCamelToSnakeCase() {
+			return Stream.of(
+					Arguments.of("simpleTest", "simple_test"),
+					Arguments.of("TestWithUppercaseStart", "test_with_uppercase_start"),
+					Arguments.of("already_snake_case", "already_snake_case"),
+					Arguments.of("mixedCase_InputString", "mixed_case_input_string"),
+					Arguments.of("JSONValue", "json_value"),
+					Arguments.of("", ""),
+					Arguments.of("a", "a"),
+					Arguments.of("FastXMLParser", "fast_xml_parser"));
+		}
+	}
+
 	@Test
 	void shouldEnvelopeStrings() {
 		String result = Strings.envelope(TEST_INTEGER_STRING, TEST_STRING);
@@ -389,52 +476,10 @@ class StringsTest {
 		assertThat(result, equalTo(TEST_INTEGER_STRING + TEST_STRING + TEST_INTEGER_STRING));
 	}
 
-	@Test
-	void shouldTransformKebabToLowerCamelCaseWhenTheStringIsKebabCase() {
-		String result = Strings.fromKebabToLowerCamelCase(KEBAB_SOME_COOL_NAME);
-
-		assertThat(result, equalTo(CAMEL_SOME_COOL_NAME));
-	}
-
-	@Test
-	void shouldTransformKebabToCamelCaseWhenTheStringIsKebabCase() {
-		String result = Strings.fromKebabToCamelCase(KEBAB_SOME_COOL_NAME);
-
-		assertThat(result, equalTo(CAMEL_SOME_COOL_NAME));
-	}
-
-	@Test
-	void shouldTransformLowerCamelToKebabCaseWhenTheStringIsKebabCase() {
-		String result = Strings.fromLowerCamelToKebabCase(CAMEL_SOME_COOL_NAME);
-
-		assertThat(result, equalTo(KEBAB_SOME_COOL_NAME));
-	}
-
-	@Test
-	void shouldTransformCamelToSnakeCaseWhenTheStringIsKebabCase() {
-		String result = Strings.fromCamelToKebabCase(CAMEL_SOME_COOL_NAME);
-
-		assertThat(result, equalTo(KEBAB_SOME_COOL_NAME));
-	}
-
-	@Test
-	void shouldTransformLowerCamelToSnakeCaseWhenTheStringIsKebabCase() {
-		String result = Strings.fromLowerCamelToSnakeCase(CAMEL_SOME_COOL_NAME);
-
-		assertThat(result, equalTo(SNAKE_SOME_COOL_NAME));
-	}
-
-	@Test
-	void shouldTransformCamelToKebabCaseWhenTheStringIsKebabCase() {
-		String result = Strings.fromCamelToSnakeCase(CAMEL_SOME_COOL_NAME);
-
-		assertThat(result, equalTo(SNAKE_SOME_COOL_NAME));
-	}
-
 	@ParameterizedTest
 	@MethodSource("provideValuesForStripChar")
 	void shouldStripCharacterFromString(final String input, final char charToStrip, final String expectedOutput) {
-		String result = Strings.stripChar(input, charToStrip);
+		String result = Strings.stripCharacter(input, charToStrip);
 
 		assertThat(result, equalTo(expectedOutput));
 	}

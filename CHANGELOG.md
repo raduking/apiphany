@@ -4,6 +4,7 @@
 
 - Changed `OAuth2TokenProviderSpec` from record to class and added builder exclusive instantiation.
 - Added `ResourceLocation` enumeration for specifying the location of the resource.
+- Fixed `Strings.fromCamelToSnakeCase` to work on strings like `"FastXMLParser"` transforming it to `"fast_xml_parser"` or `"JSONValue"` to `"json_value"`.
 - Fixed `Strings.fromPath` to work on absolute paths that do not start with `/`.
 - Added a limit of `Integer.MAX_VALUE` to the maximum number of bytes the `Strings.fromPath` methods are allowed to read much like `InputStream.readAllBytes`.
 - Added `Bytes.fromFile` to read a byte array from a given file.

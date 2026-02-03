@@ -170,10 +170,10 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 		if (Strings.isEmpty(url)) {
 			throw new IllegalArgumentException("url cannot be null or empty");
 		}
-		String base = Strings.stripChar(url, '/');
+		String base = Strings.stripCharacter(url, '/');
 		StringBuilder sb = new StringBuilder(base);
 		for (String pathSegment : pathSegments) {
-			String sanitized = Strings.stripChar(pathSegment, '/');
+			String sanitized = Strings.stripCharacter(pathSegment, '/');
 			if (Strings.isEmpty(sanitized)) {
 				continue;
 			}
