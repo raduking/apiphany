@@ -1,6 +1,5 @@
 package org.apiphany.security.ssl;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
@@ -14,7 +13,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
-import org.apiphany.io.FileSource;
+import org.apiphany.io.ResourceLocation;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.JavaArrays;
 import org.morphix.lang.Nullables;
@@ -64,7 +63,7 @@ public final class SSLContexts {
 	public static void initialize(final SSLContext sslContext, final KeyManager[] keyManagers, final TrustManager[] trustManagers,
 			final SecureRandom random) throws GeneralSecurityException {
 		Objects.requireNonNull(keyManagers, "keyManagers array cannot be null");
-		Objects.requireNonNull(keyManagers, "trustManagers array cannot be null");
+		Objects.requireNonNull(trustManagers, "trustManagers array cannot be null");
 		sslContext.init(JavaArrays.nullIfEmpty(keyManagers), JavaArrays.nullIfEmpty(trustManagers), random);
 	}
 
@@ -164,7 +163,7 @@ public final class SSLContexts {
 	 */
 	public static KeyStore keyStore(final StoreInfo storeProperties) {
 		return keyStore(storeProperties.getLocation(), storeProperties.getType(), storeProperties.getPassword(),
-				storeProperties.isExternal() ? FileSource.FILE_SYSTEM : FileSource.CLASS_PATH);
+				storeProperties.isExternal() ? ResourceLocation.FILE_SYSTEM : ResourceLocation.CLASS_PATH);
 	}
 
 	/**
@@ -173,23 +172,24 @@ public final class SSLContexts {
 	 * @param keyStoreLocation key store file location
 	 * @param keyStoreType key store type
 	 * @param password key store password
-	 * @param fileSource file source
+	 * @param resourceLocation the resource location indicating whether the certificate should be loaded
 	 * @return key store
 	 */
-	public static KeyStore keyStore(final String keyStoreLocation, final String keyStoreType, final char[] password, final FileSource fileSource) {
+	public static KeyStore keyStore(final String keyStoreLocation, final String keyStoreType, final char[] password,
+			final ResourceLocation resourceLocation) {
 		if (Strings.isEmpty(keyStoreLocation)) {
-			LOGGER.warn("Location is empty. Key store type: {}, file source: {}", keyStoreType, fileSource);
+			LOGGER.warn("Location is empty. Key store type: {}, file source: {}", keyStoreType, resourceLocation);
 			return null;
 		}
 		if (Strings.isEmpty(keyStoreType)) {
-			LOGGER.warn("Key store type is empty. Key store location: {}, file source: {}", keyStoreLocation, fileSource);
+			LOGGER.warn("Key store type is empty. Key store location: {}, file source: {}", keyStoreLocation, resourceLocation);
 			return null;
 		}
 		char[] pass = password;
 		if (null != pass && pass.length == 0) {
 			pass = null;
 		}
-		return loadKeystore(keyStoreType, keyStoreLocation, pass, fileSource.isExternal());
+		return loadKeystore(keyStoreType, keyStoreLocation, pass, resourceLocation);
 	}
 
 	/**
@@ -198,13 +198,12 @@ public final class SSLContexts {
 	 * @param keyStoreType key store type
 	 * @param location key store file location
 	 * @param pass key store password
-	 * @param isExternal flag to indicate whether the certificate should be loaded from the jar or from the file system
+	 * @param resourceLocation indicate whether the certificate should be loaded from the jar or from the file system
 	 * @return key store
 	 */
-	private static KeyStore loadKeystore(final String keyStoreType, final String location, final char[] pass, final boolean isExternal) {
-		try (InputStream keyStoreInput = isExternal
-				? new FileInputStream(location)
-				: Thread.currentThread().getContextClassLoader().getResourceAsStream(location)) {
+	private static KeyStore loadKeystore(final String keyStoreType, final String location, final char[] pass,
+			final ResourceLocation resourceLocation) {
+		try (InputStream keyStoreInput = resourceLocation.open(location)) {
 			if (null == keyStoreInput) {
 				throw new IOException("File not found: " + location);
 			}
