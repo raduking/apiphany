@@ -64,6 +64,7 @@
 		<maven.compiler.release>${java.version}</maven.compiler.release>
 		<maven.version>3.9</maven.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.build.timestamp.format>yyyyMMdd-HHmmss</maven.build.timestamp.format>
 
 		<!-- Testing dependencies versions -->
 		<hamcrest.version>3.0</hamcrest.version>
@@ -113,6 +114,7 @@
 		<jmh.version>1.37</jmh.version>
 		<jmh.maven.plugin.version>0.2.2</jmh.maven.plugin.version>
 		<jmh.fork>1</jmh.fork>
+		<benchmarks.directory>${project.build.directory}/benchmarks</benchmarks.directory>
 
 	</properties>
 
@@ -265,6 +267,13 @@
 					<version>${exec.maven.plugin.version}</version>
 				</plugin>
 
+				<!-- Ant tasks execution -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-antrun-plugin</artifactId>
+					<version>${maven.antrun.plugin.version}</version>
+				</plugin>
+
 				<!-- Enforce version for Java -->
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -316,6 +325,18 @@
 					<groupId>org.sonatype.central</groupId>
 					<artifactId>central-publishing-maven-plugin</artifactId>
 					<version>${central.publishing.maven.plugin.version}</version>
+				</plugin>
+
+				<!-- Benchmarking with JMH -->
+				<plugin>
+					<groupId>pw.krejci</groupId>
+					<artifactId>jmh-maven-plugin</artifactId>
+					<version>${jmh.maven.plugin.version}</version>
+					<configuration>
+						<fork>${jmh.fork}</fork>
+						<resultFormat>JSON</resultFormat>
+						<resultsFile>${benchmarks.directory}/jmh-result-${maven.build.timestamp}.json</resultsFile>
+					</configuration>
 				</plugin>
 
 			</plugins>
