@@ -121,9 +121,10 @@ public interface Strings {
 	 * @return snake case string
 	 */
 	static String fromLowerCamelToSnakeCase(final String str) {
-		String regex = "([a-z])([A-Z]+)";
-		String replacement = "$1_$2";
-		return str.replaceAll(regex, replacement).toLowerCase();
+		return str
+				.replaceAll("([A-Z]+)([A-Z][a-z])", "$1_$2")
+				.replaceAll("([a-z0-9])([A-Z])", "$1_$2")
+				.toLowerCase();
 	}
 
 	/**
@@ -196,8 +197,8 @@ public interface Strings {
 	 *
 	 * @param inputStream the input stream to read from
 	 * @param encoding character encoding to use when reading the input stream
-	 * @param maxSize maximum size in bytes to read from the input stream
-	 * @param bufferSize buffer size to use when reading the input stream
+	 * @param maxSize maximum size in characters to read from the input stream
+	 * @param bufferSize buffer size in characters to use when reading the input stream
 	 * @return the input stream as string
 	 * @throws IOException if an I/O error occurs
 	 * @throws IllegalArgumentException if maxSize or bufferSize are not strictly positive
@@ -207,7 +208,7 @@ public interface Strings {
 		Require.that(maxSize > 0, "Maximum size must be strictly positive");
 		Require.that(bufferSize > 0, "Buffer size must be strictly positive");
 
-		final StringBuilder out = new StringBuilder();
+		final StringBuilder out = new StringBuilder(Math.min(maxSize, IOStreams.DEFAULT_BUFFER_SIZE));
 		try (Reader in = new InputStreamReader(inputStream, encoding)) {
 			final char[] buffer = new char[bufferSize];
 			long totalRead = 0;
@@ -216,7 +217,7 @@ public interface Strings {
 				out.append(buffer, 0, s);
 				totalRead += s;
 				if (totalRead > maxSize) {
-					throw new IOException("Input stream exceeds maximum size of " + maxSize + " bytes");
+					throw new IOException("Input stream exceeds maximum size of " + maxSize + " characters");
 				}
 			}
 		}
@@ -229,8 +230,8 @@ public interface Strings {
 	 *
 	 * @param inputStream the input stream to read from
 	 * @param encoding character encoding to use when reading the input stream
-	 * @param maxSize maximum size in bytes to read from the input stream
-	 * @param bufferSize buffer size to use when reading the input stream
+	 * @param maxSize maximum size in characters to read from the input stream
+	 * @param bufferSize buffer size in characters to use when reading the input stream
 	 * @param onError on error handler, must not be null
 	 * @return the input stream as string
 	 */
@@ -248,11 +249,11 @@ public interface Strings {
 	/**
 	 * Transforms an input stream to a string. If the input stream cannot be converted to string with the given parameters,
 	 * the result will be {@code null}. This method is not intended for large streams and is also limited to read up to
-	 * {@code Integer.MAX_VALUE} bytes from the input stream.
+	 * {@code Integer.MAX_VALUE} characters from the input stream.
 	 *
 	 * @param inputStream input stream
 	 * @param encoding character encoding
-	 * @param bufferSize buffer size
+	 * @param bufferSize buffer size in characters to use when reading the input stream
 	 * @param onError on error handler
 	 * @return the input stream as string
 	 */
@@ -263,11 +264,11 @@ public interface Strings {
 	/**
 	 * Transforms an input stream to a string. If the input stream cannot be converted to string with the given parameters,
 	 * the result will be null. This method is not intended for large streams and is also limited to read up to
-	 * {@code Integer.MAX_VALUE} bytes from the input stream.
+	 * {@code Integer.MAX_VALUE} characters from the input stream.
 	 *
 	 * @param inputStream input stream
 	 * @param encoding character encoding
-	 * @param bufferSize buffer size
+	 * @param bufferSize buffer size in characters to use when reading the input stream
 	 * @return the input stream as string
 	 */
 	static String toString(final InputStream inputStream, final Charset encoding, final int bufferSize) {
@@ -277,7 +278,7 @@ public interface Strings {
 	/**
 	 * Transforms an input stream to a string. If the input stream cannot be converted to string with the given parameters,
 	 * the result will be null. This method is not intended for large streams and is also limited to read up to
-	 * {@code Integer.MAX_VALUE} bytes from the input stream.
+	 * {@code Integer.MAX_VALUE} characters from the input stream.
 	 *
 	 * @param inputStream input stream
 	 * @param encoding character encoding
@@ -295,7 +296,7 @@ public interface Strings {
 	 *
 	 * @param path path to the file, must not be null
 	 * @param encoding the file encoding
-	 * @param bufferSize the size of the buffer while reading the file
+	 * @param bufferSize the size in characters of the buffer while reading the file
 	 * @param onError on error handler
 	 * @return the file content as string
 	 */
@@ -321,7 +322,7 @@ public interface Strings {
 	 *
 	 * @param path path to the file
 	 * @param encoding the file encoding
-	 * @param bufferSize the size of the buffer while reading the file
+	 * @param bufferSize the size in characters of the buffer while reading the file
 	 * @return the file content as string
 	 */
 	static String fromFile(final String path, final Charset encoding, final int bufferSize) {
@@ -330,8 +331,8 @@ public interface Strings {
 
 	/**
 	 * Returns a string from a file or {@code null} if any error occurred. It assumes that the encoding in
-	 * {@link StandardCharsets#UTF_8} and uses a default buffer size of 4096 bytes. Use this method only if the file to be
-	 * read respects these conditions.
+	 * {@link StandardCharsets#UTF_8} and uses a default buffer size of 4096 characters. Use this method only if the file to
+	 * be read respects these conditions.
 	 * <p>
 	 * If the given path is an absolute path, it is considered a file system path otherwise, it is considered a classpath
 	 * resource.
@@ -345,8 +346,8 @@ public interface Strings {
 
 	/**
 	 * Returns a string from a file or {@code null} if any error occurred. It assumes that the encoding in
-	 * {@link StandardCharsets#UTF_8} and uses a default buffer size of 4096 bytes. Use this method only if the file to be
-	 * read respects these conditions.
+	 * {@link StandardCharsets#UTF_8} and uses a default buffer size of 4096 characters. Use this method only if the file to
+	 * be read respects these conditions.
 	 * <p>
 	 * If the given path is an absolute path, it is considered a file system path otherwise, it is considered a classpath
 	 * resource.
@@ -397,7 +398,7 @@ public interface Strings {
 	 * @param ch the character to strip
 	 * @return stripped string from the start and end if it contains the given character
 	 */
-	static String stripChar(final String input, final char ch) {
+	static String stripCharacter(final String input, final char ch) {
 		if (isEmpty(input)) {
 			return input;
 		}
