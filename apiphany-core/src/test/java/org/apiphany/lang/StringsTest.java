@@ -104,7 +104,7 @@ class StringsTest {
 	/**
 	 * Tests for:
 	 * <ul>
-	 * <li>{@link Strings#isEmpty(String)}</li>
+	 * <li>{@link Strings#isEmpty(CharSequence)}</li>
 	 * </ul>
 	 */
 	@Nested
@@ -129,7 +129,7 @@ class StringsTest {
 	/**
 	 * Tests for:
 	 * <ul>
-	 * <li>{@link Strings#isNotEmpty(String)}</li>
+	 * <li>{@link Strings#isNotEmpty(CharSequence)}</li>
 	 * </ul>
 	 */
 	@Nested
@@ -154,7 +154,7 @@ class StringsTest {
 	/**
 	 * Tests for:
 	 * <ul>
-	 * <li>{@link Strings#isBlank(String)}</li>
+	 * <li>{@link Strings#isBlank(CharSequence)}</li>
 	 * </ul>
 	 */
 	@Nested
@@ -179,7 +179,7 @@ class StringsTest {
 	/**
 	 * Tests for:
 	 * <ul>
-	 * <li>{@link Strings#isNotBlank(String)}</li>
+	 * <li>{@link Strings#isNotBlank(CharSequence)}</li>
 	 * </ul>
 	 */
 	@Nested
