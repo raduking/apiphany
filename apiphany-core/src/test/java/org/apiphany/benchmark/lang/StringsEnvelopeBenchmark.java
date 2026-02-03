@@ -19,7 +19,7 @@ import org.openjdk.jmh.infra.Blackhole;
  * Benchmark for different hexadecimal formatting approaches.
  *
  * <ul>
- * <li>{@link String#join(String, CharSequence...)} building</li>
+ * <li>{@link String#join(CharSequence, CharSequence...)} building</li>
  * <li>String concatenation building</li>
  * </ul>
  *

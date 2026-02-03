@@ -130,7 +130,7 @@ public class HttpException extends RuntimeException {
 	 * Return the exception message string based on the HTTP status and the message.
 	 *
 	 * @param status HTTP status
-	 * @param message the human readable message
+	 * @param message the human-readable message
 	 * @return the status message string
 	 */
 	public static String message(final HttpStatus status, final String message) {

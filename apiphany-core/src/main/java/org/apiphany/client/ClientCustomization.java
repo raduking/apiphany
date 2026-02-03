@@ -22,5 +22,5 @@ public enum ClientCustomization {
 	/**
 	 * No customization applied to the client.
 	 */
-	NONE;
+	NONE
 }

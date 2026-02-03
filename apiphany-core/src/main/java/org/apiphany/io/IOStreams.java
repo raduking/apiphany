@@ -104,11 +104,11 @@ public interface IOStreams {
 	static byte[] toByteArray(final InputStream is) throws IOException {
 		byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
 		int n;
-		try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+		try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
 			while ((n = is.read(buffer)) != -1) {
-				baos.write(buffer, 0, n);
+				byteArrayOutputStream.write(buffer, 0, n);
 			}
-			return baos.toByteArray();
+			return byteArrayOutputStream.toByteArray();
 		}
 	}
 }

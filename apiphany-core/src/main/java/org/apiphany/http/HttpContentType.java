@@ -131,7 +131,7 @@ public class HttpContentType implements ApiMimeType {
 	/**
 	 * Returns the canonical RFC 7231-style string representation of this HTTP content type.
 	 * <ul>
-	 * <li>type/sub-type are lower-cased</li>
+	 * <li>type/subtype are lower-cased</li>
 	 * <li>charset parameter is included only if not null</li>
 	 * <li>parameter names are lower-cased</li>
 	 * <li>charset value is lower-cased</li>

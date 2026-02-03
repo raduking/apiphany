@@ -263,7 +263,7 @@ class X25519KeysTest {
 	}
 
 	@Test
-	void shouldReturnFalseWhenKeysDontMatch() {
+	void shouldReturnFalseWhenKeysDoNotMatch() {
 		KeyPair keyPair = X25519Keys.INSTANCE.generateKeyPair();
 		byte[] differentBytes = new byte[32];
 		Arrays.fill(differentBytes, (byte) 0x99);

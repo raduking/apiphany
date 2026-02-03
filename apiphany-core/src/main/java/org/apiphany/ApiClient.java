@@ -208,7 +208,7 @@ public class ApiClient implements AutoCloseable {
 	 * Constructor with base URL and a default exchange client.
 	 * <p>
 	 * This constructor should be used only for quick tests or prototyping. For production code, it is recommended to use
-	 * one of the other constructors that allow more fine tuning of the exchange client.
+	 * one of the other constructors that allow more fine-tuning of the exchange client.
 	 *
 	 * @param baseUrl base URL
 	 */

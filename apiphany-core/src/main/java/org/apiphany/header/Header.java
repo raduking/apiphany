@@ -42,7 +42,7 @@ public interface Header extends HeaderFunction {
 	 * @param rvalue right value
 	 * @return the header value
 	 */
-	public static <L, R> String value(final L lvalue, final R rvalue) {
+	static <L, R> String value(final L lvalue, final R rvalue) {
 		return HeaderValues.value(lvalue, rvalue);
 	}
 
@@ -57,7 +57,7 @@ public interface Header extends HeaderFunction {
 	 * @param separator the separator to use between the two values
 	 * @return the header value
 	 */
-	public static <L, R> String value(final L lvalue, final R rvalue, final String separator) {
+	static <L, R> String value(final L lvalue, final R rvalue, final String separator) {
 		return HeaderValues.value(lvalue, rvalue, separator);
 	}
 }

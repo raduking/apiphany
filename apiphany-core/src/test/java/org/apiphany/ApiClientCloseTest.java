@@ -146,7 +146,7 @@ public class ApiClientCloseTest {
 
 	@Test
 	@SuppressWarnings("resource")
-	void shouldCallClonseOnManagedExchangeClientsEvenIfConstructingApiClientFails() throws Exception {
+	void shouldCallCloseOnManagedExchangeClientsEvenIfConstructingApiClientFails() throws Exception {
 		SomeExchangeClient exchangeClient1 = new SomeExchangeClient(clientProperties);
 		SomeOtherExchangeClient exchangeClient2 = new SomeOtherExchangeClient(clientProperties);
 		ScopedResource<ExchangeClient> scopedResource1 = ScopedResource.managed(exchangeClient1);

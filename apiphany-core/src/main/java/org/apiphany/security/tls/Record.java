@@ -389,7 +389,7 @@ public class Record implements TLSObject {
 				}
 			}
 		}
-		throw new IllegalArgumentException("No handhsake of type " + tlsHandshakeClass + " found in record");
+		throw new IllegalArgumentException("No handshake of type " + tlsHandshakeClass + " found in record");
 	}
 
 	/**
