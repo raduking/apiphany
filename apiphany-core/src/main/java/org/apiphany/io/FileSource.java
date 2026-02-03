@@ -1,19 +1,19 @@
 package org.apiphany.io;
 
 /**
- * Enumeration representing different file sources.
+ * Enumeration representing the possible locations / sources from which a resource can be loaded.
  *
  * @author Radu Sebastian LAZIN
  */
 public enum FileSource {
 
 	/**
-	 * Indicates that the file is located in the class path.
+	 * The resource is packaged inside the classpath (JAR, WAR, module path…).
 	 */
 	CLASS_PATH,
 
 	/**
-	 * Indicates that the file is located in the file system.
+	 * The resource is located on the local file system (absolute or relative path).
 	 */
 	FILE_SYSTEM;
 
