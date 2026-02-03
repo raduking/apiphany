@@ -205,7 +205,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	}
 
 	/**
-	 * Sets the URL as the base URL and concatenates the given path segemts to form the complete URL.
+	 * Sets the URL as the base URL and concatenates the given path segments to form the complete URL.
 	 * <p>
 	 * If you need a specific base URL for this request use any of the methods that set the URL before calling this one or
 	 * just use {@link #url(String, String...)} or {@link #uri(URI, String...)} otherwise the base URL will be resolved as

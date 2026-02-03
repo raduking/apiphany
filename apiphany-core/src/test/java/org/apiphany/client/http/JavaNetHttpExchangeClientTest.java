@@ -651,7 +651,7 @@ class JavaNetHttpExchangeClientTest {
 	@Test
 	void shouldConvertNullBodyToNoBodyPublisher() {
 		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.body((Object) null);
+				.body(null);
 
 		BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
 
@@ -670,7 +670,7 @@ class JavaNetHttpExchangeClientTest {
 	@Test
 	void shouldConvertNullSupplierBodyToNoBodyPublisher() {
 		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.body((Supplier<? extends Object>) null);
+				.body((Supplier<?>) null);
 
 		BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
 

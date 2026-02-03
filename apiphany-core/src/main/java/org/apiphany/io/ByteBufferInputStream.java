@@ -7,7 +7,7 @@ import java.util.Objects;
 
 /**
  * An {@link InputStream} implementation that reads from a byte array using a {@link ByteBuffer} without synchronization
- * overhead. This class provides an unsynchronized alternative to {@link ByteArrayInputStream} for use in
+ * overhead. This class provides an un-synchronized alternative to {@link ByteArrayInputStream} for use in
  * performance-critical scenarios where synchronization is not required.
  * <p>
  * <b>Warning:</b>

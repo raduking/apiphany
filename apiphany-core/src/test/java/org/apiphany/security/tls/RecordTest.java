@@ -153,7 +153,7 @@ class RecordTest {
 
 		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> tlsRecord.getHandshakeBody(Certificates.class));
 
-		assertThat(e.getMessage(), equalTo("No handhsake of type " + Certificates.class + " found in record"));
+		assertThat(e.getMessage(), equalTo("No handshake of type " + Certificates.class + " found in record"));
 	}
 
 	@Test
