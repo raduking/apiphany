@@ -14,6 +14,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
+import org.apiphany.io.FileSource;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.JavaArrays;
 import org.morphix.lang.Nullables;
@@ -162,7 +163,8 @@ public final class SSLContexts {
 	 * @return key store
 	 */
 	public static KeyStore keyStore(final StoreInfo storeProperties) {
-		return keyStore(storeProperties.getLocation(), storeProperties.getType(), storeProperties.getPassword(), storeProperties.isExternal());
+		return keyStore(storeProperties.getLocation(), storeProperties.getType(), storeProperties.getPassword(),
+				storeProperties.isExternal() ? FileSource.FILE_SYSTEM : FileSource.CLASS_PATH);
 	}
 
 	/**
@@ -171,23 +173,23 @@ public final class SSLContexts {
 	 * @param keyStoreLocation key store file location
 	 * @param keyStoreType key store type
 	 * @param password key store password
-	 * @param isExternal flag to indicate whether the certificate should be loaded from the jar or from the file system
+	 * @param fileSource file source
 	 * @return key store
 	 */
-	public static KeyStore keyStore(final String keyStoreLocation, final String keyStoreType, final char[] password, final boolean isExternal) {
+	public static KeyStore keyStore(final String keyStoreLocation, final String keyStoreType, final char[] password, final FileSource fileSource) {
 		if (Strings.isEmpty(keyStoreLocation)) {
-			LOGGER.warn("Location is empty. Key store type: {}, external: {}", keyStoreType, isExternal);
+			LOGGER.warn("Location is empty. Key store type: {}, file source: {}", keyStoreType, fileSource);
 			return null;
 		}
 		if (Strings.isEmpty(keyStoreType)) {
-			LOGGER.warn("Key store type is empty. Key store location: {}, external: {}", keyStoreLocation, isExternal);
+			LOGGER.warn("Key store type is empty. Key store location: {}, file source: {}", keyStoreLocation, fileSource);
 			return null;
 		}
 		char[] pass = password;
 		if (null != pass && pass.length == 0) {
 			pass = null;
 		}
-		return loadKeystore(keyStoreType, keyStoreLocation, pass, isExternal);
+		return loadKeystore(keyStoreType, keyStoreLocation, pass, fileSource.isExternal());
 	}
 
 	/**

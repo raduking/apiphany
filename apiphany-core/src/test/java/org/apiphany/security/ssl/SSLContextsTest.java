@@ -17,6 +17,7 @@ import java.security.UnrecoverableKeyException;
 
 import javax.net.ssl.SSLContext;
 
+import org.apiphany.io.FileSource;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.test.Assertions;
@@ -47,6 +48,19 @@ class SSLContextsTest {
 	}
 
 	@Test
+	void shouldCreateSSLContextSuccessfullyFromExternalPath() {
+		SSLProperties sslProperties = JsonBuilder.fromJson(SSL_PROPERTIES_JSON, SSLProperties.class);
+		String currentDirectory = Paths.get("").toAbsolutePath().toString();
+		StoreInfo keystore = sslProperties.getKeystore();
+		keystore.setLocation(currentDirectory + "/src/test/resources/" + keystore.getLocation());
+		keystore.setExternal(true);
+
+		SSLContext sslContext = SSLContexts.create(sslProperties);
+
+		assertNotNull(sslContext);
+	}
+
+	@Test
 	void shouldThrowSecurityExceptionIfCreateFailsForAnyReason() {
 		SecurityException exception = assertThrows(SecurityException.class, () -> SSLContexts.create(null));
 
@@ -57,7 +71,7 @@ class SSLContextsTest {
 	@ParameterizedTest
 	@MethodSource("provideEmptyPasswords")
 	void shouldLoadKeyStoreWithEmptyPasswordButFailToLoadKey(final char[] password) throws KeyStoreException {
-		KeyStore keyStore = SSLContexts.keyStore(KEYSTORE_PATH, KEYSTORE_TYPE, password, false);
+		KeyStore keyStore = SSLContexts.keyStore(KEYSTORE_PATH, KEYSTORE_TYPE, password, FileSource.CLASS_PATH);
 
 		assertThat(keyStore.size(), equalTo(1));
 
@@ -80,7 +94,7 @@ class SSLContextsTest {
 	void shouldFailToLoadKeyStoreWithWrongPassword() {
 		char[] wrongPassword = "wrongpassword".toCharArray();
 		SecurityException exception =
-				assertThrows(SecurityException.class, () -> SSLContexts.keyStore(KEYSTORE_PATH, KEYSTORE_TYPE, wrongPassword, false));
+				assertThrows(SecurityException.class, () -> SSLContexts.keyStore(KEYSTORE_PATH, KEYSTORE_TYPE, wrongPassword, FileSource.CLASS_PATH));
 
 		assertNotNull(exception);
 		assertThat(exception.getMessage(), equalTo("Error loading key store: " + KEYSTORE_PATH));
@@ -93,7 +107,7 @@ class SSLContextsTest {
 	@Test
 	void shouldLoadKeyStoreSuccessfully() throws KeyStoreException {
 		char[] correctPassword = "keystorepassword123".toCharArray();
-		KeyStore keyStore = SSLContexts.keyStore(KEYSTORE_PATH, KEYSTORE_TYPE, correctPassword, false);
+		KeyStore keyStore = SSLContexts.keyStore(KEYSTORE_PATH, KEYSTORE_TYPE, correctPassword, FileSource.CLASS_PATH);
 
 		assertThat(keyStore.size(), equalTo(1));
 	}
@@ -106,7 +120,7 @@ class SSLContextsTest {
 
 		char[] correctPassword = "keystorepassword123".toCharArray();
 
-		KeyStore keyStore = SSLContexts.keyStore(absolutePath.toString(), KEYSTORE_TYPE, correctPassword, true);
+		KeyStore keyStore = SSLContexts.keyStore(absolutePath.toString(), KEYSTORE_TYPE, correctPassword, FileSource.FILE_SYSTEM);
 
 		assertThat(keyStore.size(), equalTo(1));
 	}
@@ -116,7 +130,7 @@ class SSLContextsTest {
 		String invalidPath = "invalid/path/to/keystore.jks";
 
 		SecurityException exception =
-				assertThrows(SecurityException.class, () -> SSLContexts.keyStore(invalidPath, KEYSTORE_TYPE, null, false));
+				assertThrows(SecurityException.class, () -> SSLContexts.keyStore(invalidPath, KEYSTORE_TYPE, null, FileSource.CLASS_PATH));
 
 		assertThat(exception.getMessage(), equalTo("Error loading key store: " + invalidPath));
 	}
@@ -126,42 +140,42 @@ class SSLContextsTest {
 		String invalidPath = "/invalid/absolute/path/to/keystore.jks";
 
 		SecurityException exception =
-				assertThrows(SecurityException.class, () -> SSLContexts.keyStore(invalidPath, KEYSTORE_TYPE, null, true));
+				assertThrows(SecurityException.class, () -> SSLContexts.keyStore(invalidPath, KEYSTORE_TYPE, null, FileSource.FILE_SYSTEM));
 
 		assertThat(exception.getMessage(), equalTo("Error loading key store: " + invalidPath));
 	}
 
 	@Test
 	void shouldLoadKeyWithNullPasswordIfAllowed() throws KeyStoreException {
-		KeyStore keyStore = SSLContexts.keyStore(KEYSTORE_PATH, KEYSTORE_TYPE, null, false);
+		KeyStore keyStore = SSLContexts.keyStore(KEYSTORE_PATH, KEYSTORE_TYPE, null, FileSource.CLASS_PATH);
 
 		assertThat(keyStore.size(), equalTo(1));
 	}
 
 	@Test
 	void shouldLoadKeyWithEmptyPasswordIfAllowed() throws KeyStoreException {
-		KeyStore keyStore = SSLContexts.keyStore(KEYSTORE_PATH, KEYSTORE_TYPE, new char[] { }, false);
+		KeyStore keyStore = SSLContexts.keyStore(KEYSTORE_PATH, KEYSTORE_TYPE, new char[] { }, FileSource.CLASS_PATH);
 
 		assertThat(keyStore.size(), equalTo(1));
 	}
 
 	@Test
 	void shouldReturnNullIfKeyStoreTypeIsEmpty() {
-		KeyStore keyStore = SSLContexts.keyStore(KEYSTORE_PATH, "", null, false);
+		KeyStore keyStore = SSLContexts.keyStore(KEYSTORE_PATH, "", null, FileSource.CLASS_PATH);
 
 		assertNull(keyStore);
 	}
 
 	@Test
 	void shouldReturnNullIfKeyStoreTypeIsNull() {
-		KeyStore keyStore = SSLContexts.keyStore(KEYSTORE_PATH, null, null, false);
+		KeyStore keyStore = SSLContexts.keyStore(KEYSTORE_PATH, null, null, FileSource.CLASS_PATH);
 
 		assertNull(keyStore);
 	}
 
 	@Test
 	void shouldReturnNullIfKeyStoreLocationIsEmpty() {
-		KeyStore keyStore = SSLContexts.keyStore("", KEYSTORE_TYPE, null, false);
+		KeyStore keyStore = SSLContexts.keyStore("", KEYSTORE_TYPE, null, FileSource.CLASS_PATH);
 
 		assertNull(keyStore);
 	}
