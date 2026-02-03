@@ -40,8 +40,8 @@ public class StoreInfo {
 	private char[] password;
 
 	/**
-	 * Flag indicating whether the SSL certificate should be loaded from an external source (true) or from the jar file
-	 * (false).
+	 * Flag indicating whether the SSL certificate should be loaded from an external source ({@code true}) or from the jar
+	 * file ({@code false}). If {@code null}, the default behavior is applied (loading from the jar file).
 	 */
 	private Boolean external;
 
