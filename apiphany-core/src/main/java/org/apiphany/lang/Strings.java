@@ -198,6 +198,39 @@ public interface Strings {
 	 * @param encoding character encoding to use when reading the input stream
 	 * @param maxSize maximum size in bytes to read from the input stream
 	 * @param bufferSize buffer size to use when reading the input stream
+	 * @return the input stream as string
+	 * @throws IOException if an I/O error occurs
+	 * @throws IllegalArgumentException if maxSize or bufferSize are not strictly positive
+	 * @throws NullPointerException if inputStream or encoding is null
+	 */
+	static String toStringOrThrow(final InputStream inputStream, final Charset encoding, final int maxSize, final int bufferSize) throws IOException {
+		Require.that(maxSize > 0, "Maximum size must be strictly positive");
+		Require.that(bufferSize > 0, "Buffer size must be strictly positive");
+
+		final StringBuilder out = new StringBuilder();
+		try (Reader in = new InputStreamReader(inputStream, encoding)) {
+			final char[] buffer = new char[bufferSize];
+			long totalRead = 0;
+			int s = 0;
+			while ((s = in.read(buffer, 0, buffer.length)) >= 0) {
+				out.append(buffer, 0, s);
+				totalRead += s;
+				if (totalRead > maxSize) {
+					throw new IOException("Input stream exceeds maximum size of " + maxSize + " bytes");
+				}
+			}
+		}
+		return out.toString();
+	}
+
+	/**
+	 * Transforms an input stream to a string. If the input stream cannot be converted to string with the given parameters,
+	 * the result will be {@code null}.
+	 *
+	 * @param inputStream the input stream to read from
+	 * @param encoding character encoding to use when reading the input stream
+	 * @param maxSize maximum size in bytes to read from the input stream
+	 * @param bufferSize buffer size to use when reading the input stream
 	 * @param onError on error handler, must not be null
 	 * @return the input stream as string
 	 */
@@ -205,23 +238,7 @@ public interface Strings {
 			final Consumer<Exception> onError) {
 		try {
 			Objects.requireNonNull(onError, "On error handler cannot be null");
-			Require.that(maxSize > 0, "Maximum size must be strictly positive");
-			Require.that(bufferSize > 0, "Buffer size must be strictly positive");
-
-			final StringBuilder out = new StringBuilder();
-			try (Reader in = new InputStreamReader(inputStream, encoding)) {
-				final char[] buffer = new char[bufferSize];
-				long totalRead = 0;
-				int s = 0;
-				while ((s = in.read(buffer, 0, buffer.length)) >= 0) {
-					out.append(buffer, 0, s);
-					totalRead += s;
-					if (totalRead > maxSize) {
-						throw new IOException("Input stream exceeds maximum size of " + maxSize + " bytes");
-					}
-				}
-			}
-			return out.toString();
+			return toStringOrThrow(inputStream, encoding, maxSize, bufferSize);
 		} catch (Exception e) {
 			onError.accept(e);
 			return null;
@@ -273,8 +290,8 @@ public interface Strings {
 	/**
 	 * Returns a string from a file or {@code null} if any error occurred.
 	 * <p>
-	 * If the given path starts with a slash ("/"), it is considered a file system path otherwise, it is considered a
-	 * classpath resource.
+	 * If the given path is an absolute path, it is considered a file system path otherwise, it is considered a classpath
+	 * resource.
 	 *
 	 * @param path path to the file, must not be null
 	 * @param encoding the file encoding
@@ -288,7 +305,7 @@ public interface Strings {
 			Objects.requireNonNull(onError, "onError handler cannot be null");
 
 			try (InputStream inputStream = ResourceLocation.ofPath(path).open(path)) {
-				return toString(inputStream, encoding, bufferSize, onError);
+				return toStringOrThrow(inputStream, encoding, Integer.MAX_VALUE, bufferSize);
 			}
 		} catch (Exception e) {
 			onError.accept(e);
@@ -299,8 +316,8 @@ public interface Strings {
 	/**
 	 * Returns a string from a file or {@code null} if any error occurred.
 	 * <p>
-	 * If the given path starts with a slash ("/"), it is considered a file system path otherwise, it is considered a
-	 * classpath resource.
+	 * If the given path is an absolute path, it is considered a file system path otherwise, it is considered a classpath
+	 * resource.
 	 *
 	 * @param path path to the file
 	 * @param encoding the file encoding
@@ -316,8 +333,8 @@ public interface Strings {
 	 * {@link StandardCharsets#UTF_8} and uses a default buffer size of 4096 bytes. Use this method only if the file to be
 	 * read respects these conditions.
 	 * <p>
-	 * If the given path starts with a slash ("/"), it is considered a file system path otherwise, it is considered a
-	 * classpath resource.
+	 * If the given path is an absolute path, it is considered a file system path otherwise, it is considered a classpath
+	 * resource.
 	 *
 	 * @param path path to the file
 	 * @return the file content as string
@@ -331,8 +348,8 @@ public interface Strings {
 	 * {@link StandardCharsets#UTF_8} and uses a default buffer size of 4096 bytes. Use this method only if the file to be
 	 * read respects these conditions.
 	 * <p>
-	 * If the given path starts with a slash ("/"), it is considered a file system path otherwise, it is considered a
-	 * classpath resource.
+	 * If the given path is an absolute path, it is considered a file system path otherwise, it is considered a classpath
+	 * resource.
 	 *
 	 * @param path path to the file
 	 * @param onError on error handler
