@@ -118,7 +118,9 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 */
 	@Override
 	public void close() throws Exception {
-		closeTokenRefreshScheduler();
+		if (tokenRefreshScheduler.isManaged()) {
+			closeTokenRefreshScheduler();
+		}
 		if (getTokenClient() instanceof AutoCloseable closeable) {
 			closeable.close();
 		}
@@ -129,9 +131,6 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 */
 	@SuppressWarnings("resource")
 	private void closeTokenRefreshScheduler() {
-		if (tokenRefreshScheduler.isNotManaged()) {
-			return;
-		}
 		ScheduledExecutorService scheduler = tokenRefreshScheduler.unwrap();
 		boolean cancelled = null == scheduledFuture;
 		if (!cancelled) {
