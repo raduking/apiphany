@@ -102,7 +102,7 @@ class OAuth2HttpExchangeClientTest {
 		try (OAuth2HttpExchangeClient oAuth2HttpExchangeClient =
 				new OAuth2HttpExchangeClient(exchangeClient)) {
 			OAuth2TokenProvider tokenProvider = JavaObjects.cast(oAuth2HttpExchangeClient.getTokenProvider());
-			ScheduledExecutorService executorService = Fields.IgnoreAccess.get(tokenProvider, "tokenRefreshScheduler");
+			ScopedResource<ScheduledExecutorService> executorService = Fields.IgnoreAccess.get(tokenProvider, "tokenRefreshScheduler");
 
 			assertThat(executorService, notNullValue());
 		}

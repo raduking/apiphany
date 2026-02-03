@@ -8,8 +8,8 @@ import org.morphix.reflection.Reflection;
 /**
  * Utility class for Micrometer library related operations.
  * <p>
- * This class provides information about the presence of the Micrometer library in the class path and should not have
- * any Micrometer-specific dependencies itself.
+ * This class provides information about the presence of the Micrometer library in the classpath and should not have any
+ * Micrometer-specific dependencies itself.
  *
  * @author Radu Sebastian LAZIN
  */

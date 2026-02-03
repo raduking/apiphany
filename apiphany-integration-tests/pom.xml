@@ -430,6 +430,7 @@
 				<annotation.processing>full</annotation.processing>
 				<jmh.fork>1</jmh.fork>
 				<maven.build.timestamp.format>yyyyMMdd-HHmmss</maven.build.timestamp.format>
+				<benchmarks.directory>${project.build.directory}/benchmarks</benchmarks.directory>
 			</properties>
 			<build>
 				<plugins>
@@ -450,6 +451,27 @@
 						</configuration>
 					</plugin>
 
+					<!-- Create benchmarks output directory -->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<version>${maven.antrun.plugin.version}</version>
+						<executions>
+							<execution>
+								<id>create-benchmark-directory</id>
+								<phase>compile</phase>
+								<goals>
+									<goal>run</goal>
+								</goals>
+								<configuration>
+									<target>
+										<mkdir dir="${benchmarks.directory}" />
+									</target>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+
 					<!-- Benchmarking plugin -->
 					<!--
 						GitHub: https://github.com/metlos/jmh-maven-plugin
@@ -464,7 +486,7 @@
 						<configuration>
 							<fork>${jmh.fork}</fork>
 							<resultFormat>JSON</resultFormat>
-							<resultsFile>target/benchmarks/jmh-result-${maven.build.timestamp}.json</resultsFile>
+							<resultsFile>${benchmarks.directory}/jmh-result-${maven.build.timestamp}.json</resultsFile>
 						</configuration>
 					</plugin>
 				</plugins>

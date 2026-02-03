@@ -13,6 +13,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -25,6 +26,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.apiphany.lang.ScopedResource;
 import org.apiphany.lang.Strings;
 import org.apiphany.security.AuthenticationException;
 import org.apiphany.security.AuthenticationToken;
@@ -312,7 +314,7 @@ class OAuth2TokenProviderTest {
 
 		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
 				.registration(oAuth2Properties, CLIENT_REGISTRATION_NAME)
-				.tokenRefreshScheduler(scheduledExecutorService)
+				.tokenRefreshScheduler(ScopedResource.managed(scheduledExecutorService))
 				.tokenClientSupplier((cr, pd) -> tokenClient)
 				.build();
 
@@ -355,7 +357,7 @@ class OAuth2TokenProviderTest {
 		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
 				.properties(properties)
 				.registration(oAuth2Properties, CLIENT_REGISTRATION_NAME)
-				.tokenRefreshScheduler(scheduledExecutorService)
+				.tokenRefreshScheduler(ScopedResource.managed(scheduledExecutorService))
 				.tokenClientSupplier((cr, pd) -> tokenClient)
 				.build();
 
@@ -455,7 +457,7 @@ class OAuth2TokenProviderTest {
 
 		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
 				.registration(oAuth2Properties, CLIENT_REGISTRATION_NAME)
-				.tokenRefreshScheduler(scheduledExecutorService)
+				.tokenRefreshScheduler(ScopedResource.managed(scheduledExecutorService))
 				.tokenClientSupplier((cr, pd) -> localTokenClient)
 				.build();
 
@@ -496,7 +498,7 @@ class OAuth2TokenProviderTest {
 		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
 				.properties(properties)
 				.registration(oAuth2Properties)
-				.tokenRefreshScheduler(scheduledExecutorService)
+				.tokenRefreshScheduler(ScopedResource.managed(scheduledExecutorService))
 				.tokenClientSupplier((cr, pd) -> localTokenClient)
 				.build();
 
@@ -522,7 +524,7 @@ class OAuth2TokenProviderTest {
 
 		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
 				.registration(oAuth2Properties)
-				.tokenRefreshScheduler(scheduledExecutorService)
+				.tokenRefreshScheduler(ScopedResource.managed(scheduledExecutorService))
 				.build();
 
 		try (OAuth2TokenProvider localTokenProvider = OAuth2TokenProvider.of(specification)) {
@@ -530,6 +532,30 @@ class OAuth2TokenProviderTest {
 		}
 
 		verify(scheduledExecutorService).close();
+		verifyNoMoreInteractions(scheduledExecutorService);
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldNotCloseTheSchedulerIfNotManaged() throws Exception {
+		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
+		doReturn(clientRegistration).when(oAuth2Properties).getClientRegistration(CLIENT_REGISTRATION_NAME);
+		doReturn(true).when(clientRegistration).hasClientId();
+		doReturn(true).when(clientRegistration).hasClientSecret();
+		doReturn(Map.of(PROVIDER_NAME, providerDetails)).when(oAuth2Properties).getProvider();
+
+		ScheduledExecutorService scheduledExecutorService = mock(ScheduledExecutorService.class);
+
+		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
+				.registration(oAuth2Properties)
+				.tokenRefreshScheduler(scheduledExecutorService)
+				.build();
+
+		try (OAuth2TokenProvider localTokenProvider = OAuth2TokenProvider.of(specification)) {
+			// empty
+		}
+
+		verify(scheduledExecutorService, never()).close();
 		verifyNoMoreInteractions(scheduledExecutorService);
 	}
 

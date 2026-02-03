@@ -185,17 +185,19 @@ public final class Bytes {
 
 	/**
 	 * Reads all bytes from a file located at the given path. If the path is absolute, it reads from the file system;
-	 * otherwise, it attempts to read the file as a class path resource. This method is not intended for large streams and
-	 * is also limited to read up to {@code Integer.MAX_VALUE} bytes from the file.
+	 * otherwise, it attempts to read the file as a classpath resource. This method is not intended for large streams and is
+	 * also limited to read up to {@code Integer.MAX_VALUE} bytes from the file.
 	 *
-	 * @param path the file path (absolute or class path resource)
+	 * @param path the file path (absolute or classpath resource)
 	 * @param onError a consumer to handle exceptions that may occur during file reading
 	 * @return a byte array containing the file's contents, or an empty array if an error occurred
 	 * @throws NullPointerException if the path is null
 	 */
 	public static byte[] fromFile(final String path, final Consumer<Exception> onError) {
-		Objects.requireNonNull(path, "File path cannot be null");
 		try {
+			Objects.requireNonNull(path, "File path cannot be null");
+			Objects.requireNonNull(onError, "On error consumer cannot be null");
+
 			Path filePath = Paths.get(path);
 			if (filePath.isAbsolute()) {
 				return Files.readAllBytes(filePath);
@@ -214,10 +216,10 @@ public final class Bytes {
 
 	/**
 	 * Reads all bytes from a file located at the given path. If the path is absolute, it reads from the file system;
-	 * otherwise, it attempts to read the file as a class path resource. This method is not intended for large streams and
-	 * is also limited to read up to {@code Integer.MAX_VALUE} bytes from the file.
+	 * otherwise, it attempts to read the file as a classpath resource. This method is not intended for large streams and is
+	 * also limited to read up to {@code Integer.MAX_VALUE} bytes from the file.
 	 *
-	 * @param path the file path (absolute or class path resource)
+	 * @param path the file path (absolute or classpath resource)
 	 * @return a byte array containing the file's contents, or an empty array if an error occurred
 	 * @throws NullPointerException if the path is null
 	 */

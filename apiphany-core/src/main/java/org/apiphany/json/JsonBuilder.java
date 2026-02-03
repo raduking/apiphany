@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 /**
  * This will serialize/de-serialize any JSON serializable/deserializable object to {@link String}/{@link Object}. This
  * class is used to uniformly serialize/de-serialize objects across the entire project. If no JSON library was found in
- * the class path a warning will be issued and the {@link JsonBuilder#toJson(Object)} method will use the objects
+ * the classpath a warning will be issued and the {@link JsonBuilder#toJson(Object)} method will use the objects
  * {@link #toString()} method.
  * <p>
  * For serialization to {@link String} use {@link #toJson(Object)}.<br/>
@@ -69,9 +69,9 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	protected static class ErrorMessage {
 
 		/**
-		 * Error message logged when no JSON library was found in the class path.
+		 * Error message logged when no JSON library was found in the classpath.
 		 */
-		public static final String JSON_LIBRARY_NOT_FOUND = "No JSON library found in the class path (like Jackson or Gson)";
+		public static final String JSON_LIBRARY_NOT_FOUND = "No JSON library found in the classpath (like Jackson or Gson)";
 
 		/**
 		 * Error message logged when an object could not be serialized.
@@ -362,9 +362,9 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	}
 
 	/**
-	 * Returns {@code true} if Jackson library is present in the class path.
+	 * Returns {@code true} if Jackson library is present in the classpath.
 	 *
-	 * @return true if Jackson library is present in the class path
+	 * @return true if Jackson library is present in the classpath
 	 */
 	public static boolean isJacksonPresent() {
 		return JacksonLibrary.INFORMATION.left().booleanValue();

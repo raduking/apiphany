@@ -33,7 +33,6 @@ import org.junit.jupiter.params.provider.MethodSource;
  */
 class StringsTest {
 
-	private static final String SIMULATED_ERROR = "Simulated error";
 	private static final String TEST_STRING = "someString";
 	private static final Integer TEST_INTEGER = 10;
 	private static final String TEST_INTEGER_STRING = TEST_INTEGER.toString();
@@ -215,6 +214,8 @@ class StringsTest {
 	@Nested
 	class ToStringTests {
 
+		private static final String SIMULATED_ERROR_MESSAGE = "Boom: Simulated error";
+
 		@Test
 		void shouldReadATextFileWithFileInputStreamAndSpecifiedCharsetAndBuffer() throws IOException {
 			try (FileInputStream fileInputStream = new FileInputStream("src/test/resources/text-file.txt")) {
@@ -236,16 +237,12 @@ class StringsTest {
 		@Test
 		void shouldDelegateErrorToOnErrorConsumerWhenToStringWithInputStreamThrowsException() {
 			Runnable runnable = mock(Runnable.class);
-			Consumer<Exception> onError = e -> {
-				runnable.run();
-				assertThat(e, instanceOf(IOException.class));
-				assertThat(e.getMessage(), equalTo(SIMULATED_ERROR));
-			};
+			Consumer<Exception> onError = onErrorHandler(runnable, IOException.class, SIMULATED_ERROR_MESSAGE);
 			@SuppressWarnings("resource")
 			InputStream throwingStream = new InputStream() {
 				@Override
 				public int read() throws IOException {
-					throw new IOException(SIMULATED_ERROR);
+					throw new IOException(SIMULATED_ERROR_MESSAGE);
 				}
 			};
 
@@ -259,11 +256,7 @@ class StringsTest {
 		void shouldDelegateErrorToOnErrorConsumerWhenToStringWithInputStreamAndSizeThrowsException() throws IOException {
 			int maxSize = 10;
 			Runnable runnable = mock(Runnable.class);
-			Consumer<Exception> onError = e -> {
-				runnable.run();
-				assertThat(e, instanceOf(IOException.class));
-				assertThat(e.getMessage(), equalTo("Input stream exceeds maximum size of " + maxSize + " bytes"));
-			};
+			Consumer<Exception> onError = onErrorHandler(runnable, IOException.class, "Input stream exceeds maximum size of " + maxSize + " bytes");
 
 			String result;
 			try (FileInputStream fileInputStream = new FileInputStream("src/test/resources/text-file.txt")) {
@@ -272,6 +265,43 @@ class StringsTest {
 
 			assertThat(result, nullValue());
 			verify(runnable).run();
+		}
+
+		@Test
+		void shouldDelegateErrorToOnErrorConsumerWhenMaxSizeIsNegative() throws IOException {
+			Runnable runnable = mock(Runnable.class);
+			Consumer<Exception> onError = onErrorHandler(runnable, IllegalArgumentException.class, "Maximum size must be strictly positive");
+
+			String result;
+			try (FileInputStream fileInputStream = new FileInputStream("src/test/resources/text-file.txt")) {
+				result = Strings.toString(fileInputStream, StandardCharsets.UTF_8, -1, 10, onError);
+			}
+
+			assertThat(result, nullValue());
+			verify(runnable).run();
+		}
+
+		@Test
+		void shouldDelegateErrorToOnErrorConsumerWhenBufferSizeIsNegative() throws IOException {
+			Runnable runnable = mock(Runnable.class);
+			Consumer<Exception> onError = onErrorHandler(runnable, IllegalArgumentException.class, "Buffer size must be strictly positive");
+
+			String result;
+			try (FileInputStream fileInputStream = new FileInputStream("src/test/resources/text-file.txt")) {
+				result = Strings.toString(fileInputStream, StandardCharsets.UTF_8, 10, -1, onError);
+			}
+
+			assertThat(result, nullValue());
+			verify(runnable).run();
+		}
+
+		private static Consumer<Exception> onErrorHandler(final Runnable runnable,
+				final Class<? extends Exception> expectedException, final String expectedMessage) {
+			return e -> {
+				runnable.run();
+				assertThat(e, instanceOf(expectedException));
+				assertThat(e.getMessage(), equalTo(expectedMessage));
+			};
 		}
 	}
 

@@ -2,6 +2,7 @@
 
 `1.1.3`
 
+- Changed `OAuth2TokenProviderSpec` from record to class and added builder exclusive instantiation.
 - Fixed `Strings.fromPath` to work on absolute paths that do not start with `/`.
 - Added a limit of `Integer.MAX_VALUE` to the maximum number of bytes the `Strings.fromPath` methods are allowed to read much like `InputStream.readAllBytes`.
 - Added `Bytes.fromFile` to read a byte array from a given file.
@@ -426,7 +427,7 @@ Changed `AuthenticationException` to extend `SecurityException`.
 - Added `@FieldName` annotation which is replacing Jackson's `@JsonProperty` and is JSON library agnostic.
 - Added `@FieldOrder` annotation which is replacing Jackson's `@JsonPropertyOrder` and is JSON library agnostic.
 - Added `@AsValue` annotation which is replacing Jackson's `@JsonValue` and is JSON library agnostic.
-- Added `ApiphanyAnnotationIntrospector` which handles the newly added annotations when Jackson is present in the class path so that the JSON library is abstracted away.
+- Added `ApiphanyAnnotationIntrospector` which handles the newly added annotations when Jackson is present in the classpath so that the JSON library is abstracted away.
 - Added `@Sensitive` annotation for sensitive fields that will be deserialized but not serialized for security.
 - Added `SensitiveAnnotationIntrospector` that handles the `@Sensitive` annotation.
 - Changed `BasicMeters` class so that is metric library agnostic.
