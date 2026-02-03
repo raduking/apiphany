@@ -212,7 +212,7 @@ public interface Strings {
 		try (Reader in = new InputStreamReader(inputStream, encoding)) {
 			final char[] buffer = new char[bufferSize];
 			long totalRead = 0;
-			int s = 0;
+			int s;
 			while ((s = in.read(buffer, 0, buffer.length)) >= 0) {
 				out.append(buffer, 0, s);
 				totalRead += s;
