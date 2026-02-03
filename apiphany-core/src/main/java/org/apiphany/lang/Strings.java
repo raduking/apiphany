@@ -1,19 +1,16 @@
 package org.apiphany.lang;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.function.Consumer;
 
 import org.apiphany.io.IOStreams;
+import org.apiphany.io.ResourceLocation;
 import org.morphix.lang.function.Consumers;
 
 /**
@@ -290,14 +287,7 @@ public interface Strings {
 			Objects.requireNonNull(path, "File path cannot be null");
 			Objects.requireNonNull(onError, "onError handler cannot be null");
 
-			Path filePath = Paths.get(path);
-			if (filePath.isAbsolute()) {
-				return Files.readString(filePath, encoding);
-			}
-			try (InputStream inputStream = Strings.class.getClassLoader().getResourceAsStream(path)) {
-				if (null == inputStream) {
-					throw new FileNotFoundException("Classpath resource not found: " + path);
-				}
+			try (InputStream inputStream = ResourceLocation.ofPath(path).open(path)) {
 				return toString(inputStream, encoding, bufferSize, onError);
 			}
 		} catch (Exception e) {

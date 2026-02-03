@@ -1,8 +1,10 @@
 package org.apiphany.io;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 
 /**
  * Enumeration representing the possible locations / sources from which a resource can be loaded.
@@ -25,7 +27,11 @@ public enum ResourceLocation {
 		 */
 		@Override
 		public InputStream open(final String location) throws IOException {
-			return Thread.currentThread().getContextClassLoader().getResourceAsStream(location);
+			InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(location);
+			if (null == inputStream) {
+				throw new FileNotFoundException("Classpath resource not found: " + location);
+			}
+			return inputStream;
 		}
 	},
 
@@ -55,4 +61,24 @@ public enum ResourceLocation {
 	 * @throws IOException if an I/O error occurs while opening the stream
 	 */
 	public abstract InputStream open(String location) throws IOException;
+
+	/**
+	 * Determines the ResourceLocation based on the given Path.
+	 *
+	 * @param path the path to evaluate
+	 * @return FILE_SYSTEM if the path is absolute, otherwise CLASS_PATH
+	 */
+	public static ResourceLocation ofPath(final Path path) {
+		return path.isAbsolute() ? FILE_SYSTEM : CLASS_PATH;
+	}
+
+	/**
+	 * Determines the ResourceLocation based on the given Path as a {@link String}.
+	 *
+	 * @param path the path to evaluate
+	 * @return FILE_SYSTEM if the path is absolute, otherwise CLASS_PATH
+	 */
+	public static ResourceLocation ofPath(final String path) {
+		return ofPath(Path.of(path));
+	}
 }

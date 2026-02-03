@@ -1,14 +1,11 @@
 package org.apiphany.lang;
 
-import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+import org.apiphany.io.ResourceLocation;
 import org.morphix.lang.function.Consumers;
 import org.morphix.reflection.Constructors;
 
@@ -198,14 +195,7 @@ public final class Bytes {
 			Objects.requireNonNull(path, "File path cannot be null");
 			Objects.requireNonNull(onError, "On error consumer cannot be null");
 
-			Path filePath = Paths.get(path);
-			if (filePath.isAbsolute()) {
-				return Files.readAllBytes(filePath);
-			}
-			try (InputStream inputStream = Bytes.class.getClassLoader().getResourceAsStream(path)) {
-				if (null == inputStream) {
-					throw new FileNotFoundException("Classpath resource not found: " + path);
-				}
+			try (InputStream inputStream = ResourceLocation.ofPath(path).open(path)) {
 				return inputStream.readAllBytes();
 			}
 		} catch (Exception e) {

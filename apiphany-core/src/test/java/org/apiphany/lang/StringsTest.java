@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -337,7 +336,7 @@ class StringsTest {
 			Runnable runnable = mock(Runnable.class);
 			Consumer<Exception> onError = e -> {
 				runnable.run();
-				assertThat(e, instanceOf(NoSuchFileException.class));
+				assertThat(e, instanceOf(FileNotFoundException.class));
 			};
 
 			String result = Strings.fromFile("/unknown-file.txt", StandardCharsets.UTF_8, 10, onError);
@@ -351,7 +350,7 @@ class StringsTest {
 			Runnable runnable = mock(Runnable.class);
 			Consumer<Exception> onError = e -> {
 				runnable.run();
-				assertThat(e, instanceOf(NoSuchFileException.class));
+				assertThat(e, instanceOf(FileNotFoundException.class));
 			};
 
 			String result = Strings.fromFile("/unknown-file.txt", onError);
