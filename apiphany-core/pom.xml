@@ -469,9 +469,6 @@
 			<id>benchmark</id>
 			<properties>
 				<annotation.processing>full</annotation.processing>
-				<jmh.fork>1</jmh.fork>
-				<maven.build.timestamp.format>yyyyMMdd-HHmmss</maven.build.timestamp.format>
-				<benchmarks.directory>${project.build.directory}/benchmarks</benchmarks.directory>
 			</properties>
 			<build>
 				<plugins>
@@ -496,7 +493,6 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-antrun-plugin</artifactId>
-						<version>${maven.antrun.plugin.version}</version>
 						<executions>
 							<execution>
 								<id>create-benchmark-directory</id>
@@ -523,12 +519,6 @@
 					<plugin>
 						<groupId>pw.krejci</groupId>
 						<artifactId>jmh-maven-plugin</artifactId>
-						<version>${jmh.maven.plugin.version}</version>
-						<configuration>
-							<fork>${jmh.fork}</fork>
-							<resultFormat>JSON</resultFormat>
-							<resultsFile>${benchmarks.directory}/jmh-result-${maven.build.timestamp}.json</resultsFile>
-						</configuration>
 					</plugin>
 				</plugins>
 			</build>
