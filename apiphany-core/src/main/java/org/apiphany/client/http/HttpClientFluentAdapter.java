@@ -1,6 +1,7 @@
 package org.apiphany.client.http;
 
 import org.apiphany.ApiClientFluentAdapter;
+import org.apiphany.http.HttpMethod;
 
 /**
  * Fluent adapter for HTTP calls.
@@ -111,4 +112,13 @@ public class HttpClientFluentAdapter {
 		return apiClientFluentAdapter.method(httpExchangeClient.trace());
 	}
 
+	/**
+	 * Sets the request method to a custom value.
+	 *
+	 * @param method the request method
+	 * @return this
+	 */
+	public ApiClientFluentAdapter method(final HttpMethod method) {
+		return apiClientFluentAdapter.method(httpExchangeClient.method(method));
+	}
 }

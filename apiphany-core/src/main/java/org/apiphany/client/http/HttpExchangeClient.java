@@ -95,6 +95,16 @@ public interface HttpExchangeClient extends ExchangeClient {
 	}
 
 	/**
+	 * Maps the given {@link HttpMethod} to a {@link RequestMethod}.
+	 *
+	 * @param httpMethod the HTTP method
+	 * @return the request method
+	 */
+	default RequestMethod method(final HttpMethod httpMethod) {
+		return httpMethod;
+	}
+
+	/**
 	 * Redact the {@link HttpHeader#AUTHORIZATION} header.
 	 *
 	 * @return redacted headers predicate
