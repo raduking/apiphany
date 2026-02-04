@@ -42,7 +42,7 @@ public interface JavaArrays {
 	 * arrays in scenarios such as processing method arguments, handling collections, or dealing with variable-length
 	 * inputs, it simplifies the handling of different input types by providing a consistent array representation.
 	 * <ul>
-	 * <li>If the value is {@code null}, {@code null} is returned.</li>
+	 * <li>If the value is {@code null}, an empty array is returned.</li>
 	 * <li>If the value is already an array, it is converted to Object array</li>
 	 * <li>If the value is an instance of {@link Iterable}, it is converted to an Object array using streams.</li>
 	 * <li>If the value is neither an array nor an {@link Iterable}, a single-element Object array is returned containing
@@ -56,7 +56,7 @@ public interface JavaArrays {
 	 */
 	static Object[] toArray(final Object value) {
 		if (null == value) {
-			return null;
+			return new Object[0];
 		}
 		Class<?> type = value.getClass();
 
@@ -85,5 +85,15 @@ public interface JavaArrays {
 	 */
 	static boolean isEmpty(final Object[] array) {
 		return array == null || array.length == 0;
+	}
+
+	/**
+	 * Checks if the given array is not null and has at least one element.
+	 *
+	 * @param array the array to check
+	 * @return true if the array is not null and not empty, false otherwise
+	 */
+	static boolean isNotEmpty(final Object[] array) {
+		return !isEmpty(array);
 	}
 }
