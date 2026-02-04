@@ -117,7 +117,7 @@ public class ExchangeKeys {
 				exchangeKeys.serverWriteKey = read(buffer, keyLen);
 				// no IVs for stream ciphers
 			}
-			case NO_ENCRYPTION -> {
+			default -> {
 				// no keys or IVs at all
 			}
 		}

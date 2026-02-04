@@ -17,6 +17,7 @@
 - Renamed `ApiphanyAnnotationIntrospector` to `ApiphanyJackson2AnnotationIntrospector`.
 - Renamed `SensitiveAnnotationIntrospector` to `SensitiveJackson2AnnotationIntrospector`.
 - Added `JavaArrays.isEmpty` to check if an array is `null` or empty.
+- Added `LibraryDescriptor` class to describe a library support (like Jackson 2 or Micrometer).
 
 ---
 

@@ -10,7 +10,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Objects;
 
-import org.apiphany.lang.Pair;
+import org.apiphany.lang.LibraryDescriptor;
 import org.apiphany.lang.Strings;
 import org.junit.jupiter.api.Test;
 import org.morphix.reflection.Constructors;
@@ -244,14 +244,14 @@ class JsonBuilderTest {
 
 	@Test
 	void shouldReturnAJsonBuilderInstanceIfNoLibraryInfoIsProvided() {
-		JsonBuilder instance = JsonBuilder.initializeInstance((Pair<Boolean, Class<? extends JsonBuilder>>[]) null);
+		JsonBuilder instance = JsonBuilder.initializeInstance((LibraryDescriptor<? extends JsonBuilder>[]) null);
 
 		assertThat(instance.getClass(), equalTo(JsonBuilder.class));
 	}
 
 	@Test
 	void shouldReturnAJsonBuilderInstanceIfNoLibraryIsInTheClassPath() {
-		JsonBuilder instance = JsonBuilder.initializeInstance(Pair.of(false, null));
+		JsonBuilder instance = JsonBuilder.initializeInstance(LibraryDescriptor.of(false, null));
 
 		assertThat(instance.getClass(), equalTo(JsonBuilder.class));
 	}

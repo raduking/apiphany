@@ -5,7 +5,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 import org.apiphany.json.jackson2.Jackson2Library;
-import org.apiphany.lang.Pair;
+import org.apiphany.lang.LibraryDescriptor;
 import org.apiphany.lang.Strings;
 import org.morphix.convert.Converter;
 import org.morphix.reflection.Constructors;
@@ -101,7 +101,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 		/**
 		 * Singleton instance.
 		 */
-		private static final JsonBuilder INSTANCE = initializeInstance(Jackson2Library.INFORMATION);
+		private static final JsonBuilder INSTANCE = initializeInstance(Jackson2Library.DESCRIPTOR);
 	}
 
 	/**
@@ -131,15 +131,15 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	/**
 	 * Returns an instance based on the available JSON libraries.
 	 *
-	 * @param libraries the libraries information list
+	 * @param libraries the library descriptor list
 	 * @return a JSON builder
 	 */
 	@SafeVarargs
-	protected static JsonBuilder initializeInstance(final Pair<Boolean, Class<? extends JsonBuilder>>... libraries) {
+	protected static JsonBuilder initializeInstance(final LibraryDescriptor<? extends JsonBuilder>... libraries) {
 		if (null != libraries) {
-			for (Pair<Boolean, Class<? extends JsonBuilder>> libraryInfo : libraries) {
-				if (libraryInfo.left().booleanValue()) {
-					return Constructors.IgnoreAccess.newInstance(libraryInfo.right());
+			for (LibraryDescriptor<? extends JsonBuilder> library : libraries) {
+				if (library.isPresent()) {
+					return Constructors.IgnoreAccess.newInstance(library.getSpecificClass());
 				}
 			}
 		}
@@ -367,7 +367,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 * @return true if Jackson library is present in the classpath
 	 */
 	public static boolean isJacksonPresent() {
-		return Jackson2Library.INFORMATION.left().booleanValue();
+		return Jackson2Library.DESCRIPTOR.isPresent();
 	}
 
 	/**

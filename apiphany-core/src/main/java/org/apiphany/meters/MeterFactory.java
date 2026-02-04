@@ -3,7 +3,7 @@ package org.apiphany.meters;
 import java.util.Collections;
 import java.util.List;
 
-import org.apiphany.lang.Pair;
+import org.apiphany.lang.LibraryDescriptor;
 import org.apiphany.lang.builder.PropertyNameBuilder;
 import org.apiphany.meters.micrometer.MicrometerLibrary;
 import org.morphix.reflection.Constructors;
@@ -32,21 +32,21 @@ public class MeterFactory {
 		/**
 		 * The meter factory.
 		 */
-		private static final MeterFactory METER_FACTORY = initializeInstance(MicrometerLibrary.INFORMATION);
+		private static final MeterFactory METER_FACTORY = initializeInstance(MicrometerLibrary.DESCRIPTOR);
 	}
 
 	/**
 	 * Returns an instance based on the available meter libraries.
 	 *
-	 * @param libraries the libraries information list
+	 * @param libraries the library descriptor list
 	 * @return a meter factory
 	 */
 	@SafeVarargs
-	protected static MeterFactory initializeInstance(final Pair<Boolean, Class<? extends MeterFactory>>... libraries) {
+	protected static MeterFactory initializeInstance(final LibraryDescriptor<? extends MeterFactory>... libraries) {
 		if (null != libraries) {
-			for (Pair<Boolean, Class<? extends MeterFactory>> libraryInfo : libraries) {
-				if (libraryInfo.left().booleanValue()) {
-					return Constructors.IgnoreAccess.newInstance(libraryInfo.right());
+			for (LibraryDescriptor<? extends MeterFactory> library : libraries) {
+				if (library.isPresent()) {
+					return Constructors.IgnoreAccess.newInstance(library.getSpecificClass());
 				}
 			}
 		}
