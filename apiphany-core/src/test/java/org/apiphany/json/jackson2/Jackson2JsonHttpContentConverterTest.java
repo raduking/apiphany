@@ -8,13 +8,13 @@ import org.apiphany.io.ContentType;
 import org.junit.jupiter.api.Test;
 
 /**
- * Test class for {@link JacksonJsonHttpContentConverter}.
+ * Test class for {@link Jackson2JsonHttpContentConverter}.
  *
  * @author Radu Sebastian LAZIN
  */
-class JacksonJsonHttpContentConverterTest {
+class Jackson2JsonHttpContentConverterTest {
 
-	private final JacksonJsonHttpContentConverter<String> converter = new JacksonJsonHttpContentConverter<>();
+	private final Jackson2JsonHttpContentConverter<String> converter = new Jackson2JsonHttpContentConverter<>();
 
 	@Test
 	void shouldReturnTrueIfObjectIsConvertible() {

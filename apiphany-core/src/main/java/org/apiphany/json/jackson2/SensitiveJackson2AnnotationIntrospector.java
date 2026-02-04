@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.introspect.Annotated;
 import com.fasterxml.jackson.databind.introspect.NopAnnotationIntrospector;
 
 /**
- * Custom Jackson {@link com.fasterxml.jackson.databind.AnnotationIntrospector} to handle fields annotated with
+ * Custom Jackson 2 {@link com.fasterxml.jackson.databind.AnnotationIntrospector} to handle fields annotated with
  * {@link Sensitive}.
  * <p>
  * When enabled, any field marked with {@link Sensitive} will be serialized as write-only, meaning it will be ignored
@@ -23,7 +23,7 @@ import com.fasterxml.jackson.databind.introspect.NopAnnotationIntrospector;
  *
  * @author Radu Sebastian LAZIN
  */
-public class SensitiveAnnotationIntrospector extends NopAnnotationIntrospector {
+public class SensitiveJackson2AnnotationIntrospector extends NopAnnotationIntrospector {
 
 	/**
 	 * The serial version UID required by serializable classes.
@@ -37,11 +37,11 @@ public class SensitiveAnnotationIntrospector extends NopAnnotationIntrospector {
 	private final boolean enabled;
 
 	/**
-	 * Constructs a new {@link SensitiveAnnotationIntrospector}.
+	 * Constructs a new {@link SensitiveJackson2AnnotationIntrospector}.
 	 *
 	 * @param enabled flag indicating what to do with {@link Sensitive} fields.
 	 */
-	public SensitiveAnnotationIntrospector(final boolean enabled) {
+	public SensitiveJackson2AnnotationIntrospector(final boolean enabled) {
 		this.enabled = enabled;
 	}
 
@@ -50,7 +50,7 @@ public class SensitiveAnnotationIntrospector extends NopAnnotationIntrospector {
 	 *
 	 * @return an introspector configured to hide sensitive fields
 	 */
-	public static SensitiveAnnotationIntrospector hideSensitive() {
+	public static SensitiveJackson2AnnotationIntrospector hideSensitive() {
 		return InstanceHolder.HIDE;
 	}
 
@@ -59,7 +59,7 @@ public class SensitiveAnnotationIntrospector extends NopAnnotationIntrospector {
 	 *
 	 * @return an introspector configured to allow all fields
 	 */
-	public static SensitiveAnnotationIntrospector allowSensitive() {
+	public static SensitiveJackson2AnnotationIntrospector allowSensitive() {
 		return InstanceHolder.ALLOW;
 	}
 
@@ -84,11 +84,11 @@ public class SensitiveAnnotationIntrospector extends NopAnnotationIntrospector {
 		/**
 		 * Singleton instance configured to hide sensitive fields.
 		 */
-		private static final SensitiveAnnotationIntrospector HIDE = new SensitiveAnnotationIntrospector(true);
+		private static final SensitiveJackson2AnnotationIntrospector HIDE = new SensitiveJackson2AnnotationIntrospector(true);
 
 		/**
 		 * Singleton instance configured to allow all fields.
 		 */
-		private static final SensitiveAnnotationIntrospector ALLOW = new SensitiveAnnotationIntrospector(false);
+		private static final SensitiveJackson2AnnotationIntrospector ALLOW = new SensitiveJackson2AnnotationIntrospector(false);
 	}
 }

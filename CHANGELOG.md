@@ -12,6 +12,9 @@
 - Changed `ForkedHttpsServerRunner` to run any HTTPS server that has a constructor like `MyHttpsServer(int, SSLProperties)` in a separate process so that it can have a separate SSL context.
 - Updated `logback-classic` to `1.5.27`.
 - Renamed package `json.jackson` to `json.jackson2` to better reflect the Jackson version used.
+- Renamed all classes that use Jackson 2 library to have `Jackson2` in the name instead of `Jackson` only.
+- Renamed `ApiphanyAnnotationIntrospector` to `ApiphanyJackson2AnnotationIntrospector`.
+- Renamed `SensitiveAnnotationIntrospector` to `SensitiveJackson2AnnotationIntrospector`.
 
 ---
 

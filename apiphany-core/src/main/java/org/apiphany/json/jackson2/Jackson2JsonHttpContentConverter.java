@@ -11,20 +11,20 @@ import org.morphix.reflection.GenericClass;
 
 /**
  * A {@link ContentConverter} implementation that converts JSON content to objects of type {@code T}. This converter
- * uses the {@link JacksonJsonBuilder} to de-serialize JSON strings into Java objects. It supports content with the
+ * uses the {@link Jackson2JsonBuilder} to de-serialize JSON strings into Java objects. It supports content with the
  * {@code application/json} content type.
  *
  * @param <T> the type of the object to which the JSON content will be converted.
  *
  * @author Radu Sebastian LAZIN
  */
-public class JacksonJsonHttpContentConverter<T> implements HttpContentConverter<T> {
+public class Jackson2JsonHttpContentConverter<T> implements HttpContentConverter<T> {
 
 	/**
-	 * Constructs a new {@link JacksonJsonHttpContentConverter}. This constructor is intentionally empty, as no special
+	 * Constructs a new {@link Jackson2JsonHttpContentConverter}. This constructor is intentionally empty, as no special
 	 * initialization is required.
 	 */
-	public JacksonJsonHttpContentConverter() {
+	public Jackson2JsonHttpContentConverter() {
 		// empty
 	}
 
@@ -37,11 +37,11 @@ public class JacksonJsonHttpContentConverter<T> implements HttpContentConverter<
 	 * @return the de-serialized object of type {@code T}
 	 * @throws UnsupportedOperationException if the input object is not a JSON string
 	 * @see ContentConverter#from(Object, ApiMimeType, Class)
-	 * @see JacksonJsonBuilder#fromJson(Object, Class)
+	 * @see Jackson2JsonBuilder#fromJson(Object, Class)
 	 */
 	@Override
 	public T from(final Object obj, final ApiMimeType mimeType, final Class<T> targetClass) {
-		T result = JacksonJsonBuilder.fromJson(obj, targetClass);
+		T result = Jackson2JsonBuilder.fromJson(obj, targetClass);
 		if (null == result && null != obj) {
 			throw new ObjectConverterException("Error converting JSON response to " + targetClass.getName());
 		}
@@ -57,11 +57,11 @@ public class JacksonJsonHttpContentConverter<T> implements HttpContentConverter<
 	 * @return the de-serialized object of type {@code T}
 	 * @throws UnsupportedOperationException if the input object is not a JSON
 	 * @see ContentConverter#from(Object, ApiMimeType, GenericClass)
-	 * @see JacksonJsonBuilder#fromJson(Object, GenericClass)
+	 * @see Jackson2JsonBuilder#fromJson(Object, GenericClass)
 	 */
 	@Override
 	public T from(final Object obj, final ApiMimeType mimeType, final GenericClass<T> targetGenericClass) {
-		T result = JacksonJsonBuilder.fromJson(obj, targetGenericClass);
+		T result = Jackson2JsonBuilder.fromJson(obj, targetGenericClass);
 		if (null == result && null != obj) {
 			throw new ObjectConverterException("Error converting JSON response to " + targetGenericClass.getType().getTypeName());
 		}

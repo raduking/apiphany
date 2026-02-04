@@ -8,15 +8,15 @@ import org.junit.jupiter.api.Test;
 import org.morphix.reflection.Constructors;
 
 /**
- * Test class for {@link JacksonLibrary}.
+ * Test class for {@link Jackson2Library}.
  *
  * @author Radu Sebastian LAZIN
  */
-class JacksonLibraryTest {
+class Jackson2LibraryTest {
 
 	@Test
 	void shouldThrowExceptionOnCallingConstructor() {
-		UnsupportedOperationException unsupportedOperationException = assertDefaultConstructorThrows(JacksonLibrary.class);
+		UnsupportedOperationException unsupportedOperationException = assertDefaultConstructorThrows(Jackson2Library.class);
 		assertThat(unsupportedOperationException.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
 	}
 

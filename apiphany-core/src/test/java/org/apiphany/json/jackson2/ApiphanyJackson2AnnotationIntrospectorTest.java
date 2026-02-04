@@ -9,11 +9,11 @@ import org.apiphany.lang.annotation.FieldName;
 import org.junit.jupiter.api.Test;
 
 /**
- * Test class for {@link ApiphanyAnnotationIntrospector}.
+ * Test class for {@link ApiphanyJackson2AnnotationIntrospector}.
  *
  * @author Radu Sebastian LAZIN
  */
-class ApiphanyAnnotationIntrospectorTest {
+class ApiphanyJackson2AnnotationIntrospectorTest {
 
 	private static final String ERROR = "some error";
 	private static final String ERROR_DESCRIPTION = "some error description";
