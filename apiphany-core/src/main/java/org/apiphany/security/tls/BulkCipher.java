@@ -319,8 +319,8 @@ public enum BulkCipher {
 		}
 		return switch (type()) {
 			case AEAD -> switch (info.algorithm()) {
-				default -> new GCMParameterSpec(tagLength() * 8, fullIV);
 				case CHACHA20_POLY1305 -> new IvParameterSpec(fullIV);
+				default -> new GCMParameterSpec(tagLength() * 8, fullIV);
 			};
 			case BLOCK -> new IvParameterSpec(fullIV);
 			case STREAM, NO_ENCRYPTION -> null;

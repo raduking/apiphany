@@ -10,6 +10,7 @@
 - Added `Bytes.fromFile` to read a byte array from a given file.
 - Renamed `ForkedLegacyHttpsServerRunner` to `ForkedHttpsServerRunner`.
 - Changed `ForkedHttpsServerRunner` to run any HTTPS server that has a constructor like `MyHttpsServer(int, SSLProperties)` in a separate process so that it can have a separate SSL context.
+- Updated `logback-classic` to `1.5.27`.
 
 ---
 

@@ -70,7 +70,7 @@
 		<hamcrest.version>3.0</hamcrest.version>
 		<junit.jupiter.version>5.12.2</junit.jupiter.version>
 		<mockito.version>5.17.0</mockito.version>
-		<logback.version>1.5.22</logback.version>
+		<logback.version>1.5.27</logback.version>
 		<spring.security.version>6.5.7</spring.security.version>
 		<testcontainers.base.version>2.0.3</testcontainers.base.version>
 		<testcontainers.junit.version>1.21.4</testcontainers.junit.version>
