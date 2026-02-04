@@ -25,9 +25,16 @@ Simple fluent style Java API to make API calls.
 	<a href="https://github.com/features/actions" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/github/github-original.svg" alt="github actions" width="40" height="40"/></a>
 </p>
 
-### Why APIphany?
+### Why Apiphany?
 
-This is a simple wrapper over the `java.net.http` library to be able to use a fluent style API, to make API calls in a very easy way.
+- Because you want to change the underlying HTTP client by changing one line in your client and one dependency.
+- Because you want to be able to use a fluent style API to make API calls in a very easy way.
+- Because you want to be able to mock API calls in your tests without using external libraries.
+
+Currently, it wraps over the `java.net.http` library but you can easily extend it to use other HTTP clients by implementing the 
+`HttpExchangeClient` interface or by extending the `AbstractHttpExchangeClient`.
+
+Support is being developed for other HTTP clients like Apache HttpClient, OkHttp, Spring RestTemplate, etc.
 
 ### License
 
