@@ -1,4 +1,4 @@
-package org.apiphany.json.jackson;
+package org.apiphany.json.jackson2;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;

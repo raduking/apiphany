@@ -1,4 +1,4 @@
-package org.apiphany.json.jackson.serializers;
+package org.apiphany.json.jackson2.serializers;
 
 import java.io.IOException;
 

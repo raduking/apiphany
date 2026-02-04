@@ -1,4 +1,4 @@
-package org.apiphany.json.jackson.serializers;
+package org.apiphany.json.jackson2.serializers;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;

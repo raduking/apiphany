@@ -1,4 +1,4 @@
-package org.apiphany.json.jackson;
+package org.apiphany.json.jackson2;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
