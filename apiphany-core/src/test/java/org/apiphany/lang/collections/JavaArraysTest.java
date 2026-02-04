@@ -49,10 +49,10 @@ class JavaArraysTest {
 	}
 
 	@Test
-	void shouldConvertNullInputToNullArray() {
+	void shouldConvertNullInputToEmptyArray() {
 		Object[] result = JavaArrays.toArray(null);
 
-		assertThat(result, equalTo(null));
+		assertThat(result, equalTo(new Object[] { }));
 	}
 
 	@Test

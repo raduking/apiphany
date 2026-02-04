@@ -4,9 +4,9 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apiphany.lang.LibraryDescriptor;
+import org.apiphany.lang.LibraryInitializer;
 import org.apiphany.lang.builder.PropertyNameBuilder;
 import org.apiphany.meters.micrometer.MicrometerLibrary;
-import org.morphix.reflection.Constructors;
 
 /**
  * Factory for creating {@link MeterCounter} and {@link MeterTimer} instances with optional tags.
@@ -38,19 +38,12 @@ public class MeterFactory {
 	/**
 	 * Returns an instance based on the available meter libraries.
 	 *
-	 * @param libraries the library descriptor list
+	 * @param libraryDescriptors the library descriptors
 	 * @return a meter factory
 	 */
 	@SafeVarargs
-	protected static MeterFactory initializeInstance(final LibraryDescriptor<? extends MeterFactory>... libraries) {
-		if (null != libraries) {
-			for (LibraryDescriptor<? extends MeterFactory> library : libraries) {
-				if (library.isPresent()) {
-					return Constructors.IgnoreAccess.newInstance(library.getSpecificClass());
-				}
-			}
-		}
-		return new MeterFactory();
+	protected static MeterFactory initializeInstance(final LibraryDescriptor<? extends MeterFactory>... libraryDescriptors) {
+		return LibraryInitializer.instance(MeterFactory::new, libraryDescriptors);
 	}
 
 	/**

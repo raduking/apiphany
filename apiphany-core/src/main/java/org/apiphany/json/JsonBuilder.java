@@ -6,6 +6,7 @@ import java.util.function.Consumer;
 
 import org.apiphany.json.jackson2.Jackson2Library;
 import org.apiphany.lang.LibraryDescriptor;
+import org.apiphany.lang.LibraryInitializer;
 import org.apiphany.lang.Strings;
 import org.morphix.convert.Converter;
 import org.morphix.reflection.Constructors;
@@ -131,20 +132,15 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	/**
 	 * Returns an instance based on the available JSON libraries.
 	 *
-	 * @param libraries the library descriptor list
+	 * @param libraryDescriptors the library descriptors
 	 * @return a JSON builder
 	 */
 	@SafeVarargs
-	protected static JsonBuilder initializeInstance(final LibraryDescriptor<? extends JsonBuilder>... libraries) {
-		if (null != libraries) {
-			for (LibraryDescriptor<? extends JsonBuilder> library : libraries) {
-				if (library.isPresent()) {
-					return Constructors.IgnoreAccess.newInstance(library.getSpecificClass());
-				}
-			}
-		}
-		LOGGER.warn("{}, JsonBuilder.toJson will use the objects toString method!", ErrorMessage.JSON_LIBRARY_NOT_FOUND);
-		return new JsonBuilder();
+	protected static JsonBuilder initializeInstance(final LibraryDescriptor<? extends JsonBuilder>... libraryDescriptors) {
+		return LibraryInitializer.instance(() -> {
+			LOGGER.warn("{}, JsonBuilder.toJson will use the objects toString method!", ErrorMessage.JSON_LIBRARY_NOT_FOUND);
+			return new JsonBuilder();
+		}, libraryDescriptors);
 	}
 
 	/**
