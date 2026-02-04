@@ -138,7 +138,8 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	@SafeVarargs
 	protected static JsonBuilder initializeInstance(final LibraryDescriptor<? extends JsonBuilder>... libraryDescriptors) {
 		return LibraryInitializer.instance(() -> {
-			LOGGER.warn("{}, JsonBuilder.toJson will use the objects toString method!", ErrorMessage.JSON_LIBRARY_NOT_FOUND);
+			LOGGER.warn("{}, JsonBuilder.toJson will only build JSONs like { \"hash\":\"<class-name>@<hash-code>\" }!",
+					ErrorMessage.JSON_LIBRARY_NOT_FOUND);
 			return new JsonBuilder();
 		}, libraryDescriptors);
 	}
