@@ -99,4 +99,31 @@ class JavaArraysTest {
 
 		assertThat(result, equalTo(new Object[] { "a", "b", "c" }));
 	}
+
+	@Test
+	void shouldReturnFalseForNonEmptyArrayOnIsEmpty() {
+		String[] array = new String[] { "not", "empty" };
+
+		boolean result = JavaArrays.isEmpty(array);
+
+		assertThat(result, equalTo(false));
+	}
+
+	@Test
+	void shouldReturnTrueForEmptyArrayOnIsEmpty() {
+		String[] array = new String[] { };
+
+		boolean result = JavaArrays.isEmpty(array);
+
+		assertThat(result, equalTo(true));
+	}
+
+	@Test
+	void shouldReturnTrueForNullArrayOnIsEmpty() {
+		String[] array = null;
+
+		boolean result = JavaArrays.isEmpty(array);
+
+		assertThat(result, equalTo(true));
+	}
 }
