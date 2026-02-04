@@ -19,15 +19,15 @@ import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
 import com.fasterxml.jackson.databind.introspect.NopAnnotationIntrospector;
 
 /**
- * A Jackson {@link AnnotationIntrospector} that adapts neutral field annotations ({@link FieldName}, {@link Ignored},
+ * A Jackson 2 {@link AnnotationIntrospector} that adapts neutral field annotations ({@link FieldName}, {@link Ignored},
  * {@link FieldOrder}) into Jackson's property model.
  * <p>
- * This allows your domain classes to remain independent of Jackson while still benefiting from annotation-driven
+ * This allows your domain classes to remain independent of Jackson 2 while still benefiting from annotation-driven
  * serialization.
  *
  * @author Radu Sebastian LAZIN
  */
-public class ApiphanyAnnotationIntrospector extends NopAnnotationIntrospector { // NOSONAR - singleton needed
+public class ApiphanyJackson2AnnotationIntrospector extends NopAnnotationIntrospector { // NOSONAR - singleton needed
 
 	/**
 	 * Serial version UID needed for {@link Serializable} objects.
@@ -45,13 +45,13 @@ public class ApiphanyAnnotationIntrospector extends NopAnnotationIntrospector { 
 		/**
 		 * Singleton instance configured to hide sensitive fields.
 		 */
-		private static final ApiphanyAnnotationIntrospector INSTANCE = new ApiphanyAnnotationIntrospector();
+		private static final ApiphanyJackson2AnnotationIntrospector INSTANCE = new ApiphanyJackson2AnnotationIntrospector();
 	}
 
 	/**
 	 * Hide constructor.
 	 */
-	protected ApiphanyAnnotationIntrospector() {
+	protected ApiphanyJackson2AnnotationIntrospector() {
 		// empty
 	}
 
@@ -60,7 +60,7 @@ public class ApiphanyAnnotationIntrospector extends NopAnnotationIntrospector { 
 	 *
 	 * @return the singleton instance
 	 */
-	public static ApiphanyAnnotationIntrospector getInstance() {
+	public static ApiphanyJackson2AnnotationIntrospector getInstance() {
 		return InstanceHolder.INSTANCE;
 	}
 

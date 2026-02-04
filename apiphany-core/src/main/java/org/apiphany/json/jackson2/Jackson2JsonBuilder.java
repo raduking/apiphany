@@ -47,12 +47,12 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
  *
  * @author Radu Sebastian LAZIN
  */
-public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton implementation
+public final class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton implementation
 
 	/**
 	 * Logger instance.
 	 */
-	private static final Logger LOGGER = LoggerFactory.getLogger(JacksonJsonBuilder.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(Jackson2JsonBuilder.class);
 
 	/**
 	 * The custom serialization module name.
@@ -69,7 +69,7 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 		/**
 		 * Singleton instance.
 		 */
-		private static final JacksonJsonBuilder INSTANCE = new JacksonJsonBuilder();
+		private static final Jackson2JsonBuilder INSTANCE = new Jackson2JsonBuilder();
 	}
 
 	/**
@@ -85,7 +85,7 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 	/**
 	 * Hide constructor.
 	 */
-	JacksonJsonBuilder() {
+	Jackson2JsonBuilder() {
 		this.objectMapper.registerModule(newJavaTimeModule(DateTimeFormatter.ISO_DATE_TIME));
 		this.objectMapper.registerModule(apiphanySerializationModule());
 		indentOutput(isIndentOutput());
@@ -93,7 +93,7 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 		this.objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 
 		this.defaultAnnotationIntrospector = objectMapper.getSerializationConfig().getAnnotationIntrospector();
-		configureSensitivity(SensitiveAnnotationIntrospector.hideSensitive());
+		configureSensitivity(SensitiveJackson2AnnotationIntrospector.hideSensitive());
 	}
 
 	/**
@@ -342,7 +342,7 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 		final ObjectMapper propertiesObjectMapper = objectMapper.copy()
 				.setPropertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
 		configureSensitivity(propertiesObjectMapper,
-				SensitiveAnnotationIntrospector.allowSensitive(), defaultAnnotationIntrospector);
+				SensitiveJackson2AnnotationIntrospector.allowSensitive(), defaultAnnotationIntrospector);
 		try {
 			return propertiesObjectMapper.convertValue(properties, Map.class);
 		} catch (Exception e) {
@@ -377,7 +377,7 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 			@Override
 			public void setupModule(final SetupContext context) {
 				super.setupModule(context);
-				context.insertAnnotationIntrospector(ApiphanyAnnotationIntrospector.getInstance());
+				context.insertAnnotationIntrospector(ApiphanyJackson2AnnotationIntrospector.getInstance());
 			}
 		};
 		return apiphanyModule
@@ -387,29 +387,29 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 	}
 
 	/**
-	 * Configures the underlying {@link ObjectMapper} with the given {@link SensitiveAnnotationIntrospector}.
+	 * Configures the underlying {@link ObjectMapper} with the given {@link SensitiveJackson2AnnotationIntrospector}.
 	 *
 	 * @param sensitiveAnnotationIntrospector the sensitive annotation introspector
 	 */
-	public void configureSensitivity(final SensitiveAnnotationIntrospector sensitiveAnnotationIntrospector) {
+	public void configureSensitivity(final SensitiveJackson2AnnotationIntrospector sensitiveAnnotationIntrospector) {
 		configureSensitivity(objectMapper, sensitiveAnnotationIntrospector, defaultAnnotationIntrospector);
 	}
 
 	/**
-	 * Configures the given {@link ObjectMapper} with the given {@link SensitiveAnnotationIntrospector}.
+	 * Configures the given {@link ObjectMapper} with the given {@link SensitiveJackson2AnnotationIntrospector}.
 	 *
 	 * @param objectMapper the object mapper to configure
 	 * @param sensitiveAnnotationIntrospector the sensitive annotation introspector
 	 * @return the configured object mapper
 	 */
 	public static ObjectMapper configureSensitivity(final ObjectMapper objectMapper,
-			final SensitiveAnnotationIntrospector sensitiveAnnotationIntrospector) {
+			final SensitiveJackson2AnnotationIntrospector sensitiveAnnotationIntrospector) {
 		AnnotationIntrospector baseAnnotationIntrospector = objectMapper.getSerializationConfig().getAnnotationIntrospector();
 		return configureSensitivity(objectMapper, sensitiveAnnotationIntrospector, baseAnnotationIntrospector);
 	}
 
 	/**
-	 * Configures the given {@link ObjectMapper} with the given {@link SensitiveAnnotationIntrospector}.
+	 * Configures the given {@link ObjectMapper} with the given {@link SensitiveJackson2AnnotationIntrospector}.
 	 *
 	 * @param objectMapper the object mapper to configure
 	 * @param sensitiveAnnotationIntrospector the sensitive annotation introspector
@@ -417,7 +417,7 @@ public final class JacksonJsonBuilder extends JsonBuilder { // NOSONAR singleton
 	 * @return the configured object mapper
 	 */
 	public static ObjectMapper configureSensitivity(final ObjectMapper objectMapper,
-			final SensitiveAnnotationIntrospector sensitiveAnnotationIntrospector, final AnnotationIntrospector baseAnnotationIntrospector) {
+			final SensitiveJackson2AnnotationIntrospector sensitiveAnnotationIntrospector, final AnnotationIntrospector baseAnnotationIntrospector) {
 		return objectMapper.setAnnotationIntrospector(
 				AnnotationIntrospector.pair(sensitiveAnnotationIntrospector, baseAnnotationIntrospector));
 	}

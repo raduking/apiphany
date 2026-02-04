@@ -32,11 +32,11 @@ import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 
 /**
- * Test class for {@link JacksonJsonBuilder}.
+ * Test class for {@link Jackson2JsonBuilder}.
  *
  * @author Radu Sebastian LAZIN
  */
-class JacksonJsonBuilderTest {
+class Jackson2JsonBuilderTest {
 
 	private static final String CUSTOMER_ONE = "customerOne";
 	private static final String CUSTOMER_TWO = "customerTwo";
@@ -50,7 +50,7 @@ class JacksonJsonBuilderTest {
 	private static final byte[] SOME_INVALID_JSON_BYTES = SOME_INVALID_JSON_STRING.getBytes();
 	private static final String SOME_NAME = "someName";
 
-	private final JacksonJsonBuilder jsonBuilder = new JacksonJsonBuilder();
+	private final Jackson2JsonBuilder jsonBuilder = new Jackson2JsonBuilder();
 
 	@Test
 	void shouldTransformObjectToJsonStringAndReadItBack() {
@@ -58,11 +58,11 @@ class JacksonJsonBuilderTest {
 		Map<String, B> elements = Map.of(CUSTOMER_ONE, new B(CUSTOMER_ID1, TENANT_ID1));
 		a1.setElements(elements);
 
-		Object json1 = Strings.removeAllWhitespace(JacksonJsonBuilder.toJson(a1));
+		Object json1 = Strings.removeAllWhitespace(Jackson2JsonBuilder.toJson(a1));
 
-		A a2 = JacksonJsonBuilder.fromJson(json1, A.class);
+		A a2 = Jackson2JsonBuilder.fromJson(json1, A.class);
 
-		Object json2 = Strings.removeAllWhitespace(JacksonJsonBuilder.toJson(a2));
+		Object json2 = Strings.removeAllWhitespace(Jackson2JsonBuilder.toJson(a2));
 
 		assertThat(json1, equalTo(json2));
 	}
@@ -73,11 +73,11 @@ class JacksonJsonBuilderTest {
 		Map<String, B> elements = Map.of(CUSTOMER_ONE, new B(CUSTOMER_ID1, TENANT_ID1));
 		a1.setElements(elements);
 
-		Object json1 = Strings.removeAllWhitespace(JacksonJsonBuilder.toJson(a1)).getBytes();
+		Object json1 = Strings.removeAllWhitespace(Jackson2JsonBuilder.toJson(a1)).getBytes();
 
-		A a2 = JacksonJsonBuilder.fromJson(json1, A.class);
+		A a2 = Jackson2JsonBuilder.fromJson(json1, A.class);
 
-		Object json2 = Strings.removeAllWhitespace(JacksonJsonBuilder.toJson(a2)).getBytes();
+		Object json2 = Strings.removeAllWhitespace(Jackson2JsonBuilder.toJson(a2)).getBytes();
 
 		assertThat(json1, equalTo(json2));
 	}
@@ -86,7 +86,7 @@ class JacksonJsonBuilderTest {
 	void shouldThrowExceptionWhenReadingJsonObjectWithAnUnsupportedType() {
 		Object o = new Object();
 		UnsupportedOperationException e = assertThrows(UnsupportedOperationException.class,
-				() -> JacksonJsonBuilder.fromJson(o, A.class));
+				() -> Jackson2JsonBuilder.fromJson(o, A.class));
 
 		assertThat(e.getMessage(), equalTo("Unsupported JSON input type: " + Object.class));
 	}
@@ -95,13 +95,13 @@ class JacksonJsonBuilderTest {
 	void shouldTransformGenericObjectToJsonStringAndReadItBack() {
 		Map<String, B> elements1 = Map.of(CUSTOMER_ONE, new B(CUSTOMER_ID1, TENANT_ID1));
 
-		Object json1 = Strings.removeAllWhitespace(JacksonJsonBuilder.toJson(elements1));
+		Object json1 = Strings.removeAllWhitespace(Jackson2JsonBuilder.toJson(elements1));
 
-		Map<String, B> elements2 = JacksonJsonBuilder.fromJson(json1, new GenericClass<>() {
+		Map<String, B> elements2 = Jackson2JsonBuilder.fromJson(json1, new GenericClass<>() {
 			// empty
 		});
 
-		Object json2 = Strings.removeAllWhitespace(JacksonJsonBuilder.toJson(elements2));
+		Object json2 = Strings.removeAllWhitespace(Jackson2JsonBuilder.toJson(elements2));
 
 		assertThat(json1, equalTo(json2));
 	}
@@ -110,13 +110,13 @@ class JacksonJsonBuilderTest {
 	void shouldTransformGenericObjectToJsonBytesAndReadItBack() {
 		Map<String, B> elements1 = Map.of(CUSTOMER_ONE, new B(CUSTOMER_ID1, TENANT_ID1));
 
-		Object json1 = Strings.removeAllWhitespace(JacksonJsonBuilder.toJson(elements1)).getBytes();
+		Object json1 = Strings.removeAllWhitespace(Jackson2JsonBuilder.toJson(elements1)).getBytes();
 
-		Map<String, B> elements2 = JacksonJsonBuilder.fromJson(json1, new GenericClass<>() {
+		Map<String, B> elements2 = Jackson2JsonBuilder.fromJson(json1, new GenericClass<>() {
 			// empty
 		});
 
-		Object json2 = Strings.removeAllWhitespace(JacksonJsonBuilder.toJson(elements2)).getBytes();
+		Object json2 = Strings.removeAllWhitespace(Jackson2JsonBuilder.toJson(elements2)).getBytes();
 
 		assertThat(json1, equalTo(json2));
 	}
@@ -128,7 +128,7 @@ class JacksonJsonBuilderTest {
 			// empty
 		};
 		UnsupportedOperationException e = assertThrows(UnsupportedOperationException.class,
-				() -> JacksonJsonBuilder.fromJson(o, genericClass));
+				() -> Jackson2JsonBuilder.fromJson(o, genericClass));
 
 		assertThat(e.getMessage(), equalTo("Unsupported JSON input type: " + Object.class));
 	}
@@ -137,13 +137,13 @@ class JacksonJsonBuilderTest {
 	void shouldTransformGenericObjectTypeReferenceToJsonStringAndReadItBack() {
 		Map<String, B> elements1 = Map.of(CUSTOMER_ONE, new B(CUSTOMER_ID1, TENANT_ID1));
 
-		Object json1 = Strings.removeAllWhitespace(JacksonJsonBuilder.toJson(elements1));
+		Object json1 = Strings.removeAllWhitespace(Jackson2JsonBuilder.toJson(elements1));
 
-		Map<String, B> elements2 = JacksonJsonBuilder.fromJson(json1, new TypeReference<>() {
+		Map<String, B> elements2 = Jackson2JsonBuilder.fromJson(json1, new TypeReference<>() {
 			// empty
 		});
 
-		Object json2 = Strings.removeAllWhitespace(JacksonJsonBuilder.toJson(elements2));
+		Object json2 = Strings.removeAllWhitespace(Jackson2JsonBuilder.toJson(elements2));
 
 		assertThat(json1, equalTo(json2));
 	}
@@ -152,13 +152,13 @@ class JacksonJsonBuilderTest {
 	void shouldTransformGenericObjectTypeReferenceToJsonBytesAndReadItBack() {
 		Map<String, B> elements1 = Map.of(CUSTOMER_ONE, new B(CUSTOMER_ID1, TENANT_ID1));
 
-		Object json1 = Strings.removeAllWhitespace(JacksonJsonBuilder.toJson(elements1)).getBytes();
+		Object json1 = Strings.removeAllWhitespace(Jackson2JsonBuilder.toJson(elements1)).getBytes();
 
-		Map<String, B> elements2 = JacksonJsonBuilder.fromJson(json1, new TypeReference<>() {
+		Map<String, B> elements2 = Jackson2JsonBuilder.fromJson(json1, new TypeReference<>() {
 			// empty
 		});
 
-		Object json2 = Strings.removeAllWhitespace(JacksonJsonBuilder.toJson(elements2)).getBytes();
+		Object json2 = Strings.removeAllWhitespace(Jackson2JsonBuilder.toJson(elements2)).getBytes();
 
 		assertThat(json1, equalTo(json2));
 	}
@@ -170,7 +170,7 @@ class JacksonJsonBuilderTest {
 			// empty
 		};
 		UnsupportedOperationException e = assertThrows(UnsupportedOperationException.class,
-				() -> JacksonJsonBuilder.fromJson(o, typeReference));
+				() -> Jackson2JsonBuilder.fromJson(o, typeReference));
 
 		assertThat(e.getMessage(), equalTo("Unsupported JSON input type: " + Object.class));
 	}
@@ -184,7 +184,7 @@ class JacksonJsonBuilderTest {
 
 	@Test
 	void shouldReturnDebugStringOnToJsonStringWhenDebugStringIsEnabled() {
-		JacksonJsonBuilder jacksonJsonBuilder = new JacksonJsonBuilder();
+		Jackson2JsonBuilder jacksonJsonBuilder = new Jackson2JsonBuilder();
 		Fields.IgnoreAccess.set(jacksonJsonBuilder, "debugString", true);
 
 		B b = new B(CUSTOMER_ID1, TENANT_ID1);
@@ -262,12 +262,12 @@ class JacksonJsonBuilderTest {
 		AnnotationIntrospector existingAnnotationIntrospector = mock(AnnotationIntrospector.class);
 		doReturn(existingAnnotationIntrospector).when(serializationConfig).getAnnotationIntrospector();
 
-		SensitiveAnnotationIntrospector sensitiveAnnotationIntrospector = mock(SensitiveAnnotationIntrospector.class);
+		SensitiveJackson2AnnotationIntrospector sensitiveAnnotationIntrospector = mock(SensitiveJackson2AnnotationIntrospector.class);
 
 		ArgumentCaptor<AnnotationIntrospectorPair> captor = ArgumentCaptor.forClass(AnnotationIntrospectorPair.class);
 		doReturn(objectMapper).when(objectMapper).setAnnotationIntrospector(captor.capture());
 
-		ObjectMapper result = JacksonJsonBuilder.configureSensitivity(objectMapper, sensitiveAnnotationIntrospector);
+		ObjectMapper result = Jackson2JsonBuilder.configureSensitivity(objectMapper, sensitiveAnnotationIntrospector);
 
 		assertThat(result, equalTo(objectMapper));
 
@@ -281,7 +281,7 @@ class JacksonJsonBuilderTest {
 
 	@Test
 	void shouldReturnToStringResultIfSerializationFails() throws JsonProcessingException {
-		JacksonJsonBuilder jacksonJsonBuilder = new JacksonJsonBuilder();
+		Jackson2JsonBuilder jacksonJsonBuilder = new Jackson2JsonBuilder();
 
 		ObjectMapper objectMapper = mock(ObjectMapper.class);
 		Fields.IgnoreAccess.set(jacksonJsonBuilder, "objectMapper", objectMapper);
