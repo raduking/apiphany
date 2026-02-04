@@ -22,6 +22,7 @@ import org.apiphany.client.ExchangeClientBuilder;
 import org.apiphany.lang.ScopedResource;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.accumulator.DurationAccumulator;
+import org.apiphany.lang.collections.JavaArrays;
 import org.apiphany.lang.collections.Lists;
 import org.apiphany.lang.retry.Retry;
 import org.apiphany.meters.BasicMeters;
@@ -189,19 +190,19 @@ public class ApiClient implements AutoCloseable {
 	 * Constructor with base URL and exchange client builder, the built exchange client will be managed by this client.
 	 *
 	 * @param baseUrl base URL
-	 * @param exchangeClientBuilder exchange client builder
+	 * @param exchangeClientBuilders exchange client builders
 	 */
-	protected ApiClient(final String baseUrl, final ExchangeClientBuilder exchangeClientBuilder) {
-		this(baseUrl, exchangeClientBuilder.build());
+	protected ApiClient(final String baseUrl, final ExchangeClientBuilder... exchangeClientBuilders) {
+		this(baseUrl, buildExchangeClientsList(exchangeClientBuilders));
 	}
 
 	/**
 	 * Constructor with exchange client builder, this client will manage the built exchange client.
 	 *
-	 * @param exchangeClientBuilder exchange client builder
+	 * @param exchangeClientBuilders exchange client builders
 	 */
-	protected ApiClient(final ExchangeClientBuilder exchangeClientBuilder) {
-		this(EMPTY_BASE_URL, exchangeClientBuilder);
+	protected ApiClient(final ExchangeClientBuilder... exchangeClientBuilders) {
+		this(EMPTY_BASE_URL, exchangeClientBuilders);
 	}
 
 	/**
@@ -239,7 +240,7 @@ public class ApiClient implements AutoCloseable {
 				AuthenticationType authenticationType = ExchangeClient.requireAuthenticationType(newClient);
 				ScopedResource<ExchangeClient> existingResource = result.putIfAbsent(authenticationType, exchangeClientResource);
 				if (null != existingResource) {
-					handleDuplicateAuthenticationType(authenticationType, existingResource.unwrap(), newClient);
+					throw duplicateException(authenticationType, existingResource.unwrap(), newClient);
 				}
 			}
 			return Collections.unmodifiableMap(result);
@@ -250,16 +251,35 @@ public class ApiClient implements AutoCloseable {
 	}
 
 	/**
-	 * Handles the case when multiple exchange clients are provided for the same authentication type.
+	 * Builds a list of scoped exchange clients from the given exchange client builders.
+	 * <p>
+	 * If no exchange client builders are provided, a default exchange client is created.
+	 *
+	 * @param exchangeClientBuilders exchange client builders
+	 * @return list of scoped exchange clients
+	 */
+	private static List<ScopedResource<ExchangeClient>> buildExchangeClientsList(final ExchangeClientBuilder... exchangeClientBuilders) {
+		if (JavaArrays.isEmpty(exchangeClientBuilders)) {
+			return List.of(withDefaultClient().build());
+		}
+		return List.of(exchangeClientBuilders)
+				.stream()
+				.map(ExchangeClientBuilder::build)
+				.toList();
+	}
+
+	/**
+	 * Builds an exception for the case when multiple exchange clients are provided for the same authentication type. The
+	 * exception message contains the authentication type and the names of the existing and new exchange clients.
 	 *
 	 * @param authenticationType authentication type
 	 * @param existingClient existing exchange client
 	 * @param newClient new exchange client
-	 * @throws IllegalStateException always
+	 * @return IllegalStateException to be thrown
 	 */
-	protected static void handleDuplicateAuthenticationType(final AuthenticationType authenticationType,
+	protected static IllegalStateException duplicateException(final AuthenticationType authenticationType,
 			final ExchangeClient existingClient, final ExchangeClient newClient) {
-		throw new IllegalStateException("Failed to instantiate [" + ApiClient.class.getName() + "]."
+		return new IllegalStateException("Failed to instantiate [" + ApiClient.class.getName() + "]."
 				+ " Client entry for authentication type: [" + authenticationType + ", " + existingClient.getName() + "]"
 				+ " already exists when trying to add client: [" + newClient.getName() + "]");
 	}
@@ -312,11 +332,11 @@ public class ApiClient implements AutoCloseable {
 	 * Returns a new {@link ApiClient} object.
 	 *
 	 * @param baseUrl base URL
-	 * @param exchangeClientBuilder exchange client object builder
+	 * @param exchangeClientBuilders exchange client objects builders
 	 * @return a new ApiClient object
 	 */
-	public static ApiClient of(final String baseUrl, final ExchangeClientBuilder exchangeClientBuilder) {
-		return new ApiClient(baseUrl, exchangeClientBuilder);
+	public static ApiClient of(final String baseUrl, final ExchangeClientBuilder... exchangeClientBuilders) {
+		return new ApiClient(baseUrl, exchangeClientBuilders);
 	}
 
 	/**

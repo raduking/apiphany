@@ -76,4 +76,14 @@ public interface JavaArrays {
 		}
 		return new Object[] { value };
 	}
+
+	/**
+	 * Checks if the given array is null or has no elements.
+	 *
+	 * @param array the array to check
+	 * @return true if the array is null or empty, false otherwise
+	 */
+	static boolean isEmpty(final Object[] array) {
+		return array == null || array.length == 0;
+	}
 }

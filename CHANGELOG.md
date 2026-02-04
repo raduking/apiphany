@@ -2,6 +2,7 @@
 
 `1.1.3`
 
+- Added support for multiple exchange client builders to be configured when extending `ApiClient`.
 - Changed `OAuth2TokenProviderSpec` from record to class and added builder exclusive instantiation.
 - Added `ResourceLocation` enumeration for specifying the location of the resource.
 - Fixed `Strings.fromCamelToSnakeCase` to work on strings like `"FastXMLParser"` transforming it to `"fast_xml_parser"` or `"JSONValue"` to `"json_value"`.
@@ -15,6 +16,7 @@
 - Renamed all classes that use Jackson 2 library to have `Jackson2` in the name instead of `Jackson` only.
 - Renamed `ApiphanyAnnotationIntrospector` to `ApiphanyJackson2AnnotationIntrospector`.
 - Renamed `SensitiveAnnotationIntrospector` to `SensitiveJackson2AnnotationIntrospector`.
+- Added `JavaArrays.isEmpty` to check if an array is `null` or empty.
 
 ---
 
