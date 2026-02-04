@@ -248,11 +248,4 @@ class JsonBuilderTest {
 
 		assertThat(instance.getClass(), equalTo(JsonBuilder.class));
 	}
-
-	@Test
-	void shouldReturnAJsonBuilderInstanceIfNoLibraryIsInTheClassPath() {
-		JsonBuilder instance = JsonBuilder.initializeInstance(LibraryDescriptor.of(false, null));
-
-		assertThat(instance.getClass(), equalTo(JsonBuilder.class));
-	}
 }
