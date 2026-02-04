@@ -1,5 +1,7 @@
 package org.apiphany.lang;
 
+import java.util.Objects;
+
 /**
  * Descriptor for a library indicating its presence and associated specific class.
  *
@@ -27,7 +29,7 @@ public class LibraryDescriptor<T> {
 	 */
 	private LibraryDescriptor(final boolean present, final Class<T> specificClass) {
 		this.present = present;
-		this.specificClass = specificClass;
+		this.specificClass = Objects.requireNonNull(specificClass, "specificClass must not be null");
 	}
 
 	/**
