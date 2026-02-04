@@ -41,10 +41,14 @@
 	</scm>
 
 	<modules>
+		<!-- Main modules -->
 		<module>apiphany-core</module>
 		<module>apiphany-httpclient5</module>
 		<module>apiphany-test</module>
 		<module>apiphany-integration-tests</module>
+
+		<!-- Integration with other libraries -->
+		<module>integration/apiphany-jackson2-tests</module>
 	</modules>
 
 	<properties>

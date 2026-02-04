@@ -439,6 +439,10 @@ public class ApiClient implements AutoCloseable {
 
 	/**
 	 * Returns an exchange client builder with the given exchange client set.
+	 * <p>
+	 * This method is to be used in conjunction with the constructors or factory methods that accept exchange client
+	 * builders. When this method is used, the API client manages the life cycle of the exchange client, so the caller
+	 * should not close the exchange client.
 	 *
 	 * @param exchangeClientClass exchange client class
 	 * @return exchange client builder
@@ -449,9 +453,14 @@ public class ApiClient implements AutoCloseable {
 
 	/**
 	 * Alias for {@link #withClient(Class)}.
+	 * <p>
+	 * This method is to be used in conjunction with the constructors or factory methods that accept exchange client
+	 * builders. When this method is used, the API client manages the life cycle of the exchange client, so the caller
+	 * should not close the exchange client.
 	 *
 	 * @param exchangeClientClass exchange client class
 	 * @return exchange client builder
+	 * @see #withClient(Class)
 	 */
 	public static ExchangeClientBuilder with(final Class<? extends ExchangeClient> exchangeClientClass) {
 		return withClient(exchangeClientClass);
@@ -459,6 +468,10 @@ public class ApiClient implements AutoCloseable {
 
 	/**
 	 * Returns an exchange client builder with the given exchange client set.
+	 * <p>
+	 * This method is to be used in conjunction with the constructors or factory methods that accept exchange client
+	 * builders. When this method is used, the API client does not manage the life cycle of the exchange client, so the
+	 * caller is responsible for closing the exchange client if needed.
 	 * <p>
 	 * This method should be used when an instance of exchange client is already created. Prefer using {@link #with(Class)}
 	 * or {@link #withClient(Class)} when possible, so that the builder can manage the life cycle of the exchange client.
@@ -472,6 +485,9 @@ public class ApiClient implements AutoCloseable {
 
 	/**
 	 * Returns an exchange client builder with the default exchange client and given properties set.
+	 * <p>
+	 * This method is to be used in conjunction with the constructors or factory methods that accept exchange client
+	 * builders.
 	 *
 	 * @param properties client properties
 	 * @return exchange client builder
@@ -481,7 +497,10 @@ public class ApiClient implements AutoCloseable {
 	}
 
 	/**
-	 * Returns an exchange client builder with the default client.
+	 * Returns an exchange client builder with the default exchange client.
+	 * <p>
+	 * This method is to be used in conjunction with the constructors or factory methods that accept exchange client
+	 * builders.
 	 *
 	 * @return exchange client builder
 	 */
