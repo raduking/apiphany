@@ -1,4 +1,4 @@
-package org.apiphany.jackson2.tests;
+package org.apiphany.tests;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Radu Sebastian LAZIN
  */
-class Jackson2Test {
+class ApiClientJackson2Test {
 
 	private static final String JACKSON2 = "Jackson2";
 
@@ -24,7 +24,7 @@ class Jackson2Test {
 	@SuppressWarnings("resource")
 	void shouldRegisterJackson2ConverterWhenJackson2IsPresent() throws Exception {
 		List<ContentConverter<?>> converters;
-		try (ApiClient client = ApiClient.of("", ExchangeClientBuilder.create().withDefaultClient())) {
+		try (ApiClient client = ApiClient.of(ApiClient.EMPTY_BASE_URL, ExchangeClientBuilder.create().withDefaultClient())) {
 			converters = client.client().getExchangeClient(JavaNetHttpExchangeClient.class).getContentConverters();
 		}
 
