@@ -81,7 +81,7 @@ object as a custom properties.
 public class AwesomeClient extends ApiClient {
 
     public AwesomeClient(final ClientProperties properties) {
-        super("http://awesome.somewhere.com/",
+        super("http://awesome.somewhere.com",
 		        properties(properties)
                 .secureWith()
                 .oauth2());
@@ -105,7 +105,7 @@ To build a method for calling the path we can use the fluent style API as follow
     }
 ```
 This will return an `Info` object with all members set from `http://awesome.somewhere.com/api/v1/info` as specified in 
-the JSON from the API or `null` if any error occured.
+the JSON from the API or `null` if any error occurred.
 
 ### Deep dive
 
@@ -175,7 +175,7 @@ To build the request parameter map we can use the [`RequestParameters`](../apiph
 
 This will add the `customerId` request parameter and the request will be:<br/>
 `http://awesome.somewhere.com/api/v1/info?customerId=myFirstCustomer` <br/>
-You can add any number of request parameters and they can be encoded too if the proper path method is called.
+You can add any number of request parameters, and they can be encoded too if the proper path method is called.
 
 ### Metrics
 
@@ -191,21 +191,23 @@ To add metrics on all requests we can set them up in the client constructor:
 public class AwesomeClient extends ApiClient {
 
 	public AwesomeClient(final ClientProperties properties) {
-		super("http://awesome.somewhere.com/",
+		super("http://awesome.somewhere.com",
 				properties(properties)
 						.secureWith()
 						.oauth2());
-		setMeters(BasicMeters.of("dependency.awesome"))
+		setMeters(BasicMeters.of("client.awesome"));
 	}
 }
 ```
 
 This will add the following metrics on all client requests:
-- `dependency.awesome.latency` request latency (timer)
-- `dependency.awesome.request` request count (counter)
-- `dependency.awesome.error` request errors (counter)
+- `client.awesome.latency` request latency (timer)
+- `client.awesome.request` request count (counter)
+- `client.awesome.error` request errors (counter)
 
 #### Metrics on specific request
+
+Currently only Micrometer is supported as a metrics library, but feel free to contribute with other libraries if you want.
 
 To add metrics only on some of the requests we can use `meters(String)` or `meters(BasicMeters)` method from [`ApiClientFluentAdapter`](../apiphany-core/src/main/java/org/apiphany/ApiClientFluentAdapter.java).
 
@@ -214,34 +216,34 @@ To add metrics only on some of the requests we can use `meters(String)` or `mete
         return client()
                 .get()
                 .path("api", "v1", "info")
-                .meters("dependency.awesome.info")
+                .meters("client.awesome.info")
                 .retrieve(Info.class)
                 .orNull();
     }
 ```
 
 This will add the following metrics on client `getInfo()` requests:
-- `dependency.awesome.info.latency` request latency (timer)
-- `dependency.awesome.info.request` request count (counter)
-- `dependency.awesome.info.error` request errors (counter)
+- `client.awesome.info.latency` request latency (timer)
+- `client.awesome.info.request` request count (counter)
+- `client.awesome.info.error` request errors (counter)
 
-There is one more way to automatically generat the metrics with the client method name with `metersOnMethod(String)`:
+There is one more way to automatically generate the metrics with the client method name with `metersOnMethod(String)`:
 
 ```java
     public Info getInfo() {
         return client()
                 .get()
                 .path("api", "v1", "info")
-                .metersOnMethod("dependency.awesome")
+                .metersOnMethod("client.awesome")
                 .retrieve(Info.class)
                 .orNull();
     }
 ```
 
 This will add the following metrics on client `getInfo()`:
-- `dependency.awesome.get-info.latency` request latency (timer)
-- `dependency.awesome.get-info.request` request count (counter)
-- `dependency.awesome.get-info.error` request errors (counter)
+- `client.awesome.get-info.latency` request latency (timer)
+- `client.awesome.get-info.request` request count (counter)
+- `client.awesome.get-info.error` request errors (counter)
 
 This method adds the method name transformed from Camel case to Kebab case (`getInfo` to `get-info`) to the specified
 prefix given as parameter.
@@ -256,7 +258,7 @@ This is the same as adding metrics but using the [`Retry`](../apiphany-core/src/
 
 ```java
     public Info getInfo() {
-        Retry retry = Retry.of(WaitCounter.of(3, Duration.ofSeconds(1)))
+        Retry retry = Retry.of(WaitCounter.of(3, Duration.ofSeconds(1)));
         return client()
                 .get()
                 .path("api", "v1", "info")
@@ -268,5 +270,8 @@ This is the same as adding metrics but using the [`Retry`](../apiphany-core/src/
 
 This will retry the request 3 times with a 1-second delay between retries. The retry will only take effect when there
 are errors during the request.
+
+If metrics are added to the request with retries, the retry attempts will be included in the metrics as well.
+- `client.awesome.get-info.retry` request retries (counter)
 
 ### To be continued...
