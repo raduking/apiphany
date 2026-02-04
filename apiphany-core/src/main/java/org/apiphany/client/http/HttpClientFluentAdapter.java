@@ -113,6 +113,15 @@ public class HttpClientFluentAdapter {
 	}
 
 	/**
+	 * Sets the request method to CONNECT.
+	 *
+	 * @return this
+	 */
+	public ApiClientFluentAdapter connect() {
+		return apiClientFluentAdapter.method(httpExchangeClient.connect());
+	}
+
+	/**
 	 * Sets the request method to a custom value.
 	 *
 	 * @param method the request method

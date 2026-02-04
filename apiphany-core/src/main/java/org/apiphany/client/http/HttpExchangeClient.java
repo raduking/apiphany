@@ -95,6 +95,15 @@ public interface HttpExchangeClient extends ExchangeClient {
 	}
 
 	/**
+	 * Returns the CONNECT request method.
+	 *
+	 * @return the CONNECT request method
+	 */
+	default RequestMethod connect() {
+		return HttpMethod.CONNECT;
+	}
+
+	/**
 	 * Maps the given {@link HttpMethod} to a {@link RequestMethod}.
 	 *
 	 * @param httpMethod the HTTP method
