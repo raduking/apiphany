@@ -32,7 +32,7 @@ import io.micrometer.core.instrument.Timer;
  * In the future, this factory may be extended to automatically convert generic {@link Iterable} tag representations
  * (e.g., key/value pairs) into Micrometer {@link Tags}.
  *
- * <h2>Library presence detection</h2> The static field {@link MicrometerLibrary#INFORMATION} can be used to detect at
+ * <h2>Library presence detection</h2> The static field {@link MicrometerLibrary#DESCRIPTOR} can be used to detect at
  * runtime whether the Micrometer library is present on the classpath. This allows code to conditionally enable
  * Micrometer-backed metrics without a hard dependency.
  *

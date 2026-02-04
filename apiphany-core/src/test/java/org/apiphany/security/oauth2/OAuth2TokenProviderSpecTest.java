@@ -19,7 +19,6 @@ import org.junit.jupiter.api.Test;
 class OAuth2TokenProviderSpecTest {
 
 	@Test
-	@SuppressWarnings("resource")
 	void shouldCreateWithDefaults() {
 		OAuth2TokenProviderSpec config = OAuth2TokenProviderSpec.builder().build();
 

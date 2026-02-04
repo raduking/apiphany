@@ -12,7 +12,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apiphany.lang.Pair;
+import org.apiphany.lang.LibraryDescriptor;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -113,14 +113,14 @@ class MeterFactoryTest {
 
 	@Test
 	void shouldReturnNewMeterFactoryInstanceOnInitializeWithNull() {
-		MeterFactory meterFactory = MeterFactory.initializeInstance((Pair<Boolean, Class<? extends MeterFactory>>[]) null);
+		MeterFactory meterFactory = MeterFactory.initializeInstance((LibraryDescriptor<? extends MeterFactory>[]) null);
 
 		assertThat(meterFactory.getClass(), equalTo(MeterFactory.class));
 	}
 
 	@Test
 	void shouldReturnNewMeterFactoryInstanceOnInitializeWhenLibraryIsNotAvailable() {
-		MeterFactory meterFactory = MeterFactory.initializeInstance(Pair.of(Boolean.FALSE, DummyMeterFactory.class));
+		MeterFactory meterFactory = MeterFactory.initializeInstance(LibraryDescriptor.of(false, DummyMeterFactory.class));
 
 		assertThat(meterFactory.getClass(), equalTo(MeterFactory.class));
 	}

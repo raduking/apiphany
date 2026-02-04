@@ -69,6 +69,7 @@ public class StringsEnvelopeBenchmark {
 				case "long" -> payload = "x".repeat(LONG_STRING_LENGTH)
 						+ "Some string to be enveloped"
 						+ "x".repeat(LONG_STRING_LENGTH);
+				default -> throw new IllegalArgumentException("Unknown category: " + params.category);
 			}
 		}
 	}
