@@ -1,4 +1,4 @@
-package org.apiphany.json.jackson;
+package org.apiphany.json.jackson2;
 
 import java.io.IOException;
 import java.io.Serial;
@@ -11,8 +11,8 @@ import java.util.function.Consumer;
 
 import org.apiphany.RequestMethod;
 import org.apiphany.json.JsonBuilder;
-import org.apiphany.json.jackson.serializers.RequestMethodDeserializer;
-import org.apiphany.json.jackson.serializers.RequestMethodSerializer;
+import org.apiphany.json.jackson2.serializers.RequestMethodDeserializer;
+import org.apiphany.json.jackson2.serializers.RequestMethodSerializer;
 import org.morphix.lang.JavaObjects;
 import org.morphix.reflection.GenericClass;
 import org.slf4j.Logger;

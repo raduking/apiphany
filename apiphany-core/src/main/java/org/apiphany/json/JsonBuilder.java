@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import org.apiphany.json.jackson.JacksonLibrary;
+import org.apiphany.json.jackson2.JacksonLibrary;
 import org.apiphany.lang.Pair;
 import org.apiphany.lang.Strings;
 import org.morphix.convert.Converter;

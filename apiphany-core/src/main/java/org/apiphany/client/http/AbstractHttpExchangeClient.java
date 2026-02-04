@@ -13,7 +13,7 @@ import org.apiphany.header.HeaderValues;
 import org.apiphany.header.MapHeaderValues;
 import org.apiphany.http.HttpHeaderValues;
 import org.apiphany.json.JsonBuilder;
-import org.apiphany.json.jackson.JacksonJsonHttpContentConverter;
+import org.apiphany.json.jackson2.JacksonJsonHttpContentConverter;
 import org.apiphany.security.ssl.SSLContexts;
 import org.apiphany.security.ssl.SSLProperties;
 import org.morphix.lang.JavaObjects;

@@ -1,4 +1,4 @@
-package org.apiphany.json.jackson;
+package org.apiphany.json.jackson2;
 
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Pair;

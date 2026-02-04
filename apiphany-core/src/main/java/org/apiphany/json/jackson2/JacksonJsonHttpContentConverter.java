@@ -1,4 +1,4 @@
-package org.apiphany.json.jackson;
+package org.apiphany.json.jackson2;
 
 import org.apiphany.ApiMessage;
 import org.apiphany.ApiMimeType;
