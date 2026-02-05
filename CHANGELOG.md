@@ -4,6 +4,7 @@
 
 - Changed all request parameters to be `Map<String, List<String>>` instead of `Map<String, String>` to better accommodate HTTP specification.
 - Renamed `RequestParameter.value` to `RequestParameter.toValues` to better emphasize what it does.
+- Added `URIEncoder` class to be able to encode paths, query parameter names, query parameter values separately.
 
 ---
 

@@ -247,14 +247,18 @@ class ApiClientFluentAdapterTest {
 		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
 				.authenticationType(AuthenticationType.SESSION)
 				.url(URL)
-				.params(parameter("sum", "1+2+3"), parameter("other", "a b c"))
+				.params(
+						parameter("sum", "1+2+3"),
+						parameter("other", "a b c"),
+						parameter("p 1", "v@lue"))
 				.urlEncoded();
 
 		request.retrieve();
 
 		var expected = RequestParameters.of(
 				parameter("sum", "1%2B2%2B3"),
-				parameter("other", "a+b+c"));
+				parameter("other", "a+b+c"),
+				parameter("p%201", "v%40lue"));
 
 		assertThat(request.getParams(), equalTo(expected));
 	}
@@ -363,7 +367,7 @@ class ApiClientFluentAdapterTest {
 				.urlEncoded()
 				.uri(uri, API, segmentWithSpace, segmentWithSpecial);
 
-		String expected = URL + "/" + API + "/hello+world/name%40example.com";
+		String expected = URL + "/" + API + "/hello%20world/name%40example.com";
 
 		assertThat(request.getUrl(), equalTo(expected));
 	}
@@ -378,7 +382,7 @@ class ApiClientFluentAdapterTest {
 		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
 				.pathEncoded(API, segmentWithSpace, segmentWithSpecial);
 
-		String expected = URL + "/" + API + "/hello+world/name%40example.com";
+		String expected = URL + "/" + API + "/hello%20world/name%40example.com";
 
 		assertThat(request.getUrl(), equalTo(expected));
 	}
