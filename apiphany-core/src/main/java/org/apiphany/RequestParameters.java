@@ -4,14 +4,14 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apiphany.lang.Require;
 import org.apiphany.lang.Strings;
+import org.apiphany.lang.collections.JavaArrays;
 import org.apiphany.lang.collections.Maps;
 import org.morphix.convert.MapConversions;
 import org.morphix.convert.function.SimpleConverter;
@@ -42,10 +42,10 @@ public class RequestParameters {
 	 * @return a new map containing the inserted parameters
 	 */
 	public static Map<String, List<String>> of(final ParameterFunction... paramFunctions) {
-		if (null == paramFunctions || 0 == paramFunctions.length) {
-			return Collections.emptyMap();
+		var map = new LinkedHashMap<String, List<String>>();
+		if (JavaArrays.isEmpty(paramFunctions)) {
+			return map;
 		}
-		var map = new HashMap<String, List<String>>();
 		for (ParameterFunction paramFunction : paramFunctions) {
 			paramFunction.putInto(map);
 		}
@@ -94,7 +94,7 @@ public class RequestParameters {
 	 * @param body the request parameters string
 	 * @return a {@link Map} representation of the parameters
 	 */
-	public static Map<String, String> from(final String body) {
+	public static Map<String, List<String>> from(final String body) {
 		return from(body, Strings.DEFAULT_CHARSET);
 	}
 
@@ -106,12 +106,12 @@ public class RequestParameters {
 	 * @param encoding the body character encoding
 	 * @return a {@link Map} representation of the parameters
 	 */
-	public static Map<String, String> from(final String body, final Charset encoding) {
+	public static Map<String, List<String>> from(final String body, final Charset encoding) {
+		Map<String, List<String>> paramsMap = new LinkedHashMap<>();
 		if (Strings.isEmpty(body)) {
-			return Collections.emptyMap();
+			return paramsMap;
 		}
 		String[] params = body.split(SEPARATOR);
-		Map<String, String> paramsMap = new HashMap<>();
 
 		for (String param : params) {
 			int index = param.indexOf('=');
@@ -125,7 +125,7 @@ public class RequestParameters {
 				decodedKey = URLDecoder.decode(param, encoding);
 				decodedValue = "";
 			}
-			paramsMap.put(decodedKey, decodedValue);
+			paramsMap.computeIfAbsent(decodedKey, key -> new ArrayList<>()).add(decodedValue);
 		}
 		return paramsMap;
 	}
@@ -149,7 +149,7 @@ public class RequestParameters {
 	 * @return a new map containing the encoded parameters
 	 */
 	public static Map<String, List<String>> encode(final Map<String, List<String>> requestParameters, final Charset encoding) {
-		Map<String, List<String>> encodedParams = HashMap.newHashMap(requestParameters.size());
+		Map<String, List<String>> encodedParams = new LinkedHashMap<>(requestParameters.size());
 		requestParameters.forEach((key, values) -> {
 			String encodedName = URLEncoder.encode(key, encoding);
 			List<String> encodedValues = new ArrayList<>(values.size());
@@ -190,7 +190,7 @@ public class RequestParameters {
 	 */
 	public static Map<String, List<String>> from(final Object queryParams, final SimpleConverter<String, String> fieldNameConverter) {
 		if (null == queryParams) {
-			return Collections.emptyMap();
+			return new LinkedHashMap<>();
 		}
 		Require.thatNot(queryParams instanceof List<?>, "Cannot convert a List into request parameters map. Expected a POJO or a Map.");
 		Require.thatNot(queryParams instanceof Set<?>, "Cannot convert a Set into request parameters map. Expected a POJO or a Map.");
@@ -198,8 +198,8 @@ public class RequestParameters {
 
 		return switch (queryParams) {
 			case Map<?, ?> map -> MapConversions.convertMap(map,
-					k -> fieldNameConverter.convert(String.valueOf(k)), RequestParameter::values, PutFunction.ifNotNullValue()).toMap();
-			default -> MapConversions.convertToMap(queryParams, fieldNameConverter, RequestParameter::values, PutFunction.ifNotNullValue());
+					k -> fieldNameConverter.convert(String.valueOf(k)), RequestParameter::toValues, PutFunction.ifNotNullValue()).toMap();
+			default -> MapConversions.convertToMap(queryParams, fieldNameConverter, RequestParameter::toValues, PutFunction.ifNotNullValue());
 		};
 	}
 

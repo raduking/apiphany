@@ -3,6 +3,7 @@
 `1.1.4`
 
 - Changed all request parameters to be `Map<String, List<String>>` instead of `Map<String, String>` to better accommodate HTTP specification.
+- Renamed `RequestParameter.value` to `RequestParameter.toValues` to better emphasize what it does.
 
 ---
 

@@ -268,12 +268,15 @@ class OAuth2ApiClientTest {
 
 		ApiRequest<String> capturedRequest = requestCaptor.getValue();
 
-		Map<String, String> bodyParams = RequestParameters.from(capturedRequest.getBody());
+		Map<String, List<String>> bodyParams = RequestParameters.from(capturedRequest.getBody());
 		var headers = capturedRequest.getHeaders();
 
-		assertThat(bodyParams.get(OAuth2Parameter.GRANT_TYPE.value()), equalTo(clientRegistration.getAuthorizationGrantType().value()));
-		assertThat(bodyParams.get(OAuth2Parameter.CLIENT_ASSERTION_TYPE.value()), equalTo("urn:ietf:params:oauth:client-assertion-type:jwt-bearer"));
-		assertThat(bodyParams.get(OAuth2Parameter.EXPIRES_IN.value()), equalTo(String.valueOf(OAuth2Parameter.Default.EXPIRES_IN.toSeconds())));
+		assertThat(bodyParams.get(OAuth2Parameter.GRANT_TYPE.value()),
+				equalTo(List.of(clientRegistration.getAuthorizationGrantType().value())));
+		assertThat(bodyParams.get(OAuth2Parameter.CLIENT_ASSERTION_TYPE.value()),
+				equalTo(List.of("urn:ietf:params:oauth:client-assertion-type:jwt-bearer")));
+		assertThat(bodyParams.get(OAuth2Parameter.EXPIRES_IN.value()),
+				equalTo(List.of(String.valueOf(OAuth2Parameter.Default.EXPIRES_IN.toSeconds()))));
 		assertThat(headers.size(), equalTo(1));
 		assertThat(Headers.get(HttpHeader.CONTENT_TYPE, headers).getFirst(), equalTo(ContentType.Value.APPLICATION_FORM_URLENCODED));
 		assertThat(capturedRequest.getUrl().toString(), equalTo(providerDetails.getTokenUri()));
@@ -308,12 +311,15 @@ class OAuth2ApiClientTest {
 
 		ApiRequest<String> capturedRequest = requestCaptor.getValue();
 
-		Map<String, String> bodyParams = RequestParameters.from(capturedRequest.getBody());
+		Map<String, List<String>> bodyParams = RequestParameters.from(capturedRequest.getBody());
 		var headers = capturedRequest.getHeaders();
 
-		assertThat(bodyParams.get(OAuth2Parameter.GRANT_TYPE.value()), equalTo(clientRegistration.getAuthorizationGrantType().value()));
-		assertThat(bodyParams.get(OAuth2Parameter.CLIENT_ASSERTION_TYPE.value()), equalTo("urn:ietf:params:oauth:client-assertion-type:jwt-bearer"));
-		assertThat(bodyParams.get(OAuth2Parameter.EXPIRES_IN.value()), equalTo(String.valueOf(OAuth2Parameter.Default.EXPIRES_IN.toSeconds())));
+		assertThat(bodyParams.get(OAuth2Parameter.GRANT_TYPE.value()),
+				equalTo(List.of(clientRegistration.getAuthorizationGrantType().value())));
+		assertThat(bodyParams.get(OAuth2Parameter.CLIENT_ASSERTION_TYPE.value()),
+				equalTo(List.of("urn:ietf:params:oauth:client-assertion-type:jwt-bearer")));
+		assertThat(bodyParams.get(OAuth2Parameter.EXPIRES_IN.value()),
+				equalTo(List.of(String.valueOf(OAuth2Parameter.Default.EXPIRES_IN.toSeconds()))));
 		assertThat(headers.size(), equalTo(1));
 		assertThat(Headers.get(HttpHeader.CONTENT_TYPE, headers).getFirst(), equalTo(ContentType.Value.APPLICATION_FORM_URLENCODED));
 		assertThat(capturedRequest.getUrl().toString(), equalTo(providerDetails.getTokenUri()));

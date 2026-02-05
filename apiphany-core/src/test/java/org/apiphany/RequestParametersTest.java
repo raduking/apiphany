@@ -98,7 +98,7 @@ class RequestParametersTest {
 	@ParameterizedTest
 	@MethodSource("provideValuesForEmptyMapResult")
 	void shouldReturnEmptyMap(final String parametersString) {
-		Map<String, String> params = RequestParameters.from(parametersString);
+		Map<String, List<String>> params = RequestParameters.from(parametersString);
 
 		assertThat(params.entrySet(), hasSize(0));
 	}
@@ -111,18 +111,18 @@ class RequestParametersTest {
 
 	@Test
 	void shouldDecodeParametersCorrectly() {
-		Map<String, String> params = RequestParameters.from("user%20name=John%20Doe");
+		Map<String, List<String>> params = RequestParameters.from("user%20name=John%20Doe");
 
 		assertThat(params.entrySet(), hasSize(1));
-		assertThat(params.get("user name"), equalTo("John Doe"));
+		assertThat(params.get("user name"), equalTo(List.of("John Doe")));
 	}
 
 	@Test
 	void shouldReadParametersWithoutEquals() {
-		Map<String, String> params = RequestParameters.from("user");
+		Map<String, List<String>> params = RequestParameters.from("user");
 
 		assertThat(params.entrySet(), hasSize(1));
-		assertThat(params.get("user"), equalTo(""));
+		assertThat(params.get("user"), equalTo(List.of("")));
 	}
 
 	static class TestParams {

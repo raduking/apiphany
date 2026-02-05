@@ -116,42 +116,42 @@ class RequestParameterTest {
 
 	@Test
 	void shouldBuildStringValueFromObject() {
-		List<String> result = RequestParameter.values(123);
+		List<String> result = RequestParameter.toValues(123);
 
 		assertThat(result, equalTo(List.of("123")));
 	}
 
 	@Test
 	void shouldReturnNullWhenValueIsNull() {
-		List<String> result = RequestParameter.values((Object) null);
+		List<String> result = RequestParameter.toValues((Object) null);
 
 		assertThat(result, equalTo(null));
 	}
 
 	@Test
 	void shouldReturnNullWhenValueArrayIsNull() {
-		List<String> result = RequestParameter.values(null);
+		List<String> result = RequestParameter.toValues(null);
 
-		assertThat(result, equalTo(null));
+		assertThat(result, equalTo(List.of()));
 	}
 
 	@Test
 	void shouldBuildValueFromObject() {
-		List<String> values = RequestParameter.values(new A("test"));
+		List<String> values = RequestParameter.toValues(new A("test"));
 
 		assertThat(values, equalTo(List.of("test")));
 	}
 
 	@Test
 	void shouldBuildValueFromIntegerArray() {
-		List<String> parameter = RequestParameter.values(new Integer[] { 1, 2, 3 });
+		List<String> parameter = RequestParameter.toValues(new Integer[] { 1, 2, 3 });
 
 		assertThat(parameter, equalTo(List.of("1", "2", "3")));
 	}
 
 	@Test
 	void shouldBuildValueFromIntArray() {
-		List<String> parameter = RequestParameter.values(new int[] { 1, 2, 3 });
+		List<String> parameter = RequestParameter.toValues(new int[] { 1, 2, 3 });
 
 		assertThat(parameter, equalTo(List.of("1", "2", "3")));
 	}
