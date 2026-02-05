@@ -3,6 +3,7 @@ package org.apiphany;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +22,9 @@ import org.morphix.reflection.Constructors;
  * Utility class for building and manipulating request parameters. This class provides methods for creating parameter
  * maps, encoding parameters, and converting them into URL-friendly formats. It also includes a functional interface
  * {@link ParameterFunction} for defining parameter insertion logic.
+ * <p>
+ * Request parameters are typically represented as a map where the keys are parameter names and the values are lists of
+ * parameter values.
  *
  * @author Radu Sebastian LAZIN
  */
@@ -37,11 +41,11 @@ public class RequestParameters {
 	 * @param paramFunctions the {@link ParameterFunction}s to execute
 	 * @return a new map containing the inserted parameters
 	 */
-	public static Map<String, String> of(final ParameterFunction... paramFunctions) {
+	public static Map<String, List<String>> of(final ParameterFunction... paramFunctions) {
 		if (null == paramFunctions || 0 == paramFunctions.length) {
 			return Collections.emptyMap();
 		}
-		var map = new HashMap<String, String>();
+		var map = new HashMap<String, List<String>>();
 		for (ParameterFunction paramFunction : paramFunctions) {
 			paramFunction.putInto(map);
 		}
@@ -55,7 +59,7 @@ public class RequestParameters {
 	 * @param params the request parameters map
 	 * @return a URL-friendly string representation of the parameters
 	 */
-	public static String asUrlSuffix(final Map<String, String> params) {
+	public static String asUrlSuffix(final Map<String, List<String>> params) {
 		String result = asString(params);
 		if (Strings.isNotEmpty(result)) {
 			result = "?" + result;
@@ -70,14 +74,17 @@ public class RequestParameters {
 	 * @param params the request parameters map
 	 * @return a string representation of the parameters
 	 */
-	public static String asString(final Map<String, String> params) {
+	public static String asString(final Map<String, List<String>> params) {
 		if (Maps.isEmpty(params)) {
 			return "";
 		}
-		String[] paramsArray = params.entrySet().stream()
-				.map(entry -> String.join("=", entry.getKey(), entry.getValue()))
-				.toArray(String[]::new);
-		return String.join(SEPARATOR, paramsArray);
+		List<String> paramList = new ArrayList<>();
+		params.forEach((key, values) -> {
+			for (String value : values) {
+				paramList.add(String.join(RequestParameter.NAME_VALUE_SEPARATOR, key, value));
+			}
+		});
+		return String.join(SEPARATOR, paramList);
 	}
 
 	/**
@@ -129,7 +136,7 @@ public class RequestParameters {
 	 * @param requestParameters the request parameters to encode
 	 * @return a new map containing the encoded parameters
 	 */
-	public static Map<String, String> encode(final Map<String, String> requestParameters) {
+	public static Map<String, List<String>> encode(final Map<String, List<String>> requestParameters) {
 		return encode(requestParameters, Strings.DEFAULT_CHARSET);
 	}
 
@@ -141,12 +148,15 @@ public class RequestParameters {
 	 * @param encoding the character set to use for encoding
 	 * @return a new map containing the encoded parameters
 	 */
-	public static Map<String, String> encode(final Map<String, String> requestParameters, final Charset encoding) {
-		Map<String, String> encodedParams = HashMap.newHashMap(requestParameters.size());
-		requestParameters.forEach((key, value) -> {
+	public static Map<String, List<String>> encode(final Map<String, List<String>> requestParameters, final Charset encoding) {
+		Map<String, List<String>> encodedParams = HashMap.newHashMap(requestParameters.size());
+		requestParameters.forEach((key, values) -> {
 			String encodedName = URLEncoder.encode(key, encoding);
-			String encodedValue = URLEncoder.encode(value, encoding);
-			encodedParams.put(encodedName, encodedValue);
+			List<String> encodedValues = new ArrayList<>(values.size());
+			for (String value : values) {
+				encodedValues.add(URLEncoder.encode(value, encoding));
+			}
+			encodedParams.put(encodedName, encodedValues);
 		});
 		return encodedParams;
 	}
@@ -162,7 +172,7 @@ public class RequestParameters {
 	 * @return a map representation of the object's fields
 	 * @throws IllegalArgumentException if the provided object is not a POJO or a map.
 	 */
-	public static Map<String, String> from(final Object queryParams) {
+	public static Map<String, List<String>> from(final Object queryParams) {
 		return from(queryParams, String::valueOf);
 	}
 
@@ -178,7 +188,7 @@ public class RequestParameters {
 	 * @return a map representation of the object's fields
 	 * @throws IllegalArgumentException if the provided object is not a POJO or a map.
 	 */
-	public static Map<String, String> from(final Object queryParams, SimpleConverter<String, String> fieldNameConverter) {
+	public static Map<String, List<String>> from(final Object queryParams, final SimpleConverter<String, String> fieldNameConverter) {
 		if (null == queryParams) {
 			return Collections.emptyMap();
 		}
@@ -188,8 +198,8 @@ public class RequestParameters {
 
 		return switch (queryParams) {
 			case Map<?, ?> map -> MapConversions.convertMap(map,
-					k -> fieldNameConverter.convert(String.valueOf(k)), RequestParameter::value, PutFunction.ifNotNullValue()).toMap();
-			default -> MapConversions.convertToMap(queryParams, fieldNameConverter, RequestParameter::value, PutFunction.ifNotNullValue());
+					k -> fieldNameConverter.convert(String.valueOf(k)), RequestParameter::values, PutFunction.ifNotNullValue()).toMap();
+			default -> MapConversions.convertToMap(queryParams, fieldNameConverter, RequestParameter::values, PutFunction.ifNotNullValue());
 		};
 	}
 

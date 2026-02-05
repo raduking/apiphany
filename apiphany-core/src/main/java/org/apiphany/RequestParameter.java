@@ -1,5 +1,8 @@
 package org.apiphany;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import org.apiphany.lang.Require;
@@ -13,17 +16,22 @@ import org.morphix.convert.ArrayConversions;
  * class exists mainly for cases where debugging or direct usage of parameters is needed.
  *
  * @param name the name of the parameter
- * @param value the value of the parameter
+ * @param values the values of the parameter
  *
  * @author Radu Sebastian LAZIN
  */
-public record RequestParameter(String name, String value) implements ParameterFunction {
+public record RequestParameter(String name, List<String> values) implements ParameterFunction {
+
+	/**
+	 * Separator between parameter name and value.
+	 */
+	public static final String NAME_VALUE_SEPARATOR = "=";
 
 	/**
 	 * Constructs a {@link RequestParameter} instance ensuring the name is not null or blank.
 	 *
 	 * @param name the name of the parameter
-	 * @param value the value of the parameter
+	 * @param values the value of the parameter
 	 */
 	public RequestParameter {
 		Require.notNull(name, "Parameter name cannot be null");
@@ -41,7 +49,7 @@ public record RequestParameter(String name, String value) implements ParameterFu
 	 * @return a new {@link RequestParameter} instance
 	 */
 	public static <N, V> RequestParameter of(final N name, final V value) {
-		return new RequestParameter(String.valueOf(Require.notNull(name, "Parameter name cannot be null")), value(value));
+		return new RequestParameter(String.valueOf(Require.notNull(name, "Parameter name cannot be null")), values(value));
 	}
 
 	/**
@@ -51,7 +59,16 @@ public record RequestParameter(String name, String value) implements ParameterFu
 	 */
 	@Override
 	public String toString() {
-		return String.join("=", name, value);
+		StringBuilder stringBuilder = new StringBuilder();
+		for (String value : values) {
+			if (stringBuilder.length() > 0) {
+				stringBuilder.append(RequestParameters.SEPARATOR);
+			}
+			stringBuilder.append(name);
+			stringBuilder.append(NAME_VALUE_SEPARATOR);
+			stringBuilder.append(value);
+		}
+		return stringBuilder.toString();
 	}
 
 	/**
@@ -60,8 +77,8 @@ public record RequestParameter(String name, String value) implements ParameterFu
 	 * @param map the map to put the parameter into
 	 */
 	@Override
-	public void putInto(final Map<String, String> map) {
-		map.put(name, value);
+	public void putInto(final Map<String, List<String>> map) {
+		map.computeIfAbsent(name, key -> new ArrayList<>()).addAll(values);
 	}
 
 	/**
@@ -70,16 +87,16 @@ public record RequestParameter(String name, String value) implements ParameterFu
 	 * @param object the object to convert to string parameter value
 	 * @return the string representation of the value
 	 */
-	public static String value(final Object object) {
+	public static List<String> values(final Object object) {
 		if (null == object) {
 			return null;
 		}
 		return switch (object) {
-			case String string -> string;
+			case String string -> List.of(string);
 			case Iterable<?> iterable -> value(JavaArrays.toArray(iterable));
 			case Object[] array -> value(array);
 			case Object o when o.getClass().isArray() -> value(JavaArrays.toArray(o));
-			default -> String.valueOf(object);
+			default -> List.of(String.valueOf(object));
 		};
 	}
 
@@ -89,10 +106,10 @@ public record RequestParameter(String name, String value) implements ParameterFu
 	 * @param objects the array of objects to convert to string parameter value
 	 * @return the comma-separated string representation of the values
 	 */
-	public static String value(final Object[] objects) {
+	public static List<String> value(final Object[] objects) {
 		if (null == objects) {
-			return null;
+			return Collections.emptyList();
 		}
-		return String.join(",", ArrayConversions.convertArray(objects, String::valueOf).toArray(String[]::new));
+		return ArrayConversions.convertArray(objects, String::valueOf).toList();
 	}
 }

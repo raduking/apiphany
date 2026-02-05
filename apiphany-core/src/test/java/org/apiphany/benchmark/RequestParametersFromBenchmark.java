@@ -1,5 +1,6 @@
 package org.apiphany.benchmark;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -59,12 +60,12 @@ public class RequestParametersFromBenchmark {
 	}
 
 	@Benchmark
-	public Map<String, String> fromMap() {
+	public Map<String, List<String>> fromMap() {
 		return RequestParameters.from(mapParams);
 	}
 
 	@Benchmark
-	public Map<String, String> fromObject() {
+	public Map<String, List<String>> fromObject() {
 		return RequestParameters.from(objParams);
 	}
 

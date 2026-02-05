@@ -267,17 +267,17 @@ class FilterTest {
 
 	@Test
 	void shouldPutFilterIntoMap() {
-		var map = new HashMap<String, String>();
+		var map = new HashMap<String, List<String>>();
 		Filter filter = Filter.of(E.TYPE, Operator.EQ, "song");
 
 		filter.putInto(map);
 
-		assertThat(map.get(Filter.NAME), equalTo("type==song"));
+		assertThat(map.get(Filter.NAME), equalTo(List.of("type==song")));
 	}
 
 	@Test
 	void shouldNotPutNoneFilterIntoMap() {
-		var map = new HashMap<String, String>();
+		var map = new HashMap<String, List<String>>();
 
 		Filter.none().putInto(map);
 

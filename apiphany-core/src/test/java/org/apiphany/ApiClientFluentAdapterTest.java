@@ -51,7 +51,7 @@ import io.micrometer.core.instrument.Timer;
 class ApiClientFluentAdapterTest {
 
 	private static final String URL = "http://localhost";
-	private static final Map<String, String> PARAMS = RequestParameters.of(parameter("name", "value"));
+	private static final Map<String, List<String>> PARAMS = RequestParameters.of(parameter("name", "value"));
 	private static final Map<String, List<String>> HEADERS = Map.of("headerName", List.of("headerValue"));
 	private static final String BODY = "SomeBody";
 	private static final String HEADER_NAME = "header-name";

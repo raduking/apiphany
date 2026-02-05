@@ -35,21 +35,21 @@ class RequestParametersTest {
 
 	@Test
 	void shouldCreateMapWithAllParameters() {
-		Map<String, String> requestParameters = RequestParameters.of(
+		Map<String, List<String>> requestParameters = RequestParameters.of(
 				parameter("x1", "y1"),
 				withCondition(true,
 						parameter("x2", "y2")));
 
-		Map<String, String> expected = new HashMap<>();
-		expected.put("x1", "y1");
-		expected.put("x2", "y2");
+		Map<String, List<String>> expected = new HashMap<>();
+		expected.put("x1", List.of("y1"));
+		expected.put("x2", List.of("y2"));
 
 		assertThat(requestParameters, equalTo(expected));
 	}
 
 	@Test
 	void shouldConvertParametersToUrlSuffix() {
-		Map<String, String> params = RequestParameters.of(
+		Map<String, List<String>> params = RequestParameters.of(
 				parameter("param1", "value1"),
 				parameter("param2", "value2"));
 
@@ -60,21 +60,21 @@ class RequestParametersTest {
 
 	@Test
 	void shouldEncodeParameters() {
-		Map<String, String> params = RequestParameters.of(
+		Map<String, List<String>> params = RequestParameters.of(
 				parameter("param 1", "value 1"),
 				parameter("param&2", "value&2"));
 		params = RequestParameters.encode(params);
 
-		Map<String, String> expected = Map.of(
-				"param+1", "value+1",
-				"param%262", "value%262");
+		Map<String, List<String>> expected = Map.of(
+				"param+1", List.of("value+1"),
+				"param%262", List.of("value%262"));
 
 		assertThat(params, equalTo(expected));
 	}
 
 	@Test
 	void shouldReturnEmptyStringAsUrlSuffixIfNoParameters() {
-		Map<String, String> params = RequestParameters.of();
+		Map<String, List<String>> params = RequestParameters.of();
 
 		String urlSuffix = RequestParameters.asUrlSuffix(params);
 
@@ -83,14 +83,14 @@ class RequestParametersTest {
 
 	@Test
 	void shouldReturnEmptyMapIfNoParametersWereSupplied() {
-		Map<String, String> params = RequestParameters.of();
+		Map<String, List<String>> params = RequestParameters.of();
 
 		assertThat(params.entrySet(), hasSize(0));
 	}
 
 	@Test
 	void shouldReturnEmptyMapIfParametersIsNullSupplied() {
-		Map<String, String> params = RequestParameters.of((ParameterFunction[]) null);
+		Map<String, List<String>> params = RequestParameters.of((ParameterFunction[]) null);
 
 		assertThat(params.entrySet(), hasSize(0));
 	}
@@ -153,11 +153,11 @@ class RequestParametersTest {
 		testParams.setParam1("value1");
 		testParams.setParam2("value2");
 
-		Map<String, String> params = RequestParameters.from(testParams);
+		Map<String, List<String>> params = RequestParameters.from(testParams);
 
 		assertThat(params.entrySet(), hasSize(2));
-		assertThat(params.get("param1"), equalTo("value1"));
-		assertThat(params.get("param2"), equalTo("value2"));
+		assertThat(params.get("param1"), equalTo(List.of("value1")));
+		assertThat(params.get("param2"), equalTo(List.of("value2")));
 	}
 
 	static class B {
@@ -188,17 +188,17 @@ class RequestParametersTest {
 		b.setKey1(100);
 		b.setKey2(200L);
 
-		Map<String, String> params = RequestParameters.from(b);
+		Map<String, List<String>> params = RequestParameters.from(b);
 
 		assertThat(params.entrySet(), hasSize(2));
-		assertThat(params.get("key1"), equalTo("100"));
-		assertThat(params.get("key2"), equalTo("200"));
+		assertThat(params.get("key1"), equalTo(List.of("100")));
+		assertThat(params.get("key2"), equalTo(List.of("200")));
 	}
 
 	@ParameterizedTest
 	@MethodSource("provideValuesForEmptyMapFromObject")
 	void shouldConvertToEmptyMapFrom(final Object object) {
-		Map<String, String> params = RequestParameters.from(object);
+		Map<String, List<String>> params = RequestParameters.from(object);
 
 		assertThat(params.entrySet(), hasSize(0));
 	}
@@ -244,25 +244,25 @@ class RequestParametersTest {
 				"param4", new boolean[] { true, false },
 				"param5", new Integer[] { 1, 2, 3 });
 
-		Map<String, String> params = RequestParameters.from(inputMap);
+		Map<String, List<String>> params = RequestParameters.from(inputMap);
 
 		assertThat(params.entrySet(), hasSize(inputMap.size()));
 
-		assertThat(params.get("param1"), equalTo("value1"));
-		assertThat(params.get("param2"), equalTo("123"));
-		assertThat(params.get("param3"), equalTo("a,b,c"));
-		assertThat(params.get("param4"), equalTo("true,false"));
-		assertThat(params.get("param5"), equalTo("1,2,3"));
+		assertThat(params.get("param1"), equalTo(List.of("value1")));
+		assertThat(params.get("param2"), equalTo(List.of("123")));
+		assertThat(params.get("param3"), equalTo(List.of("a", "b", "c")));
+		assertThat(params.get("param4"), equalTo(List.of("true", "false")));
+		assertThat(params.get("param5"), equalTo(List.of("1", "2", "3")));
 	}
 
 	@Test
 	void shouldAddParameterWithParameterRecord() {
-		Map<String, String> params = RequestParameters.of(
+		Map<String, List<String>> params = RequestParameters.of(
 				RequestParameter.of("param1", "value1"),
 				RequestParameter.of("param2", "value2"));
 
 		assertThat(params.entrySet(), hasSize(2));
-		assertThat(params.get("param1"), equalTo("value1"));
-		assertThat(params.get("param2"), equalTo("value2"));
+		assertThat(params.get("param1"), equalTo(List.of("value1")));
+		assertThat(params.get("param2"), equalTo(List.of("value2")));
 	}
 }

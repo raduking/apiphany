@@ -321,7 +321,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @param requestParams request parameters
 	 * @return this
 	 */
-	public ApiClientFluentAdapter params(final Map<String, String> requestParams) {
+	public ApiClientFluentAdapter params(final Map<String, List<String>> requestParams) {
 		Objects.requireNonNull(getUrl(), "Request parameters must be set after URL/URI");
 		if (null == params) {
 			this.params = new HashMap<>();
