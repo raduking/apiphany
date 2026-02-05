@@ -1,11 +1,11 @@
 package org.apiphany;
 
-import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apiphany.http.URIEncoder;
 import org.apiphany.lang.Require;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.JavaArrays;
@@ -71,8 +71,8 @@ public record RequestParameter(String name, List<String> values, Charset encodin
 			if (stringBuilder.length() > 0) {
 				stringBuilder.append(RequestParameters.SEPARATOR);
 			}
-			String encodedName = URLEncoder.encode(name, encoding);
-			String encodedValue = URLEncoder.encode(value, encoding);
+			String encodedName = URIEncoder.encodeParamName(name, encoding);
+			String encodedValue = URIEncoder.encodeParamValue(value, encoding);
 			stringBuilder.append(encodedName);
 			stringBuilder.append(NAME_VALUE_SEPARATOR);
 			stringBuilder.append(encodedValue);

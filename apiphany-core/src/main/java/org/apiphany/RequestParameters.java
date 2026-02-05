@@ -1,7 +1,6 @@
 package org.apiphany;
 
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -9,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apiphany.http.URIEncoder;
 import org.apiphany.lang.Require;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.JavaArrays;
@@ -151,10 +151,10 @@ public class RequestParameters {
 	public static Map<String, List<String>> encode(final Map<String, List<String>> requestParameters, final Charset encoding) {
 		Map<String, List<String>> encodedParams = new LinkedHashMap<>(requestParameters.size());
 		requestParameters.forEach((key, values) -> {
-			String encodedName = URLEncoder.encode(key, encoding);
+			String encodedName = URIEncoder.encodeParamName(key, encoding);
 			List<String> encodedValues = new ArrayList<>(values.size());
 			for (String value : values) {
-				encodedValues.add(URLEncoder.encode(value, encoding));
+				encodedValues.add(URIEncoder.encodeParamValue(value, encoding));
 			}
 			encodedParams.put(encodedName, encodedValues);
 		});

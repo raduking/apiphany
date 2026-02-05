@@ -1,7 +1,6 @@
 package org.apiphany;
 
 import java.net.URI;
-import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -16,6 +15,7 @@ import org.apiphany.client.http.HttpClientFluentAdapter;
 import org.apiphany.header.Header;
 import org.apiphany.header.HeaderFunction;
 import org.apiphany.header.Headers;
+import org.apiphany.http.URIEncoder;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Maps;
 import org.apiphany.lang.retry.Retry;
@@ -178,7 +178,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 			if (Strings.isEmpty(sanitized)) {
 				continue;
 			}
-			String segment = isUrlEncoded() ? URLEncoder.encode(sanitized, charset) : sanitized;
+			String segment = isUrlEncoded() ? URIEncoder.encodePath(sanitized, charset) : sanitized;
 			sb.append('/').append(segment);
 		}
 		return url(sb.toString());

@@ -66,7 +66,7 @@ class RequestParametersTest {
 		params = RequestParameters.encode(params);
 
 		Map<String, List<String>> expected = Map.of(
-				"param+1", List.of("value+1"),
+				"param%201", List.of("value+1"),
 				"param%262", List.of("value%262"));
 
 		assertThat(params, equalTo(expected));
