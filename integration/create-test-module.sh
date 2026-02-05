@@ -30,6 +30,7 @@ cat > "$MODULE_NAME/pom.xml" <<EOF
 		<groupId>io.github.raduking</groupId>
 		<artifactId>$PARENT_ARTIFACT</artifactId>
 		<version>\${project.version}</version>
+		<relativePath>../../pom.xml</relativePath>
 	</parent>
 
 	<artifactId>$MODULE_NAME</artifactId>
