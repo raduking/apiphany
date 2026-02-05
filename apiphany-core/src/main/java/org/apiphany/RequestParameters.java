@@ -198,7 +198,7 @@ public class RequestParameters {
 
 		return switch (queryParams) {
 			case Map<?, ?> map -> MapConversions.convertMap(map,
-					k -> fieldNameConverter.convert(String.valueOf(k)), RequestParameter::toValues, PutFunction.ifNotNullValue()).toMap();
+					key -> fieldNameConverter.convert(String.valueOf(key)), RequestParameter::toValues, PutFunction.ifNotNullValue()).toMap();
 			default -> MapConversions.convertToMap(queryParams, fieldNameConverter, RequestParameter::toValues, PutFunction.ifNotNullValue());
 		};
 	}
