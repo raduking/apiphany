@@ -7,7 +7,6 @@ import java.security.PrivateKey;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -186,7 +185,7 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 	 * @return the authentication token with `client_secret_basic` method
 	 */
 	private AuthenticationToken getTokenWithClientSecretBasic() {
-		Map<String, List<String>> params = RequestParameters.of(
+		var params = RequestParameters.of(
 				parameter(OAuth2Parameter.GRANT_TYPE, clientRegistration.getAuthorizationGrantType()),
 				parameter(OAuth2Parameter.EXPIRES_IN, OAuth2Parameter.Default.EXPIRES_IN.toSeconds()));
 
@@ -207,7 +206,7 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 	 * @return the authentication token with `client_secret_post` method
 	 */
 	private AuthenticationToken getTokenWithClientSecretPost() {
-		Map<String, List<String>> params = RequestParameters.of(
+		var params = RequestParameters.of(
 				parameter(OAuth2Parameter.GRANT_TYPE, clientRegistration.getAuthorizationGrantType()),
 				parameter(OAuth2Parameter.EXPIRES_IN, OAuth2Parameter.Default.EXPIRES_IN.toSeconds()),
 				parameter(OAuth2Parameter.CLIENT_ID, clientRegistration.getClientId()),
@@ -234,7 +233,7 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 				providerDetails.getTokenUri(),
 				clientRegistration.getClientSecret());
 
-		Map<String, List<String>> params = RequestParameters.of(
+		var params = RequestParameters.of(
 				parameter(OAuth2Parameter.GRANT_TYPE, clientRegistration.getAuthorizationGrantType()),
 				parameter(OAuth2Parameter.CLIENT_ASSERTION_TYPE, "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"),
 				parameter(OAuth2Parameter.CLIENT_ASSERTION, clientAssertion),
@@ -263,7 +262,7 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 				privateKey,
 				signingAlgorithm);
 
-		Map<String, List<String>> params = RequestParameters.of(
+		var params = RequestParameters.of(
 				parameter(OAuth2Parameter.GRANT_TYPE, clientRegistration.getAuthorizationGrantType()),
 				parameter(OAuth2Parameter.CLIENT_ASSERTION_TYPE, "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"),
 				parameter(OAuth2Parameter.CLIENT_ASSERTION, clientAssertion),
