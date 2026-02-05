@@ -138,7 +138,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	@SafeVarargs
 	protected static JsonBuilder initializeInstance(final LibraryDescriptor<? extends JsonBuilder>... libraryDescriptors) {
 		return LibraryInitializer.instance(() -> {
-			LOGGER.warn("{}, JsonBuilder.toJson will only build JSONs like { \"hash\":\"<class-name>@<hash-code>\" }!",
+			LOGGER.warn("{}, JsonBuilder.toJson will only build JSONs like { \"identity\":\"<class-name>@<identity-hashcode>\" }!",
 					ErrorMessage.JSON_LIBRARY_NOT_FOUND);
 			return new JsonBuilder();
 		}, libraryDescriptors);
@@ -151,7 +151,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 *
 	 * @param obj object to transform
 	 * @return JSON String if conversion is possible, <code>null</code> if parameter is <code>null</code>,
-	 * {@link #toString(Object)} otherwise.
+	 * {@link #toIdentityJson(Object)} otherwise.
 	 */
 	public static <T> String toJson(final T obj) {
 		return InstanceHolder.INSTANCE.toJsonString(obj);
@@ -234,10 +234,10 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 *
 	 * @param obj object to transform
 	 * @return JSON String if conversion is possible, <code>null</code> if parameter is <code>null</code>,
-	 * {@link #toString(Object)} otherwise.
+	 * {@link #toIdentityJson(Object)} otherwise.
 	 */
 	public <T> String toJsonString(final T obj) {
-		return toString(obj);
+		return toIdentityJson(obj);
 	}
 
 	/**
@@ -368,15 +368,27 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	}
 
 	/**
-	 * Returns the {@link Object#toString()} in a JSON format.
+	 * Returns the {@link Object#toString()} in a JSON format, like:
+	 *
+	 * <pre>
+	 * { "identity":"&lt;class-name&gt;@&lt;identity-hashcode&gt;" }
+	 * </pre>
+	 *
+	 * or
+	 *
+	 * <pre>
+	 * { "identity":null }
+	 * </pre>
+	 *
+	 * if the input object is {@code null}.
 	 *
 	 * @param <T> type of the object
 	 *
 	 * @param obj input
 	 * @return JSON String
 	 */
-	protected static <T> String toString(final T obj) {
-		return "{ \"hash\":\"" + hexHash(obj) + "\" }";
+	public static <T> String toIdentityJson(final T obj) {
+		return "{ \"identity\":\"" + identityHashCode(obj) + "\" }";
 	}
 
 	/**
@@ -390,7 +402,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 */
 	protected static <T> String toDebugString(final T obj) {
 		if (null == obj) {
-			return "{ \"type\":null, \"hash\":null }";
+			return "{ \"type\":null, \"identity\":null }";
 		}
 		class FieldExtractor {
 			Long id;
@@ -398,7 +410,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 		FieldExtractor fieldExtractor = Converter.convert(obj).to(FieldExtractor::new);
 		return "{ \"type\":\"" + obj.getClass().getCanonicalName() + "\""
 				+ (null != fieldExtractor.id ? ", \"id\":\"" + fieldExtractor.id + "\"" : "")
-				+ ", \"hash\":\"" + hexHash(obj) + "\""
+				+ ", \"identity\":\"" + identityHashCode(obj) + "\""
 				+ " }";
 	}
 
@@ -408,10 +420,10 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 *
 	 * @param <T> object type
 	 *
-	 * @param obj object to get the hash
+	 * @param obj object to get the identity hash code for
 	 * @return string which contains the class name and e hexadecimal hash
 	 */
-	protected static <T> String hexHash(final T obj) {
+	protected static <T> String identityHashCode(final T obj) {
 		if (null == obj) {
 			return Objects.toString(obj);
 		}

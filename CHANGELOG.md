@@ -19,6 +19,7 @@
 - Added `JavaArrays.isEmpty` to check if an array is `null` or empty.
 - Added `LibraryDescriptor` class to describe a library support (like Jackson 2 or Micrometer).
 - Added `LibraryInitializer` utility interface to create the proper instance for the available library in the classpath.
+- Changed the way JSONs look when a JSON library is missing, the field is now named `identity` instead of `hash`.
 
 ---
 
