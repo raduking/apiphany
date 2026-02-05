@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apiphany.lang.Strings;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -79,14 +80,16 @@ class RequestParameterTest {
 
 	@Test
 	void shouldThrowExceptionWhenBuildingParameterWithConstructorAndNullName() {
-		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> new RequestParameter(null, List.of(VALUE)));
+		IllegalArgumentException e =
+				assertThrows(IllegalArgumentException.class, () -> new RequestParameter(null, List.of(VALUE), Strings.DEFAULT_CHARSET));
 
 		assertThat(e.getMessage(), equalTo("Parameter name cannot be null"));
 	}
 
 	@Test
 	void shouldThrowExceptionWhenBuildingParameterWithConstructorAndBlankName() {
-		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> new RequestParameter(BLANK_STRING, List.of(VALUE)));
+		IllegalArgumentException e =
+				assertThrows(IllegalArgumentException.class, () -> new RequestParameter(BLANK_STRING, List.of(VALUE), Strings.DEFAULT_CHARSET));
 
 		assertThat(e.getMessage(), equalTo("Parameter name cannot be blank"));
 	}

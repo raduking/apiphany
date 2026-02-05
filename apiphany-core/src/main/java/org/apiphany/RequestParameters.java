@@ -114,7 +114,7 @@ public class RequestParameters {
 		String[] params = body.split(SEPARATOR);
 
 		for (String param : params) {
-			int index = param.indexOf('=');
+			int index = param.indexOf(RequestParameter.NAME_VALUE_SEPARATOR);
 			final String decodedKey;
 			final String decodedValue;
 
