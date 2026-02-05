@@ -23,5 +23,5 @@ jobs:
           cache: maven
 
       - name: Build with Maven
-        run: mvn -B clean verify -U -e
+        run: mvn -B clean verify -U -f pom.xml
         #run: mvn -B clean verify
