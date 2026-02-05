@@ -7,6 +7,7 @@ import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -19,6 +20,7 @@ import org.apiphany.http.HttpStatus;
 import org.apiphany.io.ContentType;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
+import org.apiphany.lang.collections.Lists;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.oauth2.AuthorizationGrantType;
 import org.apiphany.security.oauth2.OAuth2Parameter;
@@ -199,19 +201,21 @@ public class JavaSunOAuth2Server implements AutoCloseable {
 				sendResponse(exchange, HttpStatus.METHOD_NOT_ALLOWED);
 				return;
 			}
-			Map<String, String> params = RequestParameters.from(getBody(exchange));
+			Map<String, List<String>> params = RequestParameters.from(getBody(exchange));
 
-			String clientId = params.get(OAuth2Parameter.CLIENT_ID.value());
-			String clientSecret = params.get(OAuth2Parameter.CLIENT_SECRET.value());
-			boolean isAuthorized = AuthorizationGrantType.CLIENT_CREDENTIALS.matches(params.get(OAuth2Parameter.GRANT_TYPE.value()))
+			String clientId = Lists.first(params.get(OAuth2Parameter.CLIENT_ID.value()));
+			String clientSecret = Lists.first(params.get(OAuth2Parameter.CLIENT_SECRET.value()));
+			String grantType = Lists.first(params.get(OAuth2Parameter.GRANT_TYPE.value()));
+			boolean isAuthorized = AuthorizationGrantType.CLIENT_CREDENTIALS.matches(grantType)
 					&& Objects.equals(server.clientId, clientId)
 					&& Objects.equals(server.clientSecret, clientSecret);
 			if (!isAuthorized) {
 				sendResponse(exchange, HttpStatus.UNAUTHORIZED, ErrorResponse.of("Invalid client: " + clientId));
 				return;
 			}
-			Duration expiresIn = getExpiresIn(params.get(OAuth2Parameter.EXPIRES_IN.value()));
-			String accessToken = generateToken(clientId, expiresIn);
+			String expiresIn = Lists.first(params.get(OAuth2Parameter.EXPIRES_IN.value()));
+			Duration expiresInDuration = getExpiresIn(expiresIn);
+			String accessToken = generateToken(clientId, expiresInDuration);
 			if (null == accessToken) {
 				sendResponse(exchange, HttpStatus.INTERNAL_SERVER_ERROR, ErrorResponse.of("Cannot generate token"));
 				return;
@@ -220,7 +224,7 @@ public class JavaSunOAuth2Server implements AutoCloseable {
 			AuthenticationToken token = new AuthenticationToken();
 			token.setAccessToken(accessToken);
 			token.setTokenType(HttpAuthScheme.BEARER.value());
-			token.setExpiresIn(expiresIn.toSeconds());
+			token.setExpiresIn(expiresInDuration.toSeconds());
 
 			sendResponse(exchange, HttpStatus.OK, token.toString());
 		}

@@ -4,7 +4,7 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -325,7 +325,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	public ApiClientFluentAdapter params(final Map<String, List<String>> requestParams) {
 		Objects.requireNonNull(getUrl(), "Request parameters must be set after URL/URI");
 		if (null == params) {
-			this.params = new HashMap<>();
+			this.params = new LinkedHashMap<>();
 		}
 		for (Map.Entry<String, List<String>> entry : Maps.safe(requestParams).entrySet()) {
 			this.params.computeIfAbsent(entry.getKey(), key -> new ArrayList<>()).addAll(entry.getValue());

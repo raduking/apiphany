@@ -1,7 +1,6 @@
 package org.apiphany;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -49,7 +48,7 @@ public record RequestParameter(String name, List<String> values) implements Para
 	 * @return a new {@link RequestParameter} instance
 	 */
 	public static <N, V> RequestParameter of(final N name, final V value) {
-		return new RequestParameter(String.valueOf(Require.notNull(name, "Parameter name cannot be null")), values(value));
+		return new RequestParameter(String.valueOf(Require.notNull(name, "Parameter name cannot be null")), toValues(value));
 	}
 
 	/**
@@ -82,34 +81,35 @@ public record RequestParameter(String name, List<String> values) implements Para
 	}
 
 	/**
-	 * Converts the given value to its string representation suitable for request parameters.
+	 * Converts the given object to its values list representation suitable for request parameters.
 	 *
 	 * @param object the object to convert to string parameter value
 	 * @return the string representation of the value
 	 */
-	public static List<String> values(final Object object) {
+	public static List<String> toValues(final Object object) {
 		if (null == object) {
 			return null;
 		}
 		return switch (object) {
 			case String string -> List.of(string);
-			case Iterable<?> iterable -> value(JavaArrays.toArray(iterable));
-			case Object[] array -> value(array);
-			case Object o when o.getClass().isArray() -> value(JavaArrays.toArray(o));
+			case Iterable<?> iterable -> toValues(JavaArrays.toArray(iterable));
+			case Object[] array -> toValues(array);
+			case Object o when o.getClass().isArray() -> toValues(JavaArrays.toArray(o));
 			default -> List.of(String.valueOf(object));
 		};
 	}
 
 	/**
-	 * Converts the given array of values to a comma-separated string representation suitable for request parameters.
+	 * Converts the given array of values to a list of values suitable for request parameters.
 	 *
 	 * @param objects the array of objects to convert to string parameter value
 	 * @return the comma-separated string representation of the values
 	 */
-	public static List<String> value(final Object[] objects) {
+	public static List<String> toValues(final Object[] objects) {
+		List<String> list = new ArrayList<>();
 		if (null == objects) {
-			return Collections.emptyList();
+			return list;
 		}
-		return ArrayConversions.convertArray(objects, String::valueOf).toList();
+		return ArrayConversions.convertArray(objects, String::valueOf).to(list);
 	}
 }
