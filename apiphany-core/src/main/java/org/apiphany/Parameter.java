@@ -153,7 +153,7 @@ public interface Parameter extends ParameterFunction {
 	 * @param map the map containing the entries to insert
 	 * @return a {@link Parameter} that inserts all entries from the map
 	 */
-	static Parameter of(final Map<String, String> map) {
+	static Parameter of(final Map<String, List<String>> map) {
 		return ParameterFunction.parameters(map)::putInto;
 	}
 

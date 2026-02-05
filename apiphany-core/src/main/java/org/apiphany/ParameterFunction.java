@@ -1,5 +1,6 @@
 package org.apiphany;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -15,7 +16,7 @@ import org.apiphany.lang.collections.Lists;
  * @author Radu Sebastian LAZIN
  */
 @FunctionalInterface
-public interface ParameterFunction extends Consumer<Map<String, String>> {
+public interface ParameterFunction extends Consumer<Map<String, List<String>>> {
 
 	/**
 	 * Cache empty function instance.
@@ -29,13 +30,13 @@ public interface ParameterFunction extends Consumer<Map<String, String>> {
 	 *
 	 * @param map the map to insert parameters into
 	 */
-	void putInto(Map<String, String> map);
+	void putInto(Map<String, List<String>> map);
 
 	/**
 	 * @see Consumer#accept(Object)
 	 */
 	@Override
-	default void accept(final Map<String, String> map) {
+	default void accept(final Map<String, List<String>> map) {
 		putInto(map);
 	}
 
@@ -47,7 +48,7 @@ public interface ParameterFunction extends Consumer<Map<String, String>> {
 	 * @return a {@link ParameterFunction} that inserts the key-value pair into the map
 	 */
 	static ParameterFunction parameter(final String name, final String value) {
-		return map -> map.put(name, value);
+		return map -> map.computeIfAbsent(name, key -> new ArrayList<>()).add(value);
 	}
 
 	/**
@@ -60,7 +61,7 @@ public interface ParameterFunction extends Consumer<Map<String, String>> {
 	 * @return a {@link ParameterFunction} that inserts the key-value pair into the map
 	 */
 	static <T> ParameterFunction parameter(final String name, final T value) {
-		return parameter(name, RequestParameter.value(value));
+		return parameter(name, RequestParameter.values(value));
 	}
 
 	/**
@@ -75,7 +76,7 @@ public interface ParameterFunction extends Consumer<Map<String, String>> {
 	 * @return a {@link ParameterFunction} that inserts the key-value pair into the map
 	 */
 	static <T, U> ParameterFunction parameter(final T name, final U value) {
-		return parameter(String.valueOf(name), RequestParameter.value(value));
+		return parameter(String.valueOf(name), RequestParameter.values(value));
 	}
 
 	/**
@@ -88,7 +89,7 @@ public interface ParameterFunction extends Consumer<Map<String, String>> {
 	 * @return a {@link ParameterFunction} that inserts the key-value pair into the map
 	 */
 	static <T> ParameterFunction parameter(final String name, final Supplier<T> value) {
-		return parameter(name, RequestParameter.value(value.get()));
+		return parameter(name, RequestParameter.values(value.get()));
 	}
 
 	/**
@@ -102,7 +103,7 @@ public interface ParameterFunction extends Consumer<Map<String, String>> {
 	 * @return a {@link ParameterFunction} that inserts the key-value pair into the map
 	 */
 	static <T, U> ParameterFunction parameter(final T name, final Supplier<U> value) {
-		return parameter(String.valueOf(name), RequestParameter.value(value.get()));
+		return parameter(String.valueOf(name), RequestParameter.values(value.get()));
 	}
 
 	/**
@@ -117,7 +118,7 @@ public interface ParameterFunction extends Consumer<Map<String, String>> {
 	 * @return a {@link ParameterFunction} that inserts the key-value pair into the map
 	 */
 	static <T, U> ParameterFunction parameter(final Supplier<T> name, final Supplier<U> value) {
-		return parameter(String.valueOf(name.get()), RequestParameter.value(value.get()));
+		return parameter(String.valueOf(name.get()), RequestParameter.values(value.get()));
 	}
 
 	/**
@@ -130,7 +131,7 @@ public interface ParameterFunction extends Consumer<Map<String, String>> {
 	static ParameterFunction parameter(final String name, final List<String> elements) {
 		return map -> {
 			if (Lists.isNotEmpty(elements)) {
-				map.put(name, String.join(",", elements));
+				map.computeIfAbsent(name, key -> new ArrayList<>()).addAll(elements);
 			}
 		};
 	}
@@ -146,7 +147,7 @@ public interface ParameterFunction extends Consumer<Map<String, String>> {
 	 * @return a {@link ParameterFunction} that inserts the key-value pair into the map
 	 */
 	static <T, U> ParameterFunction parameter(final T name, final List<U> elements) {
-		return parameter(String.valueOf(name), RequestParameter.value(elements));
+		return parameter(String.valueOf(name), RequestParameter.values(elements));
 	}
 
 	/**
@@ -165,8 +166,12 @@ public interface ParameterFunction extends Consumer<Map<String, String>> {
 	 * @param map the map containing the entries to insert
 	 * @return a {@link ParameterFunction} that inserts all entries from the map
 	 */
-	static ParameterFunction parameters(final Map<String, String> map) {
-		return existingMap -> existingMap.putAll(map);
+	static ParameterFunction parameters(final Map<String, List<String>> map) {
+		return existingMap -> {
+			for (Map.Entry<String, List<String>> entry : map.entrySet()) {
+				existingMap.computeIfAbsent(entry.getKey(), key -> new ArrayList<>()).addAll(entry.getValue());
+			}
+		};
 	}
 
 	/**

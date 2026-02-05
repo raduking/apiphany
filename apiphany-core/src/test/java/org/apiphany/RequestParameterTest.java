@@ -26,7 +26,7 @@ class RequestParameterTest {
 		RequestParameter parameter = RequestParameter.of(NAME, VALUE);
 
 		assertThat(parameter.name(), equalTo(NAME));
-		assertThat(parameter.value(), equalTo(VALUE));
+		assertThat(parameter.values(), equalTo(List.of(VALUE)));
 	}
 
 	@Test
@@ -34,7 +34,7 @@ class RequestParameterTest {
 		RequestParameter parameter = RequestParameter.of(NAME, 123);
 
 		assertThat(parameter.name(), equalTo(NAME));
-		assertThat(parameter.value(), equalTo("123"));
+		assertThat(parameter.values(), equalTo(List.of("123")));
 	}
 
 	@Test
@@ -42,7 +42,7 @@ class RequestParameterTest {
 		RequestParameter parameter = RequestParameter.of(NAME, List.of(1, 2, 3));
 
 		assertThat(parameter.name(), equalTo(NAME));
-		assertThat(parameter.value(), equalTo("1,2,3"));
+		assertThat(parameter.values(), equalTo(List.of("1", "2", "3")));
 	}
 
 	@Test
@@ -50,7 +50,7 @@ class RequestParameterTest {
 		RequestParameter parameter = RequestParameter.of(NAME, new Object[] { "a", "b", "c" });
 
 		assertThat(parameter.name(), equalTo(NAME));
-		assertThat(parameter.value(), equalTo("a,b,c"));
+		assertThat(parameter.values(), equalTo(List.of("a", "b", "c")));
 	}
 
 	@Test
@@ -58,7 +58,7 @@ class RequestParameterTest {
 		RequestParameter parameter = RequestParameter.of(NAME, new String[] { "a", "b", "c" });
 
 		assertThat(parameter.name(), equalTo(NAME));
-		assertThat(parameter.value(), equalTo("a,b,c"));
+		assertThat(parameter.values(), equalTo(List.of("a", "b", "c")));
 	}
 
 	record A(String name) {
@@ -74,19 +74,19 @@ class RequestParameterTest {
 		RequestParameter parameter = RequestParameter.of(NAME, new A("test"));
 
 		assertThat(parameter.name(), equalTo(NAME));
-		assertThat(parameter.value(), equalTo("test"));
+		assertThat(parameter.values(), equalTo(List.of("test")));
 	}
 
 	@Test
 	void shouldThrowExceptionWhenBuildingParameterWithConstructorAndNullName() {
-		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> new RequestParameter(null, VALUE));
+		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> new RequestParameter(null, List.of(VALUE)));
 
 		assertThat(e.getMessage(), equalTo("Parameter name cannot be null"));
 	}
 
 	@Test
 	void shouldThrowExceptionWhenBuildingParameterWithConstructorAndBlankName() {
-		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> new RequestParameter(BLANK_STRING, VALUE));
+		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> new RequestParameter(BLANK_STRING, List.of(VALUE)));
 
 		assertThat(e.getMessage(), equalTo("Parameter name cannot be blank"));
 	}
@@ -116,53 +116,53 @@ class RequestParameterTest {
 
 	@Test
 	void shouldBuildStringValueFromObject() {
-		String result = RequestParameter.value(123);
+		List<String> result = RequestParameter.values(123);
 
-		assertThat(result, equalTo("123"));
+		assertThat(result, equalTo(List.of("123")));
 	}
 
 	@Test
 	void shouldReturnNullWhenValueIsNull() {
-		String result = RequestParameter.value((Object) null);
+		List<String> result = RequestParameter.values((Object) null);
 
 		assertThat(result, equalTo(null));
 	}
 
 	@Test
 	void shouldReturnNullWhenValueArrayIsNull() {
-		String result = RequestParameter.value(null);
+		List<String> result = RequestParameter.values(null);
 
 		assertThat(result, equalTo(null));
 	}
 
 	@Test
 	void shouldBuildValueFromObject() {
-		String parameter = RequestParameter.value(new A("test"));
+		List<String> values = RequestParameter.values(new A("test"));
 
-		assertThat(parameter, equalTo("test"));
+		assertThat(values, equalTo(List.of("test")));
 	}
 
 	@Test
 	void shouldBuildValueFromIntegerArray() {
-		String parameter = RequestParameter.value((Object) new Integer[] { 1, 2, 3 });
+		List<String> parameter = RequestParameter.values(new Integer[] { 1, 2, 3 });
 
-		assertThat(parameter, equalTo("1,2,3"));
+		assertThat(parameter, equalTo(List.of("1", "2", "3")));
 	}
 
 	@Test
 	void shouldBuildValueFromIntArray() {
-		String parameter = RequestParameter.value(new int[] { 1, 2, 3 });
+		List<String> parameter = RequestParameter.values(new int[] { 1, 2, 3 });
 
-		assertThat(parameter, equalTo("1,2,3"));
+		assertThat(parameter, equalTo(List.of("1", "2", "3")));
 	}
 
 	@Test
 	void shouldPutParameterIntoMap() {
 		RequestParameter parameter = RequestParameter.of(NAME, VALUE);
-		Map<String, String> map = new HashMap<>();
+		Map<String, List<String>> map = new HashMap<>();
 
 		parameter.putInto(map);
 
-		assertThat(map.get(NAME), equalTo(VALUE));
+		assertThat(map.get(NAME), equalTo(List.of(VALUE)));
 	}
 }

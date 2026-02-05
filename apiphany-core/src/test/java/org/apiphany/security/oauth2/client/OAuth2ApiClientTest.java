@@ -11,6 +11,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 
 import java.security.interfaces.RSAPrivateKey;
+import java.util.List;
 import java.util.Map;
 
 import org.apiphany.ApiClient;
@@ -188,7 +189,7 @@ class OAuth2ApiClientTest {
 
 		ApiRequest<String> capturedRequest = requestCaptor.getValue();
 
-		Map<String, String> params = RequestParameters.of(
+		Map<String, List<String>> params = RequestParameters.of(
 				parameter(OAuth2Parameter.GRANT_TYPE, clientRegistration.getAuthorizationGrantType()),
 				parameter(OAuth2Parameter.EXPIRES_IN, OAuth2Parameter.Default.EXPIRES_IN.toSeconds()));
 
@@ -226,7 +227,7 @@ class OAuth2ApiClientTest {
 
 		ApiRequest<String> capturedRequest = requestCaptor.getValue();
 
-		Map<String, String> params = RequestParameters.of(
+		Map<String, List<String>> params = RequestParameters.of(
 				parameter(OAuth2Parameter.GRANT_TYPE, clientRegistration.getAuthorizationGrantType()),
 				parameter(OAuth2Parameter.EXPIRES_IN, OAuth2Parameter.Default.EXPIRES_IN.toSeconds()),
 				parameter(OAuth2Parameter.CLIENT_ID, clientRegistration.getClientId()),

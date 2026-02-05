@@ -3,6 +3,7 @@ package org.apiphany;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.util.List;
 import java.util.Map;
 
 import org.apiphany.lang.Strings;
@@ -57,7 +58,7 @@ public class ApiRequest<T> extends ApiMessage<T> {
 	/**
 	 * A map of query parameters to be included in the request.
 	 */
-	protected Map<String, String> params;
+	protected Map<String, List<String>> params;
 
 	/**
 	 * The character set to be used for the request. Defaults to UTF-8.
@@ -125,7 +126,7 @@ public class ApiRequest<T> extends ApiMessage<T> {
 	 *
 	 * @return a map of query parameters
 	 */
-	public Map<String, String> getParams() {
+	public Map<String, List<String>> getParams() {
 		return params;
 	}
 

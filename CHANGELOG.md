@@ -2,6 +2,8 @@
 
 `1.1.4`
 
+- Changed all request parameters to be `Map<String, List<String>>` instead of `Map<String, String>` to better accommodate HTTP specification.
+
 ---
 
 `1.1.3`
