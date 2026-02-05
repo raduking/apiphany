@@ -3,6 +3,7 @@ package org.apiphany;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -326,7 +327,9 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 		if (null == params) {
 			this.params = new HashMap<>();
 		}
-		this.params.putAll(Maps.safe(requestParams));
+		for (Map.Entry<String, List<String>> entry : Maps.safe(requestParams).entrySet()) {
+			this.params.computeIfAbsent(entry.getKey(), key -> new ArrayList<>()).addAll(entry.getValue());
+		}
 		return this;
 	}
 
