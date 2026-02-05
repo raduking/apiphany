@@ -46,6 +46,11 @@ class RequireTest {
 	}
 
 	@Test
+	void shouldNotThrowExceptionIfConditionIsTrueOnThatWithSpecifiedExceptionAndNoFormatting() {
+		assertDoesNotThrow(() -> Require.that(true, IllegalStateException::new, "{}"));
+	}
+
+	@Test
 	void shouldNotThrowExceptionIfConditionIsTrueOnThat() {
 		assertDoesNotThrow(() -> Require.that(true, "This should not throw"));
 	}

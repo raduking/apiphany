@@ -69,14 +69,14 @@ public class StatusRequest implements TLSExtension {
 	}
 
 	/**
-	 * Constructs a default StatusRequest for OCSP stapling.
+	 * Constructs a default {@link StatusRequest} for OCSP stapling.
 	 */
 	public StatusRequest() {
 		this(ExtensionType.STATUS_REQUEST, UInt16.of((short) 0x0005), UInt8.of((byte) 0x01), UInt16.ZERO, UInt16.ZERO);
 	}
 
 	/**
-	 * Parses a StatusRequest from an input stream.
+	 * Parses a {@link StatusRequest} from an input stream.
 	 *
 	 * @param is the input stream containing the extension data
 	 * @return the parsed StatusRequest object
@@ -90,7 +90,7 @@ public class StatusRequest implements TLSExtension {
 	}
 
 	/**
-	 * Parses a StatusRequest with known extension type.
+	 * Parses a {@link StatusRequest} with known extension type.
 	 *
 	 * @param is the input stream containing the extension data
 	 * @param type the expected extension type

@@ -49,7 +49,7 @@ public class RenegotiationInfo implements TLSExtension {
 	}
 
 	/**
-	 * Constructs a RenegotiationInfo extension with primitive values.
+	 * Constructs a {@link RenegotiationInfo} extension with primitive values.
 	 *
 	 * @param type the extension type
 	 * @param size the total extension data size as short
@@ -60,16 +60,16 @@ public class RenegotiationInfo implements TLSExtension {
 	}
 
 	/**
-	 * Constructs an empty RenegotiationInfo extension.
+	 * Constructs an empty {@link RenegotiationInfo} extension.
 	 * <p>
-	 * Creates a default instance indicating support for secure renegotiation with empty verification data.
+	 * Creates a default instance indicating support for secure re-negotiation with empty verification data.
 	 */
 	public RenegotiationInfo() {
 		this(ExtensionType.RENEGOTIATION_INFO, (short) 0x0001, (byte) 0x00);
 	}
 
 	/**
-	 * Parses a RenegotiationInfo extension from an input stream.
+	 * Parses a {@link RenegotiationInfo} extension from an input stream.
 	 *
 	 * @param is the input stream containing the extension data
 	 * @return the parsed RenegotiationInfo object

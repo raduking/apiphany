@@ -42,7 +42,7 @@ public class SessionTicket implements TLSExtension {
 	}
 
 	/**
-	 * Constructs an empty SessionTicket extension.
+	 * Constructs an empty {@link SessionTicket} extension.
 	 * <p>
 	 * Creates a default instance with zero length, typically used when requesting a new session ticket from the server.
 	 */
@@ -51,7 +51,7 @@ public class SessionTicket implements TLSExtension {
 	}
 
 	/**
-	 * Parses a SessionTicket extension from an input stream.
+	 * Parses a {@link SessionTicket} extension from an input stream.
 	 *
 	 * @param is the input stream containing the extension data
 	 * @return the parsed SessionTicket object
@@ -65,7 +65,8 @@ public class SessionTicket implements TLSExtension {
 	}
 
 	/**
-	 * Parses a SessionTicket extension with known extension type.
+	 * Parses a {@link SessionTicket} extension with known extension type. This method assumes the type has already been
+	 * read from the given input stream.
 	 *
 	 * @param is the input stream containing the extension data
 	 * @param type the expected extension type

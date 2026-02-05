@@ -61,11 +61,13 @@ public class RenegotiationInfoExtended implements TLSExtension {
 	public static RenegotiationInfoExtended from(final InputStream is) throws IOException {
 		UInt16 int16 = UInt16.from(is);
 		ExtensionType extensionType = ExtensionType.fromValue(int16.getValue());
+
 		return from(is, extensionType);
 	}
 
 	/**
-	 * Parses a RenegotiationInfoExtended extension with known extension type.
+	 * Parses a {@link RenegotiationInfoExtended} extension with known extension type. This method assumes the type has
+	 * already been read from the given input stream.
 	 *
 	 * @param is the input stream containing the extension data
 	 * @param type the expected extension type
@@ -74,6 +76,7 @@ public class RenegotiationInfoExtended implements TLSExtension {
 	 */
 	public static RenegotiationInfoExtended from(final InputStream is, final ExtensionType type) throws IOException {
 		UInt16 length = UInt16.from(is);
+
 		return new RenegotiationInfoExtended(type, length);
 	}
 

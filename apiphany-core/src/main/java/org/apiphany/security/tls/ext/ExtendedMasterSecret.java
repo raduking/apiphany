@@ -42,7 +42,7 @@ public class ExtendedMasterSecret implements TLSExtension {
 	}
 
 	/**
-	 * Constructs a default ExtendedMasterSecret extension.
+	 * Constructs a default {@link ExtendedMasterSecret} extension.
 	 * <p>
 	 * Creates an empty instance indicating support for the extension, with zero-length data as specified in RFC 7627.
 	 */
@@ -51,7 +51,8 @@ public class ExtendedMasterSecret implements TLSExtension {
 	}
 
 	/**
-	 * Parses an ExtendedMasterSecret extension from an input stream.
+	 * Parses an {@link ExtendedMasterSecret} extension from an input stream. This method assumes the type has already been
+	 * read from the given input stream.
 	 *
 	 * @param is the input stream containing the extension data
 	 * @return the parsed ExtendedMasterSecret object
@@ -65,7 +66,7 @@ public class ExtendedMasterSecret implements TLSExtension {
 	}
 
 	/**
-	 * Parses an ExtendedMasterSecret extension with known extension type.
+	 * Parses an {@link ExtendedMasterSecret} extension with known extension type.
 	 *
 	 * @param is the input stream containing the extension data
 	 * @param type the expected extension type

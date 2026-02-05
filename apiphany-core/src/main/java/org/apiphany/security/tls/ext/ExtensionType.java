@@ -108,7 +108,7 @@ public enum ExtensionType implements TLSObject {
 	private final FromFunction fromFunction;
 
 	/**
-	 * Constructs a new ExtensionType enum constant.
+	 * Constructs a new {@link ExtensionType} enum constant.
 	 *
 	 * @param value the protocol-defined value for this extension
 	 * @param fromFunction the function to parse this extension type

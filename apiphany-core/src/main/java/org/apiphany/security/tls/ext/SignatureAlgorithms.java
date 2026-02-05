@@ -83,14 +83,14 @@ public class SignatureAlgorithms implements TLSExtension {
 	}
 
 	/**
-	 * Constructs a SignatureAlgorithms extension with strong algorithms by default.
+	 * Constructs a {@link SignatureAlgorithms} extension with strong algorithms by default.
 	 */
 	public SignatureAlgorithms() {
 		this(SignatureAlgorithm.STRONG_ALGORITHMS);
 	}
 
 	/**
-	 * Parses a SignatureAlgorithms extension from an input stream.
+	 * Parses a {@link SignatureAlgorithms} extension from an input stream.
 	 *
 	 * @param is the input stream containing the extension data
 	 * @return the parsed SignatureAlgorithms object
@@ -104,7 +104,8 @@ public class SignatureAlgorithms implements TLSExtension {
 	}
 
 	/**
-	 * Parses a SignatureAlgorithms extension with known extension type.
+	 * Parses a {@link SignatureAlgorithms} extension with known extension type. This method assumes the type has already
+	 * been read from the given input stream.
 	 *
 	 * @param is the input stream containing the extension data
 	 * @param type the expected extension type
