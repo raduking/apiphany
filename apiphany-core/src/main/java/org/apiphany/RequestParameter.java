@@ -1,5 +1,7 @@
 package org.apiphany;
 
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +10,7 @@ import org.apiphany.lang.Require;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.JavaArrays;
 import org.morphix.convert.ArrayConversions;
+import org.morphix.lang.Nullables;
 
 /**
  * Represents a parameter in the API context. When constructing request parameters prefer using the
@@ -16,10 +19,11 @@ import org.morphix.convert.ArrayConversions;
  *
  * @param name the name of the parameter
  * @param values the values of the parameter
+ * @param encoding the character set encoding used for URL encoding, if null {@link Strings#DEFAULT_CHARSET} is used
  *
  * @author Radu Sebastian LAZIN
  */
-public record RequestParameter(String name, List<String> values) implements ParameterFunction {
+public record RequestParameter(String name, List<String> values, Charset encoding) implements ParameterFunction {
 
 	/**
 	 * Separator between parameter name and value.
@@ -35,6 +39,7 @@ public record RequestParameter(String name, List<String> values) implements Para
 	public RequestParameter {
 		Require.notNull(name, "Parameter name cannot be null");
 		Require.thatObject(name, Strings::isNotBlank, "Parameter name cannot be blank");
+		encoding = Nullables.nonNullOrDefault(encoding, Strings.DEFAULT_CHARSET);
 	}
 
 	/**
@@ -48,7 +53,10 @@ public record RequestParameter(String name, List<String> values) implements Para
 	 * @return a new {@link RequestParameter} instance
 	 */
 	public static <N, V> RequestParameter of(final N name, final V value) {
-		return new RequestParameter(String.valueOf(Require.notNull(name, "Parameter name cannot be null")), toValues(value));
+		return new RequestParameter(
+				String.valueOf(Require.notNull(name, "Parameter name cannot be null")),
+				toValues(value),
+				Strings.DEFAULT_CHARSET);
 	}
 
 	/**
@@ -63,9 +71,11 @@ public record RequestParameter(String name, List<String> values) implements Para
 			if (stringBuilder.length() > 0) {
 				stringBuilder.append(RequestParameters.SEPARATOR);
 			}
-			stringBuilder.append(name);
+			String encodedName = URLEncoder.encode(name, encoding);
+			String encodedValue = URLEncoder.encode(value, encoding);
+			stringBuilder.append(encodedName);
 			stringBuilder.append(NAME_VALUE_SEPARATOR);
-			stringBuilder.append(value);
+			stringBuilder.append(encodedValue);
 		}
 		return stringBuilder.toString();
 	}
