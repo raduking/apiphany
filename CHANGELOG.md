@@ -1,5 +1,9 @@
 ## Release Notes
 
+`1.1.4`
+
+---
+
 `1.1.3`
 
 - Added support for multiple exchange client builders to be configured when extending `ApiClient`.
