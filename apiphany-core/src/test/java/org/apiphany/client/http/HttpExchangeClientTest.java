@@ -44,6 +44,7 @@ class HttpExchangeClientTest {
 		RequestMethod headMethod = client.head();
 		RequestMethod optionsMethod = client.options();
 		RequestMethod traceMethod = client.trace();
+		RequestMethod connectMethod = client.connect();
 
 		client.close();
 
@@ -55,6 +56,19 @@ class HttpExchangeClientTest {
 		assertThat(headMethod, equalTo(HttpMethod.HEAD));
 		assertThat(optionsMethod, equalTo(HttpMethod.OPTIONS));
 		assertThat(traceMethod, equalTo(HttpMethod.TRACE));
+		assertThat(connectMethod, equalTo(HttpMethod.CONNECT));
+	}
+
+	@ParameterizedTest
+	@EnumSource(HttpMethod.class)
+	void shouldReturnGivenMethod(final HttpMethod method) throws Exception {
+		HttpExchangeClient client = new DummyHttpExchangeClient();
+
+		RequestMethod requestMethod = client.method(method);
+
+		client.close();
+
+		assertThat(requestMethod, equalTo(method));
 	}
 
 	@Test
