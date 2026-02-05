@@ -189,7 +189,7 @@ class Jackson2JsonBuilderTest {
 
 		B b = new B(CUSTOMER_ID1, TENANT_ID1);
 
-		String expectedDebugString = "{ \"type\":\"" + B.class.getCanonicalName() + "\", \"hash\":\"" + B.class.getName() + "@"
+		String expectedDebugString = "{ \"type\":\"" + B.class.getCanonicalName() + "\", \"identity\":\"" + B.class.getName() + "@"
 				+ Integer.toHexString(b.hashCode()) + "\" }";
 
 		String debugString = jacksonJsonBuilder.toJsonString(b);
@@ -295,7 +295,7 @@ class Jackson2JsonBuilderTest {
 		C c = new C();
 		c.setName(SOME_NAME);
 
-		String expectedString = "{ \"hash\":\"" + C.class.getName() + "@"
+		String expectedString = "{ \"identity\":\"" + C.class.getName() + "@"
 				+ Integer.toHexString(c.hashCode()) + "\" }";
 
 		String result = jacksonJsonBuilder.toJsonString(c);

@@ -35,10 +35,9 @@ class JsonBuilderTest {
 	@Test
 	void shouldCallToString() {
 		TestDto dto = new TestDto("example", 42);
+		String expectedJson = "{ \"identity\":\"" + dto.getClass().getName() + "@" + Integer.toHexString(dto.hashCode()) + "\" }";
 
 		String json = JsonBuilder.toJson(dto);
-
-		String expectedJson = "{ \"hash\":\"" + dto.getClass().getName() + "@" + Integer.toHexString(dto.hashCode()) + "\" }";
 
 		assertThat(json, equalTo(expectedJson));
 	}

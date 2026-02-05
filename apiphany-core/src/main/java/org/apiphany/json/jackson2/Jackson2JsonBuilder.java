@@ -103,7 +103,7 @@ public final class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleto
 	 *
 	 * @param obj object to transform
 	 * @return JSON String if conversion is possible, <code>null</code> if parameter is <code>null</code>,
-	 * {@link #toString(Object)} otherwise.
+	 * {@link #toIdentityJson(Object)} otherwise.
 	 */
 	public static <T> String toJson(final T obj) {
 		return InstanceHolder.INSTANCE.toJsonString(obj);
@@ -165,13 +165,13 @@ public final class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleto
 
 	/**
 	 * Transforms the parameter to a JSON String. If the object is null, returns null. If the object cannot be serialized,
-	 * returns the result of {@link #toString(Object)}.
+	 * returns the result of {@link #toIdentityJson(Object)}.
 	 *
 	 * @param <T> type of the object
 	 *
 	 * @param obj object to transform
 	 * @return JSON String if conversion is possible, <code>null</code> if parameter is <code>null</code>,
-	 * {@link #toString(Object)} otherwise.
+	 * {@link #toIdentityJson(Object)} otherwise.
 	 */
 	@Override
 	public <T> String toJsonString(final T obj) {
@@ -185,7 +185,7 @@ public final class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleto
 		try {
 			return eol() + objectWriter.writeValueAsString(obj);
 		} catch (JsonProcessingException e) {
-			String result = toString(obj);
+			String result = toIdentityJson(obj);
 			LOGGER.warn(ErrorMessage.COULD_NOT_SERIALIZE_OBJECT, result, e);
 			return result;
 		}
