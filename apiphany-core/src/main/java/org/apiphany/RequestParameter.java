@@ -2,6 +2,8 @@ package org.apiphany;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -101,12 +103,65 @@ public record RequestParameter(String name, List<String> values, Charset encodin
 			return null;
 		}
 		return switch (object) {
-			case String string -> List.of(string);
-			case Iterable<?> iterable -> toValues(JavaArrays.toArray(iterable));
+			case String string -> toValues(string);
+			case Collection<?> collection -> toValues(collection);
+			case Iterable<?> iterable -> toValues(iterable);
 			case Object[] array -> toValues(array);
 			case Object o when o.getClass().isArray() -> toValues(JavaArrays.toArray(o));
-			default -> List.of(String.valueOf(object));
+			default -> toValues(String.valueOf(object));
 		};
+	}
+
+	/**
+	 * Converts the given string to a list of values suitable for request parameters.
+	 *
+	 * @param string the string to convert to string parameter value
+	 * @return the list containing the string value
+	 */
+	public static List<String> toValues(final String string) {
+		if (null == string) {
+			return null;
+		}
+		List<String> list = new ArrayList<>();
+		list.add(string);
+		return list;
+	}
+
+	/**
+	 * Converts the given iterable of values to a list of values suitable for request parameters.
+	 *
+	 * @param iterable the iterable of objects to convert to string parameter value
+	 * @return the list of string representations of the values
+	 */
+	public static List<String> toValues(final Iterable<?> iterable) {
+		if (null == iterable) {
+			return null;
+		}
+		if (iterable instanceof Collection<?> collection) {
+			return toValues(collection);
+		}
+		Iterator<?> iterator = iterable.iterator();
+		if (!iterator.hasNext()) {
+			return null;
+		}
+		List<String> list = new ArrayList<>();
+		iterator.forEachRemaining(item -> list.add(String.valueOf(item)));
+		return list;
+	}
+
+	/**
+	 * Converts the given collection of values to a list of values suitable for request parameters.
+	 *
+	 * @param collection the collection of objects to convert to string parameter value
+	 * @return the list of string representations of the values
+	 */
+	public static List<String> toValues(final Collection<?> collection) {
+		if (null == collection || collection.isEmpty()) {
+			return null;
+		}
+		List<String> list = new ArrayList<>(collection.size());
+		collection.forEach(item -> list.add(String.valueOf(item)));
+		return list;
 	}
 
 	/**
@@ -116,10 +171,10 @@ public record RequestParameter(String name, List<String> values, Charset encodin
 	 * @return the comma-separated string representation of the values
 	 */
 	public static List<String> toValues(final Object[] objects) {
-		List<String> list = new ArrayList<>();
-		if (null == objects) {
-			return list;
+		if (JavaArrays.isEmpty(objects)) {
+			return null;
 		}
+		List<String> list = new ArrayList<>(objects.length);
 		return ArrayConversions.convertArray(objects, String::valueOf).to(list);
 	}
 }

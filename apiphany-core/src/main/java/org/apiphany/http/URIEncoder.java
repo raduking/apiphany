@@ -16,6 +16,7 @@ public interface URIEncoder {
 	 * Follows RFC 3986, spaces are encoded as {@code %20} instead of {@code +}
 	 *
 	 * @param string the string to encode
+	 * @param charset the character set to use for encoding
 	 * @return the encoded string
 	 */
 	static String encodePath(final String string, final Charset charset) {
@@ -28,6 +29,7 @@ public interface URIEncoder {
 	 * Conservative approach for query names (%20) - avoids edge cases.
 	 *
 	 * @param string the string to encode
+	 * @param charset the character set to use for encoding
 	 * @return the encoded string
 	 */
 	static String encodeParamName(final String string, final Charset charset) {
@@ -40,6 +42,7 @@ public interface URIEncoder {
 	 * {@code application/x-www-form-urlencoded} for query values (+) - practical compatibility.
 	 *
 	 * @param string the string to encode
+	 * @param charset the character set to use for encoding
 	 * @return the encoded string
 	 */
 	static String encodeParamValue(final String string, final Charset charset) {
