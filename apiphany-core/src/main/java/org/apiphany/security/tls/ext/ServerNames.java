@@ -39,7 +39,7 @@ public class ServerNames implements TLSExtension {
 	private final List<ServerName> entries;
 
 	/**
-	 * Constructs a ServerNames extension with optional length updating.
+	 * Constructs a {@link ServerNames} extension with optional length updating.
 	 *
 	 * @param type the extension type (should be SERVER_NAME)
 	 * @param length the initial length value
@@ -54,7 +54,7 @@ public class ServerNames implements TLSExtension {
 	}
 
 	/**
-	 * Constructs a ServerNames extension with automatic length calculation.
+	 * Constructs a {@link ServerNames} extension with automatic length calculation.
 	 *
 	 * @param size the initial size value
 	 * @param serverNames the list of server names
@@ -64,9 +64,9 @@ public class ServerNames implements TLSExtension {
 	}
 
 	/**
-	 * Constructs a ServerNames extension from hostname strings.
+	 * Constructs a {@link ServerNames} extension from host name strings.
 	 *
-	 * @param names the list of hostnames to include
+	 * @param names the list of host names to include
 	 */
 	public ServerNames(final List<String> names) {
 		this(UInt16.of((short) names.size()), names.stream().map(ServerName::new).toList());
@@ -89,7 +89,7 @@ public class ServerNames implements TLSExtension {
 	}
 
 	/**
-	 * Parses a ServerNames extension from an input stream.
+	 * Parses a {@link ServerNames} extension from an input stream.
 	 *
 	 * @param is the input stream containing the extension data
 	 * @return the parsed ServerNames object
@@ -102,7 +102,8 @@ public class ServerNames implements TLSExtension {
 	}
 
 	/**
-	 * Parses a ServerNames extension with known extension type.
+	 * Parses a {@link ServerNames} extension with known extension type. This method assumes the type has already been read
+	 * from the given input stream.
 	 *
 	 * @param is the input stream containing the extension data
 	 * @param type the expected extension type

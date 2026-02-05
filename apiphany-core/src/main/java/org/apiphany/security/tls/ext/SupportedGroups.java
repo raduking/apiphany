@@ -73,14 +73,14 @@ public class SupportedGroups implements TLSExtension {
 	}
 
 	/**
-	 * Constructs a SupportedGroups extension with all available named curves.
+	 * Constructs a {@link SupportedGroups} extension with all available named curves.
 	 */
 	public SupportedGroups() {
 		this(List.of(NamedCurve.values()));
 	}
 
 	/**
-	 * Parses a SupportedGroups extension from an input stream.
+	 * Parses a {@link SupportedGroups} extension from an input stream.
 	 *
 	 * @param is the input stream containing the extension data
 	 * @return the parsed SupportedGroups object
@@ -94,7 +94,8 @@ public class SupportedGroups implements TLSExtension {
 	}
 
 	/**
-	 * Parses a SupportedGroups extension with known extension type.
+	 * Parses a {@link SupportedGroups} extension with known extension type. This method assumes the type has already been
+	 * read from the given input stream.
 	 *
 	 * @param is the input stream containing the extension data
 	 * @param type the expected extension type

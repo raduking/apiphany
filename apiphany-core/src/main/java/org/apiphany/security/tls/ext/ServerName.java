@@ -13,7 +13,7 @@ import org.apiphany.security.tls.TLSObject;
 /**
  * Represents a Server Name Indication (SNI) extension entry in TLS.
  * <p>
- * This class implements the server_name extension from RFC 6066, allowing clients to specify which hostname they are
+ * This class implements the server_name extension from RFC 6066, allowing clients to specify which host name they are
  * trying to connect to during the handshake.
  *
  * @see <a href="https://tools.ietf.org/html/rfc6066#section-3">RFC 6066 - Server Name Indication</a>
@@ -58,9 +58,9 @@ public class ServerName implements TLSObject {
 	}
 
 	/**
-	 * Constructs a ServerName from a hostname string.
+	 * Constructs a {@link ServerName} from a host name string.
 	 *
-	 * @param name the hostname to use (will be encoded as ASCII)
+	 * @param name the host name to use (will be encoded as ASCII)
 	 */
 	public ServerName(final String name) {
 		this(
@@ -86,7 +86,7 @@ public class ServerName implements TLSObject {
 	}
 
 	/**
-	 * Parses a ServerName from an input stream.
+	 * Parses a {@link ServerName} from an input stream.
 	 *
 	 * @param is the input stream containing the ServerName data
 	 * @return the parsed ServerName object

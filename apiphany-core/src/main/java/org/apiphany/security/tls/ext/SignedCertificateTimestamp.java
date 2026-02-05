@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
+import org.apiphany.io.BytesWrapper;
 import org.apiphany.io.UInt16;
 import org.apiphany.security.tls.TLSExtension;
 import org.apiphany.security.tls.TLSObject;
@@ -31,28 +32,35 @@ public class SignedCertificateTimestamp implements TLSExtension {
 	private final UInt16 length;
 
 	/**
+	 * The SCT data bytes.
+	 */
+	private final BytesWrapper data;
+
+	/**
 	 * Constructs a SignedCertificateTimestamp extension with specified fields.
 	 *
 	 * @param type the extension type (should be SIGNED_CERTIFICATE_TIMESTAMP)
 	 * @param length the length of the SCT data
+	 * @param data the SCT data bytes
 	 */
-	public SignedCertificateTimestamp(final ExtensionType type, final UInt16 length) {
+	public SignedCertificateTimestamp(final ExtensionType type, final UInt16 length, final BytesWrapper data) {
 		this.type = type;
 		this.length = length;
+		this.data = data;
 	}
 
 	/**
-	 * Constructs an empty SignedCertificateTimestamp extension.
+	 * Constructs an empty {@link SignedCertificateTimestamp} extension.
 	 * <p>
 	 * Creates a default instance with zero length, typically used when no SCT data is available but the extension needs to
 	 * be present.
 	 */
 	public SignedCertificateTimestamp() {
-		this(ExtensionType.SIGNED_CERTIFICATE_TIMESTAMP, UInt16.ZERO);
+		this(ExtensionType.SIGNED_CERTIFICATE_TIMESTAMP, UInt16.ZERO, BytesWrapper.empty());
 	}
 
 	/**
-	 * Parses a SignedCertificateTimestamp extension from an input stream.
+	 * Parses a {@link SignedCertificateTimestamp} extension from an input stream.
 	 *
 	 * @param is the input stream containing the extension data
 	 * @return the parsed SignedCertificateTimestamp object
@@ -66,7 +74,8 @@ public class SignedCertificateTimestamp implements TLSExtension {
 	}
 
 	/**
-	 * Parses a SignedCertificateTimestamp extension with known extension type.
+	 * Parses a {@link SignedCertificateTimestamp} extension with known extension type. This method assumes the type has
+	 * already been read from the given input stream.
 	 *
 	 * @param is the input stream containing the extension data
 	 * @param type the expected extension type
@@ -75,8 +84,9 @@ public class SignedCertificateTimestamp implements TLSExtension {
 	 */
 	public static SignedCertificateTimestamp from(final InputStream is, final ExtensionType type) throws IOException {
 		UInt16 length = UInt16.from(is);
+		BytesWrapper data = BytesWrapper.from(is, length.getValue());
 
-		return new SignedCertificateTimestamp(type, length);
+		return new SignedCertificateTimestamp(type, length, data);
 	}
 
 	/**
@@ -89,6 +99,7 @@ public class SignedCertificateTimestamp implements TLSExtension {
 		ByteBuffer buffer = ByteBuffer.allocate(sizeOf());
 		buffer.put(type.toByteArray());
 		buffer.put(length.toByteArray());
+		buffer.put(data.toByteArray());
 		return buffer.array();
 	}
 
@@ -109,7 +120,7 @@ public class SignedCertificateTimestamp implements TLSExtension {
 	 */
 	@Override
 	public int sizeOf() {
-		return type.sizeOf() + length.sizeOf();
+		return type.sizeOf() + length.sizeOf() + data.sizeOf();
 	}
 
 	/**
@@ -129,5 +140,14 @@ public class SignedCertificateTimestamp implements TLSExtension {
 	 */
 	public UInt16 getLength() {
 		return length;
+	}
+
+	/**
+	 * Returns the SCT data bytes.
+	 *
+	 * @return the BytesWrapper containing the SCT data
+	 */
+	public BytesWrapper getData() {
+		return data;
 	}
 }

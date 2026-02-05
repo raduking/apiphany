@@ -45,7 +45,7 @@ public class ECPointFormats implements TLSExtension {
 	private final List<UInt8> formats;
 
 	/**
-	 * Constructs an ECPointFormats extension with all fields specified.
+	 * Constructs an {@link ECPointFormats} extension with all fields specified.
 	 *
 	 * @param type the extension type (should be EC_POINTS_FORMAT)
 	 * @param length the total extension data length
@@ -60,14 +60,14 @@ public class ECPointFormats implements TLSExtension {
 	}
 
 	/**
-	 * Constructs a default ECPointFormats extension with uncompressed (0) format.
+	 * Constructs a default {@link ECPointFormats} extension with uncompressed (0) format.
 	 */
 	public ECPointFormats() {
 		this(ExtensionType.EC_POINTS_FORMAT, UInt16.of((short) 0x0002), UInt8.of((byte) 0x01), List.of(UInt8.ZERO));
 	}
 
 	/**
-	 * Parses an ECPointFormats extension from an input stream.
+	 * Parses an {@link ECPointFormats} extension from an input stream.
 	 *
 	 * @param is the input stream containing the extension data
 	 * @return the parsed ECPointFormats object
@@ -81,7 +81,7 @@ public class ECPointFormats implements TLSExtension {
 	}
 
 	/**
-	 * Parses an ECPointFormats extension with known extension type.
+	 * Parses an {@link ECPointFormats} extension with known extension type.
 	 *
 	 * @param is the input stream containing the extension data
 	 * @param type the expected extension type

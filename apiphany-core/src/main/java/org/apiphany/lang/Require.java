@@ -3,6 +3,7 @@ package org.apiphany.lang;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import org.morphix.lang.Messages;
 import org.morphix.reflection.Constructors;
@@ -37,6 +38,24 @@ public final class Require {
 
 	/**
 	 * Checks that the given condition is {@code true}. If not, throws an exception supplied by the exception instance
+	 * function with the supplied message.
+	 *
+	 * @param <E> the type of the exception to be thrown
+	 *
+	 * @param condition the condition to check
+	 * @param exceptionInstanceFunction function to create the exception instance
+	 * @param messageSupplier supplier for the error message template
+	 * @throws E if {@code condition} is {@code false}
+	 */
+	public static <E extends RuntimeException> void that(final boolean condition, final Function<String, E> exceptionInstanceFunction,
+			final Supplier<String> messageSupplier) {
+		if (!condition) {
+			throw exceptionInstanceFunction.apply(messageSupplier.get());
+		}
+	}
+
+	/**
+	 * Checks that the given condition is {@code true}. If not, throws an exception supplied by the exception instance
 	 * function with the given message.
 	 *
 	 * @param <E> the type of the exception to be thrown
@@ -48,9 +67,7 @@ public final class Require {
 	 */
 	public static <E extends RuntimeException> void that(final boolean condition, final Function<String, E> exceptionInstanceFunction,
 			final String message) {
-		if (!condition) {
-			throw exceptionInstanceFunction.apply(message);
-		}
+		that(condition, exceptionInstanceFunction, () -> message);
 	}
 
 	/**
