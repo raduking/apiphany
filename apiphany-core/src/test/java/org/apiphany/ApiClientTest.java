@@ -570,4 +570,32 @@ class ApiClientTest {
 			assertThat(exchangeClient.getClientProperties(), notNullValue());
 		}
 	}
+
+	@Test
+	void shouldBuildApiClientWithEmptyBaseUrlUsingDefaultExchangeClientWithFactoryMethod() throws Exception {
+		try (ApiClient apiClient = ApiClient.of()) {
+			@SuppressWarnings("resource")
+			ExchangeClient exchangeClient = apiClient.getExchangeClient(AuthenticationType.NONE);
+
+			assertThat(apiClient.getBaseUrl(), equalTo(ApiClient.EMPTY_BASE_URL));
+			assertThat(exchangeClient, notNullValue());
+			assertThat(exchangeClient.getAuthenticationType(), equalTo(AuthenticationType.NONE));
+			assertThat(exchangeClient.getClass(), equalTo(JavaNetHttpExchangeClient.class));
+			assertThat(exchangeClient.getClientProperties(), nullValue());
+		}
+	}
+
+	@Test
+	void shouldThrowExceptionWhenBuildingApiClientWithEmptyExchangeClientResourceList() throws Exception {
+		IllegalStateException result = null;
+		try (ApiClient apiClient = new ApiClient(List.of())) {
+			// empty
+		} catch (IllegalStateException e) {
+			result = e;
+			assertThat(result.getMessage(), equalTo("At least one: " + ExchangeClient.class.getName()
+					+ " must be provided to instantiate: " + ApiClient.class.getName()));
+		}
+
+		assertThat(result, notNullValue());
+	}
 }

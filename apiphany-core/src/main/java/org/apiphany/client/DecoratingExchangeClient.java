@@ -33,12 +33,22 @@ public class DecoratingExchangeClient implements DelegatingExchangeClient {
 
 	/**
 	 * Initialize the client with the given exchange client delegate. The delegate is considered unmanaged so that the
-	 * caller must take care of closing it.
+	 * caller must take care of closing it. Only use this constructor when the life cycle of the delegate is managed outside
+	 * of this class.
 	 *
 	 * @param delegate actual exchange client making the request
 	 */
 	public DecoratingExchangeClient(final ExchangeClient delegate) {
 		this(ScopedResource.unmanaged(delegate));
+	}
+
+	/**
+	 * Returns the delegate scoped resource exchange client.
+	 *
+	 * @return the delegate scoped resource exchange client
+	 */
+	public ScopedResource<ExchangeClient> getDelegate() {
+		return exchangeClient;
 	}
 
 	/**
@@ -48,7 +58,7 @@ public class DecoratingExchangeClient implements DelegatingExchangeClient {
 	 */
 	@Override
 	public ExchangeClient getExchangeClient() {
-		return exchangeClient.unwrap();
+		return getDelegate().unwrap();
 	}
 
 	/**

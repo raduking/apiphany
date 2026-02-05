@@ -310,17 +310,6 @@ public class ApiClient implements AutoCloseable {
 	 * Returns a new {@link ApiClient} object.
 	 *
 	 * @param baseUrl base URL
-	 * @param exchangeClient exchange client object
-	 * @return a new ApiClient object
-	 */
-	public static ApiClient of(final String baseUrl, final ExchangeClient exchangeClient) {
-		return of(baseUrl, Collections.singletonList(exchangeClient));
-	}
-
-	/**
-	 * Returns a new {@link ApiClient} object.
-	 *
-	 * @param baseUrl base URL
 	 * @param exchangeClients exchange client objects
 	 * @return a new ApiClient object
 	 */
@@ -332,11 +321,32 @@ public class ApiClient implements AutoCloseable {
 	 * Returns a new {@link ApiClient} object.
 	 *
 	 * @param baseUrl base URL
+	 * @param exchangeClient exchange client object
+	 * @return a new ApiClient object
+	 */
+	public static ApiClient of(final String baseUrl, final ExchangeClient exchangeClient) {
+		return of(baseUrl, Collections.singletonList(exchangeClient));
+	}
+
+	/**
+	 * Returns a new {@link ApiClient} object.
+	 *
+	 * @param baseUrl base URL
 	 * @param exchangeClientBuilders exchange client objects builders
 	 * @return a new ApiClient object
 	 */
 	public static ApiClient of(final String baseUrl, final ExchangeClientBuilder... exchangeClientBuilders) {
 		return new ApiClient(baseUrl, exchangeClientBuilders);
+	}
+
+	/**
+	 * Returns a new {@link ApiClient} object.
+	 *
+	 * @param exchangeClientBuilders exchange client objects builders
+	 * @return a new ApiClient object
+	 */
+	public static ApiClient of(final ExchangeClientBuilder... exchangeClientBuilders) {
+		return of(EMPTY_BASE_URL, exchangeClientBuilders);
 	}
 
 	/**

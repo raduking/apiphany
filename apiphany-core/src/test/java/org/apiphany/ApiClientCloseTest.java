@@ -76,7 +76,7 @@ public class ApiClientCloseTest {
 	@SuppressWarnings("resource")
 	void shouldCallCloseOnManagedExchangeClientsBuiltWithApiClientExchangeClientMethod() throws Exception {
 		ApiClient api = ApiClient.of(BASE_URL,
-				ApiClient.withClient(SomeExchangeClient.class)
+				ApiClient.with(SomeExchangeClient.class)
 						.properties(clientProperties));
 
 		SomeExchangeClient exchangeClient = JavaObjects.cast(api.getExchangeClient(AuthenticationType.NONE));
