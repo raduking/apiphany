@@ -10,6 +10,7 @@
 - Added `ApiClientFluentAdapter.param(Object, List, MultiValueStrategy)` method to specify the way the parameter should be encoded.
 - Added `ParameterFunction.parameter(Object, List, MultiValueStrategy)` method to specify the way the parameter should be encoded.
 - Added `Parameter.of(Object, List, MultiValueStrategy)` method to specify the way the parameter should be encoded.
+- Renamed `ParameterFunction.none` to `ParameterFunction.ignored` to emphasize that parameter will be ignored.
 
 ---
 

@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import org.apiphany.lang.Require;
 import org.apiphany.lang.collections.Lists;
 import org.apiphany.openapi.MultiValueStrategy;
 
@@ -42,113 +43,31 @@ public interface ParameterFunction extends Consumer<Map<String, List<String>>> {
 	}
 
 	/**
-	 * Creates a {@link ParameterFunction} for a single key-value pair.
+	 * Inserts a single key-value pair into the given map.
 	 *
+	 * @param map the map to insert the key-value pair into
 	 * @param name the parameter name
 	 * @param value the parameter value
-	 * @return a {@link ParameterFunction} that inserts the key-value pair into the map
+	 * @throws IllegalArgumentException if the name or value is null
 	 */
-	static ParameterFunction parameter(final String name, final String value) {
-		return map -> map.computeIfAbsent(name, key -> new ArrayList<>()).add(value);
+	static void insertInto(final Map<String, List<String>> map, final String name, final String value) {
+		Require.notNull(name, "Parameter name cannot be null");
+		Require.notNull(value, "Parameter value cannot be null");
+		map.computeIfAbsent(name, key -> new ArrayList<>()).add(value);
 	}
 
 	/**
-	 * Creates a {@link ParameterFunction} for a single key-value pair, where the value is converted to a string.
+	 * Inserts multiple values for a single key into the given map.
 	 *
-	 * @param <T> the type of the value
-	 *
+	 * @param map the map to insert the key-value pairs into
 	 * @param name the parameter name
-	 * @param value the parameter value
-	 * @return a {@link ParameterFunction} that inserts the key-value pair into the map
+	 * @param values the parameter values
+	 * @throws IllegalArgumentException if the name is null or if the values list is null or empty
 	 */
-	static <T> ParameterFunction parameter(final String name, final T value) {
-		return parameter(name, RequestParameter.toValues(value));
-	}
-
-	/**
-	 * Creates a {@link ParameterFunction} for a single key-value pair, where both the key and value are converted to
-	 * strings.
-	 *
-	 * @param <T> the type of the key
-	 * @param <U> the type of the value
-	 *
-	 * @param name the parameter name
-	 * @param value the parameter value
-	 * @return a {@link ParameterFunction} that inserts the key-value pair into the map
-	 */
-	static <T, U> ParameterFunction parameter(final T name, final U value) {
-		return parameter(String.valueOf(name), RequestParameter.toValues(value));
-	}
-
-	/**
-	 * Creates a {@link ParameterFunction} for a single key-value pair, where the value is provided by a supplier.
-	 *
-	 * @param <T> the type of the value
-	 *
-	 * @param name the parameter name
-	 * @param value the supplier of the parameter value
-	 * @return a {@link ParameterFunction} that inserts the key-value pair into the map
-	 */
-	static <T> ParameterFunction parameter(final String name, final Supplier<T> value) {
-		return parameter(name, RequestParameter.toValues(value.get()));
-	}
-
-	/**
-	 * Creates a {@link ParameterFunction} for a single key-value pair, where the value is provided by a supplier.
-	 *
-	 * @param <T> the type of the name
-	 * @param <U> the type of the value
-	 *
-	 * @param name the parameter name
-	 * @param value the supplier of the parameter value
-	 * @return a {@link ParameterFunction} that inserts the key-value pair into the map
-	 */
-	static <T, U> ParameterFunction parameter(final T name, final Supplier<U> value) {
-		return parameter(String.valueOf(name), RequestParameter.toValues(value.get()));
-	}
-
-	/**
-	 * Creates a {@link ParameterFunction} for a single key-value pair, where both the key and value are provided by
-	 * suppliers.
-	 *
-	 * @param <T> the type of the key
-	 * @param <U> the type of the value
-	 *
-	 * @param name the supplier of the parameter name
-	 * @param value the supplier of the parameter value
-	 * @return a {@link ParameterFunction} that inserts the key-value pair into the map
-	 */
-	static <T, U> ParameterFunction parameter(final Supplier<T> name, final Supplier<U> value) {
-		return parameter(String.valueOf(name.get()), RequestParameter.toValues(value.get()));
-	}
-
-	/**
-	 * Creates a {@link ParameterFunction} for a list of elements, which are joined into a single string.
-	 *
-	 * @param name the parameter name
-	 * @param elements the list of elements to join
-	 * @return a {@link ParameterFunction} that inserts the key-value pair into the map
-	 */
-	static ParameterFunction parameter(final String name, final List<String> elements) {
-		return map -> {
-			if (Lists.isNotEmpty(elements)) {
-				map.computeIfAbsent(name, key -> new ArrayList<>()).addAll(elements);
-			}
-		};
-	}
-
-	/**
-	 * Creates a {@link ParameterFunction} for a list of elements, where both the key and elements are converted to strings.
-	 *
-	 * @param <T> the type of the key
-	 * @param <U> the type of the elements
-	 *
-	 * @param name the parameter name
-	 * @param elements the list of elements to join
-	 * @return a {@link ParameterFunction} that inserts the key-value pair into the map
-	 */
-	static <T, U> ParameterFunction parameter(final T name, final List<U> elements) {
-		return parameter(String.valueOf(name), RequestParameter.toValues(elements));
+	static void insertInto(final Map<String, List<String>> map, final String name, final List<String> values) {
+		Require.notNull(name, "Parameter name cannot be null");
+		Require.that(Lists.isNotEmpty(values), "Parameter values cannot be null or empty");
+		map.computeIfAbsent(name, key -> new ArrayList<>()).addAll(values);
 	}
 
 	/**
@@ -167,6 +86,71 @@ public interface ParameterFunction extends Consumer<Map<String, List<String>>> {
 	}
 
 	/**
+	 * Creates a {@link ParameterFunction} for a list of elements, where both the key and elements are converted to strings.
+	 *
+	 * @param <T> the type of the key
+	 * @param <U> the type of the elements
+	 *
+	 * @param name the parameter name
+	 * @param elements the list of elements to join
+	 * @return a {@link ParameterFunction} that inserts the key-value pair into the map
+	 */
+	static <T, U> ParameterFunction parameter(final T name, final List<U> elements) {
+		return parameter(name, elements, MultiValueStrategy.MULTI);
+	}
+
+	/**
+	 * Creates a {@link ParameterFunction} for a single key-value pair, where both the key and value are converted to
+	 * strings.
+	 *
+	 * @param <T> the type of the key
+	 * @param <U> the type of the value
+	 *
+	 * @param name the parameter name
+	 * @param value the parameter value
+	 * @return a {@link ParameterFunction} that inserts the key-value pair into the map
+	 */
+	static <T, U> ParameterFunction parameter(final T name, final U value) {
+		if (null == value) {
+			return ignored();
+		}
+		// optimize for single value
+		if (RequestParameter.isSingleValued(value)) {
+			return map -> insertInto(map, String.valueOf(name), String.valueOf(value));
+		}
+		return parameter(name, RequestParameter.toValues(value));
+	}
+
+	/**
+	 * Creates a {@link ParameterFunction} for a single key-value pair, where the value is provided by a supplier.
+	 *
+	 * @param <T> the type of the name
+	 * @param <U> the type of the value
+	 *
+	 * @param name the parameter name
+	 * @param value the supplier of the parameter value
+	 * @return a {@link ParameterFunction} that inserts the key-value pair into the map
+	 */
+	static <T, U> ParameterFunction parameter(final T name, final Supplier<U> value) {
+		return parameter(name, value.get());
+	}
+
+	/**
+	 * Creates a {@link ParameterFunction} for a single key-value pair, where both the key and value are provided by
+	 * suppliers.
+	 *
+	 * @param <T> the type of the key
+	 * @param <U> the type of the value
+	 *
+	 * @param name the supplier of the parameter name
+	 * @param value the supplier of the parameter value
+	 * @return a {@link ParameterFunction} that inserts the key-value pair into the map
+	 */
+	static <T, U> ParameterFunction parameter(final Supplier<T> name, final Supplier<U> value) {
+		return parameter(name.get(), value.get());
+	}
+
+	/**
 	 * Creates a {@link ParameterFunction} that delegates to another {@link ParameterFunction}.
 	 *
 	 * @param paramFunction the delegate {@link ParameterFunction}
@@ -179,13 +163,13 @@ public interface ParameterFunction extends Consumer<Map<String, List<String>>> {
 	/**
 	 * Creates a {@link ParameterFunction} that inserts all entries from a map.
 	 *
-	 * @param map the map containing the entries to insert
+	 * @param params the map containing the parameters to insert
 	 * @return a {@link ParameterFunction} that inserts all entries from the map
 	 */
-	static ParameterFunction parameters(final Map<String, List<String>> map) {
-		return existingMap -> {
-			for (Map.Entry<String, List<String>> entry : map.entrySet()) {
-				existingMap.computeIfAbsent(entry.getKey(), key -> new ArrayList<>()).addAll(entry.getValue());
+	static ParameterFunction parameters(final Map<String, List<String>> params) {
+		return map -> {
+			for (Map.Entry<String, List<String>> entry : params.entrySet()) {
+				insertInto(map, entry.getKey(), entry.getValue());
 			}
 		};
 	}
@@ -198,7 +182,7 @@ public interface ParameterFunction extends Consumer<Map<String, List<String>>> {
 	 */
 	static ParameterFunction parameters(final ParameterFunction... paramFunctions) {
 		if (null == paramFunctions) {
-			return none();
+			return ignored();
 		}
 		return map -> {
 			for (ParameterFunction paramFunction : paramFunctions) {
@@ -212,7 +196,7 @@ public interface ParameterFunction extends Consumer<Map<String, List<String>>> {
 	 *
 	 * @return an empty parameter function
 	 */
-	static ParameterFunction none() {
+	static ParameterFunction ignored() {
 		return EMPTY;
 	}
 
@@ -227,7 +211,7 @@ public interface ParameterFunction extends Consumer<Map<String, List<String>>> {
 		if (condition) {
 			return parameters(paramFunctions);
 		}
-		return none();
+		return ignored();
 	}
 
 	/**

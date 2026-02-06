@@ -2,7 +2,6 @@ package org.apiphany;
 
 import java.net.URI;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -329,7 +328,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 			this.params = new LinkedHashMap<>();
 		}
 		for (Map.Entry<String, List<String>> entry : Maps.safe(requestParams).entrySet()) {
-			this.params.computeIfAbsent(entry.getKey(), key -> new ArrayList<>()).addAll(entry.getValue());
+			ParameterFunction.insertInto(params, entry.getKey(), entry.getValue());
 		}
 		return this;
 	}

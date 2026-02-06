@@ -63,11 +63,23 @@ public record RequestParameter(String name, List<String> values, Charset encodin
 
 	/**
 	 * Returns the string representation of the parameter in the format {@code "name=value"}.
+	 * <p>
+	 * WARNING: This method performs URL encoding and is intended for debugging/logging, not for building final request
+	 * strings.
 	 *
 	 * @return the string representation of the parameter
 	 */
 	@Override
 	public String toString() {
+		return toEncodedString();
+	}
+
+	/**
+	 * Returns the URL encoded string representation of the parameter in the format {@code "name=value"}.
+	 *
+	 * @return the URL encoded string representation of the parameter
+	 */
+	public String toEncodedString() {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (String value : values) {
 			if (stringBuilder.length() > 0) {
@@ -89,7 +101,36 @@ public record RequestParameter(String name, List<String> values, Charset encodin
 	 */
 	@Override
 	public void putInto(final Map<String, List<String>> map) {
-		map.computeIfAbsent(name, key -> new ArrayList<>()).addAll(values);
+		ParameterFunction.insertInto(map, name, values);
+	}
+
+	/**
+	 * Determines if the given object is multi-valued (i.e., a collection, iterable, or array).
+	 *
+	 * @param object the object to check
+	 * @return true if the object is multi-valued, false otherwise
+	 */
+	public static boolean isMultiValued(final Object object) {
+		if (null == object) {
+			return false;
+		}
+		return switch (object) {
+			case Collection<?> collection -> true;
+			case Iterable<?> iterable -> true;
+			case Object[] array -> true;
+			case Object o when o.getClass().isArray() -> true;
+			default -> false;
+		};
+	}
+
+	/**
+	 * Determines if the given object is single-valued (i.e., not a collection, iterable, or array).
+	 *
+	 * @param object the object to check
+	 * @return true if the object is single-valued, false otherwise
+	 */
+	public static boolean isSingleValued(final Object object) {
+		return !isMultiValued(object);
 	}
 
 	/**
@@ -103,7 +144,6 @@ public record RequestParameter(String name, List<String> values, Charset encodin
 			return null;
 		}
 		return switch (object) {
-			case String string -> toValues(string);
 			case Collection<?> collection -> toValues(collection);
 			case Iterable<?> iterable -> toValues(iterable);
 			case Object[] array -> toValues(array);

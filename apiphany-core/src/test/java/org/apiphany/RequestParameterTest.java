@@ -248,6 +248,22 @@ class RequestParameterTest {
 		assertThat(map.get(NAME), equalTo(List.of(VALUE)));
 	}
 
+	@Test
+	void shouldIdentifyMultiValuedObjects() {
+		assertThat(RequestParameter.isMultiValued(List.of(1, 2, 3)), equalTo(true));
+		assertThat(RequestParameter.isMultiValued(new SomeIterable(1, 2, 3)), equalTo(true));
+		assertThat(RequestParameter.isMultiValued(new Object[] { 1, 2, 3 }), equalTo(true));
+		assertThat(RequestParameter.isMultiValued(new int[] { 1, 2, 3 }), equalTo(true));
+	}
+
+	@Test
+	void shouldIdentifySingleValuedObjects() {
+		assertThat(RequestParameter.isSingleValued(123), equalTo(true));
+		assertThat(RequestParameter.isSingleValued("test"), equalTo(true));
+		assertThat(RequestParameter.isSingleValued(new A("test")), equalTo(true));
+		assertThat(RequestParameter.isSingleValued(null), equalTo(true));
+	}
+
 	static class SomeIterable implements Iterable<Object> {
 
 		private final List<Object> values;
