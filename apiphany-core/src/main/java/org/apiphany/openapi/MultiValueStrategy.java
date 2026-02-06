@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.apiphany.ParameterFunction;
 import org.apiphany.RequestParameter;
+import org.apiphany.lang.collections.Lists;
 
 /**
  * Enumeration representing the different ways of parameter serialization as defined in the OpenAPI Specification.
@@ -21,7 +22,14 @@ public enum MultiValueStrategy {
 
 		@Override
 		public <T, U> ParameterFunction apply(final T name, final List<U> elements) {
-			return ParameterFunction.parameter(name, elements);
+			if (Lists.isEmpty(elements)) {
+				return ParameterFunction.ignored();
+			}
+			return map -> {
+				String parameterName = String.valueOf(name);
+				List<String> parameterValues = RequestParameter.toValues(elements);
+				ParameterFunction.insertInto(map, parameterName, parameterValues);
+			};
 		}
 	},
 
@@ -111,7 +119,13 @@ public enum MultiValueStrategy {
 	 * @return a {@link ParameterFunction} representing the encoded parameter
 	 */
 	public <T, U> ParameterFunction apply(final T name, final List<U> elements) {
-		String value = String.join(separator, RequestParameter.toValues(elements));
-		return ParameterFunction.parameter(String.valueOf(name), value);
+		if (Lists.isEmpty(elements)) {
+			return ParameterFunction.ignored();
+		}
+		return map -> {
+			String parameterName = String.valueOf(name);
+			String parameterValue = String.join(separator, RequestParameter.toValues(elements));
+			ParameterFunction.insertInto(map, parameterName, parameterValue);
+		};
 	}
 }

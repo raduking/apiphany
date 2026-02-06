@@ -26,30 +26,6 @@ public interface Parameter extends ParameterFunction {
 	};
 
 	/**
-	 * Creates a {@link Parameter} for a single key-value pair.
-	 *
-	 * @param name the parameter name
-	 * @param value the parameter value
-	 * @return a {@link Parameter} that inserts the key-value pair into the map
-	 */
-	static Parameter of(final String name, final String value) {
-		return ParameterFunction.parameter(name, value)::putInto;
-	}
-
-	/**
-	 * Creates a {@link Parameter} for a single key-value pair, where the value is converted to a string.
-	 *
-	 * @param <T> the type of the value
-	 *
-	 * @param name the parameter name
-	 * @param value the parameter value
-	 * @return a {@link Parameter} that inserts the key-value pair into the map
-	 */
-	static <T> Parameter of(final String name, final T value) {
-		return ParameterFunction.parameter(name, value)::putInto;
-	}
-
-	/**
 	 * Creates a {@link Parameter} for a single key-value pair, where both the key and value are converted to strings.
 	 *
 	 * @param <T> the type of the key
@@ -60,19 +36,6 @@ public interface Parameter extends ParameterFunction {
 	 * @return a {@link Parameter} that inserts the key-value pair into the map
 	 */
 	static <T, U> Parameter of(final T name, final U value) {
-		return ParameterFunction.parameter(name, value)::putInto;
-	}
-
-	/**
-	 * Creates a {@link Parameter} for a single key-value pair, where the value is provided by a supplier.
-	 *
-	 * @param <T> the type of the value
-	 *
-	 * @param name the parameter name
-	 * @param value the supplier of the parameter value
-	 * @return a {@link Parameter} that inserts the key-value pair into the map
-	 */
-	static <T> Parameter of(final String name, final Supplier<T> value) {
 		return ParameterFunction.parameter(name, value)::putInto;
 	}
 
@@ -105,24 +68,14 @@ public interface Parameter extends ParameterFunction {
 	}
 
 	/**
-	 * Creates a {@link Parameter} for a list of elements, which are joined into a single string.
+	 * Creates a {@link Parameter} for a list of elements of the multi-value parameter given by name. Both the name and the
+	 * elements are converted to strings.
+	 *
+	 * @param <T> the type of the name
+	 * @param <U> the type of the value
 	 *
 	 * @param name the parameter name
-	 * @param elements the list of elements to join
-	 * @return a {@link Parameter} that inserts the key-value pair into the map
-	 */
-	static Parameter of(final String name, final List<String> elements) {
-		return ParameterFunction.parameter(name, elements)::putInto;
-	}
-
-	/**
-	 * Creates a {@link Parameter} for a list of elements, where both the key and elements are converted to strings.
-	 *
-	 * @param <T> the type of the key
-	 * @param <U> the type of the elements
-	 *
-	 * @param name the parameter name
-	 * @param elements the list of elements to join
+	 * @param elements the list of values
 	 * @return a {@link Parameter} that inserts the key-value pair into the map
 	 */
 	static <T, U> Parameter of(final T name, final List<U> elements) {

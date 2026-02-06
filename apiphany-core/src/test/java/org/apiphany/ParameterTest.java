@@ -5,12 +5,15 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.apiphany.ParameterFunctionTest.SomeIterable;
+import org.apiphany.openapi.MultiValueStrategy;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -72,6 +75,64 @@ class ParameterTest {
 
 		assertThat(params.entrySet(), hasSize(1));
 		assertThat(params.get(PARAM_1), equalTo(List.of(STRING_INTEGER_VALUE)));
+	}
+
+	@Test
+	void shouldAddCollectionParameterByConvertingElementsToString() {
+		Collection<?> collection = List.of(INTEGER_VALUE, TEST_INT_42);
+		Map<String, List<String>> params = RequestParameters.of(
+				Parameter.of(PARAM_1, collection));
+
+		assertThat(params.entrySet(), hasSize(1));
+		assertThat(params.get(PARAM_1), equalTo(List.of(STRING_INTEGER_VALUE, String.valueOf(TEST_INT_42))));
+	}
+
+	@Test
+	void shouldAddArrayParameterByConvertingElementsToString() {
+		Integer[] array = new Integer[] { INTEGER_VALUE, TEST_INT_42 };
+		Map<String, List<String>> params = RequestParameters.of(
+				Parameter.of(PARAM_1, array));
+
+		assertThat(params.entrySet(), hasSize(1));
+		assertThat(params.get(PARAM_1), equalTo(List.of(STRING_INTEGER_VALUE, String.valueOf(TEST_INT_42))));
+	}
+
+	@Test
+	void shouldAddIterableParameterByConvertingElementsToString() {
+		Iterable<?> iterable = new SomeIterable(INTEGER_VALUE, TEST_INT_42);
+		Map<String, List<String>> params = RequestParameters.of(
+				Parameter.of(PARAM_1, iterable));
+
+		assertThat(params.entrySet(), hasSize(1));
+		assertThat(params.get(PARAM_1), equalTo(List.of(STRING_INTEGER_VALUE, String.valueOf(TEST_INT_42))));
+	}
+
+	@Test
+	void shouldNotAddCollectionParameterIfItHasNoElements() {
+		Collection<?> collection = List.of();
+		Map<String, List<String>> params = RequestParameters.of(
+				Parameter.of(PARAM_1, collection));
+
+		assertThat(params.entrySet(), hasSize(0));
+	}
+
+	@Test
+	void shouldNotAddNullParameter() {
+		Map<String, List<String>> params = RequestParameters.of(
+				Parameter.of(PARAM_1, (Object) null));
+
+		assertThat(params.entrySet(), hasSize(0));
+	}
+
+	@Test
+	void shouldAddParameterTransformedWithCSVStrategy() {
+		Map<String, List<String>> params = RequestParameters.of(
+				Parameter.of(PARAM_1, List.of(INTEGER_VALUE, TEST_INT_42), MultiValueStrategy.CSV));
+
+		String expectedValue = String.join(",", String.valueOf(INTEGER_VALUE), String.valueOf(TEST_INT_42));
+
+		assertThat(params.entrySet(), hasSize(1));
+		assertThat(params.get(PARAM_1), equalTo(List.of(expectedValue)));
 	}
 
 	static class A {
@@ -223,7 +284,7 @@ class ParameterTest {
 	void shouldNotModifyExistingParametersWhenAddingNone() {
 		Map<String, List<String>> params = RequestParameters.of(
 				Parameter.of(PARAM_1, STRING_INTEGER_VALUE),
-				ParameterFunction.none());
+				ParameterFunction.ignored());
 
 		assertThat(params.entrySet(), hasSize(1));
 		assertThat(params.get(PARAM_1), equalTo(List.of(STRING_INTEGER_VALUE)));

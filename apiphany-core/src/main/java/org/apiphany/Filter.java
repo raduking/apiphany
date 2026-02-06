@@ -1,6 +1,5 @@
 package org.apiphany;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -584,7 +583,7 @@ public record Filter(String value) implements ParameterFunction {
 	@Override
 	public void putInto(final Map<String, List<String>> map) {
 		if (none() != this) {
-			map.computeIfAbsent(NAME, key -> new ArrayList<>()).add(getValue());
+			ParameterFunction.insertInto(map, NAME, getValue());
 		}
 	}
 

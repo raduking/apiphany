@@ -107,27 +107,27 @@ public class RequestParameters {
 	 * @return a {@link Map} representation of the parameters
 	 */
 	public static Map<String, List<String>> from(final String body, final Charset encoding) {
-		Map<String, List<String>> paramsMap = new LinkedHashMap<>();
+		Map<String, List<String>> params = new LinkedHashMap<>();
 		if (Strings.isEmpty(body)) {
-			return paramsMap;
+			return params;
 		}
-		String[] params = body.split(SEPARATOR);
+		String[] bodyParams = body.split(SEPARATOR);
 
-		for (String param : params) {
-			int index = param.indexOf(RequestParameter.NAME_VALUE_SEPARATOR);
+		for (String bodyParam : bodyParams) {
+			int index = bodyParam.indexOf(RequestParameter.NAME_VALUE_SEPARATOR);
 			final String decodedKey;
 			final String decodedValue;
 
 			if (index >= 0) {
-				decodedKey = URLDecoder.decode(param.substring(0, index), encoding);
-				decodedValue = URLDecoder.decode(param.substring(index + 1), encoding);
+				decodedKey = URLDecoder.decode(bodyParam.substring(0, index), encoding);
+				decodedValue = URLDecoder.decode(bodyParam.substring(index + 1), encoding);
 			} else {
-				decodedKey = URLDecoder.decode(param, encoding);
+				decodedKey = URLDecoder.decode(bodyParam, encoding);
 				decodedValue = "";
 			}
-			paramsMap.computeIfAbsent(decodedKey, key -> new ArrayList<>()).add(decodedValue);
+			ParameterFunction.insertInto(params, decodedKey, decodedValue);
 		}
-		return paramsMap;
+		return params;
 	}
 
 	/**
