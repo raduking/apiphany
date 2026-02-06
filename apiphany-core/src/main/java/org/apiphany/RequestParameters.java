@@ -20,8 +20,8 @@ import org.morphix.reflection.Constructors;
 
 /**
  * Utility class for building and manipulating request parameters. This class provides methods for creating parameter
- * maps, encoding parameters, and converting them into URL-friendly formats. It also includes a functional interface
- * {@link ParameterFunction} for defining parameter insertion logic.
+ * maps, encoding parameters, and converting them into URL-friendly formats. Use it in conjunction with
+ * {@link ParameterFunction} or {@link Parameter} for defining parameter insertion logic.
  * <p>
  * Request parameters are typically represented as a map where the keys are parameter names and the values are lists of
  * parameter values.
@@ -184,11 +184,11 @@ public class RequestParameters {
 	 * Field values that are {@code null} are not included in the resulting map.
 	 *
 	 * @param queryParams the object to convert
-	 * @param fieldNameConverter a converter to transform field names
+	 * @param nameConverter a converter to transform field names of the object into parameter names
 	 * @return a map representation of the object's fields
 	 * @throws IllegalArgumentException if the provided object is not a POJO or a map.
 	 */
-	public static Map<String, List<String>> from(final Object queryParams, final SimpleConverter<String, String> fieldNameConverter) {
+	public static Map<String, List<String>> from(final Object queryParams, final SimpleConverter<String, String> nameConverter) {
 		if (null == queryParams) {
 			return new LinkedHashMap<>();
 		}
@@ -197,10 +197,32 @@ public class RequestParameters {
 		Require.thatNot(queryParams.getClass().isArray(), "Cannot convert an Array into request parameters map. Expected a POJO or a Map.");
 
 		return switch (queryParams) {
-			case Map<?, ?> map -> MapConversions.convertMap(map,
-					key -> fieldNameConverter.convert(String.valueOf(key)), RequestParameter::toValues, PutFunction.ifNotNullValue()).toMap();
-			default -> MapConversions.convertToMap(queryParams, fieldNameConverter, RequestParameter::toValues, PutFunction.ifNotNullValue());
+			case Map<?, ?> map -> from(map, nameConverter);
+			default -> MapConversions.convert(queryParams, nameConverter, RequestParameter::toValues, PutFunction.ifNotNullValue())
+					.to(LinkedHashMap::new);
 		};
+	}
+
+	/**
+	 * Converts a map into a map of request parameters. Each entry of the map is treated as a parameter, with the map key as
+	 * the parameter name and the map value as the parameter value.
+	 * <p>
+	 * Map values that are {@code null} are not included in the resulting map.
+	 *
+	 * @param <N> the type of the map keys
+	 * @param <V> the type of the map values
+	 *
+	 * @param map the map to convert
+	 * @param nameConverter a converter to transform map keys into parameter names
+	 * @return a request parameters map
+	 */
+	public static <N, V> Map<String, List<String>> from(final Map<N, V> map, final SimpleConverter<String, String> nameConverter) {
+		return MapConversions.convertMap(
+				Maps.safe(map),
+				key -> nameConverter.convert(String.valueOf(key)),
+				RequestParameter::toValues,
+				PutFunction.ifNotNullValue())
+				.to(LinkedHashMap::new);
 	}
 
 	/**

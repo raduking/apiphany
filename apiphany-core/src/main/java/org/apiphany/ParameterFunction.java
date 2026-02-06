@@ -8,6 +8,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import org.apiphany.lang.collections.Lists;
+import org.apiphany.openapi.MultiValueStrategy;
 
 /**
  * Functional interface for defining how parameters are inserted into a map. This interface is used to build parameter
@@ -148,6 +149,21 @@ public interface ParameterFunction extends Consumer<Map<String, List<String>>> {
 	 */
 	static <T, U> ParameterFunction parameter(final T name, final List<U> elements) {
 		return parameter(String.valueOf(name), RequestParameter.toValues(elements));
+	}
+
+	/**
+	 * Creates a {@link ParameterFunction} for a list of elements, using the specified multi-value encoding strategy.
+	 *
+	 * @param <T> the type of the key
+	 * @param <U> the type of the elements
+	 *
+	 * @param name the parameter name
+	 * @param elements the list of elements to join
+	 * @param multiValueStrategy the multi-value encoding strategy
+	 * @return a {@link ParameterFunction} that inserts the key-value pair into the map
+	 */
+	static <T, U> ParameterFunction parameter(final T name, final List<U> elements, final MultiValueStrategy multiValueStrategy) {
+		return multiValueStrategy.apply(name, elements);
 	}
 
 	/**
