@@ -122,6 +122,14 @@ class ParameterFunctionTest {
 	}
 
 	@Test
+	void shouldNotAddMultiParameterWhenCollectionIsEmpty() {
+		Map<String, List<String>> params = RequestParameters.of(
+				parameter(PARAM_1, List.of(), MultiValueStrategy.CSV));
+
+		assertThat(params.entrySet(), hasSize(0));
+	}
+
+	@Test
 	void shouldAddNonStringSuppliedParameterByConvertingItToString() {
 		Map<String, List<String>> params = RequestParameters.of(
 				parameter(PARAM_1, () -> INTEGER_VALUE));
