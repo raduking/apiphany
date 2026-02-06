@@ -356,10 +356,12 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	/**
 	 * Adds the request parameters from the given object.
 	 *
+	 * @param <T> request parameters object type
+	 *
 	 * @param queryParams request parameters object
 	 * @return this
 	 */
-	public ApiClientFluentAdapter params(final Object queryParams) {
+	public <T> ApiClientFluentAdapter params(final T queryParams) {
 		return params(RequestParameters.from(queryParams));
 	}
 
@@ -389,7 +391,8 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	}
 
 	/**
-	 * Adds a request parameter with multiple values.
+	 * Adds a request parameter with multiple values. The values will be encoded using the {@link MultiValueStrategy#MULTI}
+	 * strategy.
 	 *
 	 * @param <N> parameter name type
 	 * @param <U> parameter value type
@@ -399,7 +402,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @return this
 	 */
 	public <N, U> ApiClientFluentAdapter param(final N name, final List<U> values) {
-		return params(Parameter.of(name, values));
+		return param(name, values, MultiValueStrategy.MULTI);
 	}
 
 	/**
@@ -674,5 +677,4 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	public HttpClientFluentAdapter http() {
 		return HttpClientFluentAdapter.of(this);
 	}
-
 }

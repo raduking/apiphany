@@ -1,5 +1,7 @@
 package org.apiphany;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -7,16 +9,23 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.apiphany.http.URIEncoder;
 import org.apiphany.lang.Require;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.JavaArrays;
+import org.apiphany.lang.collections.Lists;
 import org.apiphany.lang.collections.Maps;
+import org.apiphany.openapi.MultiValueStrategy;
+import org.apiphany.openapi.QueryParam;
 import org.morphix.convert.MapConversions;
 import org.morphix.convert.function.SimpleConverter;
+import org.morphix.convert.strategy.ConversionStrategy;
+import org.morphix.lang.Nullables;
 import org.morphix.lang.function.PutFunction;
 import org.morphix.reflection.Constructors;
+import org.morphix.reflection.ExtendedField;
 
 /**
  * Utility class for building and manipulating request parameters. This class provides methods for creating parameter
@@ -196,11 +205,10 @@ public class RequestParameters {
 		Require.thatNot(queryParams instanceof Set<?>, "Cannot convert a Set into request parameters map. Expected a POJO or a Map.");
 		Require.thatNot(queryParams.getClass().isArray(), "Cannot convert an Array into request parameters map. Expected a POJO or a Map.");
 
-		return switch (queryParams) {
-			case Map<?, ?> map -> from(map, nameConverter);
-			default -> MapConversions.convert(queryParams, nameConverter, RequestParameter::toValues, PutFunction.ifNotNullValue())
-					.to(LinkedHashMap::new);
-		};
+		if (queryParams instanceof Map<?, ?> map) {
+			return from(map, nameConverter);
+		}
+		return fromObject(queryParams, nameConverter);
 	}
 
 	/**
@@ -223,6 +231,61 @@ public class RequestParameters {
 				RequestParameter::toValues,
 				PutFunction.ifNotNullValue())
 				.to(LinkedHashMap::new);
+	}
+
+	/**
+	 * Converts an object's fields into a map of request parameters. Each field of the object is treated as a parameter,
+	 * with the field name as the key and the field value as the value. This method uses reflection to access the fields of
+	 * the object.
+	 * <p>
+	 * Field values that are {@code null} are not included in the resulting map.
+	 *
+	 * @param queryParams the object to convert
+	 * @param nameConverter a converter to transform field names of the object into parameter names
+	 * @return a map representation of the object's fields
+	 */
+	protected static Map<String, List<String>> fromObject(final Object queryParams, final SimpleConverter<String, String> nameConverter) {
+		List<ExtendedField> fields = ConversionStrategy.findFields(queryParams,
+				field -> null != field.getFieldValue());
+
+		Map<String, List<String>> paramMap = new LinkedHashMap<>(fields.size());
+		if (Lists.isEmpty(fields)) {
+			return paramMap;
+		}
+		for (ExtendedField extendedField : fields) {
+			List<String> paramValues = RequestParameter.toValues(extendedField.getFieldValue());
+			if (Lists.isEmpty(paramValues)) {
+				continue;
+			}
+			String paramName = nameConverter.convert(extendedField.getName());
+
+			QueryParam annotation = getAnnotation(extendedField, QueryParam.class);
+			MultiValueStrategy strategy = MultiValueStrategy.from(annotation);
+			ParameterFunction parameter = strategy.apply(paramName, paramValues);
+			parameter.putInto(paramMap);
+		}
+		return paramMap;
+	}
+
+	/**
+	 * Retrieves the annotation from the given {@link ExtendedField}, if present. The method checks both the field and its
+	 * getter method for the annotation, giving precedence to the field annotation if both are present.
+	 * <p>
+	 * TODO: move this method to ExtendedField and make it more generic to retrieve any annotation.
+	 *
+	 * @param <T> the type of the annotation to retrieve
+	 *
+	 * @param extendedField the {@link ExtendedField} to check for the annotation
+	 * @param annotationClass the class of the annotation to retrieve
+	 * @return the {@link QueryParam} annotation if present, or {@code null} if not found
+	 */
+	private static <T extends Annotation> T getAnnotation(final ExtendedField extendedField, final Class<T> annotationClass) {
+		Function<AnnotatedElement, T> getAnnotation = annotated -> annotated.getAnnotation(annotationClass);
+		T annotation = Nullables.apply(extendedField.getField(), getAnnotation);
+		if (null != annotation) {
+			return annotation;
+		}
+		return Nullables.apply(extendedField.getGetterMethod(), getAnnotation);
 	}
 
 	/**

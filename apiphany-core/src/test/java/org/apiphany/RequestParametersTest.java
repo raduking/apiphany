@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.apiphany.openapi.ParameterMode;
+import org.apiphany.openapi.QueryParam;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -197,6 +199,88 @@ class RequestParametersTest {
 		assertThat(params.get("key2"), equalTo(List.of("200")));
 	}
 
+	static class C {
+
+		private List<Integer> numbers;
+
+		public List<Integer> getNumbers() {
+			return numbers;
+		}
+
+		public void setNumbers(final List<Integer> numbers) {
+			this.numbers = numbers;
+		}
+	}
+
+	@Test
+	void shouldConvertFromObjectWithCollectionFields() {
+		C c = new C();
+		c.setNumbers(List.of(1, 2, 3));
+
+		Map<String, List<String>> params = RequestParameters.from(c);
+
+		assertThat(params.entrySet(), hasSize(1));
+		assertThat(params.get("numbers"), equalTo(List.of("1", "2", "3")));
+	}
+
+	static class D {
+
+		@QueryParam(mode = ParameterMode.JOINED)
+		private List<Integer> numbers;
+
+		public List<Integer> getNumbers() {
+			return numbers;
+		}
+
+		public void setNumbers(final List<Integer> numbers) {
+			this.numbers = numbers;
+		}
+	}
+
+	@Test
+	void shouldConvertFromObjectWithCollectionFieldsAnnotatedWithJoined() {
+		D d = new D();
+		d.setNumbers(List.of(1, 2, 3));
+
+		Map<String, List<String>> params = RequestParameters.from(d);
+
+		assertThat(params.entrySet(), hasSize(1));
+		assertThat(params.get("numbers"), equalTo(List.of("1,2,3")));
+	}
+
+	static class E {
+
+		@QueryParam
+		private List<Integer> numbers;
+
+		public E() {
+			// empty
+		}
+
+		public E(final List<Integer> numbers) {
+			this.numbers = numbers;
+		}
+
+		public List<Integer> getNumbers() {
+			return numbers;
+		}
+
+		public void setNumbers(final List<Integer> numbers) {
+			this.numbers = numbers;
+		}
+	}
+
+	@Test
+	void shouldConvertFromObjectWithCollectionFieldsAnnotatedUsingDefaultMulti() {
+		E e = new E();
+		e.setNumbers(List.of(1, 2, 3));
+
+		Map<String, List<String>> params = RequestParameters.from(e);
+
+		assertThat(params.entrySet(), hasSize(1));
+		assertThat(params.get("numbers"), equalTo(List.of("1", "2", "3")));
+	}
+
 	@ParameterizedTest
 	@MethodSource("provideValuesForEmptyMapFromObject")
 	void shouldConvertToEmptyMapFrom(final Object object) {
@@ -210,7 +294,8 @@ class RequestParametersTest {
 				Arguments.of(new TestParams()),
 				Arguments.of(new B()),
 				Arguments.of(new Object()),
-				Arguments.of((Object) null));
+				Arguments.of((Object) null),
+				Arguments.of(new E(List.of())));
 	}
 
 	@Test
