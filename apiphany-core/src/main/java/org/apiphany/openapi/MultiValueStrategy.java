@@ -128,4 +128,28 @@ public enum MultiValueStrategy {
 			ParameterFunction.insertInto(map, parameterName, parameterValue);
 		};
 	}
+
+	/**
+	 * Determines the appropriate {@link MultiValueStrategy} based on the provided {@link QueryParam} annotation. If the
+	 * annotation is null, defaults to {@link #MULTI}.
+	 *
+	 * @param queryParam the {@link QueryParam} annotation
+	 * @return the corresponding {@link MultiValueStrategy}
+	 */
+	public static MultiValueStrategy from(final QueryParam queryParam) {
+		if (null == queryParam) {
+			return MULTI;
+		}
+		return switch (queryParam.style()) {
+			case FORM -> queryParam.mode() == ParameterMode.EXPLODE
+					? MultiValueStrategy.MULTI
+					: MultiValueStrategy.CSV;
+
+			case SPACE_DELIMITED -> MultiValueStrategy.SSV;
+			case PIPE_DELIMITED -> MultiValueStrategy.PIPES;
+
+			default -> throw new UnsupportedOperationException(
+					"Unsupported query parameter style: " + queryParam.style());
+		};
+	}
 }
