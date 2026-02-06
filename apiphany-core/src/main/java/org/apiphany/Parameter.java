@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import org.apiphany.openapi.MultiValueStrategy;
+
 /**
  * Functional interface for defining how parameters are inserted into a map. This interface is used to build parameter
  * maps dynamically.
@@ -125,6 +127,27 @@ public interface Parameter extends ParameterFunction {
 	 */
 	static <T, U> Parameter of(final T name, final List<U> elements) {
 		return ParameterFunction.parameter(name, elements)::putInto;
+	}
+
+	/**
+	 * Creates a {@link Parameter} for a list of elements, serialized using the specified multi-value encoding.
+	 * <p>
+	 * Depending on the encoding, values may be:
+	 * <ul>
+	 * <li>emitted as repeated parameters {@link MultiValueStrategy#MULTI}</li>
+	 * <li>joined into a single parameter value using a delimiter</li>
+	 * </ul>
+	 *
+	 * @param <T> the type of the name
+	 * @param <U> the type of the elements
+	 *
+	 * @param name the parameter name
+	 * @param elements the list of elements to join
+	 * @param multiValueStrategy the multi-value encoding strategy
+	 * @return a {@link Parameter} that inserts the key-value pair into the map
+	 */
+	static <T, U> Parameter of(final T name, final List<U> elements, final MultiValueStrategy multiValueStrategy) {
+		return ParameterFunction.parameter(name, elements, multiValueStrategy)::putInto;
 	}
 
 	/**

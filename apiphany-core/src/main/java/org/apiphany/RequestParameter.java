@@ -16,8 +16,8 @@ import org.morphix.lang.Nullables;
 
 /**
  * Represents a parameter in the API context. When constructing request parameters prefer using the
- * {@link ParameterFunction} together with {@link RequestParameters} and static imports for better readability. This
- * class exists mainly for cases where debugging or direct usage of parameters is needed.
+ * {@link ParameterFunction} or {@link Parameter} together with {@link RequestParameters} and static imports for better
+ * readability. This class exists mainly for cases where debugging or direct usage of parameters is needed.
  *
  * @param name the name of the parameter
  * @param values the values of the parameter

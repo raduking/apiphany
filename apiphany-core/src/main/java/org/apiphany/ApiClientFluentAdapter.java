@@ -20,6 +20,7 @@ import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Maps;
 import org.apiphany.lang.retry.Retry;
 import org.apiphany.meters.BasicMeters;
+import org.apiphany.openapi.MultiValueStrategy;
 import org.apiphany.security.AuthenticationType;
 import org.morphix.convert.function.SimpleConverter;
 import org.morphix.lang.JavaObjects;
@@ -96,7 +97,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 */
 	public <T> ApiResponse<T> retrieve() {
 		if (isUrlEncoded()) {
-			this.params = RequestParameters.encode(this.params, getCharset());
+			this.params = RequestParameters.encode(params, getCharset());
 		}
 		return JavaObjects.cast(apiClient.exchange(this));
 	}
@@ -386,6 +387,35 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 */
 	public <N, V> ApiClientFluentAdapter param(final N name, final V value) {
 		return params(Parameter.of(name, value));
+	}
+
+	/**
+	 * Adds a request parameter with multiple values.
+	 *
+	 * @param <N> parameter name type
+	 * @param <U> parameter value type
+	 *
+	 * @param name parameter name
+	 * @param values parameter values
+	 * @return this
+	 */
+	public <N, U> ApiClientFluentAdapter param(final N name, final List<U> values) {
+		return params(Parameter.of(name, values));
+	}
+
+	/**
+	 * Adds a request parameter with multiple values.
+	 *
+	 * @param <N> parameter name type
+	 * @param <U> parameter value type
+	 *
+	 * @param name parameter name
+	 * @param values parameter values
+	 * @param multiValueStrategy multi-value encoding strategy
+	 * @return this
+	 */
+	public <N, U> ApiClientFluentAdapter param(final N name, final List<U> values, final MultiValueStrategy multiValueStrategy) {
+		return params(Parameter.of(name, values, multiValueStrategy));
 	}
 
 	/**
