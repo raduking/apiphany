@@ -30,6 +30,7 @@ import org.apiphany.lang.retry.Retry;
 import org.apiphany.lang.retry.WaitCounter;
 import org.apiphany.meters.BasicMeters;
 import org.apiphany.meters.MeterCounter;
+import org.apiphany.openapi.MultiValueStrategy;
 import org.apiphany.security.AuthenticationType;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -51,7 +52,7 @@ import io.micrometer.core.instrument.Timer;
 class ApiClientFluentAdapterTest {
 
 	private static final String URL = "http://localhost";
-	private static final Map<String, String> PARAMS = RequestParameters.of(parameter("name", "value"));
+	private static final Map<String, List<String>> PARAMS = RequestParameters.of(parameter("name", "value"));
 	private static final Map<String, List<String>> HEADERS = Map.of("headerName", List.of("headerValue"));
 	private static final String BODY = "SomeBody";
 	private static final String HEADER_NAME = "header-name";
@@ -247,16 +248,57 @@ class ApiClientFluentAdapterTest {
 		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
 				.authenticationType(AuthenticationType.SESSION)
 				.url(URL)
-				.params(parameter("sum", "1+2+3"), parameter("other", "a b c"))
+				.params(
+						parameter("sum", "1+2+3"),
+						parameter("other", "a b c"),
+						parameter("p 1", "v@lue"))
 				.urlEncoded();
 
 		request.retrieve();
 
 		var expected = RequestParameters.of(
 				parameter("sum", "1%2B2%2B3"),
-				parameter("other", "a+b+c"));
+				parameter("other", "a+b+c"),
+				parameter("p%201", "v%40lue"));
 
 		assertThat(request.getParams(), equalTo(expected));
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldEncodeMultiValueParamsWithCSVOnRetrieve() {
+		ExchangeClient exchangeClient = mock(ExchangeClient.class);
+		doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.API_KEY);
+
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+				.authenticationType(AuthenticationType.API_KEY)
+				.url(URL)
+				.param("sum", List.of(1, 2, 3), MultiValueStrategy.CSV)
+				.urlEncoded();
+
+		request.retrieve();
+
+		// The commas should be encoded: 1,2,3 -> 1%2C2%2C3
+		var expected = RequestParameters.of(parameter("sum", "1%2C2%2C3"));
+
+		assertThat(request.getParams(), equalTo(expected));
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldEncodeMultiValueParamsWithMultiByDefaultOnRetrieve() {
+		ExchangeClient exchangeClient = mock(ExchangeClient.class);
+		doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.API_KEY);
+
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+				.authenticationType(AuthenticationType.API_KEY)
+				.url(URL)
+				.param("sum", List.of("1 1", "2 2", "3 3"))
+				.urlEncoded();
+
+		request.retrieve();
+
+		assertThat(request.getParams().get("sum"), equalTo(List.of("1+1", "2+2", "3+3")));
 	}
 
 	@Test
@@ -363,7 +405,7 @@ class ApiClientFluentAdapterTest {
 				.urlEncoded()
 				.uri(uri, API, segmentWithSpace, segmentWithSpecial);
 
-		String expected = URL + "/" + API + "/hello+world/name%40example.com";
+		String expected = URL + "/" + API + "/hello%20world/name%40example.com";
 
 		assertThat(request.getUrl(), equalTo(expected));
 	}
@@ -378,7 +420,7 @@ class ApiClientFluentAdapterTest {
 		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
 				.pathEncoded(API, segmentWithSpace, segmentWithSpecial);
 
-		String expected = URL + "/" + API + "/hello+world/name%40example.com";
+		String expected = URL + "/" + API + "/hello%20world/name%40example.com";
 
 		assertThat(request.getUrl(), equalTo(expected));
 	}

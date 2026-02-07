@@ -2,12 +2,16 @@ package org.apiphany;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apiphany.lang.Strings;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -26,7 +30,7 @@ class RequestParameterTest {
 		RequestParameter parameter = RequestParameter.of(NAME, VALUE);
 
 		assertThat(parameter.name(), equalTo(NAME));
-		assertThat(parameter.value(), equalTo(VALUE));
+		assertThat(parameter.values(), equalTo(List.of(VALUE)));
 	}
 
 	@Test
@@ -34,7 +38,7 @@ class RequestParameterTest {
 		RequestParameter parameter = RequestParameter.of(NAME, 123);
 
 		assertThat(parameter.name(), equalTo(NAME));
-		assertThat(parameter.value(), equalTo("123"));
+		assertThat(parameter.values(), equalTo(List.of("123")));
 	}
 
 	@Test
@@ -42,7 +46,7 @@ class RequestParameterTest {
 		RequestParameter parameter = RequestParameter.of(NAME, List.of(1, 2, 3));
 
 		assertThat(parameter.name(), equalTo(NAME));
-		assertThat(parameter.value(), equalTo("1,2,3"));
+		assertThat(parameter.values(), equalTo(List.of("1", "2", "3")));
 	}
 
 	@Test
@@ -50,7 +54,7 @@ class RequestParameterTest {
 		RequestParameter parameter = RequestParameter.of(NAME, new Object[] { "a", "b", "c" });
 
 		assertThat(parameter.name(), equalTo(NAME));
-		assertThat(parameter.value(), equalTo("a,b,c"));
+		assertThat(parameter.values(), equalTo(List.of("a", "b", "c")));
 	}
 
 	@Test
@@ -58,7 +62,7 @@ class RequestParameterTest {
 		RequestParameter parameter = RequestParameter.of(NAME, new String[] { "a", "b", "c" });
 
 		assertThat(parameter.name(), equalTo(NAME));
-		assertThat(parameter.value(), equalTo("a,b,c"));
+		assertThat(parameter.values(), equalTo(List.of("a", "b", "c")));
 	}
 
 	record A(String name) {
@@ -74,19 +78,21 @@ class RequestParameterTest {
 		RequestParameter parameter = RequestParameter.of(NAME, new A("test"));
 
 		assertThat(parameter.name(), equalTo(NAME));
-		assertThat(parameter.value(), equalTo("test"));
+		assertThat(parameter.values(), equalTo(List.of("test")));
 	}
 
 	@Test
 	void shouldThrowExceptionWhenBuildingParameterWithConstructorAndNullName() {
-		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> new RequestParameter(null, VALUE));
+		IllegalArgumentException e =
+				assertThrows(IllegalArgumentException.class, () -> new RequestParameter(null, List.of(VALUE), Strings.DEFAULT_CHARSET));
 
 		assertThat(e.getMessage(), equalTo("Parameter name cannot be null"));
 	}
 
 	@Test
 	void shouldThrowExceptionWhenBuildingParameterWithConstructorAndBlankName() {
-		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> new RequestParameter(BLANK_STRING, VALUE));
+		IllegalArgumentException e =
+				assertThrows(IllegalArgumentException.class, () -> new RequestParameter(BLANK_STRING, List.of(VALUE), Strings.DEFAULT_CHARSET));
 
 		assertThat(e.getMessage(), equalTo("Parameter name cannot be blank"));
 	}
@@ -115,54 +121,164 @@ class RequestParameterTest {
 	}
 
 	@Test
-	void shouldBuildStringValueFromObject() {
-		String result = RequestParameter.value(123);
+	void shouldBuildParameterWithMultipleValuesToString() {
+		RequestParameter parameter = RequestParameter.of(NAME, List.of(VALUE + "1", VALUE + "2"));
 
-		assertThat(result, equalTo("123"));
+		String result = parameter.toString();
+
+		assertThat(result, equalTo("name=value1&name=value2"));
+	}
+
+	@Test
+	void shouldBuildStringValueFromObject() {
+		List<String> result = RequestParameter.toValues(123);
+
+		assertThat(result, equalTo(List.of("123")));
+		assertDoesNotThrow(() -> result.add("666"));
 	}
 
 	@Test
 	void shouldReturnNullWhenValueIsNull() {
-		String result = RequestParameter.value((Object) null);
+		List<String> result = RequestParameter.toValues((Object) null);
 
 		assertThat(result, equalTo(null));
 	}
 
 	@Test
 	void shouldReturnNullWhenValueArrayIsNull() {
-		String result = RequestParameter.value(null);
+		List<String> result = RequestParameter.toValues((Object[]) null);
+
+		assertThat(result, equalTo(null));
+	}
+
+	@Test
+	void shouldReturnNullWhenValueArrayIsEmpty() {
+		List<String> result = RequestParameter.toValues(new Object[0]);
+
+		assertThat(result, equalTo(null));
+	}
+
+	@Test
+	void shouldReturnNullWhenValueIterableIsNull() {
+		List<String> result = RequestParameter.toValues((Iterable<?>) null);
+
+		assertThat(result, equalTo(null));
+	}
+
+	@Test
+	void shouldReturnNullWhenValueIterableIsEmptyAndNotCollection() {
+		SomeIterable iterable = new SomeIterable();
+		List<String> result = RequestParameter.toValues(iterable);
+
+		assertThat(result, equalTo(null));
+	}
+
+	@Test
+	void shouldReturnNullWhenValueCollectionIsEmpty() {
+		List<String> result = RequestParameter.toValues(List.of());
+
+		assertThat(result, equalTo(null));
+	}
+
+	@Test
+	void shouldReturnNullWhenValueCollectionIsNull() {
+		List<String> result = RequestParameter.toValues((Collection<?>) null);
+
+		assertThat(result, equalTo(null));
+	}
+
+	@Test
+	void shouldReturnNullWhenValueIterableIsEmpty() {
+		List<String> result = RequestParameter.toValues((Iterable<?>) List.of());
+
+		assertThat(result, equalTo(null));
+	}
+
+	@Test
+	void shouldReturnNullWhenValueStringIsNull() {
+		List<String> result = RequestParameter.toValues((String) null);
 
 		assertThat(result, equalTo(null));
 	}
 
 	@Test
 	void shouldBuildValueFromObject() {
-		String parameter = RequestParameter.value(new A("test"));
+		List<String> values = RequestParameter.toValues(new A("test"));
 
-		assertThat(parameter, equalTo("test"));
+		assertThat(values, equalTo(List.of("test")));
+	}
+
+	@Test
+	void shouldBuildValueFromIterable() {
+		SomeIterable iterable = new SomeIterable(1, 2, 3);
+		List<String> parameter = RequestParameter.toValues(iterable);
+
+		assertThat(parameter, equalTo(List.of("1", "2", "3")));
+	}
+
+	@Test
+	void shouldBuildValueFromIterableWithObjectParam() {
+		Object iterable = new SomeIterable(1, 2, 3);
+		List<String> parameter = RequestParameter.toValues(iterable);
+
+		assertThat(parameter, equalTo(List.of("1", "2", "3")));
 	}
 
 	@Test
 	void shouldBuildValueFromIntegerArray() {
-		String parameter = RequestParameter.value((Object) new Integer[] { 1, 2, 3 });
+		List<String> parameter = RequestParameter.toValues(new Integer[] { 1, 2, 3 });
 
-		assertThat(parameter, equalTo("1,2,3"));
+		assertThat(parameter, equalTo(List.of("1", "2", "3")));
 	}
 
 	@Test
 	void shouldBuildValueFromIntArray() {
-		String parameter = RequestParameter.value(new int[] { 1, 2, 3 });
+		List<String> parameter = RequestParameter.toValues(new int[] { 1, 2, 3 });
 
-		assertThat(parameter, equalTo("1,2,3"));
+		assertThat(parameter, equalTo(List.of("1", "2", "3")));
 	}
 
 	@Test
 	void shouldPutParameterIntoMap() {
 		RequestParameter parameter = RequestParameter.of(NAME, VALUE);
-		Map<String, String> map = new HashMap<>();
+		Map<String, List<String>> map = new HashMap<>();
 
 		parameter.putInto(map);
 
-		assertThat(map.get(NAME), equalTo(VALUE));
+		assertThat(map.get(NAME), equalTo(List.of(VALUE)));
+	}
+
+	@Test
+	void shouldIdentifyMultiValuedObjects() {
+		assertThat(RequestParameter.isMultiValued(List.of(1, 2, 3)), equalTo(true));
+		assertThat(RequestParameter.isMultiValued(new SomeIterable(1, 2, 3)), equalTo(true));
+		assertThat(RequestParameter.isMultiValued(new Object[] { 1, 2, 3 }), equalTo(true));
+		assertThat(RequestParameter.isMultiValued(new int[] { 1, 2, 3 }), equalTo(true));
+	}
+
+	@Test
+	void shouldIdentifySingleValuedObjects() {
+		assertThat(RequestParameter.isSingleValued(123), equalTo(true));
+		assertThat(RequestParameter.isSingleValued("test"), equalTo(true));
+		assertThat(RequestParameter.isSingleValued(new A("test")), equalTo(true));
+		assertThat(RequestParameter.isSingleValued(null), equalTo(true));
+	}
+
+	static class SomeIterable implements Iterable<Object> {
+
+		private final List<Object> values;
+
+		public SomeIterable(final Object... values) {
+			this.values = List.of(values);
+		}
+
+		public SomeIterable(final List<Object> values) {
+			this.values = values;
+		}
+
+		@Override
+		public Iterator<Object> iterator() {
+			return values.iterator();
+		}
 	}
 }

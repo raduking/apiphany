@@ -11,6 +11,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 
 import java.security.interfaces.RSAPrivateKey;
+import java.util.List;
 import java.util.Map;
 
 import org.apiphany.ApiClient;
@@ -188,7 +189,7 @@ class OAuth2ApiClientTest {
 
 		ApiRequest<String> capturedRequest = requestCaptor.getValue();
 
-		Map<String, String> params = RequestParameters.of(
+		Map<String, List<String>> params = RequestParameters.of(
 				parameter(OAuth2Parameter.GRANT_TYPE, clientRegistration.getAuthorizationGrantType()),
 				parameter(OAuth2Parameter.EXPIRES_IN, OAuth2Parameter.Default.EXPIRES_IN.toSeconds()));
 
@@ -226,7 +227,7 @@ class OAuth2ApiClientTest {
 
 		ApiRequest<String> capturedRequest = requestCaptor.getValue();
 
-		Map<String, String> params = RequestParameters.of(
+		Map<String, List<String>> params = RequestParameters.of(
 				parameter(OAuth2Parameter.GRANT_TYPE, clientRegistration.getAuthorizationGrantType()),
 				parameter(OAuth2Parameter.EXPIRES_IN, OAuth2Parameter.Default.EXPIRES_IN.toSeconds()),
 				parameter(OAuth2Parameter.CLIENT_ID, clientRegistration.getClientId()),
@@ -267,12 +268,15 @@ class OAuth2ApiClientTest {
 
 		ApiRequest<String> capturedRequest = requestCaptor.getValue();
 
-		Map<String, String> bodyParams = RequestParameters.from(capturedRequest.getBody());
+		Map<String, List<String>> bodyParams = RequestParameters.from(capturedRequest.getBody());
 		var headers = capturedRequest.getHeaders();
 
-		assertThat(bodyParams.get(OAuth2Parameter.GRANT_TYPE.value()), equalTo(clientRegistration.getAuthorizationGrantType().value()));
-		assertThat(bodyParams.get(OAuth2Parameter.CLIENT_ASSERTION_TYPE.value()), equalTo("urn:ietf:params:oauth:client-assertion-type:jwt-bearer"));
-		assertThat(bodyParams.get(OAuth2Parameter.EXPIRES_IN.value()), equalTo(String.valueOf(OAuth2Parameter.Default.EXPIRES_IN.toSeconds())));
+		assertThat(bodyParams.get(OAuth2Parameter.GRANT_TYPE.value()),
+				equalTo(List.of(clientRegistration.getAuthorizationGrantType().value())));
+		assertThat(bodyParams.get(OAuth2Parameter.CLIENT_ASSERTION_TYPE.value()),
+				equalTo(List.of("urn:ietf:params:oauth:client-assertion-type:jwt-bearer")));
+		assertThat(bodyParams.get(OAuth2Parameter.EXPIRES_IN.value()),
+				equalTo(List.of(String.valueOf(OAuth2Parameter.Default.EXPIRES_IN.toSeconds()))));
 		assertThat(headers.size(), equalTo(1));
 		assertThat(Headers.get(HttpHeader.CONTENT_TYPE, headers).getFirst(), equalTo(ContentType.Value.APPLICATION_FORM_URLENCODED));
 		assertThat(capturedRequest.getUrl().toString(), equalTo(providerDetails.getTokenUri()));
@@ -307,12 +311,15 @@ class OAuth2ApiClientTest {
 
 		ApiRequest<String> capturedRequest = requestCaptor.getValue();
 
-		Map<String, String> bodyParams = RequestParameters.from(capturedRequest.getBody());
+		Map<String, List<String>> bodyParams = RequestParameters.from(capturedRequest.getBody());
 		var headers = capturedRequest.getHeaders();
 
-		assertThat(bodyParams.get(OAuth2Parameter.GRANT_TYPE.value()), equalTo(clientRegistration.getAuthorizationGrantType().value()));
-		assertThat(bodyParams.get(OAuth2Parameter.CLIENT_ASSERTION_TYPE.value()), equalTo("urn:ietf:params:oauth:client-assertion-type:jwt-bearer"));
-		assertThat(bodyParams.get(OAuth2Parameter.EXPIRES_IN.value()), equalTo(String.valueOf(OAuth2Parameter.Default.EXPIRES_IN.toSeconds())));
+		assertThat(bodyParams.get(OAuth2Parameter.GRANT_TYPE.value()),
+				equalTo(List.of(clientRegistration.getAuthorizationGrantType().value())));
+		assertThat(bodyParams.get(OAuth2Parameter.CLIENT_ASSERTION_TYPE.value()),
+				equalTo(List.of("urn:ietf:params:oauth:client-assertion-type:jwt-bearer")));
+		assertThat(bodyParams.get(OAuth2Parameter.EXPIRES_IN.value()),
+				equalTo(List.of(String.valueOf(OAuth2Parameter.Default.EXPIRES_IN.toSeconds()))));
 		assertThat(headers.size(), equalTo(1));
 		assertThat(Headers.get(HttpHeader.CONTENT_TYPE, headers).getFirst(), equalTo(ContentType.Value.APPLICATION_FORM_URLENCODED));
 		assertThat(capturedRequest.getUrl().toString(), equalTo(providerDetails.getTokenUri()));

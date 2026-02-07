@@ -161,7 +161,7 @@ class ApiClientTest {
 
 		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
 
-		Map<String, String> params = RequestParameters.of(
+		Map<String, List<String>> params = RequestParameters.of(
 				ParameterFunction.parameter(PARAM_ID, ID1));
 
 		TestDto result = api.client()

@@ -204,9 +204,6 @@ public final class SSLContexts {
 	private static KeyStore loadKeystore(final String keyStoreType, final String location, final char[] pass,
 			final ResourceLocation resourceLocation) {
 		try (InputStream keyStoreInput = resourceLocation.open(location)) {
-			if (null == keyStoreInput) {
-				throw new IOException("File not found: " + location);
-			}
 			KeyStore keyStore = KeyStore.getInstance(keyStoreType);
 			keyStore.load(keyStoreInput, pass);
 			return keyStore;

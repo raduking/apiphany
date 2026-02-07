@@ -581,9 +581,9 @@ public record Filter(String value) implements ParameterFunction {
 	 * @param map map to put the filter into
 	 */
 	@Override
-	public void putInto(final Map<String, String> map) {
+	public void putInto(final Map<String, List<String>> map) {
 		if (none() != this) {
-			map.put(NAME, getValue());
+			ParameterFunction.insertInto(map, NAME, getValue());
 		}
 	}
 

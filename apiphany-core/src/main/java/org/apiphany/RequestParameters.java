@@ -1,26 +1,39 @@
 package org.apiphany;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.nio.charset.Charset;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
+import org.apiphany.http.URIEncoder;
 import org.apiphany.lang.Require;
 import org.apiphany.lang.Strings;
+import org.apiphany.lang.collections.JavaArrays;
+import org.apiphany.lang.collections.Lists;
 import org.apiphany.lang.collections.Maps;
+import org.apiphany.openapi.MultiValueStrategy;
+import org.apiphany.openapi.QueryParam;
 import org.morphix.convert.MapConversions;
 import org.morphix.convert.function.SimpleConverter;
+import org.morphix.convert.strategy.ConversionStrategy;
+import org.morphix.lang.Nullables;
 import org.morphix.lang.function.PutFunction;
 import org.morphix.reflection.Constructors;
+import org.morphix.reflection.ExtendedField;
 
 /**
  * Utility class for building and manipulating request parameters. This class provides methods for creating parameter
- * maps, encoding parameters, and converting them into URL-friendly formats. It also includes a functional interface
- * {@link ParameterFunction} for defining parameter insertion logic.
+ * maps, encoding parameters, and converting them into URL-friendly formats. Use it in conjunction with
+ * {@link ParameterFunction} or {@link Parameter} for defining parameter insertion logic.
+ * <p>
+ * Request parameters are typically represented as a map where the keys are parameter names and the values are lists of
+ * parameter values.
  *
  * @author Radu Sebastian LAZIN
  */
@@ -37,11 +50,11 @@ public class RequestParameters {
 	 * @param paramFunctions the {@link ParameterFunction}s to execute
 	 * @return a new map containing the inserted parameters
 	 */
-	public static Map<String, String> of(final ParameterFunction... paramFunctions) {
-		if (null == paramFunctions || 0 == paramFunctions.length) {
-			return Collections.emptyMap();
+	public static Map<String, List<String>> of(final ParameterFunction... paramFunctions) {
+		var map = new LinkedHashMap<String, List<String>>();
+		if (JavaArrays.isEmpty(paramFunctions)) {
+			return map;
 		}
-		var map = new HashMap<String, String>();
 		for (ParameterFunction paramFunction : paramFunctions) {
 			paramFunction.putInto(map);
 		}
@@ -55,7 +68,7 @@ public class RequestParameters {
 	 * @param params the request parameters map
 	 * @return a URL-friendly string representation of the parameters
 	 */
-	public static String asUrlSuffix(final Map<String, String> params) {
+	public static String asUrlSuffix(final Map<String, List<String>> params) {
 		String result = asString(params);
 		if (Strings.isNotEmpty(result)) {
 			result = "?" + result;
@@ -70,14 +83,17 @@ public class RequestParameters {
 	 * @param params the request parameters map
 	 * @return a string representation of the parameters
 	 */
-	public static String asString(final Map<String, String> params) {
+	public static String asString(final Map<String, List<String>> params) {
 		if (Maps.isEmpty(params)) {
 			return "";
 		}
-		String[] paramsArray = params.entrySet().stream()
-				.map(entry -> String.join("=", entry.getKey(), entry.getValue()))
-				.toArray(String[]::new);
-		return String.join(SEPARATOR, paramsArray);
+		List<String> paramList = new ArrayList<>();
+		params.forEach((key, values) -> {
+			for (String value : values) {
+				paramList.add(String.join(RequestParameter.NAME_VALUE_SEPARATOR, key, value));
+			}
+		});
+		return String.join(SEPARATOR, paramList);
 	}
 
 	/**
@@ -87,7 +103,7 @@ public class RequestParameters {
 	 * @param body the request parameters string
 	 * @return a {@link Map} representation of the parameters
 	 */
-	public static Map<String, String> from(final String body) {
+	public static Map<String, List<String>> from(final String body) {
 		return from(body, Strings.DEFAULT_CHARSET);
 	}
 
@@ -99,28 +115,28 @@ public class RequestParameters {
 	 * @param encoding the body character encoding
 	 * @return a {@link Map} representation of the parameters
 	 */
-	public static Map<String, String> from(final String body, final Charset encoding) {
+	public static Map<String, List<String>> from(final String body, final Charset encoding) {
+		Map<String, List<String>> params = new LinkedHashMap<>();
 		if (Strings.isEmpty(body)) {
-			return Collections.emptyMap();
+			return params;
 		}
-		String[] params = body.split(SEPARATOR);
-		Map<String, String> paramsMap = new HashMap<>();
+		String[] bodyParams = body.split(SEPARATOR);
 
-		for (String param : params) {
-			int index = param.indexOf('=');
+		for (String bodyParam : bodyParams) {
+			int index = bodyParam.indexOf(RequestParameter.NAME_VALUE_SEPARATOR);
 			final String decodedKey;
 			final String decodedValue;
 
 			if (index >= 0) {
-				decodedKey = URLDecoder.decode(param.substring(0, index), encoding);
-				decodedValue = URLDecoder.decode(param.substring(index + 1), encoding);
+				decodedKey = URLDecoder.decode(bodyParam.substring(0, index), encoding);
+				decodedValue = URLDecoder.decode(bodyParam.substring(index + 1), encoding);
 			} else {
-				decodedKey = URLDecoder.decode(param, encoding);
+				decodedKey = URLDecoder.decode(bodyParam, encoding);
 				decodedValue = "";
 			}
-			paramsMap.put(decodedKey, decodedValue);
+			ParameterFunction.insertInto(params, decodedKey, decodedValue);
 		}
-		return paramsMap;
+		return params;
 	}
 
 	/**
@@ -129,7 +145,7 @@ public class RequestParameters {
 	 * @param requestParameters the request parameters to encode
 	 * @return a new map containing the encoded parameters
 	 */
-	public static Map<String, String> encode(final Map<String, String> requestParameters) {
+	public static Map<String, List<String>> encode(final Map<String, List<String>> requestParameters) {
 		return encode(requestParameters, Strings.DEFAULT_CHARSET);
 	}
 
@@ -141,12 +157,15 @@ public class RequestParameters {
 	 * @param encoding the character set to use for encoding
 	 * @return a new map containing the encoded parameters
 	 */
-	public static Map<String, String> encode(final Map<String, String> requestParameters, final Charset encoding) {
-		Map<String, String> encodedParams = HashMap.newHashMap(requestParameters.size());
-		requestParameters.forEach((key, value) -> {
-			String encodedName = URLEncoder.encode(key, encoding);
-			String encodedValue = URLEncoder.encode(value, encoding);
-			encodedParams.put(encodedName, encodedValue);
+	public static Map<String, List<String>> encode(final Map<String, List<String>> requestParameters, final Charset encoding) {
+		Map<String, List<String>> encodedParams = new LinkedHashMap<>(requestParameters.size());
+		requestParameters.forEach((key, values) -> {
+			String encodedName = URIEncoder.encodeParamName(key, encoding);
+			List<String> encodedValues = new ArrayList<>(values.size());
+			for (String value : values) {
+				encodedValues.add(URIEncoder.encodeParamValue(value, encoding));
+			}
+			encodedParams.put(encodedName, encodedValues);
 		});
 		return encodedParams;
 	}
@@ -162,7 +181,7 @@ public class RequestParameters {
 	 * @return a map representation of the object's fields
 	 * @throws IllegalArgumentException if the provided object is not a POJO or a map.
 	 */
-	public static Map<String, String> from(final Object queryParams) {
+	public static Map<String, List<String>> from(final Object queryParams) {
 		return from(queryParams, String::valueOf);
 	}
 
@@ -174,23 +193,99 @@ public class RequestParameters {
 	 * Field values that are {@code null} are not included in the resulting map.
 	 *
 	 * @param queryParams the object to convert
-	 * @param fieldNameConverter a converter to transform field names
+	 * @param nameConverter a converter to transform field names of the object into parameter names
 	 * @return a map representation of the object's fields
 	 * @throws IllegalArgumentException if the provided object is not a POJO or a map.
 	 */
-	public static Map<String, String> from(final Object queryParams, SimpleConverter<String, String> fieldNameConverter) {
+	public static Map<String, List<String>> from(final Object queryParams, final SimpleConverter<String, String> nameConverter) {
 		if (null == queryParams) {
-			return Collections.emptyMap();
+			return new LinkedHashMap<>();
 		}
 		Require.thatNot(queryParams instanceof List<?>, "Cannot convert a List into request parameters map. Expected a POJO or a Map.");
 		Require.thatNot(queryParams instanceof Set<?>, "Cannot convert a Set into request parameters map. Expected a POJO or a Map.");
 		Require.thatNot(queryParams.getClass().isArray(), "Cannot convert an Array into request parameters map. Expected a POJO or a Map.");
 
-		return switch (queryParams) {
-			case Map<?, ?> map -> MapConversions.convertMap(map,
-					k -> fieldNameConverter.convert(String.valueOf(k)), RequestParameter::value, PutFunction.ifNotNullValue()).toMap();
-			default -> MapConversions.convertToMap(queryParams, fieldNameConverter, RequestParameter::value, PutFunction.ifNotNullValue());
-		};
+		if (queryParams instanceof Map<?, ?> map) {
+			return from(map, nameConverter);
+		}
+		return fromObject(queryParams, nameConverter);
+	}
+
+	/**
+	 * Converts a map into a map of request parameters. Each entry of the map is treated as a parameter, with the map key as
+	 * the parameter name and the map value as the parameter value.
+	 * <p>
+	 * Map values that are {@code null} are not included in the resulting map.
+	 *
+	 * @param <N> the type of the map keys
+	 * @param <V> the type of the map values
+	 *
+	 * @param map the map to convert
+	 * @param nameConverter a converter to transform map keys into parameter names
+	 * @return a request parameters map
+	 */
+	public static <N, V> Map<String, List<String>> from(final Map<N, V> map, final SimpleConverter<String, String> nameConverter) {
+		return MapConversions.convertMap(
+				Maps.safe(map),
+				key -> nameConverter.convert(String.valueOf(key)),
+				RequestParameter::toValues,
+				PutFunction.ifNotNullValue())
+				.to(LinkedHashMap::new);
+	}
+
+	/**
+	 * Converts an object's fields into a map of request parameters. Each field of the object is treated as a parameter,
+	 * with the field name as the key and the field value as the value. This method uses reflection to access the fields of
+	 * the object.
+	 * <p>
+	 * Field values that are {@code null} are not included in the resulting map.
+	 *
+	 * @param queryParams the object to convert
+	 * @param nameConverter a converter to transform field names of the object into parameter names
+	 * @return a map representation of the object's fields
+	 */
+	protected static Map<String, List<String>> fromObject(final Object queryParams, final SimpleConverter<String, String> nameConverter) {
+		List<ExtendedField> fields = ConversionStrategy.findFields(queryParams,
+				field -> null != field.getFieldValue());
+
+		Map<String, List<String>> paramMap = new LinkedHashMap<>(fields.size());
+		if (Lists.isEmpty(fields)) {
+			return paramMap;
+		}
+		for (ExtendedField extendedField : fields) {
+			List<String> paramValues = RequestParameter.toValues(extendedField.getFieldValue());
+			if (Lists.isEmpty(paramValues)) {
+				continue;
+			}
+			String paramName = nameConverter.convert(extendedField.getName());
+
+			QueryParam annotation = getAnnotation(extendedField, QueryParam.class);
+			MultiValueStrategy strategy = MultiValueStrategy.from(annotation);
+			ParameterFunction parameter = strategy.apply(paramName, paramValues);
+			parameter.putInto(paramMap);
+		}
+		return paramMap;
+	}
+
+	/**
+	 * Retrieves the annotation from the given {@link ExtendedField}, if present. The method checks both the field and its
+	 * getter method for the annotation, giving precedence to the field annotation if both are present.
+	 * <p>
+	 * TODO: move this method to ExtendedField and make it more generic to retrieve any annotation.
+	 *
+	 * @param <T> the type of the annotation to retrieve
+	 *
+	 * @param extendedField the {@link ExtendedField} to check for the annotation
+	 * @param annotationClass the class of the annotation to retrieve
+	 * @return the {@link QueryParam} annotation if present, or {@code null} if not found
+	 */
+	private static <T extends Annotation> T getAnnotation(final ExtendedField extendedField, final Class<T> annotationClass) {
+		Function<AnnotatedElement, T> getAnnotation = annotated -> annotated.getAnnotation(annotationClass);
+		T annotation = Nullables.apply(extendedField.getField(), getAnnotation);
+		if (null != annotation) {
+			return annotation;
+		}
+		return Nullables.apply(extendedField.getGetterMethod(), getAnnotation);
 	}
 
 	/**

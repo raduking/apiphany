@@ -1,9 +1,8 @@
 package org.apiphany;
 
 import java.net.URI;
-import java.net.URLEncoder;
 import java.nio.charset.Charset;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -15,10 +14,12 @@ import org.apiphany.client.http.HttpClientFluentAdapter;
 import org.apiphany.header.Header;
 import org.apiphany.header.HeaderFunction;
 import org.apiphany.header.Headers;
+import org.apiphany.http.URIEncoder;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Maps;
 import org.apiphany.lang.retry.Retry;
 import org.apiphany.meters.BasicMeters;
+import org.apiphany.openapi.MultiValueStrategy;
 import org.apiphany.security.AuthenticationType;
 import org.morphix.convert.function.SimpleConverter;
 import org.morphix.lang.JavaObjects;
@@ -95,7 +96,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 */
 	public <T> ApiResponse<T> retrieve() {
 		if (isUrlEncoded()) {
-			this.params = RequestParameters.encode(this.params, getCharset());
+			this.params = RequestParameters.encode(params, getCharset());
 		}
 		return JavaObjects.cast(apiClient.exchange(this));
 	}
@@ -177,7 +178,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 			if (Strings.isEmpty(sanitized)) {
 				continue;
 			}
-			String segment = isUrlEncoded() ? URLEncoder.encode(sanitized, charset) : sanitized;
+			String segment = isUrlEncoded() ? URIEncoder.encodePath(sanitized, charset) : sanitized;
 			sb.append('/').append(segment);
 		}
 		return url(sb.toString());
@@ -321,12 +322,14 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @param requestParams request parameters
 	 * @return this
 	 */
-	public ApiClientFluentAdapter params(final Map<String, String> requestParams) {
+	public ApiClientFluentAdapter params(final Map<String, List<String>> requestParams) {
 		Objects.requireNonNull(getUrl(), "Request parameters must be set after URL/URI");
 		if (null == params) {
-			this.params = new HashMap<>();
+			this.params = new LinkedHashMap<>();
 		}
-		this.params.putAll(Maps.safe(requestParams));
+		for (Map.Entry<String, List<String>> entry : Maps.safe(requestParams).entrySet()) {
+			ParameterFunction.insertInto(params, entry.getKey(), entry.getValue());
+		}
 		return this;
 	}
 
@@ -353,10 +356,12 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	/**
 	 * Adds the request parameters from the given object.
 	 *
+	 * @param <T> request parameters object type
+	 *
 	 * @param queryParams request parameters object
 	 * @return this
 	 */
-	public ApiClientFluentAdapter params(final Object queryParams) {
+	public <T> ApiClientFluentAdapter params(final T queryParams) {
 		return params(RequestParameters.from(queryParams));
 	}
 
@@ -383,6 +388,36 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 */
 	public <N, V> ApiClientFluentAdapter param(final N name, final V value) {
 		return params(Parameter.of(name, value));
+	}
+
+	/**
+	 * Adds a request parameter with multiple values. The values will be encoded using the {@link MultiValueStrategy#MULTI}
+	 * strategy.
+	 *
+	 * @param <N> parameter name type
+	 * @param <U> parameter value type
+	 *
+	 * @param name parameter name
+	 * @param values parameter values
+	 * @return this
+	 */
+	public <N, U> ApiClientFluentAdapter param(final N name, final List<U> values) {
+		return param(name, values, MultiValueStrategy.MULTI);
+	}
+
+	/**
+	 * Adds a request parameter with multiple values.
+	 *
+	 * @param <N> parameter name type
+	 * @param <U> parameter value type
+	 *
+	 * @param name parameter name
+	 * @param values parameter values
+	 * @param multiValueStrategy multi-value encoding strategy
+	 * @return this
+	 */
+	public <N, U> ApiClientFluentAdapter param(final N name, final List<U> values, final MultiValueStrategy multiValueStrategy) {
+		return params(Parameter.of(name, values, multiValueStrategy));
 	}
 
 	/**
@@ -642,5 +677,4 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	public HttpClientFluentAdapter http() {
 		return HttpClientFluentAdapter.of(this);
 	}
-
 }

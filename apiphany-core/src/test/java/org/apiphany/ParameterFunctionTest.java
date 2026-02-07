@@ -10,12 +10,16 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.apiphany.openapi.MultiValueStrategy;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -35,29 +39,103 @@ class ParameterFunctionTest {
 	void shouldAddParametersToAMapWithConsumerAPI() {
 		ParameterFunction param = parameter(PARAM_1, STRING_INTEGER_VALUE);
 
-		Map<String, String> params = new HashMap<>();
+		Map<String, List<String>> params = new HashMap<>();
 		param.accept(params);
 
 		assertThat(params.entrySet(), hasSize(1));
-		assertThat(params.get(PARAM_1), equalTo(STRING_INTEGER_VALUE));
+		assertThat(params.get(PARAM_1), equalTo(List.of(STRING_INTEGER_VALUE)));
 	}
 
 	@Test
 	void shouldAddNonStringParameterByConvertingItToString() {
-		Map<String, String> params = RequestParameters.of(
+		Map<String, List<String>> params = RequestParameters.of(
 				parameter(PARAM_1, INTEGER_VALUE));
 
 		assertThat(params.entrySet(), hasSize(1));
-		assertThat(params.get(PARAM_1), equalTo(STRING_INTEGER_VALUE));
+		assertThat(params.get(PARAM_1), equalTo(List.of(STRING_INTEGER_VALUE)));
+	}
+
+	@Test
+	void shouldAddCollectionParameterByConvertingElementsToString() {
+		Collection<?> collection = List.of(INTEGER_VALUE, TEST_INT_42);
+		Map<String, List<String>> params = RequestParameters.of(
+				parameter(PARAM_1, collection));
+
+		assertThat(params.entrySet(), hasSize(1));
+		assertThat(params.get(PARAM_1), equalTo(List.of(STRING_INTEGER_VALUE, String.valueOf(TEST_INT_42))));
+	}
+
+	@Test
+	void shouldAddArrayParameterByConvertingElementsToString() {
+		Integer[] array = new Integer[] { INTEGER_VALUE, TEST_INT_42 };
+		Map<String, List<String>> params = RequestParameters.of(
+				parameter(PARAM_1, array));
+
+		assertThat(params.entrySet(), hasSize(1));
+		assertThat(params.get(PARAM_1), equalTo(List.of(STRING_INTEGER_VALUE, String.valueOf(TEST_INT_42))));
+	}
+
+	@Test
+	void shouldAddIterableParameterByConvertingElementsToString() {
+		Iterable<?> iterable = new SomeIterable(INTEGER_VALUE, TEST_INT_42);
+		Map<String, List<String>> params = RequestParameters.of(
+				parameter(PARAM_1, iterable));
+
+		assertThat(params.entrySet(), hasSize(1));
+		assertThat(params.get(PARAM_1), equalTo(List.of(STRING_INTEGER_VALUE, String.valueOf(TEST_INT_42))));
+	}
+
+	@Test
+	void shouldNotAddCollectionParameterIfItHasNoElements() {
+		Collection<?> collection = List.of();
+		Map<String, List<String>> params = RequestParameters.of(
+				parameter(PARAM_1, collection));
+
+		assertThat(params.entrySet(), hasSize(0));
+	}
+
+	@Test
+	void shouldNotAddNullParameter() {
+		Map<String, List<String>> params = RequestParameters.of(
+				parameter(PARAM_1, (Object) null));
+
+		assertThat(params.entrySet(), hasSize(0));
+	}
+
+	@Test
+	void shouldNotAddNullSuppliedParameter() {
+		Map<String, List<String>> params = RequestParameters.of(
+				parameter(PARAM_1, () -> null));
+
+		assertThat(params.entrySet(), hasSize(0));
+	}
+
+	@Test
+	void shouldAddParameterTransformedWithCSVStrategy() {
+		Map<String, List<String>> params = RequestParameters.of(
+				parameter(PARAM_1, List.of(INTEGER_VALUE, TEST_INT_42), MultiValueStrategy.CSV));
+
+		String expectedValue = String.join(",", String.valueOf(INTEGER_VALUE), String.valueOf(TEST_INT_42));
+
+		assertThat(params.entrySet(), hasSize(1));
+		assertThat(params.get(PARAM_1), equalTo(List.of(expectedValue)));
+	}
+
+	@Test
+	void shouldNotAddMultiParameterWhenCollectionIsEmpty() {
+		Map<String, List<String>> params = RequestParameters.of(
+				parameter(PARAM_1, List.of(), MultiValueStrategy.CSV));
+
+		assertThat(params.entrySet(), hasSize(0));
 	}
 
 	@Test
 	void shouldAddNonStringSuppliedParameterByConvertingItToString() {
-		Map<String, String> params = RequestParameters.of(
+		Map<String, List<String>> params = RequestParameters.of(
 				parameter(PARAM_1, () -> INTEGER_VALUE));
 
 		assertThat(params.entrySet(), hasSize(1));
-		assertThat(params.get(PARAM_1), equalTo(STRING_INTEGER_VALUE));
+		assertThat(params.get(PARAM_1), equalTo(List.of(STRING_INTEGER_VALUE)));
 	}
 
 	static class A {
@@ -76,42 +154,42 @@ class ParameterFunctionTest {
 
 	@Test
 	void shouldAddNonStringSuppliedNonStringParameterByConvertingItToString() {
-		Map<String, String> params = RequestParameters.of(
+		Map<String, List<String>> params = RequestParameters.of(
 				parameter(new A(PARAM_1), () -> INTEGER_VALUE));
 
 		assertThat(params.entrySet(), hasSize(1));
-		assertThat(params.get(PARAM_1), equalTo(STRING_INTEGER_VALUE));
+		assertThat(params.get(PARAM_1), equalTo(List.of(STRING_INTEGER_VALUE)));
 	}
 
 	@Test
 	void shouldAddNonStringSuppliedNonStringSuppliedParameterByConvertingItToString() {
-		Map<String, String> params = RequestParameters.of(
+		Map<String, List<String>> params = RequestParameters.of(
 				parameter(() -> new A(PARAM_1), () -> INTEGER_VALUE));
 
 		assertThat(params.entrySet(), hasSize(1));
-		assertThat(params.get(PARAM_1), equalTo(STRING_INTEGER_VALUE));
+		assertThat(params.get(PARAM_1), equalTo(List.of(STRING_INTEGER_VALUE)));
 	}
 
 	@Test
 	void shouldAddAFilterParameter() {
 		Filter filter = Filter.of("x", "==", "y");
 
-		Map<String, String> params = RequestParameters.of(
+		Map<String, List<String>> params = RequestParameters.of(
 				parameter(filter));
 
 		assertThat(params.entrySet(), hasSize(1));
-		assertThat(params.get(Filter.NAME), equalTo(filter.getValue()));
+		assertThat(params.get(Filter.NAME), equalTo(List.of(filter.getValue())));
 	}
 
 	@Test
 	void shouldAddFilterParameterWithValues() {
 		Filter filter = Filter.of("x", "==", "y");
 
-		Map<String, String> params = RequestParameters.of(
+		Map<String, List<String>> params = RequestParameters.of(
 				parameter(Filter.NAME, filter.getValue()));
 
 		assertThat(params.entrySet(), hasSize(1));
-		assertThat(params.get(Filter.NAME), equalTo(filter.getValue()));
+		assertThat(params.get(Filter.NAME), equalTo(List.of(filter.getValue())));
 	}
 
 	static class Parameter implements ParameterFunction {
@@ -125,8 +203,8 @@ class ParameterFunctionTest {
 		}
 
 		@Override
-		public void putInto(final Map<String, String> map) {
-			map.put(name, value);
+		public void putInto(final Map<String, List<String>> map) {
+			map.computeIfAbsent(name, key -> new ArrayList<>()).add(value);
 		}
 	}
 
@@ -134,29 +212,29 @@ class ParameterFunctionTest {
 	void shouldAddAParameterFunctionParameter() {
 		Parameter param = new Parameter(PARAM_1, STRING_INTEGER_VALUE);
 
-		Map<String, String> params = RequestParameters.of(
+		Map<String, List<String>> params = RequestParameters.of(
 				parameter(param));
 
 		assertThat(params.entrySet(), hasSize(1));
-		assertThat(params.get(PARAM_1), equalTo(STRING_INTEGER_VALUE));
+		assertThat(params.get(PARAM_1), equalTo(List.of(STRING_INTEGER_VALUE)));
 	}
 
 	@Test
 	void shouldAddStringListParameter() {
 		List<String> list = List.of("v1", "v2");
 
-		Map<String, String> params = RequestParameters.of(
+		Map<String, List<String>> params = RequestParameters.of(
 				parameter(PARAM_1, list));
 
 		assertThat(params.entrySet(), hasSize(1));
-		assertThat(params.get(PARAM_1), equalTo(String.join(",", list)));
+		assertThat(params.get(PARAM_1), equalTo(list));
 	}
 
 	@Test
 	void shouldNotAddStringListParameterIfListIsEmpty() {
 		List<String> list = Collections.emptyList();
 
-		Map<String, String> params = RequestParameters.of(
+		Map<String, List<String>> params = RequestParameters.of(
 				parameter(PARAM_1, list));
 
 		assertThat(params.entrySet(), hasSize(0));
@@ -166,7 +244,7 @@ class ParameterFunctionTest {
 	void shouldNotAddStringListParameterIfListIsNull() {
 		List<String> list = null;
 
-		Map<String, String> params = RequestParameters.of(
+		Map<String, List<String>> params = RequestParameters.of(
 				parameter(PARAM_1, list));
 
 		assertThat(params.entrySet(), hasSize(0));
@@ -176,47 +254,57 @@ class ParameterFunctionTest {
 	void shouldAddListParameterByConvertingEachParameterToString() {
 		List<Integer> list = List.of(INTEGER_VALUE, TEST_INT_42);
 
-		Map<String, String> params = RequestParameters.of(
+		Map<String, List<String>> params = RequestParameters.of(
 				ParameterFunction.<String, Integer>parameter(PARAM_1, list));
 
-		assertThat(params.get(PARAM_1), equalTo(String.join(",", list.stream().map(String::valueOf).toList())));
+		assertThat(params.get(PARAM_1), equalTo(list.stream().map(String::valueOf).toList()));
+	}
+
+	@Test
+	void shouldAddListParameterByConvertingEachParameterToStringAndUsingMultiStrategy() {
+		List<Integer> list = List.of(INTEGER_VALUE, TEST_INT_42);
+
+		Map<String, List<String>> params = RequestParameters.of(
+				ParameterFunction.<String, Integer>parameter(PARAM_1, list));
+
+		assertThat(params.get(PARAM_1), equalTo(list.stream().map(String::valueOf).toList()));
 	}
 
 	@Test
 	void shouldPutAllValuesFromAMap() {
-		Map<String, String> map = Map.of(PARAM_1, STRING_INTEGER_VALUE);
+		Map<String, List<String>> map = Map.of(PARAM_1, List.of(STRING_INTEGER_VALUE));
 
-		Map<String, String> params = RequestParameters.of(
+		Map<String, List<String>> params = RequestParameters.of(
 				parameters(map));
 
 		assertThat(params.entrySet(), hasSize(1));
-		assertThat(params.get(PARAM_1), equalTo(STRING_INTEGER_VALUE));
+		assertThat(params.get(PARAM_1), equalTo(List.of(STRING_INTEGER_VALUE)));
 	}
 
 	@Test
-	void shouldOverwriteExistingParametersFromAMap() {
-		Map<String, String> map = Map.of(PARAM_1, STRING_INTEGER_VALUE);
+	void shouldAddToExistingParametersFromAMap() {
+		Map<String, List<String>> map = Map.of(PARAM_1, List.of(STRING_INTEGER_VALUE));
 
-		Map<String, String> params = RequestParameters.of(
+		Map<String, List<String>> params = RequestParameters.of(
 				parameter(PARAM_1, TEST_INT_42),
 				parameters(map));
 
 		assertThat(params.entrySet(), hasSize(1));
-		assertThat(params.get(PARAM_1), equalTo(STRING_INTEGER_VALUE));
+		assertThat(params.get(PARAM_1), equalTo(List.of(String.valueOf(TEST_INT_42), STRING_INTEGER_VALUE)));
 	}
 
 	@Test
 	void shouldNotModifyExistingParametersWhenAddingNone() {
-		Map<String, String> params = RequestParameters.of(
+		Map<String, List<String>> params = RequestParameters.of(
 				parameter(PARAM_1, STRING_INTEGER_VALUE),
-				ParameterFunction.none());
+				ParameterFunction.ignored());
 
 		assertThat(params.entrySet(), hasSize(1));
-		assertThat(params.get(PARAM_1), equalTo(STRING_INTEGER_VALUE));
+		assertThat(params.get(PARAM_1), equalTo(List.of(STRING_INTEGER_VALUE)));
 
 		@SuppressWarnings("unchecked")
-		Map<String, String> mockMap = mock(Map.class);
-		ParameterFunction.none().putInto(mockMap);
+		Map<String, List<String>> mockMap = mock(Map.class);
+		ParameterFunction.ignored().putInto(mockMap);
 
 		verifyNoInteractions(mockMap);
 	}
@@ -226,7 +314,7 @@ class ParameterFunctionTest {
 		ParameterFunction parameterFunction = parameters((ParameterFunction[]) null);
 
 		@SuppressWarnings("unchecked")
-		Map<String, String> mockMap = mock(Map.class);
+		Map<String, List<String>> mockMap = mock(Map.class);
 		parameterFunction.putInto(mockMap);
 
 		verifyNoInteractions(mockMap);
@@ -238,7 +326,7 @@ class ParameterFunctionTest {
 		ParameterFunction parameterFunction = when(false, param);
 
 		@SuppressWarnings("unchecked")
-		Map<String, String> mockMap = mock(Map.class);
+		Map<String, List<String>> mockMap = mock(Map.class);
 		parameterFunction.putInto(mockMap);
 
 		verifyNoInteractions(mockMap);
@@ -250,7 +338,7 @@ class ParameterFunctionTest {
 		ParameterFunction parameterFunction = withNonNull(null, param);
 
 		@SuppressWarnings("unchecked")
-		Map<String, String> mockMap = mock(Map.class);
+		Map<String, List<String>> mockMap = mock(Map.class);
 		parameterFunction.putInto(mockMap);
 
 		verifyNoInteractions(mockMap);
@@ -261,11 +349,11 @@ class ParameterFunctionTest {
 		Parameter param = new Parameter(PARAM_1, STRING_INTEGER_VALUE);
 		ParameterFunction parameterFunction = withNonNull(INTEGER_VALUE, param);
 
-		Map<String, String> map = new HashMap<>();
+		Map<String, List<String>> map = new HashMap<>();
 		parameterFunction.putInto(map);
 
 		assertThat(map.entrySet(), hasSize(1));
-		assertThat(map.get(PARAM_1), equalTo(STRING_INTEGER_VALUE));
+		assertThat(map.get(PARAM_1), equalTo(List.of(STRING_INTEGER_VALUE)));
 	}
 
 	@Test
@@ -274,9 +362,27 @@ class ParameterFunctionTest {
 		ParameterFunction parameterFunction = when(null, Objects::nonNull, param);
 
 		@SuppressWarnings("unchecked")
-		Map<String, String> mockMap = mock(Map.class);
+		Map<String, List<String>> mockMap = mock(Map.class);
 		parameterFunction.putInto(mockMap);
 
 		verifyNoInteractions(mockMap);
+	}
+
+	static class SomeIterable implements Iterable<Object> {
+
+		private final List<Object> values;
+
+		public SomeIterable(final Object... values) {
+			this.values = List.of(values);
+		}
+
+		public SomeIterable(final List<Object> values) {
+			this.values = values;
+		}
+
+		@Override
+		public Iterator<Object> iterator() {
+			return values.iterator();
+		}
 	}
 }

@@ -1,5 +1,19 @@
 ## Release Notes
 
+`1.1.4`
+
+- Changed all request parameters to be `Map<String, List<String>>` instead of `Map<String, String>` to better accommodate HTTP specification.
+- Renamed `RequestParameter.value` to `RequestParameter.toValues` to better emphasize what it does.
+- Added `URIEncoder` class to be able to encode paths, query parameter names, query parameter values separately.
+- Added `MultiValueStrategy` enumeration which describes how multi-value request parameters should be encoded.
+- Changed all request parameters from `HashMap` to `LinkedHashMap` because order can matter.
+- Added `ApiClientFluentAdapter.param(Object, List, MultiValueStrategy)` method to specify the way the parameter should be encoded.
+- Added `ParameterFunction.parameter(Object, List, MultiValueStrategy)` method to specify the way the parameter should be encoded.
+- Added `Parameter.of(Object, List, MultiValueStrategy)` method to specify the way the parameter should be encoded.
+- Renamed `ParameterFunction.none` to `ParameterFunction.ignored` to emphasize that parameter will be ignored.
+
+---
+
 `1.1.3`
 
 - Added support for multiple exchange client builders to be configured when extending `ApiClient`.

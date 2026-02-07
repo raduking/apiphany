@@ -185,7 +185,7 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 	 * @return the authentication token with `client_secret_basic` method
 	 */
 	private AuthenticationToken getTokenWithClientSecretBasic() {
-		Map<String, String> params = RequestParameters.of(
+		var params = RequestParameters.of(
 				parameter(OAuth2Parameter.GRANT_TYPE, clientRegistration.getAuthorizationGrantType()),
 				parameter(OAuth2Parameter.EXPIRES_IN, OAuth2Parameter.Default.EXPIRES_IN.toSeconds()));
 
@@ -206,7 +206,7 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 	 * @return the authentication token with `client_secret_post` method
 	 */
 	private AuthenticationToken getTokenWithClientSecretPost() {
-		Map<String, String> params = RequestParameters.of(
+		var params = RequestParameters.of(
 				parameter(OAuth2Parameter.GRANT_TYPE, clientRegistration.getAuthorizationGrantType()),
 				parameter(OAuth2Parameter.EXPIRES_IN, OAuth2Parameter.Default.EXPIRES_IN.toSeconds()),
 				parameter(OAuth2Parameter.CLIENT_ID, clientRegistration.getClientId()),
@@ -233,7 +233,7 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 				providerDetails.getTokenUri(),
 				clientRegistration.getClientSecret());
 
-		Map<String, String> params = RequestParameters.of(
+		var params = RequestParameters.of(
 				parameter(OAuth2Parameter.GRANT_TYPE, clientRegistration.getAuthorizationGrantType()),
 				parameter(OAuth2Parameter.CLIENT_ASSERTION_TYPE, "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"),
 				parameter(OAuth2Parameter.CLIENT_ASSERTION, clientAssertion),
@@ -262,7 +262,7 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 				privateKey,
 				signingAlgorithm);
 
-		Map<String, String> params = RequestParameters.of(
+		var params = RequestParameters.of(
 				parameter(OAuth2Parameter.GRANT_TYPE, clientRegistration.getAuthorizationGrantType()),
 				parameter(OAuth2Parameter.CLIENT_ASSERTION_TYPE, "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"),
 				parameter(OAuth2Parameter.CLIENT_ASSERTION, clientAssertion),
