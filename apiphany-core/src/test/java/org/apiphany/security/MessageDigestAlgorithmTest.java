@@ -106,4 +106,41 @@ class MessageDigestAlgorithmTest {
 
 		assertThat(e.getMessage(), equalTo("Unsupported digest algorithm: " + mda));
 	}
+
+	@ParameterizedTest
+	@EnumSource(names = { "SHA1", "SHA256", "SHA384", "SHA512" })
+	void shouldReturnSanitizedValueValidAlgorithm(final MessageDigestAlgorithm mda) {
+		MessageDigestAlgorithm sanitized = switch (mda) {
+			case SHA1 -> MessageDigestAlgorithm.SHA256;
+			default -> mda;
+		};
+
+		assertThat(mda.sanitizedValue(), equalTo(sanitized.value()));
+	}
+
+	@ParameterizedTest
+	@EnumSource(names = { "SHA1", "SHA256", "SHA384", "SHA512" })
+	void shouldDigestWithSanitizedValue(final MessageDigestAlgorithm mda) throws NoSuchAlgorithmException {
+		MessageDigestAlgorithm sanitized = switch (mda) {
+			case SHA1 -> MessageDigestAlgorithm.SHA256;
+			default -> mda;
+		};
+
+		byte[] bytes = MESSAGE.getBytes(StandardCharsets.UTF_8);
+
+		MessageDigest md = MessageDigest.getInstance(sanitized.value());
+		byte[] expected = md.digest(bytes);
+
+		byte[] result = mda.sanitizedDigest(bytes);
+
+		assertThat(result, equalTo(expected));
+	}
+
+	@ParameterizedTest
+	@EnumSource(names = { "GOST3411", "GOST3411_2012_256", "GOST3411_2012_512", "SM3" })
+	void shouldReturnHmacAlgorithmNameForGOSTAndSM3(final MessageDigestAlgorithm mda) {
+		String expected = "Hmac" + mda.value();
+
+		assertThat(mda.hmacAlgorithmName(), equalTo(expected));
+	}
 }
