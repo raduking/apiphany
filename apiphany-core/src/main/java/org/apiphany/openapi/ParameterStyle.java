@@ -15,8 +15,8 @@ package org.apiphany.openapi;
  * <p>
  * Official OpenAPI style values (lower-case):
  * <ul>
- * <li>{@code form} — default for query & cookie</li>
- * <li>{@code simple} — default for path & header</li>
+ * <li>{@code form} — default for query and cookie</li>
+ * <li>{@code simple} — default for path and header</li>
  * <li>{@code matrix}</li>
  * <li>{@code spaceDelimited}</li>
  * <li>{@code pipeDelimited}</li>
@@ -33,8 +33,20 @@ public enum ParameterStyle {
 	/**
 	 * Form-style query expansion — ampersand-separated (default for <b>query</b> and <b>cookie</b>).
 	 * <ul>
-	 * <li>explode = true (default): <code>color=red&color=green&color=blue</code></li>
-	 * <li>explode = false: <code>color=red,green,blue</code></li>
+	 * <li>explode = true (default):
+	 *
+	 * <pre>
+	 * color=red&amp;color=green&amp;color=blue
+	 * </pre>
+	 *
+	 * </li>
+	 * <li>explode = false:
+	 *
+	 * <pre>
+	 * color=red,green,blue
+	 * </pre>
+	 *
+	 * </li>
 	 * </ul>
 	 */
 	FORM,
@@ -42,7 +54,17 @@ public enum ParameterStyle {
 	/**
 	 * Comma-separated values without any prefix (default for <b>path</b> and <b>header</b> parameters).
 	 * <p>
-	 * Example (array): <code>/users/1,2,3</code> or <code>Accept: text/csv</code>
+	 * Example (array):
+	 *
+	 * <pre>
+	 * /users/1,2,3
+	 * </pre>
+	 *
+	 * or
+	 *
+	 * <pre>
+	 * Accept: text/csv
+	 * </pre>
 	 * <p>
 	 * Also used for exploded objects in some cases.
 	 */
@@ -51,14 +73,24 @@ public enum ParameterStyle {
 	/**
 	 * Space-separated array values (only for <b>query</b> parameters, usually with explode = false).
 	 * <p>
-	 * Example: <code>color=red%20green%20blue</code> (note: spaces are %-encoded)
+	 * Example:
+	 *
+	 * <pre>
+	 * color=red%20green%20blue
+	 * </pre>
+	 *
+	 * (note: spaces are %-encoded)
 	 */
 	SPACE_DELIMITED,
 
 	/**
 	 * Pipe-separated array values (only for <b>query</b> parameters, usually with explode = false).
 	 * <p>
-	 * Example: <code>color=red|green|blue</code>
+	 * Example:
+	 *
+	 * <pre>
+	 * color = red | green | blue
+	 * </pre>
 	 */
 	PIPE_DELIMITED,
 
@@ -67,8 +99,20 @@ public enum ParameterStyle {
 	 * <p>
 	 * Examples:
 	 * <ul>
-	 * <li>explode = false: <code>/map/point;x=50;y=20</code></li>
-	 * <li>explode = true: <code>/map/point;x=50;y=20</code> (same in most cases)</li>
+	 * <li>explode = false:
+	 *
+	 * <pre>
+	 * /map/point;x=50;y=20
+	 * </pre>
+	 *
+	 * </li>
+	 * <li>explode = true:
+	 *
+	 * <pre>
+	 * /map/point;x=50;y=20
+	 * </pre>
+	 *
+	 * (same in most cases)</li>
 	 * </ul>
 	 */
 	MATRIX,
@@ -78,7 +122,11 @@ public enum ParameterStyle {
 	 * <p>
 	 * Mainly for <b>query</b> parameters representing objects.
 	 * <p>
-	 * Example: <code>point[x]=50&point[y]=20</code>
+	 * Example:
+	 *
+	 * <pre>
+	 * point[x]=50&amp;point[y]=20
+	 * </pre>
 	 * <p>
 	 * Note: behavior for deeply nested objects or arrays is often undefined / implementation-specific.
 	 */
