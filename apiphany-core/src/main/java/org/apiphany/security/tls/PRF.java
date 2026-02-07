@@ -19,7 +19,7 @@ public interface PRF {
 
 	/**
 	 * Returns the PRF algorithm name for the given message digest algorithm (for TLS 1.2 it can only be HMAC-SHA256 or
-	 * HMAC-SHA384, if it is not one of those it defaults to HMACSHA256).
+	 * HMAC-SHA384, if it is not one of those it defaults to HMAC-SHA256).
 	 * <p>
 	 * TODO: Extend this method to support TLS 1.3 PRF algorithms as well.
 	 *

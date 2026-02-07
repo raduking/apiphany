@@ -49,17 +49,6 @@ public enum ParameterStyle {
 	SIMPLE,
 
 	/**
-	 * Path-style / matrix parameters — semicolon-prefixed (mainly for <b>path</b> parameters).
-	 * <p>
-	 * Examples:
-	 * <ul>
-	 * <li>explode = false: <code>/map/point;x=50;y=20</code></li>
-	 * <li>explode = true: <code>/map/point;x=50;y=20</code> (same in most cases)</li>
-	 * </ul>
-	 */
-	MATRIX,
-
-	/**
 	 * Space-separated array values (only for <b>query</b> parameters, usually with explode = false).
 	 * <p>
 	 * Example: <code>color=red%20green%20blue</code> (note: spaces are %-encoded)
@@ -72,6 +61,17 @@ public enum ParameterStyle {
 	 * Example: <code>color=red|green|blue</code>
 	 */
 	PIPE_DELIMITED,
+
+	/**
+	 * Path-style / matrix parameters — semicolon-prefixed (mainly for <b>path</b> parameters).
+	 * <p>
+	 * Examples:
+	 * <ul>
+	 * <li>explode = false: <code>/map/point;x=50;y=20</code></li>
+	 * <li>explode = true: <code>/map/point;x=50;y=20</code> (same in most cases)</li>
+	 * </ul>
+	 */
+	MATRIX,
 
 	/**
 	 * Deep object notation — renders object properties as separate parameters with property names in brackets.
