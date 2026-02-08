@@ -11,6 +11,7 @@ import org.apiphany.ApiClient;
 import org.apiphany.client.ContentConverter;
 import org.apiphany.client.ExchangeClientBuilder;
 import org.apiphany.client.http.JavaNetHttpExchangeClient;
+import org.apiphany.client.http.StringHttpContentConverter;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -29,7 +30,7 @@ class ApiClientNoJsonLibraryTest {
 		}
 
 		assertThat(converters, hasSize(1));
-		assertThat(converters.getFirst(), is(instanceOf(ContentConverter.class)));
+		assertThat(converters.getFirst(), is(instanceOf(StringHttpContentConverter.class)));
 	}
 
 	@Test
@@ -41,7 +42,7 @@ class ApiClientNoJsonLibraryTest {
 		}
 
 		assertThat(converters, hasSize(1));
-		assertThat(converters.getFirst(), is(instanceOf(ContentConverter.class)));
+		assertThat(converters.getFirst(), is(instanceOf(StringHttpContentConverter.class)));
 	}
 
 	static class TestClient extends ApiClient {
