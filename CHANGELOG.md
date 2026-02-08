@@ -5,12 +5,16 @@
 - Changed all request parameters to be `Map<String, List<String>>` instead of `Map<String, String>` to better accommodate HTTP specification.
 - Renamed `RequestParameter.value` to `RequestParameter.toValues` to better emphasize what it does.
 - Added `URIEncoder` class to be able to encode paths, query parameter names, query parameter values separately.
-- Added `MultiValueStrategy` enumeration which describes how multi-value request parameters should be encoded.
 - Changed all request parameters from `HashMap` to `LinkedHashMap` because order can matter.
 - Added `ApiClientFluentAdapter.param(Object, List, MultiValueStrategy)` method to specify the way the parameter should be encoded.
 - Added `ParameterFunction.parameter(Object, List, MultiValueStrategy)` method to specify the way the parameter should be encoded.
 - Added `Parameter.of(Object, List, MultiValueStrategy)` method to specify the way the parameter should be encoded.
 - Renamed `ParameterFunction.none` to `ParameterFunction.ignored` to emphasize that parameter will be ignored.
+- Added `openapi` package for OpenAPI specific functionality.
+- Added `MultiValueStrategy` enumeration which describes how multi-value request parameters should be encoded.
+- Added `ParameterStyle` enum for the style field of a Parameter Object as defined in the OpenAPI Specification.
+- Added `ParameterMode` enum for the mode of the Parameter Object which can be `EXPLODE` or `JOINED`.
+- Added `QueryParam` annotation to define the way fields behave in query parameter objects.
 
 ---
 
