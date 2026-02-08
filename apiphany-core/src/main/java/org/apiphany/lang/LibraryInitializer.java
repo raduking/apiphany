@@ -33,5 +33,4 @@ public interface LibraryInitializer {
 		}
 		return fallbackSupplier.get();
 	}
-
 }

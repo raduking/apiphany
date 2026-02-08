@@ -71,5 +71,4 @@ public final class Holder<T> {
 	public static <U> Holder<U> of(final U value) {
 		return new Holder<>(value);
 	}
-
 }
