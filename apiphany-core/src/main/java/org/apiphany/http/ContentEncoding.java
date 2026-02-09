@@ -8,6 +8,7 @@ import java.util.function.Supplier;
 import org.apiphany.lang.collections.Lists;
 import org.morphix.lang.Enums;
 import org.morphix.lang.Nullables;
+import org.morphix.lang.function.ToStringFunction;
 
 /**
  * Represents the Content-Encoding HTTP header values. Used to indicate what content encodings have been applied to the
@@ -91,7 +92,7 @@ public enum ContentEncoding {
 	/**
 	 * The name map for easy from string implementation.
 	 */
-	private static final Map<String, ContentEncoding> NAME_MAP = Enums.buildNameMap(values(), encoding -> encoding.toString().toLowerCase());
+	private static final Map<String, ContentEncoding> NAME_MAP = Enums.buildNameMap(values(), ToStringFunction.toLowerCase());
 
 	/**
 	 * Content encoding value.
