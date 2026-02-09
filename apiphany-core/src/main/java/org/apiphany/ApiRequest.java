@@ -242,5 +242,4 @@ public class ApiRequest<T> extends ApiMessage<T> {
 	public AuthenticationType getAuthenticationType() {
 		return authenticationType;
 	}
-
 }

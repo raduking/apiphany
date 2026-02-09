@@ -619,5 +619,4 @@ public record Filter(String value) implements ParameterFunction {
 		 */
 		Filter get(String rv, String lv);
 	}
-
 }

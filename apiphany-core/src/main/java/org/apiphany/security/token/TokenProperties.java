@@ -84,5 +84,4 @@ public class TokenProperties {
 	public void setAuthenticationScheme(final String authenticationScheme) {
 		this.authenticationScheme = authenticationScheme;
 	}
-
 }
