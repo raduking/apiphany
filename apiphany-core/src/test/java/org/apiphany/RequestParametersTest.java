@@ -281,6 +281,72 @@ class RequestParametersTest {
 		assertThat(params.get("numbers"), equalTo(List.of("1", "2", "3")));
 	}
 
+	static class F {
+
+		private List<Integer> numbers;
+
+		public F() {
+			// empty
+		}
+
+		public F(final List<Integer> numbers) {
+			this.numbers = numbers;
+		}
+
+		@QueryParam
+		public List<Integer> getNumbers() {
+			return numbers;
+		}
+
+		public void setNumbers(final List<Integer> numbers) {
+			this.numbers = numbers;
+		}
+	}
+
+	@Test
+	void shouldConvertFromObjectWithCollectionFieldsAnnotatedUsingDefaultMultiOnGetter() {
+		F f = new F();
+		f.setNumbers(List.of(1, 2, 3));
+
+		Map<String, List<String>> params = RequestParameters.from(f);
+
+		assertThat(params.entrySet(), hasSize(1));
+		assertThat(params.get("numbers"), equalTo(List.of("1", "2", "3")));
+	}
+
+	static class G {
+
+		@QueryParam(strategy = "multi")
+		private List<Integer> numbers;
+
+		public G() {
+			// empty
+		}
+
+		public G(final List<Integer> numbers) {
+			this.numbers = numbers;
+		}
+
+		public List<Integer> getNumbers() {
+			return numbers;
+		}
+
+		public void setNumbers(final List<Integer> numbers) {
+			this.numbers = numbers;
+		}
+	}
+
+	@Test
+	void shouldConvertFromObjectWithCollectionFieldsAnnotatedUsingExplicitMulti() {
+		G g = new G();
+		g.setNumbers(List.of(1, 2, 3));
+
+		Map<String, List<String>> params = RequestParameters.from(g);
+
+		assertThat(params.entrySet(), hasSize(1));
+		assertThat(params.get("numbers"), equalTo(List.of("1", "2", "3")));
+	}
+
 	@ParameterizedTest
 	@MethodSource("provideValuesForEmptyMapFromObject")
 	void shouldConvertToEmptyMapFrom(final Object object) {

@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.morphix.lang.Enums;
+import org.morphix.lang.function.ToStringFunction;
 
 /**
  * This enum represents the supported key store types.
@@ -25,7 +26,7 @@ public enum KeyStoreType {
 	/**
 	 * The name map for easy from string implementation.
 	 */
-	private static final Map<String, KeyStoreType> NAME_MAP = Enums.buildNameMap(values(), keyStoreType -> keyStoreType.toString().toUpperCase());
+	private static final Map<String, KeyStoreType> NAME_MAP = Enums.buildNameMap(values(), ToStringFunction.toUpperCase());
 
 	/**
 	 * Key store type as string.
@@ -48,7 +49,7 @@ public enum KeyStoreType {
 	 * @return a key store type enum
 	 */
 	public static KeyStoreType fromString(final String keyStoreType) {
-		return Enums.fromString(Objects.requireNonNull(keyStoreType).toUpperCase(), NAME_MAP, values());
+		return Enums.fromString(Objects.requireNonNull(keyStoreType, "keyStoreType cannot be null").toUpperCase(), NAME_MAP, values());
 	}
 
 	/**
