@@ -15,7 +15,7 @@ import javax.net.ssl.TrustManagerFactory;
 
 import org.apiphany.io.ResourceLocation;
 import org.apiphany.lang.Strings;
-import org.apiphany.lang.collections.JavaArrays;
+import org.morphix.lang.JavaArrays;
 import org.morphix.lang.Nullables;
 import org.morphix.reflection.Constructors;
 import org.slf4j.Logger;

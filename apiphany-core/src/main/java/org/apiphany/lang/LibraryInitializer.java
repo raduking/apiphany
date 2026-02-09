@@ -2,7 +2,7 @@ package org.apiphany.lang;
 
 import java.util.function.Supplier;
 
-import org.apiphany.lang.collections.JavaArrays;
+import org.morphix.lang.JavaArrays;
 import org.morphix.reflection.Constructors;
 
 /**

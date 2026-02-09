@@ -1,10 +1,15 @@
 package org.apiphany.openapi;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apiphany.ParameterFunction;
 import org.apiphany.RequestParameter;
+import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Lists;
+import org.morphix.lang.Enums;
+import org.morphix.lang.function.ToStringFunction;
+import org.morphix.reflection.Constructors;
 
 /**
  * Enumeration representing the different ways of parameter serialization as defined in the OpenAPI Specification.
@@ -18,7 +23,7 @@ public enum MultiValueStrategy {
 	 * example, for a query parameter named {@code "color"} with values {@code "red"}, {@code "green"}, and {@code "blue"},
 	 * the {@code "multi"} style would serialize it as {@code "color=red&color=green&color=blue"}.
 	 */
-	MULTI("multi", "") {
+	MULTI(Value.MULTI, "") {
 
 		@Override
 		public <T, U> ParameterFunction apply(final T name, final List<U> elements) {
@@ -37,25 +42,74 @@ public enum MultiValueStrategy {
 	 * The {@code "csv"} style serializes multiple values as a comma-separated list. For example,
 	 * {@code "color=red,green,blue"}.
 	 */
-	CSV("csv", ","),
+	CSV(Value.CSV, ","),
 
 	/**
 	 * The {@code "ssv"} style serializes multiple values as a space-separated list. For example,
 	 * {@code "color=red green blue"}.
 	 */
-	SSV("ssv", " "),
+	SSV(Value.SSV, " "),
 
 	/**
 	 * The {@code "tsv"} style serializes multiple values as a tab-separated list. For example,
 	 * {@code "color=red\tgreen\tblue"}.
 	 */
-	TSV("tsv", "\t"),
+	TSV(Value.TSV, "\t"),
 
 	/**
 	 * The {@code "pipes"} style serializes multiple values as a pipe-separated list. For example,
 	 * {@code "color=red|green|blue"}.
 	 */
-	PIPES("pipes", "|");
+	PIPES(Value.PIPES, "|");
+
+	/**
+	 * The default multi-value strategy to use when no specific strategy is provided. This defaults to {@link #MULTI} as it
+	 * is the most widely supported and straightforward approach for handling multiple values.
+	 */
+	public static final MultiValueStrategy DEFAULT = MULTI;
+
+	/**
+	 * Name space for the string representations of the multi-value strategies.
+	 */
+	public static class Value {
+
+		/**
+		 * The string representation for the {@code "multi"} style.
+		 */
+		public static final String MULTI = "multi";
+
+		/**
+		 * The string representation for the {@code "csv"} style.
+		 */
+		public static final String CSV = "csv";
+
+		/**
+		 * The string representation for the {@code "ssv"} style.
+		 */
+		public static final String SSV = "ssv";
+
+		/**
+		 * The string representation for the {@code "tsv"} style.
+		 */
+		public static final String TSV = "tsv";
+
+		/**
+		 * The string representation for the {@code "pipes"} style.
+		 */
+		public static final String PIPES = "pipes";
+
+		/**
+		 * Private constructor to prevent instantiation.
+		 */
+		private Value() {
+			throw Constructors.unsupportedOperationException();
+		}
+	}
+
+	/**
+	 * The name map for easy from string implementation.
+	 */
+	private static final Map<String, MultiValueStrategy> NAME_MAP = Enums.buildNameMap(values(), ToStringFunction.toLowerCase());
 
 	/**
 	 * The string representation of the parameter style.
@@ -138,7 +192,11 @@ public enum MultiValueStrategy {
 	 */
 	public static MultiValueStrategy from(final QueryParam queryParam) {
 		if (null == queryParam) {
-			return MULTI;
+			return DEFAULT;
+		}
+		String strategy = queryParam.strategy();
+		if (Strings.isNotBlank(strategy)) {
+			return from(strategy);
 		}
 		return switch (queryParam.style()) {
 			case FORM -> queryParam.mode() == ParameterMode.EXPLODE
@@ -151,5 +209,17 @@ public enum MultiValueStrategy {
 			default -> throw new UnsupportedOperationException(
 					"Unsupported query parameter style: " + queryParam.style());
 		};
+	}
+
+	/**
+	 * Determines the appropriate {@link MultiValueStrategy} based on the provided string representation. The string is
+	 * matched against the known styles in a case-insensitive manner. If the string does not match any known style it
+	 * defaults to {@link #MULTI}.
+	 *
+	 * @param style the string representation of the parameter style
+	 * @return the corresponding {@link MultiValueStrategy}
+	 */
+	public static MultiValueStrategy from(final String style) {
+		return Enums.from(style.toLowerCase(), NAME_MAP, () -> MULTI);
 	}
 }

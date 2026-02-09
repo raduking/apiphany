@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.morphix.lang.Enums;
+import org.morphix.lang.function.ToStringFunction;
 
 /**
  * Represents all standard and widely used HTTP {@code Authorization} header schemes. Includes RFC-defined schemes
@@ -96,7 +97,7 @@ public enum HttpAuthScheme {
 	/**
 	 * The name map for easy from string implementation.
 	 */
-	private static final Map<String, HttpAuthScheme> NAME_MAP = Enums.buildNameMap(values(), scheme -> scheme.toString().toLowerCase());
+	private static final Map<String, HttpAuthScheme> NAME_MAP = Enums.buildNameMap(values(), ToStringFunction.toLowerCase());
 
 	/**
 	 * The scheme string representation.

@@ -15,6 +15,8 @@
 - Added `ParameterStyle` enum for the style field of a Parameter Object as defined in the OpenAPI Specification.
 - Added `ParameterMode` enum for the mode of the Parameter Object which can be `EXPLODE` or `JOINED`.
 - Added `QueryParam` annotation to define the way fields behave in query parameter objects.
+- Upgraded `morphix-all` to `1.0.21`.
+- Removed `JavaArrays` since it's already available in `morphix-all`.
 
 ---
 
@@ -70,6 +72,7 @@
 - Updated `CipherType` to reflect what it uses and what it provides via flags.
 - Moved `MessageDigestAlgorithm.prfHmacAlgorithmName` to `PRF.algorithmName(MessageDigestAlgorithm)` because it is only used for TLS for now.
 - Added missing `ServerFinished` TLS object to be used instead of a too generic `EncryptedHandshake` object.
+- Upgraded `morphix-all` to `1.0.20`.
 
 ---
 

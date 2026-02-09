@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.morphix.lang.Enums;
+import org.morphix.lang.function.ToStringFunction;
 
 /**
  * Standard HTTP headers used for distributed tracing across different frameworks and platforms.
@@ -84,7 +85,7 @@ public enum TracingHeader {
 	/**
 	 * The name map for easy from string implementation.
 	 */
-	private static final Map<String, TracingHeader> NAME_MAP = Enums.buildNameMap(values(), header -> header.toString().toLowerCase());
+	private static final Map<String, TracingHeader> NAME_MAP = Enums.buildNameMap(values(), ToStringFunction.toLowerCase());
 
 	/**
 	 * The string representation of the header.
