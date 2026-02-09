@@ -220,6 +220,6 @@ public enum MultiValueStrategy {
 	 * @return the corresponding {@link MultiValueStrategy}
 	 */
 	public static MultiValueStrategy from(final String style) {
-		return Enums.from(style.toLowerCase(), NAME_MAP, () -> MULTI);
+		return Enums.from(Strings.safe(style).toLowerCase(), NAME_MAP, () -> MULTI);
 	}
 }
