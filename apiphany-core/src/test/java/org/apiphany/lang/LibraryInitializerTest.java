@@ -35,10 +35,10 @@ class LibraryInitializerTest {
 	@SuppressWarnings("unchecked")
 	void shouldReturnInstanceOfFirstPresentLibrary() {
 		LibraryDescriptor<FirstLibraryType> first =
-				LibraryDescriptor.of(true, FirstLibraryType.class);
+				LibraryDescriptor.present(FirstLibraryType.class);
 
 		LibraryDescriptor<SecondLibraryType> second =
-				LibraryDescriptor.of(true, SecondLibraryType.class);
+				LibraryDescriptor.present(SecondLibraryType.class);
 
 		Supplier<DefaultType> fallback = mock(Supplier.class);
 
@@ -52,10 +52,10 @@ class LibraryInitializerTest {
 	@SuppressWarnings("unchecked")
 	void shouldSkipLibrariesThatAreNotPresent() {
 		LibraryDescriptor<FirstLibraryType> notPresent =
-				LibraryDescriptor.of(false, FirstLibraryType.class);
+				LibraryDescriptor.notPresent(FirstLibraryType.class);
 
 		LibraryDescriptor<SecondLibraryType> present =
-				LibraryDescriptor.of(true, SecondLibraryType.class);
+				LibraryDescriptor.present(SecondLibraryType.class);
 
 		Supplier<DefaultType> fallback = mock(Supplier.class);
 
@@ -69,10 +69,10 @@ class LibraryInitializerTest {
 	@SuppressWarnings("unchecked")
 	void shouldReturnFallbackWhenNoLibrariesArePresent() {
 		LibraryDescriptor<FirstLibraryType> first =
-				LibraryDescriptor.of(false, FirstLibraryType.class);
+				LibraryDescriptor.notPresent(FirstLibraryType.class);
 
 		LibraryDescriptor<SecondLibraryType> second =
-				LibraryDescriptor.of(false, SecondLibraryType.class);
+				LibraryDescriptor.notPresent(SecondLibraryType.class);
 
 		DefaultType fallbackInstance = new DefaultType();
 		Supplier<DefaultType> fallback = mock(Supplier.class);

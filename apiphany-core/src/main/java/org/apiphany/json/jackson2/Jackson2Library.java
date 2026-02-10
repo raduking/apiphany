@@ -3,7 +3,6 @@ package org.apiphany.json.jackson2;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.LibraryDescriptor;
 import org.morphix.reflection.Constructors;
-import org.morphix.reflection.Reflection;
 
 /**
  * Utility class for Jackson 2 JSON library related operations.
@@ -26,7 +25,7 @@ public class Jackson2Library {
 	 */
 	public static final LibraryDescriptor<? extends JsonBuilder> DESCRIPTOR =
 			LibraryDescriptor.of(
-					Reflection.isClassPresent(JACKSON_2_OBJECT_MAPPER_CLASS_NAME),
+					JACKSON_2_OBJECT_MAPPER_CLASS_NAME,
 					Jackson2JsonBuilder.class);
 
 	/**
