@@ -3,7 +3,6 @@ package org.apiphany.meters.micrometer;
 import org.apiphany.lang.LibraryDescriptor;
 import org.apiphany.meters.MeterFactory;
 import org.morphix.reflection.Constructors;
-import org.morphix.reflection.Reflection;
 
 /**
  * Utility class for Micrometer library related operations.
@@ -24,11 +23,11 @@ public class MicrometerLibrary {
 	 * A {@link LibraryDescriptor} indicating whether the Micrometer library is present on the classpath, along with the
 	 * {@link MeterFactory} implementation class to use if it is available.
 	 * <p>
-	 * The {@link LibraryDescriptor#isPresent()} value is {@code true} if Micrometer is detected, {@code false} otherwise.
+	 * The {@link LibraryDescriptor#isLibraryPresent()} value is {@code true} if Micrometer is detected, {@code false} otherwise.
 	 */
 	public static final LibraryDescriptor<? extends MeterFactory> DESCRIPTOR =
 			LibraryDescriptor.of(
-					Reflection.isClassPresent(MICROMETER_METER_CLASS_NAME),
+					MICROMETER_METER_CLASS_NAME,
 					MicrometerFactory.class);
 
 	/**

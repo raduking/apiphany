@@ -364,7 +364,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 * @return true if Jackson library is present in the classpath
 	 */
 	public static boolean isJacksonPresent() {
-		return Jackson2Library.DESCRIPTOR.isPresent();
+		return Jackson2Library.DESCRIPTOR.isLibraryPresent();
 	}
 
 	/**

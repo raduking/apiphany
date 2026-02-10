@@ -2,6 +2,11 @@
 
 `1.1.5`
 
+- Added `LibraryDescriptor.of(String, Class)` to initialize a descriptor based on the presence in the classpath of the given class name.
+- Added `LibraryDescriptor.present(Class)` to signal the presence of a library.
+- Added `LibraryDescriptor.notPresent(Class)` to signal the absence of a library.
+- Removed `LibraryDescriptor.of(boolean, Class)` because there are other more appropriate methods now.
+
 ---
 
 `1.1.4`

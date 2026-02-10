@@ -120,7 +120,7 @@ class MeterFactoryTest {
 
 	@Test
 	void shouldReturnNewMeterFactoryInstanceOnInitializeWhenLibraryIsNotAvailable() {
-		MeterFactory meterFactory = MeterFactory.initializeInstance(LibraryDescriptor.of(false, DummyMeterFactory.class));
+		MeterFactory meterFactory = MeterFactory.initializeInstance(LibraryDescriptor.notPresent(DummyMeterFactory.class));
 
 		assertThat(meterFactory.getClass(), equalTo(MeterFactory.class));
 	}
