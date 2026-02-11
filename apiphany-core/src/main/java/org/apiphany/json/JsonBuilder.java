@@ -277,7 +277,15 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 * @return wanted object
 	 */
 	public <T> T fromPropertiesMap(final Map<String, Object> propertiesMap, final Class<T> cls, final Consumer<Exception> onError) {
-		throw jsonLibraryNotFound();
+		if (null == propertiesMap) {
+			return null;
+		}
+		try {
+			return Converter.convert(propertiesMap).to(cls);
+		} catch (Exception e) {
+			onError.accept(e);
+			return null;
+		}
 	}
 
 	/**

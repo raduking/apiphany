@@ -53,7 +53,7 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	 * to see the defaults.
 	 */
 	public JavaNetHttpExchangeClient() {
-		this(null);
+		this(ClientProperties.defaults());
 	}
 
 	/**

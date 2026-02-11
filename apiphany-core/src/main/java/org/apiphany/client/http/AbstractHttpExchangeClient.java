@@ -2,6 +2,7 @@ package org.apiphany.client.http;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 import javax.net.ssl.SSLContext;
 
@@ -59,7 +60,7 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	 */
 	protected AbstractHttpExchangeClient(final ClientProperties clientProperties) {
 		LOGGER.debug("Initializing: {}", getClass().getSimpleName());
-		this.clientProperties = clientProperties;
+		this.clientProperties = Objects.requireNonNull(clientProperties, "clientProperties cannot be null");
 		initialize();
 		addDefaultContentConverters(contentConverters);
 		this.headerValuesChain = addDefaultHeaderValues(new HeaderValues());

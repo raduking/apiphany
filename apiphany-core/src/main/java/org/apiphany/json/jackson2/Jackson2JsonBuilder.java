@@ -13,7 +13,6 @@ import org.apiphany.RequestMethod;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.json.jackson2.serializers.RequestMethodDeserializer;
 import org.apiphany.json.jackson2.serializers.RequestMethodSerializer;
-import org.morphix.lang.JavaObjects;
 import org.morphix.reflection.GenericClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -320,7 +319,7 @@ public final class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleto
 				.setPropertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
 		try {
 			String json = propertiesObjectMapper.writeValueAsString(propertiesMap);
-			return JavaObjects.cast(propertiesObjectMapper.readValue(json, cls));
+			return propertiesObjectMapper.readValue(json, cls);
 		} catch (Exception e) {
 			onError.accept(e);
 			return null;
@@ -383,7 +382,6 @@ public final class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleto
 		return apiphanyModule
 				.addSerializer(RequestMethod.class, new RequestMethodSerializer())
 				.addDeserializer(RequestMethod.class, new RequestMethodDeserializer());
-
 	}
 
 	/**
