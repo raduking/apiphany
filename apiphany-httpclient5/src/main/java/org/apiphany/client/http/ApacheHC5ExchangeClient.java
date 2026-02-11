@@ -71,7 +71,7 @@ public class ApacheHC5ExchangeClient extends AbstractHttpExchangeClient {
 	 * Constructs the exchange client.
 	 */
 	public ApacheHC5ExchangeClient() {
-		this(new ClientProperties());
+		this(ClientProperties.defaults());
 	}
 
 	/**

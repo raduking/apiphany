@@ -13,6 +13,7 @@ import java.util.Objects;
 import org.apiphany.lang.LibraryDescriptor;
 import org.apiphany.lang.Strings;
 import org.junit.jupiter.api.Test;
+import org.morphix.lang.function.Consumers;
 import org.morphix.reflection.Constructors;
 import org.morphix.reflection.GenericClass;
 import org.morphix.reflection.MemberAccessor;
@@ -58,11 +59,10 @@ class JsonBuilderTest {
 	}
 
 	@Test
-	void shouldThrowExceptionOnFromPropertiesMap() {
-		UnsupportedOperationException e = assertThrows(UnsupportedOperationException.class,
-				() -> jsonBuilder.fromPropertiesMap(null, null, null));
+	void shouldReturnNullOnFromPropertiesMapWhenMapIsNull() {
+		Object result = jsonBuilder.fromPropertiesMap(null, null, Consumers.noConsumer());
 
-		assertThat(e.getMessage(), equalTo(JsonBuilder.ErrorMessage.JSON_LIBRARY_NOT_FOUND));
+		assertThat(result, equalTo(null));
 	}
 
 	static class A {

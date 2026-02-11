@@ -55,7 +55,7 @@
 	<properties>
 
 		<!-- Dependencies versions -->
-		<morphix.version>1.0.21</morphix.version>
+		<morphix.version>1.0.22</morphix.version>
 		<micrometer.version>1.15.7</micrometer.version>
 		<jackson2.version>2.19.4</jackson2.version>
 		<slf4j.version>2.0.17</slf4j.version>
@@ -253,7 +253,9 @@
 								<order>java,javax,jakarta,org,com</order>
 							</importOrder>
 							<removeUnusedImports />
+							<forbidWildcardImports />
 							<trimTrailingWhitespace />
+							<endWithNewline />
 						</java>
 					</configuration>
 				</plugin>
