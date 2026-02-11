@@ -30,15 +30,16 @@ public class ScopedResource<T extends AutoCloseable> {
 	private final boolean managed;
 
 	/**
-	 * Constructs a new ScopedResource instance.
+	 * Constructs a new ScopedResource instance. Use factory methods {@link #managed(AutoCloseable)}, or
+	 * {@link #unmanaged(AutoCloseable)} to construct managed or unmanaged instances respectively.
 	 *
 	 * @param resource the resource to wrap (must not be null)
-	 * @param managed whether this wrapper should manage the resource's life-cycle
+	 * @param management whether the wrapper should manage the life-cycle of the resource
 	 * @throws NullPointerException if resource is null
 	 */
-	public ScopedResource(final T resource, final boolean managed) {
+	public ScopedResource(final T resource, final Lifecycle management) {
 		this.resource = Objects.requireNonNull(resource, "resource cannot be null");
-		this.managed = managed;
+		this.managed = Objects.requireNonNull(management, "management cannot be null").isManaged();
 	}
 
 	/**
@@ -48,7 +49,7 @@ public class ScopedResource<T extends AutoCloseable> {
 	 * @throws NullPointerException if resource is null
 	 */
 	public ScopedResource(final T resource) {
-		this(resource, true);
+		this(resource, Lifecycle.MANAGED);
 	}
 
 	/**
@@ -118,11 +119,11 @@ public class ScopedResource<T extends AutoCloseable> {
 	 * @param <T> the type of the resource
 	 *
 	 * @param resource the resource to wrap
-	 * @param managed whether the wrapper should manage the resource
+	 * @param management whether the wrapper should manage the life-cycle of the resource
 	 * @return a new ScopedResource instance
 	 */
-	public static <T extends AutoCloseable> ScopedResource<T> of(final T resource, final boolean managed) {
-		return new ScopedResource<>(resource, managed);
+	public static <T extends AutoCloseable> ScopedResource<T> of(final T resource, final Lifecycle management) {
+		return new ScopedResource<>(resource, management);
 	}
 
 	/**
@@ -134,7 +135,7 @@ public class ScopedResource<T extends AutoCloseable> {
 	 * @return a new managed ScopedResource instance
 	 */
 	public static <T extends AutoCloseable> ScopedResource<T> managed(final T resource) {
-		return of(resource, true);
+		return of(resource, Lifecycle.MANAGED);
 	}
 
 	/**
@@ -146,7 +147,7 @@ public class ScopedResource<T extends AutoCloseable> {
 	 * @return a new unmanaged ScopedResource instance
 	 */
 	public static <T extends AutoCloseable> ScopedResource<T> unmanaged(final T resource) {
-		return of(resource, false);
+		return of(resource, Lifecycle.UNMANAGED);
 	}
 
 	/**
