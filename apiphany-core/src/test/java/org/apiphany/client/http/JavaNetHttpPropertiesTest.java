@@ -4,9 +4,14 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import java.net.http.HttpClient.Version;
+import java.util.Map;
+
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.junit.jupiter.api.Test;
+import org.morphix.lang.function.Consumers;
+import org.morphix.reflection.Constructors;
 
 /**
  * Test class for {@link JavaNetHttpProperties}.
@@ -69,5 +74,20 @@ class JavaNetHttpPropertiesTest {
 		String expected = javaNetHttpPropertiesRequest.toString();
 
 		assertThat(result, equalTo(expected));
+	}
+
+	@Test
+	void shouldConvertJavaNetHttpPropertiesFromMap() {
+		JsonBuilder jsonBuilder = Constructors.IgnoreAccess.newInstance(JsonBuilder.class);
+
+		JavaNetHttpProperties javaNetHttpProperties1 = jsonBuilder.fromPropertiesMap(Map.of(
+				"request", Map.of(
+						"version", "HTTP/2")),
+				JavaNetHttpProperties.class,
+				Consumers.noConsumer());
+
+		assertThat(javaNetHttpProperties1, notNullValue());
+		assertThat(javaNetHttpProperties1.getRequest(), notNullValue());
+		assertThat(javaNetHttpProperties1.getRequest().getHttpVersion(), equalTo(Version.HTTP_2));
 	}
 }

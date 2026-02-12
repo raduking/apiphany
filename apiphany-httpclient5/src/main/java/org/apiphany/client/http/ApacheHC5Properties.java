@@ -273,7 +273,7 @@ public class ApacheHC5Properties {
 		/**
 		 * The HTTP protocol version to use. Defaults to the value from {@link HttpVersion#DEFAULT}.
 		 */
-		private String protocolVersion = HttpVersion.DEFAULT.getProtocol();
+		private String protocolVersion = HttpVersion.DEFAULT.format();
 
 		/**
 		 * Default constructor.

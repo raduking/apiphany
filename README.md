@@ -42,7 +42,7 @@ Support is being developed for other HTTP clients like Apache HttpClient, OkHttp
 
 ### Releases
 
-Current release `1.1.4`
+Current release `1.1.5`
 
 ### Getting Started
 
@@ -52,7 +52,7 @@ Maven: add this dependency to your `pom.xml`
 <dependency>
     <groupId>io.github.raduking</groupId>
     <artifactId>apiphany</artifactId>
-    <version>1.1.4</version>
+    <version>1.1.5</version>
 </dependency>
 ```
 
@@ -67,6 +67,8 @@ mvn clean install
 
 The project being in active development. Expect class name changes, method name changes, and other similar changes between versions.
 All such changes are documented in [CHANGELOG.md](CHANGELOG.md).
+
+WARNING: Every new version should be treated as Major and having breaking changes.
 
 ### How to use
 

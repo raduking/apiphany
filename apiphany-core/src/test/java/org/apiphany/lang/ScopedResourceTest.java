@@ -37,7 +37,7 @@ class ScopedResourceTest {
 	void shouldCreateAnUnmanagedResourceWithConstructor() {
 		TestResource resource = new TestResource();
 
-		ScopedResource<TestResource> scopedResource = new ScopedResource<>(resource, false);
+		ScopedResource<TestResource> scopedResource = new ScopedResource<>(resource, Lifecycle.UNMANAGED);
 
 		TestResource retrievedResource = scopedResource.unwrap();
 

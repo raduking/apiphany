@@ -2,7 +2,6 @@ package org.apiphany.client.http;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -83,7 +82,7 @@ class JavaNetHttpExchangeClientTest {
 		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
 		exchangeClient.close();
 
-		assertThat(exchangeClient.getClientProperties(), nullValue());
+		assertThat(exchangeClient.getClientProperties(), equalTo(ClientProperties.defaults()));
 	}
 
 	@Test
@@ -535,7 +534,7 @@ class JavaNetHttpExchangeClientTest {
 	void shouldSendRequestAndReturnHttpResponse() throws Exception {
 		HttpClient httpClient = mock(HttpClient.class);
 
-		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient(null, httpClient);
+		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient(ClientProperties.defaults(), httpClient);
 		exchangeClient.close();
 
 		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
@@ -560,7 +559,7 @@ class JavaNetHttpExchangeClientTest {
 	void shouldThrowExceptionWhenHttpClientThrowsExceptionOnSendRequest() throws Exception {
 		HttpClient httpClient = mock(HttpClient.class);
 
-		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient(null, httpClient);
+		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient(ClientProperties.defaults(), httpClient);
 		exchangeClient.close();
 
 		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
@@ -583,7 +582,7 @@ class JavaNetHttpExchangeClientTest {
 	void shouldExchangeApiRequestAndReturnApiResponse() throws Exception {
 		HttpClient httpClient = mock(HttpClient.class);
 
-		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient(null, httpClient);
+		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient(ClientProperties.defaults(), httpClient);
 		exchangeClient.close();
 
 		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)

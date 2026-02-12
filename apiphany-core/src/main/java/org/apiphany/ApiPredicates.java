@@ -163,5 +163,4 @@ public class ApiPredicates {
 	private ApiPredicates() {
 		throw Constructors.unsupportedOperationException();
 	}
-
 }

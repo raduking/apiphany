@@ -142,5 +142,4 @@ public interface Maps {
 	static boolean isNotEmpty(final Map<?, ?> map) {
 		return !isEmpty(map);
 	}
-
 }

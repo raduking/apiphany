@@ -188,5 +188,4 @@ public class WaitCounter implements Wait {
 	public int hashCode() {
 		return Objects.hash(interval, intervalTimeUnit, maxCount, count);
 	}
-
 }

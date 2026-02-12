@@ -553,7 +553,7 @@ class ApiClientTest {
 			assertThat(exchangeClient, notNullValue());
 			assertThat(exchangeClient.getAuthenticationType(), equalTo(AuthenticationType.NONE));
 			assertThat(exchangeClient.getClass(), equalTo(JavaNetHttpExchangeClient.class));
-			assertThat(exchangeClient.getClientProperties(), nullValue());
+			assertThat(exchangeClient.getClientProperties(), equalTo(ClientProperties.defaults()));
 		}
 	}
 
@@ -581,7 +581,7 @@ class ApiClientTest {
 			assertThat(exchangeClient, notNullValue());
 			assertThat(exchangeClient.getAuthenticationType(), equalTo(AuthenticationType.NONE));
 			assertThat(exchangeClient.getClass(), equalTo(JavaNetHttpExchangeClient.class));
-			assertThat(exchangeClient.getClientProperties(), nullValue());
+			assertThat(exchangeClient.getClientProperties(), equalTo(ClientProperties.defaults()));
 		}
 	}
 

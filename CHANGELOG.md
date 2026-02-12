@@ -1,5 +1,19 @@
 ## Release Notes
 
+`1.1.5`
+
+- Added `LibraryDescriptor.of(String, Class)` to initialize a descriptor based on the presence in the classpath of the given class name.
+- Added `LibraryDescriptor.present(Class)` to signal the presence of a library.
+- Added `LibraryDescriptor.notPresent(Class)` to signal the absence of a library.
+- Removed `LibraryDescriptor.of(boolean, Class)` because there are other more appropriate methods now.
+- Upgraded `morphix-all` to `1.0.22`.
+- Added `ClientProperties.defaults` to get an instance with default values.
+- Changed `JsonBuilder.fromMap` to work without the need of a JSON library to be present in the classpath.
+- Added `Lifecycle` enum to enumerate the life cycle options (`MANAGED` and `UNMANAGED`) for a `ScopedResource`.
+- Changed `ScopedResource` to use the `Lifecycle` enum instead of using `boolean` parameters for methods and constructors.
+
+---
+
 `1.1.4`
 
 - Changed all request parameters to be `Map<String, List<String>>` instead of `Map<String, String>` to better accommodate HTTP specification.

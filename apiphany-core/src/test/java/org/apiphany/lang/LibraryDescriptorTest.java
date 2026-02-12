@@ -20,29 +20,43 @@ class LibraryDescriptorTest {
 
 	@Test
 	void shouldIndicateLibraryIsPresent() {
-		LibraryDescriptor<TestType> descriptor = LibraryDescriptor.of(true, TestType.class);
+		LibraryDescriptor<TestType> descriptor = LibraryDescriptor.present(TestType.class);
 
-		assertThat(descriptor.isPresent(), is(true));
+		assertThat(descriptor.isLibraryPresent(), is(true));
 	}
 
 	@Test
 	void shouldIndicateLibraryIsNotPresent() {
-		LibraryDescriptor<TestType> descriptor = LibraryDescriptor.of(false, TestType.class);
+		LibraryDescriptor<TestType> descriptor = LibraryDescriptor.notPresent(TestType.class);
 
-		assertThat(descriptor.isPresent(), is(false));
+		assertThat(descriptor.isLibraryPresent(), is(false));
 	}
 
 	@Test
 	void shouldReturnSpecificClass() {
-		LibraryDescriptor<TestType> descriptor = LibraryDescriptor.of(true, TestType.class);
+		LibraryDescriptor<TestType> descriptor = LibraryDescriptor.present(TestType.class);
 
 		assertThat(descriptor.getSpecificClass(), sameInstance(TestType.class));
 	}
 
 	@Test
 	void shouldFailWhenSpecificClassIsNull() {
-		NullPointerException exception = assertThrows(NullPointerException.class, () -> LibraryDescriptor.of(true, null));
+		NullPointerException exception = assertThrows(NullPointerException.class, () -> LibraryDescriptor.present(null));
 
 		assertThat(exception.getMessage(), is("specificClass must not be null"));
+	}
+
+	@Test
+	void shouldReturnTrueForPresentClassDescriptor() {
+		LibraryDescriptor<TestType> descriptor = LibraryDescriptor.of(TestType.class.getName(), TestType.class);
+
+		assertThat(descriptor.isLibraryPresent(), is(true));
+	}
+
+	@Test
+	void shouldReturnFalseForNotPresentClassDescriptor() {
+		LibraryDescriptor<TestType> descriptor = LibraryDescriptor.of(TestType.class.getName() + "$NonExistentClass", TestType.class);
+
+		assertThat(descriptor.isLibraryPresent(), is(false));
 	}
 }
