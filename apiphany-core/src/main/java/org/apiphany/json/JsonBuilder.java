@@ -1,14 +1,19 @@
 package org.apiphany.json;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.apiphany.json.jackson2.Jackson2Library;
 import org.apiphany.lang.LibraryDescriptor;
 import org.apiphany.lang.LibraryInitializer;
 import org.apiphany.lang.Strings;
 import org.morphix.convert.Converter;
+import org.morphix.convert.MapConversions;
+import org.morphix.convert.function.SimpleConverter;
+import org.morphix.lang.function.Suppliers;
 import org.morphix.reflection.Constructors;
 import org.morphix.reflection.GenericClass;
 import org.slf4j.Logger;
@@ -267,7 +272,8 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	}
 
 	/**
-	 * Returns an object from a properties map.
+	 * Returns an object from a properties map, on error the exception is passed to the onError consumer and {@code null} is
+	 * returned.
 	 *
 	 * @param <T> return type
 	 *
@@ -277,19 +283,12 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 * @return wanted object
 	 */
 	public <T> T fromPropertiesMap(final Map<String, Object> propertiesMap, final Class<T> cls, final Consumer<Exception> onError) {
-		if (null == propertiesMap) {
-			return null;
-		}
-		try {
-			return Converter.convert(propertiesMap).to(cls);
-		} catch (Exception e) {
-			onError.accept(e);
-			return null;
-		}
+		return convert(propertiesMap, map -> Converter.convert(map).to(cls), Suppliers.supplyNull(), onError);
 	}
 
 	/**
-	 * Returns a properties map from an object.
+	 * Returns a properties map from an object, on error the exception is passed to the onError consumer and an empty map is
+	 * returned.
 	 *
 	 * @param <T> properties object type
 	 *
@@ -298,7 +297,34 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 * @return properties map
 	 */
 	public <T> Map<String, Object> toPropertiesMap(final T properties, final Consumer<Exception> onError) {
-		throw jsonLibraryNotFound();
+		return convert(properties, MapConversions::toPropertiesMap, Collections::emptyMap, onError);
+	}
+
+	/**
+	 * Converts a source object to a target type using the provided converter. If the source is null, the fallback supplier
+	 * is used to provide a default value. If an exception occurs during conversion, the onError consumer is called with the
+	 * exception and the fallback supplier is used to provide a default value.
+	 *
+	 * @param <T> source type
+	 * @param <R> target type
+	 *
+	 * @param source the object to convert
+	 * @param converter the converter function to convert the source to the target type
+	 * @param fallbackSupplier supplier for a default value if the source is null or if an error occurs during conversion
+	 * @param onError consumer for handling exceptions that occur during conversion
+	 * @return the converted object, or a default value if the source is null or if an error occurs during conversion
+	 */
+	protected static <T, R> R convert(final T source, final SimpleConverter<T, R> converter, final Supplier<R> fallbackSupplier,
+			final Consumer<? super Exception> onError) {
+		if (null == source) {
+			return fallbackSupplier.get();
+		}
+		try {
+			return converter.convert(source);
+		} catch (Exception e) {
+			onError.accept(e);
+			return fallbackSupplier.get();
+		}
 	}
 
 	/**
