@@ -7,12 +7,16 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
+import org.apiphany.lang.Holder;
 import org.apiphany.lang.LibraryDescriptor;
 import org.apiphany.lang.Strings;
 import org.junit.jupiter.api.Test;
+import org.morphix.convert.function.SimpleConverter;
 import org.morphix.lang.function.Consumers;
 import org.morphix.reflection.Constructors;
 import org.morphix.reflection.GenericClass;
@@ -51,11 +55,10 @@ class JsonBuilderTest {
 	}
 
 	@Test
-	void shouldThrowExceptionOnToPropertiesMap() {
-		UnsupportedOperationException e = assertThrows(UnsupportedOperationException.class,
-				() -> jsonBuilder.toPropertiesMap(null, null));
+	void shouldReturnEmptyMapOnToPropertiesMapWhenSourceIsNull() {
+		Object result = jsonBuilder.toPropertiesMap(null, null);
 
-		assertThat(e.getMessage(), equalTo(JsonBuilder.ErrorMessage.JSON_LIBRARY_NOT_FOUND));
+		assertThat(result, equalTo(Collections.emptyMap()));
 	}
 
 	@Test
@@ -63,6 +66,23 @@ class JsonBuilderTest {
 		Object result = jsonBuilder.fromPropertiesMap(null, null, Consumers.noConsumer());
 
 		assertThat(result, equalTo(null));
+	}
+
+	@Test
+	void shouldReturnFallbackValueIfConversionFailsOnFromPropertiesMap() {
+		String fallback = "fallback";
+		String source = "source";
+		SimpleConverter<String, String> converter = s -> {
+			throw new RuntimeException("Conversion failed");
+		};
+		Holder<String> holder = Holder.noValue();
+		Consumer<Exception> errorConsumer = e -> {
+			holder.setValue(e.getMessage());
+		};
+		String result = JsonBuilder.convert(source, converter, () -> fallback, errorConsumer);
+
+		assertThat(result, equalTo(fallback));
+		assertThat(holder.getValue(), equalTo("Conversion failed"));
 	}
 
 	static class A {
