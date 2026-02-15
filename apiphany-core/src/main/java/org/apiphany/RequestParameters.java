@@ -17,11 +17,11 @@ import org.apiphany.openapi.MultiValueStrategy;
 import org.apiphany.openapi.QueryParam;
 import org.morphix.convert.MapConversions;
 import org.morphix.convert.function.SimpleConverter;
-import org.morphix.convert.strategy.ConversionStrategy;
 import org.morphix.lang.JavaArrays;
 import org.morphix.lang.function.PutFunction;
 import org.morphix.reflection.Constructors;
 import org.morphix.reflection.ExtendedField;
+import org.morphix.reflection.ExtendedFields;
 
 /**
  * Utility class for building and manipulating request parameters. This class provides methods for creating parameter
@@ -241,7 +241,7 @@ public class RequestParameters {
 	 * @return a map representation of the object's fields
 	 */
 	protected static Map<String, List<String>> fromObject(final Object queryParams, final SimpleConverter<String, String> nameConverter) {
-		List<ExtendedField> extendedFields = ConversionStrategy.findFields(queryParams,
+		List<ExtendedField> extendedFields = ExtendedFields.findAllNonStatic(queryParams,
 				extendedField -> null != extendedField.getFieldValue());
 
 		Map<String, List<String>> paramMap = new LinkedHashMap<>(extendedFields.size());
