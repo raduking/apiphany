@@ -244,7 +244,7 @@ public class RequestParameters {
 		List<ExtendedField> extendedFields = ExtendedFields.findAllNonStatic(queryParams,
 				extendedField -> null != extendedField.getFieldValue());
 
-		Map<String, List<String>> paramMap = new LinkedHashMap<>(extendedFields.size());
+		Map<String, List<String>> paramMap = LinkedHashMap.newLinkedHashMap(extendedFields.size());
 		if (Lists.isEmpty(extendedFields)) {
 			return paramMap;
 		}
