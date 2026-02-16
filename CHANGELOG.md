@@ -11,6 +11,9 @@
 - Changed `JsonBuilder.fromMap` to work without the need of a JSON library to be present in the classpath.
 - Added `Lifecycle` enum to enumerate the life cycle options (`MANAGED` and `UNMANAGED`) for a `ScopedResource`.
 - Changed `ScopedResource` to use the `Lifecycle` enum instead of using `boolean` parameters for methods and constructors.
+- Updated `logback-classic` to `1.5.31`.
+- Updated to JUnit 6 (`6.0.2`).
+- Upgraded `oauth2-oidc-sdk` to `11.31.1`.
 
 ---
 

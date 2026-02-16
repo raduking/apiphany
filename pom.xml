@@ -73,15 +73,15 @@
 
 		<!-- Testing dependencies versions -->
 		<hamcrest.version>3.0</hamcrest.version>
-		<junit.jupiter.version>5.12.2</junit.jupiter.version>
-		<mockito.version>5.17.0</mockito.version>
-		<logback.version>1.5.27</logback.version>
+		<junit.jupiter.version>6.0.2</junit.jupiter.version>
+		<mockito.version>5.20.0</mockito.version>
+		<logback.version>1.5.31</logback.version>
 		<spring.security.version>6.5.7</spring.security.version>
 		<testcontainers.base.version>2.0.3</testcontainers.base.version>
 		<testcontainers.junit.version>1.21.4</testcontainers.junit.version>
 		<testcontainers.keycloak.version>4.1.0</testcontainers.keycloak.version>
 		<nimbus.jose.jwt.version>10.7</nimbus.jose.jwt.version>
-		<oauth2.oidc.sdk.version>11.31.1</oauth2.oidc.sdk.version>
+		<oauth2.oidc.sdk.version>11.33</oauth2.oidc.sdk.version>
 
 		<!-- Dependencies used by plugins versions -->
 		<org.eclipse.jdt.core.version>3.44.0</org.eclipse.jdt.core.version>
