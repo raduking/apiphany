@@ -53,13 +53,6 @@
 			<version>${project.version}</version>
 		</dependency>
 
-		<!-- MorphiX -->
-		<dependency>
-			<groupId>io.github.raduking</groupId>
-			<artifactId>morphix-all</artifactId>
-			<version>${morphix.version}</version>
-		</dependency>
-
 		<!-- Logging -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
