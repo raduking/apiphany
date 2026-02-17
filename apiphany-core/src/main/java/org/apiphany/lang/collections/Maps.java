@@ -3,7 +3,7 @@ package org.apiphany.lang.collections;
 import static java.util.Collections.emptyMap;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -108,9 +108,9 @@ public interface Maps {
 	 */
 	static <K, V> Map<K, List<V>> multiValueMap(final Map<K, V> map) {
 		if (map == null) {
-			return new HashMap<>();
+			return new LinkedHashMap<>();
 		}
-		Map<K, List<V>> multiValueMap = new HashMap<>();
+		Map<K, List<V>> multiValueMap = LinkedHashMap.newLinkedHashMap(map.size());
 		for (Map.Entry<K, V> entry : map.entrySet()) {
 			List<V> value = new ArrayList<>();
 			value.add(entry.getValue());
