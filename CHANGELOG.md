@@ -14,6 +14,12 @@
 - Updated `logback-classic` to `1.5.31`.
 - Updated to JUnit 6 (`6.0.2`).
 - Upgraded `oauth2-oidc-sdk` to `11.31.1`.
+- Added `JsonBuilder.runtime` to get the current `JsonBuilder` instance.
+- Added `JsonBuilder.with` method to run code on a different `JsonBuilder` with different settings.
+- Added `JsonBuilder.toIdentityJsonString(Object)` to build the identity JSON in the given `JsonBuilder`.
+- Added `Jackson2JsonBuilder.runtime` to get the current `Jackson2JsonBuilder` instance.
+- Added `Jackson2JsonBuilder.with` method to run code on a different `Jackson2JsonBuilder` with different settings.
+- Added `Jackson2JsonBuilder.getObjectMapper` to configure the underlying `ObjectMapper`.
 
 ---
 
