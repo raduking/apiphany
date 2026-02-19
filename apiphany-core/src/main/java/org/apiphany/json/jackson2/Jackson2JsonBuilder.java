@@ -108,8 +108,7 @@ public final class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleto
 	 * @return the runtime JSON builder instance
 	 */
 	public static Jackson2JsonBuilder runtime() {
-		Jackson2JsonBuilder override = OVERRIDE.get();
-		return override != null ? override : InstanceHolder.INSTANCE;
+		return runtime(OVERRIDE, InstanceHolder.INSTANCE);
 	}
 
 	/**
