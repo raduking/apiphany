@@ -156,13 +156,27 @@ public class JsonBuilder { // NOSONAR singleton implementation
 
 	/**
 	 * Returns the runtime JSON builder instance. If a thread local override is set it returns the override, otherwise it
+	 * returns the provided instance.
+	 *
+	 * @param <B> type of the JSON builder
+	 *
+	 * @param override the thread local override to check
+	 * @param instance the instance to return if no thread local override is set
+	 * @return the runtime JSON builder instance
+	 */
+	protected static <B> B runtime(final ThreadLocal<B> override, final B instance) {
+		B overrideInstance = override.get();
+		return null != overrideInstance ? overrideInstance : instance;
+	}
+
+	/**
+	 * Returns the runtime JSON builder instance. If a thread local override is set it returns the override, otherwise it
 	 * returns the singleton instance.
 	 *
 	 * @return the runtime JSON builder instance
 	 */
 	public static JsonBuilder runtime() {
-		JsonBuilder override = OVERRIDE.get();
-		return override != null ? override : InstanceHolder.INSTANCE;
+		return runtime(OVERRIDE, InstanceHolder.INSTANCE);
 	}
 
 	/**
