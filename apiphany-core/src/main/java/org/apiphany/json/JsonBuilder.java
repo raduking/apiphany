@@ -166,6 +166,32 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	}
 
 	/**
+	 * Executes the supplier with the provided JSON builder override. The override is set only for the current thread and
+	 * will be removed after the supplier execution.
+	 *
+	 * @param <T> return type of the supplier
+	 * @param <B> type of the JSON builder
+	 *
+	 * @param builder the JSON builder to use during the execution of the supplier
+	 * @param override the thread local override to set during the execution of the supplier
+	 * @param supplier the supplier to execute with the provided JSON builder
+	 * @return the result of the supplier execution
+	 */
+	protected static <T, B extends JsonBuilder> T with(final B builder, final ThreadLocal<B> override, final Supplier<T> supplier) {
+		B previous = override.get();
+		override.set(builder);
+		try {
+			return supplier.get();
+		} finally {
+			if (null == previous) {
+				override.remove();
+			} else {
+				override.set(previous);
+			}
+		}
+	}
+
+	/**
 	 * Executes the supplier with the provided JSON builder.
 	 *
 	 * @param <T> return type of the supplier
@@ -175,17 +201,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 * @return the result of the supplier execution
 	 */
 	public static <T> T with(final JsonBuilder builder, final Supplier<T> supplier) {
-		JsonBuilder previous = OVERRIDE.get();
-		OVERRIDE.set(builder);
-		try {
-			return supplier.get();
-		} finally {
-			if (null == previous) {
-				OVERRIDE.remove();
-			} else {
-				OVERRIDE.set(previous);
-			}
-		}
+		return with(builder, OVERRIDE, supplier);
 	}
 
 	/**

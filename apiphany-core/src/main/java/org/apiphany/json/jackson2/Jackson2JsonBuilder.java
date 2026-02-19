@@ -122,17 +122,7 @@ public final class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleto
 	 * @return the result of the supplier execution
 	 */
 	public static <T> T with(final Jackson2JsonBuilder builder, final Supplier<T> supplier) {
-		Jackson2JsonBuilder previous = OVERRIDE.get();
-		OVERRIDE.set(builder);
-		try {
-			return supplier.get();
-		} finally {
-			if (null == previous) {
-				OVERRIDE.remove();
-			} else {
-				OVERRIDE.set(previous);
-			}
-		}
+		return with(builder, OVERRIDE, supplier);
 	}
 
 	/**
