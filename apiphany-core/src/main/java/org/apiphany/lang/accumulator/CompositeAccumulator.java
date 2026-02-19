@@ -15,6 +15,9 @@ import org.morphix.lang.Nullables;
  */
 public class CompositeAccumulator extends Accumulator<Object> {
 
+	/**
+	 * List of accumulators contained in this composite.
+	 */
 	private final List<Accumulator<?>> accumulators = new ArrayList<>();
 
 	/**

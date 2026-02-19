@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>io.github.raduking</groupId>
 		<artifactId>apiphany-parent</artifactId>
-		<version>1.1.4</version>
+		<version>1.1.5</version>
 		<relativePath>../../pom.xml</relativePath>
 	</parent>
 
@@ -51,13 +51,6 @@
 			<groupId>io.github.raduking</groupId>
 			<artifactId>apiphany</artifactId>
 			<version>${project.version}</version>
-		</dependency>
-
-		<!-- MorphiX -->
-		<dependency>
-			<groupId>io.github.raduking</groupId>
-			<artifactId>morphix-all</artifactId>
-			<version>${morphix.version}</version>
 		</dependency>
 
 		<!-- Logging -->

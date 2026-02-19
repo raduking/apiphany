@@ -8,12 +8,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.apiphany.RequestMethod;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.json.jackson2.serializers.RequestMethodDeserializer;
 import org.apiphany.json.jackson2.serializers.RequestMethodSerializer;
-import org.morphix.lang.JavaObjects;
 import org.morphix.reflection.GenericClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,6 +73,11 @@ public final class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleto
 	}
 
 	/**
+	 * Thread local override for the singleton instance.
+	 */
+	private static final ThreadLocal<Jackson2JsonBuilder> OVERRIDE = new ThreadLocal<>();
+
+	/**
 	 * The underlying {@link ObjectMapper}.
 	 */
 	private final ObjectMapper objectMapper = new ObjectMapper();
@@ -97,16 +102,39 @@ public final class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleto
 	}
 
 	/**
+	 * Returns the runtime JSON builder instance. If a thread local override is set it returns the override, otherwise it
+	 * returns the singleton instance.
+	 *
+	 * @return the runtime JSON builder instance
+	 */
+	public static Jackson2JsonBuilder runtime() {
+		return runtime(OVERRIDE, InstanceHolder.INSTANCE);
+	}
+
+	/**
+	 * Executes the supplier with the provided JSON builder.
+	 *
+	 * @param <T> return type of the supplier
+	 *
+	 * @param builder the JSON builder to use during the execution of the supplier
+	 * @param supplier the supplier to execute with the provided JSON builder
+	 * @return the result of the supplier execution
+	 */
+	public static <T> T with(final Jackson2JsonBuilder builder, final Supplier<T> supplier) {
+		return with(builder, OVERRIDE, supplier);
+	}
+
+	/**
 	 * Transforms the parameter to a JSON String.
 	 *
 	 * @param <T> type of the object
 	 *
 	 * @param obj object to transform
 	 * @return JSON String if conversion is possible, <code>null</code> if parameter is <code>null</code>,
-	 * {@link #toIdentityJson(Object)} otherwise.
+	 * {@link #toIdentityJsonString(Object)} otherwise.
 	 */
 	public static <T> String toJson(final T obj) {
-		return InstanceHolder.INSTANCE.toJsonString(obj);
+		return runtime().toJsonString(obj);
 	}
 
 	/**
@@ -121,8 +149,8 @@ public final class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleto
 	 */
 	public static <O, T> T fromJson(final O json, final Class<T> cls) {
 		return switch (json) {
-			case String string -> InstanceHolder.INSTANCE.fromJsonString(string, cls);
-			case byte[] bytes -> InstanceHolder.INSTANCE.fromJsonBytes(bytes, cls);
+			case String string -> runtime().fromJsonString(string, cls);
+			case byte[] bytes -> runtime().fromJsonBytes(bytes, cls);
 			default -> throw unsupportedJsonInputType(json);
 		};
 	}
@@ -139,8 +167,8 @@ public final class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleto
 	 */
 	public static <O, T> T fromJson(final O json, final GenericClass<T> genericClass) {
 		return switch (json) {
-			case String string -> InstanceHolder.INSTANCE.fromJsonString(string, genericClass);
-			case byte[] bytes -> InstanceHolder.INSTANCE.fromJsonBytes(bytes, genericClass);
+			case String string -> runtime().fromJsonString(string, genericClass);
+			case byte[] bytes -> runtime().fromJsonBytes(bytes, genericClass);
 			default -> throw unsupportedJsonInputType(json);
 		};
 	}
@@ -157,21 +185,21 @@ public final class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleto
 	 */
 	public static <O, T> T fromJson(final O json, final TypeReference<T> typeReference) {
 		return switch (json) {
-			case String string -> InstanceHolder.INSTANCE.fromJsonString(string, typeReference);
-			case byte[] bytes -> InstanceHolder.INSTANCE.fromJsonBytes(bytes, typeReference);
+			case String string -> runtime().fromJsonString(string, typeReference);
+			case byte[] bytes -> runtime().fromJsonBytes(bytes, typeReference);
 			default -> throw unsupportedJsonInputType(json);
 		};
 	}
 
 	/**
 	 * Transforms the parameter to a JSON String. If the object is null, returns null. If the object cannot be serialized,
-	 * returns the result of {@link #toIdentityJson(Object)}.
+	 * returns the result of {@link #toIdentityJsonString(Object)}.
 	 *
 	 * @param <T> type of the object
 	 *
 	 * @param obj object to transform
 	 * @return JSON String if conversion is possible, <code>null</code> if parameter is <code>null</code>,
-	 * {@link #toIdentityJson(Object)} otherwise.
+	 * {@link #toIdentityJsonString(Object)} otherwise.
 	 */
 	@Override
 	public <T> String toJsonString(final T obj) {
@@ -185,7 +213,7 @@ public final class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleto
 		try {
 			return eol() + objectWriter.writeValueAsString(obj);
 		} catch (JsonProcessingException e) {
-			String result = toIdentityJson(obj);
+			String result = toIdentityJsonString(obj);
 			LOGGER.warn(ErrorMessage.COULD_NOT_SERIALIZE_OBJECT, result, e);
 			return result;
 		}
@@ -320,7 +348,7 @@ public final class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleto
 				.setPropertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
 		try {
 			String json = propertiesObjectMapper.writeValueAsString(propertiesMap);
-			return JavaObjects.cast(propertiesObjectMapper.readValue(json, cls));
+			return propertiesObjectMapper.readValue(json, cls);
 		} catch (Exception e) {
 			onError.accept(e);
 			return null;
@@ -383,7 +411,6 @@ public final class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleto
 		return apiphanyModule
 				.addSerializer(RequestMethod.class, new RequestMethodSerializer())
 				.addDeserializer(RequestMethod.class, new RequestMethodDeserializer());
-
 	}
 
 	/**
@@ -432,5 +459,14 @@ public final class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleto
 		super.indentOutput(enable);
 		Consumer<SerializationFeature> indentation = enable ? objectMapper::enable : objectMapper::disable;
 		indentation.accept(SerializationFeature.INDENT_OUTPUT);
+	}
+
+	/**
+	 * Returns the underlying {@link ObjectMapper}.
+	 *
+	 * @return the underlying {@link ObjectMapper}
+	 */
+	public ObjectMapper getObjectMapper() {
+		return objectMapper;
 	}
 }

@@ -146,6 +146,20 @@ public class ApiClientCloseTest {
 
 	@Test
 	@SuppressWarnings("resource")
+	void shouldCallCloseOnExchangeClientWhenApiClientIsInitializedWithScopedResourceList() throws Exception {
+		SomeExchangeClient exchangeClient = new SomeExchangeClient(clientProperties);
+
+		ApiClient api = new ApiClient(List.of(ScopedResource.managed(exchangeClient)));
+
+		assertFalse(exchangeClient.isClosed());
+
+		api.close();
+
+		assertTrue(exchangeClient.isClosed());
+	}
+
+	@Test
+	@SuppressWarnings("resource")
 	void shouldCallCloseOnManagedExchangeClientsEvenIfConstructingApiClientFails() throws Exception {
 		SomeExchangeClient exchangeClient1 = new SomeExchangeClient(clientProperties);
 		SomeOtherExchangeClient exchangeClient2 = new SomeOtherExchangeClient(clientProperties);

@@ -1,14 +1,19 @@
 package org.apiphany.json;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.apiphany.json.jackson2.Jackson2Library;
 import org.apiphany.lang.LibraryDescriptor;
 import org.apiphany.lang.LibraryInitializer;
 import org.apiphany.lang.Strings;
 import org.morphix.convert.Converter;
+import org.morphix.convert.MapConversions;
+import org.morphix.convert.function.SimpleConverter;
+import org.morphix.lang.function.Suppliers;
 import org.morphix.reflection.Constructors;
 import org.morphix.reflection.GenericClass;
 import org.slf4j.Logger;
@@ -106,6 +111,11 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	}
 
 	/**
+	 * Thread local override for the singleton instance.
+	 */
+	private static final ThreadLocal<JsonBuilder> OVERRIDE = new ThreadLocal<>();
+
+	/**
 	 * Indent output flag.
 	 */
 	private boolean indentOutput;
@@ -145,16 +155,80 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	}
 
 	/**
+	 * Returns the runtime JSON builder instance. If a thread local override is set it returns the override, otherwise it
+	 * returns the provided instance.
+	 *
+	 * @param <B> type of the JSON builder
+	 *
+	 * @param override the thread local override to check
+	 * @param instance the instance to return if no thread local override is set
+	 * @return the runtime JSON builder instance
+	 */
+	protected static <B> B runtime(final ThreadLocal<B> override, final B instance) {
+		B overrideInstance = override.get();
+		return null != overrideInstance ? overrideInstance : instance;
+	}
+
+	/**
+	 * Returns the runtime JSON builder instance. If a thread local override is set it returns the override, otherwise it
+	 * returns the singleton instance.
+	 *
+	 * @return the runtime JSON builder instance
+	 */
+	public static JsonBuilder runtime() {
+		return runtime(OVERRIDE, InstanceHolder.INSTANCE);
+	}
+
+	/**
+	 * Executes the supplier with the provided JSON builder override. The override is set only for the current thread and
+	 * will be removed after the supplier execution.
+	 *
+	 * @param <T> return type of the supplier
+	 * @param <B> type of the JSON builder
+	 *
+	 * @param builder the JSON builder to use during the execution of the supplier
+	 * @param override the thread local override to set during the execution of the supplier
+	 * @param supplier the supplier to execute with the provided JSON builder
+	 * @return the result of the supplier execution
+	 */
+	protected static <T, B extends JsonBuilder> T with(final B builder, final ThreadLocal<B> override, final Supplier<T> supplier) {
+		B previous = override.get();
+		override.set(builder);
+		try {
+			return supplier.get();
+		} finally {
+			if (null == previous) {
+				override.remove();
+			} else {
+				override.set(previous);
+			}
+		}
+	}
+
+	/**
+	 * Executes the supplier with the provided JSON builder.
+	 *
+	 * @param <T> return type of the supplier
+	 *
+	 * @param builder the JSON builder to use during the execution of the supplier
+	 * @param supplier the supplier to execute with the provided JSON builder
+	 * @return the result of the supplier execution
+	 */
+	public static <T> T with(final JsonBuilder builder, final Supplier<T> supplier) {
+		return with(builder, OVERRIDE, supplier);
+	}
+
+	/**
 	 * Transforms the parameter to a JSON String.
 	 *
 	 * @param <T> type of the object
 	 *
 	 * @param obj object to transform
 	 * @return JSON String if conversion is possible, <code>null</code> if parameter is <code>null</code>,
-	 * {@link #toIdentityJson(Object)} otherwise.
+	 * {@link #toIdentityJsonString(Object)} otherwise.
 	 */
 	public static <T> String toJson(final T obj) {
-		return InstanceHolder.INSTANCE.toJsonString(obj);
+		return runtime().toJsonString(obj);
 	}
 
 	/**
@@ -169,7 +243,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 */
 	public static <O, T> T fromJson(final O json, final Class<T> cls) {
 		return switch (json) {
-			case String string -> InstanceHolder.INSTANCE.fromJsonString(string, cls);
+			case String string -> runtime().fromJsonString(string, cls);
 			default -> throw unsupportedJsonInputType(json);
 		};
 	}
@@ -186,7 +260,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 */
 	public static <O, T> T fromJson(final O json, final GenericClass<T> genericClass) {
 		return switch (json) {
-			case String string -> InstanceHolder.INSTANCE.fromJsonString(string, genericClass);
+			case String string -> runtime().fromJsonString(string, genericClass);
 			default -> throw unsupportedJsonInputType(json);
 		};
 	}
@@ -202,7 +276,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 * @return wanted object
 	 */
 	public static <T> T fromMap(final Map<String, Object> propertiesMap, final Class<T> cls, final Consumer<Exception> onError) {
-		return InstanceHolder.INSTANCE.fromPropertiesMap(propertiesMap, cls, onError);
+		return runtime().fromPropertiesMap(propertiesMap, cls, onError);
 	}
 
 	/**
@@ -215,7 +289,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 * @return properties map
 	 */
 	public static <T> Map<String, Object> toMap(final T properties, final Consumer<Exception> onError) {
-		return InstanceHolder.INSTANCE.toPropertiesMap(properties, onError);
+		return runtime().toPropertiesMap(properties, onError);
 	}
 
 	/**
@@ -224,7 +298,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 * @param enable indent flag
 	 */
 	public static void indentJsonOutput(final boolean enable) {
-		InstanceHolder.INSTANCE.indentOutput(enable);
+		runtime().indentOutput(enable);
 	}
 
 	/**
@@ -234,10 +308,10 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 *
 	 * @param obj object to transform
 	 * @return JSON String if conversion is possible, <code>null</code> if parameter is <code>null</code>,
-	 * {@link #toIdentityJson(Object)} otherwise.
+	 * {@link #toIdentityJsonString(Object)} otherwise.
 	 */
 	public <T> String toJsonString(final T obj) {
-		return toIdentityJson(obj);
+		return toIdentityJsonString(obj);
 	}
 
 	/**
@@ -267,7 +341,8 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	}
 
 	/**
-	 * Returns an object from a properties map.
+	 * Returns an object from a properties map, on error the exception is passed to the onError consumer and {@code null} is
+	 * returned.
 	 *
 	 * @param <T> return type
 	 *
@@ -277,11 +352,12 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 * @return wanted object
 	 */
 	public <T> T fromPropertiesMap(final Map<String, Object> propertiesMap, final Class<T> cls, final Consumer<Exception> onError) {
-		throw jsonLibraryNotFound();
+		return convert(propertiesMap, map -> Converter.convert(map).to(cls), Suppliers.supplyNull(), onError);
 	}
 
 	/**
-	 * Returns a properties map from an object.
+	 * Returns a properties map from an object, on error the exception is passed to the onError consumer and an empty map is
+	 * returned.
 	 *
 	 * @param <T> properties object type
 	 *
@@ -290,7 +366,36 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 * @return properties map
 	 */
 	public <T> Map<String, Object> toPropertiesMap(final T properties, final Consumer<Exception> onError) {
-		throw jsonLibraryNotFound();
+		return convert(properties, MapConversions::toPropertiesMap, Collections::emptyMap, onError);
+	}
+
+	/**
+	 * Converts a source object to a target type using the provided converter. If the source is null, the fallback supplier
+	 * is used to provide a default value. If an exception occurs during conversion, the onError consumer is called with the
+	 * exception and the fallback supplier is used to provide a default value.
+	 *
+	 * @param <T> source type
+	 * @param <R> target type
+	 *
+	 * @param source the object to convert
+	 * @param converter the converter function to convert the source to the target type
+	 * @param fallbackSupplier supplier for a default value if the source is null or if an error occurs during conversion
+	 * @param onError consumer for handling exceptions that occur during conversion
+	 * @return the converted object, or a default value if the source is null or if an error occurs during conversion
+	 */
+	protected static <T, R> R convert(final T source, final SimpleConverter<T, R> converter, final Supplier<R> fallbackSupplier,
+			final Consumer<? super Exception> onError) {
+		if (null == source) {
+			return fallbackSupplier.get();
+		}
+		try {
+			return converter.convert(source);
+		} catch (Exception e) {
+			if (null != onError) {
+				onError.accept(e);
+			}
+			return fallbackSupplier.get();
+		}
 	}
 
 	/**
@@ -364,7 +469,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 * @return true if Jackson library is present in the classpath
 	 */
 	public static boolean isJacksonPresent() {
-		return Jackson2Library.DESCRIPTOR.isPresent();
+		return Jackson2Library.DESCRIPTOR.isLibraryPresent();
 	}
 
 	/**
@@ -388,7 +493,33 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 * @return JSON String
 	 */
 	public static <T> String toIdentityJson(final T obj) {
-		return "{ \"identity\":\"" + identityHashCode(obj) + "\" }";
+		return runtime().toIdentityJsonString(obj);
+	}
+
+	/**
+	 * Returns the {@link Object#toString()} in a JSON format, like:
+	 *
+	 * <pre>
+	 * { "identity":"&lt;class-name&gt;@&lt;identity-hashcode&gt;" }
+	 * </pre>
+	 *
+	 * or
+	 *
+	 * <pre>
+	 * { "identity":null }
+	 * </pre>
+	 *
+	 * if the input object is {@code null}.
+	 *
+	 * @param <T> type of the object
+	 *
+	 * @param obj input
+	 * @return JSON String
+	 */
+	protected <T> String toIdentityJsonString(final T obj) {
+		String indent = indentOutput ? eol() : " ";
+		String tab = indentOutput ? "\t" : "";
+		return "{" + indent + tab + "\"identity\":\"" + identityHashCode(obj) + "\"" + indent + "}";
 	}
 
 	/**

@@ -41,7 +41,7 @@ public class SensitiveJackson2AnnotationIntrospector extends NopAnnotationIntros
 	 *
 	 * @param enabled flag indicating what to do with {@link Sensitive} fields.
 	 */
-	public SensitiveJackson2AnnotationIntrospector(final boolean enabled) {
+	protected SensitiveJackson2AnnotationIntrospector(final boolean enabled) {
 		this.enabled = enabled;
 	}
 

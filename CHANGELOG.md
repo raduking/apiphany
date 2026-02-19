@@ -1,5 +1,28 @@
 ## Release Notes
 
+`1.1.5`
+
+- Added `LibraryDescriptor.of(String, Class)` to initialize a descriptor based on the presence in the classpath of the given class name.
+- Added `LibraryDescriptor.present(Class)` to signal the presence of a library.
+- Added `LibraryDescriptor.notPresent(Class)` to signal the absence of a library.
+- Removed `LibraryDescriptor.of(boolean, Class)` because there are other more appropriate methods now.
+- Upgraded `morphix-all` to `1.0.22`.
+- Added `ClientProperties.defaults` to get an instance with default values.
+- Changed `JsonBuilder.fromMap` to work without the need of a JSON library to be present in the classpath.
+- Added `Lifecycle` enum to enumerate the life cycle options (`MANAGED` and `UNMANAGED`) for a `ScopedResource`.
+- Changed `ScopedResource` to use the `Lifecycle` enum instead of using `boolean` parameters for methods and constructors.
+- Updated `logback-classic` to `1.5.31`.
+- Updated to JUnit 6 (`6.0.2`).
+- Upgraded `oauth2-oidc-sdk` to `11.31.1`.
+- Added `JsonBuilder.runtime` to get the current `JsonBuilder` instance.
+- Added `JsonBuilder.with` method to run code on a different `JsonBuilder` with different settings.
+- Added `JsonBuilder.toIdentityJsonString(Object)` to build the identity JSON in the given `JsonBuilder`.
+- Added `Jackson2JsonBuilder.runtime` to get the current `Jackson2JsonBuilder` instance.
+- Added `Jackson2JsonBuilder.with` method to run code on a different `Jackson2JsonBuilder` with different settings.
+- Added `Jackson2JsonBuilder.getObjectMapper` to configure the underlying `ObjectMapper`.
+
+---
+
 `1.1.4`
 
 - Changed all request parameters to be `Map<String, List<String>>` instead of `Map<String, String>` to better accommodate HTTP specification.

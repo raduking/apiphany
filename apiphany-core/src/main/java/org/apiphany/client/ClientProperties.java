@@ -74,6 +74,15 @@ public class ClientProperties {
 	}
 
 	/**
+	 * Returns a new instance of {@link ClientProperties} with default values.
+	 *
+	 * @return a new {@link ClientProperties} instance with default values.
+	 */
+	public static ClientProperties defaults() {
+		return new ClientProperties();
+	}
+
+	/**
 	 * Returns a JSON representation of this {@link ClientProperties} object.
 	 *
 	 * @return a JSON string representing this object.
@@ -91,16 +100,15 @@ public class ClientProperties {
 		if (this == obj) {
 			return true;
 		}
-		if (obj == null || getClass() != obj.getClass()) {
-			return false;
+		if (obj instanceof ClientProperties that) {
+			return this.enabled == that.enabled
+					&& Objects.equals(this.timeout, that.timeout)
+					&& Objects.equals(this.connection, that.connection)
+					&& Objects.equals(this.compression, that.compression)
+					&& Objects.equals(this.client, that.client)
+					&& Objects.equals(this.custom, that.custom);
 		}
-		ClientProperties that = (ClientProperties) obj;
-		return enabled == that.enabled
-				&& Objects.equals(timeout, that.timeout)
-				&& Objects.equals(connection, that.connection)
-				&& Objects.equals(compression, that.compression)
-				&& Objects.equals(client, that.client)
-				&& Objects.equals(custom, that.custom);
+		return false;
 	}
 
 	/**
@@ -419,13 +427,12 @@ public class ClientProperties {
 			if (this == obj) {
 				return true;
 			}
-			if (obj == null || getClass() != obj.getClass()) {
-				return false;
+			if (obj instanceof Connection that) {
+				return this.maxTotal == that.maxTotal
+						&& this.maxPerRoute == that.maxPerRoute
+						&& Objects.equals(this.timeToLive, that.timeToLive);
 			}
-			Connection that = (Connection) obj;
-			return maxTotal == that.maxTotal
-					&& maxPerRoute == that.maxPerRoute
-					&& Objects.equals(timeToLive, that.timeToLive);
+			return false;
 		}
 
 		/**
@@ -559,13 +566,12 @@ public class ClientProperties {
 			if (this == obj) {
 				return true;
 			}
-			if (obj == null || getClass() != obj.getClass()) {
-				return false;
+			if (obj instanceof Timeout that) {
+				return Objects.equals(this.connect, that.connect)
+						&& Objects.equals(this.connectionRequest, that.connectionRequest)
+						&& Objects.equals(this.socket, that.socket);
 			}
-			Timeout that = (Timeout) obj;
-			return Objects.equals(connect, that.connect)
-					&& Objects.equals(connectionRequest, that.connectionRequest)
-					&& Objects.equals(socket, that.socket);
+			return false;
 		}
 
 		/**
@@ -782,11 +788,10 @@ public class ClientProperties {
 			if (this == obj) {
 				return true;
 			}
-			if (obj == null || getClass() != obj.getClass()) {
-				return false;
+			if (obj instanceof Compression that) {
+				return Objects.equals(this.gzip, that.gzip);
 			}
-			Compression that = (Compression) obj;
-			return Objects.equals(gzip, that.gzip);
+			return false;
 		}
 
 		/**

@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -28,6 +29,7 @@ import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 
@@ -80,6 +82,82 @@ class Jackson2JsonBuilderTest {
 		Object json2 = Strings.removeAllWhitespace(Jackson2JsonBuilder.toJson(a2)).getBytes();
 
 		assertThat(json1, equalTo(json2));
+	}
+
+	@Test
+	void shouldTransformObjectToJsonWithSpecificJackson2JsonBuilder() {
+		Jackson2JsonBuilder jacksonJsonBuilder = new Jackson2JsonBuilder();
+		jacksonJsonBuilder.indentOutput(false);
+		jacksonJsonBuilder.getObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
+
+		A a = new A();
+		Map<String, B> elements = Map.of(CUSTOMER_ONE, new B(CUSTOMER_ID1, TENANT_ID1));
+		a.setElements(elements);
+
+		Object json1 = Jackson2JsonBuilder.with(jacksonJsonBuilder, () -> Jackson2JsonBuilder.toJson(a));
+
+		assertThat(json1, equalTo("{\"elements\":{\"customerOne\":{\"customer-id\":\"cid1\",\"tenant-id\":\"tid1\"}}}"));
+	}
+
+	@Test
+	void shouldTransformObjectToJsonWithSpecificJackson2JsonBuilderRecursive() {
+		Jackson2JsonBuilder jacksonJsonBuilder1 = new Jackson2JsonBuilder();
+		jacksonJsonBuilder1.indentOutput(false);
+		jacksonJsonBuilder1.getObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
+
+		Jackson2JsonBuilder jacksonJsonBuilder2 = new Jackson2JsonBuilder();
+		jacksonJsonBuilder2.indentOutput(false);
+		jacksonJsonBuilder2.getObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+
+		A a = new A();
+		Map<String, B> elements = Map.of(CUSTOMER_ONE, new B(CUSTOMER_ID1, TENANT_ID1));
+		a.setElements(elements);
+
+		Object json1 = Jackson2JsonBuilder.with(jacksonJsonBuilder1,
+				() -> Jackson2JsonBuilder.with(jacksonJsonBuilder2, () -> Jackson2JsonBuilder.toJson(a)));
+
+		assertThat(json1, equalTo("{\"elements\":{\"customerOne\":{\"customer_id\":\"cid1\",\"tenant_id\":\"tid1\"}}}"));
+	}
+
+	@Test
+	void shouldTransformObjectToJsonWithSpecificJsonBuilderRecursive() {
+		Jackson2JsonBuilder jacksonJsonBuilder1 = new Jackson2JsonBuilder();
+		jacksonJsonBuilder1.indentOutput(false);
+		jacksonJsonBuilder1.getObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
+
+		Jackson2JsonBuilder jacksonJsonBuilder2 = new Jackson2JsonBuilder();
+		jacksonJsonBuilder2.indentOutput(false);
+		jacksonJsonBuilder2.getObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+
+		A a = new A();
+		Map<String, B> elements = Map.of(CUSTOMER_ONE, new B(CUSTOMER_ID1, TENANT_ID1));
+		a.setElements(elements);
+
+		Object json1 = JsonBuilder.with(jacksonJsonBuilder1,
+				() -> JsonBuilder.with(jacksonJsonBuilder2, () -> JsonBuilder.toJson(a)));
+
+		assertThat(json1, equalTo("{\"elements\":{\"customerOne\":{\"customer_id\":\"cid1\",\"tenant_id\":\"tid1\"}}}"));
+	}
+
+	@Test
+	void shouldTransformObjectToJsonWithSpecificJsonBuilderMixed() {
+		Jackson2JsonBuilder jacksonJsonBuilder1 = new Jackson2JsonBuilder();
+		jacksonJsonBuilder1.indentOutput(false);
+		jacksonJsonBuilder1.getObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
+
+		Jackson2JsonBuilder jacksonJsonBuilder2 = new Jackson2JsonBuilder();
+		jacksonJsonBuilder2.indentOutput(false);
+		jacksonJsonBuilder2.getObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+
+		A a = new A();
+		Map<String, B> elements = Map.of(CUSTOMER_ONE, new B(CUSTOMER_ID1, TENANT_ID1));
+		a.setElements(elements);
+
+		// inner Jackson2JsonBuilder will be ignored if the inner call is made through JsonBuilder.
+		Object json1 = JsonBuilder.with(jacksonJsonBuilder1,
+				() -> Jackson2JsonBuilder.with(jacksonJsonBuilder2, () -> JsonBuilder.toJson(a)));
+
+		assertThat(json1, equalTo("{\"elements\":{\"customerOne\":{\"customer-id\":\"cid1\",\"tenant-id\":\"tid1\"}}}"));
 	}
 
 	@Test
@@ -295,8 +373,12 @@ class Jackson2JsonBuilderTest {
 		C c = new C();
 		c.setName(SOME_NAME);
 
-		String expectedString = "{ \"identity\":\"" + C.class.getName() + "@"
-				+ Integer.toHexString(c.hashCode()) + "\" }";
+		boolean indentOutput = jsonBuilder.isIndentOutput();
+		String indent = indentOutput ? jsonBuilder.eol() : " ";
+		String tab = indentOutput ? "\t" : "";
+
+		String expectedString = "{" + indent + tab + "\"identity\":\"" + C.class.getName() + "@"
+				+ Integer.toHexString(c.hashCode()) + "\"" + indent + "}";
 
 		String result = jacksonJsonBuilder.toJsonString(c);
 

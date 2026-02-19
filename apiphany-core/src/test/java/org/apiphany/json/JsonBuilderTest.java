@@ -7,12 +7,18 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 
+import org.apiphany.lang.Holder;
 import org.apiphany.lang.LibraryDescriptor;
 import org.apiphany.lang.Strings;
 import org.junit.jupiter.api.Test;
+import org.morphix.convert.function.SimpleConverter;
+import org.morphix.lang.function.Consumers;
 import org.morphix.reflection.Constructors;
 import org.morphix.reflection.GenericClass;
 import org.morphix.reflection.MemberAccessor;
@@ -50,19 +56,71 @@ class JsonBuilderTest {
 	}
 
 	@Test
-	void shouldThrowExceptionOnToPropertiesMap() {
-		UnsupportedOperationException e = assertThrows(UnsupportedOperationException.class,
-				() -> jsonBuilder.toPropertiesMap(null, null));
+	void shouldReturnEmptyMapOnToPropertiesMapWhenSourceIsNull() {
+		Object result = jsonBuilder.toPropertiesMap(null, null);
 
-		assertThat(e.getMessage(), equalTo(JsonBuilder.ErrorMessage.JSON_LIBRARY_NOT_FOUND));
+		assertThat(result, equalTo(Collections.emptyMap()));
 	}
 
 	@Test
-	void shouldThrowExceptionOnFromPropertiesMap() {
-		UnsupportedOperationException e = assertThrows(UnsupportedOperationException.class,
-				() -> jsonBuilder.fromPropertiesMap(null, null, null));
+	void shouldReturnEmptyMapOnToPropertiesMapWhenSourceIsObject() {
+		Object result = jsonBuilder.toPropertiesMap(new Object(), null);
 
-		assertThat(e.getMessage(), equalTo(JsonBuilder.ErrorMessage.JSON_LIBRARY_NOT_FOUND));
+		assertThat(result, equalTo(Collections.emptyMap()));
+	}
+
+	@Test
+	void shouldConvertObjectToPropertiesMap() {
+		Map<String, Object> result = jsonBuilder.toPropertiesMap(new A(CUSTOMER_ID1, TENANT_ID1), null);
+
+		assertThat(result.get("customerId"), equalTo(CUSTOMER_ID1));
+		assertThat(result.get("tenantId"), equalTo(TENANT_ID1));
+	}
+
+	@Test
+	void shouldReturnNullOnFromPropertiesMapWhenMapIsNull() {
+		Object result = jsonBuilder.fromPropertiesMap(null, null, Consumers.noConsumer());
+
+		assertThat(result, equalTo(null));
+	}
+
+	@Test
+	void shouldReturnObjectFromPropertiesMap() {
+		A result = jsonBuilder.fromPropertiesMap(
+				Map.of("customerId", CUSTOMER_ID1, "tenantId", TENANT_ID1),
+				A.class, Consumers.noConsumer());
+
+		assertThat(result.getCustomerId(), equalTo(CUSTOMER_ID1));
+		assertThat(result.getTenantId(), equalTo(TENANT_ID1));
+	}
+
+	@Test
+	void shouldReturnFallbackValueIfConversionFailsOnFromPropertiesMap() {
+		String fallback = "fallback";
+		String source = "source";
+		SimpleConverter<String, String> converter = s -> {
+			throw new RuntimeException("Conversion failed");
+		};
+		Holder<String> holder = Holder.noValue();
+		Consumer<Exception> errorConsumer = e -> {
+			holder.setValue(e.getMessage());
+		};
+		String result = JsonBuilder.convert(source, converter, () -> fallback, errorConsumer);
+
+		assertThat(result, equalTo(fallback));
+		assertThat(holder.getValue(), equalTo("Conversion failed"));
+	}
+
+	@Test
+	void shouldReturnFallbackValueIfConversionFailsOnFromPropertiesMapEvenIfOnErrorIsNull() {
+		String fallback = "fallback";
+		String source = "source";
+		SimpleConverter<String, String> converter = s -> {
+			throw new RuntimeException("Conversion failed");
+		};
+		String result = JsonBuilder.convert(source, converter, () -> fallback, null);
+
+		assertThat(result, equalTo(fallback));
 	}
 
 	static class A {
@@ -233,12 +291,30 @@ class JsonBuilderTest {
 	}
 
 	@Test
-	void shouldReturnSimilarToDebugStringIfJsonLibraryIsNotPresent() {
+	void shouldReturnIdentityJsonStringIfJsonLibraryIsNotPresent() {
 		Object o = new Object();
+
+		boolean indentOutput = jsonBuilder.isIndentOutput();
+		String indent = indentOutput ? jsonBuilder.eol() : " ";
+		String tab = indentOutput ? "\t" : "";
+		String expected = "{" + indent + tab + "\"identity\":\"" + JsonBuilder.identityHashCode(o) + "\"" + indent + "}";
 
 		String result = jsonBuilder.toJsonString(o);
 
-		String expected = "{ \"identity\":\"" + JsonBuilder.identityHashCode(o) + "\" }";
+		assertThat(result, equalTo(expected));
+	}
+
+	@Test
+	void shouldReturnIdentityJsonStringIfJsonLibraryIsNotPresentWithRuntime() {
+		Object o = new Object();
+
+		JsonBuilder runtime = JsonBuilder.runtime();
+		boolean indentOutput = runtime.isIndentOutput();
+		String indent = indentOutput ? runtime.eol() : " ";
+		String tab = indentOutput ? "\t" : "";
+		String expected = "{" + indent + tab + "\"identity\":\"" + JsonBuilder.identityHashCode(o) + "\"" + indent + "}";
+
+		String result = JsonBuilder.toIdentityJson(o);
 
 		assertThat(result, equalTo(expected));
 	}
@@ -248,5 +324,47 @@ class JsonBuilderTest {
 		JsonBuilder instance = JsonBuilder.initializeInstance((LibraryDescriptor<? extends JsonBuilder>[]) null);
 
 		assertThat(instance.getClass(), equalTo(JsonBuilder.class));
+	}
+
+	@Test
+	void shouldRunTheGivenSupplierOnTheGivenJsonBuilderInstance() {
+		JsonBuilder jsonBuilder1 = new JsonBuilder();
+		jsonBuilder1.indentOutput(false);
+
+		JsonBuilder jsonBuilder2 = new JsonBuilder();
+		jsonBuilder2.indentOutput(true);
+
+		Object object = new Object();
+
+		String expected1 = "{ \"identity\":\"" + JsonBuilder.identityHashCode(object) + "\" }";
+		String expected2 =
+				"{" + System.lineSeparator() + "\t\"identity\":\"" + JsonBuilder.identityHashCode(object) + "\"" + System.lineSeparator() + "}";
+
+		String result1 = JsonBuilder.with(jsonBuilder1, () -> JsonBuilder.toJson(object));
+		String result2 = JsonBuilder.with(jsonBuilder2, () -> JsonBuilder.toJson(object));
+
+		assertThat(result1, equalTo(expected1));
+		assertThat(result2, equalTo(expected2));
+	}
+
+	@Test
+	void shouldRunTheGivenSupplierEvenOnRecursiveCalls() {
+		JsonBuilder jsonBuilder1 = new JsonBuilder();
+		jsonBuilder1.indentOutput(false);
+
+		JsonBuilder jsonBuilder2 = new JsonBuilder();
+		jsonBuilder2.indentOutput(true);
+
+		Object object = new Object();
+
+		String expected =
+				"{" + System.lineSeparator() + "\t\"identity\":\"" + JsonBuilder.identityHashCode(object) + "\"" + System.lineSeparator() + "}";
+
+		String result = JsonBuilder.with(jsonBuilder1, () -> {
+			// recursive call to with
+			return JsonBuilder.with(jsonBuilder2, () -> JsonBuilder.toJson(object));
+		});
+
+		assertThat(result, equalTo(expected));
 	}
 }

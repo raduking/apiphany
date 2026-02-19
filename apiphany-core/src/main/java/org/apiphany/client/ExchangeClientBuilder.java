@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import org.apiphany.client.http.JavaNetHttpExchangeClient;
+import org.apiphany.lang.Lifecycle;
 import org.apiphany.lang.Require;
 import org.apiphany.lang.ScopedResource;
 import org.apiphany.security.client.SecuredExchangeClientBuilder;
@@ -81,7 +82,7 @@ public class ExchangeClientBuilder {
 		boolean managed = exchangeClient == null;
 		ExchangeClient client = managed ? build(exchangeClientClass) : exchangeClient;
 
-		ScopedResource<ExchangeClient> scopedResource = ScopedResource.of(client, managed);
+		ScopedResource<ExchangeClient> scopedResource = ScopedResource.of(client, Lifecycle.from(managed));
 		for (Class<? extends DecoratingExchangeClient> decoratorClientClass : decoratorClientClasses) {
 			client = build(scopedResource, decoratorClientClass);
 			scopedResource = ScopedResource.managed(client);

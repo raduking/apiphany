@@ -38,5 +38,4 @@ public enum BytesOrder {
 	public static BytesOrder fromString(final String bytesOrder) {
 		return Enums.fromString(bytesOrder, NAME_MAP, values());
 	}
-
 }
