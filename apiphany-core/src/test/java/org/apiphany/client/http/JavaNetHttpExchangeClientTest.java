@@ -278,7 +278,8 @@ class JavaNetHttpExchangeClientTest {
 		HttpException e = assertThrows(HttpException.class, () -> exchangeClient.buildRequest(request));
 
 		assertThat(e.getStatus(), equalTo(HttpStatus.BAD_REQUEST));
-		assertThat(e.getMessage(), equalTo(HttpException.message(HttpStatus.BAD_REQUEST, "HTTP method " + HttpMethod.CONNECT + " is not supported!")));
+		assertThat(e.getMessage(),
+				equalTo(HttpException.message(HttpStatus.BAD_REQUEST, "HTTP method " + HttpMethod.CONNECT + " is not supported!")));
 	}
 
 	@Test

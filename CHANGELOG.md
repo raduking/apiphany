@@ -6,7 +6,7 @@
 - Added `LibraryDescriptor.present(Class)` to signal the presence of a library.
 - Added `LibraryDescriptor.notPresent(Class)` to signal the absence of a library.
 - Removed `LibraryDescriptor.of(boolean, Class)` because there are other more appropriate methods now.
-- Upgraded `morphix-all` to `1.0.22`.
+- Upgraded `morphix-all` to `1.0.23`.
 - Added `ClientProperties.defaults` to get an instance with default values.
 - Changed `JsonBuilder.fromMap` to work without the need of a JSON library to be present in the classpath.
 - Added `Lifecycle` enum to enumerate the life cycle options (`MANAGED` and `UNMANAGED`) for a `ScopedResource`.
