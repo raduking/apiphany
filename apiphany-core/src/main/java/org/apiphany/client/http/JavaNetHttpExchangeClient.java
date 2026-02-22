@@ -177,6 +177,9 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 
 	/**
 	 * Builds the {@link HttpRequest} based on the given {@link ApiRequest}.
+	 * <p>
+	 * Note: {@link HttpMethod#CONNECT} is explicitly not supported by the Java net HTTP client so we won't support it
+	 * either for this exchange client.
 	 *
 	 * @param <T> request body type
 	 *
@@ -188,18 +191,20 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 				.uri(apiRequest.getUri());
 		addHeaders(httpRequestBuilder, apiRequest.getHeaders());
 
-		HttpMethod httpMethod = HttpException.ifThrows(() -> apiRequest.getMethod(), HttpStatus.BAD_REQUEST);
-		switch (httpMethod) {
-			case GET -> httpRequestBuilder.GET();
-			case PUT -> httpRequestBuilder.PUT(toBodyPublisher(apiRequest));
-			case POST -> httpRequestBuilder.POST(toBodyPublisher(apiRequest));
-			case DELETE -> httpRequestBuilder.DELETE();
-			case HEAD -> httpRequestBuilder.HEAD();
-			case PATCH -> httpRequestBuilder.method(httpMethod.value(), toBodyPublisher(apiRequest));
-			case OPTIONS, TRACE -> httpRequestBuilder.method(httpMethod.value(), BodyPublishers.noBody());
-			default -> throw new HttpException(HttpStatus.BAD_REQUEST, "HTTP method " + httpMethod + " is not supported!");
-		}
-		return httpRequestBuilder.build();
+		return HttpException.ifThrows(() -> {
+			HttpMethod httpMethod = apiRequest.getMethod();
+			switch (httpMethod) {
+				case GET -> httpRequestBuilder.GET();
+				case PUT -> httpRequestBuilder.PUT(toBodyPublisher(apiRequest));
+				case POST -> httpRequestBuilder.POST(toBodyPublisher(apiRequest));
+				case DELETE -> httpRequestBuilder.DELETE();
+				case HEAD -> httpRequestBuilder.HEAD();
+				case PATCH -> httpRequestBuilder.method(httpMethod.value(), toBodyPublisher(apiRequest));
+				case OPTIONS, TRACE -> httpRequestBuilder.method(httpMethod.value(), BodyPublishers.noBody());
+				default -> throw new UnsupportedOperationException("HTTP method " + httpMethod + " is not supported!");
+			}
+			return httpRequestBuilder.build();
+		}, HttpStatus.BAD_REQUEST);
 	}
 
 	/**

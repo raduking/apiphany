@@ -62,7 +62,9 @@ public class KeyValueHttpServer implements AutoCloseable {
 			HttpMethod.DELETE,
 			HttpMethod.PATCH,
 			HttpMethod.HEAD,
-			HttpMethod.OPTIONS);
+			HttpMethod.CONNECT,
+			HttpMethod.OPTIONS,
+			HttpMethod.TRACE);
 
 	/**
 	 * Comma-separated string of allowed HTTP methods for the Allow header.
@@ -189,6 +191,7 @@ public class KeyValueHttpServer implements AutoCloseable {
 				case DELETE -> handleDelete(exchange);
 				case PATCH -> handlePatch(exchange);
 				case HEAD -> handleHead(exchange);
+				case CONNECT -> handleConnect(exchange);
 				case OPTIONS -> handleOptions(exchange);
 				case TRACE -> handleTrace(exchange);
 				default -> exchange.sendResponseHeaders(HttpStatus.METHOD_NOT_ALLOWED.value(), NO_BODY);
@@ -288,6 +291,19 @@ public class KeyValueHttpServer implements AutoCloseable {
 				exchange.sendResponseHeaders(HttpStatus.OK.value(), NO_BODY);
 			} else {
 				exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.value(), NO_BODY);
+			}
+		}
+
+		/**
+		 * Handles CONNECT requests to acknowledge the connection.
+		 *
+		 * @param exchange the HTTP exchange object
+		 * @throws IOException if an I/O error occurs
+		 */
+		private static void handleConnect(final HttpExchange exchange) throws IOException {
+			exchange.sendResponseHeaders(HttpStatus.OK.value(), NO_BODY);
+			try (OutputStream os = exchange.getResponseBody()) {
+				// no body for CONNECT, just acknowledge the connection
 			}
 		}
 
