@@ -267,6 +267,21 @@ class JavaNetHttpExchangeClientTest {
 	}
 
 	@Test
+	void shouldThrowExceptionOnBuildConnectRequest() throws Exception {
+		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+		exchangeClient.close();
+
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+				.url(URL)
+				.method(HttpMethod.CONNECT);
+
+		HttpException e = assertThrows(HttpException.class, () -> exchangeClient.buildRequest(request));
+
+		assertThat(e.getStatus(), equalTo(HttpStatus.BAD_REQUEST));
+		assertThat(e.getMessage(), equalTo(HttpException.message(HttpStatus.BAD_REQUEST, "HTTP method " + HttpMethod.CONNECT + " is not supported!")));
+	}
+
+	@Test
 	void shouldBuildOptionsRequest() throws Exception {
 		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
 		exchangeClient.close();

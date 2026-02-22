@@ -35,7 +35,7 @@ public class CloseableHttpResponseInputStream extends InputStream {
 	protected CloseableHttpResponseInputStream(final ClassicHttpResponse classicHttpResponse) {
 		this.classicHttpResponse = Objects.requireNonNull(classicHttpResponse, "response cannot be null");
 		HttpEntity httpEntity = Objects.requireNonNull(classicHttpResponse.getEntity(), "response entity cannot be null");
-		this.inputStream = Objects.requireNonNull(ThrowingSupplier.unchecked(httpEntity::getContent).get());
+		this.inputStream = Objects.requireNonNull(ThrowingSupplier.unchecked(httpEntity::getContent).get(), "entity content cannot be null");
 	}
 
 	/**
