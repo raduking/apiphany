@@ -113,7 +113,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	/**
 	 * Thread local override for the singleton instance.
 	 */
-	private static final ThreadLocal<JsonBuilder> OVERRIDE = new ThreadLocal<>();
+	private static final ThreadLocal<JsonBuilder> OVERRIDE = new ThreadLocal<>(); // NOSONAR used correctly with remove() in the with() method
 
 	/**
 	 * Indent output flag.
