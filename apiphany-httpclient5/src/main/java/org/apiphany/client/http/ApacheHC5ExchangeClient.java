@@ -120,17 +120,29 @@ public class ApacheHC5ExchangeClient extends AbstractHttpExchangeClient {
 	/**
 	 * @see ExchangeClient#exchange(ApiRequest)
 	 */
-	@SuppressWarnings("resource")
 	@Override
 	public <T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest) {
 		apiRequest.addHeaders(getTracingHeaders());
 		apiRequest.addHeaders(getCommonHeaders());
 
 		HttpUriRequest httpUriRequest = buildRequest(apiRequest);
+		return sendRequest(apiRequest, httpUriRequest);
+	}
+
+	/**
+	 * Sends the HTTP request and returns the API response.
+	 *
+	 * @param <T> request body type
+	 * @param <U> response body type
+	 *
+	 * @param apiRequest API request object
+	 * @param httpUriRequest HTTP URI request to send
+	 * @return API response object
+	 */
+	@SuppressWarnings("resource")
+	private <U, T> ApiResponse<U> sendRequest(final ApiRequest<T> apiRequest, final HttpUriRequest httpUriRequest) {
 		HttpClientResponseHandler<ApiResponse<U>> responseHandler = httpResponse -> buildResponse(apiRequest, httpResponse);
-		return ThrowingSupplier
-				.unchecked(() -> getHttpClient().execute(httpUriRequest, responseHandler))
-				.get();
+		return HttpException.ifThrows(() -> getHttpClient().execute(httpUriRequest, responseHandler));
 	}
 
 	/**
