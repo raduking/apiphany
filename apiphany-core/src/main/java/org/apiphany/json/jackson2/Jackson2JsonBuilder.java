@@ -1,7 +1,6 @@
 package org.apiphany.json.jackson2;
 
 import java.io.IOException;
-import java.io.Serial;
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -10,15 +9,13 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import org.apiphany.RequestMethod;
 import org.apiphany.json.JsonBuilder;
-import org.apiphany.json.jackson2.serializers.RequestMethodDeserializer;
-import org.apiphany.json.jackson2.serializers.RequestMethodSerializer;
 import org.morphix.reflection.GenericClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
@@ -55,11 +52,6 @@ public final class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleto
 	private static final Logger LOGGER = LoggerFactory.getLogger(Jackson2JsonBuilder.class);
 
 	/**
-	 * The custom serialization module name.
-	 */
-	public static final String APIPHANY_MODULE = "apiphany";
-
-	/**
 	 * Singleton instance holder.
 	 *
 	 * @author Radu Sebastian LAZIN
@@ -83,17 +75,20 @@ public final class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleto
 	/**
 	 * The underlying {@link ObjectMapper}.
 	 */
-	private final ObjectMapper objectMapper = new ObjectMapper();
+	protected final ObjectMapper objectMapper;
 
 	/**
 	 * The default annotation introspector.
 	 */
-	private final AnnotationIntrospector defaultAnnotationIntrospector;
+	protected final AnnotationIntrospector defaultAnnotationIntrospector;
 
 	/**
 	 * Hide constructor.
+	 *
+	 * @param objectMapper the object mapper to use
 	 */
-	Jackson2JsonBuilder() {
+	Jackson2JsonBuilder(final ObjectMapper objectMapper) {
+		this.objectMapper = objectMapper;
 		this.objectMapper.registerModule(newJavaTimeModule(DateTimeFormatter.ISO_DATE_TIME));
 		this.objectMapper.registerModule(apiphanySerializationModule());
 		indentOutput(isIndentOutput());
@@ -102,6 +97,23 @@ public final class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleto
 
 		this.defaultAnnotationIntrospector = objectMapper.getSerializationConfig().getAnnotationIntrospector();
 		configureSensitivity(SensitiveJackson2AnnotationIntrospector.hideSensitive());
+	}
+
+	/**
+	 * Hide constructor.
+	 */
+	Jackson2JsonBuilder() {
+		this(new ObjectMapper());
+	}
+
+	/**
+	 * Since the {@link ObjectMapper} cannot be configured to use a different {@link JsonFactory} after its creation, this
+	 * constructor allows creating a new {@link Jackson2JsonBuilder} with a custom {@link JsonFactory}.
+	 *
+	 * @param jsonFactory the JSON factory to use for the underlying {@link ObjectMapper}, e.g. for YAML support.
+	 */
+	public Jackson2JsonBuilder(final JsonFactory jsonFactory) {
+		this(new ObjectMapper(jsonFactory));
 	}
 
 	/**
@@ -395,25 +407,12 @@ public final class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleto
 	}
 
 	/**
-	 * Creates a new {@link SimpleModule} with custom serializers/deserializers named {@link #APIPHANY_MODULE}.
+	 * Returns a {@link SimpleModule} with custom serializers/deserializers named {@link ApiphanyJackson2Module#NAME}.
 	 *
 	 * @return simple module
 	 */
 	public static SimpleModule apiphanySerializationModule() {
-		SimpleModule apiphanyModule = new SimpleModule(APIPHANY_MODULE) {
-
-			@Serial
-			private static final long serialVersionUID = -1205949335841515195L;
-
-			@Override
-			public void setupModule(final SetupContext context) {
-				super.setupModule(context);
-				context.insertAnnotationIntrospector(ApiphanyJackson2AnnotationIntrospector.getInstance());
-			}
-		};
-		return apiphanyModule
-				.addSerializer(RequestMethod.class, new RequestMethodSerializer())
-				.addDeserializer(RequestMethod.class, new RequestMethodDeserializer());
+		return ApiphanyJackson2Module.instance();
 	}
 
 	/**

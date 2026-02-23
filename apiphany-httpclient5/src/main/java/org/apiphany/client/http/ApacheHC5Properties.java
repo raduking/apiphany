@@ -1,5 +1,7 @@
 package org.apiphany.client.http;
 
+import java.util.Objects;
+
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.core5.http.HttpVersion;
 import org.apache.hc.core5.http.ParseException;
@@ -17,7 +19,7 @@ public class ApacheHC5Properties {
 	/**
 	 * The root property prefix for Apache HTTP Client 5 configuration.
 	 */
-	public static final String ROOT = "http-client-5";
+	public static final String ROOT = "http-client5";
 
 	/**
 	 * Specific Apache HTTP Client 5 connection properties.
@@ -57,6 +59,32 @@ public class ApacheHC5Properties {
 	@Override
 	public String toString() {
 		return JsonBuilder.toJson(this);
+	}
+
+	/**
+	 * @see Object#equals(Object)
+	 */
+	@Override
+	public boolean equals(final Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o instanceof ApacheHC5Properties that) {
+			return Objects.equals(this.connection, that.connection) &&
+					Objects.equals(this.request, that.request) &&
+					Objects.equals(this.connectionRequest, that.connectionRequest) &&
+					Objects.equals(this.connect, that.connect) &&
+					Objects.equals(this.socket, that.socket);
+		}
+		return false;
+	}
+
+	/**
+	 * @see Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hash(connection, request, connectionRequest, connect, socket);
 	}
 
 	/**
@@ -145,7 +173,7 @@ public class ApacheHC5Properties {
 	 *
 	 * @param socket socket properties to set.
 	 */
-	public void setConnect(final Socket socket) {
+	public void setSocket(final Socket socket) {
 		this.socket = socket;
 	}
 
@@ -201,6 +229,30 @@ public class ApacheHC5Properties {
 		@Override
 		public String toString() {
 			return JsonBuilder.toJson(this);
+		}
+
+		/**
+		 * @see Object#equals(Object)
+		 */
+		@Override
+		public boolean equals(final Object o) {
+			if (this == o) {
+				return true;
+			}
+			if (o instanceof Connection that) {
+				return Objects.equals(this.timeToLive, that.timeToLive) &&
+						this.maxTotal == that.maxTotal &&
+						this.maxPerRoute == that.maxPerRoute;
+			}
+			return false;
+		}
+
+		/**
+		 * @see Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			return Objects.hash(timeToLive, maxTotal, maxPerRoute);
 		}
 
 		/**
@@ -293,6 +345,29 @@ public class ApacheHC5Properties {
 		}
 
 		/**
+		 * @see Object#equals(Object)
+		 */
+		@Override
+		public boolean equals(final Object o) {
+			if (this == o) {
+				return true;
+			}
+			if (o instanceof Request that) {
+				return this.protocolUpgradeEnabled == that.protocolUpgradeEnabled &&
+						Objects.equals(this.protocolVersion, that.protocolVersion);
+			}
+			return false;
+		}
+
+		/**
+		 * @see Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			return Objects.hash(protocolUpgradeEnabled, protocolVersion);
+		}
+
+		/**
 		 * Gets whether protocol upgrade is enabled.
 		 *
 		 * @return true if protocol upgrade is enabled, false otherwise
@@ -362,6 +437,38 @@ public class ApacheHC5Properties {
 		}
 
 		/**
+		 * Returns a JSON representation of this Connect object.
+		 *
+		 * @return JSON string representation of this object
+		 */
+		@Override
+		public String toString() {
+			return JsonBuilder.toJson(this);
+		}
+
+		/**
+		 * @see Object#equals(Object)
+		 */
+		@Override
+		public boolean equals(final Object o) {
+			if (this == o) {
+				return true;
+			}
+			if (o instanceof Connect that) {
+				return Objects.equals(this.timeout, that.timeout);
+			}
+			return false;
+		}
+
+		/**
+		 * @see Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			return Objects.hash(timeout);
+		}
+
+		/**
 		 * Returns the connect timeout.
 		 *
 		 * @return the connect timeout.
@@ -400,6 +507,38 @@ public class ApacheHC5Properties {
 		}
 
 		/**
+		 * Returns a JSON representation of this ConnectionRequest object.
+		 *
+		 * @return JSON string representation of this object
+		 */
+		@Override
+		public String toString() {
+			return JsonBuilder.toJson(this);
+		}
+
+		/**
+		 * @see Object#equals(Object)
+		 */
+		@Override
+		public boolean equals(final Object o) {
+			if (this == o) {
+				return true;
+			}
+			if (o instanceof ConnectionRequest that) {
+				return Objects.equals(this.timeout, that.timeout);
+			}
+			return false;
+		}
+
+		/**
+		 * @see Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			return Objects.hash(timeout);
+		}
+
+		/**
 		 * Returns the connection request timeout.
 		 *
 		 * @return the connection request timeout.
@@ -435,6 +574,38 @@ public class ApacheHC5Properties {
 		 */
 		protected Socket() {
 			// empty
+		}
+
+		/**
+		 * Returns a JSON representation of this Socket object.
+		 *
+		 * @return JSON string representation of this object
+		 */
+		@Override
+		public String toString() {
+			return JsonBuilder.toJson(this);
+		}
+
+		/**
+		 * @see Object#equals(Object)
+		 */
+		@Override
+		public boolean equals(final Object o) {
+			if (this == o) {
+				return true;
+			}
+			if (o instanceof Socket that) {
+				return Objects.equals(this.timeout, that.timeout);
+			}
+			return false;
+		}
+
+		/**
+		 * @see Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			return Objects.hash(timeout);
 		}
 
 		/**
