@@ -102,7 +102,7 @@ public class ApacheHC5ExchangeClient extends AbstractHttpExchangeClient {
 	 * @param httpClientBuilder the HTTP client builder
 	 */
 	private void customize(final HttpClientBuilder httpClientBuilder) {
-		ApacheHC5Properties properties = getClientProperties().getCustomProperties(ApacheHC5Properties.class);
+		ApacheHC5Properties properties = getCustomProperties(ApacheHC5Properties.class);
 		if (null == properties) {
 			return;
 		}
@@ -140,7 +140,7 @@ public class ApacheHC5ExchangeClient extends AbstractHttpExchangeClient {
 	 * @return API response object
 	 */
 	@SuppressWarnings("resource")
-	private <U, T> ApiResponse<U> sendRequest(final ApiRequest<T> apiRequest, final HttpUriRequest httpUriRequest) {
+	protected <U, T> ApiResponse<U> sendRequest(final ApiRequest<T> apiRequest, final HttpUriRequest httpUriRequest) {
 		HttpClientResponseHandler<ApiResponse<U>> responseHandler = httpResponse -> buildResponse(apiRequest, httpResponse);
 		return HttpException.ifThrows(() -> getHttpClient().execute(httpUriRequest, responseHandler));
 	}

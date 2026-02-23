@@ -20,6 +20,8 @@
 - Added `Jackson2JsonBuilder.runtime` to get the current `Jackson2JsonBuilder` instance.
 - Added `Jackson2JsonBuilder.with` method to run code on a different `Jackson2JsonBuilder` with different settings.
 - Added `Jackson2JsonBuilder.getObjectMapper` to configure the underlying `ObjectMapper`.
+- Added `Jackson2JsonBuilder(JsonFactory)` constructor to configure the `ObjectMapper` with a different factory since it can only be configured at construction.
+- Extracted `ApiphanyJackson2Module` from `Jackson2JsonBuilder` for easier usage and added `instance` method.
 
 ---
 
