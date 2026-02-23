@@ -2,8 +2,14 @@ package org.apiphany.lang;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.time.Duration;
+
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 /**
  * Test class for {@link Temporals}.
@@ -37,4 +43,60 @@ class TemporalsTest {
 		assertThat(result, equalTo("N/A"));
 	}
 
+	@Nested
+	class ParseSimpleDurationTest {
+
+		@Test
+		void shouldParseSimpleDurationSeconds() {
+			String duration = "1s";
+
+			Duration result = Temporals.parseSimpleDuration(duration);
+
+			assertThat(result, equalTo(Duration.ofSeconds(1)));
+		}
+
+		@Test
+		void shouldParseSimpleDurationMinutes() {
+			String duration = "1m";
+
+			Duration result = Temporals.parseSimpleDuration(duration);
+
+			assertThat(result, equalTo(Duration.ofMinutes(1)));
+		}
+
+		@Test
+		void shouldParseSimpleDurationHours() {
+			String duration = "1h";
+
+			Duration result = Temporals.parseSimpleDuration(duration);
+
+			assertThat(result, equalTo(Duration.ofHours(1)));
+		}
+
+		@Test
+		void shouldParseSimpleDurationDays() {
+			String duration = "1d";
+
+			Duration result = Temporals.parseSimpleDuration(duration);
+
+			assertThat(result, equalTo(Duration.ofDays(1)));
+		}
+
+		@Test
+		void shouldThrowExceptionIfUnsupportedFormat() {
+			String duration = "1x";
+
+			IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> Temporals.parseSimpleDuration(duration));
+
+			assertThat(e.getMessage(), equalTo("Unsupported unit: x in: " + duration));
+		}
+
+		@ParameterizedTest
+		@ValueSource(strings = { "", " ", "\t", "\n" })
+		void shouldThrowExceptionIfInputIsBlank(final String duration) {
+			IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> Temporals.parseSimpleDuration(duration));
+
+			assertThat(e.getMessage(), equalTo("Input cannot be empty or null"));
+		}
+	}
 }

@@ -70,4 +70,28 @@ public interface Temporals {
 		}
 		return String.format(locale, "%.3fs", duration);
 	}
+
+	/**
+	 * Parses a simple duration format like "10s", "5m", "2h" or "7d".
+	 *
+	 * @param input the input string
+	 * @return the parsed duration
+	 * @throws IllegalArgumentException if the format is unsupported
+	 * @throws NumberFormatException if the numeric part of the input is not a valid number
+	 */
+	public static Duration parseSimpleDuration(final String input) {
+		if (Strings.isBlank(input)) {
+			throw new IllegalArgumentException("Input cannot be empty or null");
+		}
+		char unit = input.charAt(input.length() - 1);
+		String numberPart = input.substring(0, input.length() - 1);
+		long value = Long.parseLong(numberPart);
+		return switch (unit) {
+			case 's' -> Duration.ofSeconds(value);
+			case 'm' -> Duration.ofMinutes(value);
+			case 'h' -> Duration.ofHours(value);
+			case 'd' -> Duration.ofDays(value);
+			default -> throw new IllegalArgumentException("Unsupported unit: " + unit + " in: " + input);
+		};
+	}
 }
