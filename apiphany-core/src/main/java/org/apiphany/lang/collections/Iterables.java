@@ -27,4 +27,16 @@ public interface Iterables {
 	static <T> Iterable<T> safe(final Iterable<T> iterable) {
 		return null == iterable ? Collections.emptyList() : iterable;
 	}
+
+	/**
+	 * Returns the collection given as parameter or an empty collection if the parameter is {@code null}.
+	 *
+	 * @param <T> element type
+	 *
+	 * @param collection a collection
+	 * @return the collection given as parameter or an empty collection if the parameter is null
+	 */
+	static <T> Collection<T> safe(final Collection<T> collection) {
+		return null == collection ? Collections.emptyList() : collection;
+	}
 }
