@@ -1,9 +1,9 @@
 package org.apiphany.client.http;
 
 import java.io.File;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +33,7 @@ import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
+import org.apiphany.header.Headers;
 import org.apiphany.header.MapHeaderValues;
 import org.apiphany.http.HttpContentType;
 import org.apiphany.http.HttpException;
@@ -191,20 +192,42 @@ public class ApacheHC5ExchangeClient extends AbstractHttpExchangeClient {
 		HttpEntity httpEntity = response.getEntity();
 		HttpStatus httpStatus = HttpStatus.fromCode(response.getCode());
 
-		Map<String, List<String>> headers = Nullables.apply(response.getHeaders(), ApacheHC5ExchangeClient::toHttpHeadersMap);
-		HttpContentType resolvedContentType = HttpContentType.from(httpEntity.getContentType(), httpEntity.getContentEncoding());
+		Map<String, List<String>> headers = Nullables.whenNotNull(response.getHeaders(), ApacheHC5ExchangeClient::toHttpHeadersMap);
+		HttpContentType contentType = HttpContentType.from(httpEntity.getContentType(), httpEntity.getContentEncoding());
 		if (httpStatus.isError()) {
-			throw new HttpException(httpStatus, StringHttpContentConverter.instance().from(httpEntity, resolvedContentType, String.class));
+			throw new HttpException(httpStatus, StringHttpContentConverter.from(toInputStream(httpEntity), contentType));
 		}
-
-		byte[] bodyBytes = ThrowingSupplier.unchecked(() -> EntityUtils.toByteArray(httpEntity)).get();
-		U body = convertBody(apiRequest, resolvedContentType, headers, bodyBytes);
+		U body = convertBody(apiRequest, contentType, headers, toByteArray(httpEntity));
 
 		return ApiResponse.create(body)
 				.status(httpStatus)
 				.headers(headers)
 				.exchangeClient(this)
 				.build();
+	}
+
+	/**
+	 * Return the content of the HTTP entity as an input stream. This method is used to convert the response body to the
+	 * target type using the content converters. The content converters can use the input stream to read the response body
+	 * without loading it entirely into memory, which is useful for large responses.
+	 *
+	 * @param httpEntity the HTTP entity to read the content from
+	 * @return an input stream containing the content of the HTTP entity
+	 */
+	public static InputStream toInputStream(final HttpEntity httpEntity) {
+		return ThrowingSupplier.unchecked(httpEntity::getContent).get();
+	}
+
+	/**
+	 * Return the content of the HTTP entity as a byte array. This method is used to convert the response body to the target
+	 * type using the content converters. The content converters can use the byte array to read the response body without
+	 * loading it entirely into memory, which is useful for large responses.
+	 *
+	 * @param httpEntity the HTTP entity to read the content from
+	 * @return a byte array containing the content of the HTTP entity
+	 */
+	public static byte[] toByteArray(final HttpEntity httpEntity) {
+		return ThrowingSupplier.unchecked(() -> EntityUtils.toByteArray(httpEntity)).get();
 	}
 
 	/**
@@ -260,9 +283,7 @@ public class ApacheHC5ExchangeClient extends AbstractHttpExchangeClient {
 	public static Map<String, List<String>> toHttpHeadersMap(final Header[] headers) {
 		var httpHeaders = new HashMap<String, List<String>>();
 		for (Header header : headers) {
-			String headerName = header.getName();
-			String headerValue = header.getValue();
-			httpHeaders.computeIfAbsent(headerName, k -> new ArrayList<>()).add(headerValue);
+			Headers.addTo(httpHeaders, header.getName(), header.getValue());
 		}
 		return httpHeaders;
 	}
