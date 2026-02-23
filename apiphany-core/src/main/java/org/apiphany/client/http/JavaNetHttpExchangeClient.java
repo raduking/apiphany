@@ -176,7 +176,8 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	}
 
 	/**
-	 * Builds the {@link HttpRequest} based on the given {@link ApiRequest}.
+	 * Builds the {@link HttpRequest} based on the given {@link ApiRequest} and handles any exception that may occur during
+	 * the building process by throwing an {@link HttpException} with a {@link HttpStatus#BAD_REQUEST} status code.
 	 * <p>
 	 * Note: {@link HttpMethod#CONNECT} is explicitly not supported by the Java net HTTP client so we won't support it
 	 * either for this exchange client.
@@ -187,24 +188,34 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	 * @return HTTP request object
 	 */
 	protected <T> HttpRequest buildRequest(final ApiRequest<T> apiRequest) {
+		return HttpException.ifThrows(() -> buildHttpRequest(apiRequest), HttpStatus.BAD_REQUEST);
+	}
+
+	/**
+	 * Builds the {@link HttpRequest} based on the given {@link ApiRequest}.
+	 *
+	 * @param <T> request body type
+	 *
+	 * @param apiRequest API request
+	 * @return HTTP request object
+	 */
+	protected <T> HttpRequest buildHttpRequest(final ApiRequest<T> apiRequest) {
 		HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder()
 				.uri(apiRequest.getUri());
 		addHeaders(httpRequestBuilder, apiRequest.getHeaders());
 
-		return HttpException.ifThrows(() -> {
-			HttpMethod httpMethod = apiRequest.getMethod();
-			switch (httpMethod) {
-				case GET -> httpRequestBuilder.GET();
-				case PUT -> httpRequestBuilder.PUT(toBodyPublisher(apiRequest));
-				case POST -> httpRequestBuilder.POST(toBodyPublisher(apiRequest));
-				case DELETE -> httpRequestBuilder.DELETE();
-				case HEAD -> httpRequestBuilder.HEAD();
-				case PATCH -> httpRequestBuilder.method(httpMethod.value(), toBodyPublisher(apiRequest));
-				case OPTIONS, TRACE -> httpRequestBuilder.method(httpMethod.value(), BodyPublishers.noBody());
-				default -> throw new UnsupportedOperationException("HTTP method " + httpMethod + " is not supported!");
-			}
-			return httpRequestBuilder.build();
-		}, HttpStatus.BAD_REQUEST);
+		HttpMethod httpMethod = apiRequest.getMethod();
+		switch (httpMethod) {
+			case GET -> httpRequestBuilder.GET();
+			case PUT -> httpRequestBuilder.PUT(toBodyPublisher(apiRequest));
+			case POST -> httpRequestBuilder.POST(toBodyPublisher(apiRequest));
+			case DELETE -> httpRequestBuilder.DELETE();
+			case HEAD -> httpRequestBuilder.HEAD();
+			case PATCH -> httpRequestBuilder.method(httpMethod.value(), toBodyPublisher(apiRequest));
+			case OPTIONS, TRACE -> httpRequestBuilder.method(httpMethod.value(), BodyPublishers.noBody());
+			default -> throw new UnsupportedOperationException("HTTP method " + httpMethod + " is not supported!");
+		}
+		return httpRequestBuilder.build();
 	}
 
 	/**
