@@ -22,6 +22,7 @@
 - Added `Jackson2JsonBuilder.getObjectMapper` to configure the underlying `ObjectMapper`.
 - Added `Jackson2JsonBuilder(JsonFactory)` constructor to configure the `ObjectMapper` with a different factory since it can only be configured at construction.
 - Extracted `ApiphanyJackson2Module` from `Jackson2JsonBuilder` for easier usage and added `instance` method.
+- Added `Iterables` utility interface for `Iterable` and `Collection`.
 
 ---
 
