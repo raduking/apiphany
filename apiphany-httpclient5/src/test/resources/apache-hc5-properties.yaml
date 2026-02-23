@@ -5,13 +5,13 @@ http-client5:
   connection:
     time-to-live: 30s
     max-total: 100
-    max-per-route: 100
+    max-per-route: 50
   request:
     protocol-upgrade-enabled: true
     protocol-version: HTTP/1.1
   connection-request:
     timeout: infinite
   connect:
-    timeout: infinite
+    timeout: 1m
   socket:
-    timeout: infinite
+    timeout: 1h
