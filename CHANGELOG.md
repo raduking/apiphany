@@ -23,6 +23,7 @@
 - Added `Jackson2JsonBuilder(JsonFactory)` constructor to configure the `ObjectMapper` with a different factory since it can only be configured at construction.
 - Extracted `ApiphanyJackson2Module` from `Jackson2JsonBuilder` for easier usage and added `instance` method.
 - Added `Iterables` utility interface for `Iterable` and `Collection`.
+- Added `Temporals.parseSimpleDuration` to parse durations like `1s`, `2m`, `3h` or `7d`. 
 
 ---
 

@@ -1,10 +1,12 @@
 package org.apiphany.json.jackson2.serializers;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.text.ParseException;
 import java.time.Duration;
 
 import org.apache.hc.core5.util.Timeout;
+import org.apiphany.lang.Temporals;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -17,12 +19,22 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
  */
 public class TimeoutDeserializer extends StdDeserializer<Timeout> {
 
+	/**
+	 * Serial version UID for serialization.
+	 */
+	@Serial
 	private static final long serialVersionUID = 3036490563258813683L;
 
+	/**
+	 * Default constructor.
+	 */
 	public TimeoutDeserializer() {
 		super(Timeout.class);
 	}
 
+	/**
+	 * @see StdDeserializer#deserialize(JsonParser, DeserializationContext)
+	 */
 	@Override
 	public Timeout deserialize(final JsonParser p, final DeserializationContext ctxt) throws IOException {
 		String value = p.getValueAsString();
@@ -34,7 +46,7 @@ public class TimeoutDeserializer extends StdDeserializer<Timeout> {
 		}
 		Duration duration = null;
 		try {
-			duration = parseSimpleDuration(value);
+			duration = Temporals.parseSimpleDuration(value);
 			return Timeout.of(duration);
 		} catch (Exception e) {
 			// ignore and try other formats
@@ -44,19 +56,5 @@ public class TimeoutDeserializer extends StdDeserializer<Timeout> {
 		} catch (ParseException e) {
 			throw new IOException("Invalid timeout format: " + value, e);
 		}
-	}
-
-	public static Duration parseSimpleDuration(final String input) {
-		if (input.endsWith("s")) {
-			long seconds = Long.parseLong(input.replace("s", ""));
-			return Duration.ofSeconds(seconds);
-		} else if (input.endsWith("m")) {
-			long minutes = Long.parseLong(input.replace("m", ""));
-			return Duration.ofMinutes(minutes);
-		} else if (input.endsWith("h")) {
-			long hours = Long.parseLong(input.replace("h", ""));
-			return Duration.ofHours(hours);
-		}
-		throw new IllegalArgumentException("Unsupported format: " + input);
 	}
 }

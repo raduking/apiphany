@@ -6,14 +6,18 @@ import java.util.Map;
 import org.apiphany.ApiClient;
 import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
+import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.http.server.KeyValueHttpServer;
 import org.morphix.reflection.GenericClass;
 
 /**
- * Simple key-value API client for testing purposes that uses the {@link JavaNetHttpExchangeClient} as underlying HTTP
- * client. This client exposes basic CRUD operations for a key-value store API implemented in
+ * Simple key-value API client for testing purposes that uses the provided {@link ExchangeClient} class as underlying
+ * HTTP client. This client exposes basic CRUD operations for a key-value store API implemented in
  * {@link KeyValueHttpServer}.
+ * <p>
+ * By default, it uses {@link JavaNetHttpExchangeClient} as the underlying HTTP client but it can be configured to use
+ * any other implementation of {@link ExchangeClient} by providing the desired class in the constructor.
  *
  * @author Radu Sebastian LAZIN
  */
@@ -34,9 +38,20 @@ public class KeyValueApiClient extends ApiClient {
 	 *
 	 * @param baseUrl the base URL
 	 * @param properties the client properties
+	 * @param exchangeClientClass the exchange client class
+	 */
+	public KeyValueApiClient(final String baseUrl, final ClientProperties properties, final Class<? extends ExchangeClient> exchangeClientClass) {
+		super(baseUrl, with(exchangeClientClass).properties(properties));
+	}
+
+	/**
+	 * Constructs a key-value API client.
+	 *
+	 * @param baseUrl the base URL
+	 * @param properties the client properties
 	 */
 	public KeyValueApiClient(final String baseUrl, final ClientProperties properties) {
-		super(baseUrl, with(properties));
+		this(baseUrl, properties, JavaNetHttpExchangeClient.class);
 	}
 
 	/**
