@@ -29,7 +29,7 @@ cat > "$MODULE_NAME/pom.xml" <<EOF
 	<parent>
 		<groupId>io.github.raduking</groupId>
 		<artifactId>$PARENT_ARTIFACT</artifactId>
-		<version>\${project.version}</version>
+		<version>$VERSION</version>
 		<relativePath>../../pom.xml</relativePath>
 	</parent>
 
@@ -72,20 +72,6 @@ cat > "$MODULE_NAME/pom.xml" <<EOF
 			<groupId>io.github.raduking</groupId>
 			<artifactId>apiphany</artifactId>
 			<version>\${project.version}</version>
-		</dependency>
-
-		<!-- MorphiX -->
-		<dependency>
-			<groupId>io.github.raduking</groupId>
-			<artifactId>morphix-all</artifactId>
-			<version>\${morphix.version}</version>
-		</dependency>
-
-		<!-- Logging -->
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>\${slf4j.version}</version>
 		</dependency>
 
 		<!-- Testing -->
@@ -248,5 +234,14 @@ cat > "$MODULE_NAME/.gitignore" <<EOF
 \# Visual Studio Code
 /.vscode
 EOF
+
+echo "Add $MODULE_NAME to parent."
+
+PARENT_POM_XML="../pom.xml"
+NEW_MODULE="integration/$MODULE_NAME"
+
+# Add new module just before </modules>
+sed -i '' '/<\/modules>/i \
+		<module>'"$NEW_MODULE"'</module>' "$PARENT_POM_XML"
 
 echo "Module $MODULE_NAME created successfully."
