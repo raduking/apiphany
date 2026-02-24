@@ -213,7 +213,7 @@ public class ApacheHC5ExchangeClient extends AbstractHttpExchangeClient {
 
 		List<String> contentEncodings = getHeaderValuesChain().get(HttpHeader.CONTENT_ENCODING, headers);
 		ContentEncoding contentEncoding = ContentEncoding.parse(contentEncodings);
-		InputStream responseBody = ContentConverter.decodeBody(toInputStream(httpEntity), contentEncoding);
+		byte[] responseBody = ContentConverter.decodeBody(toByteArray(httpEntity), contentEncoding);
 
 		HttpContentType contentType = HttpContentType.from(httpEntity.getContentType(), httpEntity.getContentEncoding());
 		if (httpStatus.isError()) {
