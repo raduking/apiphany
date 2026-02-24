@@ -1,6 +1,7 @@
 package org.apiphany.json.jackson2;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -166,6 +167,7 @@ public final class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleto
 		return switch (json) {
 			case String string -> runtime().fromJsonString(string, cls);
 			case byte[] bytes -> runtime().fromJsonBytes(bytes, cls);
+			case InputStream inputStream -> runtime().fromJsonInputStream(inputStream, cls);
 			default -> throw unsupportedJsonInputType(json);
 		};
 	}
@@ -184,6 +186,7 @@ public final class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleto
 		return switch (json) {
 			case String string -> runtime().fromJsonString(string, genericClass);
 			case byte[] bytes -> runtime().fromJsonBytes(bytes, genericClass);
+			case InputStream inputStream -> runtime().fromJsonInputStream(inputStream, genericClass);
 			default -> throw unsupportedJsonInputType(json);
 		};
 	}
@@ -202,6 +205,7 @@ public final class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleto
 		return switch (json) {
 			case String string -> runtime().fromJsonString(string, typeReference);
 			case byte[] bytes -> runtime().fromJsonBytes(bytes, typeReference);
+			case InputStream inputStream -> runtime().fromJsonInputStream(inputStream, typeReference);
 			default -> throw unsupportedJsonInputType(json);
 		};
 	}
@@ -338,6 +342,61 @@ public final class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleto
 	 * @return an object from the JSON string
 	 */
 	public <T> T fromJsonBytes(final byte[] json, final TypeReference<T> typeReference) {
+		try {
+			return objectMapper.readValue(json, typeReference);
+		} catch (IOException e) {
+			LOGGER.warn(ErrorMessage.COULD_NOT_DESERIALIZE_OBJECT, json, e);
+			return null;
+		}
+	}
+
+	/**
+	 * Returns an object from the given input stream. If the byte array cannot be de-serialized, returns null.
+	 *
+	 * @param <T> type of the object
+	 *
+	 * @param json JSON input stream
+	 * @param cls class of the object
+	 * @return an object from the JSON string
+	 */
+	public <T> T fromJsonInputStream(final InputStream json, final Class<T> cls) {
+		try {
+			return objectMapper.readValue(json, cls);
+		} catch (IOException e) {
+			LOGGER.warn(ErrorMessage.COULD_NOT_DESERIALIZE_OBJECT, json, e);
+			return null;
+		}
+	}
+
+	/**
+	 * Returns an object from the given input stream. If the byte array cannot be de-serialized, returns null.
+	 *
+	 * @param <T> type of the object
+	 *
+	 * @param json JSON input stream
+	 * @param genericClass generic class wrapper for the type of the generic object
+	 * @return an object from the JSON string
+	 */
+	public <T> T fromJsonInputStream(final InputStream json, final GenericClass<T> genericClass) {
+		TypeReference<T> typeReference = new TypeReference<>() {
+			@Override
+			public Type getType() {
+				return genericClass.getType();
+			}
+		};
+		return fromJsonInputStream(json, typeReference);
+	}
+
+	/**
+	 * Returns an object from the given input stream. If the byte array cannot be de-serialized, returns null.
+	 *
+	 * @param <T> type of the object
+	 *
+	 * @param json JSON input stream
+	 * @param typeReference type of the object
+	 * @return an object from the JSON string
+	 */
+	public <T> T fromJsonInputStream(final InputStream json, final TypeReference<T> typeReference) {
 		try {
 			return objectMapper.readValue(json, typeReference);
 		} catch (IOException e) {

@@ -78,7 +78,8 @@ public interface PoolingHttpClients {
 
 		HttpClientBuilder httpClientBuilder = HttpClients.custom()
 				.setConnectionManager(connectionManager)
-				.setDefaultRequestConfig(requestConfig);
+				.setDefaultRequestConfig(requestConfig)
+				.disableContentCompression();
 		httpClientBuilderCustomizer.accept(httpClientBuilder);
 
 		return httpClientBuilder.build();
