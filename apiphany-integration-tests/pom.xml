@@ -99,7 +99,11 @@
 			<version>${project.version}</version>
 		</dependency>
 
-		<!-- Testing -->
+		<!--
+			Testing dependencies 
+		-->
+
+		<!-- Logging -->
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
@@ -107,13 +111,7 @@
 			<scope>test</scope>
 		</dependency>
 
-		<dependency>
-			<groupId>org.hamcrest</groupId>
-			<artifactId>hamcrest</artifactId>
-			<version>${hamcrest.version}</version>
-			<scope>test</scope>
-		</dependency>
-
+		<!-- JUnit -->
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-params</artifactId>
@@ -128,6 +126,15 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- Hamcrest -->
+		<dependency>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest</artifactId>
+			<version>${hamcrest.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- Mockito -->
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
@@ -142,6 +149,7 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- Test containers -->
 		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>junit-jupiter</artifactId>
@@ -163,6 +171,15 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- Wiremock -->
+		<dependency>
+			<groupId>org.wiremock</groupId>
+			<artifactId>wiremock</artifactId>
+			<version>${wiremock.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- Spring security OAuth2 -->
 		<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-oauth2-client</artifactId>
@@ -170,6 +187,7 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- Eclipse JDT -->
 		<dependency>
 			<groupId>org.eclipse.jdt</groupId>
 			<artifactId>org.eclipse.jdt.core</artifactId>
@@ -177,6 +195,7 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- Code formatting -->
 		<dependency>
 			<groupId>io.github.raduking</groupId>
 			<artifactId>code-format</artifactId>
@@ -184,7 +203,7 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- Benchmarking dependencies (scope=test so they don't affect the main build) -->
+		<!-- JMH - Benchmarking dependencies (scope=test so they don't affect the main build) -->
 		<dependency>
 			<groupId>org.openjdk.jmh</groupId>
 			<artifactId>jmh-core</artifactId>
@@ -256,11 +275,30 @@
 				</executions>
 			</plugin>
 
+			<!-- Writes all maven project properties to ${project.build.directory}/maven.properties -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>properties-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>initialize</phase>
+						<goals>
+							<goal>write-project-properties</goal>
+						</goals>
+						<configuration>
+							<outputFile>${project.build.directory}/maven.properties</outputFile>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- Compilation plugin -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 			</plugin>
 
+			<!-- Integration tests runner -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-failsafe-plugin</artifactId>
@@ -290,6 +328,7 @@
 				</executions>
 			</plugin>
 
+			<!-- Creates a JAR file with sources -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
@@ -304,19 +343,15 @@
 				</executions>
 			</plugin>
 
-			<!-- Writes all maven project properties to ${project.build.directory}/maven.properties -->
+			<!-- Creates a JAR file that includes the test classes and resources, useful for test-jar dependencies -->
 			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>properties-maven-plugin</artifactId>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
 				<executions>
 					<execution>
-						<phase>initialize</phase>
 						<goals>
-							<goal>write-project-properties</goal>
+							<goal>test-jar</goal>
 						</goals>
-						<configuration>
-							<outputFile>${project.build.directory}/maven.properties</outputFile>
-						</configuration>
 					</execution>
 				</executions>
 			</plugin>
