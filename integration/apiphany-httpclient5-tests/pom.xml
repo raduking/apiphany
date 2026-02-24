@@ -5,18 +5,18 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-    <parent>
+	<parent>
 		<groupId>io.github.raduking</groupId>
 		<artifactId>apiphany-parent</artifactId>
 		<version>1.1.5</version>
 		<relativePath>../../pom.xml</relativePath>
 	</parent>
 
-	<artifactId>apiphany-json-no-dependency-tests</artifactId>
+	<artifactId>apiphany-httpclient5-tests</artifactId>
 	<packaging>jar</packaging>
 
 	<name>${project.groupId}:${project.artifactId}</name>
-	<description>Apiphany no JSON library integration tests</description>
+	<description>Apiphany Apache HTTP Client 5 integration tests</description>
 	<url>https://github.com/raduking/apiphany</url>
 
 	<licenses>
@@ -114,7 +114,7 @@
 
 	<build>
 		<plugins>
-				<!-- Copy resources to output directories -->
+			<!-- Copy resources to output directories -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-resources-plugin</artifactId>

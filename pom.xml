@@ -48,6 +48,7 @@
 		<module>apiphany-integration-tests</module>
 
 		<!-- Integration with other libraries -->
+		<module>integration/apiphany-httpclient5-tests</module>
 		<module>integration/apiphany-json-jackson2-tests</module>
 		<module>integration/apiphany-json-no-dependency-tests</module>
 	</modules>
