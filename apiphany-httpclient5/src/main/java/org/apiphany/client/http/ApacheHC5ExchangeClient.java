@@ -102,6 +102,9 @@ public class ApacheHC5ExchangeClient extends AbstractHttpExchangeClient {
 	 * @param httpClientBuilder the HTTP client builder
 	 */
 	private void customize(final HttpClientBuilder httpClientBuilder) {
+		if (!ApacheHC5Properties.Connection.DEFAULT_FOLLOW_REDIRECTS) {
+			httpClientBuilder.disableRedirectHandling();
+		}
 		ApacheHC5Properties properties = getCustomProperties(ApacheHC5Properties.class);
 		if (null == properties) {
 			return;
@@ -205,6 +208,7 @@ public class ApacheHC5ExchangeClient extends AbstractHttpExchangeClient {
 		HttpStatus httpStatus = HttpStatus.fromCode(response.getCode());
 
 		Map<String, List<String>> headers = Nullables.whenNotNull(response.getHeaders(), ApacheHC5ExchangeClient::toHttpHeadersMap);
+
 		HttpContentType contentType = HttpContentType.from(httpEntity.getContentType(), httpEntity.getContentEncoding());
 		if (httpStatus.isError()) {
 			throw new HttpException(httpStatus, StringHttpContentConverter.from(toInputStream(httpEntity), contentType));

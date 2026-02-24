@@ -234,7 +234,8 @@ public class HttpContentType implements ApiMimeType {
 	 * @return a new HTTP content type
 	 */
 	public static HttpContentType from(final String type, final String encoding) {
-		ContentType contentType = ContentType.fromString(type);
+		String contentTypeValue = Strings.isNotBlank(type) ? type.trim() : ContentType.Value.APPLICATION_OCTET_STREAM;
+		ContentType contentType = ContentType.fromString(contentTypeValue);
 		Charset charset = ApiMimeType.parseCharset(encoding);
 		return HttpContentType.of(contentType, charset);
 	}

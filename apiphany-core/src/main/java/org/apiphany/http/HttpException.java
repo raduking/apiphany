@@ -2,6 +2,7 @@ package org.apiphany.http;
 
 import java.io.Serial;
 
+import org.apiphany.Status;
 import org.morphix.lang.function.ThrowingSupplier;
 
 /**
@@ -123,7 +124,7 @@ public class HttpException extends RuntimeException {
 	 * @return the status message string
 	 */
 	public static String message(final HttpStatus status) {
-		return "[" + status.value() + " " + status.message() + "]";
+		return Status.message(status);
 	}
 
 	/**
@@ -134,8 +135,6 @@ public class HttpException extends RuntimeException {
 	 * @return the status message string
 	 */
 	public static String message(final HttpStatus status, final String message) {
-		return null != message
-				? String.join(" ", message(status), message)
-				: message(status);
+		return Status.message(status, message);
 	}
 }

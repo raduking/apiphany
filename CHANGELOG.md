@@ -24,6 +24,8 @@
 - Extracted `ApiphanyJackson2Module` from `Jackson2JsonBuilder` for easier usage and added `instance` method.
 - Added `Iterables` utility interface for `Iterable` and `Collection`.
 - Added `Temporals.parseSimpleDuration` to parse durations like `1s`, `2m`, `3h` or `7d`. 
+- Added `apache-httpclient5-tests` integration tests module.
+- Added `Status.message` utility methods to build status messages.
 
 ---
 

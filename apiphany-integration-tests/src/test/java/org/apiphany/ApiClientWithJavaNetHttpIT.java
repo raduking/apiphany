@@ -1,6 +1,7 @@
 package org.apiphany;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
@@ -86,5 +87,25 @@ public class ApiClientWithJavaNetHttpIT {
 
 		// MUST NOT have followed redirect
 		wiremock.verify(0, getRequestedFor(urlEqualTo("/target")));
+	}
+
+	@Test
+	void shouldSendHeaders() throws Exception {
+		wiremock.stubFor(get("/headers")
+				.willReturn(aResponse()
+						.withStatus(200)));
+
+		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		try (api) {
+			api.client()
+					.http()
+					.get()
+					.path("headers")
+					.header("X-Test", "42")
+					.retrieve();
+		}
+
+		wiremock.verify(getRequestedFor(urlEqualTo("/headers"))
+				.withHeader("X-Test", equalTo("42")));
 	}
 }
