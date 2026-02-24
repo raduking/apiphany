@@ -575,6 +575,7 @@ public class ClientProperties {
 			if (obj instanceof Timeout that) {
 				return Objects.equals(this.connect, that.connect)
 						&& Objects.equals(this.connectionRequest, that.connectionRequest)
+						&& Objects.equals(this.request, that.request)
 						&& Objects.equals(this.socket, that.socket);
 			}
 			return false;
@@ -585,7 +586,7 @@ public class ClientProperties {
 		 */
 		@Override
 		public int hashCode() {
-			return Objects.hash(connect, connectionRequest, socket);
+			return Objects.hash(connect, connectionRequest, request, socket);
 		}
 
 		/**

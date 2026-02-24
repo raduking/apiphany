@@ -386,8 +386,9 @@ public class ApacheHC5Properties {
 				return true;
 			}
 			if (o instanceof Request that) {
-				return this.protocolUpgradeEnabled == that.protocolUpgradeEnabled &&
-						Objects.equals(this.protocolVersion, that.protocolVersion);
+				return this.protocolUpgradeEnabled == that.protocolUpgradeEnabled
+						&& Objects.equals(this.protocolVersion, that.protocolVersion)
+						&& Objects.equals(this.requestTimeout, that.requestTimeout);
 			}
 			return false;
 		}
@@ -397,7 +398,7 @@ public class ApacheHC5Properties {
 		 */
 		@Override
 		public int hashCode() {
-			return Objects.hash(protocolUpgradeEnabled, protocolVersion);
+			return Objects.hash(protocolUpgradeEnabled, protocolVersion, requestTimeout);
 		}
 
 		/**
