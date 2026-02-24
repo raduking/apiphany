@@ -147,4 +147,18 @@ public class ApiMessage<T> {
 	public <N, V> void addHeaders(final Map<N, V> headersToAdd) {
 		Headers.addTo(getHeaders(), headersToAdd);
 	}
+
+	/**
+	 * Adds the given header to the message's headers.
+	 *
+	 * @param <N> header name type
+	 * @param <V> header value type
+	 *
+	 * @param headerName the name of the header to add
+	 * @param headerValue the value of the header to add
+	 * @see Headers#addTo(Map, Object, Object)
+	 */
+	public <N, V> void addHeader(final N headerName, final V headerValue) {
+		Headers.addTo(getHeaders(), headerName, headerValue);
+	}
 }
