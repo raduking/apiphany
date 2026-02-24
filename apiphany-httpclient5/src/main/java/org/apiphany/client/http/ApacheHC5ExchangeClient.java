@@ -32,9 +32,11 @@ import org.apache.hc.core5.http.io.entity.HttpEntities;
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
+import org.apiphany.client.ContentConverter;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.header.Headers;
 import org.apiphany.header.MapHeaderValues;
+import org.apiphany.http.ContentEncoding;
 import org.apiphany.http.HttpContentType;
 import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
@@ -209,11 +211,15 @@ public class ApacheHC5ExchangeClient extends AbstractHttpExchangeClient {
 
 		Map<String, List<String>> headers = Nullables.whenNotNull(response.getHeaders(), ApacheHC5ExchangeClient::toHttpHeadersMap);
 
+		List<String> contentEncodings = getHeaderValuesChain().get(HttpHeader.CONTENT_ENCODING, headers);
+		ContentEncoding contentEncoding = ContentEncoding.parse(contentEncodings);
+		InputStream responseBody = ContentConverter.decodeBody(toInputStream(httpEntity), contentEncoding);
+
 		HttpContentType contentType = HttpContentType.from(httpEntity.getContentType(), httpEntity.getContentEncoding());
 		if (httpStatus.isError()) {
-			throw new HttpException(httpStatus, StringHttpContentConverter.from(toInputStream(httpEntity), contentType));
+			throw new HttpException(httpStatus, StringHttpContentConverter.from(responseBody, contentType));
 		}
-		U body = convertBody(apiRequest, contentType, headers, toByteArray(httpEntity));
+		U body = convertBody(apiRequest, contentType, headers, responseBody);
 
 		return ApiResponse.create(body)
 				.status(httpStatus)

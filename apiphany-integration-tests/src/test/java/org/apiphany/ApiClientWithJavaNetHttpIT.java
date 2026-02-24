@@ -317,4 +317,155 @@ public class ApiClientWithJavaNetHttpIT {
 
 		wiremock.verify(getRequestedFor(urlEqualTo("/slow")));
 	}
+
+	@Test
+	void shouldNotSendContentTypeWithoutBody() throws Exception {
+		// Some clients will add a "Content-Type: text/plain" header by default even for empty bodies, but Java's HttpClient
+		// does not, so we want to ensure that the ApiClient doesn't add it either.
+		wiremock.stubFor(post("/no-body")
+				.willReturn(aResponse()
+						.withStatus(200)));
+
+		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		try (api) {
+			api.client()
+					.http()
+					.post()
+					.path("no-body")
+					.retrieve()
+					.orNull();
+		}
+
+		wiremock.verify(postRequestedFor(urlEqualTo("/no-body"))
+				.withoutHeader("Content-Type"));
+	}
+
+	@Test
+	void shouldNotSendAcceptHeaderByDefault() throws Exception {
+		// Many clients will send an "Accept: */*" header by default, but Java's HttpClient does not, so we want to ensure that
+		// the ApiClient doesn't add it either.
+		wiremock.stubFor(get("/accept")
+				.willReturn(aResponse()
+						.withStatus(200)));
+
+		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		try (api) {
+			api.client()
+					.http()
+					.get()
+					.path("accept")
+					.retrieve()
+					.orNull();
+		}
+
+		wiremock.verify(getRequestedFor(urlEqualTo("/accept"))
+				.withoutHeader("Accept"));
+	}
+
+	@Test
+	void shouldNotSendAcceptEncodingByDefault() throws Exception {
+		// Many clients will send an "Accept-Encoding: gzip, deflate" header by default, but Java's HttpClient does not, so we
+		// want to ensure that the ApiClient doesn't add it either.
+		wiremock.stubFor(get("/encoding")
+				.willReturn(aResponse()
+						.withStatus(200)));
+
+		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		try (api) {
+			api.client()
+					.http()
+					.get()
+					.path("encoding")
+					.retrieve()
+					.orNull();
+		}
+
+		wiremock.verify(getRequestedFor(urlEqualTo("/encoding"))
+				.withoutHeader("Accept-Encoding"));
+	}
+
+	@Test
+	void shouldPreserveCustomHeader() throws Exception {
+		// OkHttp loves normalizing header names to lower case, so we want to ensure that the ApiClient preserves the case of
+		// custom headers even if the underlying client doesn't.
+		wiremock.stubFor(get("/case")
+				.willReturn(aResponse()
+						.withStatus(200)));
+
+		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		try (api) {
+			api.client()
+					.http()
+					.get()
+					.path("case")
+					.header("X-CuStOm-HeAdEr", "42")
+					.retrieve();
+		}
+
+		wiremock.verify(getRequestedFor(urlEqualTo("/case"))
+				.withHeader("X-CuStOm-HeAdEr", equalTo("42")));
+	}
+
+	@Test
+	void shouldNotRetryByDefault() throws Exception {
+		// Apache's HttpClient will automatically retry failed requests by default, but Java's HttpClient does not, so we want
+		// to ensure that the ApiClient doesn't add retries either.
+		wiremock.stubFor(get("/flaky")
+				.willReturn(aResponse()
+						.withStatus(500)));
+
+		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		try (api) {
+			api.client()
+					.http()
+					.get()
+					.path("flaky")
+					.retrieve()
+					.orNull();
+		}
+
+		wiremock.verify(1, getRequestedFor(urlEqualTo("/flaky")));
+	}
+
+	@Test
+	void shouldNotTransformPostToGetOn307() throws Exception {
+		wiremock.stubFor(post("/redirect307")
+				.willReturn(aResponse()
+						.withStatus(307)
+						.withHeader("Location", "/target")));
+
+		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		try (api) {
+			api.client()
+					.http()
+					.post()
+					.path("redirect307")
+					.body("test")
+					.retrieve()
+					.orNull();
+		}
+
+		wiremock.verify(postRequestedFor(urlEqualTo("/redirect307")));
+		wiremock.verify(0, getRequestedFor(urlEqualTo("/target")));
+	}
+
+	@Test
+	void shouldNotAddTransferEncodingAutomatically() throws Exception {
+		wiremock.stubFor(post("/chunk")
+				.willReturn(aResponse()
+						.withStatus(200)));
+
+		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		try (api) {
+			api.client()
+					.http()
+					.post()
+					.path("chunk")
+					.body("hello")
+					.retrieve();
+		}
+
+		wiremock.verify(postRequestedFor(urlEqualTo("/chunk"))
+				.withoutHeader("Transfer-Encoding"));
+	}
 }

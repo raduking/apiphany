@@ -10,11 +10,15 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.apiphany.io.IOStreams;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.junit.jupiter.api.Test;
@@ -50,6 +54,7 @@ class Jackson2JsonBuilderTest {
 	private static final String EXPECTED_EXCEPTION_MESSAGE = "Expected exception";
 	private static final String SOME_INVALID_JSON_STRING = "some invalid json";
 	private static final byte[] SOME_INVALID_JSON_BYTES = SOME_INVALID_JSON_STRING.getBytes();
+	private static final InputStream SOME_INVALID_JSON_INPUT_STREAM = new ByteArrayInputStream(SOME_INVALID_JSON_BYTES);
 	private static final String SOME_NAME = "someName";
 
 	private final Jackson2JsonBuilder jsonBuilder = new Jackson2JsonBuilder();
@@ -82,6 +87,28 @@ class Jackson2JsonBuilderTest {
 		Object json2 = Strings.removeAllWhitespace(Jackson2JsonBuilder.toJson(a2)).getBytes();
 
 		assertThat(json1, equalTo(json2));
+	}
+
+	@Test
+	void shouldTransformObjectToJsonInputStreamAndReadItBack() throws IOException {
+		A a1 = new A();
+		Map<String, B> elements = Map.of(CUSTOMER_ONE, new B(CUSTOMER_ID1, TENANT_ID1));
+		a1.setElements(elements);
+
+		byte[] jsonBytes1 = Strings.removeAllWhitespace(Jackson2JsonBuilder.toJson(a1)).getBytes();
+		Object json1 = new ByteArrayInputStream(jsonBytes1);
+
+		A a2 = Jackson2JsonBuilder.fromJson(json1, A.class);
+
+		byte[] jsonBytes2 = Strings.removeAllWhitespace(Jackson2JsonBuilder.toJson(a2)).getBytes();
+		Object json2 = new ByteArrayInputStream(jsonBytes2);
+
+		// we need a new stream because the previous one has been read and is at the end of the stream, so we cannot read it
+		// again to compare the bytes.
+		byte[] bytes1 = IOStreams.toByteArray(new ByteArrayInputStream(jsonBytes1));
+		byte[] bytes2 = IOStreams.toByteArray((InputStream) json2);
+
+		assertThat(bytes1, equalTo(bytes2));
 	}
 
 	@Test
@@ -200,6 +227,28 @@ class Jackson2JsonBuilderTest {
 	}
 
 	@Test
+	void shouldTransformGenericObjectToJsonInputStreamAndReadItBack() throws IOException {
+		Map<String, B> elements1 = Map.of(CUSTOMER_ONE, new B(CUSTOMER_ID1, TENANT_ID1));
+
+		byte[] jsonBytes1 = Strings.removeAllWhitespace(Jackson2JsonBuilder.toJson(elements1)).getBytes();
+		Object json1 = new ByteArrayInputStream(jsonBytes1);
+
+		Map<String, B> elements2 = Jackson2JsonBuilder.fromJson(json1, new GenericClass<>() {
+			// empty
+		});
+
+		byte[] jsonBytes2 = Strings.removeAllWhitespace(Jackson2JsonBuilder.toJson(elements2)).getBytes();
+		Object json2 = new ByteArrayInputStream(jsonBytes2);
+
+		// we need a new stream because the previous one has been read and is at the end of the stream, so we cannot read it
+		// again to compare the bytes.
+		byte[] bytes1 = IOStreams.toByteArray(new ByteArrayInputStream(jsonBytes1));
+		byte[] bytes2 = IOStreams.toByteArray((InputStream) json2);
+
+		assertThat(bytes1, equalTo(bytes2));
+	}
+
+	@Test
 	void shouldThrowExceptionWhenReadingJsonGenericObjectWithAnUnsupportedType() {
 		Object o = new Object();
 		var genericClass = new GenericClass<Map<String, B>>() {
@@ -239,6 +288,28 @@ class Jackson2JsonBuilderTest {
 		Object json2 = Strings.removeAllWhitespace(Jackson2JsonBuilder.toJson(elements2)).getBytes();
 
 		assertThat(json1, equalTo(json2));
+	}
+
+	@Test
+	void shouldTransformGenericObjectTypeReferenceToJsonInputStreamAndReadItBack() throws IOException {
+		Map<String, B> elements1 = Map.of(CUSTOMER_ONE, new B(CUSTOMER_ID1, TENANT_ID1));
+
+		byte[] jsonBytes1 = Strings.removeAllWhitespace(Jackson2JsonBuilder.toJson(elements1)).getBytes();
+		Object json1 = new ByteArrayInputStream(jsonBytes1);
+
+		Map<String, B> elements2 = Jackson2JsonBuilder.fromJson(json1, new TypeReference<>() {
+			// empty
+		});
+
+		byte[] jsonBytes2 = Strings.removeAllWhitespace(Jackson2JsonBuilder.toJson(elements2)).getBytes();
+		Object json2 = new ByteArrayInputStream(jsonBytes2);
+
+		// we need a new stream because the previous one has been read and is at the end of the stream, so we cannot read it
+		// again to compare the bytes.
+		byte[] bytes1 = IOStreams.toByteArray(new ByteArrayInputStream(jsonBytes1));
+		byte[] bytes2 = IOStreams.toByteArray((InputStream) json2);
+
+		assertThat(bytes1, equalTo(bytes2));
 	}
 
 	@Test
@@ -429,6 +500,31 @@ class Jackson2JsonBuilderTest {
 	@Test
 	void shouldReturnNullWhenDeserializingBytesJsonFailsWithGenericClass() {
 		List<A> result = jsonBuilder.fromJsonBytes(SOME_INVALID_JSON_BYTES, new GenericClass<>() {
+			// empty
+		});
+
+		assertThat(result, equalTo(null));
+	}
+
+	@Test
+	void shouldReturnNullWhenDeserializingInputStreamJsonFailsWithClass() {
+		A result = jsonBuilder.fromJsonInputStream(SOME_INVALID_JSON_INPUT_STREAM, A.class);
+
+		assertThat(result, equalTo(null));
+	}
+
+	@Test
+	void shouldReturnNullWhenDeserializingInputStreamJsonFailsWithTypeReference() {
+		List<A> result = jsonBuilder.fromJsonInputStream(SOME_INVALID_JSON_INPUT_STREAM, new TypeReference<>() {
+			// empty
+		});
+
+		assertThat(result, equalTo(null));
+	}
+
+	@Test
+	void shouldReturnNullWhenDeserializingInputStreamJsonFailsWithGenericClass() {
+		List<A> result = jsonBuilder.fromJsonInputStream(SOME_INVALID_JSON_INPUT_STREAM, new GenericClass<>() {
 			// empty
 		});
 
