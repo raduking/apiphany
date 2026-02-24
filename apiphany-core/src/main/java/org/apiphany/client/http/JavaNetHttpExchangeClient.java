@@ -16,12 +16,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientCustomization;
 import org.apiphany.client.ClientProperties;
+import org.apiphany.client.ClientProperties.Timeout;
 import org.apiphany.client.ContentConverter;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.http.ContentEncoding;
@@ -154,10 +156,8 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 		Nullables.notNull(getSslContext()).then(httpClientBuilder::sslContext);
 
 		// Timeouts
-		Duration connectTimeout = properties.getTimeout().getConnect();
-		if (!Objects.equals(properties.getTimeout().getConnect(), ClientProperties.Timeout.INFINITE)) {
-			httpClientBuilder.connectTimeout(connectTimeout);
-		}
+		Nullables.notNull(getUsableTimeout(properties.getTimeout(), Timeout::getConnect))
+				.then(httpClientBuilder::connectTimeout);
 		return httpClientBuilder;
 	}
 
@@ -228,10 +228,7 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 			case OPTIONS, TRACE -> httpRequestBuilder.method(httpMethod.value(), BodyPublishers.noBody());
 			default -> throw new UnsupportedOperationException("HTTP method " + httpMethod + " is not supported!");
 		}
-		Duration requestTimeout = getClientProperties().getTimeout().getRequest();
-		if (!Objects.equals(requestTimeout, ClientProperties.Timeout.INFINITE)) {
-			httpRequestBuilder.timeout(requestTimeout);
-		}
+		Nullables.apply(getUsableTimeout(getClientProperties().getTimeout(), Timeout::getRequest), httpRequestBuilder::timeout);
 		return httpRequestBuilder.build();
 	}
 
@@ -327,5 +324,28 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 		Maps.safe(headers)
 				.forEach((headerName, headerValues) -> Lists.safe(headerValues)
 						.forEach(headerValue -> httpRequestBuilder.header(headerName, headerValue)));
+	}
+
+	/**
+	 * Returns the usable timeout value based on the given timeout and timeout extractor. If the timeout value is equal to
+	 * {@link ClientProperties.Timeout#INFINITE}, then this method will return null to indicate that no timeout should be
+	 * applied.
+	 * <p>
+	 * This method is only useful for the Java net HTTP client because whenever a zero (infinite) timeout is set it throws
+	 * an exception instead of just treating it as infinite.
+	 *
+	 * @param timeout timeout object containing the timeout value
+	 * @param timeoutExtractor function to extract the timeout value from the timeout object
+	 * @return the usable timeout value or null if no timeout should be applied
+	 */
+	protected static Duration getUsableTimeout(final Timeout timeout, final Function<Timeout, Duration> timeoutExtractor) {
+		Duration timeoutValue = timeoutExtractor.apply(timeout);
+		if (null == timeoutValue) {
+			return null;
+		}
+		if (Objects.equals(timeoutValue, ClientProperties.Timeout.INFINITE)) {
+			return null;
+		}
+		return timeoutValue;
 	}
 }
