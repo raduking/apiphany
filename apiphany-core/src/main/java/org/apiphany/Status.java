@@ -38,4 +38,39 @@ public interface Status {
 	 * @return the numeric status code, or {@link #UNKNOWN} (-1) if not applicable
 	 */
 	int getCode();
+
+	/**
+	 * Gets a human-readable message associated with this status.
+	 * <p>
+	 * The content and format of the message are implementation-dependent. It may provide additional details about the
+	 * status, such as error descriptions or success confirmations.
+	 *
+	 * @return a message describing the status, or {@code null} if no message is available
+	 */
+	String getMessage();
+
+	/**
+	 * Return the status message string.
+	 *
+	 * @param status the status
+	 * @return the status message string
+	 */
+	static String message(final Status status) {
+		return null != status
+				? "[" + status.getCode() + " " + status.getMessage() + "]"
+				: "[unknown status]";
+	}
+
+	/**
+	 * Return the message string based on the status message and the given message.
+	 *
+	 * @param status the status
+	 * @param message the human-readable message
+	 * @return the status message string
+	 */
+	static String message(final Status status, final String message) {
+		return null != message
+				? String.join(" ", message(status), message)
+				: message(status);
+	}
 }

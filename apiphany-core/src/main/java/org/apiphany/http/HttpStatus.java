@@ -548,6 +548,16 @@ public enum HttpStatus implements Status {
 	}
 
 	/**
+	 * Alias for {@link #message()}.
+	 *
+	 * @return the message associated with this status code
+	 */
+	@Override
+	public String getMessage() {
+		return message();
+	}
+
+	/**
 	 * Checks if this status code is of the specified type.
 	 *
 	 * @param type the type to check against

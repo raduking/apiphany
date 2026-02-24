@@ -373,7 +373,7 @@ class ApiClientTest {
 
 		assertThat(result.getBody(), nullValue());
 		assertThat(result.getException(), equalTo(e));
-		assertThat(result.getErrorMessage(), equalTo("Exchange error: " + SOME_ERROR_MESSAGE));
+		assertThat(result.getErrorMessage(), equalTo(Status.message(null, "Exchange error: " + SOME_ERROR_MESSAGE)));
 		assertThat(result.getExchangeClient(), equalTo(exchangeClient));
 	}
 

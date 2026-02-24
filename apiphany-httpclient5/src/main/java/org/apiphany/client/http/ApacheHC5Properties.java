@@ -190,14 +190,19 @@ public class ApacheHC5Properties {
 		public static final Timeout DEFAULT_TIME_TO_LIVE = Timeout.ofSeconds(30);
 
 		/**
-		 * Default maximum total connections per pool.
+		 * Default maximum total connections per pool: 100.
 		 */
 		public static final int DEFAULT_MAX_TOTAL = 100;
 
 		/**
-		 * Default maximum per route connections.
+		 * Default maximum per route connections: 100.
 		 */
 		public static final int DEFAULT_MAX_PER_ROUTE = 100;
+
+		/**
+		 * Default flag indicating whether redirects should be followed: false.
+		 */
+		public static final boolean DEFAULT_FOLLOW_REDIRECTS = false;
 
 		/**
 		 * Time to live.
@@ -213,6 +218,11 @@ public class ApacheHC5Properties {
 		 * Maximum per route connections.
 		 */
 		private int maxPerRoute = DEFAULT_MAX_PER_ROUTE;
+
+		/**
+		 * Flag indicating whether redirects should be followed.
+		 */
+		private boolean followRedirects = DEFAULT_FOLLOW_REDIRECTS;
 
 		/**
 		 * Default constructor.
@@ -307,6 +317,24 @@ public class ApacheHC5Properties {
 		 */
 		public void setTimeToLive(final Timeout timeToLive) {
 			this.timeToLive = timeToLive;
+		}
+
+		/**
+		 * Returns whether redirects should be followed.
+		 *
+		 * @return true if redirects should be followed, false otherwise
+		 */
+		public boolean isFollowRedirects() {
+			return followRedirects;
+		}
+
+		/**
+		 * Sets whether redirects should be followed.
+		 *
+		 * @param followRedirects true to follow redirects, false to not follow
+		 */
+		public void setFollowRedirects(final boolean followRedirects) {
+			this.followRedirects = followRedirects;
 		}
 	}
 
