@@ -69,10 +69,10 @@ class OAuth2ApiClientKeycloakIT {
 	public static void logJWTSigningPublicKey(final String authServerUrl) throws Exception {
 		String openidConfigUrl = String.format("%s/realms/%s/.well-known/openid-configuration", authServerUrl, KEYCLOAK_REALM_NAME);
 		ObjectMapper mapper = new ObjectMapper();
-		JsonNode config = mapper.readTree(URI.create(openidConfigUrl).toURL());
+		JsonNode config = mapper.readTree(URI.create(openidConfigUrl).toURL().openStream());
 		String jwksUri = config.get("jwks_uri").asText();
 
-		JsonNode jwks = mapper.readTree(URI.create(jwksUri).toURL());
+		JsonNode jwks = mapper.readTree(URI.create(jwksUri).toURL().openStream());
 		JsonNode keys = jwks.get("keys");
 		JsonNode key = keys.get(0);
 		JsonNode x5cs = key.get("x5c");
