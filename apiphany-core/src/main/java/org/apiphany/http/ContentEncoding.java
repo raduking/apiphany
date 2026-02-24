@@ -9,6 +9,7 @@ import org.apiphany.lang.collections.Lists;
 import org.morphix.lang.Enums;
 import org.morphix.lang.Nullables;
 import org.morphix.lang.function.ToStringFunction;
+import org.morphix.reflection.Constructors;
 
 /**
  * Represents the Content-Encoding HTTP header values. Used to indicate what content encodings have been applied to the
@@ -24,14 +25,14 @@ public enum ContentEncoding {
 	 *
 	 * @see <a href="https://www.rfc-editor.org/rfc/rfc9110.html#section-8.4.1">RFC 9110 Section 8.4.1</a>
 	 */
-	IDENTITY("identity"),
+	IDENTITY(Value.IDENTITY),
 
 	/**
 	 * The {@code gzip} encoding format (LZ77 + CRC32). This is the most widely supported compression format for HTTP.
 	 *
 	 * @see <a href="https://www.rfc-editor.org/rfc/rfc1952">RFC 1952: GZIP File Format Specification</a>
 	 */
-	GZIP("gzip"),
+	GZIP(Value.GZIP),
 
 	/**
 	 * The {@code zlib} format (RFC 1950) with {@code deflate} compression (RFC 1951). Note: Some implementations
@@ -40,7 +41,7 @@ public enum ContentEncoding {
 	 * @see <a href="https://www.rfc-editor.org/rfc/rfc1950">RFC 1950: ZLIB Compressed Data Format</a>
 	 * @see <a href="https://www.rfc-editor.org/rfc/rfc1951">RFC 1951: DEFLATE Compressed Data Format</a>
 	 */
-	DEFLATE("deflate"),
+	DEFLATE(Value.DEFLATE),
 
 	/**
 	 * Brotli compressed data format (lossless compression algorithm). Provides better compression ratios than gzip at
@@ -48,7 +49,7 @@ public enum ContentEncoding {
 	 *
 	 * @see <a href="https://www.rfc-editor.org/rfc/rfc7932">RFC 7932: Brotli Compressed Data Format</a>
 	 */
-	BR("br"),
+	BR(Value.BR),
 
 	/**
 	 * Zstandard compression format developed by Facebook. Provides excellent compression speed/ratio trade-off. While not
@@ -56,7 +57,7 @@ public enum ContentEncoding {
 	 *
 	 * @see <a href="https://facebook.github.io/zstd/">Zstandard Documentation</a>
 	 */
-	ZSTD("zstd"),
+	ZSTD(Value.ZSTD),
 
 	/**
 	 * The UNIX "compress" program format (LZW algorithm). This encoding is largely obsolete and not widely supported in
@@ -64,7 +65,7 @@ public enum ContentEncoding {
 	 *
 	 * @see <a href="https://www.rfc-editor.org/rfc/rfc9110.html#section-8.4.1">RFC 9110 Section 8.4.1</a>
 	 */
-	COMPRESS("compress"),
+	COMPRESS(Value.COMPRESS),
 
 	/**
 	 * LZ4 compression format (extremely fast compression). Primarily used in specialized high-performance applications. Not
@@ -72,7 +73,7 @@ public enum ContentEncoding {
 	 *
 	 * @see <a href="https://lz4.github.io/lz4/">LZ4 Documentation</a>
 	 */
-	LZ4("lz4"),
+	LZ4(Value.LZ4),
 
 	/**
 	 * XZ compression format (LZMA2 algorithm). Provides excellent compression ratios but is slow. Rarely used in HTTP, more
@@ -80,14 +81,75 @@ public enum ContentEncoding {
 	 *
 	 * @see <a href="https://tukaani.org/xz/format.html">XZ File Format Specification</a>
 	 */
-	XZ("xz"),
+	XZ(Value.XZ),
 
 	/**
 	 * Bzip2 compression format (Burrows-Wheeler algorithm). Not commonly used in HTTP due to high CPU requirements.
 	 *
 	 * @see <a href="https://sourceware.org/bzip2/">bzip2 Documentation</a>
 	 */
-	BZIP2("bzip2");
+	BZIP2(Value.BZIP2);
+
+	/**
+	 * A utility class containing string constants for the content encoding values. This allows for easy reference to the
+	 * standard content encoding strings without hard coding them throughout the code base.
+	 *
+	 * @author Radu Sebastian LAZIN
+	 */
+	public static class Value {
+
+		/**
+		 * The string value for the {@code identity} content encoding.
+		 */
+		public static final String IDENTITY = "identity";
+
+		/**
+		 * The string value for the {@code gzip} content encoding.
+		 */
+		public static final String GZIP = "gzip";
+
+		/**
+		 * The string value for the {@code deflate} content encoding.
+		 */
+		public static final String DEFLATE = "deflate";
+
+		/**
+		 * The string value for the {@code br} content encoding.
+		 */
+		public static final String BR = "br";
+
+		/**
+		 * The string value for the {@code zstd} content encoding.
+		 */
+		public static final String ZSTD = "zstd";
+
+		/**
+		 * The string value for the {@code compress} content encoding.
+		 */
+		public static final String COMPRESS = "compress";
+
+		/**
+		 * The string value for the {@code lz4} content encoding.
+		 */
+		public static final String LZ4 = "lz4";
+
+		/**
+		 * The string value for the {@code xz} content encoding.
+		 */
+		public static final String XZ = "xz";
+
+		/**
+		 * The string value for the {@code bzip2} content encoding.
+		 */
+		public static final String BZIP2 = "bzip2";
+
+		/**
+		 * Hide constructor.
+		 */
+		private Value() {
+			throw Constructors.unsupportedOperationException();
+		}
+	}
 
 	/**
 	 * The name map for easy from string implementation.

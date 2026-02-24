@@ -11,8 +11,10 @@ import java.net.http.HttpResponse.BodyHandler;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -138,13 +140,24 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	 * @return the customized HTTP client builder
 	 */
 	private HttpClient.Builder customize(final HttpClient.Builder httpClientBuilder) {
+		ClientProperties properties = getClientProperties();
 		JavaNetHttpProperties httpProperties = getCustomProperties(JavaNetHttpProperties.class);
+
+		// HTTP version
 		HttpClient.Version version = Nullables.notNull(httpProperties)
 				.andNotNull(JavaNetHttpProperties::getRequest)
 				.thenNotNull(JavaNetHttpProperties.Request::getHttpVersion)
 				.orElse(() -> JavaNetHttpProperties.Request.DEFAULT_HTTP_VERSION);
 		httpClientBuilder.version(version);
+
+		// SSL context
 		Nullables.notNull(getSslContext()).then(httpClientBuilder::sslContext);
+
+		// Timeouts
+		Duration connectTimeout = properties.getTimeout().getConnect();
+		if (!Objects.equals(properties.getTimeout().getConnect(), ClientProperties.Timeout.INFINITE)) {
+			httpClientBuilder.connectTimeout(connectTimeout);
+		}
 		return httpClientBuilder;
 	}
 
@@ -214,6 +227,10 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 			case PATCH -> httpRequestBuilder.method(httpMethod.value(), toBodyPublisher(apiRequest));
 			case OPTIONS, TRACE -> httpRequestBuilder.method(httpMethod.value(), BodyPublishers.noBody());
 			default -> throw new UnsupportedOperationException("HTTP method " + httpMethod + " is not supported!");
+		}
+		Duration requestTimeout = getClientProperties().getTimeout().getRequest();
+		if (!Objects.equals(requestTimeout, ClientProperties.Timeout.INFINITE)) {
+			httpRequestBuilder.timeout(requestTimeout);
 		}
 		return httpRequestBuilder.build();
 	}

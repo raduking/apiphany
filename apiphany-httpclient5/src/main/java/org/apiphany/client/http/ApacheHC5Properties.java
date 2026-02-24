@@ -356,6 +356,11 @@ public class ApacheHC5Properties {
 		private String protocolVersion = HttpVersion.DEFAULT.format();
 
 		/**
+		 * Request timeout is {@link Timeout#INFINITE} by default.
+		 */
+		private Timeout requestTimeout = Timeout.INFINITE;
+
+		/**
 		 * Default constructor.
 		 */
 		protected Request() {
@@ -442,6 +447,24 @@ public class ApacheHC5Properties {
 		 */
 		public void setProtocolVersion(final String protocolVersion) {
 			this.protocolVersion = protocolVersion;
+		}
+
+		/**
+		 * Returns the request timeout.
+		 *
+		 * @return the request timeout.
+		 */
+		public Timeout getRequestTimeout() {
+			return requestTimeout;
+		}
+
+		/**
+		 * Sets the request timeout.
+		 *
+		 * @param requestTimeout timeout to set
+		 */
+		public void setRequestTimeout(final Timeout requestTimeout) {
+			this.requestTimeout = requestTimeout;
 		}
 	}
 

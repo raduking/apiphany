@@ -318,7 +318,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @return the error message
 	 */
 	public String getErrorMessage() {
-		return Status.message(getStatus(), Strings.isNotEmpty(errorMessage) ? errorMessage : "No error message.");
+		return Strings.isNotEmpty(errorMessage) ? errorMessage : Status.message(getStatus(), "No error message.");
 	}
 
 	/**

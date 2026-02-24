@@ -1,14 +1,17 @@
 package org.apiphany.http;
 
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.apiphany.test.Assertions.assertDefaultConstructorThrows;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.morphix.reflection.Constructors;
 
 /**
  * Test class for {@link ContentEncoding}.
@@ -67,5 +70,11 @@ class ContentEncodingTest {
 				{ List.of(), null },
 				{ null, null }
 		};
+	}
+
+	@Test
+	void shouldThrowExceptionOnCallingValueConstructor() {
+		UnsupportedOperationException e = assertDefaultConstructorThrows(ContentEncoding.Value.class);
+		assertThat(e.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
 	}
 }

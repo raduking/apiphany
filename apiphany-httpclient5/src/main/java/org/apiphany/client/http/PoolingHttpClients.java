@@ -134,6 +134,8 @@ public interface PoolingHttpClients {
 		ClientProperties.Timeout timeout = clientProperties.getTimeout();
 		return RequestConfig.custom()
 				.setConnectionRequestTimeout(Timeout.of(timeout.getConnectionRequest()))
+				.setProtocolUpgradeEnabled(false)
+				.setResponseTimeout(Timeout.of(timeout.getRequest()))
 				.build();
 	}
 
@@ -147,6 +149,7 @@ public interface PoolingHttpClients {
 		return RequestConfig.custom()
 				.setConnectionRequestTimeout(apacheHC5Properties.getConnectionRequest().getTimeout())
 				.setProtocolUpgradeEnabled(apacheHC5Properties.getRequest().isProtocolUpgradeEnabled())
+				.setResponseTimeout(apacheHC5Properties.getRequest().getRequestTimeout())
 				.build();
 	}
 

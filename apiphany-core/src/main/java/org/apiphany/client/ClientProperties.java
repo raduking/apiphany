@@ -526,6 +526,11 @@ public class ClientProperties {
 		private Duration connectionRequest = INFINITE;
 
 		/**
+		 * Request timeout.
+		 */
+		private Duration request = INFINITE;
+
+		/**
 		 * Socket timeout.
 		 */
 		private Duration socket = INFINITE;
@@ -545,6 +550,7 @@ public class ClientProperties {
 		protected Timeout(final Builder builder) {
 			this.connect = builder.connect;
 			this.connectionRequest = builder.connectionRequest;
+			this.request = builder.request;
 			this.socket = builder.socket;
 		}
 
@@ -637,6 +643,24 @@ public class ClientProperties {
 		}
 
 		/**
+		 * Returns the request timeout.
+		 *
+		 * @return the request timeout.
+		 */
+		public Duration getRequest() {
+			return request;
+		}
+
+		/**
+		 * Sets the request timeout.
+		 *
+		 * @param request the request timeout to set.
+		 */
+		public void setRequest(final Duration request) {
+			this.request = request;
+		}
+
+		/**
 		 * Builder for {@link Timeout}.
 		 *
 		 * @author Radu Sebastian LAZIN
@@ -652,6 +676,11 @@ public class ClientProperties {
 			 * Connection request timeout set to {@link Timeout#INFINITE} by default.
 			 */
 			private Duration connectionRequest = INFINITE;
+
+			/**
+			 * Request timeout set to {@link Timeout#INFINITE} by default.
+			 */
+			private Duration request = INFINITE;
 
 			/**
 			 * Socket timeout set to {@link Timeout#INFINITE} by default.
@@ -725,6 +754,27 @@ public class ClientProperties {
 			 */
 			public Builder connectionRequest(final Duration connectionRequestTimeout) {
 				this.connectionRequest = connectionRequestTimeout;
+				return this;
+			}
+
+			/**
+			 * Sets the request timeout in milliseconds.
+			 *
+			 * @param requestTimeout the request timeout to set.
+			 * @return this builder instance.
+			 */
+			public Builder request(final int requestTimeout) {
+				return request(Duration.ofMillis(requestTimeout));
+			}
+
+			/**
+			 * Sets the request timeout.
+			 *
+			 * @param requestTimeout the request timeout to set.
+			 * @return this builder instance.
+			 */
+			public Builder request(final Duration requestTimeout) {
+				this.request = requestTimeout;
 				return this;
 			}
 
