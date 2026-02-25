@@ -346,14 +346,19 @@ class ByteBufferSubscriberTest {
 			executor.shutdown();
 			executor.awaitTermination(1, TimeUnit.SECONDS);
 
-			assertThat(subscriber.hasBufferLimitExceeded(), equalTo(true));
 			assertThat(receivedCount.get() + rejectedCount.get(), equalTo(THREADS * buffersPerThread));
+			assertThat(subscriber.hasBufferLimitExceeded(), equalTo(true));
 			assertThat(subscriber.isCompleted(), equalTo(false));
+			assertThat(subscriber.getBufferCount(), equalTo(0));
+			assertThat(subscriber.getReceivedBytes(), equalTo(Bytes.EMPTY));
+			assertThat(subscriber.getReceivedBytesCount(), equalTo(0L));
 		}
 	}
 
 	@Nested
 	class OnErrorTests {
+
+		private static final String TEST_ERROR = "Test error";
 
 		@Test
 		void shouldCancelSubscriptionOnError() {
@@ -361,12 +366,12 @@ class ByteBufferSubscriberTest {
 			TestSubscription subscription = new TestSubscription();
 
 			subscriber.onSubscribe(subscription);
-			subscriber.onError(new RuntimeException("Test error"));
+			subscriber.onError(new RuntimeException(TEST_ERROR));
 
 			assertThat(subscription.isCancelled(), equalTo(true));
 			assertThat(subscriber.isCompleted(), equalTo(true));
 			assertThat(subscriber.hasError(), equalTo(true));
-			assertThat(subscriber.getError().getMessage(), equalTo("Test error"));
+			assertThat(subscriber.getError().getMessage(), equalTo(TEST_ERROR));
 			assertThat(subscriber.hasBufferLimitExceeded(), equalTo(false));
 		}
 	}
