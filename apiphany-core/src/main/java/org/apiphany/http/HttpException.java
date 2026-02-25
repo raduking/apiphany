@@ -98,6 +98,8 @@ public class HttpException extends RuntimeException {
 	public static <T> T ifThrows(final ThrowingSupplier<T> throwingSupplier, final HttpStatus httpStatus) {
 		try {
 			return throwingSupplier.get();
+		} catch (HttpException e) {
+			throw e;
 		} catch (Throwable e) {
 			throw new HttpException(httpStatus, e.getMessage(), e);
 		}
