@@ -6,8 +6,6 @@ import org.apiphany.ApiMessage;
 import org.apiphany.ApiMimeType;
 import org.apiphany.ApiRequest;
 import org.apiphany.header.HeaderValues;
-import org.apiphany.http.ContentEncoding;
-import org.apiphany.io.gzip.GZip;
 import org.morphix.reflection.GenericClass;
 
 /**
@@ -91,35 +89,5 @@ public interface ContentConverter<T> {
 		return apiRequest.hasGenericType()
 				? typeConverter.from(body, mimeType, apiRequest.getGenericResponseType())
 				: typeConverter.from(body, mimeType, apiRequest.getClassResponseType());
-	}
-
-	/**
-	 * Decodes the body based on the given content encoding.
-	 * <p>
-	 * TODO: support more content encodings
-	 *
-	 * @param <T> body type
-	 *
-	 * @param body the body
-	 * @param contentEncoding content encoding
-	 * @return decoded body
-	 */
-	static <T> T decodeBody(final T body, final ContentEncoding contentEncoding) {
-		if (null == body) {
-			return null;
-		}
-		if (null == contentEncoding) {
-			return body;
-		}
-		return switch (contentEncoding) {
-			case GZIP -> {
-				try {
-					yield GZip.decompress(body);
-				} catch (Exception e) {
-					throw new IllegalStateException("Failed to decode response body with encoding: " + contentEncoding, e);
-				}
-			}
-			default -> throw new UnsupportedOperationException("Content encoding " + contentEncoding + " is not supported!");
-		};
 	}
 }

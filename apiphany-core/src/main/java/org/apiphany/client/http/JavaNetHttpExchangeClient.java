@@ -24,7 +24,6 @@ import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientCustomization;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ClientProperties.Timeout;
-import org.apiphany.client.ContentConverter;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.http.ContentEncoding;
 import org.apiphany.http.HttpContentType;
@@ -249,9 +248,8 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 		HttpStatus httpStatus = HttpStatus.fromCode(httpResponse.statusCode());
 		Map<String, List<String>> headers = Nullables.apply(httpResponse.headers(), HttpHeaders::map);
 
-		List<String> contentEncodings = getHeaderValuesChain().get(HttpHeader.CONTENT_ENCODING, headers);
-		ContentEncoding contentEncoding = ContentEncoding.parse(contentEncodings);
-		R responseBody = ContentConverter.decodeBody(httpResponse.body(), contentEncoding);
+		List<String> encodings = getHeaderValuesChain().get(HttpHeader.CONTENT_ENCODING, headers);
+		R responseBody = ContentEncoding.decodeBody(httpResponse.body(), ContentEncoding.parseAll(encodings));
 
 		List<String> contentTypes = getHeaderValuesChain().get(HttpHeader.CONTENT_TYPE, headers);
 		HttpContentType contentType = HttpContentType.parse(contentTypes);

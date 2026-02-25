@@ -1,10 +1,13 @@
 package org.apiphany.http;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
 
+import org.apiphany.io.gzip.GZip;
 import org.apiphany.lang.collections.Lists;
 import org.morphix.lang.Enums;
 import org.morphix.lang.Nullables;
@@ -32,7 +35,24 @@ public enum ContentEncoding {
 	 *
 	 * @see <a href="https://www.rfc-editor.org/rfc/rfc1952">RFC 1952: GZIP File Format Specification</a>
 	 */
-	GZIP(Value.GZIP),
+	GZIP(Value.GZIP) {
+
+		/**
+		 * Decodes the given input stream or byte array using GZIP decompression.
+		 *
+		 * @param body compressed body to decode, can be an InputStream or a byte array
+		 * @return de-compressed body that decodes the original body using GZIP decompression
+		 * @throws IllegalStateException if any error occurs during decompression
+		 */
+		@Override
+		public <T> T decode(final T body) {
+			try {
+				return GZip.decompress(body);
+			} catch (Exception e) {
+				throw new IllegalStateException("Failed to decode response body with encoding: " + this, e);
+			}
+		}
+	},
 
 	/**
 	 * The {@code zlib} format (RFC 1950) with {@code deflate} compression (RFC 1951). Note: Some implementations
@@ -171,6 +191,19 @@ public enum ContentEncoding {
 	}
 
 	/**
+	 * Decodes the given input stream according to the content encoding. The default implementation throws an
+	 * {@link UnsupportedOperationException} since the actual decoding logic is implemented in each specific enum constant.
+	 *
+	 * @param body the body to decode
+	 * @return a decoded body that decodes the original body according to the content encoding
+	 * @throws UnsupportedOperationException if the content encoding is not supported or if the decoding logic is not
+	 *     implemented for this encoding
+	 */
+	public <T> T decode(final T body) {
+		throw new UnsupportedOperationException("Content encoding " + this + " is not supported!");
+	}
+
+	/**
 	 * Returns a {@link ContentEncoding} enum from a {@link String}.
 	 *
 	 * @param encoding the string representation of the content encoding
@@ -227,7 +260,7 @@ public enum ContentEncoding {
 	 * @param values the list of strings to parse
 	 * @return the first matching content encoding enum, or null if none match
 	 */
-	public static ContentEncoding parse(final List<String> values) {
+	public static ContentEncoding parseFirst(final List<String> values) {
 		if (Lists.isEmpty(values)) {
 			return null;
 		}
@@ -238,5 +271,51 @@ public enum ContentEncoding {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Parses the given list of strings and returns a list of matching {@link ContentEncoding} enums. If none of the strings
+	 * match, an empty list is returned.
+	 *
+	 * @param values the list of strings to parse
+	 * @return a list of matching content encoding enums, or an empty list if none match
+	 */
+	public static List<ContentEncoding> parseAll(final List<String> values) {
+		if (Lists.isEmpty(values)) {
+			return Collections.emptyList();
+		}
+		List<ContentEncoding> encodings = new ArrayList<>(values.size());
+		for (String value : values) {
+			ContentEncoding encoding = fromString(value, Nullables.supplyNull());
+			if (null != encoding) {
+				encodings.add(encoding);
+			}
+		}
+		return encodings;
+	}
+
+	/**
+	 * Decodes the body based on the given content encoding list. The body is decoded in the reverse order of the content
+	 * encodings, meaning that the last encoding in the list is decoded first. If the body is null or the content encoding
+	 * list is empty, the original body is returned without any decoding.
+	 *
+	 * @param <T> body type
+	 *
+	 * @param body the body
+	 * @param contentEncodings content encoding list in the order they were applied to the body
+	 * @return decoded body
+	 */
+	public static <T> T decodeBody(final T body, final List<ContentEncoding> contentEncodings) {
+		if (null == body) {
+			return null;
+		}
+		if (Lists.isEmpty(contentEncodings)) {
+			return body;
+		}
+		T result = body;
+		for (ContentEncoding contentEndoding : contentEncodings.reversed()) {
+			result = contentEndoding.decode(result);
+		}
+		return result;
 	}
 }
