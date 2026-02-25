@@ -260,6 +260,15 @@ public class ByteBufferSubscriber implements Subscriber<ByteBuffer> {
 	}
 
 	/**
+	 * Returns the total number of bytes received across all buffers.
+	 *
+	 * @return total bytes received
+	 */
+	public long getReceivedBytesCount() {
+		return receivedBytes.get();
+	}
+
+	/**
 	 * Checks if maximum buffer limit was exceeded.
 	 *
 	 * @return true if maximum buffer limit was exceeded
