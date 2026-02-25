@@ -33,7 +33,7 @@ import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.header.Headers;
 import org.apiphany.header.MapHeaderValues;
-import org.apiphany.http.ApacheHttp5Entities;
+import org.apiphany.http.ApacheHC5Entities;
 import org.apiphany.http.ContentEncoding;
 import org.apiphany.http.HttpContentType;
 import org.apiphany.http.HttpException;
@@ -51,7 +51,7 @@ import org.morphix.lang.Nullables;
  *
  * @author Radu Sebastian LAZIN
  */
-public class ApacheHttp5ExchangeClient extends AbstractHttpExchangeClient {
+public class ApacheHC5HttpExchangeClient extends AbstractHttpExchangeClient {
 
 	/**
 	 * The Apache HTTP client instance.
@@ -71,7 +71,7 @@ public class ApacheHttp5ExchangeClient extends AbstractHttpExchangeClient {
 	/**
 	 * Constructs the exchange client.
 	 */
-	public ApacheHttp5ExchangeClient() {
+	public ApacheHC5HttpExchangeClient() {
 		this(ClientProperties.defaults());
 	}
 
@@ -80,10 +80,10 @@ public class ApacheHttp5ExchangeClient extends AbstractHttpExchangeClient {
 	 *
 	 * @param clientProperties the client properties
 	 */
-	public ApacheHttp5ExchangeClient(final ClientProperties clientProperties) {
+	public ApacheHC5HttpExchangeClient(final ClientProperties clientProperties) {
 		super(clientProperties);
-		this.httpClient = ApacheHttp5PoolingClients.createClient(clientProperties,
-				ApacheHttp5PoolingClients.noCustomizer(), this::customize, this::customize);
+		this.httpClient = ApacheHC5PoolingHttpClients.createClient(clientProperties,
+				ApacheHC5PoolingHttpClients.noCustomizer(), this::customize, this::customize);
 		this.httpVersion = Nullables.nonNullOrDefault(this.httpVersion, HttpVersion.DEFAULT);
 	}
 
@@ -102,10 +102,10 @@ public class ApacheHttp5ExchangeClient extends AbstractHttpExchangeClient {
 	 * @param httpClientBuilder the HTTP client builder
 	 */
 	private void customize(final HttpClientBuilder httpClientBuilder) {
-		if (!ApacheHttp5Properties.Connection.DEFAULT_FOLLOW_REDIRECTS) {
+		if (!ApacheHC5Properties.Connection.DEFAULT_FOLLOW_REDIRECTS) {
 			httpClientBuilder.disableRedirectHandling();
 		}
-		ApacheHttp5Properties properties = getCustomProperties(ApacheHttp5Properties.class);
+		ApacheHC5Properties properties = getCustomProperties(ApacheHC5Properties.class);
 		if (null == properties) {
 			return;
 		}
@@ -207,7 +207,7 @@ public class ApacheHttp5ExchangeClient extends AbstractHttpExchangeClient {
 		HttpEntity httpEntity = response.getEntity();
 		HttpStatus httpStatus = HttpStatus.fromCode(response.getCode());
 
-		Map<String, List<String>> headers = Nullables.whenNotNull(response.getHeaders(), ApacheHttp5ExchangeClient::toHttpHeadersMap);
+		Map<String, List<String>> headers = Nullables.whenNotNull(response.getHeaders(), ApacheHC5HttpExchangeClient::toHttpHeadersMap);
 
 		List<String> encodings = getHeaderValuesChain().get(HttpHeader.CONTENT_ENCODING, headers);
 		U responseBody = ContentEncoding.decodeBody(getResponseBody(apiRequest, httpEntity), ContentEncoding.parseAll(encodings));
@@ -231,6 +231,7 @@ public class ApacheHttp5ExchangeClient extends AbstractHttpExchangeClient {
 	 * an input stream, otherwise it is returned as a byte array.
 	 *
 	 * @param <T> request body type
+	 * @param <U> response body type
 	 *
 	 * @param apiRequest API request object
 	 * @param httpEntity HTTP entity containing the response body
@@ -240,9 +241,9 @@ public class ApacheHttp5ExchangeClient extends AbstractHttpExchangeClient {
 	protected <T, U> U getResponseBody(final ApiRequest<T> apiRequest, final HttpEntity httpEntity) {
 		Object body;
 		if (apiRequest.isStream()) {
-			body = ApacheHttp5Entities.toInputStream(httpEntity);
+			body = ApacheHC5Entities.toInputStream(httpEntity);
 		} else {
-			body = ApacheHttp5Entities.toByteArray(httpEntity);
+			body = ApacheHC5Entities.toByteArray(httpEntity);
 		}
 		return JavaObjects.cast(body);
 	}

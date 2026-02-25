@@ -5,6 +5,7 @@ import java.io.InputStream;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.morphix.lang.function.ThrowingSupplier;
+import org.morphix.reflection.Constructors;
 
 /**
  * Utility class for working with HTTP entities. Provides methods to convert HTTP entities to various formats, such as
@@ -13,7 +14,7 @@ import org.morphix.lang.function.ThrowingSupplier;
  *
  * @author Radu Sebastian LAZIN
  */
-public class ApacheHttp5Entities {
+public class ApacheHC5Entities {
 
 	/**
 	 * Return the content of the HTTP entity as an input stream. This method is used to convert the response body to the
@@ -37,5 +38,12 @@ public class ApacheHttp5Entities {
 	 */
 	public static byte[] toByteArray(final HttpEntity httpEntity) {
 		return ThrowingSupplier.unchecked(() -> EntityUtils.toByteArray(httpEntity)).get();
+	}
+
+	/**
+	 * Private constructor to prevent instantiation of this utility class.
+	 */
+	private ApacheHC5Entities() {
+		throw Constructors.unsupportedOperationException();
 	}
 }
