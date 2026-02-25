@@ -32,7 +32,6 @@ import org.apache.hc.core5.http.io.entity.HttpEntities;
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
-import org.apiphany.client.ContentConverter;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.header.Headers;
 import org.apiphany.header.MapHeaderValues;
@@ -211,9 +210,8 @@ public class ApacheHC5ExchangeClient extends AbstractHttpExchangeClient {
 
 		Map<String, List<String>> headers = Nullables.whenNotNull(response.getHeaders(), ApacheHC5ExchangeClient::toHttpHeadersMap);
 
-		List<String> contentEncodings = getHeaderValuesChain().get(HttpHeader.CONTENT_ENCODING, headers);
-		ContentEncoding contentEncoding = ContentEncoding.parse(contentEncodings);
-		byte[] responseBody = ContentConverter.decodeBody(toByteArray(httpEntity), contentEncoding);
+		List<String> encodings = getHeaderValuesChain().get(HttpHeader.CONTENT_ENCODING, headers);
+		byte[] responseBody = ContentEncoding.decodeBody(toByteArray(httpEntity), ContentEncoding.parseAll(encodings));
 
 		HttpContentType contentType = HttpContentType.from(httpEntity.getContentType(), httpEntity.getContentEncoding());
 		if (httpStatus.isError()) {
@@ -224,6 +222,7 @@ public class ApacheHC5ExchangeClient extends AbstractHttpExchangeClient {
 		return ApiResponse.create(body)
 				.status(httpStatus)
 				.headers(headers)
+				.request(apiRequest)
 				.exchangeClient(this)
 				.build();
 	}

@@ -52,9 +52,86 @@ class ContentEncodingTest {
 	@ParameterizedTest
 	@MethodSource("provideValuesForParsingFromList")
 	void shouldParseValueFromAList(final List<String> values, final ContentEncoding expectedEncoding) {
-		ContentEncoding result = ContentEncoding.parse(values);
+		ContentEncoding result = ContentEncoding.parseFirst(values);
 
 		assertThat(result, equalTo(expectedEncoding));
+	}
+
+	@Test
+	void shouldReturnNullWhenParsingFromListWithNull() {
+		ContentEncoding result = ContentEncoding.parseFirst(null);
+
+		assertThat(result, equalTo(null));
+	}
+
+	@Test
+	void shouldReturnNullWhenParsingFromListWithEmptyList() {
+		ContentEncoding result = ContentEncoding.parseFirst(List.of());
+
+		assertThat(result, equalTo(null));
+	}
+
+	@Test
+	void shouldReturnNullWhenParsingFromListWithUnknownValues() {
+		ContentEncoding result = ContentEncoding.parseFirst(List.of("unknown1", "unknown2"));
+
+		assertThat(result, equalTo(null));
+	}
+
+	@Test
+	void shouldReturnNullWhenParsingFromListWithUnknownAndKnownValues() {
+		ContentEncoding result = ContentEncoding.parseFirst(List.of("unknown", "gzip"));
+
+		assertThat(result, equalTo(ContentEncoding.GZIP));
+	}
+
+	@Test
+	void shouldReturnFirstWhenParsingFromListWithKnownValues() {
+		ContentEncoding result = ContentEncoding.parseFirst(List.of("gzip", "deflate"));
+
+		assertThat(result, equalTo(ContentEncoding.GZIP));
+	}
+
+	@Test
+	void shouldReturnFirstKnownValueWhenParsingFromListWithKnownAndUnknownValues() {
+		ContentEncoding result = ContentEncoding.parseFirst(List.of("unknown", "deflate", "gzip"));
+
+		assertThat(result, equalTo(ContentEncoding.DEFLATE));
+	}
+
+	@Test
+	void shouldReturnFirstKnownValueWhenParsingFromListWithKnownAndUnknownValuesInDifferentOrder() {
+		ContentEncoding result = ContentEncoding.parseFirst(List.of("br", "unknown", "gzip"));
+
+		assertThat(result, equalTo(ContentEncoding.BR));
+	}
+
+	@Test
+	void shouldReturnEmptyListWhenParsingFromListWithNull() {
+		List<ContentEncoding> result = ContentEncoding.parseAll(null);
+
+		assertThat(result, equalTo(List.of()));
+	}
+
+	@Test
+	void shouldReturnEmptyListWhenParsingFromListWithEmptyList() {
+		List<ContentEncoding> result = ContentEncoding.parseAll(List.of());
+
+		assertThat(result, equalTo(List.of()));
+	}
+
+	@Test
+	void shouldReturnEmptyListWhenParsingFromListWithUnknownValues() {
+		List<ContentEncoding> result = ContentEncoding.parseAll(List.of("unknown1", "", "unknown2"));
+
+		assertThat(result, equalTo(List.of()));
+	}
+
+	@Test
+	void shouldReturnListWithKnownValuesWhenParsingFromListWithKnownAndUnknownValues() {
+		List<ContentEncoding> result = ContentEncoding.parseAll(List.of("unknown", "gzip", "deflate"));
+
+		assertThat(result, equalTo(List.of(ContentEncoding.GZIP, ContentEncoding.DEFLATE)));
 	}
 
 	private static Object[][] provideValuesForParsingFromList() {
