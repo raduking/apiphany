@@ -87,7 +87,8 @@ public class HttpException extends RuntimeException {
 
 	/**
 	 * Returns the value supplied by the supplier if no exception is thrown, otherwise it wraps the throwable thrown by the
-	 * supplier into a {@link HttpException}.
+	 * supplier into a {@link HttpException}. If the exception is already an instance of {@link HttpException}, it is
+	 * re-thrown without wrapping. The exception will have the status set to the provided {@code httpStatus}.
 	 *
 	 * @param <T> return type
 	 *

@@ -72,4 +72,15 @@ class HttpExceptionTest {
 
 		assertThat(exception.getMessage(), equalTo(HttpException.message(HttpStatus.INTERNAL_SERVER_ERROR, CAUSE_ERROR_MESSAGE)));
 	}
+
+	@Test
+	void shouldNotWrapHttpExceptionThrownBySupplier() {
+		HttpException cause = new HttpException(HttpStatus.BAD_REQUEST, CAUSE_ERROR_MESSAGE);
+
+		HttpException exception = assertThrows(HttpException.class, () -> HttpException.ifThrows(() -> {
+			throw cause;
+		}));
+
+		assertThat(exception, equalTo(cause));
+	}
 }
