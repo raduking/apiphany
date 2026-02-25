@@ -44,9 +44,9 @@ import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
+import org.apiphany.io.ByteBufferSubscriber;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
-import org.apiphany.test.http.ByteBufferBodySubscriber;
 import org.apiphany.utils.TestDto;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -654,7 +654,7 @@ class JavaNetHttpExchangeClientTest {
 
 		assertThat(bodyPublisher.contentLength(), equalTo((long) STRING.length()));
 
-		ByteBufferBodySubscriber subscriber = new ByteBufferBodySubscriber();
+		ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
 		bodyPublisher.subscribe(subscriber);
 		subscriber.awaitCompletion();
 
@@ -701,7 +701,7 @@ class JavaNetHttpExchangeClientTest {
 
 		assertThat(bodyPublisher.contentLength(), equalTo((long) BYTES.length));
 
-		ByteBufferBodySubscriber subscriber = new ByteBufferBodySubscriber();
+		ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
 		bodyPublisher.subscribe(subscriber);
 		subscriber.awaitCompletion();
 
@@ -719,7 +719,7 @@ class JavaNetHttpExchangeClientTest {
 
 		BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
 
-		ByteBufferBodySubscriber subscriber = new ByteBufferBodySubscriber();
+		ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
 		bodyPublisher.subscribe(subscriber);
 		subscriber.awaitCompletion();
 
@@ -738,7 +738,7 @@ class JavaNetHttpExchangeClientTest {
 
 		BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
 
-		ByteBufferBodySubscriber subscriber = new ByteBufferBodySubscriber();
+		ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
 		bodyPublisher.subscribe(subscriber);
 		subscriber.awaitCompletion();
 
@@ -754,7 +754,7 @@ class JavaNetHttpExchangeClientTest {
 
 		BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
 
-		ByteBufferBodySubscriber subscriber = new ByteBufferBodySubscriber();
+		ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
 		bodyPublisher.subscribe(subscriber);
 		subscriber.awaitCompletion();
 
@@ -776,7 +776,7 @@ class JavaNetHttpExchangeClientTest {
 
 		String expectedJson = JsonBuilder.toJson(expectedDto);
 
-		ByteBufferBodySubscriber subscriber = new ByteBufferBodySubscriber();
+		ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
 		bodyPublisher.subscribe(subscriber);
 		subscriber.awaitCompletion();
 
@@ -798,7 +798,7 @@ class JavaNetHttpExchangeClientTest {
 
 		String expectedString = expectedDto.toString();
 
-		ByteBufferBodySubscriber subscriber = new ByteBufferBodySubscriber();
+		ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
 		bodyPublisher.subscribe(subscriber);
 		subscriber.awaitCompletion();
 
@@ -817,7 +817,7 @@ class JavaNetHttpExchangeClientTest {
 
 		BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
 
-		ByteBufferBodySubscriber subscriber = new ByteBufferBodySubscriber();
+		ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
 		bodyPublisher.subscribe(subscriber);
 		subscriber.awaitCompletion();
 
