@@ -19,6 +19,11 @@ public interface IOStreams {
 	int DEFAULT_BUFFER_SIZE = 2 << 12;
 
 	/**
+	 * Maximum buffer size to prevent OutOfMemoryError: {@link Integer#MAX_VALUE}.
+	 */
+	int MAX_BUFFER_SIZE = Integer.MAX_VALUE;
+
+	/**
 	 * Reads exactly N bytes from the given input stream (a chunk). Throws an exception if N bytes could not be read.
 	 *
 	 * @param is the input stream

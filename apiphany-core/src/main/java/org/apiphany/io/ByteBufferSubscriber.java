@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.apiphany.lang.Bytes;
 import org.morphix.lang.thread.Threads;
 
 /**
@@ -59,13 +60,13 @@ public class ByteBufferSubscriber implements Subscriber<ByteBuffer> {
 	/**
 	 * Maximum number of buffers to store before canceling the subscription to prevent memory issues.
 	 */
-	private long maxBytes;
+	private final long maxBytes;
 
 	/**
 	 * Default constructor.
 	 */
 	public ByteBufferSubscriber() {
-		this(Integer.MAX_VALUE);
+		this(IOStreams.MAX_BUFFER_SIZE);
 	}
 
 	/**
@@ -164,7 +165,7 @@ public class ByteBufferSubscriber implements Subscriber<ByteBuffer> {
 		lock.readLock().lock();
 		try {
 			if (receivedBuffers.isEmpty()) {
-				return new byte[0];
+				return Bytes.EMPTY;
 			}
 			int totalSize = 0;
 			for (ByteBuffer buffer : receivedBuffers) {

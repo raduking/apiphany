@@ -2,14 +2,23 @@ package org.apiphany.io;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.nio.ByteBuffer;
+import java.time.Duration;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Flow.Subscription;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apiphany.lang.Bytes;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 /**
  * Test class for {@link ByteBufferSubscriber}.
@@ -221,6 +230,129 @@ class ByteBufferSubscriberTest {
 	}
 
 	@Nested
+	class ConcurrentOnNextTests {
+
+		private static final int THREADS = 10;
+		private static final int BUFFERS_PER_THREAD = 100;
+
+		private static final int MAX_BYTES = 10;
+
+		@Test
+		void shouldHandleConcurrentOnNextCalls() throws InterruptedException {
+			ByteBufferSubscriber subscriber = new ByteBufferSubscriber(BUFFER_SIZE);
+			TestSubscription subscription = new TestSubscription();
+
+			subscriber.onSubscribe(subscription);
+
+			Thread thread1 = Thread.ofVirtual().unstarted(() -> subscriber.onNext(ByteBuffer.allocate(1)));
+			Thread thread2 = Thread.ofVirtual().unstarted(() -> subscriber.onNext(ByteBuffer.allocate(1)));
+
+			thread1.start();
+			thread2.start();
+
+			thread1.join();
+			thread2.join();
+
+			assertThat(subscription.isCancelled(), equalTo(false));
+			assertThat(subscriber.hasBufferLimitExceeded(), equalTo(false));
+			assertThat(subscriber.getBufferCount(), equalTo(2));
+		}
+
+		@Test
+		@Timeout(5)
+		void shouldHandleConcurrentOnNextCallsWithMultipleThreads() throws InterruptedException {
+			ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
+
+			AtomicInteger exceptions = new AtomicInteger(0);
+			AtomicInteger successes = new AtomicInteger(0);
+			ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+
+			CountDownLatch startLatch = new CountDownLatch(1);
+			CountDownLatch endLatch = new CountDownLatch(THREADS);
+
+			for (int i = 0; i < THREADS; ++i) {
+				final int threadId = i;
+				executor.submit(() -> {
+					try {
+						startLatch.await();
+						for (int j = 0; j < BUFFERS_PER_THREAD; ++j) {
+							try {
+								ByteBuffer buffer = ByteBuffer.wrap(("Thread" + threadId + "-Data" + j).getBytes());
+								subscriber.onNext(buffer);
+								successes.incrementAndGet();
+							} catch (Exception e) {
+								exceptions.incrementAndGet();
+							}
+						}
+					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
+					} finally {
+						endLatch.countDown();
+					}
+				});
+			}
+			startLatch.countDown();
+
+			endLatch.await(10, TimeUnit.SECONDS);
+			executor.shutdown();
+			executor.awaitTermination(1, TimeUnit.SECONDS);
+
+			assertThat(exceptions.get(), equalTo(0));
+			assertThat(subscriber.getBufferCount(), equalTo(THREADS * BUFFERS_PER_THREAD));
+			assertThat(successes.get(), equalTo(THREADS * BUFFERS_PER_THREAD));
+			assertFalse(subscriber.hasError());
+			assertFalse(subscriber.hasBufferLimitExceeded());
+		}
+
+		@Test
+		@Timeout(5)
+		void shouldHandleConcurrentOnNextWhenLimitExceeded() throws InterruptedException {
+			ByteBufferSubscriber subscriber = new ByteBufferSubscriber(MAX_BYTES);
+
+			AtomicInteger receivedCount = new AtomicInteger(0);
+			AtomicInteger rejectedCount = new AtomicInteger(0);
+			ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+
+			CountDownLatch startLatch = new CountDownLatch(1);
+			CountDownLatch endLatch = new CountDownLatch(THREADS);
+
+			int bufferSize = MAX_BYTES / 2;
+			int buffersPerThread = 3;
+			byte[] data = new byte[bufferSize];
+			ByteBuffer buffer = ByteBuffer.wrap(data);
+
+			for (int i = 0; i < THREADS; ++i) {
+				executor.submit(() -> {
+					try {
+						startLatch.await();
+						for (int j = 0; j < buffersPerThread; ++j) {
+							subscriber.onNext(buffer.duplicate());
+							if (subscriber.hasBufferLimitExceeded()) {
+								rejectedCount.incrementAndGet();
+							} else {
+								receivedCount.incrementAndGet();
+							}
+						}
+					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
+					} finally {
+						endLatch.countDown();
+					}
+				});
+			}
+			startLatch.countDown();
+
+			endLatch.await(10, TimeUnit.SECONDS);
+			executor.shutdown();
+			executor.awaitTermination(1, TimeUnit.SECONDS);
+
+			assertThat(subscriber.hasBufferLimitExceeded(), equalTo(true));
+			assertThat(receivedCount.get() + rejectedCount.get(), equalTo(THREADS * buffersPerThread));
+			assertThat(subscriber.isCompleted(), equalTo(false));
+		}
+	}
+
+	@Nested
 	class OnErrorTests {
 
 		@Test
@@ -317,6 +449,25 @@ class ByteBufferSubscriberTest {
 			assertThat(e.getMessage(), equalTo("Error occurred during subscription"));
 			assertThat(e.getCause().getMessage(), equalTo("Test error"));
 		}
+
+		@Test
+		void shouldReturnEmptyArrayWhenNoBuffersReceived() {
+			ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
+			TestSubscription subscription = new TestSubscription();
+
+			subscriber.onSubscribe(subscription);
+
+			byte[] receivedBytes = subscriber.getReceivedBytes();
+
+			assertThat(receivedBytes, equalTo(new byte[0]));
+			assertThat(receivedBytes, equalTo(Bytes.EMPTY));
+			assertThat(subscriber.getBufferCount(), equalTo(0));
+			assertThat(subscriber.isCompleted(), equalTo(false));
+			assertThat(subscriber.hasError(), equalTo(false));
+			assertThat(subscriber.hasBufferLimitExceeded(), equalTo(false));
+			assertThat(subscription.isCancelled(), equalTo(false));
+			assertThat(subscription.isRequested(), equalTo(true));
+		}
 	}
 
 	@Nested
@@ -348,6 +499,36 @@ class ByteBufferSubscriberTest {
 			assertThat(subscriber.isCompleted(), equalTo(true));
 			assertThat(subscriber.hasError(), equalTo(true));
 			assertThat(subscriber.getError().getMessage(), equalTo("Test error"));
+		}
+
+		@Test
+		void shouldCompleteNormallyWhenSubscriptionCancelled() {
+			ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
+			TestSubscription subscription = new TestSubscription();
+
+			subscriber.onSubscribe(subscription);
+			subscriber.cancel();
+
+			subscriber.awaitCompletion(Duration.ofMillis(100), Duration.ofMillis(10));
+
+			assertThat(subscriber.isCompleted(), equalTo(false));
+			assertThat(subscriber.hasError(), equalTo(false));
+			assertThat(subscriber.hasBufferLimitExceeded(), equalTo(false));
+		}
+
+		@Test
+		void shouldCompleteNormallyWhenSubscriptionCancelledAfterBufferLimitExceeded() {
+			ByteBufferSubscriber subscriber = new ByteBufferSubscriber(BUFFER_SIZE);
+			TestSubscription subscription = new TestSubscription();
+
+			subscriber.onSubscribe(subscription);
+			subscriber.onNext(ByteBuffer.allocate(INT_BUFFER_SIZE + 1));
+
+			subscriber.awaitCompletion(Duration.ofMillis(100), Duration.ofMillis(10));
+
+			assertThat(subscriber.isCompleted(), equalTo(false));
+			assertThat(subscriber.hasError(), equalTo(false));
+			assertThat(subscriber.hasBufferLimitExceeded(), equalTo(true));
 		}
 	}
 
