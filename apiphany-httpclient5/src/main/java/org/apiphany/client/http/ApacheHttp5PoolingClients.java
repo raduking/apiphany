@@ -19,7 +19,7 @@ import org.morphix.lang.function.Consumers;
  *
  * @author Radu Sebastian LAZIN
  */
-public interface PoolingHttpClients {
+public interface ApacheHttp5PoolingClients {
 
 	/**
 	 * Returns a configured HTTP client based on the given client properties. The caller is responsible for closing the
@@ -62,7 +62,7 @@ public interface PoolingHttpClients {
 			final Consumer<PoolingHttpClientConnectionManagerBuilder> connectionManagerBuilderCustomizer,
 			final Consumer<PoolingHttpClientConnectionManager> connectionManagerCustomizer,
 			final Consumer<HttpClientBuilder> httpClientBuilderCustomizer) {
-		ApacheHC5Properties apacheHC5Properties = clientProperties.getCustomProperties(ApacheHC5Properties.class);
+		ApacheHttp5Properties apacheHC5Properties = clientProperties.getCustomProperties(ApacheHttp5Properties.class);
 
 		PoolingHttpClientConnectionManagerBuilder connectionManagerBuilder = null == apacheHC5Properties
 				? createConnectionManagerBuilder(clientProperties)
@@ -112,7 +112,7 @@ public interface PoolingHttpClients {
 	 * @param apacheHC5Properties Apache HTTP Client 5 properties
 	 * @return a pulling HTTP client connection manager
 	 */
-	static PoolingHttpClientConnectionManagerBuilder createConnectionManagerBuilder(final ApacheHC5Properties apacheHC5Properties) {
+	static PoolingHttpClientConnectionManagerBuilder createConnectionManagerBuilder(final ApacheHttp5Properties apacheHC5Properties) {
 		return PoolingHttpClientConnectionManagerBuilder.create()
 				.setDefaultSocketConfig(SocketConfig.custom()
 						.setSoTimeout(apacheHC5Properties.getSocket().getTimeout())
@@ -146,7 +146,7 @@ public interface PoolingHttpClients {
 	 * @param apacheHC5Properties Apache HTTP Client 5 properties
 	 * @return returns the request configuration object
 	 */
-	static RequestConfig createRequestConfig(final ApacheHC5Properties apacheHC5Properties) {
+	static RequestConfig createRequestConfig(final ApacheHttp5Properties apacheHC5Properties) {
 		return RequestConfig.custom()
 				.setConnectionRequestTimeout(apacheHC5Properties.getConnectionRequest().getTimeout())
 				.setProtocolUpgradeEnabled(apacheHC5Properties.getRequest().isProtocolUpgradeEnabled())

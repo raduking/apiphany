@@ -17,7 +17,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 /**
- * Test class for {@link ApacheHC5Properties}.
+ * Test class for {@link ApacheHttp5Properties}.
  */
 class ApacheHC5PropertiesTest {
 
@@ -36,17 +36,17 @@ class ApacheHC5PropertiesTest {
 
 	static class ApplicationProperties {
 
-		private ApacheHC5Properties httpClient5;
+		private ApacheHttp5Properties httpClient5;
 
 		public ApplicationProperties() {
 			// Default constructor for Jackson
 		}
 
-		public ApacheHC5Properties getHttpClient5() {
+		public ApacheHttp5Properties getHttpClient5() {
 			return httpClient5;
 		}
 
-		public void setHttpClient5(final ApacheHC5Properties httpClient5) {
+		public void setHttpClient5(final ApacheHttp5Properties httpClient5) {
 			this.httpClient5 = httpClient5;
 		}
 	}
@@ -58,7 +58,7 @@ class ApacheHC5PropertiesTest {
 
 		ApplicationProperties properties = fromYaml(yaml, ApplicationProperties.class);
 
-		ApacheHC5Properties httpClient5Properties = properties.getHttpClient5();
+		ApacheHttp5Properties httpClient5Properties = properties.getHttpClient5();
 
 		assertThat(httpClient5Properties.getConnection().getTimeToLive(), equalTo(Timeout.ofSeconds(30)));
 		assertThat(httpClient5Properties.getConnection().getMaxTotal(), equalTo(100));
