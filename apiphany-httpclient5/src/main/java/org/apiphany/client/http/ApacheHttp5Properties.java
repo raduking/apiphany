@@ -14,7 +14,7 @@ import org.apiphany.json.JsonBuilder;
  *
  * @author Radu Sebastian LAZIN
  */
-public class ApacheHC5Properties {
+public class ApacheHttp5Properties {
 
 	/**
 	 * The root property prefix for Apache HTTP Client 5 configuration.
@@ -49,7 +49,7 @@ public class ApacheHC5Properties {
 	/**
 	 * Default constructor.
 	 */
-	public ApacheHC5Properties() {
+	public ApacheHttp5Properties() {
 		// empty
 	}
 
@@ -69,7 +69,7 @@ public class ApacheHC5Properties {
 		if (this == o) {
 			return true;
 		}
-		if (o instanceof ApacheHC5Properties that) {
+		if (o instanceof ApacheHttp5Properties that) {
 			return Objects.equals(this.connection, that.connection) &&
 					Objects.equals(this.request, that.request) &&
 					Objects.equals(this.connectionRequest, that.connectionRequest) &&

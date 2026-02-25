@@ -1,7 +1,6 @@
 package org.apiphany.client.http;
 
 import java.io.File;
-import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.HashMap;
@@ -27,7 +26,6 @@ import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.HttpVersion;
 import org.apache.hc.core5.http.ProtocolVersion;
 import org.apache.hc.core5.http.io.HttpClientResponseHandler;
-import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.entity.HttpEntities;
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
@@ -35,6 +33,7 @@ import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.header.Headers;
 import org.apiphany.header.MapHeaderValues;
+import org.apiphany.http.ApacheHttp5Entities;
 import org.apiphany.http.ContentEncoding;
 import org.apiphany.http.HttpContentType;
 import org.apiphany.http.HttpException;
@@ -44,15 +43,15 @@ import org.apiphany.http.HttpStatus;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Lists;
 import org.apiphany.lang.collections.Maps;
+import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Nullables;
-import org.morphix.lang.function.ThrowingSupplier;
 
 /**
  * Apache HTTP Client 5 exchange client.
  *
  * @author Radu Sebastian LAZIN
  */
-public class ApacheHC5ExchangeClient extends AbstractHttpExchangeClient {
+public class ApacheHttp5ExchangeClient extends AbstractHttpExchangeClient {
 
 	/**
 	 * The Apache HTTP client instance.
@@ -72,7 +71,7 @@ public class ApacheHC5ExchangeClient extends AbstractHttpExchangeClient {
 	/**
 	 * Constructs the exchange client.
 	 */
-	public ApacheHC5ExchangeClient() {
+	public ApacheHttp5ExchangeClient() {
 		this(ClientProperties.defaults());
 	}
 
@@ -81,10 +80,10 @@ public class ApacheHC5ExchangeClient extends AbstractHttpExchangeClient {
 	 *
 	 * @param clientProperties the client properties
 	 */
-	public ApacheHC5ExchangeClient(final ClientProperties clientProperties) {
+	public ApacheHttp5ExchangeClient(final ClientProperties clientProperties) {
 		super(clientProperties);
-		this.httpClient = PoolingHttpClients.createClient(clientProperties,
-				PoolingHttpClients.noCustomizer(), this::customize, this::customize);
+		this.httpClient = ApacheHttp5PoolingClients.createClient(clientProperties,
+				ApacheHttp5PoolingClients.noCustomizer(), this::customize, this::customize);
 		this.httpVersion = Nullables.nonNullOrDefault(this.httpVersion, HttpVersion.DEFAULT);
 	}
 
@@ -103,10 +102,10 @@ public class ApacheHC5ExchangeClient extends AbstractHttpExchangeClient {
 	 * @param httpClientBuilder the HTTP client builder
 	 */
 	private void customize(final HttpClientBuilder httpClientBuilder) {
-		if (!ApacheHC5Properties.Connection.DEFAULT_FOLLOW_REDIRECTS) {
+		if (!ApacheHttp5Properties.Connection.DEFAULT_FOLLOW_REDIRECTS) {
 			httpClientBuilder.disableRedirectHandling();
 		}
-		ApacheHC5Properties properties = getCustomProperties(ApacheHC5Properties.class);
+		ApacheHttp5Properties properties = getCustomProperties(ApacheHttp5Properties.class);
 		if (null == properties) {
 			return;
 		}
@@ -208,10 +207,10 @@ public class ApacheHC5ExchangeClient extends AbstractHttpExchangeClient {
 		HttpEntity httpEntity = response.getEntity();
 		HttpStatus httpStatus = HttpStatus.fromCode(response.getCode());
 
-		Map<String, List<String>> headers = Nullables.whenNotNull(response.getHeaders(), ApacheHC5ExchangeClient::toHttpHeadersMap);
+		Map<String, List<String>> headers = Nullables.whenNotNull(response.getHeaders(), ApacheHttp5ExchangeClient::toHttpHeadersMap);
 
 		List<String> encodings = getHeaderValuesChain().get(HttpHeader.CONTENT_ENCODING, headers);
-		byte[] responseBody = ContentEncoding.decodeBody(toByteArray(httpEntity), ContentEncoding.parseAll(encodings));
+		U responseBody = ContentEncoding.decodeBody(getResponseBody(apiRequest, httpEntity), ContentEncoding.parseAll(encodings));
 
 		HttpContentType contentType = HttpContentType.from(httpEntity.getContentType(), httpEntity.getContentEncoding());
 		if (httpStatus.isError()) {
@@ -228,27 +227,24 @@ public class ApacheHC5ExchangeClient extends AbstractHttpExchangeClient {
 	}
 
 	/**
-	 * Return the content of the HTTP entity as an input stream. This method is used to convert the response body to the
-	 * target type using the content converters. The content converters can use the input stream to read the response body
-	 * without loading it entirely into memory, which is useful for large responses.
+	 * Returns the response body converted to the target type. If the request is a stream, the response body is returned as
+	 * an input stream, otherwise it is returned as a byte array.
 	 *
-	 * @param httpEntity the HTTP entity to read the content from
-	 * @return an input stream containing the content of the HTTP entity
-	 */
-	public static InputStream toInputStream(final HttpEntity httpEntity) {
-		return ThrowingSupplier.unchecked(httpEntity::getContent).get();
-	}
-
-	/**
-	 * Return the content of the HTTP entity as a byte array. This method is used to convert the response body to the target
-	 * type using the content converters. The content converters can use the byte array to read the response body without
-	 * loading it entirely into memory, which is useful for large responses.
+	 * @param <T> request body type
 	 *
-	 * @param httpEntity the HTTP entity to read the content from
-	 * @return a byte array containing the content of the HTTP entity
+	 * @param apiRequest API request object
+	 * @param httpEntity HTTP entity containing the response body
+	 * @return the response body converted to the target type
 	 */
-	public static byte[] toByteArray(final HttpEntity httpEntity) {
-		return ThrowingSupplier.unchecked(() -> EntityUtils.toByteArray(httpEntity)).get();
+	@SuppressWarnings("resource")
+	protected <T, U> U getResponseBody(final ApiRequest<T> apiRequest, final HttpEntity httpEntity) {
+		Object body;
+		if (apiRequest.isStream()) {
+			body = ApacheHttp5Entities.toInputStream(httpEntity);
+		} else {
+			body = ApacheHttp5Entities.toByteArray(httpEntity);
+		}
+		return JavaObjects.cast(body);
 	}
 
 	/**

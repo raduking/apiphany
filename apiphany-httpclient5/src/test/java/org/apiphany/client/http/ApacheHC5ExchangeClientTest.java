@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.morphix.reflection.Fields;
 
 /**
- * Test class for {@link ApacheHC5ExchangeClient}.
+ * Test class for {@link ApacheHttp5ExchangeClient}.
  *
  * @author Radu Sebastian LAZIN
  */
@@ -24,7 +24,7 @@ class ApacheHC5ExchangeClientTest {
 		CloseableHttpClient httpClient = null;
 		Queue<Closeable> closeables = null;
 
-		try (ApacheHC5ExchangeClient client = new ApacheHC5ExchangeClient()) {
+		try (ApacheHttp5ExchangeClient client = new ApacheHttp5ExchangeClient()) {
 			httpClient = client.getHttpClient();
 			closeables = Fields.IgnoreAccess.get(httpClient, "closeables");
 
