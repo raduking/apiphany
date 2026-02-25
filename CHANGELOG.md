@@ -27,6 +27,7 @@
 - Added `Temporals.parseSimpleDuration` to parse durations like `1s`, `2m`, `3h` or `7d`. 
 - Added `apache-httpclient5-tests` integration tests module.
 - Added `Status.message` utility methods to build status messages.
+- Added `ByteBufferSubscriber` from `apiphany-test` since it can be used generally and made it thread safe.
 
 ---
 
