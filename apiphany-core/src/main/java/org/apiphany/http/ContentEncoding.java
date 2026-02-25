@@ -1,5 +1,6 @@
 package org.apiphany.http;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -39,6 +40,8 @@ public enum ContentEncoding {
 
 		/**
 		 * Decodes the given input stream or byte array using GZIP decompression.
+		 *
+		 * @param <T> body type
 		 *
 		 * @param body compressed body to decode, can be an InputStream or a byte array
 		 * @return de-compressed body that decodes the original body using GZIP decompression
@@ -194,6 +197,8 @@ public enum ContentEncoding {
 	 * Decodes the given input stream according to the content encoding. The default implementation throws an
 	 * {@link UnsupportedOperationException} since the actual decoding logic is implemented in each specific enum constant.
 	 *
+	 * @param <T> body type
+	 *
 	 * @param body the body to decode
 	 * @return a decoded body that decodes the original body according to the content encoding
 	 * @throws UnsupportedOperationException if the content encoding is not supported or if the decoding logic is not
@@ -302,20 +307,20 @@ public enum ContentEncoding {
 	 * @param <T> body type
 	 *
 	 * @param body the body
-	 * @param contentEncodings content encoding list in the order they were applied to the body
+	 * @param encodings content encoding list in the order they were applied to the body
 	 * @return decoded body
 	 */
-	public static <T> T decodeBody(final T body, final List<ContentEncoding> contentEncodings) {
-		if (null == body) {
-			return null;
-		}
-		if (Lists.isEmpty(contentEncodings)) {
+	public static <T> T decodeBody(final T body, final List<ContentEncoding> encodings) {
+		if (null == body || Lists.isEmpty(encodings)) {
 			return body;
 		}
-		T result = body;
-		for (ContentEncoding contentEndoding : contentEncodings.reversed()) {
-			result = contentEndoding.decode(result);
+		if (body instanceof InputStream || body instanceof byte[]) {
+			T result = body;
+			for (ContentEncoding encoding : encodings.reversed()) {
+				result = encoding.decode(result);
+			}
+			return result;
 		}
-		return result;
+		return body;
 	}
 }
