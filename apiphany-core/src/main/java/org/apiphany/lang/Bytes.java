@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+import org.apiphany.io.IOStreams;
 import org.apiphany.io.ResourceLocation;
 import org.morphix.lang.function.Consumers;
 import org.morphix.reflection.Constructors;
@@ -183,7 +184,7 @@ public final class Bytes {
 	/**
 	 * Reads all bytes from a file located at the given path. If the path is absolute, it reads from the file system;
 	 * otherwise, it attempts to read the file as a classpath resource. This method is not intended for large streams and is
-	 * also limited to read up to {@code Integer.MAX_VALUE} bytes from the file.
+	 * also limited to read up to {@link IOStreams#MAX_BUFFER_SIZE} bytes from the file.
 	 *
 	 * @param path the file path (absolute or classpath resource)
 	 * @param onError a consumer to handle exceptions that may occur during file reading
@@ -207,7 +208,7 @@ public final class Bytes {
 	/**
 	 * Reads all bytes from a file located at the given path. If the path is absolute, it reads from the file system;
 	 * otherwise, it attempts to read the file as a classpath resource. This method is not intended for large streams and is
-	 * also limited to read up to {@code Integer.MAX_VALUE} bytes from the file.
+	 * also limited to read up to {@link IOStreams#MAX_BUFFER_SIZE} bytes from the file.
 	 *
 	 * @param path the file path (absolute or classpath resource)
 	 * @return a byte array containing the file's contents, or an empty array if an error occurred

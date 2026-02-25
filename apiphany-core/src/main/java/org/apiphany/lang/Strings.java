@@ -249,7 +249,7 @@ public interface Strings {
 	/**
 	 * Transforms an input stream to a string. If the input stream cannot be converted to string with the given parameters,
 	 * the result will be {@code null}. This method is not intended for large streams and is also limited to read up to
-	 * {@code Integer.MAX_VALUE} characters from the input stream.
+	 * {@link IOStreams#MAX_BUFFER_SIZE} characters from the input stream.
 	 *
 	 * @param inputStream input stream
 	 * @param encoding character encoding
@@ -258,13 +258,13 @@ public interface Strings {
 	 * @return the input stream as string
 	 */
 	static String toString(final InputStream inputStream, final Charset encoding, final int bufferSize, final Consumer<Exception> onError) {
-		return toString(inputStream, encoding, Integer.MAX_VALUE, bufferSize, onError);
+		return toString(inputStream, encoding, IOStreams.MAX_BUFFER_SIZE, bufferSize, onError);
 	}
 
 	/**
 	 * Transforms an input stream to a string. If the input stream cannot be converted to string with the given parameters,
 	 * the result will be null. This method is not intended for large streams and is also limited to read up to
-	 * {@code Integer.MAX_VALUE} characters from the input stream.
+	 * {@link IOStreams#MAX_BUFFER_SIZE} characters from the input stream.
 	 *
 	 * @param inputStream input stream
 	 * @param encoding character encoding
@@ -278,7 +278,7 @@ public interface Strings {
 	/**
 	 * Transforms an input stream to a string. If the input stream cannot be converted to string with the given parameters,
 	 * the result will be null. This method is not intended for large streams and is also limited to read up to
-	 * {@code Integer.MAX_VALUE} characters from the input stream.
+	 * {@link IOStreams#MAX_BUFFER_SIZE} characters from the input stream.
 	 *
 	 * @param inputStream input stream
 	 * @param encoding character encoding
@@ -306,7 +306,7 @@ public interface Strings {
 			Objects.requireNonNull(onError, "onError handler cannot be null");
 
 			try (InputStream inputStream = ResourceLocation.ofPath(path).open(path)) {
-				return toStringOrThrow(inputStream, encoding, Integer.MAX_VALUE, bufferSize);
+				return toStringOrThrow(inputStream, encoding, IOStreams.MAX_BUFFER_SIZE, bufferSize);
 			}
 		} catch (Exception e) {
 			onError.accept(e);

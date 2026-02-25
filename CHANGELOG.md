@@ -28,6 +28,7 @@
 - Added `apache-httpclient5-tests` integration tests module.
 - Added `Status.message` utility methods to build status messages.
 - Added `ByteBufferSubscriber` from `apiphany-test` since it can be used generally and made it thread safe.
+- Added `IOStreams.MAX_BUFFER_SIZE` to prevent `OutOfMemoryError` on I/O operations, all buffering operations use this value now. 
 
 ---
 
