@@ -14,7 +14,7 @@ echo "All tests passed. Deploying apiphany module..."
 # -DskipTests to skip tests during deployment
 
 mvn deploy -Drelease=true \
-	-pl apiphany-core \
+	-pl apiphany-core,apiphany-httpclient5 \
 	-am \
 	-DskipTests
 
