@@ -43,7 +43,7 @@ Support is being developed for other HTTP clients like Apache HttpClient, OkHttp
 
 ### Releases
 
-Current release `1.1.5`
+Current release `1.1.6`
 
 ### Getting Started
 
@@ -53,7 +53,7 @@ Maven: add this dependency to your `pom.xml`
 <dependency>
     <groupId>io.github.raduking</groupId>
     <artifactId>apiphany</artifactId>
-    <version>1.1.5</version>
+    <version>1.1.6</version>
 </dependency>
 ```
 
