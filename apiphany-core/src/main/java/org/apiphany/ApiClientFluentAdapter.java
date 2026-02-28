@@ -279,10 +279,20 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 		this.body = switch (body) {
 			case null -> null;
 			case InputStream is -> new OneShotInputStreamSupplier(is);
-			case InputStreamSupplier iss -> iss;
 			default -> body;
 		};
 		return this;
+	}
+
+	/**
+	 * Sets the request body as an input stream supplier. This method is here to be able to use a supplier expression when
+	 * building the body.
+	 *
+	 * @param body the body to set
+	 * @return this
+	 */
+	public ApiClientFluentAdapter body(final InputStreamSupplier body) {
+		return body((Object) body);
 	}
 
 	/**

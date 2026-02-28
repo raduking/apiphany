@@ -24,6 +24,7 @@ import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.http.ContentEncoding;
 import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
+import org.apiphany.io.InputStreamSupplier;
 import org.apiphany.io.gzip.GZip;
 import org.apiphany.lang.retry.Retry;
 import org.apiphany.lang.retry.WaitCounter;
@@ -121,7 +122,6 @@ class ApiClientWithJavaNetHttpIT {
 						.withBody("OK")));
 
 		ClientProperties properties = new ClientProperties();
-		// properties.setFollowRedirects(true);
 		ApiClient api = ApiClient.of(baseUrl(),
 				ApiClient.with(exchangeClientClass()).properties(properties));
 		try (api) {
@@ -688,6 +688,76 @@ class ApiClientWithJavaNetHttpIT {
 		// this will break most clients since the InputStream can only be read once, but we want to ensure that the ApiClient
 		// properly retries even in this case by re-creating the stream for the retry attempt
 		wiremock.verify(1, postRequestedFor(urlEqualTo("/retry-stream"))
+				.withRequestBody(equalTo("hello")));
+	}
+
+	@Test
+	void shouldNotFailRetryBeforeSendWhenBodyIsInputStreamSupplierRepeatable() throws Exception {
+		wiremock.stubFor(post("/retry-stream")
+				.inScenario("retry-stream")
+				.whenScenarioStateIs(STARTED)
+				.willReturn(aResponse().withStatus(500))
+				.willSetStateTo("second"));
+
+		wiremock.stubFor(post("/retry-stream")
+				.inScenario("retry-stream")
+				.whenScenarioStateIs("second")
+				.willReturn(aResponse()
+						.withStatus(200)
+						.withBody("hi")));
+
+		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		try (api) {
+			String result = api.client()
+					.http()
+					.post()
+					.path("retry-stream")
+					.body(InputStreamSupplier.from(() -> new OneShotInputStream("hello")))
+					.retry(Retry.of(WaitCounter.of(2, Duration.ofMillis(100))))
+					.retrieve(String.class)
+					.orRethrow();
+
+			assertEquals("hi", result);
+		}
+
+		// this will break most clients since the InputStream can only be read once, but we want to ensure that the ApiClient
+		// properly retries even in this case by re-creating the stream for the retry attempt
+		wiremock.verify(2, postRequestedFor(urlEqualTo("/retry-stream"))
+				.withRequestBody(equalTo("hello")));
+	}
+
+	@Test
+	void shouldNotFailRetryBeforeSendWhenBodyIsRepeatableByRecreatingTheInputStream() throws Exception {
+		wiremock.stubFor(post("/retry-stream")
+				.inScenario("retry-stream")
+				.whenScenarioStateIs(STARTED)
+				.willReturn(aResponse().withStatus(500))
+				.willSetStateTo("second"));
+
+		wiremock.stubFor(post("/retry-stream")
+				.inScenario("retry-stream")
+				.whenScenarioStateIs("second")
+				.willReturn(aResponse()
+						.withStatus(200)
+						.withBody("hi")));
+
+		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		try (api) {
+			String result = api.client()
+					.http()
+					.post()
+					.path("retry-stream")
+					.body(() -> new OneShotInputStream("hello"))
+					.retry(Retry.of(WaitCounter.of(2, Duration.ofMillis(100))))
+					.retrieve(String.class)
+					.orRethrow();
+
+			assertEquals("hi", result);
+		}
+
+		// this will break most clients since the InputStream can only be read once, but we want to ensure that the ApiClient
+		// properly retries even in this case by re-creating the stream for the retry attempt
+		wiremock.verify(2, postRequestedFor(urlEqualTo("/retry-stream"))
 				.withRequestBody(equalTo("hello")));
 	}
 }
