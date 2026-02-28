@@ -45,9 +45,11 @@ import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
 import org.apiphany.io.ByteBufferSubscriber;
+import org.apiphany.io.InputStreamSupplier;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.utils.TestDto;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -55,6 +57,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.morphix.convert.MapConversions;
 import org.morphix.convert.ObjectConverterException;
 import org.morphix.lang.Nullables;
+import org.morphix.reflection.Fields;
 import org.morphix.reflection.GenericClass;
 import org.morphix.reflection.GenericType;
 
@@ -150,399 +153,409 @@ class JavaNetHttpExchangeClientTest {
 		assertThat(exchangeClient.getClientProperties(), equalTo(prefixedProperties));
 	}
 
-	@Test
-	void shouldBuildGetRequest() throws Exception {
-		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
-		exchangeClient.close();
+	@Nested
+	class BuildRequestTests {
 
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.url(URL)
-				.method(HttpMethod.GET);
+		@Test
+		void shouldBuildGetRequest() throws Exception {
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+			exchangeClient.close();
 
-		HttpRequest httpRequest = exchangeClient.buildRequest(request);
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.GET);
 
-		assertThat(httpRequest.method(), equalTo("GET"));
-		assertThat(httpRequest.uri().toString(), equalTo(URL));
+			HttpRequest httpRequest = exchangeClient.buildRequest(request);
+
+			assertThat(httpRequest.method(), equalTo("GET"));
+			assertThat(httpRequest.uri().toString(), equalTo(URL));
+		}
+
+		@Test
+		void shouldBuildPutRequest() throws Exception {
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.PUT)
+					.body(STRING);
+
+			HttpRequest httpRequest = exchangeClient.buildRequest(request);
+
+			assertThat(httpRequest.method(), equalTo("PUT"));
+			assertThat(httpRequest.uri().toString(), equalTo(URL));
+			assertThat(httpRequest.bodyPublisher().isPresent(), equalTo(true));
+		}
+
+		@Test
+		void shouldBuildPostRequest() throws Exception {
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.POST)
+					.body(STRING);
+
+			HttpRequest httpRequest = exchangeClient.buildRequest(request);
+
+			assertThat(httpRequest.method(), equalTo("POST"));
+			assertThat(httpRequest.uri().toString(), equalTo(URL));
+			assertThat(httpRequest.bodyPublisher().isPresent(), equalTo(true));
+		}
+
+		@Test
+		void shouldBuildDeleteRequest() throws Exception {
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.DELETE);
+
+			HttpRequest httpRequest = exchangeClient.buildRequest(request);
+
+			assertThat(httpRequest.method(), equalTo("DELETE"));
+			assertThat(httpRequest.uri().toString(), equalTo(URL));
+			assertThat(httpRequest.bodyPublisher().isPresent(), equalTo(false));
+		}
+
+		@Test
+		void shouldBuildHeadRequest() throws Exception {
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.HEAD);
+
+			HttpRequest httpRequest = exchangeClient.buildRequest(request);
+
+			assertThat(httpRequest.method(), equalTo("HEAD"));
+			assertThat(httpRequest.uri().toString(), equalTo(URL));
+			assertThat(httpRequest.bodyPublisher().isPresent(), equalTo(false));
+		}
+
+		@Test
+		void shouldBuildHeadRequestWithHeaders() throws Exception {
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.HEAD)
+					.header("X-Custom-Header", "CustomValue");
+
+			HttpRequest httpRequest = exchangeClient.buildRequest(request);
+
+			assertThat(httpRequest.method(), equalTo("HEAD"));
+			assertThat(httpRequest.uri().toString(), equalTo(URL));
+			assertThat(httpRequest.headers().firstValue("X-Custom-Header").orElse(null), equalTo("CustomValue"));
+			assertThat(httpRequest.bodyPublisher().isPresent(), equalTo(false));
+		}
+
+		@Test
+		void shouldBuildPatchRequest() throws Exception {
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.PATCH)
+					.body(STRING);
+
+			HttpRequest httpRequest = exchangeClient.buildRequest(request);
+
+			assertThat(httpRequest.method(), equalTo("PATCH"));
+			assertThat(httpRequest.uri().toString(), equalTo(URL));
+			assertThat(httpRequest.bodyPublisher().isPresent(), equalTo(true));
+		}
+
+		@Test
+		void shouldThrowExceptionOnBuildConnectRequest() throws Exception {
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.CONNECT);
+
+			HttpException e = assertThrows(HttpException.class, () -> exchangeClient.buildRequest(request));
+
+			assertThat(e.getStatus(), equalTo(HttpStatus.BAD_REQUEST));
+			assertThat(e.getMessage(),
+					equalTo(HttpException.message(HttpStatus.BAD_REQUEST, "HTTP method " + HttpMethod.CONNECT + " is not supported!")));
+		}
+
+		@Test
+		void shouldBuildOptionsRequest() throws Exception {
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.OPTIONS);
+
+			HttpRequest httpRequest = exchangeClient.buildRequest(request);
+
+			assertThat(httpRequest.method(), equalTo("OPTIONS"));
+			assertThat(httpRequest.uri().toString(), equalTo(URL));
+			assertThat(httpRequest.bodyPublisher().isPresent(), equalTo(true));
+			assertThat(httpRequest.bodyPublisher().get().contentLength(), equalTo(0L));
+		}
+
+		@Test
+		void shouldBuildTraceRequest() throws Exception {
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.TRACE);
+
+			HttpRequest httpRequest = exchangeClient.buildRequest(request);
+
+			assertThat(httpRequest.method(), equalTo("TRACE"));
+			assertThat(httpRequest.uri().toString(), equalTo(URL));
+			assertThat(httpRequest.bodyPublisher().isPresent(), equalTo(true));
+			assertThat(httpRequest.bodyPublisher().get().contentLength(), equalTo(0L));
+		}
+
+		@Test
+		void shouldThrowExceptionBuildingCustomMethodRequest() throws Exception {
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(ApiMethod.UNDEFINED)
+					.body(STRING);
+
+			HttpException exception = assertThrows(HttpException.class, () -> exchangeClient.buildRequest(request));
+
+			assertThat(exception.getStatus(), equalTo(HttpStatus.BAD_REQUEST));
+			assertThat(exception.getMessage(), startsWith(
+					HttpException.message(HttpStatus.BAD_REQUEST, ApiMethod.class + " cannot be cast to " + HttpMethod.class)));
+		}
 	}
 
-	@Test
-	void shouldBuildPutRequest() throws Exception {
-		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
-		exchangeClient.close();
-
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.url(URL)
-				.method(HttpMethod.PUT)
-				.body(STRING);
-
-		HttpRequest httpRequest = exchangeClient.buildRequest(request);
-
-		assertThat(httpRequest.method(), equalTo("PUT"));
-		assertThat(httpRequest.uri().toString(), equalTo(URL));
-		assertThat(httpRequest.bodyPublisher().isPresent(), equalTo(true));
-	}
-
-	@Test
-	void shouldBuildPostRequest() throws Exception {
-		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
-		exchangeClient.close();
-
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.url(URL)
-				.method(HttpMethod.POST)
-				.body(STRING);
-
-		HttpRequest httpRequest = exchangeClient.buildRequest(request);
-
-		assertThat(httpRequest.method(), equalTo("POST"));
-		assertThat(httpRequest.uri().toString(), equalTo(URL));
-		assertThat(httpRequest.bodyPublisher().isPresent(), equalTo(true));
-	}
-
-	@Test
-	void shouldBuildDeleteRequest() throws Exception {
-		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
-		exchangeClient.close();
-
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.url(URL)
-				.method(HttpMethod.DELETE);
-
-		HttpRequest httpRequest = exchangeClient.buildRequest(request);
-
-		assertThat(httpRequest.method(), equalTo("DELETE"));
-		assertThat(httpRequest.uri().toString(), equalTo(URL));
-		assertThat(httpRequest.bodyPublisher().isPresent(), equalTo(false));
-	}
-
-	@Test
-	void shouldBuildHeadRequest() throws Exception {
-		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
-		exchangeClient.close();
-
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.url(URL)
-				.method(HttpMethod.HEAD);
-
-		HttpRequest httpRequest = exchangeClient.buildRequest(request);
-
-		assertThat(httpRequest.method(), equalTo("HEAD"));
-		assertThat(httpRequest.uri().toString(), equalTo(URL));
-		assertThat(httpRequest.bodyPublisher().isPresent(), equalTo(false));
-	}
-
-	@Test
-	void shouldBuildHeadRequestWithHeaders() throws Exception {
-		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
-		exchangeClient.close();
-
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.url(URL)
-				.method(HttpMethod.HEAD)
-				.header("X-Custom-Header", "CustomValue");
-
-		HttpRequest httpRequest = exchangeClient.buildRequest(request);
-
-		assertThat(httpRequest.method(), equalTo("HEAD"));
-		assertThat(httpRequest.uri().toString(), equalTo(URL));
-		assertThat(httpRequest.headers().firstValue("X-Custom-Header").orElse(null), equalTo("CustomValue"));
-		assertThat(httpRequest.bodyPublisher().isPresent(), equalTo(false));
-	}
-
-	@Test
-	void shouldBuildPatchRequest() throws Exception {
-		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
-		exchangeClient.close();
-
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.url(URL)
-				.method(HttpMethod.PATCH)
-				.body(STRING);
-
-		HttpRequest httpRequest = exchangeClient.buildRequest(request);
-
-		assertThat(httpRequest.method(), equalTo("PATCH"));
-		assertThat(httpRequest.uri().toString(), equalTo(URL));
-		assertThat(httpRequest.bodyPublisher().isPresent(), equalTo(true));
-	}
-
-	@Test
-	void shouldThrowExceptionOnBuildConnectRequest() throws Exception {
-		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
-		exchangeClient.close();
-
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.url(URL)
-				.method(HttpMethod.CONNECT);
-
-		HttpException e = assertThrows(HttpException.class, () -> exchangeClient.buildRequest(request));
-
-		assertThat(e.getStatus(), equalTo(HttpStatus.BAD_REQUEST));
-		assertThat(e.getMessage(),
-				equalTo(HttpException.message(HttpStatus.BAD_REQUEST, "HTTP method " + HttpMethod.CONNECT + " is not supported!")));
-	}
-
-	@Test
-	void shouldBuildOptionsRequest() throws Exception {
-		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
-		exchangeClient.close();
-
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.url(URL)
-				.method(HttpMethod.OPTIONS);
-
-		HttpRequest httpRequest = exchangeClient.buildRequest(request);
-
-		assertThat(httpRequest.method(), equalTo("OPTIONS"));
-		assertThat(httpRequest.uri().toString(), equalTo(URL));
-		assertThat(httpRequest.bodyPublisher().isPresent(), equalTo(true));
-		assertThat(httpRequest.bodyPublisher().get().contentLength(), equalTo(0L));
-	}
-
-	@Test
-	void shouldBuildTraceRequest() throws Exception {
-		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
-		exchangeClient.close();
-
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.url(URL)
-				.method(HttpMethod.TRACE);
-
-		HttpRequest httpRequest = exchangeClient.buildRequest(request);
-
-		assertThat(httpRequest.method(), equalTo("TRACE"));
-		assertThat(httpRequest.uri().toString(), equalTo(URL));
-		assertThat(httpRequest.bodyPublisher().isPresent(), equalTo(true));
-		assertThat(httpRequest.bodyPublisher().get().contentLength(), equalTo(0L));
-	}
-
-	@Test
-	void shouldThrowExceptionBuildingCustomMethodRequest() throws Exception {
-		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
-		exchangeClient.close();
-
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.url(URL)
-				.method(ApiMethod.UNDEFINED)
-				.body(STRING);
-
-		HttpException exception = assertThrows(HttpException.class, () -> exchangeClient.buildRequest(request));
-
-		assertThat(exception.getStatus(), equalTo(HttpStatus.BAD_REQUEST));
-		assertThat(exception.getMessage(), startsWith(
-				HttpException.message(HttpStatus.BAD_REQUEST, ApiMethod.class + " cannot be cast to " + HttpMethod.class)));
-	}
-
-	@Test
-	void shouldBuildResponseFromApiRequestAndHttpResponse() throws Exception {
-		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
-		exchangeClient.close();
-
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.url(URL)
-				.method(HttpMethod.GET)
-				.responseType(String.class);
-
-		Map<String, List<String>> headers = Map.of(
-				"Content-Type", List.of("application/json"));
-
-		HttpResponse<?> httpResponse = mock(HttpResponse.class);
-		doReturn(HttpStatus.OK.value()).when(httpResponse).statusCode();
-		doReturn(STRING).when(httpResponse).body();
-		doReturn(HttpHeaders.of(headers, (v1, v2) -> true)).when(httpResponse).headers();
-
-		ApiResponse<?> apiResponse = exchangeClient.buildResponse(request, httpResponse);
-
-		assertThat(apiResponse.getRequest(), equalTo(request));
-		assertThat(apiResponse.getBody(), equalTo(STRING));
-		assertThat(apiResponse.getHeaders().size(), equalTo(1));
-		assertThat(apiResponse.getHeaders().get("Content-Type"), equalTo(List.of("application/json")));
-	}
-
-	@Test
-	void shouldBuildResponseFromApiRequestAndHttpResponseWhenBodyIsNull() throws Exception {
-		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
-		exchangeClient.close();
-
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.url(URL)
-				.method(HttpMethod.GET)
-				.responseType(String.class);
-
-		HttpResponse<?> httpResponse = mock(HttpResponse.class);
-		doReturn(HttpStatus.OK.value()).when(httpResponse).statusCode();
-
-		ApiResponse<?> apiResponse = exchangeClient.buildResponse(request, httpResponse);
-
-		assertThat(apiResponse.getRequest(), equalTo(request));
-		assertNull(apiResponse.getBody());
-		assertThat(apiResponse.getHeaders().size(), equalTo(0));
-	}
-
-	@Test
-	void shouldThrowExceptionOnBuildResponseFromApiRequestAndHttpResponseWhenResponseTypeIsNotProvided() throws Exception {
-		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
-		exchangeClient.close();
-
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.url(URL)
-				.method(HttpMethod.GET);
-
-		HttpResponse<?> httpResponse = mock(HttpResponse.class);
-		doReturn(HttpStatus.OK.value()).when(httpResponse).statusCode();
-
-		UnsupportedOperationException exception = assertThrows(UnsupportedOperationException.class,
-				() -> exchangeClient.buildResponse(request, httpResponse));
-
-		assertThat(exception.getMessage(), equalTo(
-				"No content converter found to convert response to: " + ApiRequest.UNKNOWN_RESPONSE_TYPE + ", for the response content type: null"));
-	}
-
-	@Test
-	void shouldThrowExceptionOnBuildResponseFromApiRequestAndHttpResponseWhenResponseTypeIsVoid() throws Exception {
-		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
-		exchangeClient.close();
-
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.url(URL)
-				.method(HttpMethod.GET)
-				.responseType(Void.class);
-
-		HttpResponse<?> httpResponse = mock(HttpResponse.class);
-		doReturn(HttpStatus.OK.value()).when(httpResponse).statusCode();
-		doReturn(STRING).when(httpResponse).body();
-
-		UnsupportedOperationException exception = assertThrows(UnsupportedOperationException.class,
-				() -> exchangeClient.buildResponse(request, httpResponse));
-
-		assertThat(exception.getMessage(),
-				equalTo("No content converter found to convert response to: " + Void.class.getTypeName() + ", for the response content type: null"));
-	}
-
-	@Test
-	void shouldThrowExceptionOnBuildResponseFromApiRequestAndHttpResponseWhenResponseTypeIsPrimitive() throws Exception {
-		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
-		exchangeClient.close();
-
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.url(URL)
-				.method(HttpMethod.GET)
-				.responseType(int.class);
-
-		HttpResponse<?> httpResponse = mock(HttpResponse.class);
-		doReturn(HttpStatus.OK.value()).when(httpResponse).statusCode();
-		doReturn(STRING).when(httpResponse).body();
-
-		UnsupportedOperationException exception = assertThrows(UnsupportedOperationException.class,
-				() -> exchangeClient.buildResponse(request, httpResponse));
-
-		assertThat(exception.getMessage(),
-				equalTo("No content converter found to convert response to: " + int.class + ", for the response content type: null"));
-	}
-
-	@Test
-	void shouldReturnDtoOnBuildResponseWhenResponseTypeIsDtoAndContentTypeIsApplicationJson() throws Exception {
-		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
-		exchangeClient.close();
-
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.url(URL)
-				.method(HttpMethod.GET)
-				.responseType(TestDto.class);
-
-		Map<String, List<String>> headers = Map.of(
-				"Content-Type", List.of("application/json"));
-
-		TestDto expectedDto = TestDto.of("someId", 10);
-
-		HttpResponse<?> httpResponse = mock(HttpResponse.class);
-		doReturn(HttpStatus.OK.value()).when(httpResponse).statusCode();
-		doReturn(expectedDto.toString()).when(httpResponse).body();
-		doReturn(HttpHeaders.of(headers, (v1, v2) -> true)).when(httpResponse).headers();
-
-		ApiResponse<TestDto> apiResponse = exchangeClient.buildResponse(request, httpResponse);
-
-		assertThat(apiResponse.getRequest(), equalTo(request));
-		assertThat(apiResponse.getBody(), equalTo(expectedDto));
-	}
-
-	@Test
-	void shouldReturnDtoOnBuildResponseWhenResponseTypeIsGenericClassAndContentTypeIsApplicationJson() throws Exception {
-		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
-		exchangeClient.close();
-
-		GenericClass<Map<String, TestDto>> genericResponseType = GenericClass.of(
-				GenericType.of(Map.class, GenericType.Arguments.of(String.class, TestDto.class)));
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.url(URL)
-				.method(HttpMethod.GET)
-				.responseType(genericResponseType);
-
-		Map<String, List<String>> headers = Map.of(
-				"Content-Type", List.of("application/json"));
-
-		TestDto expectedInnerDto = TestDto.of("someId", 10);
-		Map<String, TestDto> expectedDto = Map.of("key", expectedInnerDto);
-
-		HttpResponse<?> httpResponse = mock(HttpResponse.class);
-		doReturn(HttpStatus.OK.value()).when(httpResponse).statusCode();
-		doReturn(JsonBuilder.toJson(expectedDto)).when(httpResponse).body();
-		doReturn(HttpHeaders.of(headers, (v1, v2) -> true)).when(httpResponse).headers();
-
-		ApiResponse<Map<String, TestDto>> apiResponse = exchangeClient.buildResponse(request, httpResponse);
-
-		assertThat(apiResponse.getRequest(), equalTo(request));
-		assertThat(apiResponse.getBody(), equalTo(expectedDto));
-	}
-
-	@Test
-	void shouldThrowExceptionOnBuildResponseWhenResponseTypeIsDtoAndContentTypeIsApplicationJsonButResponseIsNotJson() throws Exception {
-		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
-		exchangeClient.close();
-
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.url(URL)
-				.method(HttpMethod.GET)
-				.responseType(TestDto.class);
-
-		Map<String, List<String>> headers = Map.of(
-				"Content-Type", List.of("application/json"));
-
-		HttpResponse<?> httpResponse = mock(HttpResponse.class);
-		doReturn(HttpStatus.OK.value()).when(httpResponse).statusCode();
-		doReturn(STRING).when(httpResponse).body();
-		doReturn(HttpHeaders.of(headers, (v1, v2) -> true)).when(httpResponse).headers();
-
-		ObjectConverterException exception = assertThrows(ObjectConverterException.class,
-				() -> exchangeClient.buildResponse(request, httpResponse));
-
-		assertThat(exception.getMessage(), equalTo("Error converting JSON response to " + TestDto.class.getName()));
-	}
-
-	@Test
-	void shouldThrowExceptionOnBuildResponseWhenResponseTypeIsGenericTypeAndContentTypeIsApplicationJsonButResponseIsNotJson() throws Exception {
-		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
-		exchangeClient.close();
-
-		GenericClass<Map<String, TestDto>> genericResponseType = GenericClass.of(
-				GenericType.of(Map.class, GenericType.Arguments.of(String.class, TestDto.class)));
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.url(URL)
-				.method(HttpMethod.GET)
-				.responseType(genericResponseType);
-
-		Map<String, List<String>> headers = Map.of(
-				"Content-Type", List.of("application/json"));
-
-		HttpResponse<?> httpResponse = mock(HttpResponse.class);
-		doReturn(HttpStatus.OK.value()).when(httpResponse).statusCode();
-		doReturn(STRING).when(httpResponse).body();
-		doReturn(HttpHeaders.of(headers, (v1, v2) -> true)).when(httpResponse).headers();
-
-		ObjectConverterException exception = assertThrows(ObjectConverterException.class,
-				() -> exchangeClient.buildResponse(request, httpResponse));
-
-		assertThat(exception.getMessage(), equalTo("Error converting JSON response to " + genericResponseType.getType().getTypeName()));
+	@Nested
+	class BuildResponseTests {
+
+		@Test
+		void shouldBuildResponseFromApiRequestAndHttpResponse() throws Exception {
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.GET)
+					.responseType(String.class);
+
+			Map<String, List<String>> headers = Map.of(
+					"Content-Type", List.of("application/json"));
+
+			HttpResponse<?> httpResponse = mock(HttpResponse.class);
+			doReturn(HttpStatus.OK.value()).when(httpResponse).statusCode();
+			doReturn(STRING).when(httpResponse).body();
+			doReturn(HttpHeaders.of(headers, (v1, v2) -> true)).when(httpResponse).headers();
+
+			ApiResponse<?> apiResponse = exchangeClient.buildResponse(request, httpResponse);
+
+			assertThat(apiResponse.getRequest(), equalTo(request));
+			assertThat(apiResponse.getBody(), equalTo(STRING));
+			assertThat(apiResponse.getHeaders().size(), equalTo(1));
+			assertThat(apiResponse.getHeaders().get("Content-Type"), equalTo(List.of("application/json")));
+		}
+
+		@Test
+		void shouldBuildResponseFromApiRequestAndHttpResponseWhenBodyIsNull() throws Exception {
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.GET)
+					.responseType(String.class);
+
+			HttpResponse<?> httpResponse = mock(HttpResponse.class);
+			doReturn(HttpStatus.OK.value()).when(httpResponse).statusCode();
+
+			ApiResponse<?> apiResponse = exchangeClient.buildResponse(request, httpResponse);
+
+			assertThat(apiResponse.getRequest(), equalTo(request));
+			assertNull(apiResponse.getBody());
+			assertThat(apiResponse.getHeaders().size(), equalTo(0));
+		}
+
+		@Test
+		void shouldThrowExceptionOnBuildResponseFromApiRequestAndHttpResponseWhenResponseTypeIsNotProvided() throws Exception {
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.GET);
+
+			HttpResponse<?> httpResponse = mock(HttpResponse.class);
+			doReturn(HttpStatus.OK.value()).when(httpResponse).statusCode();
+
+			UnsupportedOperationException exception = assertThrows(UnsupportedOperationException.class,
+					() -> exchangeClient.buildResponse(request, httpResponse));
+
+			assertThat(exception.getMessage(), equalTo(
+					"No content converter found to convert response to: " + ApiRequest.UNKNOWN_RESPONSE_TYPE
+							+ ", for the response content type: null"));
+		}
+
+		@Test
+		void shouldThrowExceptionOnBuildResponseFromApiRequestAndHttpResponseWhenResponseTypeIsVoid() throws Exception {
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.GET)
+					.responseType(Void.class);
+
+			HttpResponse<?> httpResponse = mock(HttpResponse.class);
+			doReturn(HttpStatus.OK.value()).when(httpResponse).statusCode();
+			doReturn(STRING).when(httpResponse).body();
+
+			UnsupportedOperationException exception = assertThrows(UnsupportedOperationException.class,
+					() -> exchangeClient.buildResponse(request, httpResponse));
+
+			assertThat(exception.getMessage(),
+					equalTo("No content converter found to convert response to: " + Void.class.getTypeName()
+							+ ", for the response content type: null"));
+		}
+
+		@Test
+		void shouldThrowExceptionOnBuildResponseFromApiRequestAndHttpResponseWhenResponseTypeIsPrimitive() throws Exception {
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.GET)
+					.responseType(int.class);
+
+			HttpResponse<?> httpResponse = mock(HttpResponse.class);
+			doReturn(HttpStatus.OK.value()).when(httpResponse).statusCode();
+			doReturn(STRING).when(httpResponse).body();
+
+			UnsupportedOperationException exception = assertThrows(UnsupportedOperationException.class,
+					() -> exchangeClient.buildResponse(request, httpResponse));
+
+			assertThat(exception.getMessage(),
+					equalTo("No content converter found to convert response to: " + int.class + ", for the response content type: null"));
+		}
+
+		@Test
+		void shouldReturnDtoOnBuildResponseWhenResponseTypeIsDtoAndContentTypeIsApplicationJson() throws Exception {
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.GET)
+					.responseType(TestDto.class);
+
+			Map<String, List<String>> headers = Map.of(
+					"Content-Type", List.of("application/json"));
+
+			TestDto expectedDto = TestDto.of("someId", 10);
+
+			HttpResponse<?> httpResponse = mock(HttpResponse.class);
+			doReturn(HttpStatus.OK.value()).when(httpResponse).statusCode();
+			doReturn(expectedDto.toString()).when(httpResponse).body();
+			doReturn(HttpHeaders.of(headers, (v1, v2) -> true)).when(httpResponse).headers();
+
+			ApiResponse<TestDto> apiResponse = exchangeClient.buildResponse(request, httpResponse);
+
+			assertThat(apiResponse.getRequest(), equalTo(request));
+			assertThat(apiResponse.getBody(), equalTo(expectedDto));
+		}
+
+		@Test
+		void shouldReturnDtoOnBuildResponseWhenResponseTypeIsGenericClassAndContentTypeIsApplicationJson() throws Exception {
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+			exchangeClient.close();
+
+			GenericClass<Map<String, TestDto>> genericResponseType = GenericClass.of(
+					GenericType.of(Map.class, GenericType.Arguments.of(String.class, TestDto.class)));
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.GET)
+					.responseType(genericResponseType);
+
+			Map<String, List<String>> headers = Map.of(
+					"Content-Type", List.of("application/json"));
+
+			TestDto expectedInnerDto = TestDto.of("someId", 10);
+			Map<String, TestDto> expectedDto = Map.of("key", expectedInnerDto);
+
+			HttpResponse<?> httpResponse = mock(HttpResponse.class);
+			doReturn(HttpStatus.OK.value()).when(httpResponse).statusCode();
+			doReturn(JsonBuilder.toJson(expectedDto)).when(httpResponse).body();
+			doReturn(HttpHeaders.of(headers, (v1, v2) -> true)).when(httpResponse).headers();
+
+			ApiResponse<Map<String, TestDto>> apiResponse = exchangeClient.buildResponse(request, httpResponse);
+
+			assertThat(apiResponse.getRequest(), equalTo(request));
+			assertThat(apiResponse.getBody(), equalTo(expectedDto));
+		}
+
+		@Test
+		void shouldThrowExceptionOnBuildResponseWhenResponseTypeIsDtoAndContentTypeIsApplicationJsonButResponseIsNotJson() throws Exception {
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.GET)
+					.responseType(TestDto.class);
+
+			Map<String, List<String>> headers = Map.of(
+					"Content-Type", List.of("application/json"));
+
+			HttpResponse<?> httpResponse = mock(HttpResponse.class);
+			doReturn(HttpStatus.OK.value()).when(httpResponse).statusCode();
+			doReturn(STRING).when(httpResponse).body();
+			doReturn(HttpHeaders.of(headers, (v1, v2) -> true)).when(httpResponse).headers();
+
+			ObjectConverterException exception = assertThrows(ObjectConverterException.class,
+					() -> exchangeClient.buildResponse(request, httpResponse));
+
+			assertThat(exception.getMessage(), equalTo("Error converting JSON response to " + TestDto.class.getName()));
+		}
+
+		@Test
+		void shouldThrowExceptionOnBuildResponseWhenResponseTypeIsGenericTypeAndContentTypeIsApplicationJsonButResponseIsNotJson() throws Exception {
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+			exchangeClient.close();
+
+			GenericClass<Map<String, TestDto>> genericResponseType = GenericClass.of(
+					GenericType.of(Map.class, GenericType.Arguments.of(String.class, TestDto.class)));
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.GET)
+					.responseType(genericResponseType);
+
+			Map<String, List<String>> headers = Map.of(
+					"Content-Type", List.of("application/json"));
+
+			HttpResponse<?> httpResponse = mock(HttpResponse.class);
+			doReturn(HttpStatus.OK.value()).when(httpResponse).statusCode();
+			doReturn(STRING).when(httpResponse).body();
+			doReturn(HttpHeaders.of(headers, (v1, v2) -> true)).when(httpResponse).headers();
+
+			ObjectConverterException exception = assertThrows(ObjectConverterException.class,
+					() -> exchangeClient.buildResponse(request, httpResponse));
+
+			assertThat(exception.getMessage(), equalTo("Error converting JSON response to " + genericResponseType.getType().getTypeName()));
+		}
 	}
 
 	@Test
@@ -586,7 +599,7 @@ class JavaNetHttpExchangeClientTest {
 		RuntimeException exceptionToThrow = new RuntimeException(EXPECTED_CONNECTION_ERROR);
 		doThrow(exceptionToThrow).when(httpClient).send(any(HttpRequest.class), any(BodyHandler.class));
 
-		HttpException exception = assertThrows(HttpException.class,
+		HttpException exception = assertThrows(HttpException.class, // NOSONAR this is exactly what we want to test
 				() -> exchangeClient.sendRequest(request, exchangeClient.buildRequest(request)));
 
 		assertThat(exception.getStatus(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
@@ -644,199 +657,241 @@ class JavaNetHttpExchangeClientTest {
 		assertInstanceOf(HttpResponse.BodySubscribers.ofInputStream().getClass(), subscriber);
 	}
 
-	@Test
-	void shouldConvertNullContentTypeToStringBodyPublisherWhenStringIsProvidedAsBody() {
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.header(HttpHeader.CONTENT_TYPE, (String) null)
-				.body(STRING);
+	@Nested
+	class ToBodyPublisherTests {
 
-		BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+		@Test
+		void shouldConvertNullContentTypeToStringBodyPublisherWhenStringIsProvidedAsBody() {
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.header(HttpHeader.CONTENT_TYPE, (String) null)
+					.body(STRING);
 
-		assertThat(bodyPublisher.contentLength(), equalTo((long) STRING.length()));
+			BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
 
-		ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
-		bodyPublisher.subscribe(subscriber);
-		subscriber.awaitCompletion();
+			assertThat(bodyPublisher.contentLength(), equalTo((long) STRING.length()));
 
-		assertTrue(subscriber.isCompleted());
-		assertNull(subscriber.getError());
-		assertThat(STRING.getBytes(StandardCharsets.UTF_8), equalTo(subscriber.getReceivedBytes()));
-	}
+			ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
+			bodyPublisher.subscribe(subscriber);
+			subscriber.awaitCompletion();
 
-	@Test
-	void shouldConvertNullBodyToNoBodyPublisher() {
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.body(null);
+			assertTrue(subscriber.isCompleted());
+			assertNull(subscriber.getError());
+			assertThat(STRING.getBytes(StandardCharsets.UTF_8), equalTo(subscriber.getReceivedBytes()));
+		}
 
-		BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+		@Test
+		void shouldConvertNullBodyToNoBodyPublisher() {
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.body(null);
 
-		assertThat(bodyPublisher.contentLength(), equalTo(0L));
-	}
+			BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
 
-	@Test
-	void shouldConvertEmptyBodyToNoBodyPublisher() {
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient);
+			assertThat(bodyPublisher.contentLength(), equalTo(0L));
+		}
 
-		BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+		@Test
+		void shouldConvertEmptyBodyToNoBodyPublisher() {
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient);
 
-		assertThat(bodyPublisher.contentLength(), equalTo(0L));
-	}
+			BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
 
-	@Test
-	void shouldConvertNullSupplierBodyToNoBodyPublisher() {
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.body((Supplier<?>) null);
+			assertThat(bodyPublisher.contentLength(), equalTo(0L));
+		}
 
-		BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+		@Test
+		void shouldConvertNullSupplierBodyToNoBodyPublisher() {
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.body((Supplier<?>) null);
 
-		assertThat(bodyPublisher.contentLength(), equalTo(0L));
-	}
+			BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
 
-	@Test
-	void shouldConvertByteArrayToByteArrayBodyPublisher() {
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.body(BYTES);
+			assertThat(bodyPublisher.contentLength(), equalTo(0L));
+		}
 
-		BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+		@Test
+		void shouldConvertByteArrayToByteArrayBodyPublisher() {
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.body(BYTES);
 
-		assertThat(bodyPublisher.contentLength(), equalTo((long) BYTES.length));
+			BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
 
-		ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
-		bodyPublisher.subscribe(subscriber);
-		subscriber.awaitCompletion();
+			assertThat(bodyPublisher.contentLength(), equalTo((long) BYTES.length));
 
-		assertTrue(subscriber.isCompleted());
-		assertNull(subscriber.getError());
-		assertThat(BYTES, equalTo(subscriber.getReceivedBytes()));
-	}
+			ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
+			bodyPublisher.subscribe(subscriber);
+			subscriber.awaitCompletion();
 
-	@Test
-	void shouldConvertInputStreamToInputStreamBodyPublisher() {
-		ByteArrayInputStream bis = new ByteArrayInputStream(BYTES);
+			assertTrue(subscriber.isCompleted());
+			assertNull(subscriber.getError());
+			assertThat(BYTES, equalTo(subscriber.getReceivedBytes()));
+		}
 
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.body(bis);
+		@Test
+		void shouldConvertInputStreamToInputStreamBodyPublisher() {
+			ByteArrayInputStream bis = new ByteArrayInputStream(BYTES);
 
-		BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.body(bis);
 
-		ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
-		bodyPublisher.subscribe(subscriber);
-		subscriber.awaitCompletion();
+			BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
 
-		assertTrue(subscriber.isCompleted());
-		assertNull(subscriber.getError());
-		assertThat(BYTES, equalTo(subscriber.getReceivedBytes()));
-	}
+			ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
+			bodyPublisher.subscribe(subscriber);
+			subscriber.awaitCompletion();
 
-	@Test
-	void shouldConvertInputStreamSupplierToInputStreamBodyPublisher() {
-		ByteArrayInputStream bis = new ByteArrayInputStream(BYTES);
-		Supplier<? extends InputStream> supplier = () -> bis;
+			assertTrue(subscriber.isCompleted());
+			assertNull(subscriber.getError());
+			assertThat(BYTES, equalTo(subscriber.getReceivedBytes()));
+		}
 
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.body(supplier);
+		@Test
+		void shouldConvertInputStreamSetWithReflectionToInputStreamBodyPublisher() {
+			ByteArrayInputStream bis = new ByteArrayInputStream(BYTES);
 
-		BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.body(bis);
+			Fields.set(request, "body", bis);
 
-		ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
-		bodyPublisher.subscribe(subscriber);
-		subscriber.awaitCompletion();
+			BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
 
-		assertTrue(subscriber.isCompleted());
-		assertNull(subscriber.getError());
-		assertThat(BYTES, equalTo(subscriber.getReceivedBytes()));
-	}
+			ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
+			bodyPublisher.subscribe(subscriber);
+			subscriber.awaitCompletion();
 
-	@Test
-	void shouldConvertStringToStringBodyPublisher() {
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.body(STRING);
+			assertTrue(subscriber.isCompleted());
+			assertNull(subscriber.getError());
+			assertThat(BYTES, equalTo(subscriber.getReceivedBytes()));
+		}
 
-		BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+		@Test
+		void shouldConvertInputStreamSupplierToInputStreamBodyPublisher() {
+			ByteArrayInputStream bis = new ByteArrayInputStream(BYTES);
+			InputStreamSupplier supplier = () -> bis;
 
-		ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
-		bodyPublisher.subscribe(subscriber);
-		subscriber.awaitCompletion();
+			ApiRequest<?> request = ApiClientFluentAdapter.of(apiClient)
+					.body(supplier);
 
-		assertThat(bodyPublisher.contentLength(), equalTo((long) STRING.length()));
-		assertTrue(subscriber.isCompleted());
-		assertNull(subscriber.getError());
-		assertThat(STRING.getBytes(StandardCharsets.UTF_8), equalTo(subscriber.getReceivedBytes()));
-	}
+			BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
 
-	@Test
-	void shouldConvertObjectToJsonStringBodyPublisherWhenContentTypeIsApplicationJson() {
-		TestDto expectedDto = TestDto.of("someId1", 5);
+			ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
+			bodyPublisher.subscribe(subscriber);
+			subscriber.awaitCompletion();
 
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.header(HttpHeader.CONTENT_TYPE, "application/json")
-				.body(expectedDto);
+			assertTrue(subscriber.isCompleted());
+			assertNull(subscriber.getError());
+			assertThat(BYTES, equalTo(subscriber.getReceivedBytes()));
+		}
 
-		BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+		@Test
+		void shouldConvertRawInputStreamSupplierToInputStreamBodyPublisher() {
+			ByteArrayInputStream bis = new ByteArrayInputStream(BYTES);
+			Supplier<InputStream> supplier = () -> bis;
 
-		String expectedJson = JsonBuilder.toJson(expectedDto);
+			ApiRequest<?> request = ApiClientFluentAdapter.of(apiClient)
+					.body(supplier);
 
-		ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
-		bodyPublisher.subscribe(subscriber);
-		subscriber.awaitCompletion();
+			BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
 
-		assertThat(bodyPublisher.contentLength(), equalTo((long) expectedJson.length()));
-		assertTrue(subscriber.isCompleted());
-		assertNull(subscriber.getError());
-		assertThat(expectedJson.getBytes(StandardCharsets.UTF_8), equalTo(subscriber.getReceivedBytes()));
-	}
+			ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
+			bodyPublisher.subscribe(subscriber);
+			subscriber.awaitCompletion();
 
-	@Test
-	void shouldConvertObjectToStringBodyPublisherWhenContentTypeIsNotApplicationJson() {
-		TestDto expectedDto = TestDto.of("someId2", 10);
+			assertTrue(subscriber.isCompleted());
+			assertNull(subscriber.getError());
+			assertThat(BYTES, equalTo(subscriber.getReceivedBytes()));
+		}
 
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.header(HttpHeader.CONTENT_TYPE, "text/plain")
-				.body(expectedDto);
+		@Test
+		void shouldConvertStringToStringBodyPublisher() {
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.body(STRING);
 
-		BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+			BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
 
-		String expectedString = expectedDto.toString();
+			ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
+			bodyPublisher.subscribe(subscriber);
+			subscriber.awaitCompletion();
 
-		ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
-		bodyPublisher.subscribe(subscriber);
-		subscriber.awaitCompletion();
+			assertThat(bodyPublisher.contentLength(), equalTo((long) STRING.length()));
+			assertTrue(subscriber.isCompleted());
+			assertNull(subscriber.getError());
+			assertThat(STRING.getBytes(StandardCharsets.UTF_8), equalTo(subscriber.getReceivedBytes()));
+		}
 
-		assertThat(bodyPublisher.contentLength(), equalTo((long) expectedString.length()));
-		assertTrue(subscriber.isCompleted());
-		assertNull(subscriber.getError());
-		assertThat(expectedString.getBytes(StandardCharsets.UTF_8), equalTo(subscriber.getReceivedBytes()));
-	}
+		@Test
+		void shouldConvertObjectToJsonStringBodyPublisherWhenContentTypeIsApplicationJson() {
+			TestDto expectedDto = TestDto.of("someId1", 5);
 
-	@Test
-	void shouldConvertFileToFileBodyPublisher() {
-		String fileContent = Strings.fromFile(TEXT_FILE_TXT);
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.header(HttpHeader.CONTENT_TYPE, "application/json")
+					.body(expectedDto);
 
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.body(Path.of("src/test/resources/" + TEXT_FILE_TXT));
+			BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
 
-		BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+			String expectedJson = JsonBuilder.toJson(expectedDto);
 
-		ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
-		bodyPublisher.subscribe(subscriber);
-		subscriber.awaitCompletion();
+			ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
+			bodyPublisher.subscribe(subscriber);
+			subscriber.awaitCompletion();
 
-		assertThat(bodyPublisher.contentLength(), equalTo((long) fileContent.getBytes(StandardCharsets.UTF_8).length));
-		assertTrue(subscriber.isCompleted());
-		assertNull(subscriber.getError());
-		assertThat(fileContent.getBytes(StandardCharsets.UTF_8), equalTo(subscriber.getReceivedBytes()));
-	}
+			assertThat(bodyPublisher.contentLength(), equalTo((long) expectedJson.length()));
+			assertTrue(subscriber.isCompleted());
+			assertNull(subscriber.getError());
+			assertThat(expectedJson.getBytes(StandardCharsets.UTF_8), equalTo(subscriber.getReceivedBytes()));
+		}
 
-	@Test
-	void shouldThrowExceptionIfFileNotFoundWhenTryingToBuildFileBodyPublisher() {
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.body(Path.of(TEXT_FILE_TXT));
+		@Test
+		void shouldConvertObjectToStringBodyPublisherWhenContentTypeIsNotApplicationJson() {
+			TestDto expectedDto = TestDto.of("someId2", 10);
 
-		HttpException exception = assertThrows(HttpException.class, () -> JavaNetHttpExchangeClient.toBodyPublisher(request));
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.header(HttpHeader.CONTENT_TYPE, "text/plain")
+					.body(expectedDto);
 
-		assertThat(exception.getStatus(), equalTo(HttpStatus.BAD_REQUEST));
-		assertThat(exception.getMessage(), equalTo(
-				HttpException.message(HttpStatus.BAD_REQUEST, TEXT_FILE_TXT + " not found")));
+			BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+
+			String expectedString = expectedDto.toString();
+
+			ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
+			bodyPublisher.subscribe(subscriber);
+			subscriber.awaitCompletion();
+
+			assertThat(bodyPublisher.contentLength(), equalTo((long) expectedString.length()));
+			assertTrue(subscriber.isCompleted());
+			assertNull(subscriber.getError());
+			assertThat(expectedString.getBytes(StandardCharsets.UTF_8), equalTo(subscriber.getReceivedBytes()));
+		}
+
+		@Test
+		void shouldConvertFileToFileBodyPublisher() {
+			String fileContent = Strings.fromFile(TEXT_FILE_TXT);
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.body(Path.of("src/test/resources/" + TEXT_FILE_TXT));
+
+			BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+
+			ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
+			bodyPublisher.subscribe(subscriber);
+			subscriber.awaitCompletion();
+
+			assertThat(bodyPublisher.contentLength(), equalTo((long) fileContent.getBytes(StandardCharsets.UTF_8).length));
+			assertTrue(subscriber.isCompleted());
+			assertNull(subscriber.getError());
+			assertThat(fileContent.getBytes(StandardCharsets.UTF_8), equalTo(subscriber.getReceivedBytes()));
+		}
+
+		@Test
+		void shouldThrowExceptionIfFileNotFoundWhenTryingToBuildFileBodyPublisher() {
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.body(Path.of(TEXT_FILE_TXT));
+
+			HttpException exception = assertThrows(HttpException.class, () -> JavaNetHttpExchangeClient.toBodyPublisher(request));
+
+			assertThat(exception.getStatus(), equalTo(HttpStatus.BAD_REQUEST));
+			assertThat(exception.getMessage(), equalTo(
+					HttpException.message(HttpStatus.BAD_REQUEST, TEXT_FILE_TXT + " not found")));
+		}
 	}
 
 	@Test
