@@ -32,7 +32,6 @@ import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.header.Headers;
-import org.apiphany.header.MapHeaderValues;
 import org.apiphany.http.ApacheHC5Entities;
 import org.apiphany.http.ContentEncoding;
 import org.apiphany.http.HttpContentType;
@@ -40,6 +39,7 @@ import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
+import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Lists;
 import org.apiphany.lang.collections.Maps;
@@ -167,7 +167,6 @@ public class ApacheHC5HttpExchangeClient extends AbstractHttpExchangeClient {
 			HttpEntity httpEntity = createHttpEntity(apiRequest);
 			httpUriRequest.setEntity(httpEntity);
 		}
-
 		return httpUriRequest;
 	}
 
@@ -181,13 +180,15 @@ public class ApacheHC5HttpExchangeClient extends AbstractHttpExchangeClient {
 	 */
 	protected <T> HttpEntity createHttpEntity(final ApiRequest<T> apiRequest) {
 		T body = apiRequest.getBody();
-		String contentTypeValue = Lists.first(MapHeaderValues.get(HttpHeader.CONTENT_TYPE, apiRequest.getHeaders()));
+		List<String> contentTypeValues = getHeaderValues(HttpHeader.CONTENT_TYPE, apiRequest.getHeaders());
+		String contentTypeValue = Lists.first(contentTypeValues);
 		ContentType contentType = Nullables.apply(contentTypeValue, ct -> ContentType.parse(ct).withCharset(apiRequest.getCharset()));
 		return switch (body) {
 			case String str -> HttpEntities.create(str, contentType);
 			case byte[] bytes -> HttpEntities.create(bytes, contentType);
 			case File file -> HttpEntities.create(file, contentType);
 			case Serializable serializable -> HttpEntities.create(serializable, contentType);
+			case Object obj when isJson(apiRequest) -> HttpEntities.create(JsonBuilder.toJson(body), contentType);
 			default -> HttpEntities.create(Strings.safeToString(body), contentType);
 		};
 	}
@@ -206,13 +207,14 @@ public class ApacheHC5HttpExchangeClient extends AbstractHttpExchangeClient {
 	protected <T, U> ApiResponse<U> buildResponse(final ApiRequest<T> apiRequest, final ClassicHttpResponse response) {
 		HttpEntity httpEntity = response.getEntity();
 		HttpStatus httpStatus = HttpStatus.fromCode(response.getCode());
-
 		Map<String, List<String>> headers = Nullables.whenNotNull(response.getHeaders(), ApacheHC5HttpExchangeClient::toHttpHeadersMap);
 
-		List<String> encodings = getHeaderValuesChain().get(HttpHeader.CONTENT_ENCODING, headers);
+		List<String> encodings = getHeaderValues(HttpHeader.CONTENT_ENCODING, headers);
 		U responseBody = ContentEncoding.decodeBody(getResponseBody(apiRequest, httpEntity), ContentEncoding.parseAll(encodings));
 
-		HttpContentType contentType = HttpContentType.from(httpEntity.getContentType(), httpEntity.getContentEncoding());
+		List<String> contentTypes = getHeaderValues(HttpHeader.CONTENT_TYPE, headers);
+		HttpContentType contentType = HttpContentType.parse(contentTypes);
+
 		if (httpStatus.isError()) {
 			throw new HttpException(httpStatus, StringHttpContentConverter.from(responseBody, contentType));
 		}

@@ -31,7 +31,6 @@ import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
-import org.apiphany.io.ContentType;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Lists;
@@ -248,10 +247,10 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 		HttpStatus httpStatus = HttpStatus.fromCode(httpResponse.statusCode());
 		Map<String, List<String>> headers = Nullables.apply(httpResponse.headers(), HttpHeaders::map);
 
-		List<String> encodings = getHeaderValuesChain().get(HttpHeader.CONTENT_ENCODING, headers);
+		List<String> encodings = getHeaderValues(HttpHeader.CONTENT_ENCODING, headers);
 		R responseBody = ContentEncoding.decodeBody(httpResponse.body(), ContentEncoding.parseAll(encodings));
 
-		List<String> contentTypes = getHeaderValuesChain().get(HttpHeader.CONTENT_TYPE, headers);
+		List<String> contentTypes = getHeaderValues(HttpHeader.CONTENT_TYPE, headers);
 		HttpContentType contentType = HttpContentType.parse(contentTypes);
 
 		if (httpStatus.isError()) {
@@ -287,8 +286,7 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 			case InputStream is -> BodyPublishers.ofInputStream(() -> is);
 			case Supplier<?> supplier when supplier.get() instanceof InputStream is -> BodyPublishers.ofInputStream(() -> is);
 			case Path path -> HttpException.ifThrows(() -> BodyPublishers.ofFile(path), HttpStatus.BAD_REQUEST);
-			case Object obj when apiRequest.containsHeader(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_JSON) -> BodyPublishers
-					.ofString(JsonBuilder.toJson(obj), charset);
+			case Object obj when isJson(apiRequest) -> BodyPublishers.ofString(JsonBuilder.toJson(obj), charset);
 			default -> BodyPublishers.ofString(Strings.safeToString(body), charset);
 		};
 	}
