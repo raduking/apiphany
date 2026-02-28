@@ -14,5 +14,4 @@ public class ApiClientWithApacheHC5IT extends ApiClientWithJavaNetHttpIT {
 	protected Class<? extends ExchangeClient> exchangeClientClass() {
 		return ApacheHC5HttpExchangeClient.class;
 	}
-
 }

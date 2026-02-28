@@ -16,7 +16,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.io.InputStream;
 import java.time.Duration;
 
 import org.apiphany.client.ClientProperties;
@@ -28,6 +27,7 @@ import org.apiphany.http.HttpHeader;
 import org.apiphany.io.gzip.GZip;
 import org.apiphany.lang.retry.Retry;
 import org.apiphany.lang.retry.WaitCounter;
+import org.apiphany.test.io.OneShotInputStream;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -39,7 +39,7 @@ import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
  *
  * @author Radu Sebastian LAZIN
  */
-public class ApiClientWithJavaNetHttpIT {
+class ApiClientWithJavaNetHttpIT {
 
 	@RegisterExtension
 	private static final WireMockExtension wiremock =
@@ -312,7 +312,7 @@ public class ApiClientWithJavaNetHttpIT {
 		ApiClient api = ApiClient.of(baseUrl(),
 				ApiClient.with(exchangeClientClass()).properties(properties));
 		try (api) {
-			assertThrows(HttpException.class, () -> api.client()
+			assertThrows(HttpException.class, () -> api.client() // NOSONAR should not complain
 					.http()
 					.get()
 					.path("slow")
@@ -660,7 +660,8 @@ public class ApiClientWithJavaNetHttpIT {
 	}
 
 	@Test
-	void shouldResendBodyOnRetryEvenForNonRepeatableStream() throws Exception {
+	@SuppressWarnings("resource")
+	void shouldFailRetryBeforeSendWhenBodyIsNonRepeatable() throws Exception {
 		wiremock.stubFor(post("/retry-stream")
 				.inScenario("retry-stream")
 				.whenScenarioStateIs(STARTED)
@@ -674,38 +675,19 @@ public class ApiClientWithJavaNetHttpIT {
 
 		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
 		try (api) {
-			api.client()
+			assertThrows(Exception.class, () -> api.client()
 					.http()
 					.post()
 					.path("retry-stream")
-					.body(new OneShotInputStream())
+					.body(new OneShotInputStream("hello"))
 					.retry(Retry.of(WaitCounter.of(2, Duration.ofMillis(100))))
 					.retrieve()
-					.orNull();
+					.orRethrow());
 		}
 
 		// this will break most clients since the InputStream can only be read once, but we want to ensure that the ApiClient
 		// properly retries even in this case by re-creating the stream for the retry attempt
 		wiremock.verify(1, postRequestedFor(urlEqualTo("/retry-stream"))
 				.withRequestBody(equalTo("hello")));
-	}
-
-	static final class OneShotInputStream extends InputStream {
-
-		private byte[] data = "hello".getBytes();
-		private int index = 0;
-		private boolean consumed = false;
-
-		@Override
-		public int read() {
-			if (consumed) {
-				return -1;
-			}
-			if (index >= data.length) {
-				consumed = true;
-				return -1;
-			}
-			return data[index++];
-		}
 	}
 }

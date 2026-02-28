@@ -1,6 +1,7 @@
 package org.apiphany.client.http;
 
 import java.io.File;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.HashMap;
@@ -39,6 +40,7 @@ import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
+import org.apiphany.io.InputStreamSupplier;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Lists;
@@ -186,6 +188,8 @@ public class ApacheHC5HttpExchangeClient extends AbstractHttpExchangeClient {
 		return switch (body) {
 			case String str -> HttpEntities.create(str, contentType);
 			case byte[] bytes -> HttpEntities.create(bytes, contentType);
+			case InputStream is -> ApacheHC5Entities.create(is, contentType);
+			case InputStreamSupplier iss -> ApacheHC5Entities.create(iss.get(), contentType);
 			case File file -> HttpEntities.create(file, contentType);
 			case Serializable serializable -> HttpEntities.create(serializable, contentType);
 			case Object obj when isJson(apiRequest) -> HttpEntities.create(JsonBuilder.toJson(body), contentType);
