@@ -1,5 +1,11 @@
 ## Release Notes
 
+`1.1.6`
+
+- Added `AbstractHttpExchangeClient.getHeaderValues` method that returns a list with all the values for a given header.
+
+---
+
 `1.1.5`
 
 - Added `LibraryDescriptor.of(String, Class)` to initialize a descriptor based on the presence in the classpath of the given class name.

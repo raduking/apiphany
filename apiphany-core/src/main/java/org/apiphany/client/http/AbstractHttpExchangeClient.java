@@ -12,7 +12,9 @@ import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ContentConverter;
 import org.apiphany.header.HeaderValues;
 import org.apiphany.header.MapHeaderValues;
+import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpHeaderValues;
+import org.apiphany.io.ContentType;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.json.jackson2.Jackson2JsonHttpContentConverter;
 import org.apiphany.security.ssl.SSLContexts;
@@ -176,4 +178,29 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 		return sslContext;
 	}
 
+	/**
+	 * Retrieves the values of a specific header from the provided headers object using the header values chain.
+	 *
+	 * @param <N> header name type
+	 *
+	 * @param header the name of the header whose values are to be retrieved.
+	 * @param headers the headers object from which to retrieve the header values.
+	 * @return a list of values for the specified header. If the header is not found, an empty list is returned.
+	 */
+	public <N> List<String> getHeaderValues(final N header, final Object headers) {
+		return getHeaderValuesChain().get(header, headers);
+	}
+
+	/**
+	 * Returns true if the API request contains the "Content-Type" header with the value "application/json", false
+	 * otherwise.
+	 *
+	 * @param <T> the type of the original request body
+	 *
+	 * @param apiRequest the API request to check for JSON content type
+	 * @return true if the API request contains the "Content-Type" header with the value "application/json"
+	 */
+	protected static <T> boolean isJson(final ApiRequest<T> apiRequest) {
+		return apiRequest.containsHeader(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_JSON);
+	}
 }
