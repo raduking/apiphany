@@ -2,6 +2,7 @@ package org.apiphany.http;
 
 import java.io.InputStream;
 
+import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.morphix.lang.function.ThrowingSupplier;
@@ -38,6 +39,19 @@ public class ApacheHC5Entities {
 	 */
 	public static byte[] toByteArray(final HttpEntity httpEntity) {
 		return ThrowingSupplier.unchecked(() -> EntityUtils.toByteArray(httpEntity)).get();
+	}
+
+	/**
+	 * Create a new HTTP entity from the given input stream and content type. This method is used to create a new HTTP
+	 * entity that can be sent as the request body when sending HTTP requests. The created entity will be non-repeatable,
+	 * meaning it can only be read once, which is useful for streaming large request bodies.
+	 *
+	 * @param content the input stream containing the content of the HTTP entity
+	 * @param contentType the content type of the HTTP entity
+	 * @return a new HTTP entity containing the given content and content type
+	 */
+	public static HttpEntity create(final InputStream content, final ContentType contentType) {
+		return new OneShotHttpEntity(content, contentType);
 	}
 
 	/**

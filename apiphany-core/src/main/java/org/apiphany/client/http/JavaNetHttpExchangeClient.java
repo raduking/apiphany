@@ -31,6 +31,7 @@ import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
+import org.apiphany.io.InputStreamSupplier;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Lists;
@@ -284,6 +285,7 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 			case String str -> BodyPublishers.ofString(str, charset);
 			case byte[] bytes -> BodyPublishers.ofByteArray(bytes);
 			case InputStream is -> BodyPublishers.ofInputStream(() -> is);
+			case InputStreamSupplier iss -> BodyPublishers.ofInputStream(iss);
 			case Supplier<?> supplier when supplier.get() instanceof InputStream is -> BodyPublishers.ofInputStream(() -> is);
 			case Path path -> HttpException.ifThrows(() -> BodyPublishers.ofFile(path), HttpStatus.BAD_REQUEST);
 			case Object obj when isJson(apiRequest) -> BodyPublishers.ofString(JsonBuilder.toJson(obj), charset);
