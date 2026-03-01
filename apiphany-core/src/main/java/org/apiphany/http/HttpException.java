@@ -2,7 +2,9 @@ package org.apiphany.http;
 
 import java.io.Serial;
 
+import org.apiphany.ApiResponse;
 import org.apiphany.Status;
+import org.morphix.lang.JavaObjects;
 import org.morphix.lang.function.ThrowingSupplier;
 
 /**
@@ -23,6 +25,11 @@ public class HttpException extends RuntimeException {
 	 * The HTTP status associated with this exception.
 	 */
 	private final HttpStatus status;
+
+	/**
+	 * The API response associated with this exception, if available.
+	 */
+	private final transient ApiResponse<String> response;
 
 	/**
 	 * Constructs a new {@link HttpException} with the specified HTTP status and message.
@@ -65,6 +72,30 @@ public class HttpException extends RuntimeException {
 	public HttpException(final HttpStatus status, final String message, final Throwable cause) {
 		super(message(status, message), cause);
 		this.status = status;
+		this.response = null;
+	}
+
+	/**
+	 * Constructs a new {@link HttpException} with the specified API response and cause. The exception message is
+	 * generated based on the HTTP status and body of the API response.
+	 *
+	 * @param apiResponse the API response associated with this exception.
+	 * @param cause the cause of the exception (can be null).
+	 */
+	public HttpException(final ApiResponse<String> apiResponse, final Throwable cause) {
+		super(message(apiResponse.getStatus(), apiResponse.getBody()), cause);
+		this.status = apiResponse.getStatus();
+		this.response = apiResponse;
+	}
+
+	/**
+	 * Constructs a new {@link HttpException} with the specified API response. The exception message is generated
+	 * based on the HTTP status and body of the API response.
+	 *
+	 * @param apiResponse the API response associated with this exception.
+	 */
+	public HttpException(final ApiResponse<String> apiResponse) {
+		this(apiResponse, null);
 	}
 
 	/**
@@ -83,6 +114,17 @@ public class HttpException extends RuntimeException {
 	 */
 	public int getStatusCode() {
 		return getStatus().value();
+	}
+
+	/**
+	 * Returns the API response associated with this exception, if available.
+	 *
+	 * @param <T> the type of the API response body
+	 *
+	 * @return the API response, or null if not available
+	 */
+	public <T> ApiResponse<T> getResponse() {
+		return JavaObjects.cast(response);
 	}
 
 	/**
