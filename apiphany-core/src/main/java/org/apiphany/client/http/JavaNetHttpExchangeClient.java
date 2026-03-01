@@ -277,6 +277,23 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	 */
 	public static <T> BodyPublisher toBodyPublisher(final ApiRequest<T> apiRequest) {
 		T body = apiRequest.getBody();
+		return toBodyPublisher(apiRequest, body);
+	}
+
+	/**
+	 * Creates a {@link BodyPublisher} from the given API request and body. It checks for the body common types to create
+	 * the appropriate publisher. This method only uses the body parameter to create the publisher and not the API request
+	 * body because in some cases the body can be a supplier that needs to be resolved first to get the actual body object
+	 * and then create the publisher from it. The API request is only used in this method to get the {@link Charset} for
+	 * string bodies and to check if the body should be converted to JSON or not.
+	 *
+	 * @param <T> body type
+	 *
+	 * @param apiRequest the API request object
+	 * @param body the body to create the publisher from
+	 * @return a body publisher needed in building the HTTP request
+	 */
+	private static <T> BodyPublisher toBodyPublisher(final ApiRequest<T> apiRequest, final T body) {
 		if (body == null) {
 			return BodyPublishers.noBody();
 		}
@@ -286,7 +303,7 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 			case byte[] bytes -> BodyPublishers.ofByteArray(bytes);
 			case InputStream is -> BodyPublishers.ofInputStream(() -> is);
 			case InputStreamSupplier iss -> BodyPublishers.ofInputStream(iss);
-			case Supplier<?> supplier when supplier.get() instanceof InputStream is -> BodyPublishers.ofInputStream(() -> is);
+			case Supplier<?> supplier -> toBodyPublisher(apiRequest, JavaObjects.cast(supplier.get()));
 			case Path path -> HttpException.ifThrows(() -> BodyPublishers.ofFile(path), HttpStatus.BAD_REQUEST);
 			case Object obj when isJson(apiRequest) -> BodyPublishers.ofString(JsonBuilder.toJson(obj), charset);
 			default -> BodyPublishers.ofString(Strings.safeToString(body), charset);
