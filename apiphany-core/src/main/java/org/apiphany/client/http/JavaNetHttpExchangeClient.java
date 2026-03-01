@@ -255,10 +255,17 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 		HttpContentType contentType = HttpContentType.parse(contentTypes);
 
 		if (httpStatus.isError()) {
-			throw new HttpException(httpStatus, StringHttpContentConverter.from(responseBody, contentType));
+			String errorResponseBody = StringHttpContentConverter.from(responseBody, contentType);
+			ApiResponse<String> errorResponse = ApiResponse.<String>create(errorResponseBody)
+					.status(httpStatus)
+					.headers(headers)
+					.request(apiRequest)
+					.exchangeClient(this)
+					.build();
+			throw new HttpException(errorResponse);
 		}
-		U body = convertBody(apiRequest, contentType, headers, responseBody);
 
+		U body = convertBody(apiRequest, contentType, headers, responseBody);
 		return ApiResponse.create(body)
 				.status(httpStatus)
 				.headers(headers)

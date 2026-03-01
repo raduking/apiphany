@@ -509,6 +509,34 @@ class JavaNetHttpExchangeClientTest {
 		}
 
 		@Test
+		void shouldThrowExceptionOnBuildResponseFromApiRequestAndHttpResponse500() throws Exception {
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.GET)
+					.responseType(String.class);
+
+			Map<String, List<String>> headers = Map.of(
+					"Content-Type", List.of("application/json"));
+
+			HttpResponse<?> httpResponse = mock(HttpResponse.class);
+			doReturn(HttpStatus.INTERNAL_SERVER_ERROR.value()).when(httpResponse).statusCode();
+			doReturn(STRING).when(httpResponse).body();
+			doReturn(HttpHeaders.of(headers, (v1, v2) -> true)).when(httpResponse).headers();
+
+			HttpException e = assertThrows(HttpException.class, () -> exchangeClient.buildResponse(request, httpResponse));
+
+			assertThat(e.getMessage(), equalTo(HttpException.message(HttpStatus.INTERNAL_SERVER_ERROR, STRING)));
+			ApiResponse<String> apiResponse = e.getResponse();
+			assertThat(apiResponse.getRequest(), equalTo(request));
+			assertThat(apiResponse.getBody(), equalTo(STRING));
+			assertThat(apiResponse.getHeaders().size(), equalTo(1));
+			assertThat(apiResponse.getHeaders().get("Content-Type"), equalTo(List.of("application/json")));
+		}
+
+		@Test
 		void shouldThrowExceptionOnBuildResponseWhenResponseTypeIsDtoAndContentTypeIsApplicationJsonButResponseIsNotJson() throws Exception {
 			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
 			exchangeClient.close();

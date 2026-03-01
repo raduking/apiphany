@@ -6,12 +6,14 @@ import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.builder.PropertyNameBuilder;
 import org.morphix.lang.Nullables;
 import org.morphix.lang.Unchecked;
+import org.morphix.lang.function.Predicates;
 import org.morphix.lang.function.Runnables;
 import org.morphix.reflection.Constructors;
 import org.morphix.reflection.Methods;
@@ -111,6 +113,7 @@ public record BasicMeters(
 	 * Returns the underlying latency timer object which must have the given type.
 	 *
 	 * @param <T> type of the underlying timer object
+	 *
 	 * @param cls class of the underlying timer object
 	 * @return the underlying latency timer object which must have the given type
 	 */
@@ -122,6 +125,7 @@ public record BasicMeters(
 	 * Returns the underlying requests counter object which must have the given type.
 	 *
 	 * @param <T> type of the underlying counter object
+	 *
 	 * @param cls class of the underlying counter object
 	 * @return the underlying requests counter object which must have the given type
 	 */
@@ -133,6 +137,7 @@ public record BasicMeters(
 	 * Returns the underlying retries counter object which must have the given type.
 	 *
 	 * @param <T> type of the underlying counter object
+	 *
 	 * @param cls class of the underlying counter object
 	 * @return the underlying retries counter object which must have the given type
 	 */
@@ -144,6 +149,7 @@ public record BasicMeters(
 	 * Returns the underlying errors counter object which must have the given type.
 	 *
 	 * @param <T> type of the underlying counter object
+	 *
 	 * @param cls class of the underlying counter object
 	 * @return the underlying errors counter object which must have the given type
 	 */
@@ -155,15 +161,34 @@ public record BasicMeters(
 	 * Wraps the supplier code with metrics, recording latency, requests, and errors.
 	 *
 	 * @param <T> the return type of the supplier.
+	 *
 	 * @param supplier the code to wrap with metrics.
 	 * @param onError the function to handle errors and provide a fallback value.
 	 * @return the result of the supplier on success, or the result of the error handler on failure.
 	 */
 	public <T> T wrap(final Supplier<T> supplier, final Function<? super Exception, T> onError) {
+		return wrap(supplier, Predicates.alwaysTrue(), onError);
+	}
+
+	/**
+	 * Wraps the supplier code with metrics, recording latency, requests, and errors.
+	 *
+	 * @param <T> the return type of the supplier.
+	 *
+	 * @param supplier the code to wrap with metrics.
+	 * @param isSuccess the predicate to determine if the result of the supplier is considered a success
+	 * @param onError the function to handle errors and provide a fallback value.
+	 * @return the result of the supplier on success, or the result of the error handler on failure.
+	 */
+	public <T> T wrap(final Supplier<T> supplier, final Predicate<T> isSuccess, final Function<? super Exception, T> onError) {
 		requests().increment();
 		Instant startTime = Instant.now();
 		try {
-			return supplier.get();
+			T result = supplier.get();
+			if (!isSuccess.test(result)) {
+				errors().increment();
+			}
+			return result;
 		} catch (Exception e) {
 			errors().increment();
 			return onError.apply(e);
