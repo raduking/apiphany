@@ -16,7 +16,6 @@ import org.apiphany.header.Header;
 import org.apiphany.header.HeaderFunction;
 import org.apiphany.header.Headers;
 import org.apiphany.http.URIEncoder;
-import org.apiphany.io.InputStreamSupplier;
 import org.apiphany.io.OneShotInputStreamSupplier;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Maps;
@@ -285,13 +284,13 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	}
 
 	/**
-	 * Sets the request body as an input stream supplier. This method is here to be able to use a supplier expression when
-	 * building the body.
+	 * Sets the request body as a supplier. This method is here to be able to use a supplier expression when building the
+	 * body.
 	 *
 	 * @param body the body to set
 	 * @return this
 	 */
-	public ApiClientFluentAdapter body(final InputStreamSupplier body) {
+	public <U> ApiClientFluentAdapter body(final Supplier<U> body) {
 		return body((Object) body);
 	}
 
