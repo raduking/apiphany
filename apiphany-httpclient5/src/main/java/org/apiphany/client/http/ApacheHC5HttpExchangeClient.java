@@ -7,6 +7,7 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.apache.hc.client5.http.classic.methods.HttpDelete;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
@@ -185,11 +186,26 @@ public class ApacheHC5HttpExchangeClient extends AbstractHttpExchangeClient {
 		List<String> contentTypeValues = getHeaderValues(HttpHeader.CONTENT_TYPE, apiRequest.getHeaders());
 		String contentTypeValue = Lists.first(contentTypeValues);
 		ContentType contentType = Nullables.apply(contentTypeValue, ct -> ContentType.parse(ct).withCharset(apiRequest.getCharset()));
+		return createHttpEntity(apiRequest, body, contentType);
+	}
+
+	/**
+	 * Creates an appropriate {@link HttpEntity} based on the request body type and content type.
+	 *
+	 * @param <T> request body type
+	 *
+	 * @param apiRequest API request object
+	 * @param body request body
+	 * @param contentType content type of the request body
+	 * @return HTTP entity object
+	 */
+	private static <T> HttpEntity createHttpEntity(final ApiRequest<T> apiRequest, final T body, final ContentType contentType) {
 		return switch (body) {
 			case String str -> HttpEntities.create(str, contentType);
 			case byte[] bytes -> HttpEntities.create(bytes, contentType);
 			case InputStream is -> ApacheHC5Entities.create(is, contentType);
 			case InputStreamSupplier iss -> ApacheHC5Entities.create(iss.get(), contentType);
+			case Supplier<?> supplier -> createHttpEntity(apiRequest, JavaObjects.cast(supplier.get()), contentType);
 			case File file -> HttpEntities.create(file, contentType);
 			case Serializable serializable -> HttpEntities.create(serializable, contentType);
 			case Object obj when isJson(apiRequest) -> HttpEntities.create(JsonBuilder.toJson(body), contentType);
