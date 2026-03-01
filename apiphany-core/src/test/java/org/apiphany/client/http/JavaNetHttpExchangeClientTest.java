@@ -26,6 +26,7 @@ import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandler;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Flow.Subscriber;
@@ -932,5 +933,19 @@ class JavaNetHttpExchangeClientTest {
 
 		verify(requestBuilder).header("X-Header-2", "Value1");
 		verify(requestBuilder).header("X-Header-2", "Value2");
+	}
+
+	@Test
+	void shouldReturnANullUsableTimeputFromNull() {
+		Duration timeout = JavaNetHttpExchangeClient.getUsableTimeout(null, t -> null);
+
+		assertThat(timeout, equalTo(null));
+	}
+
+	@Test
+	void shouldReturnGivenTimeoutWhenUsableAndNotInfinite() {
+		Duration timeout = JavaNetHttpExchangeClient.getUsableTimeout(null, t -> Duration.ofSeconds(10));
+
+		assertThat(timeout, equalTo(Duration.ofSeconds(10)));
 	}
 }
