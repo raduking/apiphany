@@ -136,4 +136,30 @@ class ApiMessageTest {
 
 		assertThat(message.getHeaders(), equalTo(expected));
 	}
+
+	@Test
+	void shouldAddHeaderToExistingHeaders() {
+		ApiMessage<String> message = new ApiMessage<>(DUMMY_BODY, headers);
+
+		message.addHeader(N2, List.of(V3, V4));
+
+		var expected = Map.of(
+				N1, List.of(V1, V2),
+				N2, List.of(V3, V4));
+
+		assertThat(message.getHeaders(), equalTo(expected));
+	}
+
+	@Test
+	void shouldAddSingleValueHeaderToExistingHeaders() {
+		ApiMessage<String> message = new ApiMessage<>(DUMMY_BODY, headers);
+
+		message.addHeader(N2, V3);
+
+		var expected = Map.of(
+				N1, List.of(V1, V2),
+				N2, List.of(V3));
+
+		assertThat(message.getHeaders(), equalTo(expected));
+	}
 }

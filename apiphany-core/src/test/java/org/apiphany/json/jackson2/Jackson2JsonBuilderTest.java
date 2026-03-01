@@ -36,6 +36,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
+import com.fasterxml.jackson.dataformat.xml.XmlFactory;
 
 /**
  * Test class for {@link Jackson2JsonBuilder}.
@@ -529,6 +530,13 @@ class Jackson2JsonBuilderTest {
 		});
 
 		assertThat(result, equalTo(null));
+	}
+
+	@Test
+	void shouldBuildTheBuilderWithCustomJsonFactory() {
+		Jackson2JsonBuilder builder = new Jackson2JsonBuilder(new XmlFactory());
+
+		assertThat(builder.getObjectMapper().getFactory().getClass(), equalTo(XmlFactory.class));
 	}
 
 	static class A {
