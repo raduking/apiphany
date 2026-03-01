@@ -16,7 +16,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.List;
+import java.util.function.Supplier;
 
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
@@ -33,7 +38,9 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
+import com.github.tomakehurst.wiremock.stubbing.ServeEvent;
 
 /**
  * Test class for {@link ApiClient} using {@link JavaNetHttpExchangeClient}.
@@ -191,8 +198,8 @@ class ApiClientWithJavaNetHttpIT {
 						.withStatus(200)
 						.withHeader("Content-Type", "application/json")
 						.withBody("""
-	                        {"name":"john"}
-	                    """)));
+								    {"name":"john"}
+								""")));
 
 		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
 		try (api) {
@@ -693,14 +700,14 @@ class ApiClientWithJavaNetHttpIT {
 
 	@Test
 	void shouldNotFailRetryBeforeSendWhenBodyIsInputStreamSupplierRepeatable() throws Exception {
-		wiremock.stubFor(post("/retry-stream")
-				.inScenario("retry-stream")
+		wiremock.stubFor(post("/retry-stream-1")
+				.inScenario("retry-stream-1")
 				.whenScenarioStateIs(STARTED)
 				.willReturn(aResponse().withStatus(500))
 				.willSetStateTo("second"));
 
-		wiremock.stubFor(post("/retry-stream")
-				.inScenario("retry-stream")
+		wiremock.stubFor(post("/retry-stream-1")
+				.inScenario("retry-stream-1")
 				.whenScenarioStateIs("second")
 				.willReturn(aResponse()
 						.withStatus(200)
@@ -711,7 +718,7 @@ class ApiClientWithJavaNetHttpIT {
 			String result = api.client()
 					.http()
 					.post()
-					.path("retry-stream")
+					.path("retry-stream-1")
 					.body(InputStreamSupplier.from(() -> new OneShotInputStream("hello")))
 					.retry(Retry.of(WaitCounter.of(2, Duration.ofMillis(100))))
 					.retrieve(String.class)
@@ -722,20 +729,20 @@ class ApiClientWithJavaNetHttpIT {
 
 		// this will break most clients since the InputStream can only be read once, but we want to ensure that the ApiClient
 		// properly retries even in this case by re-creating the stream for the retry attempt
-		wiremock.verify(2, postRequestedFor(urlEqualTo("/retry-stream"))
+		wiremock.verify(2, postRequestedFor(urlEqualTo("/retry-stream-1"))
 				.withRequestBody(equalTo("hello")));
 	}
 
 	@Test
 	void shouldNotFailRetryBeforeSendWhenBodyIsRepeatableByRecreatingTheInputStream() throws Exception {
-		wiremock.stubFor(post("/retry-stream")
-				.inScenario("retry-stream")
+		wiremock.stubFor(post("/retry-stream-2")
+				.inScenario("retry-stream-2")
 				.whenScenarioStateIs(STARTED)
 				.willReturn(aResponse().withStatus(500))
 				.willSetStateTo("second"));
 
-		wiremock.stubFor(post("/retry-stream")
-				.inScenario("retry-stream")
+		wiremock.stubFor(post("/retry-stream-2")
+				.inScenario("retry-stream-2")
 				.whenScenarioStateIs("second")
 				.willReturn(aResponse()
 						.withStatus(200)
@@ -746,7 +753,7 @@ class ApiClientWithJavaNetHttpIT {
 			String result = api.client()
 					.http()
 					.post()
-					.path("retry-stream")
+					.path("retry-stream-2")
 					.body(() -> new OneShotInputStream("hello"))
 					.retry(Retry.of(WaitCounter.of(2, Duration.ofMillis(100))))
 					.retrieve(String.class)
@@ -757,7 +764,66 @@ class ApiClientWithJavaNetHttpIT {
 
 		// this will break most clients since the InputStream can only be read once, but we want to ensure that the ApiClient
 		// properly retries even in this case by re-creating the stream for the retry attempt
-		wiremock.verify(2, postRequestedFor(urlEqualTo("/retry-stream"))
+		wiremock.verify(2, postRequestedFor(urlEqualTo("/retry-stream-2"))
 				.withRequestBody(equalTo("hello")));
+	}
+
+	@Test
+	void shouldFailRetryWhenSupplierReturnsSameConsumedInputStream() throws Exception {
+		final String expectedBody = "hello world";
+
+		// first request fails
+		wiremock.stubFor(post("/retry-stream-3")
+				.inScenario("retry-stream-3")
+				.whenScenarioStateIs(STARTED)
+				.willReturn(aResponse()
+						.withStatus(500))
+				.willSetStateTo("second"));
+
+		// retry succeeds
+		wiremock.stubFor(post("/retry-stream-3")
+				.inScenario("retry-stream-3")
+				.whenScenarioStateIs("second")
+				.willReturn(aResponse()
+						.withStatus(200)
+						.withBody("hi")));
+
+		InputStream alreadyOpened =
+				new ByteArrayInputStream(expectedBody.getBytes(StandardCharsets.UTF_8));
+
+		Supplier<InputStream> brokenSupplier = () -> alreadyOpened;
+
+		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		try (api) {
+			String result = api.client()
+					.http()
+					.post()
+					.path("retry-stream-3")
+					.body(brokenSupplier)
+					.charset(StandardCharsets.UTF_8)
+					.retry(Retry.of(WaitCounter.of(2, Duration.ofMillis(100))))
+					.retrieve(String.class)
+					.orRethrow();
+
+			assertEquals("hi", result);
+		}
+
+		// first attempt
+		wiremock.verify(1, postRequestedFor(urlEqualTo("/retry-stream-3"))
+				.withRequestBody(equalTo(expectedBody)));
+
+		// retry attempt MUST be broken (stream already consumed)
+		wiremock.verify(1, postRequestedFor(urlEqualTo("/retry-stream-3"))
+				.withRequestBody(WireMock.notMatching(expectedBody)));
+
+		List<ServeEvent> events =
+				wiremock.getAllServeEvents().stream()
+						.filter(e -> e.getRequest().getUrl().equals("/retry-stream-3"))
+						.toList();
+
+		// events are in reverse order (newest first), so the first attempt is events.get(1) and the retry is events.get(0)
+		assertEquals(2, events.size());
+		assertEquals("", events.get(0).getRequest().getBodyAsString());
+		assertEquals(expectedBody, events.get(1).getRequest().getBodyAsString());
 	}
 }
