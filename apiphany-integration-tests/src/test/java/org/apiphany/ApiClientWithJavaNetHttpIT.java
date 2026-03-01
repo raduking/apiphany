@@ -5,16 +5,23 @@ import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.headRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.List;
+import java.util.function.Supplier;
 
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
@@ -22,19 +29,25 @@ import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.http.ContentEncoding;
 import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
+import org.apiphany.io.InputStreamSupplier;
 import org.apiphany.io.gzip.GZip;
+import org.apiphany.lang.retry.Retry;
+import org.apiphany.lang.retry.WaitCounter;
+import org.apiphany.test.io.OneShotInputStream;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
+import com.github.tomakehurst.wiremock.stubbing.ServeEvent;
 
 /**
  * Test class for {@link ApiClient} using {@link JavaNetHttpExchangeClient}.
  *
  * @author Radu Sebastian LAZIN
  */
-public class ApiClientWithJavaNetHttpIT {
+class ApiClientWithJavaNetHttpIT {
 
 	@RegisterExtension
 	private static final WireMockExtension wiremock =
@@ -116,7 +129,6 @@ public class ApiClientWithJavaNetHttpIT {
 						.withBody("OK")));
 
 		ClientProperties properties = new ClientProperties();
-		// properties.setFollowRedirects(true);
 		ApiClient api = ApiClient.of(baseUrl(),
 				ApiClient.with(exchangeClientClass()).properties(properties));
 		try (api) {
@@ -186,8 +198,8 @@ public class ApiClientWithJavaNetHttpIT {
 						.withStatus(200)
 						.withHeader("Content-Type", "application/json")
 						.withBody("""
-	                        {"name":"john"}
-	                    """)));
+								    {"name":"john"}
+								""")));
 
 		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
 		try (api) {
@@ -307,7 +319,7 @@ public class ApiClientWithJavaNetHttpIT {
 		ApiClient api = ApiClient.of(baseUrl(),
 				ApiClient.with(exchangeClientClass()).properties(properties));
 		try (api) {
-			assertThrows(HttpException.class, () -> api.client()
+			assertThrows(HttpException.class, () -> api.client() // NOSONAR should not complain
 					.http()
 					.get()
 					.path("slow")
@@ -467,5 +479,351 @@ public class ApiClientWithJavaNetHttpIT {
 
 		wiremock.verify(postRequestedFor(urlEqualTo("/chunk"))
 				.withoutHeader("Transfer-Encoding"));
+	}
+
+	@Test
+	void shouldHandleEmptyBody200() throws Exception {
+		// some clients behave differently for Content-Length: 0 vs no body.
+		wiremock.stubFor(get("/empty")
+				.willReturn(aResponse()
+						.withStatus(200)
+						.withHeader("Content-Length", "0")));
+
+		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		try (api) {
+			String result = api.client()
+					.http()
+					.get()
+					.path("empty")
+					.retrieve(String.class)
+					.orNull();
+
+			assertNull(result);
+		}
+
+		wiremock.verify(getRequestedFor(urlEqualTo("/empty")));
+	}
+
+	@Test
+	void shouldHandle204NoContent() throws Exception {
+		// 204 must not try to deserialize.
+		wiremock.stubFor(get("/no-content")
+				.willReturn(aResponse().withStatus(204)));
+
+		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		try (api) {
+			var result = api.client()
+					.http()
+					.get()
+					.path("no-content")
+					.retrieve(String.class)
+					.orNull();
+
+			assertNull(result);
+		}
+	}
+
+	@Test
+	void shouldSendContentLengthWhenBodyPresent() throws Exception {
+		wiremock.stubFor(post("/length")
+				.willReturn(aResponse().withStatus(200)));
+
+		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		try (api) {
+			api.client()
+					.http()
+					.post()
+					.path("length")
+					.body("hello")
+					.retrieve();
+		}
+
+		wiremock.verify(postRequestedFor(urlEqualTo("/length"))
+				.withHeader("Content-Length", equalTo("5")));
+	}
+
+	@Test
+	void shouldReuseConnectionForMultipleRequests() throws Exception {
+		wiremock.stubFor(get("/reuse")
+				.willReturn(aResponse().withStatus(200)));
+
+		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		try (api) {
+			api.client().http().get().path("reuse").retrieve();
+			api.client().http().get().path("reuse").retrieve();
+		}
+
+		wiremock.verify(2, getRequestedFor(urlEqualTo("/reuse")));
+	}
+
+	@Test
+	void shouldRespectCharsetFromContentType() throws Exception {
+		wiremock.stubFor(get("/charset")
+				.willReturn(aResponse()
+						.withStatus(200)
+						.withHeader("Content-Type", "text/plain; charset=ISO-8859-1")
+						.withBody(new byte[] { (byte) 0xE9 }))); // é in ISO-8859-1
+
+		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		try (api) {
+			String result = api.client()
+					.http()
+					.get()
+					.path("charset")
+					.retrieve(String.class)
+					.orNull();
+
+			assertEquals("é", result);
+		}
+	}
+
+	@Test
+	void shouldSupportHeadMethod() throws Exception {
+		wiremock.stubFor(get("/head")
+				.willReturn(aResponse()
+						.withStatus(200)
+						.withHeader("X-Test", "42")));
+
+		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		try (api) {
+			api.client()
+					.http()
+					.head()
+					.path("head")
+					.retrieve();
+		}
+
+		wiremock.verify(headRequestedFor(urlEqualTo("/head")));
+	}
+
+	@Test
+	void shouldSendMultipleHeaderValues() throws Exception {
+		wiremock.stubFor(get("/multi")
+				.willReturn(aResponse().withStatus(200)));
+
+		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		try (api) {
+			api.client()
+					.http()
+					.get()
+					.path("multi")
+					.header("X-Test", "A")
+					.header("X-Test", "B")
+					.retrieve();
+		}
+
+		wiremock.verify(getRequestedFor(urlEqualTo("/multi"))
+				.withHeader("X-Test", containing("A"))
+				.withHeader("X-Test", containing("B")));
+	}
+
+	@Test
+	void shouldFailOnInvalidJson() throws Exception {
+		wiremock.stubFor(get("/bad-json")
+				.willReturn(aResponse()
+						.withStatus(200)
+						.withHeader("Content-Type", "application/json")
+						.withBody("{ invalid json")));
+
+		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		try (api) {
+			assertThrows(Exception.class, () -> api.client()
+					.http()
+					.get()
+					.path("bad-json")
+					.retrieve(MyDto.class)
+					.orRethrow());
+		}
+	}
+
+	@Test
+	void shouldRetryAndEventuallySucceed() throws Exception {
+		wiremock.stubFor(get("/retry-success")
+				.inScenario("retry")
+				.whenScenarioStateIs(STARTED)
+				.willReturn(aResponse().withStatus(500))
+				.willSetStateTo("second"));
+
+		wiremock.stubFor(get("/retry-success")
+				.inScenario("retry")
+				.whenScenarioStateIs("second")
+				.willReturn(aResponse().withStatus(200).withBody("OK")));
+
+		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		try (api) {
+			String result = api.client()
+					.http()
+					.get()
+					.path("retry-success")
+					.retry(Retry.of(WaitCounter.of(2, Duration.ofMillis(100))))
+					.retrieve(String.class)
+					.orNull();
+
+			assertEquals("OK", result);
+		}
+
+		// 2 attempts total
+		wiremock.verify(2, getRequestedFor(urlEqualTo("/retry-success")));
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldFailRetryBeforeSendWhenBodyIsNonRepeatable() throws Exception {
+		wiremock.stubFor(post("/retry-stream")
+				.inScenario("retry-stream")
+				.whenScenarioStateIs(STARTED)
+				.willReturn(aResponse().withStatus(500))
+				.willSetStateTo("second"));
+
+		wiremock.stubFor(post("/retry-stream")
+				.inScenario("retry-stream")
+				.whenScenarioStateIs("second")
+				.willReturn(aResponse().withStatus(200)));
+
+		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		try (api) {
+			assertThrows(Exception.class, () -> api.client()
+					.http()
+					.post()
+					.path("retry-stream")
+					.body(new OneShotInputStream("hello"))
+					.retry(Retry.of(WaitCounter.of(2, Duration.ofMillis(100))))
+					.retrieve()
+					.orRethrow());
+		}
+
+		// this will break most clients since the InputStream can only be read once, but we want to ensure that the ApiClient
+		// properly retries even in this case by re-creating the stream for the retry attempt
+		wiremock.verify(1, postRequestedFor(urlEqualTo("/retry-stream"))
+				.withRequestBody(equalTo("hello")));
+	}
+
+	@Test
+	void shouldNotFailRetryBeforeSendWhenBodyIsInputStreamSupplierRepeatable() throws Exception {
+		wiremock.stubFor(post("/retry-stream-1")
+				.inScenario("retry-stream-1")
+				.whenScenarioStateIs(STARTED)
+				.willReturn(aResponse().withStatus(500))
+				.willSetStateTo("second"));
+
+		wiremock.stubFor(post("/retry-stream-1")
+				.inScenario("retry-stream-1")
+				.whenScenarioStateIs("second")
+				.willReturn(aResponse()
+						.withStatus(200)
+						.withBody("hi")));
+
+		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		try (api) {
+			String result = api.client()
+					.http()
+					.post()
+					.path("retry-stream-1")
+					.body(InputStreamSupplier.from(() -> new OneShotInputStream("hello")))
+					.retry(Retry.of(WaitCounter.of(2, Duration.ofMillis(100))))
+					.retrieve(String.class)
+					.orRethrow();
+
+			assertEquals("hi", result);
+		}
+
+		// this will break most clients since the InputStream can only be read once, but we want to ensure that the ApiClient
+		// properly retries even in this case by re-creating the stream for the retry attempt
+		wiremock.verify(2, postRequestedFor(urlEqualTo("/retry-stream-1"))
+				.withRequestBody(equalTo("hello")));
+	}
+
+	@Test
+	void shouldNotFailRetryBeforeSendWhenBodyIsRepeatableByRecreatingTheInputStream() throws Exception {
+		wiremock.stubFor(post("/retry-stream-2")
+				.inScenario("retry-stream-2")
+				.whenScenarioStateIs(STARTED)
+				.willReturn(aResponse().withStatus(500))
+				.willSetStateTo("second"));
+
+		wiremock.stubFor(post("/retry-stream-2")
+				.inScenario("retry-stream-2")
+				.whenScenarioStateIs("second")
+				.willReturn(aResponse()
+						.withStatus(200)
+						.withBody("hi")));
+
+		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		try (api) {
+			String result = api.client()
+					.http()
+					.post()
+					.path("retry-stream-2")
+					.body(() -> new OneShotInputStream("hello"))
+					.retry(Retry.of(WaitCounter.of(2, Duration.ofMillis(100))))
+					.retrieve(String.class)
+					.orRethrow();
+
+			assertEquals("hi", result);
+		}
+
+		// this will break most clients since the InputStream can only be read once, but we want to ensure that the ApiClient
+		// properly retries even in this case by re-creating the stream for the retry attempt
+		wiremock.verify(2, postRequestedFor(urlEqualTo("/retry-stream-2"))
+				.withRequestBody(equalTo("hello")));
+	}
+
+	@Test
+	void shouldFailRetryWhenSupplierReturnsSameConsumedInputStream() throws Exception {
+		final String expectedBody = "hello world";
+
+		// first request fails
+		wiremock.stubFor(post("/retry-stream-3")
+				.inScenario("retry-stream-3")
+				.whenScenarioStateIs(STARTED)
+				.willReturn(aResponse()
+						.withStatus(500))
+				.willSetStateTo("second"));
+
+		// retry succeeds
+		wiremock.stubFor(post("/retry-stream-3")
+				.inScenario("retry-stream-3")
+				.whenScenarioStateIs("second")
+				.willReturn(aResponse()
+						.withStatus(200)
+						.withBody("hi")));
+
+		InputStream alreadyOpened =
+				new ByteArrayInputStream(expectedBody.getBytes(StandardCharsets.UTF_8));
+
+		Supplier<InputStream> brokenSupplier = () -> alreadyOpened;
+
+		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		try (api) {
+			String result = api.client()
+					.http()
+					.post()
+					.path("retry-stream-3")
+					.body(brokenSupplier)
+					.charset(StandardCharsets.UTF_8)
+					.retry(Retry.of(WaitCounter.of(2, Duration.ofMillis(100))))
+					.retrieve(String.class)
+					.orRethrow();
+
+			assertEquals("hi", result);
+		}
+
+		// first attempt
+		wiremock.verify(1, postRequestedFor(urlEqualTo("/retry-stream-3"))
+				.withRequestBody(equalTo(expectedBody)));
+
+		// retry attempt MUST be broken (stream already consumed)
+		wiremock.verify(1, postRequestedFor(urlEqualTo("/retry-stream-3"))
+				.withRequestBody(WireMock.notMatching(expectedBody)));
+
+		List<ServeEvent> events =
+				wiremock.getAllServeEvents().stream()
+						.filter(e -> e.getRequest().getUrl().equals("/retry-stream-3"))
+						.toList();
+
+		// events are in reverse order (newest first), so the first attempt is events.get(1) and the retry is events.get(0)
+		assertEquals(2, events.size());
+		assertEquals("", events.get(0).getRequest().getBodyAsString());
+		assertEquals(expectedBody, events.get(1).getRequest().getBodyAsString());
 	}
 }

@@ -1,5 +1,6 @@
 package org.apiphany;
 
+import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.LinkedHashMap;
@@ -15,6 +16,7 @@ import org.apiphany.header.Header;
 import org.apiphany.header.HeaderFunction;
 import org.apiphany.header.Headers;
 import org.apiphany.http.URIEncoder;
+import org.apiphany.io.OneShotInputStreamSupplier;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Maps;
 import org.apiphany.lang.retry.Retry;
@@ -273,8 +275,23 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @return this
 	 */
 	public <U> ApiClientFluentAdapter body(final U body) {
-		this.body = body;
+		this.body = switch (body) {
+			case null -> null;
+			case InputStream is -> new OneShotInputStreamSupplier(is);
+			default -> body;
+		};
 		return this;
+	}
+
+	/**
+	 * Sets the request body as a supplier. This method is here to be able to use a supplier expression when building the
+	 * body.
+	 *
+	 * @param body the body to set
+	 * @return this
+	 */
+	public <U> ApiClientFluentAdapter body(final Supplier<U> body) {
+		return body((Object) body);
 	}
 
 	/**

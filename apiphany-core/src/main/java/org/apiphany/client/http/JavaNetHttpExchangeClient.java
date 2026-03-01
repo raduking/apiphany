@@ -31,7 +31,7 @@ import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
-import org.apiphany.io.ContentType;
+import org.apiphany.io.InputStreamSupplier;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.collections.Lists;
@@ -248,10 +248,10 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 		HttpStatus httpStatus = HttpStatus.fromCode(httpResponse.statusCode());
 		Map<String, List<String>> headers = Nullables.apply(httpResponse.headers(), HttpHeaders::map);
 
-		List<String> encodings = getHeaderValuesChain().get(HttpHeader.CONTENT_ENCODING, headers);
+		List<String> encodings = getHeaderValues(HttpHeader.CONTENT_ENCODING, headers);
 		R responseBody = ContentEncoding.decodeBody(httpResponse.body(), ContentEncoding.parseAll(encodings));
 
-		List<String> contentTypes = getHeaderValuesChain().get(HttpHeader.CONTENT_TYPE, headers);
+		List<String> contentTypes = getHeaderValues(HttpHeader.CONTENT_TYPE, headers);
 		HttpContentType contentType = HttpContentType.parse(contentTypes);
 
 		if (httpStatus.isError()) {
@@ -277,6 +277,23 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	 */
 	public static <T> BodyPublisher toBodyPublisher(final ApiRequest<T> apiRequest) {
 		T body = apiRequest.getBody();
+		return toBodyPublisher(apiRequest, body);
+	}
+
+	/**
+	 * Creates a {@link BodyPublisher} from the given API request and body. It checks for the body common types to create
+	 * the appropriate publisher. This method only uses the body parameter to create the publisher and not the API request
+	 * body because in some cases the body can be a supplier that needs to be resolved first to get the actual body object
+	 * and then create the publisher from it. The API request is only used in this method to get the {@link Charset} for
+	 * string bodies and to check if the body should be converted to JSON or not.
+	 *
+	 * @param <T> body type
+	 *
+	 * @param apiRequest the API request object
+	 * @param body the body to create the publisher from
+	 * @return a body publisher needed in building the HTTP request
+	 */
+	private static <T> BodyPublisher toBodyPublisher(final ApiRequest<T> apiRequest, final T body) {
 		if (body == null) {
 			return BodyPublishers.noBody();
 		}
@@ -285,10 +302,10 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 			case String str -> BodyPublishers.ofString(str, charset);
 			case byte[] bytes -> BodyPublishers.ofByteArray(bytes);
 			case InputStream is -> BodyPublishers.ofInputStream(() -> is);
-			case Supplier<?> supplier when supplier.get() instanceof InputStream is -> BodyPublishers.ofInputStream(() -> is);
+			case InputStreamSupplier iss -> BodyPublishers.ofInputStream(iss);
+			case Supplier<?> supplier -> toBodyPublisher(apiRequest, JavaObjects.cast(supplier.get()));
 			case Path path -> HttpException.ifThrows(() -> BodyPublishers.ofFile(path), HttpStatus.BAD_REQUEST);
-			case Object obj when apiRequest.containsHeader(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_JSON) -> BodyPublishers
-					.ofString(JsonBuilder.toJson(obj), charset);
+			case Object obj when isJson(apiRequest) -> BodyPublishers.ofString(JsonBuilder.toJson(obj), charset);
 			default -> BodyPublishers.ofString(Strings.safeToString(body), charset);
 		};
 	}

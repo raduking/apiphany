@@ -1,5 +1,16 @@
 ## Release Notes
 
+`1.1.6`
+
+- Added `AbstractHttpExchangeClient.getHeaderValues` method that returns a list with all the values for a given header.
+- Added `InputStreamSupplier` interface that supplies an `InputStream` used as a marker interface.
+- Added `OneShotInputStreamSupplier` class that allows only a single `get` call, useful for retries.
+- Added `OneShotHttpEntity` for Apache HTTP Client 5 clients that allows the input stream to be consumed only once.
+- Added `ApacheHC5Entities.create(InputStream, ContentType)` similar to Apache `HttpEntities.create` methods but for handling input streams.
+- Added `ApiClientFluentAdapter.body(Supplier)` to allow lazy body building.
+
+---
+
 `1.1.5`
 
 - Added `LibraryDescriptor.of(String, Class)` to initialize a descriptor based on the presence in the classpath of the given class name.
