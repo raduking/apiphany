@@ -774,6 +774,24 @@ class JavaNetHttpExchangeClientTest {
 		}
 
 		@Test
+		void shouldConvertByteArrayPayloadSupplierToByteArrayBodyPublisher() {
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.payload(() -> BYTES);
+
+			BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+
+			assertThat(bodyPublisher.contentLength(), equalTo((long) BYTES.length));
+
+			ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
+			bodyPublisher.subscribe(subscriber);
+			subscriber.awaitCompletion();
+
+			assertTrue(subscriber.isCompleted());
+			assertNull(subscriber.getError());
+			assertThat(BYTES, equalTo(subscriber.getReceivedBytes()));
+		}
+
+		@Test
 		void shouldConvertInputStreamToInputStreamBodyPublisher() {
 			ByteArrayInputStream bis = new ByteArrayInputStream(BYTES);
 
