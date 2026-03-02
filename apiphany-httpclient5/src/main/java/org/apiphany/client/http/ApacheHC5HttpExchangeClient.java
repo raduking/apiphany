@@ -235,17 +235,7 @@ public class ApacheHC5HttpExchangeClient extends AbstractHttpExchangeClient {
 		List<String> contentTypes = getHeaderValues(HttpHeader.CONTENT_TYPE, headers);
 		HttpContentType contentType = HttpContentType.parse(contentTypes);
 
-		if (httpStatus.isError()) {
-			throw new HttpException(httpStatus, StringHttpContentConverter.from(responseBody, contentType));
-		}
-		U body = convertBody(apiRequest, contentType, headers, responseBody);
-
-		return ApiResponse.create(body)
-				.status(httpStatus)
-				.headers(headers)
-				.request(apiRequest)
-				.exchangeClient(this)
-				.build();
+		return buildResponse(apiRequest, httpStatus, headers, contentType, responseBody);
 	}
 
 	/**

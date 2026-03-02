@@ -2,18 +2,23 @@ package org.apiphany.client.http;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import javax.net.ssl.SSLContext;
 
 import org.apiphany.ApiMimeType;
 import org.apiphany.ApiRequest;
+import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ContentConverter;
 import org.apiphany.header.HeaderValues;
 import org.apiphany.header.MapHeaderValues;
+import org.apiphany.http.HttpContentType;
+import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpHeaderValues;
+import org.apiphany.http.HttpStatus;
 import org.apiphany.io.ContentType;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.json.jackson2.Jackson2JsonHttpContentConverter;
@@ -202,5 +207,42 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	 */
 	protected static <T> boolean isJson(final ApiRequest<T> apiRequest) {
 		return apiRequest.containsHeader(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_JSON);
+	}
+
+	/**
+	 * Builds an API response based on the given parameters. If the HTTP status indicates an error, it creates an
+	 * HttpException with the error response body and includes it in the {@link ApiResponse}. Otherwise, it converts the
+	 * response body to the desired type and includes it in the {@link ApiResponse}.
+	 *
+	 * @param <T> the type of the original request body
+	 * @param <U> the target type for the response body
+	 * @param <R> the type of the original response body
+	 *
+	 * @param apiRequest the API request associated with this response
+	 * @param httpStatus the HTTP status of the response
+	 * @param headers the headers of the response
+	 * @param contentType the content type of the response body
+	 * @param rawBody the raw response body to be converted and included in the ApiResponse
+	 * @return an ApiResponse object containing either the converted response body or an exception if an error occurred
+	 */
+	protected <T, U, R> ApiResponse<U> buildResponse(final ApiRequest<T> apiRequest, final HttpStatus httpStatus,
+			final Map<String, List<String>> headers, final HttpContentType contentType, final R rawBody) {
+		ApiResponse.Builder<U> responseBuilder = ApiResponse.<U>builder()
+				.status(httpStatus)
+				.headers(headers)
+				.request(apiRequest)
+				.exchangeClient(this);
+		U body;
+		if (httpStatus.isError()) {
+			String errorResponseBody = StringHttpContentConverter.from(rawBody, contentType);
+			HttpException exception = new HttpException(httpStatus, errorResponseBody);
+			responseBuilder.exception(exception);
+			body = JavaObjects.cast(errorResponseBody);
+		} else {
+			body = convertBody(apiRequest, contentType, headers, rawBody);
+		}
+		return responseBuilder
+				.body(body)
+				.build();
 	}
 }
