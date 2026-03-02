@@ -20,7 +20,7 @@ import org.morphix.lang.JavaObjects;
  *
  * @author Radu Sebastian LAZIN
  */
-public class ApiClientCloseTest {
+class ApiClientCloseTest {
 
 	private static final String BASE_URL = "http://localhost";
 
@@ -160,14 +160,14 @@ public class ApiClientCloseTest {
 
 	@Test
 	@SuppressWarnings("resource")
-	void shouldCallCloseOnManagedExchangeClientsEvenIfConstructingApiClientFails() throws Exception {
+	void shouldCallCloseOnManagedExchangeClientsEvenIfConstructingApiClientFails() {
 		SomeExchangeClient exchangeClient1 = new SomeExchangeClient(clientProperties);
 		SomeOtherExchangeClient exchangeClient2 = new SomeOtherExchangeClient(clientProperties);
 		ScopedResource<ExchangeClient> scopedResource1 = ScopedResource.managed(exchangeClient1);
 		ScopedResource<ExchangeClient> scopedResource2 = ScopedResource.managed(exchangeClient2);
+		List<ScopedResource<ExchangeClient>> resources = List.of(scopedResource1, scopedResource2);
 
-		IllegalStateException e = assertThrows(IllegalStateException.class,
-				() -> new ApiClient(List.of(scopedResource1, scopedResource2)));
+		IllegalStateException e = assertThrows(IllegalStateException.class, () -> new ApiClient(resources));
 
 		assertThat(e.getMessage(), equalTo("Failed to instantiate [" + ApiClient.class.getName() + "]."
 				+ " Client entry for authentication type: [" + AuthenticationType.NONE + ", " + exchangeClient1.getName() + "]"
@@ -178,14 +178,14 @@ public class ApiClientCloseTest {
 
 	@Test
 	@SuppressWarnings("resource")
-	void shouldNotCallCloseOnNonManagedExchangeClientsEvenIfConstructingApiClientFails() throws Exception {
+	void shouldNotCallCloseOnNonManagedExchangeClientsEvenIfConstructingApiClientFails() {
 		SomeExchangeClient exchangeClient1 = new SomeExchangeClient(clientProperties);
 		SomeOtherExchangeClient exchangeClient2 = new SomeOtherExchangeClient(clientProperties);
 		ScopedResource<ExchangeClient> scopedResource1 = ScopedResource.unmanaged(exchangeClient1);
 		ScopedResource<ExchangeClient> scopedResource2 = ScopedResource.unmanaged(exchangeClient2);
+		List<ScopedResource<ExchangeClient>> resources = List.of(scopedResource1, scopedResource2);
 
-		IllegalStateException e = assertThrows(IllegalStateException.class,
-				() -> new ApiClient(List.of(scopedResource1, scopedResource2)));
+		IllegalStateException e = assertThrows(IllegalStateException.class, () -> new ApiClient(resources));
 
 		assertThat(e.getMessage(), equalTo("Failed to instantiate [" + ApiClient.class.getName() + "]."
 				+ " Client entry for authentication type: [" + AuthenticationType.NONE + ", " + exchangeClient1.getName() + "]"

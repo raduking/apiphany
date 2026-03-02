@@ -11,13 +11,13 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 
 import java.time.Duration;
 import java.util.List;
 
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.http.HttpExchangeClient;
+import org.apiphany.http.HttpStatus;
 import org.apiphany.lang.retry.Retry;
 import org.apiphany.lang.retry.WaitCounter;
 import org.apiphany.meters.BasicMeters;
@@ -34,7 +34,7 @@ import io.micrometer.core.instrument.Tags;
  *
  * @author Radu Sebastian LAZIN
  */
-public class ApiClientMetersTest {
+class ApiClientMetersTest {
 
 	private static final String BASE_URL = "http://localhost";
 	private static final String PATH_TEST = "test";
@@ -195,7 +195,7 @@ public class ApiClientMetersTest {
 
 	@Test
 	@SuppressWarnings({ "unchecked", "resource" })
-	void shouldSetMetricsOnExchangeWhenThereAreNoExceptions() {
+	void shouldSetMetricsOnExchangeWhenThereAreNoExceptionsButResponseIsNotSuccessful() {
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 
@@ -232,7 +232,7 @@ public class ApiClientMetersTest {
 		verify(retries, times(RETRY_COUNT)).increment();
 		verify(requests, times(RETRY_COUNT)).increment();
 		verify(latency, times(RETRY_COUNT)).record(any(Duration.class));
-		verifyNoInteractions(errors);
+		verify(errors, times(RETRY_COUNT)).increment();
 	}
 
 	@Test
@@ -265,6 +265,54 @@ public class ApiClientMetersTest {
 
 		RuntimeException exception = new RuntimeException(SOME_ERROR_MESSAGE);
 		doThrow(exception).when(exchangeClient).exchange(request);
+
+		ApiResponse<?> result = api.exchange(request);
+
+		assertThat(result.getException(), sameInstance(exception));
+
+		verify(retries, times(RETRY_COUNT)).increment();
+		verify(requests, times(RETRY_COUNT)).increment();
+		verify(latency, times(RETRY_COUNT)).record(any(Duration.class));
+		verify(errors, times(RETRY_COUNT)).increment();
+	}
+
+	@Test
+	@SuppressWarnings({ "unchecked", "resource" })
+	void shouldSetMetricsOnExchangeWhenThereAreErrorResponses() {
+		ExchangeClient exchangeClient = mock(ExchangeClient.class);
+		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
+
+		MeterFactory meterFactory = mock(MeterFactory.class);
+		MeterTimer latency = mock(MeterTimer.class);
+		MeterCounter requests = mock(MeterCounter.class);
+		MeterCounter errors = mock(MeterCounter.class);
+		MeterCounter retries = mock(MeterCounter.class);
+		doReturn(latency).when(meterFactory).timer(eq(METRICS_PREFIX), eq(BasicMeters.Name.LATENCY), any(List.class));
+		doReturn(requests).when(meterFactory).counter(eq(METRICS_PREFIX), eq(BasicMeters.Name.REQUEST), any(List.class));
+		doReturn(errors).when(meterFactory).counter(eq(METRICS_PREFIX), eq(BasicMeters.Name.ERROR), any(List.class));
+		doReturn(retries).when(meterFactory).counter(eq(METRICS_PREFIX), eq(BasicMeters.Name.RETRY), any(List.class));
+
+		BasicMeters meters = BasicMeters.of(meterFactory, METRICS_PREFIX);
+
+		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
+		api.setMetricsEnabled(true);
+		api.setMeters(meters);
+
+		Retry retry = Retry.of(WaitCounter.of(RETRY_COUNT, Duration.ofMillis(10)));
+		api.setRetry(retry);
+
+		ApiRequest<?> request = mock(ApiRequest.class);
+		doReturn(AuthenticationType.OAUTH2).when(request).getAuthenticationType();
+
+		RuntimeException exception = new RuntimeException(SOME_ERROR_MESSAGE);
+		ApiResponse<String> response = ApiResponse.<String>builder()
+				.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.exception(exception)
+				.errorMessage("someErrorMessage")
+				.body("error")
+				.build();
+
+		doReturn(response).when(exchangeClient).exchange(request);
 
 		ApiResponse<?> result = api.exchange(request);
 

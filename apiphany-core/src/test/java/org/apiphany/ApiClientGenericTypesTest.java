@@ -33,7 +33,7 @@ import org.springframework.context.annotation.Description;
  *
  * @author Radu Sebastian LAZIN
  */
-public class ApiClientGenericTypesTest {
+class ApiClientGenericTypesTest {
 
 	private static final String BASE_URL = "http://localhost";
 	private static final String PATH_TEST = "test";

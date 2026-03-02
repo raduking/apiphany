@@ -254,24 +254,21 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 		List<String> contentTypes = getHeaderValues(HttpHeader.CONTENT_TYPE, headers);
 		HttpContentType contentType = HttpContentType.parse(contentTypes);
 
-		if (httpStatus.isError()) {
-			String errorResponseBody = StringHttpContentConverter.from(responseBody, contentType);
-			ApiResponse<String> errorResponse = ApiResponse.<String>create(errorResponseBody)
-					.status(httpStatus)
-					.headers(headers)
-					.request(apiRequest)
-					.exchangeClient(this)
-					.build();
-			throw new HttpException(errorResponse);
-		}
-
-		U body = convertBody(apiRequest, contentType, headers, responseBody);
-		return ApiResponse.create(body)
+		ApiResponse.Builder<U> responseBuilder = ApiResponse.<U>builder()
 				.status(httpStatus)
 				.headers(headers)
 				.request(apiRequest)
-				.exchangeClient(this)
-				.build();
+				.exchangeClient(this);
+
+		if (httpStatus.isError()) {
+			String errorResponseBody = StringHttpContentConverter.from(responseBody, contentType);
+			HttpException exception = new HttpException(httpStatus, errorResponseBody);
+			responseBuilder.exception(exception).body(JavaObjects.cast(errorResponseBody));
+		} else {
+			U body = convertBody(apiRequest, contentType, headers, responseBody);
+			responseBuilder.body(body);
+		}
+		return responseBuilder.build();
 	}
 
 	/**
