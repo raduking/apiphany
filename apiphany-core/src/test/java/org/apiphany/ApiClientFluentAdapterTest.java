@@ -151,6 +151,23 @@ class ApiClientFluentAdapterTest {
 		assertThat(request.getParams(), equalTo(expected));
 	}
 
+	@Test
+	@SuppressWarnings("resource")
+	void shouldPopulateEmptyParamsOnRetrieveWhenParamsAreNullAndSetMultipleTimes() {
+		ExchangeClient exchangeClient = mock(ExchangeClient.class);
+		doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
+
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+				.authenticationType(AuthenticationType.SESSION)
+				.url(URL)
+				.params((Map<String, List<String>>) null)
+				.params((Map<String, List<String>>) null);
+
+		request.retrieve();
+
+		assertThat(request.getParams(), equalTo(Collections.emptyMap()));
+	}
+
 	static class ParamObject {
 		@SuppressWarnings("unused")
 		private final String sum = "1+2+3";

@@ -287,6 +287,8 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * Sets the request body as a supplier. This method is here to be able to use a supplier expression when building the
 	 * body.
 	 *
+	 * @param <U> body type
+	 *
 	 * @param body the body to set
 	 * @return this
 	 */
@@ -303,6 +305,18 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @return this
 	 */
 	public <U> ApiClientFluentAdapter payload(final U payload) {
+		return body(payload);
+	}
+
+	/**
+	 * Alias for {@link #body(Supplier)}.
+	 *
+	 * @param <U> payload type
+	 *
+	 * @param payload the payload to set as a supplier
+	 * @return this
+	 */
+	public <U> ApiClientFluentAdapter payload(final Supplier<U> payload) {
 		return body(payload);
 	}
 
