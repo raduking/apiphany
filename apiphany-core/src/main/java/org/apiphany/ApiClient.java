@@ -573,6 +573,7 @@ public class ApiClient implements AutoCloseable {
 	private <T> ApiResponse<T> exchange(final ApiRequest<T> apiRequest, final ExchangeClient exchangeClient, final BasicMeters activeMeters) {
 		return activeMeters.wrap(
 				() -> exchangeClient.exchange(apiRequest),
+				ApiResponse::isSuccessful,
 				e -> buildErrorResponse(e, apiRequest, exchangeClient));
 	}
 

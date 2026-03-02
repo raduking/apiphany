@@ -46,6 +46,7 @@ import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
 import org.apiphany.io.ByteBufferSubscriber;
+import org.apiphany.io.ContentType;
 import org.apiphany.io.InputStreamSupplier;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
@@ -509,7 +510,7 @@ class JavaNetHttpExchangeClientTest {
 		}
 
 		@Test
-		void shouldThrowExceptionOnBuildResponseFromApiRequestAndHttpResponse500() throws Exception {
+		void shouldReturnResponseWithExceptionOnBuildResponseFromApiRequestAndHttpResponse500() throws Exception {
 			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
 			exchangeClient.close();
 
@@ -519,21 +520,20 @@ class JavaNetHttpExchangeClientTest {
 					.responseType(String.class);
 
 			Map<String, List<String>> headers = Map.of(
-					"Content-Type", List.of("application/json"));
+					"Content-Type", List.of(ContentType.Value.APPLICATION_JSON));
 
 			HttpResponse<?> httpResponse = mock(HttpResponse.class);
 			doReturn(HttpStatus.INTERNAL_SERVER_ERROR.value()).when(httpResponse).statusCode();
 			doReturn(STRING).when(httpResponse).body();
 			doReturn(HttpHeaders.of(headers, (v1, v2) -> true)).when(httpResponse).headers();
 
-			HttpException e = assertThrows(HttpException.class, () -> exchangeClient.buildResponse(request, httpResponse));
+			ApiResponse<String> apiResponse = exchangeClient.buildResponse(request, httpResponse);
 
-			assertThat(e.getMessage(), equalTo(HttpException.message(HttpStatus.INTERNAL_SERVER_ERROR, STRING)));
-			ApiResponse<String> apiResponse = e.getResponse();
+			assertThat(apiResponse.getException().getMessage(), equalTo(HttpException.message(HttpStatus.INTERNAL_SERVER_ERROR, STRING)));
 			assertThat(apiResponse.getRequest(), equalTo(request));
 			assertThat(apiResponse.getBody(), equalTo(STRING));
 			assertThat(apiResponse.getHeaders().size(), equalTo(1));
-			assertThat(apiResponse.getHeaders().get("Content-Type"), equalTo(List.of("application/json")));
+			assertThat(apiResponse.getHeaders().get("Content-Type"), equalTo(List.of(ContentType.Value.APPLICATION_JSON)));
 		}
 
 		@Test

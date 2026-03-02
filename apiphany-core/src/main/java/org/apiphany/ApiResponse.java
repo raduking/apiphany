@@ -62,9 +62,8 @@ public class ApiResponse<T> extends ApiMessage<T> {
 		super(builder.body, builder.headers);
 		this.status = builder.status;
 		this.request = builder.request;
-		this.errorMessage = null != builder.errorMessage
-				? Nullables.nonNullOrDefault(builder.errorMessagePrefix, "") + builder.errorMessage
-				: null;
+		this.errorMessage = Nullables.whenNotNull(builder.errorMessage,
+				msg -> Nullables.nonNullOrDefault(builder.errorMessagePrefix, "") + msg);
 		this.exception = builder.exception;
 		this.exchangeClient = builder.exchangeClient;
 	}
