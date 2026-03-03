@@ -3,6 +3,7 @@
 `1.1.6`
 
 - Added `AbstractHttpExchangeClient.getHeaderValues` method that returns a list with all the values for a given header.
+- Added `AbstractHttpExchangeClient.isContentJson(ApiRequest)` method that returns true if the requests' content type is `application/json`.
 - Added `InputStreamSupplier` interface that supplies an `InputStream` used as a marker interface.
 - Added `OneShotInputStreamSupplier` class that allows only a single `get` call, useful for retries.
 - Added `OneShotHttpEntity` for Apache HTTP Client 5 clients that allows the input stream to be consumed only once.

@@ -205,7 +205,7 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	 * @param apiRequest the API request to check for JSON content type
 	 * @return true if the API request contains the "Content-Type" header with the value "application/json"
 	 */
-	protected static <T> boolean isJson(final ApiRequest<T> apiRequest) {
+	protected static <T> boolean isContentJson(final ApiRequest<T> apiRequest) {
 		return apiRequest.containsHeader(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_JSON);
 	}
 

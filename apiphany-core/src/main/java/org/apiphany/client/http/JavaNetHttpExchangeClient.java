@@ -295,7 +295,7 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 			case InputStreamSupplier iss -> BodyPublishers.ofInputStream(iss);
 			case Supplier<?> supplier -> toBodyPublisher(apiRequest, JavaObjects.cast(supplier.get()));
 			case Path path -> HttpException.ifThrows(() -> BodyPublishers.ofFile(path), HttpStatus.BAD_REQUEST);
-			case Object obj when isJson(apiRequest) -> BodyPublishers.ofString(JsonBuilder.toJson(obj), charset);
+			case Object obj when isContentJson(apiRequest) -> BodyPublishers.ofString(JsonBuilder.toJson(obj), charset);
 			default -> BodyPublishers.ofString(Strings.safeToString(body), charset);
 		};
 	}
