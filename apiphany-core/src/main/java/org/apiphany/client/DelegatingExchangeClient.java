@@ -2,6 +2,7 @@ package org.apiphany.client;
 
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
+import org.apiphany.security.AuthenticationType;
 
 /**
  * An ExchangeClient that delegates all calls to another ExchangeClient.
@@ -49,5 +50,17 @@ public interface DelegatingExchangeClient extends ExchangeClient {
 	@Override
 	default <T extends ClientProperties> T getClientProperties() {
 		return getExchangeClient().getClientProperties();
+	}
+
+	/**
+	 * Delegates the {@link ExchangeClient#getAuthenticationType()} to the underlying exchange client.
+	 *
+	 * @return the authentication type of the underlying exchange client
+	 * @see ExchangeClient#getAuthenticationType()
+	 */
+	@SuppressWarnings("resource")
+	@Override
+	default AuthenticationType getAuthenticationType() {
+		return getExchangeClient().getAuthenticationType();
 	}
 }

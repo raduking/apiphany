@@ -7,9 +7,12 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.head;
 import static com.github.tomakehurst.wiremock.client.WireMock.headRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.ok;
+import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
@@ -24,18 +27,27 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
+import java.util.stream.IntStream;
 
 import org.apiphany.client.ClientProperties;
+import org.apiphany.client.DecoratingExchangeClient;
 import org.apiphany.client.ExchangeClient;
+import org.apiphany.client.http.HttpExchangeClient;
 import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.http.ContentEncoding;
 import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.io.InputStreamSupplier;
 import org.apiphany.io.gzip.GZip;
+import org.apiphany.lang.ScopedResource;
 import org.apiphany.lang.retry.Retry;
 import org.apiphany.lang.retry.WaitCounter;
+import org.apiphany.security.AuthenticationType;
 import org.apiphany.test.io.OneShotInputStream;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -45,6 +57,7 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.github.tomakehurst.wiremock.matching.UrlPattern;
 import com.github.tomakehurst.wiremock.stubbing.ServeEvent;
+import com.jayway.jsonpath.JsonPath;
 
 /**
  * Test class for {@link ApiClient} using {@link JavaNetHttpExchangeClient}.
@@ -65,6 +78,34 @@ class ApiClientWithJavaNetHttpIT {
 
 	protected Class<? extends ExchangeClient> exchangeClientClass() {
 		return JavaNetHttpExchangeClient.class;
+	}
+
+	public ExchangeClient getClient(final AuthenticationType authType) {
+		return new JavaNetHttpExchangeClient() {
+			@Override
+			public AuthenticationType getAuthenticationType() {
+				return authType;
+			}
+		};
+	}
+
+	static class CountingHttpExchangeClient extends DecoratingExchangeClient implements HttpExchangeClient {
+
+		private final AtomicInteger requestCount = new AtomicInteger(0);
+
+		public CountingHttpExchangeClient(final ScopedResource<ExchangeClient> delegate) {
+			super(delegate);
+		}
+
+		@Override
+		public <T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest) {
+			requestCount.incrementAndGet();
+			return super.exchange(apiRequest);
+		}
+
+		public int getRequestCount() {
+			return requestCount.get();
+		}
 	}
 
 	@Test
@@ -367,8 +408,8 @@ class ApiClientWithJavaNetHttpIT {
 						.withStatus(200)));
 
 		ClientProperties properties = new ClientProperties();
-		properties.getTimeout().setConnect(Duration.ofMillis(50));
-		properties.getTimeout().setRequest(Duration.ofMillis(60));
+		properties.getTimeout().setConnect(Duration.ofMillis(100));
+		properties.getTimeout().setRequest(Duration.ofMillis(100));
 
 		ApiClient api = ApiClient.of(baseUrl(),
 				ApiClient.with(exchangeClientClass()).properties(properties));
@@ -761,6 +802,8 @@ class ApiClientWithJavaNetHttpIT {
 					.retrieve(MyDto.class)
 					.orRethrow());
 		}
+
+		wiremock.verify(1, getRequestedFor(urlEqualTo("/bad-json")));
 	}
 
 	@Test
@@ -960,5 +1003,85 @@ class ApiClientWithJavaNetHttpIT {
 		assertEquals(2, events.size());
 		assertEquals("", events.get(0).getRequest().getBodyAsString());
 		assertEquals(expectedBody, events.get(1).getRequest().getBodyAsString());
+	}
+
+	@Test
+	void shouldUseDifferentClientForDifferentAuthType() throws Exception {
+		// stub two different auth types → e.g. TOKEN and SESSION
+		wiremock.stubFor(get("/token")
+				.willReturn(okJson("{\"auth\":\"token\"}")));
+		wiremock.stubFor(get("/session")
+				.willReturn(okJson("{\"auth\":\"session\"}")));
+
+		ExchangeClient tokenClient = getClient(AuthenticationType.TOKEN);
+		ExchangeClient sessionClient = getClient(AuthenticationType.SESSION);
+
+		ApiClient api = ApiClient.of(baseUrl(),
+				ApiClient.with(tokenClient)
+						.decoratedWith(CountingHttpExchangeClient.class),
+				ApiClient.with(sessionClient)
+						.decoratedWith(CountingHttpExchangeClient.class));
+		try (api) {
+			String tokenResult = api.client(AuthenticationType.TOKEN)
+					.http()
+					.get()
+					.path("token")
+					.retrieve(String.class)
+					.orNull();
+			String sessionResult = api.client(AuthenticationType.SESSION)
+					.http()
+					.get()
+					.path("session")
+					.retrieve(String.class)
+					.orNull();
+
+			assertEquals("token", JsonPath.parse(tokenResult).read("$.auth"));
+			assertEquals("session", JsonPath.parse(sessionResult).read("$.auth"));
+
+			@SuppressWarnings("resource")
+			CountingHttpExchangeClient tokenCountingClient = api.client(AuthenticationType.TOKEN)
+					.getExchangeClient(CountingHttpExchangeClient.class);
+			@SuppressWarnings("resource")
+			CountingHttpExchangeClient sessionCountingClient = api.client(AuthenticationType.SESSION)
+					.getExchangeClient(CountingHttpExchangeClient.class);
+
+			assertEquals(1, tokenCountingClient.getRequestCount());
+			assertEquals(1, sessionCountingClient.getRequestCount());
+		} finally {
+			tokenClient.close();
+			sessionClient.close();
+		}
+
+		wiremock.verify(1, getRequestedFor(urlEqualTo("/token")));
+		wiremock.verify(1, getRequestedFor(urlEqualTo("/session")));
+	}
+
+	@Test
+	void shouldHandleConcurrentRequests() throws Exception {
+		wiremock.stubFor(get(urlMatching("/concurrent.*"))
+				.willReturn(ok()));
+
+		int threadCount = 50;
+		ExecutorService exe = Executors.newVirtualThreadPerTaskExecutor();
+
+		ApiClient api = ApiClient.of(baseUrl(),
+				ApiClient.with(exchangeClientClass()));
+		try (api) {
+			List<CompletableFuture<String>> futures = IntStream.range(0, threadCount)
+					.mapToObj(i -> CompletableFuture.supplyAsync(() -> api.client()
+							.http()
+							.get()
+							.path("/concurrent/" + i)
+							.retrieve(String.class)
+							.orNull(),
+							exe))
+					.toList();
+
+			CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).join();
+		} finally {
+			exe.close();
+		}
+
+		wiremock.verify(50, getRequestedFor(urlMatching("/concurrent/.*")));
 	}
 }
