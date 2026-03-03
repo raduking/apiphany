@@ -147,7 +147,7 @@ public class Hex {
 	 * @return formatted hexadecimal dump of the byte array
 	 */
 	public static String dump(final byte[] bytes, final boolean verbose) { // NOSONAR
-		if (bytes == null) {
+		if (null == bytes) {
 			return "null";
 		}
 		int width = 16;

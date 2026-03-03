@@ -170,7 +170,7 @@ public class MeterFactory {
 	 * @return true if the tags object is empty, false otherwise
 	 */
 	public <T, U extends Iterable<T>> boolean isEmpty(final U tags) {
-		if (tags == null) {
+		if (null == tags) {
 			return true;
 		}
 		if (tags == Collections.emptyList()) {

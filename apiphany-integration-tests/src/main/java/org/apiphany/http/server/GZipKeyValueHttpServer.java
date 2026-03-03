@@ -160,7 +160,7 @@ public class GZipKeyValueHttpServer implements AutoCloseable {
 			String key = getKeyFromPath(exchange);
 			String response = null == key ? null : map.getOrDefault(key, null);
 
-			if (response == null) {
+			if (null == response) {
 				exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.value(), NO_BODY);
 				return;
 			}

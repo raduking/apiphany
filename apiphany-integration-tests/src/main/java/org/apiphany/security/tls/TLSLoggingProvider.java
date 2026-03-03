@@ -102,7 +102,7 @@ public final class TLSLoggingProvider extends Provider {
 				break;
 			}
 		}
-		if (weakIdentityWrapperClass == null) {
+		if (null == weakIdentityWrapperClass) {
 			throw new IllegalStateException("WeakIdentityWrapper class not found");
 		}
 		Constructor<?> constructor = Constructors.getDeclared(weakIdentityWrapperClass, Provider.class, ReferenceQueue.class);

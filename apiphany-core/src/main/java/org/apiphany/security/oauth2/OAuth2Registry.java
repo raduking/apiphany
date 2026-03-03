@@ -62,7 +62,7 @@ public class OAuth2Registry {
 	 * @return the resolved registration entries
 	 */
 	private static Map<String, OAuth2ResolvedRegistration> buildResolvedRegistrations(final OAuth2Properties properties) {
-		if (properties == null || properties.getRegistration() == null) {
+		if (null == properties || null == properties.getRegistration()) {
 			return Collections.emptyMap();
 		}
 		Map<String, OAuth2ResolvedRegistration> resolved = new HashMap<>();

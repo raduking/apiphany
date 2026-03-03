@@ -129,7 +129,7 @@ public final class AlwaysEmptyList<E> implements List<E> {
 	 */
 	@Override
 	public boolean containsAll(final Collection<?> c) {
-		return c == null || c.isEmpty();
+		return null == c || c.isEmpty();
 	}
 
 	/**

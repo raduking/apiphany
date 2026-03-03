@@ -87,7 +87,7 @@ public class ByteBufferSubscriber implements Subscriber<ByteBuffer> {
 	 */
 	@Override
 	public void onSubscribe(final Subscription subscription) {
-		if (subscription == null) {
+		if (null == subscription) {
 			throw new NullPointerException("subscription cannot be null");
 		}
 		if (!subscriptionReference.compareAndSet(null, subscription)) {
