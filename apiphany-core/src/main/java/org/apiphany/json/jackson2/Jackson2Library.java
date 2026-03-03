@@ -9,6 +9,10 @@ import org.morphix.reflection.Constructors;
  * <p>
  * This class provides information about the presence of the Jackson 2 JSON library in the classpath and should not have
  * any Jackson-specific dependencies itself.
+ * <p>
+ * WARNING: This class should not have any dependencies on Jackson-specific classes to avoid class loading issues when
+ * the library is not present in the classpath. It should only contain information about the presence of the library and
+ * the specific {@link JsonBuilder} implementation to use when the library is available.
  *
  * @author Radu Sebastian LAZIN
  */
@@ -27,7 +31,7 @@ public class Jackson2Library {
 			LibraryDescriptor.of(
 					JACKSON_2_OBJECT_MAPPER_CLASS_NAME,
 					Jackson2JsonBuilder.class,
-					Jackson2JsonBuilder::instance);
+					() -> Jackson2JsonBuilder.instance());
 
 	/**
 	 * Private constructor to prevent instantiation.

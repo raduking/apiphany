@@ -1,4 +1,4 @@
-package org.apiphany.tests;
+package org.apiphany.tests.client.http;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Radu Sebastian LAZIN
  */
-class ApiClientNoJsonLibraryTest {
+class JavaNetHttpExchangeClientConvertersTest {
 
 	@Test
 	@SuppressWarnings("resource")

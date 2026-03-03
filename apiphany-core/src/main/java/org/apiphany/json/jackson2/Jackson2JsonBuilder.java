@@ -483,6 +483,7 @@ public final class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleto
 	 *
 	 * @param moduleName the module name
 	 * @param moduleSupplier the supplier of the module to register
+	 * @return the existing module supplier if a module with the same name is already registered, null otherwise
 	 */
 	public static Supplier<SimpleModule> registerModule(final String moduleName, final Supplier<SimpleModule> moduleSupplier) {
 		Supplier<SimpleModule> existing = MODULES.putIfAbsent(moduleName, moduleSupplier);
@@ -495,7 +496,7 @@ public final class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleto
 	/**
 	 * Registers modules from the given service loader.
 	 *
-	 * @param loader the service loader to load the modules from
+	 * @param providers an iterable of module providers to register
 	 */
 	public static void registerModules(final Iterable<Jackson2ModuleProvider> providers) {
 		for (Jackson2ModuleProvider provider : providers) {

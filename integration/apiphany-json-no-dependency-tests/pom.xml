@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 
-    <parent>
+	<parent>
 		<groupId>io.github.raduking</groupId>
 		<artifactId>apiphany-parent</artifactId>
 		<version>1.1.6</version>
@@ -45,7 +45,7 @@
 	</properties>
 
 	<dependencies>
-	
+
 		<!-- Apiphany -->
 		<dependency>
 			<groupId>io.github.raduking</groupId>
@@ -56,7 +56,7 @@
 		<!-- Testing -->
 		<dependency>
 			<groupId>io.github.raduking</groupId>
-			<artifactId>apiphany-test</artifactId>
+			<artifactId>apiphany-integration-tests</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
@@ -114,7 +114,7 @@
 
 	<build>
 		<plugins>
-				<!-- Copy resources to output directories -->
+			<!-- Copy resources to output directories -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-resources-plugin</artifactId>

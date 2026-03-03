@@ -194,5 +194,4 @@ class JavaNetHttpExchangeClientIT {
 		assertNull(subscriber.getError());
 		assertThat(NEW_VALUE_1.getBytes(StandardCharsets.UTF_8), equalTo(subscriber.getReceivedBytes()));
 	}
-
 }
