@@ -4,7 +4,6 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 import org.morphix.lang.JavaArrays;
-import org.morphix.reflection.Constructors;
 
 /**
  * Utility interface for initializing libraries based on their presence in the descriptors.
@@ -29,7 +28,7 @@ public interface LibraryInitializer {
 		if (JavaArrays.isNotEmpty(libraryDescriptors)) {
 			for (LibraryDescriptor<? extends T> libraryDescriptor : libraryDescriptors) {
 				if (libraryDescriptor.isLibraryPresent()) {
-					return Constructors.IgnoreAccess.newInstance(libraryDescriptor.getSpecificClass());
+					return libraryDescriptor.getSpecificInstance();
 				}
 			}
 		}

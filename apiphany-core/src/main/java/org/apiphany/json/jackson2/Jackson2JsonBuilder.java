@@ -7,6 +7,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.Map;
+import java.util.ServiceLoader;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -74,6 +76,17 @@ public final class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleto
 	private static final ThreadLocal<Jackson2JsonBuilder> OVERRIDE = new ThreadLocal<>(); // NOSONAR see JavaDoc
 
 	/**
+	 * Map of modules to register to the underlying {@link ObjectMapper}. The key is the module class name. This allows
+	 * registering modules to the underlying {@link ObjectMapper} without creating a dependency on the module's library.
+	 */
+	protected static final Map<String, Supplier<SimpleModule>> MODULES = new ConcurrentHashMap<>();
+	static {
+		registerModule(JavaTimeModule.class.getName(), () -> newJavaTimeModule(DateTimeFormatter.ISO_DATE_TIME));
+		registerModule(ApiphanyJackson2Module.NAME, () -> apiphanySerializationModule());
+		registerModules(ServiceLoader.load(Jackson2ModuleProvider.class));
+	}
+
+	/**
 	 * The underlying {@link ObjectMapper}.
 	 */
 	protected final ObjectMapper objectMapper;
@@ -90,8 +103,9 @@ public final class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleto
 	 */
 	Jackson2JsonBuilder(final ObjectMapper objectMapper) {
 		this.objectMapper = objectMapper;
-		this.objectMapper.registerModule(newJavaTimeModule(DateTimeFormatter.ISO_DATE_TIME));
-		this.objectMapper.registerModule(apiphanySerializationModule());
+		for (Supplier<SimpleModule> moduleSupplier : MODULES.values()) {
+			this.objectMapper.registerModule(moduleSupplier.get());
+		}
 		indentOutput(isIndentOutput());
 		this.objectMapper.setSerializationInclusion(Include.NON_NULL);
 		this.objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
@@ -450,6 +464,42 @@ public final class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleto
 		} catch (Exception e) {
 			onError.accept(e);
 			return Collections.emptyMap();
+		}
+	}
+
+	/**
+	 * Returns the singleton instance of the JSON builder.
+	 *
+	 * @return the singleton instance of the JSON builder
+	 */
+	protected static Jackson2JsonBuilder instance() {
+		return InstanceHolder.INSTANCE;
+	}
+
+	/**
+	 * Registers a module to be added to the underlying {@link ObjectMapper}. The module is registered by its name, so if a
+	 * module with the same name is already registered, it will be overridden. This allows registering modules to the
+	 * underlying {@link ObjectMapper} without creating a dependency on the module's library.
+	 *
+	 * @param moduleName the module name
+	 * @param moduleSupplier the supplier of the module to register
+	 */
+	public static Supplier<SimpleModule> registerModule(final String moduleName, final Supplier<SimpleModule> moduleSupplier) {
+		Supplier<SimpleModule> existing = MODULES.putIfAbsent(moduleName, moduleSupplier);
+		if (null != existing) {
+			LOGGER.warn(ErrorMessage.MODULE_ALREADY_REGISTERED, moduleName);
+		}
+		return existing;
+	}
+
+	/**
+	 * Registers modules from the given service loader.
+	 *
+	 * @param loader the service loader to load the modules from
+	 */
+	public static void registerModules(final Iterable<Jackson2ModuleProvider> providers) {
+		for (Jackson2ModuleProvider provider : providers) {
+			registerModule(provider.getModuleName(), provider.getModuleSupplier());
 		}
 	}
 

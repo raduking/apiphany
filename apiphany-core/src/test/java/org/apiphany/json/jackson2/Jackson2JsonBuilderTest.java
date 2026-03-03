@@ -2,6 +2,8 @@ package org.apiphany.json.jackson2;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -17,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.apiphany.io.IOStreams;
 import org.apiphany.json.JsonBuilder;
@@ -36,6 +39,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.xml.XmlFactory;
 
 /**
@@ -537,6 +541,35 @@ class Jackson2JsonBuilderTest {
 		Jackson2JsonBuilder builder = new Jackson2JsonBuilder(new XmlFactory());
 
 		assertThat(builder.getObjectMapper().getFactory().getClass(), equalTo(XmlFactory.class));
+	}
+
+	@Test
+	void shouldNotRegisterTheSameModuleTwice() {
+		int initialModulesSize = Jackson2JsonBuilder.MODULES.size();
+
+		Supplier<SimpleModule> moduleSupplier = () -> new SimpleModule();
+		Supplier<SimpleModule> ms1 = Jackson2JsonBuilder.registerModule(ApiphanyJackson2Module.NAME + "1", moduleSupplier);
+
+		assertThat(ms1, nullValue());
+
+		Supplier<SimpleModule> ms2 = Jackson2JsonBuilder.registerModule(ApiphanyJackson2Module.NAME + "1", () -> new SimpleModule());
+
+		assertThat(ms2, sameInstance(moduleSupplier));
+		assertThat(Jackson2JsonBuilder.MODULES.size(), equalTo(initialModulesSize + 1));
+	}
+
+	@Test
+	void shouldRegisterModulesWithServiceLoader() {
+		int initialModulesSize = Jackson2JsonBuilder.MODULES.size();
+		Supplier<SimpleModule> moduleSupplier = () -> new SimpleModule();
+
+		Jackson2ModuleProvider provider = mock(Jackson2ModuleProvider.class);
+		doReturn(ApiphanyJackson2Module.NAME + "2").when(provider).getModuleName();
+		doReturn(moduleSupplier).when(provider).getModuleSupplier();
+
+		Jackson2JsonBuilder.registerModules(List.of(provider));
+
+		assertThat(Jackson2JsonBuilder.MODULES.size(), equalTo(initialModulesSize + 1));
 	}
 
 	static class A {

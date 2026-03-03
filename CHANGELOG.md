@@ -9,6 +9,10 @@
 - Added `OneShotHttpEntity` for Apache HTTP Client 5 clients that allows the input stream to be consumed only once.
 - Added `ApacheHC5Entities.create(InputStream, ContentType)` similar to Apache `HttpEntities.create` methods but for handling input streams.
 - Added `ApiClientFluentAdapter.body(Supplier)` to allow lazy body building.
+- Added `Jackson2JsonBuilder.registerModule` static method to be able to register new modules to `JsonBuilder`.
+- Added `Jackson2JsonBuilder.registerModules` static method to register multiple modules including via SPI (Service Provider Interface) `ServiceLoader` ones.
+- Added support for instance function to `LibraryDescriptor` to be able to provide singletons instead of always new instances.
+- Added Jackson 2 simple module for Apache specific serializers/deserializers.
 
 ---
 
