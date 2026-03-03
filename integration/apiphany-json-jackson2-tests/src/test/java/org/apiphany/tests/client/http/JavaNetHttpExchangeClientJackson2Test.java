@@ -1,4 +1,4 @@
-package org.apiphany.tests;
+package org.apiphany.tests.client.http;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Radu Sebastian LAZIN
  */
-class ApiClientJackson2Test {
+class JavaNetHttpExchangeClientJackson2Test {
 
 	private static final String JACKSON2 = "Jackson2";
 
