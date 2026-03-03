@@ -5,6 +5,7 @@ import java.io.InputStream;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apiphany.lang.Bytes;
 import org.morphix.lang.function.ThrowingSupplier;
 import org.morphix.reflection.Constructors;
 
@@ -26,6 +27,9 @@ public class ApacheHC5Entities {
 	 * @return an input stream containing the content of the HTTP entity
 	 */
 	public static InputStream toInputStream(final HttpEntity httpEntity) {
+		if (null == httpEntity) {
+			return InputStream.nullInputStream();
+		}
 		return ThrowingSupplier.unchecked(httpEntity::getContent).get();
 	}
 
@@ -38,6 +42,9 @@ public class ApacheHC5Entities {
 	 * @return a byte array containing the content of the HTTP entity
 	 */
 	public static byte[] toByteArray(final HttpEntity httpEntity) {
+		if (null == httpEntity) {
+			return Bytes.EMPTY;
+		}
 		return ThrowingSupplier.unchecked(() -> EntityUtils.toByteArray(httpEntity)).get();
 	}
 
