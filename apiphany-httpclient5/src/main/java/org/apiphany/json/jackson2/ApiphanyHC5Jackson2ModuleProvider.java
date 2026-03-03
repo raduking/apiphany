@@ -12,6 +12,13 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 public class ApiphanyHC5Jackson2ModuleProvider implements Jackson2ModuleProvider {
 
 	/**
+	 * Default constructor.
+	 */
+	public ApiphanyHC5Jackson2ModuleProvider() {
+		// empty
+	}
+
+	/**
 	 * @see Jackson2ModuleProvider#getModuleName()
 	 */
 	@Override
