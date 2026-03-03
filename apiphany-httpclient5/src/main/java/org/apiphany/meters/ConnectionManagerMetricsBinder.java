@@ -149,5 +149,4 @@ public class ConnectionManagerMetricsBinder implements MeterBinder {
 				.path(paths)
 				.build();
 	}
-
 }

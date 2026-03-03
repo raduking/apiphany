@@ -90,6 +90,11 @@ public class JsonBuilder { // NOSONAR singleton implementation
 		public static final String COULD_NOT_DESERIALIZE_OBJECT = "Could not deserialize object: {}";
 
 		/**
+		 * Error message logged when a JSON library module is already registered.
+		 */
+		public static final String MODULE_ALREADY_REGISTERED = "Module already registered: {}";
+
+		/**
 		 * Hide constructor.
 		 */
 		private ErrorMessage() {

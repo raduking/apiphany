@@ -335,5 +335,4 @@ public class ApacheHC5HttpExchangeClient extends AbstractHttpExchangeClient {
 	public PoolingHttpClientConnectionManager getConnectionManager() {
 		return connectionManager;
 	}
-
 }

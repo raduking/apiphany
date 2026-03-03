@@ -26,7 +26,8 @@ public class Jackson2Library {
 	public static final LibraryDescriptor<? extends JsonBuilder> DESCRIPTOR =
 			LibraryDescriptor.of(
 					JACKSON_2_OBJECT_MAPPER_CLASS_NAME,
-					Jackson2JsonBuilder.class);
+					Jackson2JsonBuilder.class,
+					Jackson2JsonBuilder::instance);
 
 	/**
 	 * Private constructor to prevent instantiation.

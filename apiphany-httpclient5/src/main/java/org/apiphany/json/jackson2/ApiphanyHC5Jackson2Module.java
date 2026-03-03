@@ -8,7 +8,7 @@ import org.apiphany.json.jackson2.serializers.TimeoutDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
 /**
- * Custom Jackson module to register serializers and deserializers for Apache HttpClient 5 types, such as
+ * Custom Jackson module to register serializers and deserializers for Apache HTTP Client 5 types, such as
  * {@link Timeout}.
  *
  * @author Radu Sebastian LAZIN
