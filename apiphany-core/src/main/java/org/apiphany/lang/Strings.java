@@ -71,7 +71,7 @@ public interface Strings {
 	 * @return {@code true} if the CharSequence is empty or null
 	 */
 	static boolean isEmpty(final CharSequence cs) {
-		return cs == null || cs.isEmpty();
+		return null == cs || cs.isEmpty();
 	}
 
 	/**

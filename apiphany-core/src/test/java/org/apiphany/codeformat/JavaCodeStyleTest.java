@@ -57,7 +57,7 @@ class JavaCodeStyleTest {
 
 	private static String readString(final String formatterFile) throws IOException {
 		try (InputStream inputStream = JavaCodeStyleTest.class.getClassLoader().getResourceAsStream(formatterFile)) {
-			if (inputStream == null) {
+			if (null == inputStream) {
 				throw new FileNotFoundException("File not found in classpath: " + formatterFile);
 			}
 			return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
@@ -78,11 +78,11 @@ class JavaCodeStyleTest {
 					ArrayNode arrayNode = (ArrayNode) child;
 					arrayNode.forEach(setting -> {
 						JsonNode idNode = setting.get("id");
-						if (idNode == null) {
+						if (null == idNode) {
 							return;
 						}
 						JsonNode valueNode = setting.get("value");
-						if (valueNode == null) {
+						if (null == valueNode) {
 							return;
 						}
 						String id = idNode.asText();

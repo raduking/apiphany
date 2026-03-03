@@ -284,7 +284,7 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	 * @return a body publisher needed in building the HTTP request
 	 */
 	private static <T> BodyPublisher toBodyPublisher(final ApiRequest<T> apiRequest, final T body) {
-		if (body == null) {
+		if (null == body) {
 			return BodyPublishers.noBody();
 		}
 		Charset charset = Nullables.nonNullOrDefault(apiRequest.getCharset(), Strings.DEFAULT_CHARSET);

@@ -31,7 +31,7 @@ public interface Maps {
 	 * @return the given map if not null, empty map otherwise
 	 */
 	static <K, V> Map<K, V> safe(final Map<K, V> map) {
-		return map == null ? emptyMap() : map;
+		return null == map ? emptyMap() : map;
 	}
 
 	/**
@@ -107,7 +107,7 @@ public interface Maps {
 	 * @return a new multi value map
 	 */
 	static <K, V> Map<K, List<V>> multiValueMap(final Map<K, V> map) {
-		if (map == null) {
+		if (isEmpty(map)) {
 			return new LinkedHashMap<>();
 		}
 		Map<K, List<V>> multiValueMap = LinkedHashMap.newLinkedHashMap(map.size());
@@ -128,7 +128,7 @@ public interface Maps {
 	 * @return true if empty or null
 	 */
 	static boolean isEmpty(final Map<?, ?> map) {
-		return map == null || map.isEmpty();
+		return null == map || map.isEmpty();
 	}
 
 	/**

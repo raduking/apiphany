@@ -13,6 +13,7 @@ import java.util.logging.SimpleFormatter;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.morphix.lang.JavaArrays;
 import org.morphix.reflection.Constructors;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -171,7 +172,7 @@ public class TestSummary {
 		}
 
 		File[] files = dir.listFiles((d, name) -> name.startsWith("TEST-") && name.endsWith(".xml"));
-		if (files == null) {
+		if (JavaArrays.isEmpty(files)) {
 			return s;
 		}
 

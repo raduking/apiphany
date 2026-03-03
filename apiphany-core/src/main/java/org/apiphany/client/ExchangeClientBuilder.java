@@ -79,7 +79,7 @@ public class ExchangeClientBuilder {
 		if (null == this.exchangeClient && null == this.exchangeClientClass) {
 			throw new IllegalStateException("Either exchange client instance or exchange client class must be set");
 		}
-		boolean managed = exchangeClient == null;
+		boolean managed = null == exchangeClient;
 		ExchangeClient client = managed ? build(exchangeClientClass) : exchangeClient;
 
 		ScopedResource<ExchangeClient> scopedResource = ScopedResource.of(client, Lifecycle.from(managed));

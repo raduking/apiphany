@@ -44,7 +44,7 @@ public class ForkedJvmExtension implements InvocationInterceptor {
 			final ReflectiveInvocationContext<Method> context,
 			final ExtensionContext extensionContext) throws Throwable {
 		ForkedJvmTest annotation = context.getExecutable().getAnnotation(ForkedJvmTest.class);
-		if (annotation == null) {
+		if (null == annotation) {
 			invocation.proceed();
 			return;
 		}

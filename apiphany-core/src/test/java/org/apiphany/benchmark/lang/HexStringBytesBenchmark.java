@@ -56,7 +56,7 @@ public class HexStringBytesBenchmark {
 	}
 
 	static String string(final byte[] bytes, final String separator) {
-		if (bytes == null) {
+		if (null == bytes) {
 			return "null";
 		}
 		StringBuilder sb = new StringBuilder();

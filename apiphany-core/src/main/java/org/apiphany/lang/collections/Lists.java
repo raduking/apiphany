@@ -118,7 +118,7 @@ public interface Lists {
 	 * @return true if empty or null
 	 */
 	static <T> boolean isEmpty(final List<T> list) {
-		return list == null || list.isEmpty();
+		return null == list || list.isEmpty();
 	}
 
 	/**

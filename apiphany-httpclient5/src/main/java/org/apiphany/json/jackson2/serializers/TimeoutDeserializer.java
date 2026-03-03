@@ -6,6 +6,7 @@ import java.text.ParseException;
 import java.time.Duration;
 
 import org.apache.hc.core5.util.Timeout;
+import org.apiphany.lang.Strings;
 import org.apiphany.lang.Temporals;
 
 import com.fasterxml.jackson.core.JsonParser;
@@ -38,7 +39,7 @@ public class TimeoutDeserializer extends StdDeserializer<Timeout> {
 	@Override
 	public Timeout deserialize(final JsonParser p, final DeserializationContext ctxt) throws IOException {
 		String value = p.getValueAsString();
-		if (value == null || value.isEmpty()) {
+		if (Strings.isEmpty(value)) {
 			return null;
 		}
 		if ("infinite".equalsIgnoreCase(value)) {
