@@ -3,6 +3,7 @@ package org.apiphany.security.tls;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.Objects;
 
 import org.apiphany.io.UInt16;
 import org.apiphany.io.UInt8;
@@ -126,6 +127,30 @@ public class RecordHeader implements TLSObject {
 	@Override
 	public String toString() {
 		return TLSObject.serialize(this);
+	}
+
+	/**
+	 * @see Object#equals(Object)
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof RecordHeader that) {
+			return this.type == that.type
+					&& Objects.equals(this.version, that.version)
+					&& Objects.equals(this.length, that.length);
+		}
+		return false;
+	}
+
+	/**
+	 * @see Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hash(type, version, length);
 	}
 
 	/**

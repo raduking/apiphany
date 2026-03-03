@@ -53,6 +53,7 @@ public final class OneShotInputStream extends InputStream {
 	 * Constructor that initializes the stream with the given string data.
 	 *
 	 * @param data the string data to be read from the stream
+	 * @param charset the character set to use for encoding the string into bytes
 	 */
 	public OneShotInputStream(final String data, final Charset charset) {
 		this(data.getBytes(charset));

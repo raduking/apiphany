@@ -3,6 +3,7 @@ package org.apiphany.security.tls;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.Objects;
 
 import org.apiphany.io.UInt16;
 import org.apiphany.io.UInt8;
@@ -75,6 +76,29 @@ public class CurveInfo implements TLSObject {
 	@Override
 	public String toString() {
 		return TLSObject.serialize(this);
+	}
+
+	/**
+	 * @see Object#equals(Object)
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof CurveInfo that) {
+			return this.type == that.type
+					&& this.name == that.name;
+		}
+		return false;
+	}
+
+	/**
+	 * @see Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hash(type, name);
 	}
 
 	/**
