@@ -85,4 +85,12 @@ class ClientKeyExchangeTest {
 
 		assertEquals(expectedHashCode, clientKeyExchange.hashCode());
 	}
+
+	@Test
+	void shouldHaveTheCorrectType() {
+		KeyExchangeData data = new KeyExchangeData(KEY_DATA);
+		ClientKeyExchange clientKeyExchange = new ClientKeyExchange(data);
+
+		assertEquals(HandshakeType.CLIENT_KEY_EXCHANGE, clientKeyExchange.getType());
+	}
 }
