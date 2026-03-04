@@ -15,6 +15,8 @@
 - Added support for instance function to `LibraryDescriptor` to be able to provide singletons instead of always new instances.
 - Added Jackson 2 simple module for Apache specific serializers/deserializers.
 - Removed `JsonBuilder.isJacksonPresent` in favor of `Jackson2Library.isPresent`.
+- Changed `Jackson2JsonBuilder(JsonFactory)` constructor visibility to package protected.
+- Added `Jackson2JsonBuilder.custom(JsonFactory)` to build a custom `Jackson2JsonBuilder`.
 
 ---
 

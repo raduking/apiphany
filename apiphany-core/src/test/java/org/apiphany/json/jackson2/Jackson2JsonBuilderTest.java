@@ -1,6 +1,7 @@
 package org.apiphany.json.jackson2;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
@@ -23,6 +24,7 @@ import java.util.function.Supplier;
 
 import org.apiphany.io.IOStreams;
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.json.jackson2.serializers.SimpleExceptionSerializer;
 import org.apiphany.lang.Strings;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -538,7 +540,7 @@ class Jackson2JsonBuilderTest {
 
 	@Test
 	void shouldBuildTheBuilderWithCustomJsonFactory() {
-		Jackson2JsonBuilder builder = new Jackson2JsonBuilder(new XmlFactory());
+		Jackson2JsonBuilder builder = Jackson2JsonBuilder.custom(new XmlFactory());
 
 		assertThat(builder.getObjectMapper().getFactory().getClass(), equalTo(XmlFactory.class));
 	}
@@ -570,6 +572,30 @@ class Jackson2JsonBuilderTest {
 		Jackson2JsonBuilder.registerModules(List.of(provider));
 
 		assertThat(Jackson2JsonBuilder.MODULES.size(), equalTo(initialModulesSize + 1));
+	}
+
+	@Test
+	void shouldRegisterAndNotUseNewModule() {
+		String expectedSimpleExceptionJson = "{\"exception\":\"java.lang.Exception\"}";
+
+		Exception e = new Exception("some exception");
+		D d = new D();
+		d.setException(e);
+
+		String json = Strings.removeAllWhitespace(Jackson2JsonBuilder.toJson(d));
+
+		assertThat(json, not(equalTo(expectedSimpleExceptionJson)));
+
+		String moduleName = ApiphanyJackson2Module.NAME + "SimpleExceptionSerializer";
+		SimpleModule module = new SimpleModule();
+		module.addSerializer(Exception.class, new SimpleExceptionSerializer());
+
+		Supplier<SimpleModule> ms = Jackson2JsonBuilder.registerModule(moduleName, () -> module);
+
+		json = Strings.removeAllWhitespace(Jackson2JsonBuilder.toJson(d));
+
+		assertThat(ms, nullValue());
+		assertThat(json, not(equalTo("{\"exception\":\"java.lang.Exception\"}")));
 	}
 
 	static class A {
@@ -632,6 +658,23 @@ class Jackson2JsonBuilderTest {
 
 		public String getName() {
 			return name;
+		}
+	}
+
+	static class D {
+
+		private Exception exception;
+
+		public D() {
+			// empty
+		}
+
+		public Exception getException() {
+			return exception;
+		}
+
+		public void setException(final Exception exception) {
+			this.exception = exception;
 		}
 	}
 }
