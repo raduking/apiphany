@@ -117,12 +117,10 @@ public class JsonBuilder { // NOSONAR singleton implementation
 
 		/**
 		 * Singleton instance.
-		 * <p>
-		 * TODO: when switching to Jackson 2.21 switch the order. Currently JsonSerializeAs is missing in Jackson 2.19.
 		 */
 		private static final JsonBuilder INSTANCE = initializeInstance(
-				Jackson2Library.DESCRIPTOR,
-				Jackson3Library.DESCRIPTOR);
+				Jackson3Library.DESCRIPTOR,
+				Jackson2Library.DESCRIPTOR);
 	}
 
 	/**
