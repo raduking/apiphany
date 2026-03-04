@@ -6,6 +6,11 @@ import static org.hamcrest.Matchers.nullValue;
 
 import org.junit.jupiter.api.Test;
 
+/**
+ * Test class for {@link BasicHttpResponseParser}.
+ *
+ * @author Radu Sebastian LAZIN
+ */
 class BasicHttpResponseParserTest {
 
 	@Test
@@ -18,6 +23,26 @@ class BasicHttpResponseParserTest {
 				Hello, World!""";
 
 		BasicHttpResponseParser parser = new BasicHttpResponseParser(response);
+
+		assertThat(parser.getStatus(), is("HTTP/1.1 200 OK"));
+		assertThat(parser.getStatusCode(), is(200));
+		assertThat(parser.getHeader("Content-Type"), is("text/plain"));
+		assertThat(parser.getHeader("Content-Length"), is("13"));
+		assertThat(parser.getBody(), is("Hello, World!"));
+		assertThat(parser.isComplete(), is(true));
+	}
+
+	@Test
+	void shouldParseSimpleHttpResponseAndAppendData() {
+		String response = """
+				HTTP/1.1 200 OK\r
+				Content-Type: text/plain\r
+				Content-Length: 13\r
+				\r
+				Hello,""";
+
+		BasicHttpResponseParser parser = new BasicHttpResponseParser(response);
+		parser.appendData(" World!");
 
 		assertThat(parser.getStatus(), is("HTTP/1.1 200 OK"));
 		assertThat(parser.getStatusCode(), is(200));
