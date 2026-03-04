@@ -68,70 +68,70 @@ public class ApiphanyJackson2AnnotationIntrospector extends NopAnnotationIntrosp
 	 * @see AnnotationIntrospector#findNameForSerialization(Annotated)
 	 */
 	@Override
-	public PropertyName findNameForSerialization(final Annotated a) {
-		FieldName ann = _findAnnotation(a, FieldName.class);
-		if (ann != null) {
-			return PropertyName.construct(ann.value());
+	public PropertyName findNameForSerialization(final Annotated annotated) {
+		FieldName fieldName = _findAnnotation(annotated, FieldName.class);
+		if (null != fieldName) {
+			return PropertyName.construct(fieldName.value());
 		}
-		return super.findNameForSerialization(a);
+		return super.findNameForSerialization(annotated);
 	}
 
 	/**
 	 * @see AnnotationIntrospector#findNameForDeserialization(Annotated)
 	 */
 	@Override
-	public PropertyName findNameForDeserialization(final Annotated a) {
-		FieldName ann = _findAnnotation(a, FieldName.class);
-		if (ann != null) {
-			return PropertyName.construct(ann.value());
+	public PropertyName findNameForDeserialization(final Annotated annotated) {
+		FieldName fieldName = _findAnnotation(annotated, FieldName.class);
+		if (null != fieldName) {
+			return PropertyName.construct(fieldName.value());
 		}
-		return super.findNameForDeserialization(a);
+		return super.findNameForDeserialization(annotated);
 	}
 
 	/**
 	 * @see AnnotationIntrospector#findPropertyAccess(Annotated)
 	 */
 	@Override
-	public JsonProperty.Access findPropertyAccess(final Annotated a) {
-		if (_hasAnnotation(a, Ignored.class)) {
+	public JsonProperty.Access findPropertyAccess(final Annotated annotated) {
+		if (_hasAnnotation(annotated, Ignored.class)) {
 			// exclude from serialization but allow deserialization
 			return JsonProperty.Access.WRITE_ONLY;
 		}
-		return super.findPropertyAccess(a);
+		return super.findPropertyAccess(annotated);
 	}
 
 	/**
 	 * @see AnnotationIntrospector#findSerializationPropertyOrder(AnnotatedClass)
 	 */
 	@Override
-	public String[] findSerializationPropertyOrder(final AnnotatedClass ac) {
-		FieldOrder ann = _findAnnotation(ac, FieldOrder.class);
-		if (ann != null) {
-			return ann.value();
+	public String[] findSerializationPropertyOrder(final AnnotatedClass annotatedClass) {
+		FieldOrder fieldOrder = _findAnnotation(annotatedClass, FieldOrder.class);
+		if (null != fieldOrder) {
+			return fieldOrder.value();
 		}
-		return super.findSerializationPropertyOrder(ac);
+		return super.findSerializationPropertyOrder(annotatedClass);
 	}
 
 	/**
 	 * @see AnnotationIntrospector#hasAsValue(Annotated)
 	 */
 	@Override
-	public Boolean hasAsValue(final Annotated a) {
+	public Boolean hasAsValue(final Annotated annotated) {
 		// tells Jackson that this method/field should be used as the "value" during serialization
-		if (a.hasAnnotation(AsValue.class)) {
+		if (annotated.hasAnnotation(AsValue.class)) {
 			return Boolean.TRUE;
 		}
-		return super.hasAsValue(a);
+		return super.hasAsValue(annotated);
 	}
 
 	/**
 	 * @see AnnotationIntrospector#findCreatorAnnotation(MapperConfig, Annotated)
 	 */
 	@Override
-	public JsonCreator.Mode findCreatorAnnotation(final MapperConfig<?> config, final Annotated a) {
-		if (a.hasAnnotation(Creator.class)) {
+	public JsonCreator.Mode findCreatorAnnotation(final MapperConfig<?> config, final Annotated annotated) {
+		if (annotated.hasAnnotation(Creator.class)) {
 			return JsonCreator.Mode.DEFAULT;
 		}
-		return super.findCreatorAnnotation(config, a);
+		return super.findCreatorAnnotation(config, annotated);
 	}
 }

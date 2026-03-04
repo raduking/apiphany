@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.apiphany.json.jackson2.Jackson2Library;
+import org.apiphany.json.jackson3.Jackson3Library;
 import org.apiphany.lang.LibraryDescriptor;
 import org.apiphany.lang.LibraryInitializer;
 import org.apiphany.lang.Strings;
@@ -116,8 +117,12 @@ public class JsonBuilder { // NOSONAR singleton implementation
 
 		/**
 		 * Singleton instance.
+		 * <p>
+		 * TODO: when switching to Jackson 2.21 switch the order. Currently JsonSerializeAs is missing in Jackson 2.19.
 		 */
-		private static final JsonBuilder INSTANCE = initializeInstance(Jackson2Library.DESCRIPTOR);
+		private static final JsonBuilder INSTANCE = initializeInstance(
+				Jackson2Library.DESCRIPTOR,
+				Jackson3Library.DESCRIPTOR);
 	}
 
 	/**
