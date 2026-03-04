@@ -1,11 +1,7 @@
-package org.apiphany.json.jackson2;
+package org.apiphany.json.jackson3;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -19,21 +15,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.AnnotationIntrospector;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.json.JsonFactory;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.AnnotationIntrospector;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectWriter;
+import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
 
 /**
  * This will serialize/de-serialize any JSON serializable/deserializable object to {@link String}/{@link Object}. This
@@ -50,12 +43,12 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
  *
  * @author Radu Sebastian LAZIN
  */
-public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton implementation
+public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton implementation
 
 	/**
 	 * Logger instance.
 	 */
-	private static final Logger LOGGER = LoggerFactory.getLogger(Jackson2JsonBuilder.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(Jackson3JsonBuilder.class);
 
 	/**
 	 * Singleton instance holder.
@@ -67,16 +60,16 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 		/**
 		 * Singleton instance.
 		 */
-		private static final Jackson2JsonBuilder INSTANCE = create();
+		private static final Jackson3JsonBuilder INSTANCE = create();
 
 		/**
 		 * Creates the singleton instance.
 		 *
 		 * @return the singleton instance
 		 */
-		private static Jackson2JsonBuilder create() {
-			Jackson2JsonBuilder instance = new Jackson2JsonBuilder();
-			Jackson2JsonBuilder.singletonMaterialized = true;
+		private static Jackson3JsonBuilder create() {
+			Jackson3JsonBuilder instance = new Jackson3JsonBuilder();
+			Jackson3JsonBuilder.singletonMaterialized = true;
 			return instance;
 		}
 	}
@@ -87,7 +80,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * The {@link ThreadLocal#remove()} is handled correctly in #with(Jackson2JsonBuilder, Supplier) which calls
 	 * {@link JsonBuilder#with(JsonBuilder, ThreadLocal, Supplier)} so no memory leak problems occur.
 	 */
-	private static final ThreadLocal<Jackson2JsonBuilder> OVERRIDE = new ThreadLocal<>(); // NOSONAR see JavaDoc
+	private static final ThreadLocal<Jackson3JsonBuilder> OVERRIDE = new ThreadLocal<>(); // NOSONAR see JavaDoc
 
 	/**
 	 * Map of modules to register to the underlying {@link ObjectMapper}. The key is the module class name. This allows
@@ -95,9 +88,8 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 */
 	protected static final Map<String, Supplier<SimpleModule>> MODULES = new ConcurrentHashMap<>();
 	static {
-		registerModule(JavaTimeModule.class.getName(), () -> newJavaTimeModule(DateTimeFormatter.ISO_DATE_TIME, DateTimeFormatter.ISO_DATE));
-		registerModule(ApiphanyJackson2Module.NAME, () -> apiphanySerializationModule());
-		registerModules(ServiceLoader.load(Jackson2ModuleProvider.class));
+		registerModule(ApiphanyJackson3Module.NAME, () -> apiphanySerializationModule());
+		registerModules(ServiceLoader.load(Jackson3ModuleProvider.class));
 	}
 
 	/**
@@ -118,38 +110,51 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	protected final AnnotationIntrospector defaultAnnotationIntrospector;
 
 	/**
+	 * The JSON mapper builder used to create the underlying {@link ObjectMapper}. This is used to create new
+	 * {@link ObjectMapper} instances with the registered modules when needed, e.g. for the {@link #custom(JsonFactory)}
+	 * method.
+	 */
+	protected final JsonMapper.Builder jsonMapperBuilder;
+
+	/**
 	 * Hide constructor.
 	 *
 	 * @param objectMapper the object mapper to use
 	 */
-	Jackson2JsonBuilder(final ObjectMapper objectMapper) {
-		this.objectMapper = objectMapper;
-		for (Supplier<SimpleModule> moduleSupplier : MODULES.values()) {
-			this.objectMapper.registerModule(moduleSupplier.get());
-		}
-		indentOutput(isIndentOutput());
-		this.objectMapper.setSerializationInclusion(Include.NON_NULL);
-		this.objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+	Jackson3JsonBuilder(final JsonMapper.Builder builder) {
+		this.jsonMapperBuilder = builder;
 
-		this.defaultAnnotationIntrospector = objectMapper.getSerializationConfig().getAnnotationIntrospector();
-		configureSensitivity(SensitiveJackson2AnnotationIntrospector.hideSensitive());
+		for (Supplier<SimpleModule> moduleSupplier : MODULES.values()) {
+			builder.addModule(moduleSupplier.get());
+		}
+		builder.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+		builder.changeDefaultPropertyInclusion(inclusion -> inclusion
+				.withContentInclusion(Include.NON_NULL)
+				.withValueInclusion(Include.NON_NULL));
+
+		indentOutput(isIndentOutput());
+
+		this.defaultAnnotationIntrospector = builder.annotationIntrospector();
+		configureSensitivity(SensitiveJackson3AnnotationIntrospector.hideSensitive());
+
+		this.objectMapper = builder.build();
 	}
 
 	/**
 	 * Hide constructor.
 	 */
-	Jackson2JsonBuilder() {
-		this(new ObjectMapper());
+	Jackson3JsonBuilder() {
+		this(JsonMapper.builder());
 	}
 
 	/**
 	 * Since the {@link ObjectMapper} cannot be configured to use a different {@link JsonFactory} after its creation, this
-	 * constructor allows creating a new {@link Jackson2JsonBuilder} with a custom {@link JsonFactory}.
+	 * constructor allows creating a new {@link Jackson3JsonBuilder} with a custom {@link JsonFactory}.
 	 *
 	 * @param jsonFactory the JSON factory to use for the underlying {@link ObjectMapper}, e.g. for YAML support.
 	 */
-	Jackson2JsonBuilder(final JsonFactory jsonFactory) {
-		this(new ObjectMapper(jsonFactory));
+	Jackson3JsonBuilder(final JsonFactory jsonFactory) {
+		this(JsonMapper.builder(jsonFactory));
 	}
 
 	/**
@@ -158,7 +163,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 *
 	 * @return the runtime JSON builder instance
 	 */
-	public static Jackson2JsonBuilder runtime() {
+	public static Jackson3JsonBuilder runtime() {
 		return runtime(OVERRIDE, InstanceHolder.INSTANCE);
 	}
 
@@ -168,8 +173,8 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @param jsonFactory the JSON factory to use for the underlying {@link ObjectMapper}, e.g. for YAML support.
 	 * @return a new JSON builder with the given {@link JsonFactory}
 	 */
-	public static Jackson2JsonBuilder custom(final JsonFactory jsonFactory) {
-		return new Jackson2JsonBuilder(jsonFactory);
+	public static Jackson3JsonBuilder custom(final JsonFactory jsonFactory) {
+		return new Jackson3JsonBuilder(jsonFactory);
 	}
 
 	/**
@@ -181,7 +186,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @param supplier the supplier to execute with the provided JSON builder
 	 * @return the result of the supplier execution
 	 */
-	public static <T> T with(final Jackson2JsonBuilder builder, final Supplier<T> supplier) {
+	public static <T> T with(final Jackson3JsonBuilder builder, final Supplier<T> supplier) {
 		return with(builder, OVERRIDE, supplier);
 	}
 
@@ -276,7 +281,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 		ObjectWriter objectWriter = objectMapper.writerFor(obj.getClass());
 		try {
 			return eol() + objectWriter.writeValueAsString(obj);
-		} catch (JsonProcessingException e) {
+		} catch (JacksonException e) {
 			String result = toIdentityJsonString(obj);
 			LOGGER.warn(ErrorMessage.COULD_NOT_SERIALIZE_OBJECT, result, e);
 			return result;
@@ -296,7 +301,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	public <T> T fromJsonString(final String json, final Class<T> cls) {
 		try {
 			return objectMapper.readValue(json, cls);
-		} catch (JsonProcessingException e) {
+		} catch (JacksonException e) {
 			LOGGER.warn(ErrorMessage.COULD_NOT_DESERIALIZE_OBJECT, json, e);
 			return null;
 		}
@@ -334,7 +339,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	public <T> T fromJsonString(final String json, final TypeReference<T> typeReference) {
 		try {
 			return objectMapper.readValue(json, typeReference);
-		} catch (JsonProcessingException e) {
+		} catch (JacksonException e) {
 			LOGGER.warn(ErrorMessage.COULD_NOT_DESERIALIZE_OBJECT, json, e);
 			return null;
 		}
@@ -352,7 +357,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	public <T> T fromJsonBytes(final byte[] json, final Class<T> cls) {
 		try {
 			return objectMapper.readValue(json, cls);
-		} catch (IOException e) {
+		} catch (JacksonException e) {
 			LOGGER.warn(ErrorMessage.COULD_NOT_DESERIALIZE_OBJECT, json, e);
 			return null;
 		}
@@ -389,7 +394,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	public <T> T fromJsonBytes(final byte[] json, final TypeReference<T> typeReference) {
 		try {
 			return objectMapper.readValue(json, typeReference);
-		} catch (IOException e) {
+		} catch (JacksonException e) {
 			LOGGER.warn(ErrorMessage.COULD_NOT_DESERIALIZE_OBJECT, json, e);
 			return null;
 		}
@@ -407,7 +412,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	public <T> T fromJsonInputStream(final InputStream json, final Class<T> cls) {
 		try {
 			return objectMapper.readValue(json, cls);
-		} catch (IOException e) {
+		} catch (JacksonException e) {
 			LOGGER.warn(ErrorMessage.COULD_NOT_DESERIALIZE_OBJECT, json, e);
 			return null;
 		}
@@ -444,7 +449,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	public <T> T fromJsonInputStream(final InputStream json, final TypeReference<T> typeReference) {
 		try {
 			return objectMapper.readValue(json, typeReference);
-		} catch (IOException e) {
+		} catch (JacksonException e) {
 			LOGGER.warn(ErrorMessage.COULD_NOT_DESERIALIZE_OBJECT, json, e);
 			return null;
 		}
@@ -462,9 +467,11 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 */
 	@Override
 	public <T> T fromPropertiesMap(final Map<String, Object> propertiesMap, final Class<T> cls, final Consumer<Exception> onError) {
-		final ObjectMapper propertiesObjectMapper = objectMapper.copy()
+		JsonMapper.Builder propertiesJsonMapperBuilder = JsonMapper.builder()
 				.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-				.setPropertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
+				.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
+				.propertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
+		final ObjectMapper propertiesObjectMapper = propertiesJsonMapperBuilder.build();
 		try {
 			String json = propertiesObjectMapper.writeValueAsString(propertiesMap);
 			return propertiesObjectMapper.readValue(json, cls);
@@ -486,10 +493,12 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> Map<String, Object> toPropertiesMap(final T properties, final Consumer<Exception> onError) {
-		final ObjectMapper propertiesObjectMapper = objectMapper.copy()
-				.setPropertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
-		configureSensitivity(propertiesObjectMapper,
-				SensitiveJackson2AnnotationIntrospector.allowSensitive(), defaultAnnotationIntrospector);
+		JsonMapper.Builder propertiesJsonMapperBuilder = JsonMapper.builder()
+				.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
+				.propertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
+		configureSensitivity(propertiesJsonMapperBuilder,
+				SensitiveJackson3AnnotationIntrospector.allowSensitive(), defaultAnnotationIntrospector);
+		final ObjectMapper propertiesObjectMapper = propertiesJsonMapperBuilder.build();
 		try {
 			return propertiesObjectMapper.convertValue(properties, Map.class);
 		} catch (Exception e) {
@@ -503,7 +512,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 *
 	 * @return the singleton instance of the JSON builder
 	 */
-	protected static Jackson2JsonBuilder instance() {
+	protected static Jackson3JsonBuilder instance() {
 		return InstanceHolder.INSTANCE;
 	}
 
@@ -517,7 +526,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @return the existing module supplier if a module with the same name is already registered, null otherwise
 	 */
 	public static Supplier<SimpleModule> registerModule(final String moduleName, final Supplier<SimpleModule> moduleSupplier) {
-		if (Jackson2JsonBuilder.singletonMaterialized) {
+		if (Jackson3JsonBuilder.singletonMaterialized) {
 			LOGGER.warn(ErrorMessage.MODULE_REGISTERED_AFTER_INITIALIZATION, moduleName);
 		}
 		Supplier<SimpleModule> existing = MODULES.putIfAbsent(moduleName, moduleSupplier);
@@ -532,69 +541,54 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 *
 	 * @param providers an iterable of module providers to register
 	 */
-	public static void registerModules(final Iterable<Jackson2ModuleProvider> providers) {
-		for (Jackson2ModuleProvider provider : providers) {
+	public static void registerModules(final Iterable<Jackson3ModuleProvider> providers) {
+		for (Jackson3ModuleProvider provider : providers) {
 			registerModule(provider.getModuleName(), provider.getModuleSupplier());
 		}
 	}
 
 	/**
-	 * Creates a new JavaTimeModule with ISO formatters
-	 *
-	 * @param dateTimeFormatter the date time formatter object
-	 * @param dateFormatter the date formatter object
-	 * @return java time module
-	 */
-	public static SimpleModule newJavaTimeModule(final DateTimeFormatter dateTimeFormatter, final DateTimeFormatter dateFormatter) {
-		return new JavaTimeModule()
-				.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(dateTimeFormatter))
-				.addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer(dateTimeFormatter))
-				.addSerializer(LocalDate.class, new LocalDateSerializer(dateFormatter))
-				.addDeserializer(LocalDate.class, new LocalDateDeserializer(dateFormatter));
-	}
-
-	/**
-	 * Returns a {@link SimpleModule} with custom serializers/deserializers named {@link ApiphanyJackson2Module#NAME}.
+	 * Returns a {@link SimpleModule} with custom serializers/deserializers named {@link ApiphanyJackson3Module#NAME}.
 	 *
 	 * @return simple module
 	 */
 	public static SimpleModule apiphanySerializationModule() {
-		return ApiphanyJackson2Module.instance();
+		return ApiphanyJackson3Module.instance();
 	}
 
 	/**
-	 * Configures the underlying {@link ObjectMapper} with the given {@link SensitiveJackson2AnnotationIntrospector}.
+	 * Configures the underlying {@link JsonMapper.Builder} with the given {@link SensitiveJackson3AnnotationIntrospector}.
 	 *
 	 * @param sensitiveAnnotationIntrospector the sensitive annotation introspector
 	 */
-	public void configureSensitivity(final SensitiveJackson2AnnotationIntrospector sensitiveAnnotationIntrospector) {
-		configureSensitivity(objectMapper, sensitiveAnnotationIntrospector, defaultAnnotationIntrospector);
+	public void configureSensitivity(final SensitiveJackson3AnnotationIntrospector sensitiveAnnotationIntrospector) {
+		configureSensitivity(jsonMapperBuilder, sensitiveAnnotationIntrospector, defaultAnnotationIntrospector);
 	}
 
 	/**
-	 * Configures the given {@link ObjectMapper} with the given {@link SensitiveJackson2AnnotationIntrospector}.
+	 * Configures the given {@link JsonMapper.Builder} with the given {@link SensitiveJackson3AnnotationIntrospector}.
 	 *
-	 * @param objectMapper the object mapper to configure
+	 * @param jsonMapperBuilder the JSON mapper builder to configure
 	 * @param sensitiveAnnotationIntrospector the sensitive annotation introspector
 	 * @return the configured object mapper
 	 */
-	public static ObjectMapper configureSensitivity(final ObjectMapper objectMapper,
-			final SensitiveJackson2AnnotationIntrospector sensitiveAnnotationIntrospector) {
-		AnnotationIntrospector baseAnnotationIntrospector = objectMapper.getSerializationConfig().getAnnotationIntrospector();
-		return configureSensitivity(objectMapper, sensitiveAnnotationIntrospector, baseAnnotationIntrospector);
+	public static JsonMapper.Builder configureSensitivity(final JsonMapper.Builder jsonMapperBuilder,
+			final SensitiveJackson3AnnotationIntrospector sensitiveAnnotationIntrospector) {
+		AnnotationIntrospector baseAnnotationIntrospector = jsonMapperBuilder.annotationIntrospector();
+		return configureSensitivity(jsonMapperBuilder, sensitiveAnnotationIntrospector, baseAnnotationIntrospector);
 	}
 
 	/**
-	 * Configures the given {@link ObjectMapper} with the given {@link SensitiveJackson2AnnotationIntrospector}.
+	 * Configures the given {@link JsonMapper.Builder} with the given {@link SensitiveJackson3AnnotationIntrospector}.
 	 *
-	 * @param objectMapper the object mapper to configure
+	 * @param jsonMapperBuilder the JSON mapper builder to configure
 	 * @param sensitiveAnnotationIntrospector the sensitive annotation introspector
 	 * @param baseAnnotationIntrospector the base annotation introspector
 	 * @return the configured object mapper
 	 */
-	public static ObjectMapper configureSensitivity(final ObjectMapper objectMapper,
-			final SensitiveJackson2AnnotationIntrospector sensitiveAnnotationIntrospector, final AnnotationIntrospector baseAnnotationIntrospector) {
-		return objectMapper.setAnnotationIntrospector(
+	public static JsonMapper.Builder configureSensitivity(final JsonMapper.Builder jsonMapperBuilder,
+			final SensitiveJackson3AnnotationIntrospector sensitiveAnnotationIntrospector, final AnnotationIntrospector baseAnnotationIntrospector) {
+		return jsonMapperBuilder.annotationIntrospector(
 				AnnotationIntrospector.pair(sensitiveAnnotationIntrospector, baseAnnotationIntrospector));
 	}
 
@@ -606,7 +600,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	@Override
 	public void indentOutput(final boolean enable) {
 		super.indentOutput(enable);
-		Consumer<SerializationFeature> indentation = enable ? objectMapper::enable : objectMapper::disable;
+		Consumer<SerializationFeature> indentation = enable ? jsonMapperBuilder::enable : jsonMapperBuilder::disable;
 		indentation.accept(SerializationFeature.INDENT_OUTPUT);
 	}
 

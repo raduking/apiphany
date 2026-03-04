@@ -3,6 +3,8 @@ package org.apiphany.tests.json;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.apiphany.json.JsonBuilder;
@@ -427,5 +429,75 @@ class JsonBuilderIT {
 
 			assertThat(json, equalTo("{\"second\":\"secondValue\",\"first\":\"firstValue\"}"));
 		}
+	}
+
+	static class Java8TimeDTO {
+
+		private LocalDate date;
+
+		public Java8TimeDTO() {
+			// empty
+		}
+
+		public Java8TimeDTO(final LocalDate date) {
+			this.date = date;
+		}
+
+		public java.time.LocalDate getDate() {
+			return date;
+		}
+
+		public void setDate(final LocalDate date) {
+			this.date = date;
+		}
+	}
+
+	@Test
+	void shouldTransformObjectWithJava8TimeToJsonAndReadItBack() {
+		Java8TimeDTO a1 = new Java8TimeDTO(LocalDate.of(2026, 2, 6));
+
+		Object json1 = Strings.removeAllWhitespace(JsonBuilder.toJson(a1));
+
+		Java8TimeDTO a2 = JsonBuilder.fromJson(json1, Java8TimeDTO.class);
+
+		Object json2 = Strings.removeAllWhitespace(JsonBuilder.toJson(a2));
+
+		assertThat(json1, equalTo(json2));
+		assertThat(json1, equalTo("{\"date\":\"2026-02-06\"}"));
+	}
+
+	static class LocalDateTimeDTO {
+
+		private LocalDateTime dateTime;
+
+		public LocalDateTimeDTO() {
+			// empty
+		}
+
+		public LocalDateTimeDTO(final LocalDateTime dateTime) {
+			this.dateTime = dateTime;
+		}
+
+		public LocalDateTime getDateTime() {
+			return dateTime;
+		}
+
+		public void setDateTime(final LocalDateTime dateTime) {
+			this.dateTime = dateTime;
+		}
+	}
+
+	@Test
+	void shouldTransformObjectWithLocalDateTimeToJsonAndReadItBack() {
+		LocalDateTimeDTO a1 = new LocalDateTimeDTO(LocalDateTime.of(2026, 2, 6, 12, 30, 11));
+
+		Object json1 = Strings.removeAllWhitespace(JsonBuilder.toJson(a1));
+
+		LocalDateTimeDTO a2 = JsonBuilder.fromJson(json1, LocalDateTimeDTO.class);
+
+		Object json2 = Strings.removeAllWhitespace(JsonBuilder.toJson(a2));
+
+		assertThat(json1, equalTo(json2));
+		assertThat(json1, equalTo("{\"dateTime\":\"2026-02-06T12:30:11\"}"));
 	}
 }

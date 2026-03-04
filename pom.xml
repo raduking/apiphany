@@ -50,6 +50,7 @@
 		<!-- Integration with other libraries -->
 		<module>integration/apiphany-httpclient5-tests</module>
 		<module>integration/apiphany-json-jackson2-tests</module>
+		<module>integration/apiphany-json-jackson3-tests</module>
 		<module>integration/apiphany-json-no-dependency-tests</module>
 	</modules>
 
@@ -59,6 +60,7 @@
 		<morphix.version>1.0.23</morphix.version>
 		<micrometer.version>1.15.7</micrometer.version>
 		<jackson2.version>2.19.4</jackson2.version>
+		<jackson3.version>3.1.0</jackson3.version>
 		<slf4j.version>2.0.17</slf4j.version>
 
 		<httpclient5.version>5.5.1</httpclient5.version>

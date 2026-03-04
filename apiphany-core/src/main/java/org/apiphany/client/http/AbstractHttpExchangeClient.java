@@ -22,6 +22,8 @@ import org.apiphany.http.HttpStatus;
 import org.apiphany.io.ContentType;
 import org.apiphany.json.jackson2.Jackson2JsonHttpContentConverter;
 import org.apiphany.json.jackson2.Jackson2Library;
+import org.apiphany.json.jackson3.Jackson3JsonHttpContentConverter;
+import org.apiphany.json.jackson3.Jackson3Library;
 import org.apiphany.security.ssl.SSLContexts;
 import org.apiphany.security.ssl.SSLProperties;
 import org.morphix.lang.JavaObjects;
@@ -94,6 +96,9 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 
 		if (Jackson2Library.isPresent()) {
 			contentConverters.add(new Jackson2JsonHttpContentConverter<>());
+		}
+		if (Jackson3Library.isPresent()) {
+			contentConverters.add(new Jackson3JsonHttpContentConverter<>());
 		}
 	}
 
