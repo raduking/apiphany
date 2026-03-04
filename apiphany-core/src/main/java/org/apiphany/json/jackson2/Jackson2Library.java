@@ -34,6 +34,15 @@ public class Jackson2Library {
 					() -> Jackson2JsonBuilder.instance());
 
 	/**
+	 * Checks if the Jackson 2 JSON library is present in the classpath.
+	 *
+	 * @return {@code true} if the Jackson 2 JSON library is present, {@code false} otherwise
+	 */
+	public static boolean isPresent() {
+		return DESCRIPTOR.isLibraryPresent();
+	}
+
+	/**
 	 * Private constructor to prevent instantiation.
 	 */
 	private Jackson2Library() {
