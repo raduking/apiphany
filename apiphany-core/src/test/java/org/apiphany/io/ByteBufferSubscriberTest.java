@@ -260,6 +260,7 @@ class ByteBufferSubscriberTest {
 
 		@Test
 		@Timeout(5)
+		@SuppressWarnings("resource")
 		void shouldHandleConcurrentOnNextCallsWithMultipleThreads() throws InterruptedException {
 			ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
 
@@ -306,6 +307,7 @@ class ByteBufferSubscriberTest {
 
 		@Test
 		@Timeout(5)
+		@SuppressWarnings("resource")
 		void shouldHandleConcurrentOnNextWhenLimitExceeded() throws InterruptedException {
 			ByteBufferSubscriber subscriber = new ByteBufferSubscriber(MAX_BYTES);
 

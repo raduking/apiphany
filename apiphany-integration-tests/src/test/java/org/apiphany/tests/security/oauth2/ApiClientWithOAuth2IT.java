@@ -1,4 +1,4 @@
-package org.apiphany.security.oath2;
+package org.apiphany.tests.security.oauth2;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;

@@ -1,4 +1,4 @@
-package org.apiphany.security.tls;
+package org.apiphany.tests.security.tls;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -19,6 +19,9 @@ import org.apiphany.security.ssl.SSLProperties;
 import org.apiphany.security.ssl.SSLProtocol;
 import org.apiphany.security.ssl.server.BasicHttpsServer;
 import org.apiphany.security.ssl.server.NameHandler;
+import org.apiphany.security.tls.CipherSuite;
+import org.apiphany.security.tls.TLSLoggingProvider;
+import org.apiphany.security.tls.TLSObject;
 import org.apiphany.security.tls.client.MinimalTLSClient;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;

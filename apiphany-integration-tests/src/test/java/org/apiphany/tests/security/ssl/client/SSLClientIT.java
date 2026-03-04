@@ -1,4 +1,4 @@
-package org.apiphany.security.ssl.client;
+package org.apiphany.tests.security.ssl.client;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;

@@ -1,4 +1,4 @@
-package org.apiphany.client.http;
+package org.apiphany.tests.client.http;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -6,6 +6,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import java.time.Duration;
 
 import org.apiphany.client.ClientProperties;
+import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.http.client.KeyValueApiClient;
 import org.apiphany.http.server.GZipKeyValueHttpServer;
 import org.apiphany.http.server.KeyValueHttpServer;

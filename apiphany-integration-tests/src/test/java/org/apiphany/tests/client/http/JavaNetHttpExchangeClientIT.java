@@ -1,4 +1,4 @@
-package org.apiphany.client.http;
+package org.apiphany.tests.client.http;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.startsWith;
@@ -19,6 +19,7 @@ import java.util.function.Supplier;
 import org.apiphany.ApiClientFluentAdapter;
 import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
+import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.header.Headers;
 import org.apiphany.http.HttpContentType;
 import org.apiphany.http.HttpHeader;
