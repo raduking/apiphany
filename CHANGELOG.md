@@ -13,6 +13,7 @@
 - Added `Jackson2JsonBuilder.registerModules` static method to register multiple modules including via SPI (Service Provider Interface) `ServiceLoader` ones.
 - Added support for instance function to `LibraryDescriptor` to be able to provide singletons instead of always new instances.
 - Added Jackson 2 simple module for Apache specific serializers/deserializers.
+- Removed `JsonBuilder.isJacksonPresent` in favor of `Jackson2Library.isPresent`.
 
 ---
 

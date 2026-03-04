@@ -469,15 +469,6 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	}
 
 	/**
-	 * Returns {@code true} if Jackson library is present in the classpath.
-	 *
-	 * @return true if Jackson library is present in the classpath
-	 */
-	public static boolean isJacksonPresent() {
-		return Jackson2Library.DESCRIPTOR.isLibraryPresent();
-	}
-
-	/**
 	 * Returns the {@link Object#toString()} in a JSON format, like:
 	 *
 	 * <pre>
