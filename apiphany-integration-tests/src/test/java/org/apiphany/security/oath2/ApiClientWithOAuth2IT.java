@@ -174,8 +174,8 @@ class ApiClientWithOAuth2IT extends ITWithJavaSunOAuth2Server {
 		}
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldCloseAllResourcesWithApiClientManagedResourcesWithOAuth2v4() throws Exception {
 		JavaNetHttpExchangeClient exchangeClient = spy(new JavaNetHttpExchangeClient(clientProperties));
 		try (OAuth2v4ApiClient client = new OAuth2v4ApiClient(exchangeClient)) {
@@ -194,8 +194,8 @@ class ApiClientWithOAuth2IT extends ITWithJavaSunOAuth2Server {
 		}
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldNotAutoCloseAllResourcesWithApiClientManagedResourcesWithOAuth2v6() throws Exception {
 		JavaNetHttpExchangeClient exchangeClient = spy(new JavaNetHttpExchangeClient(clientProperties));
 		try (exchangeClient) {
@@ -216,8 +216,8 @@ class ApiClientWithOAuth2IT extends ITWithJavaSunOAuth2Server {
 		}
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldNotAutoCloseAllResourcesWithApiClientManagedResourcesWithOAuth2v8() throws Exception {
 		JavaNetHttpExchangeClient exchangeClient = spy(new JavaNetHttpExchangeClient(clientProperties));
 		try (exchangeClient) {
@@ -286,8 +286,8 @@ class ApiClientWithOAuth2IT extends ITWithJavaSunOAuth2Server {
 		assertThat(exception.getMessage(), equalTo("[401 Unauthorized] Only one Authorization header value accepted, got 2."));
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldReturnValidAuthenticationTokenWithManagedApiClientManagedWithOAuth2() throws Exception {
 		try (JavaNetHttpExchangeClient tokenClient = spy(new JavaNetHttpExchangeClient())) {
 			try (OAuth2UnmanagedTokenClientApiClient client = new OAuth2UnmanagedTokenClientApiClient(clientProperties, tokenClient)) {
@@ -588,5 +588,4 @@ class ApiClientWithOAuth2IT extends ITWithJavaSunOAuth2Server {
 					.properties(properties));
 		}
 	}
-
 }

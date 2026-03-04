@@ -152,9 +152,7 @@ class MultiValueStrategyTest {
 	@SuppressWarnings("unused")
 	void shouldCorrectlyAddTheParameterToTheMap(final MultiValueStrategy strategy, final String style, final String separator) {
 		String parameterName = TEST_PARAM;
-		String parameterValue1 = VALUE1;
-		String parameterValue2 = VALUE2;
-		List<String> values = List.of(parameterValue1, parameterValue2);
+		List<String> values = List.of(VALUE1, VALUE2);
 		Map<String, List<String>> map = new HashMap<>();
 
 		strategy.apply(parameterName, values).putInto(map);
@@ -167,11 +165,10 @@ class MultiValueStrategyTest {
 	@MethodSource("provideNonMultiStrategies")
 	@SuppressWarnings("unused")
 	void shouldNotAddParameterToMapWhenValuesAreEmpty(final MultiValueStrategy strategy, final String style, final String separator) {
-		String parameterName = TEST_PARAM;
 		List<String> values = List.of();
 		Map<String, List<String>> map = new HashMap<>();
 
-		strategy.apply(parameterName, values).putInto(map);
+		strategy.apply(TEST_PARAM, values).putInto(map);
 
 		assertThat(map.isEmpty(), equalTo(true));
 	}
@@ -179,9 +176,7 @@ class MultiValueStrategyTest {
 	@Test
 	void shouldCorrectlyAddTheParameterToTheMap() {
 		String parameterName = TEST_PARAM;
-		String parameterValue1 = VALUE1;
-		String parameterValue2 = VALUE2;
-		List<String> values = List.of(parameterValue1, parameterValue2);
+		List<String> values = List.of(VALUE1, VALUE2);
 		Map<String, List<String>> map = new HashMap<>();
 
 		MultiValueStrategy.MULTI.apply(parameterName, values).putInto(map);
@@ -192,11 +187,10 @@ class MultiValueStrategyTest {
 
 	@Test
 	void shouldNotAddParameterToMapWhenValuesAreEmptyWithMulti() {
-		String parameterName = TEST_PARAM;
 		List<String> values = List.of();
 		Map<String, List<String>> map = new HashMap<>();
 
-		MultiValueStrategy.MULTI.apply(parameterName, values).putInto(map);
+		MultiValueStrategy.MULTI.apply(TEST_PARAM, values).putInto(map);
 
 		assertThat(map.isEmpty(), equalTo(true));
 	}

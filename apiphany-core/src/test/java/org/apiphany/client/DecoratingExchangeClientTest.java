@@ -45,14 +45,11 @@ class DecoratingExchangeClientTest {
 	@Test
 	@SuppressWarnings("resource")
 	void shouldDelegateExchangeCall() throws Exception {
-		ExchangeClient delegate = mock(ExchangeClient.class);
-		ApiRequest<String> request = new ApiRequest<>();
-		try (DecoratingExchangeClient client = new DecoratingExchangeClient(delegate)) {
+		try (ExchangeClient delegate = mock(ExchangeClient.class); DecoratingExchangeClient client = new DecoratingExchangeClient(delegate)) {
+			ApiRequest<String> request = new ApiRequest<>();
 			client.exchange(request);
 
 			verify(delegate).exchange(request);
-		} finally {
-			delegate.close();
 		}
 	}
 }

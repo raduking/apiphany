@@ -34,9 +34,7 @@ class KeysTest {
 
 	@Test
 	void shouldThrowSecurityExceptionWhenAlgorithmIsInvalid() {
-		SecurityException exception = assertThrows(SecurityException.class, () -> {
-			Keys.getKeyFactory(INVALID_ALGORITHM);
-		});
+		SecurityException exception = assertThrows(SecurityException.class, () -> Keys.getKeyFactory(INVALID_ALGORITHM));
 
 		assertThat(exception.getMessage(), is("Error initializing " + INVALID_ALGORITHM + " KeyFactory"));
 		assertThat(exception.getCause(), is(instanceOf(NoSuchAlgorithmException.class)));
@@ -51,9 +49,7 @@ class KeysTest {
 
 	@Test
 	void shouldThrowSecurityExceptionWhenGeneratingKeyPairWithInvalidAlgorithm() {
-		SecurityException exception = assertThrows(SecurityException.class, () -> {
-			Keys.generateKeyPair(INVALID_ALGORITHM);
-		});
+		SecurityException exception = assertThrows(SecurityException.class, () -> Keys.generateKeyPair(INVALID_ALGORITHM));
 
 		assertThat(exception.getMessage(), is("Error generating key pair"));
 		assertThat(exception.getCause(), is(instanceOf(NoSuchAlgorithmException.class)));
@@ -83,9 +79,7 @@ class KeysTest {
 	void shouldThrowSecurityExceptionWhenGeneratingSecretWithInvalidAlgorithm() {
 		KeyPair keyPair = Keys.generateKeyPair(XDH);
 
-		SecurityException exception = assertThrows(SecurityException.class, () -> {
-			Keys.generateSecret(INVALID_ALGORITHM, keyPair);
-		});
+		SecurityException exception = assertThrows(SecurityException.class, () -> Keys.generateSecret(INVALID_ALGORITHM, keyPair));
 
 		assertThat(exception.getMessage(), is("Error generating shared secret"));
 		assertThat(exception.getCause(), is(instanceOf(NoSuchAlgorithmException.class)));
@@ -95,9 +89,8 @@ class KeysTest {
 	void shouldThrowSecurityExceptionWhenGeneratingSecretWithInvalidAlgorithmAndKeys() {
 		KeyPair keyPair = Keys.generateKeyPair(XDH);
 
-		SecurityException exception = assertThrows(SecurityException.class, () -> {
-			Keys.generateSecret(INVALID_ALGORITHM, keyPair.getPublic(), keyPair.getPrivate());
-		});
+		SecurityException exception =
+				assertThrows(SecurityException.class, () -> Keys.generateSecret(INVALID_ALGORITHM, keyPair.getPublic(), keyPair.getPrivate()));
 
 		assertThat(exception.getMessage(), is("Error generating shared secret"));
 		assertThat(exception.getCause(), is(instanceOf(NoSuchAlgorithmException.class)));
@@ -118,9 +111,8 @@ class KeysTest {
 	void shouldThrowSecurityExceptionWhenGeneratingPublicKeyWithInvalidSpec() {
 		KeyFactory keyFactory = Keys.getKeyFactory(XDH);
 
-		SecurityException exception = assertThrows(SecurityException.class, () -> {
-			Keys.generatePublicKey(keyFactory, new X509EncodedKeySpec(new byte[] { 0x00, 0x01, 0x02 }));
-		});
+		SecurityException exception = assertThrows(SecurityException.class,
+				() -> Keys.generatePublicKey(keyFactory, new X509EncodedKeySpec(new byte[] { 0x00, 0x01, 0x02 })));
 
 		assertThat(exception.getMessage(), is("Error generating public key"));
 		assertThat(exception.getCause(), is(instanceOf(InvalidKeySpecException.class)));

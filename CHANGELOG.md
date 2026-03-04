@@ -11,6 +11,7 @@
 - Added `ApiClientFluentAdapter.body(Supplier)` to allow lazy body building.
 - Added `Jackson2JsonBuilder.registerModule` static method to be able to register new modules to `JsonBuilder`.
 - Added `Jackson2JsonBuilder.registerModules` static method to register multiple modules including via SPI (Service Provider Interface) `ServiceLoader` ones.
+- Added `Jackson2JsonBuilder.instance` static method to get a `Jackson2JsonBuilder` singleton instance.
 - Added support for instance function to `LibraryDescriptor` to be able to provide singletons instead of always new instances.
 - Added Jackson 2 simple module for Apache specific serializers/deserializers.
 - Removed `JsonBuilder.isJacksonPresent` in favor of `Jackson2Library.isPresent`.

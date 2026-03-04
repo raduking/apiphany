@@ -45,9 +45,8 @@ public class TimeoutDeserializer extends StdDeserializer<Timeout> {
 		if ("infinite".equalsIgnoreCase(value)) {
 			return Timeout.INFINITE;
 		}
-		Duration duration = null;
 		try {
-			duration = Temporals.parseSimpleDuration(value);
+			Duration duration = Temporals.parseSimpleDuration(value);
 			return Timeout.of(duration);
 		} catch (Exception e) {
 			// ignore and try other formats

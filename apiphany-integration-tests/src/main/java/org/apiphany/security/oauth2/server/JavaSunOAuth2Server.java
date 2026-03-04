@@ -237,7 +237,7 @@ public class JavaSunOAuth2Server implements AutoCloseable {
 		 */
 		private static Duration getExpiresIn(final String value) {
 			try {
-				return Duration.ofSeconds(Long.valueOf(value));
+				return Duration.ofSeconds(Long.parseLong(value));
 			} catch (Exception e) {
 				LOGGER.info("Error reading 'expires_in': {}, defaulting to: {}", value, DEFAULT_EXPIRES_IN, e);
 				return DEFAULT_EXPIRES_IN;

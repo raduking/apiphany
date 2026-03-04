@@ -121,10 +121,9 @@ public class CloseableHttpResponseInputStream extends InputStream {
 		if (this == obj) {
 			return true;
 		}
-		if (!(obj instanceof CloseableHttpResponseInputStream)) {
+		if (!(obj instanceof CloseableHttpResponseInputStream other)) {
 			return false;
 		}
-		CloseableHttpResponseInputStream other = (CloseableHttpResponseInputStream) obj;
 		return Objects.equals(classicHttpResponse, other.classicHttpResponse)
 				&& Objects.equals(inputStream, other.inputStream);
 	}

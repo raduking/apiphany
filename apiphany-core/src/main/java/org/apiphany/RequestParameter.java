@@ -82,7 +82,7 @@ public record RequestParameter(String name, List<String> values, Charset encodin
 	public String toEncodedString() {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (String value : values) {
-			if (stringBuilder.length() > 0) {
+			if (!stringBuilder.isEmpty()) {
 				stringBuilder.append(RequestParameters.SEPARATOR);
 			}
 			String encodedName = URIEncoder.encodeParamName(name, encoding);
