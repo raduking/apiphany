@@ -64,7 +64,18 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 		/**
 		 * Singleton instance.
 		 */
-		private static final Jackson2JsonBuilder INSTANCE = new Jackson2JsonBuilder();
+		private static final Jackson2JsonBuilder INSTANCE = create();
+
+		/**
+		 * Creates the singleton instance.
+		 *
+		 * @return the singleton instance
+		 */
+		private static Jackson2JsonBuilder create() {
+			Jackson2JsonBuilder instance = new Jackson2JsonBuilder();
+			Jackson2JsonBuilder.singletonMaterialized = true;
+			return instance;
+		}
 	}
 
 	/**
@@ -85,6 +96,13 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 		registerModule(ApiphanyJackson2Module.NAME, () -> apiphanySerializationModule());
 		registerModules(ServiceLoader.load(Jackson2ModuleProvider.class));
 	}
+
+	/**
+	 * Flag to indicate if the singleton instance has been created and initialized. This is used to log a warning if a
+	 * module is registered after the singleton instance has been initialized, as the module will not be registered to the
+	 * singleton instance's underlying {@link ObjectMapper}.
+	 */
+	private static volatile boolean singletonMaterialized;
 
 	/**
 	 * The underlying {@link ObjectMapper}.
@@ -127,7 +145,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 *
 	 * @param jsonFactory the JSON factory to use for the underlying {@link ObjectMapper}, e.g. for YAML support.
 	 */
-	public Jackson2JsonBuilder(final JsonFactory jsonFactory) {
+	Jackson2JsonBuilder(final JsonFactory jsonFactory) {
 		this(new ObjectMapper(jsonFactory));
 	}
 
@@ -139,6 +157,16 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 */
 	public static Jackson2JsonBuilder runtime() {
 		return runtime(OVERRIDE, InstanceHolder.INSTANCE);
+	}
+
+	/**
+	 * Creates a new JSON builder with the given {@link JsonFactory}.
+	 *
+	 * @param jsonFactory the JSON factory to use for the underlying {@link ObjectMapper}, e.g. for YAML support.
+	 * @return a new JSON builder with the given {@link JsonFactory}
+	 */
+	public static Jackson2JsonBuilder custom(final JsonFactory jsonFactory) {
+		return new Jackson2JsonBuilder(jsonFactory);
 	}
 
 	/**
@@ -486,6 +514,9 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @return the existing module supplier if a module with the same name is already registered, null otherwise
 	 */
 	public static Supplier<SimpleModule> registerModule(final String moduleName, final Supplier<SimpleModule> moduleSupplier) {
+		if (Jackson2JsonBuilder.singletonMaterialized) {
+			LOGGER.warn(ErrorMessage.MODULE_REGISTERED_AFTER_INITIALIZATION, moduleName);
+		}
 		Supplier<SimpleModule> existing = MODULES.putIfAbsent(moduleName, moduleSupplier);
 		if (null != existing) {
 			LOGGER.warn(ErrorMessage.MODULE_ALREADY_REGISTERED, moduleName);

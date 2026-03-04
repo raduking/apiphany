@@ -95,6 +95,11 @@ public class JsonBuilder { // NOSONAR singleton implementation
 		public static final String MODULE_ALREADY_REGISTERED = "Module already registered: {}";
 
 		/**
+		 * Error message logged when a JSON library module is registered after initialization.
+		 */
+		public static final String MODULE_REGISTERED_AFTER_INITIALIZATION = "Module registered after initialization: {}";
+
+		/**
 		 * Hide constructor.
 		 */
 		private ErrorMessage() {

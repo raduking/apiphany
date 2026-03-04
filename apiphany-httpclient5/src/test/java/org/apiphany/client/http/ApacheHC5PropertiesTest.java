@@ -25,7 +25,7 @@ class ApacheHC5PropertiesTest {
 
 	@BeforeAll
 	static void setup() {
-		jsonBuilder = new Jackson2JsonBuilder(new YAMLFactory());
+		jsonBuilder = Jackson2JsonBuilder.custom(new YAMLFactory());
 		jsonBuilder.getObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
 		jsonBuilder.getObjectMapper().registerModule(ApiphanyHC5Jackson2Module.instance());
 	}
