@@ -50,5 +50,4 @@ class ApiphanyJackson2AnnotationIntrospectorTest {
 		assertThat(response.getError(), equalTo(ERROR));
 		assertThat(response.getErrorDescription(), equalTo(ERROR_DESCRIPTION));
 	}
-
 }
