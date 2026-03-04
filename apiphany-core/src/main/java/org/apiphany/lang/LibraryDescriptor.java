@@ -1,5 +1,6 @@
 package org.apiphany.lang;
 
+import java.util.List;
 import java.util.Objects;
 
 import org.morphix.lang.function.InstanceFunction;
@@ -135,7 +136,22 @@ public class LibraryDescriptor<T> {
 	 */
 	public static <T> LibraryDescriptor<T> of(final String libraryClassName, final Class<T> specificClass,
 			final InstanceFunction<T> instanceFunction) {
-		return Reflection.isClassPresent(libraryClassName)
+		return of(List.of(libraryClassName), specificClass, instanceFunction);
+	}
+
+	/**
+	 * Factory method to create a {@link LibraryDescriptor} instance.
+	 *
+	 * @param <T> the type of the specific class
+	 *
+	 * @param libraryClassNames a list of fully qualified class names to check for presence
+	 * @param specificClass the specific class associated with the library
+	 * @return a new LibraryDescriptor instance
+	 */
+	public static <T> LibraryDescriptor<T> of(final List<String> libraryClassNames, final Class<T> specificClass,
+			final InstanceFunction<T> instanceFunction) {
+		boolean libraryPresent = libraryClassNames.stream().allMatch(Reflection::isClassPresent);
+		return libraryPresent
 				? present(specificClass, instanceFunction)
 				: notPresent(specificClass, instanceFunction);
 	}

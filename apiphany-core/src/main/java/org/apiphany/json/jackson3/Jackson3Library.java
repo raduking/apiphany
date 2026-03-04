@@ -1,5 +1,7 @@
 package org.apiphany.json.jackson3;
 
+import java.util.List;
+
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.LibraryDescriptor;
 import org.morphix.reflection.Constructors;
@@ -24,6 +26,11 @@ public class Jackson3Library {
 	private static final String JACKSON_3_OBJECT_MAPPER_CLASS_NAME = "tools.jackson.databind.ObjectMapper";
 
 	/**
+	 * Jackson 3 JSON library JsonSerializeAs annotation class name.
+	 */
+	private static final String JACKSON_3_JSON_SERIALIZE_AS_CLASS_NAME = "com.fasterxml.jackson.annotation.JsonSerializeAs";
+
+	/**
 	 * Library descriptor that shows if Jackson 3 JSON library is present in the classpath and the {@link JsonBuilder}
 	 * specific class.
 	 * <p>
@@ -31,7 +38,7 @@ public class Jackson3Library {
 	 */
 	public static final LibraryDescriptor<? extends JsonBuilder> DESCRIPTOR =
 			LibraryDescriptor.of(
-					JACKSON_3_OBJECT_MAPPER_CLASS_NAME,
+					List.of(JACKSON_3_OBJECT_MAPPER_CLASS_NAME, JACKSON_3_JSON_SERIALIZE_AS_CLASS_NAME),
 					Jackson3JsonBuilder.class,
 					() -> Jackson3JsonBuilder.instance());
 
