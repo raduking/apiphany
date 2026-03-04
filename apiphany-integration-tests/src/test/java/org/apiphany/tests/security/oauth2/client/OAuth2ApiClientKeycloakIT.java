@@ -1,4 +1,4 @@
-package org.apiphany.security.oath2.client;
+package org.apiphany.tests.security.oauth2.client;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;

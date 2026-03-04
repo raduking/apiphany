@@ -1,4 +1,4 @@
-package org.apiphany.security.tls;
+package org.apiphany.tests.security.tls;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -16,6 +16,9 @@ import org.apiphany.security.ssl.ForkedHttpsServerRunner;
 import org.apiphany.security.ssl.SSLProperties;
 import org.apiphany.security.ssl.SSLProtocol;
 import org.apiphany.security.ssl.server.LegacyHttpsServer;
+import org.apiphany.security.tls.CipherSuite;
+import org.apiphany.security.tls.TLSLoggingProvider;
+import org.apiphany.security.tls.TLSObject;
 import org.apiphany.security.tls.client.MinimalTLSClient;
 import org.apiphany.test.fork.ForkedJvmExtension;
 import org.apiphany.test.fork.ForkedJvmTest;

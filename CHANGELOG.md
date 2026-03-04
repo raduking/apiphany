@@ -17,6 +17,7 @@
 - Removed `JsonBuilder.isJacksonPresent` in favor of `Jackson2Library.isPresent`.
 - Changed `Jackson2JsonBuilder(JsonFactory)` constructor visibility to package protected.
 - Added `Jackson2JsonBuilder.custom(JsonFactory)` to build a custom `Jackson2JsonBuilder`.
+- Changed all integration tests modules to use the `org.apiphany.tests` base package so that package protected stuff doesn't leak in.
 
 ---
 

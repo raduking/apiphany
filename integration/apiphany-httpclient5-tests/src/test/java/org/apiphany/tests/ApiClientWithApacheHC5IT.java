@@ -1,5 +1,6 @@
-package org.apiphany;
+package org.apiphany.tests;
 
+import org.apiphany.ApiClient;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.http.ApacheHC5HttpExchangeClient;
 import org.apiphany.security.AuthenticationType;
