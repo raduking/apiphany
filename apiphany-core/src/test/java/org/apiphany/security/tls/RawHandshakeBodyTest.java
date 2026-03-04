@@ -48,9 +48,8 @@ class RawHandshakeBodyTest {
 		RawHandshakeBody body = new RawHandshakeBody(HandshakeType.CERTIFICATE, new BytesWrapper(DATA));
 		byte[] bodyBytes = body.toByteArray();
 
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-			RawHandshakeBody.from(new ByteArrayInputStream(bodyBytes), HandshakeType.CERTIFICATE, -1);
-		});
+		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+				() -> RawHandshakeBody.from(new ByteArrayInputStream(bodyBytes), HandshakeType.CERTIFICATE, -1));
 
 		assertThat(exception.getMessage(), equalTo("Size cannot be negative"));
 	}

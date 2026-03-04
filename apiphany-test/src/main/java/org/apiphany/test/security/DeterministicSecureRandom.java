@@ -34,7 +34,7 @@ public class DeterministicSecureRandom extends SecureRandom {
 	 */
 	@Override
 	public void nextBytes(final byte[] bytes) {
-		for (int i = 0; i < bytes.length; i++) {
+		for (int i = 0; i < bytes.length; ++i) {
 			bytes[i] = (byte) (i & 0xFF);
 		}
 	}

@@ -79,7 +79,7 @@ public interface Temporals {
 	 * @throws IllegalArgumentException if the format is unsupported
 	 * @throws NumberFormatException if the numeric part of the input is not a valid number
 	 */
-	public static Duration parseSimpleDuration(final String input) {
+	static Duration parseSimpleDuration(final String input) {
 		if (Strings.isBlank(input)) {
 			throw new IllegalArgumentException("Input cannot be empty or null");
 		}

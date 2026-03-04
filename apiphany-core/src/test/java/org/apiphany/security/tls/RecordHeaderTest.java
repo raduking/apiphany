@@ -65,9 +65,7 @@ class RecordHeaderTest {
 		RecordHeader rh = new RecordHeader(RecordContentType.HANDSHAKE, SSLProtocol.TLS_1_2, (short) 123);
 		ByteArrayInputStream bais = new ByteArrayInputStream(rh.toByteArray());
 
-		IOException exception = assertThrows(IOException.class, () -> {
-			RecordHeader.from(bais, RecordContentType.APPLICATION_DATA);
-		});
+		IOException exception = assertThrows(IOException.class, () -> RecordHeader.from(bais, RecordContentType.APPLICATION_DATA));
 
 		assertEquals("Expected APPLICATION_DATA record to continue, got HANDSHAKE", exception.getMessage());
 	}

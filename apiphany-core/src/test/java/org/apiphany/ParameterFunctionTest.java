@@ -373,7 +373,7 @@ class ParameterFunctionTest {
 		private final List<Object> values;
 
 		public SomeIterable(final Object... values) {
-			this.values = List.of(values);
+			this(List.of(values));
 		}
 
 		public SomeIterable(final List<Object> values) {

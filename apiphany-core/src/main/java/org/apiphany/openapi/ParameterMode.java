@@ -17,6 +17,5 @@ public enum ParameterMode {
 	 * The parameter is serialized as a single parameter with multiple values (e.g., {@code "color=red,green,blue"} or
 	 * {@code "color=red green blue"}, etc.).
 	 */
-	JOINED;
-
+	JOINED
 }

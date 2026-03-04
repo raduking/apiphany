@@ -27,5 +27,4 @@ class ApiMethodTest {
 
 		assertThat(method.value(), equalTo(SOME_NAME));
 	}
-
 }

@@ -37,7 +37,7 @@ class ByteBufferSubscriberTest {
 		void shouldCreateSubscriberWithDefaultBufferSize() {
 			ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
 
-			assertThat(subscriber.getMaxBytes(), equalTo(Long.valueOf(Integer.MAX_VALUE)));
+			assertThat(subscriber.getMaxBytes(), equalTo((long) Integer.MAX_VALUE));
 			assertNotNull(subscriber);
 		}
 

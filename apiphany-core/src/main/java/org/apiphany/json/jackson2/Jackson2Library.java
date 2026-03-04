@@ -26,6 +26,8 @@ public class Jackson2Library {
 	/**
 	 * Library descriptor that shows if Jackson 2 JSON library is present in the classpath and the {@link JsonBuilder}
 	 * specific class.
+	 * <p>
+	 * WARNING: Instance function needs to be lambda not method reference to avoid direct reference to class.
 	 */
 	public static final LibraryDescriptor<? extends JsonBuilder> DESCRIPTOR =
 			LibraryDescriptor.of(

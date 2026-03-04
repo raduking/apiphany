@@ -14,8 +14,7 @@ class BytesOrderTest {
 
 	@ParameterizedTest
 	@EnumSource(BytesOrder.class)
-	void shouldGetBytesOrderValueFromString(BytesOrder bytesOrder) {
+	void shouldGetBytesOrderValueFromString(final BytesOrder bytesOrder) {
 		assertEquals(bytesOrder, BytesOrder.fromString(bytesOrder.name()));
 	}
-
 }

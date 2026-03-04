@@ -62,5 +62,4 @@ class JavaNetHttpExchangeClientGZipIT {
 		value = API_CLIENT.delete(NEW_KEY);
 		assertThat(value, equalTo(NEW_VALUE_2 + NEW_VALUE_1));
 	}
-
 }

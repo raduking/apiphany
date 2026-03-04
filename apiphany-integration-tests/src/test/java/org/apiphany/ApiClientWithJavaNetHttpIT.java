@@ -236,7 +236,7 @@ class ApiClientWithJavaNetHttpIT {
 				.withQueryParam("foo", equalTo("bar")));
 	}
 
-	static record MyDto(String name) {
+	record MyDto(String name) {
 		// no additional code needed
 	}
 
@@ -1021,7 +1021,7 @@ class ApiClientWithJavaNetHttpIT {
 						.decoratedWith(CountingHttpExchangeClient.class),
 				ApiClient.with(sessionClient)
 						.decoratedWith(CountingHttpExchangeClient.class));
-		try (api) {
+		try (tokenClient; sessionClient; api) {
 			String tokenResult = api.client(AuthenticationType.TOKEN)
 					.http()
 					.get()
@@ -1047,9 +1047,6 @@ class ApiClientWithJavaNetHttpIT {
 
 			assertEquals(1, tokenCountingClient.getRequestCount());
 			assertEquals(1, sessionCountingClient.getRequestCount());
-		} finally {
-			tokenClient.close();
-			sessionClient.close();
 		}
 
 		wiremock.verify(1, getRequestedFor(urlEqualTo("/token")));
@@ -1066,7 +1063,7 @@ class ApiClientWithJavaNetHttpIT {
 
 		ApiClient api = ApiClient.of(baseUrl(),
 				ApiClient.with(exchangeClientClass()));
-		try (api) {
+		try (exe; api) {
 			List<CompletableFuture<String>> futures = IntStream.range(0, threadCount)
 					.mapToObj(i -> CompletableFuture.supplyAsync(() -> api.client()
 							.http()
@@ -1078,8 +1075,6 @@ class ApiClientWithJavaNetHttpIT {
 					.toList();
 
 			CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).join();
-		} finally {
-			exe.close();
 		}
 
 		wiremock.verify(50, getRequestedFor(urlMatching("/concurrent/.*")));

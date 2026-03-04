@@ -47,7 +47,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
  *
  * @author Radu Sebastian LAZIN
  */
-public final class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton implementation
+public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton implementation
 
 	/**
 	 * Logger instance.
@@ -71,7 +71,7 @@ public final class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleto
 	 * Thread local override for the singleton instance.
 	 * <p>
 	 * The {@link ThreadLocal#remove()} is handled correctly in #with(Jackson2JsonBuilder, Supplier) which calls
-	 * {@link #with(Object, ThreadLocal, Supplier)} so no memory leak problems occur.
+	 * {@link JsonBuilder#with(JsonBuilder, ThreadLocal, Supplier)} so no memory leak problems occur.
 	 */
 	private static final ThreadLocal<Jackson2JsonBuilder> OVERRIDE = new ThreadLocal<>(); // NOSONAR see JavaDoc
 

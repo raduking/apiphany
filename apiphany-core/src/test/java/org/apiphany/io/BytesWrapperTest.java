@@ -73,9 +73,9 @@ class BytesWrapperTest {
 		ByteBuffer byteBuffer = bytesWrapper.toByteBuffer();
 
 		assertTrue(byteBuffer.isReadOnly());
-		for (int i = 0; i < bytes.length; ++i) {
+		for (byte aByte : bytes) {
 			byte b = byteBuffer.get();
-			assertThat(b, equalTo(bytes[i]));
+			assertThat(b, equalTo(aByte));
 		}
 	}
 

@@ -547,12 +547,12 @@ class Jackson2JsonBuilderTest {
 	void shouldNotRegisterTheSameModuleTwice() {
 		int initialModulesSize = Jackson2JsonBuilder.MODULES.size();
 
-		Supplier<SimpleModule> moduleSupplier = () -> new SimpleModule();
+		Supplier<SimpleModule> moduleSupplier = SimpleModule::new;
 		Supplier<SimpleModule> ms1 = Jackson2JsonBuilder.registerModule(ApiphanyJackson2Module.NAME + "1", moduleSupplier);
 
 		assertThat(ms1, nullValue());
 
-		Supplier<SimpleModule> ms2 = Jackson2JsonBuilder.registerModule(ApiphanyJackson2Module.NAME + "1", () -> new SimpleModule());
+		Supplier<SimpleModule> ms2 = Jackson2JsonBuilder.registerModule(ApiphanyJackson2Module.NAME + "1", SimpleModule::new);
 
 		assertThat(ms2, sameInstance(moduleSupplier));
 		assertThat(Jackson2JsonBuilder.MODULES.size(), equalTo(initialModulesSize + 1));
@@ -561,7 +561,7 @@ class Jackson2JsonBuilderTest {
 	@Test
 	void shouldRegisterModulesWithServiceLoader() {
 		int initialModulesSize = Jackson2JsonBuilder.MODULES.size();
-		Supplier<SimpleModule> moduleSupplier = () -> new SimpleModule();
+		Supplier<SimpleModule> moduleSupplier = SimpleModule::new;
 
 		Jackson2ModuleProvider provider = mock(Jackson2ModuleProvider.class);
 		doReturn(ApiphanyJackson2Module.NAME + "2").when(provider).getModuleName();
