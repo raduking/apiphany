@@ -12,7 +12,7 @@ import org.morphix.reflection.Constructors;
  *
  * @author Radu Sebastian LAZIN
  */
-class Jackson2LibraryTest {
+class Jackson3LibraryTest {
 
 	@Test
 	void shouldThrowExceptionOnCallingConstructor() {

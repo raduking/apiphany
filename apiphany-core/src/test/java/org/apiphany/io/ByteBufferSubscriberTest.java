@@ -8,6 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.nio.ByteBuffer;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -19,6 +21,8 @@ import org.apiphany.lang.Bytes;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.morphix.lang.thread.Threads;
+import org.morphix.lang.thread.Threads.ExecutionType;
 
 /**
  * Test class for {@link ByteBufferSubscriber}.
@@ -354,6 +358,23 @@ class ByteBufferSubscriberTest {
 			assertThat(subscriber.getBufferCount(), equalTo(0));
 			assertThat(subscriber.getReceivedBytes(), equalTo(Bytes.EMPTY));
 			assertThat(subscriber.getReceivedBytesCount(), equalTo(0L));
+		}
+
+		@Test
+		@Timeout(5)
+		void shouldAllowOnlyOneThreadToWriteToBuffer() {
+			ByteBufferSubscriber subscriber = new ByteBufferSubscriber(1);
+
+			byte[] data = new byte[1];
+			ByteBuffer buffer = ByteBuffer.wrap(data);
+
+			List<Runnable> tasks = new ArrayList<>();
+			for (int i = 0; i < THREADS; ++i) {
+				tasks.add(() -> subscriber.onNext(buffer.duplicate()));
+			}
+			Threads.execute(tasks, ExecutionType.VIRTUAL);
+
+			assertThat(subscriber.hasBufferLimitExceeded(), equalTo(true));
 		}
 	}
 

@@ -26,7 +26,7 @@ public class ApiphanyJackson3Module extends SimpleModule {
 	/**
 	 * Name of the module, used for identification when registering with ObjectMapper.
 	 */
-	public static final String NAME = "apiphany-jackson2";
+	public static final String NAME = "apiphany-jackson3";
 
 	/**
 	 * Default constructor that initializes the module with its name.

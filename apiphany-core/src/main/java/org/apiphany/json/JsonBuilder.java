@@ -355,7 +355,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 
 	/**
 	 * Returns an object from a properties map, on error the exception is passed to the onError consumer and {@code null} is
-	 * returned.
+	 * returned. This will only work for camel case properties.
 	 *
 	 * @param <T> return type
 	 *
@@ -370,7 +370,8 @@ public class JsonBuilder { // NOSONAR singleton implementation
 
 	/**
 	 * Returns a properties map from an object, on error the exception is passed to the onError consumer and an empty map is
-	 * returned.
+	 * returned. This will return camel case properties, for example a property called {@code myProperty} will be returned
+	 * as {@code "myProperty": value}.
 	 *
 	 * @param <T> properties object type
 	 *
