@@ -16,6 +16,8 @@ import java.util.function.Consumer;
 import org.apiphany.lang.Holder;
 import org.apiphany.lang.LibraryDescriptor;
 import org.apiphany.lang.Strings;
+import org.apiphany.lang.annotation.Creator;
+import org.apiphany.lang.annotation.FieldName;
 import org.junit.jupiter.api.Test;
 import org.morphix.convert.function.SimpleConverter;
 import org.morphix.lang.function.Consumers;
@@ -33,6 +35,8 @@ class JsonBuilderTest {
 	private static final String CUSTOMER_ID1 = "cid1";
 	private static final String TENANT_ID1 = "tid1";
 	private static final long TEST_LONG = 42L;
+	private static final String ERROR = "some error";
+	private static final String ERROR_DESCRIPTION = "some error description";
 
 	private final JsonBuilder jsonBuilder = new JsonBuilder();
 
@@ -366,5 +370,38 @@ class JsonBuilderTest {
 		});
 
 		assertThat(result, equalTo(expected));
+	}
+
+	static class ErrorResponse {
+
+		private final String error;
+
+		private final String errorDescription;
+
+		@Creator
+		public ErrorResponse(
+				@FieldName("error") final String error,
+				@FieldName("error_description") final String description) {
+			this.error = error;
+			this.errorDescription = description;
+		}
+
+		public String getError() {
+			return error;
+		}
+
+		public String getErrorDescription() {
+			return errorDescription;
+		}
+	}
+
+	@Test
+	void shouldCreateObjectWithCreator() {
+		String json = "{\"error\":\"" + ERROR + "\",\"error_description\":\"" + ERROR_DESCRIPTION + "\"}";
+
+		ErrorResponse response = JsonBuilder.fromJson(json, ErrorResponse.class);
+
+		assertThat(response.getError(), equalTo(ERROR));
+		assertThat(response.getErrorDescription(), equalTo(ERROR_DESCRIPTION));
 	}
 }

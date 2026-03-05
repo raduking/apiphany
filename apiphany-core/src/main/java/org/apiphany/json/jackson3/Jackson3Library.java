@@ -40,7 +40,7 @@ public class Jackson3Library {
 			LibraryDescriptor.of(
 					List.of(JACKSON_3_OBJECT_MAPPER_CLASS_NAME, JACKSON_3_JSON_SERIALIZE_AS_CLASS_NAME),
 					Jackson3JsonBuilder.class,
-					() -> Jackson3JsonBuilder.instance());
+					() -> Jackson3JsonBuilder.instance()); // NOSONAR method reference would cause class loading issues
 
 	/**
 	 * Checks if the Jackson 3 JSON library is present in the classpath.
