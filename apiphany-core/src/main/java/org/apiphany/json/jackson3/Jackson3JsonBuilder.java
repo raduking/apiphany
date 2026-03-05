@@ -10,6 +10,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.apiphany.json.JsonBuilder;
+import org.morphix.lang.function.Consumers;
 import org.morphix.reflection.GenericClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -121,7 +122,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 *
 	 * @param objectMapper the object mapper to use
 	 */
-	Jackson3JsonBuilder(final JsonMapper.Builder builder) {
+	Jackson3JsonBuilder(final JsonMapper.Builder builder, final Consumer<JsonMapper.Builder> builderCustomizer) {
 		this.jsonMapperBuilder = builder;
 
 		for (Supplier<SimpleModule> moduleSupplier : MODULES.values()) {
@@ -132,10 +133,14 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 				.withContentInclusion(Include.NON_NULL)
 				.withValueInclusion(Include.NON_NULL));
 
-		indentOutput(isIndentOutput());
+		Consumer<SerializationFeature> indentation = isIndentOutput() ? builder::enable : builder::disable;
+		indentation.accept(SerializationFeature.INDENT_OUTPUT);
 
 		this.defaultAnnotationIntrospector = builder.annotationIntrospector();
 		configureSensitivity(SensitiveJackson3AnnotationIntrospector.hideSensitive());
+
+		builderCustomizer.accept(builder);
+		indentOutput(builder.isEnabled(SerializationFeature.INDENT_OUTPUT));
 
 		this.objectMapper = builder.build();
 	}
@@ -144,17 +149,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * Hide constructor.
 	 */
 	Jackson3JsonBuilder() {
-		this(JsonMapper.builder());
-	}
-
-	/**
-	 * Since the {@link ObjectMapper} cannot be configured to use a different {@link JsonFactory} after its creation, this
-	 * constructor allows creating a new {@link Jackson3JsonBuilder} with a custom {@link JsonFactory}.
-	 *
-	 * @param jsonFactory the JSON factory to use for the underlying {@link ObjectMapper}, e.g. for YAML support.
-	 */
-	Jackson3JsonBuilder(final JsonFactory jsonFactory) {
-		this(JsonMapper.builder(jsonFactory));
+		this(JsonMapper.builder(), Consumers.noConsumer());
 	}
 
 	/**
@@ -171,10 +166,31 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * Creates a new JSON builder with the given {@link JsonFactory}.
 	 *
 	 * @param jsonFactory the JSON factory to use for the underlying {@link ObjectMapper}, e.g. for YAML support.
+	 * @param builderCustomizer the customizer to apply to the underlying {@link JsonMapper.Builder}
+	 * @return a new JSON builder with the given {@link JsonFactory}
+	 */
+	public static Jackson3JsonBuilder custom(final JsonFactory jsonFactory, final Consumer<JsonMapper.Builder> builderCustomizer) {
+		return new Jackson3JsonBuilder(JsonMapper.builder(jsonFactory), builderCustomizer);
+	}
+
+	/**
+	 * Creates a new JSON builder with the given {@link JsonFactory}.
+	 *
+	 * @param jsonFactory the JSON factory to use for the underlying {@link ObjectMapper}, e.g. for YAML support.
 	 * @return a new JSON builder with the given {@link JsonFactory}
 	 */
 	public static Jackson3JsonBuilder custom(final JsonFactory jsonFactory) {
-		return new Jackson3JsonBuilder(jsonFactory);
+		return custom(jsonFactory, Consumers.noConsumer());
+	}
+
+	/**
+	 * Creates a new JSON builder with the given customizer applied to the underlying {@link JsonMapper.Builder}.
+	 *
+	 * @param builderCustomizer the customizer to apply to the underlying {@link JsonMapper.Builder}
+	 * @return a new JSON builder with the given customizer applied to the underlying {@link JsonMapper.Builder}
+	 */
+	public static Jackson3JsonBuilder custom(final Consumer<JsonMapper.Builder> builderCustomizer) {
+		return new Jackson3JsonBuilder(JsonMapper.builder(), builderCustomizer);
 	}
 
 	/**
@@ -590,18 +606,6 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 			final SensitiveJackson3AnnotationIntrospector sensitiveAnnotationIntrospector, final AnnotationIntrospector baseAnnotationIntrospector) {
 		return jsonMapperBuilder.annotationIntrospector(
 				AnnotationIntrospector.pair(sensitiveAnnotationIntrospector, baseAnnotationIntrospector));
-	}
-
-	/**
-	 * Enable/disable JSON indentation.
-	 *
-	 * @param enable true to enable, false to disable
-	 */
-	@Override
-	public void indentOutput(final boolean enable) {
-		super.indentOutput(enable);
-		Consumer<SerializationFeature> indentation = enable ? jsonMapperBuilder::enable : jsonMapperBuilder::disable;
-		indentation.accept(SerializationFeature.INDENT_OUTPUT);
 	}
 
 	/**
