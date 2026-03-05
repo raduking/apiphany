@@ -146,6 +146,7 @@ public class LibraryDescriptor<T> {
 	 *
 	 * @param libraryClassNames a list of fully qualified class names to check for presence
 	 * @param specificClass the specific class associated with the library
+	 * @param instanceFunction an instance function to retrieve instances of the specific class
 	 * @return a new LibraryDescriptor instance
 	 */
 	public static <T> LibraryDescriptor<T> of(final List<String> libraryClassNames, final Class<T> specificClass,
