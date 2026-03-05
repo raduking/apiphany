@@ -543,6 +543,14 @@ class Jackson2JsonBuilderTest {
 			assertThat(result, equalTo(Collections.emptyMap()));
 			assertThat(errors.size(), equalTo(1));
 		}
+
+		@Test
+		void shouldConvertObjectToPropertiesMap() {
+			Map<String, Object> result = jsonBuilder.toPropertiesMap(new B(CUSTOMER_ID1, TENANT_ID1), null);
+
+			assertThat(result.get("customer-id"), equalTo(CUSTOMER_ID1));
+			assertThat(result.get("tenant-id"), equalTo(TENANT_ID1));
+		}
 	}
 
 	@Nested
@@ -553,11 +561,11 @@ class Jackson2JsonBuilderTest {
 			int initialModulesSize = Jackson2JsonBuilder.MODULES.size();
 
 			Supplier<SimpleModule> moduleSupplier = SimpleModule::new;
-			Supplier<SimpleModule> ms1 = Jackson2JsonBuilder.registerModule(ApiphanyJackson2Module.NAME + "1", moduleSupplier);
+			Supplier<SimpleModule> ms1 = Jackson2JsonBuilder.registerModule(ApiphanyJackson2Module.NAME + "-1", moduleSupplier);
 
 			assertThat(ms1, nullValue());
 
-			Supplier<SimpleModule> ms2 = Jackson2JsonBuilder.registerModule(ApiphanyJackson2Module.NAME + "1", SimpleModule::new);
+			Supplier<SimpleModule> ms2 = Jackson2JsonBuilder.registerModule(ApiphanyJackson2Module.NAME + "-1", SimpleModule::new);
 
 			assertThat(ms2, sameInstance(moduleSupplier));
 			assertThat(Jackson2JsonBuilder.MODULES.size(), equalTo(initialModulesSize + 1));
@@ -575,7 +583,7 @@ class Jackson2JsonBuilderTest {
 
 			assertThat(json, not(equalTo(expectedSimpleExceptionJson)));
 
-			String moduleName = ApiphanyJackson2Module.NAME + "SimpleExceptionSerializer";
+			String moduleName = ApiphanyJackson2Module.NAME + "-SimpleExceptionSerializer";
 			SimpleModule module = new SimpleModule();
 			module.addSerializer(Exception.class, new SimpleExceptionSerializer());
 
@@ -593,7 +601,7 @@ class Jackson2JsonBuilderTest {
 			Supplier<SimpleModule> moduleSupplier = SimpleModule::new;
 
 			Jackson2ModuleProvider provider = mock(Jackson2ModuleProvider.class);
-			doReturn(ApiphanyJackson2Module.NAME + "2").when(provider).getModuleName();
+			doReturn(ApiphanyJackson2Module.NAME + "-2").when(provider).getModuleName();
 			doReturn(moduleSupplier).when(provider).getModuleSupplier();
 
 			Jackson2JsonBuilder.registerModules(List.of(provider));
@@ -602,38 +610,46 @@ class Jackson2JsonBuilderTest {
 		}
 	}
 
-	@Test
-	void shouldConfigureSensitivityWithExistingAnnotationIntrospector() {
-		ObjectMapper objectMapper = mock(ObjectMapper.class);
+	@Nested
+	class ConfigureSensitivityTests {
 
-		SerializationConfig serializationConfig = mock(SerializationConfig.class);
-		doReturn(serializationConfig).when(objectMapper).getSerializationConfig();
+		@Test
+		void shouldConfigureSensitivityWithExistingAnnotationIntrospector() {
+			ObjectMapper objectMapper = mock(ObjectMapper.class);
 
-		AnnotationIntrospector existingAnnotationIntrospector = mock(AnnotationIntrospector.class);
-		doReturn(existingAnnotationIntrospector).when(serializationConfig).getAnnotationIntrospector();
+			SerializationConfig serializationConfig = mock(SerializationConfig.class);
+			doReturn(serializationConfig).when(objectMapper).getSerializationConfig();
 
-		SensitiveJackson2AnnotationIntrospector sensitiveAnnotationIntrospector = mock(SensitiveJackson2AnnotationIntrospector.class);
+			AnnotationIntrospector existingAnnotationIntrospector = mock(AnnotationIntrospector.class);
+			doReturn(existingAnnotationIntrospector).when(serializationConfig).getAnnotationIntrospector();
 
-		ArgumentCaptor<AnnotationIntrospectorPair> captor = ArgumentCaptor.forClass(AnnotationIntrospectorPair.class);
-		doReturn(objectMapper).when(objectMapper).setAnnotationIntrospector(captor.capture());
+			SensitiveJackson2AnnotationIntrospector sensitiveAnnotationIntrospector = mock(SensitiveJackson2AnnotationIntrospector.class);
 
-		ObjectMapper result = Jackson2JsonBuilder.configureSensitivity(objectMapper, sensitiveAnnotationIntrospector);
+			ArgumentCaptor<AnnotationIntrospectorPair> captor = ArgumentCaptor.forClass(AnnotationIntrospectorPair.class);
+			doReturn(objectMapper).when(objectMapper).setAnnotationIntrospector(captor.capture());
 
-		assertThat(result, equalTo(objectMapper));
+			ObjectMapper result = Jackson2JsonBuilder.configureSensitivity(objectMapper, sensitiveAnnotationIntrospector);
 
-		AnnotationIntrospectorPair pair = captor.getValue();
-		List<AnnotationIntrospector> introspectors = new ArrayList<>();
-		pair.allIntrospectors(introspectors);
+			assertThat(result, equalTo(objectMapper));
 
-		verify(sensitiveAnnotationIntrospector).allIntrospectors(introspectors);
-		verify(existingAnnotationIntrospector).allIntrospectors(introspectors);
+			AnnotationIntrospectorPair pair = captor.getValue();
+			List<AnnotationIntrospector> introspectors = new ArrayList<>();
+			pair.allIntrospectors(introspectors);
+
+			verify(sensitiveAnnotationIntrospector).allIntrospectors(introspectors);
+			verify(existingAnnotationIntrospector).allIntrospectors(introspectors);
+		}
 	}
 
-	@Test
-	void shouldBuildTheBuilderWithCustomJsonFactory() {
-		Jackson2JsonBuilder builder = Jackson2JsonBuilder.custom(new XmlFactory());
+	@Nested
+	class CustomJsonFactoryTests {
 
-		assertThat(builder.getObjectMapper().getFactory().getClass(), equalTo(XmlFactory.class));
+		@Test
+		void shouldBuildTheBuilderWithCustomJsonFactory() {
+			Jackson2JsonBuilder builder = Jackson2JsonBuilder.custom(new XmlFactory());
+
+			assertThat(builder.getObjectMapper().getFactory().getClass(), equalTo(XmlFactory.class));
+		}
 	}
 
 	static class A {

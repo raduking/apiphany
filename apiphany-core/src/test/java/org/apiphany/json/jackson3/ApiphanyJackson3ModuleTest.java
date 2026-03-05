@@ -25,7 +25,7 @@ import tools.jackson.databind.type.ClassKey;
  *
  * @author Radu Sebastian LAZIN
  */
-class ApiphanyJackson2ModuleTest {
+class ApiphanyJackson3ModuleTest {
 
 	@Test
 	void shouldSetUpModule() {

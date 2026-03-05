@@ -1,38 +1,49 @@
 package org.apiphany.json.jackson3;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.apiphany.io.IOStreams;
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.json.jackson3.serializers.SimpleExceptionSerializer;
 import org.apiphany.lang.Strings;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.morphix.lang.function.Consumers;
 import org.morphix.reflection.Fields;
 import org.morphix.reflection.GenericClass;
 
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.exc.JacksonIOException;
+import tools.jackson.core.json.JsonFactory;
 import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.AnnotationIntrospector;
 import tools.jackson.databind.ObjectWriter;
 import tools.jackson.databind.PropertyNamingStrategies;
 import tools.jackson.databind.SerializationFeature;
 import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
 
 /**
  * Test class for {@link Jackson3JsonBuilder}.
@@ -536,6 +547,118 @@ class Jackson3JsonBuilderTest extends Jackson3Test {
 			assertThat(result, equalTo(Collections.emptyMap()));
 			assertThat(errors.size(), equalTo(1));
 		}
+
+		@Test
+		void shouldConvertObjectToPropertiesMap() {
+			Map<String, Object> result = jsonBuilder.toPropertiesMap(new B(CUSTOMER_ID1, TENANT_ID1), null);
+
+			assertThat(result.get("customer-id"), equalTo(CUSTOMER_ID1));
+			assertThat(result.get("tenant-id"), equalTo(TENANT_ID1));
+		}
+	}
+
+	@Nested
+	class RegisterModuleTests {
+
+		@Test
+		void shouldNotRegisterTheSameModuleTwice() {
+			int initialModulesSize = Jackson3JsonBuilder.MODULES.size();
+
+			Supplier<SimpleModule> moduleSupplier = SimpleModule::new;
+			Supplier<SimpleModule> ms1 = Jackson3JsonBuilder.registerModule(ApiphanyJackson3Module.NAME + "-1", moduleSupplier);
+
+			assertThat(ms1, nullValue());
+
+			Supplier<SimpleModule> ms2 = Jackson3JsonBuilder.registerModule(ApiphanyJackson3Module.NAME + "-1", SimpleModule::new);
+
+			assertThat(ms2, sameInstance(moduleSupplier));
+			assertThat(Jackson3JsonBuilder.MODULES.size(), equalTo(initialModulesSize + 1));
+		}
+
+		@Test
+		void shouldRegisterAndNotUseNewModule() {
+			String expectedSimpleExceptionJson = "{\"exception\":\"java.lang.Exception\"}";
+
+			Exception e = new Exception("some exception");
+			D d = new D();
+			d.setException(e);
+
+			String json = Strings.removeAllWhitespace(Jackson3JsonBuilder.toJson(d));
+
+			assertThat(json, not(equalTo(expectedSimpleExceptionJson)));
+
+			String moduleName = ApiphanyJackson3Module.NAME + "-SimpleExceptionSerializer";
+			SimpleModule module = new SimpleModule();
+			module.addSerializer(Exception.class, new SimpleExceptionSerializer());
+
+			Supplier<SimpleModule> ms = Jackson3JsonBuilder.registerModule(moduleName, () -> module);
+
+			json = Strings.removeAllWhitespace(Jackson3JsonBuilder.toJson(d));
+
+			assertThat(ms, nullValue());
+			assertThat(json, not(equalTo("{\"exception\":\"java.lang.Exception\"}")));
+		}
+
+		@Test
+		void shouldRegisterModulesWithServiceLoader() {
+			int initialModulesSize = Jackson3JsonBuilder.MODULES.size();
+			Supplier<SimpleModule> moduleSupplier = SimpleModule::new;
+
+			Jackson3ModuleProvider provider = mock(Jackson3ModuleProvider.class);
+			doReturn(ApiphanyJackson3Module.NAME + "-2").when(provider).getModuleName();
+			doReturn(moduleSupplier).when(provider).getModuleSupplier();
+
+			Jackson3JsonBuilder.registerModules(List.of(provider));
+
+			assertThat(Jackson3JsonBuilder.MODULES.size(), equalTo(initialModulesSize + 1));
+		}
+	}
+
+	@Nested
+	class ConfigureSensitivityTests {
+
+		@Test
+		void shouldConfigureSensitivityWithExistingAnnotationIntrospector() {
+			JsonMapper.Builder jsonMapperBuilder = mock(JsonMapper.Builder.class);
+
+			SensitiveJackson3AnnotationIntrospector sensitiveAnnotationIntrospector = mock(SensitiveJackson3AnnotationIntrospector.class);
+			AnnotationIntrospector existingAnnotationIntrospector = mock(AnnotationIntrospector.class);
+			doReturn(existingAnnotationIntrospector).when(jsonMapperBuilder).annotationIntrospector();
+
+			ArgumentCaptor<AnnotationIntrospector> captor = ArgumentCaptor.forClass(AnnotationIntrospector.class);
+			doReturn(jsonMapperBuilder).when(jsonMapperBuilder).annotationIntrospector(captor.capture());
+
+			JsonMapper.Builder result = Jackson3JsonBuilder.configureSensitivity(jsonMapperBuilder, sensitiveAnnotationIntrospector);
+
+			assertThat(result, equalTo(jsonMapperBuilder));
+
+			AnnotationIntrospector pair = captor.getValue();
+			List<AnnotationIntrospector> introspectors = new ArrayList<>();
+			pair.allIntrospectors(introspectors);
+
+			verify(sensitiveAnnotationIntrospector).allIntrospectors(introspectors);
+			verify(existingAnnotationIntrospector).allIntrospectors(introspectors);
+		}
+	}
+
+	@Nested
+	class CustomJsonFactoryTests {
+
+		@Test
+		void shouldBuildTheBuilderWithCustomJsonFactory() {
+			CustomJsonFactory customFactory = new CustomJsonFactory();
+			Jackson3JsonBuilder jacksonJsonBuilder = Jackson3JsonBuilder.custom(customFactory);
+
+			assertThat(jacksonJsonBuilder.getJsonMapperBuilder().streamFactory(), equalTo(customFactory));
+		}
+	}
+
+	@Test
+	void shouldHaveJsonMapperBuilt() {
+		Jackson3JsonBuilder jacksonJsonBuilder = new Jackson3JsonBuilder();
+
+		assertThat(jacksonJsonBuilder.getJsonMapper(), not(nullValue()));
+		assertThat(Jackson3JsonBuilder.instance().getJsonMapper(), not(nullValue()));
 	}
 
 	static class A {
@@ -616,5 +739,11 @@ class Jackson3JsonBuilderTest extends Jackson3Test {
 		public void setException(final Exception exception) {
 			this.exception = exception;
 		}
+	}
+
+	class CustomJsonFactory extends JsonFactory {
+
+		@Serial
+		private static final long serialVersionUID = 5054225012734582242L;
 	}
 }

@@ -22,7 +22,6 @@ import tools.jackson.core.json.JsonFactory;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.AnnotationIntrospector;
 import tools.jackson.databind.DeserializationFeature;
-import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.ObjectWriter;
 import tools.jackson.databind.PropertyNamingStrategies;
 import tools.jackson.databind.SerializationFeature;
@@ -84,8 +83,8 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	private static final ThreadLocal<Jackson3JsonBuilder> OVERRIDE = new ThreadLocal<>(); // NOSONAR see JavaDoc
 
 	/**
-	 * Map of modules to register to the underlying {@link ObjectMapper}. The key is the module class name. This allows
-	 * registering modules to the underlying {@link ObjectMapper} without creating a dependency on the module's library.
+	 * Map of modules to register to the underlying {@link JsonMapper}. The key is the module class name. This allows
+	 * registering modules to the underlying {@link JsonMapper} without creating a dependency on the module's library.
 	 */
 	protected static final Map<String, Supplier<SimpleModule>> MODULES = new ConcurrentHashMap<>();
 	static {
@@ -96,14 +95,14 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	/**
 	 * Flag to indicate if the singleton instance has been created and initialized. This is used to log a warning if a
 	 * module is registered after the singleton instance has been initialized, as the module will not be registered to the
-	 * singleton instance's underlying {@link ObjectMapper}.
+	 * singleton instance's underlying {@link JsonMapper}.
 	 */
 	private static volatile boolean singletonMaterialized;
 
 	/**
-	 * The underlying {@link ObjectMapper}.
+	 * The underlying {@link JsonMapper}.
 	 */
-	protected final ObjectMapper objectMapper;
+	protected final JsonMapper jsonMapper;
 
 	/**
 	 * The default annotation introspector.
@@ -111,8 +110,8 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	protected final AnnotationIntrospector defaultAnnotationIntrospector;
 
 	/**
-	 * The JSON mapper builder used to create the underlying {@link ObjectMapper}. This is used to create new
-	 * {@link ObjectMapper} instances with the registered modules when needed, e.g. for the {@link #custom(JsonFactory)}
+	 * The JSON mapper builder used to create the underlying {@link JsonMapper}. This is used to create new
+	 * {@link JsonMapper} instances with the registered modules when needed, e.g. for the {@link #custom(JsonFactory)}
 	 * method.
 	 */
 	protected final JsonMapper.Builder jsonMapperBuilder;
@@ -120,7 +119,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	/**
 	 * Hide constructor.
 	 *
-	 * @param objectMapper the object mapper to use
+	 * @param jsonMapper the object mapper to use
 	 */
 	Jackson3JsonBuilder(final JsonMapper.Builder builder, final Consumer<JsonMapper.Builder> builderCustomizer) {
 		this.jsonMapperBuilder = builder;
@@ -142,7 +141,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 		builderCustomizer.accept(builder);
 		indentOutput(builder.isEnabled(SerializationFeature.INDENT_OUTPUT));
 
-		this.objectMapper = builder.build();
+		this.jsonMapper = builder.build();
 	}
 
 	/**
@@ -165,7 +164,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	/**
 	 * Creates a new JSON builder with the given {@link JsonFactory}.
 	 *
-	 * @param jsonFactory the JSON factory to use for the underlying {@link ObjectMapper}, e.g. for YAML support.
+	 * @param jsonFactory the JSON factory to use for the underlying {@link JsonMapper}, e.g. for YAML support.
 	 * @param builderCustomizer the customizer to apply to the underlying {@link JsonMapper.Builder}
 	 * @return a new JSON builder with the given {@link JsonFactory}
 	 */
@@ -176,7 +175,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	/**
 	 * Creates a new JSON builder with the given {@link JsonFactory}.
 	 *
-	 * @param jsonFactory the JSON factory to use for the underlying {@link ObjectMapper}, e.g. for YAML support.
+	 * @param jsonFactory the JSON factory to use for the underlying {@link JsonMapper}, e.g. for YAML support.
 	 * @return a new JSON builder with the given {@link JsonFactory}
 	 */
 	public static Jackson3JsonBuilder custom(final JsonFactory jsonFactory) {
@@ -294,7 +293,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 		if (null == obj) {
 			return null;
 		}
-		ObjectWriter objectWriter = objectMapper.writerFor(obj.getClass());
+		ObjectWriter objectWriter = jsonMapper.writerFor(obj.getClass());
 		try {
 			return eol() + objectWriter.writeValueAsString(obj);
 		} catch (JacksonException e) {
@@ -316,7 +315,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	@Override
 	public <T> T fromJsonString(final String json, final Class<T> cls) {
 		try {
-			return objectMapper.readValue(json, cls);
+			return jsonMapper.readValue(json, cls);
 		} catch (JacksonException e) {
 			LOGGER.warn(ErrorMessage.COULD_NOT_DESERIALIZE_OBJECT, json, e);
 			return null;
@@ -354,7 +353,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 */
 	public <T> T fromJsonString(final String json, final TypeReference<T> typeReference) {
 		try {
-			return objectMapper.readValue(json, typeReference);
+			return jsonMapper.readValue(json, typeReference);
 		} catch (JacksonException e) {
 			LOGGER.warn(ErrorMessage.COULD_NOT_DESERIALIZE_OBJECT, json, e);
 			return null;
@@ -372,7 +371,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 */
 	public <T> T fromJsonBytes(final byte[] json, final Class<T> cls) {
 		try {
-			return objectMapper.readValue(json, cls);
+			return jsonMapper.readValue(json, cls);
 		} catch (JacksonException e) {
 			LOGGER.warn(ErrorMessage.COULD_NOT_DESERIALIZE_OBJECT, json, e);
 			return null;
@@ -409,7 +408,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 */
 	public <T> T fromJsonBytes(final byte[] json, final TypeReference<T> typeReference) {
 		try {
-			return objectMapper.readValue(json, typeReference);
+			return jsonMapper.readValue(json, typeReference);
 		} catch (JacksonException e) {
 			LOGGER.warn(ErrorMessage.COULD_NOT_DESERIALIZE_OBJECT, json, e);
 			return null;
@@ -427,7 +426,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 */
 	public <T> T fromJsonInputStream(final InputStream json, final Class<T> cls) {
 		try {
-			return objectMapper.readValue(json, cls);
+			return jsonMapper.readValue(json, cls);
 		} catch (JacksonException e) {
 			LOGGER.warn(ErrorMessage.COULD_NOT_DESERIALIZE_OBJECT, json, e);
 			return null;
@@ -464,7 +463,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 */
 	public <T> T fromJsonInputStream(final InputStream json, final TypeReference<T> typeReference) {
 		try {
-			return objectMapper.readValue(json, typeReference);
+			return jsonMapper.readValue(json, typeReference);
 		} catch (JacksonException e) {
 			LOGGER.warn(ErrorMessage.COULD_NOT_DESERIALIZE_OBJECT, json, e);
 			return null;
@@ -487,10 +486,10 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 				.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 				.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
 				.propertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
-		final ObjectMapper propertiesObjectMapper = propertiesJsonMapperBuilder.build();
+		final JsonMapper propertiesJsonMapper = propertiesJsonMapperBuilder.build();
 		try {
-			String json = propertiesObjectMapper.writeValueAsString(propertiesMap);
-			return propertiesObjectMapper.readValue(json, cls);
+			String json = propertiesJsonMapper.writeValueAsString(propertiesMap);
+			return propertiesJsonMapper.readValue(json, cls);
 		} catch (Exception e) {
 			onError.accept(e);
 			return null;
@@ -514,9 +513,9 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 				.propertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
 		configureSensitivity(propertiesJsonMapperBuilder,
 				SensitiveJackson3AnnotationIntrospector.allowSensitive(), defaultAnnotationIntrospector);
-		final ObjectMapper propertiesObjectMapper = propertiesJsonMapperBuilder.build();
+		final JsonMapper propertiesJsonMapper = propertiesJsonMapperBuilder.build();
 		try {
-			return propertiesObjectMapper.convertValue(properties, Map.class);
+			return propertiesJsonMapper.convertValue(properties, Map.class);
 		} catch (Exception e) {
 			onError.accept(e);
 			return Collections.emptyMap();
@@ -533,9 +532,9 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	}
 
 	/**
-	 * Registers a module to be added to the underlying {@link ObjectMapper}. The module is registered by its name, so if a
+	 * Registers a module to be added to the underlying {@link JsonMapper}. The module is registered by its name, so if a
 	 * module with the same name is already registered, it will be overridden. This allows registering modules to the
-	 * underlying {@link ObjectMapper} without creating a dependency on the module's library.
+	 * underlying {@link JsonMapper} without creating a dependency on the module's library.
 	 *
 	 * @param moduleName the module name
 	 * @param moduleSupplier the supplier of the module to register
@@ -609,11 +608,20 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	}
 
 	/**
-	 * Returns the underlying {@link ObjectMapper}.
+	 * Returns the underlying {@link JsonMapper}.
 	 *
-	 * @return the underlying {@link ObjectMapper}
+	 * @return the underlying {@link JsonMapper}
 	 */
-	public ObjectMapper getObjectMapper() {
-		return objectMapper;
+	public JsonMapper getJsonMapper() {
+		return jsonMapper;
+	}
+
+	/**
+	 * Returns the JSON mapper builder used to create the underlying {@link JsonMapper}.
+	 *
+	 * @return the JSON mapper builder used to create the underlying {@link JsonMapper}
+	 */
+	public JsonMapper.Builder getJsonMapperBuilder() {
+		return jsonMapperBuilder;
 	}
 }

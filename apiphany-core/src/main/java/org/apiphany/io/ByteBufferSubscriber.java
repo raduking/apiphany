@@ -63,6 +63,11 @@ public class ByteBufferSubscriber implements Subscriber<ByteBuffer> {
 	private final long maxBytes;
 
 	/**
+	 * Flag to determine whether to clear received buffers on cancellation to free up memory.
+	 */
+	private final boolean clearOnCancel;
+
+	/**
 	 * Default constructor.
 	 */
 	public ByteBufferSubscriber() {
@@ -76,10 +81,21 @@ public class ByteBufferSubscriber implements Subscriber<ByteBuffer> {
 	 * @throws IllegalArgumentException if maxBytes is negative
 	 */
 	public ByteBufferSubscriber(final long maxBytes) {
+		this(maxBytes, true);
+	}
+
+	/**
+	 * Constructor with configurable max bytes limit.
+	 *
+	 * @param maxBytes maximum number of bytes to store
+	 * @throws IllegalArgumentException if maxBytes is negative
+	 */
+	public ByteBufferSubscriber(final long maxBytes, final boolean clearOnCancel) {
 		if (maxBytes < 0) {
 			throw new IllegalArgumentException("maxBytes cannot be negative");
 		}
 		this.maxBytes = maxBytes;
+		this.clearOnCancel = clearOnCancel;
 	}
 
 	/**
@@ -304,6 +320,16 @@ public class ByteBufferSubscriber implements Subscriber<ByteBuffer> {
 		if (subscription != null) {
 			subscription.cancel();
 		}
+		if (clearOnCancel) {
+			clear();
+		}
+	}
+
+	/**
+	 * Clears all received buffers and resets the byte count. This method is thread-safe and can be used to free up memory
+	 * after cancellation or when buffers are no longer needed.
+	 */
+	public void clear() {
 		// clear all received buffers to free up memory
 		lock.writeLock().lock();
 		try {
