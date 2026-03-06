@@ -94,11 +94,11 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	public static void addDefaultContentConverters(final List<ContentConverter<?>> contentConverters) {
 		contentConverters.add(new StringHttpContentConverter());
 
-		if (Jackson2Library.isPresent()) {
-			contentConverters.add(new Jackson2JsonHttpContentConverter<>());
-		}
+		// TODO: abstract away the converter registration and discovery
 		if (Jackson3Library.isPresent()) {
 			contentConverters.add(new Jackson3JsonHttpContentConverter<>());
+		} else if (Jackson2Library.isPresent()) {
+			contentConverters.add(new Jackson2JsonHttpContentConverter<>());
 		}
 	}
 
