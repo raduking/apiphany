@@ -110,6 +110,34 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	}
 
 	/**
+	 * Enum for indentation settings.
+	 *
+	 * @author Radu Sebastian LAZIN
+	 */
+	public enum Indentation {
+
+		/**
+		 * Indentation enabled, JSON output will be formatted with line breaks and indentation for better readability.
+		 */
+		ENABLED,
+
+		/**
+		 * Indentation disabled, JSON output will be compact without line breaks or indentation.
+		 */
+		DISABLED;
+
+		/**
+		 * Converts a boolean value to the corresponding Indentation enum value.
+		 *
+		 * @param indent true for ENABLED, false for DISABLED
+		 * @return the corresponding Indentation enum value
+		 */
+		public static Indentation fromBoolean(final boolean indent) {
+			return indent ? ENABLED : DISABLED;
+		}
+	}
+
+	/**
 	 * Singleton instance holder.
 	 *
 	 * @author Radu Sebastian LAZIN
