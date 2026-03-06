@@ -14,6 +14,7 @@ import org.apiphany.lang.Strings;
 import org.morphix.convert.Converter;
 import org.morphix.convert.MapConversions;
 import org.morphix.convert.function.SimpleConverter;
+import org.morphix.lang.Case;
 import org.morphix.lang.function.Suppliers;
 import org.morphix.reflection.Constructors;
 import org.morphix.reflection.GenericClass;
@@ -380,7 +381,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 * @return properties map
 	 */
 	public <T> Map<String, Object> toPropertiesMap(final T properties, final Consumer<Exception> onError) {
-		return convert(properties, MapConversions::toPropertiesMap, Collections::emptyMap, onError);
+		return convert(properties, obj -> MapConversions.toPropertiesMap(obj, Case.KEBAB::convert), Collections::emptyMap, onError);
 	}
 
 	/**

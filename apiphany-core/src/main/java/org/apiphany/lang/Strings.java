@@ -11,6 +11,7 @@ import java.util.function.Consumer;
 
 import org.apiphany.io.IOStreams;
 import org.apiphany.io.ResourceLocation;
+import org.morphix.lang.Case;
 import org.morphix.lang.function.Consumers;
 
 /**
@@ -121,10 +122,7 @@ public interface Strings {
 	 * @return snake case string
 	 */
 	static String fromLowerCamelToSnakeCase(final String str) {
-		return str
-				.replaceAll("([A-Z]+)([A-Z][a-z])", "$1_$2")
-				.replaceAll("([a-z0-9])([A-Z])", "$1_$2")
-				.toLowerCase();
+		return Case.SNAKE.convert(str);
 	}
 
 	/**
@@ -145,9 +143,7 @@ public interface Strings {
 	 * @return kebab case string
 	 */
 	static String fromLowerCamelToKebabCase(final String str) {
-		String regex = "([a-z])([A-Z]+)";
-		String replacement = "$1-$2";
-		return str.replaceAll(regex, replacement).toLowerCase();
+		return Case.KEBAB.convert(str);
 	}
 
 	/**
