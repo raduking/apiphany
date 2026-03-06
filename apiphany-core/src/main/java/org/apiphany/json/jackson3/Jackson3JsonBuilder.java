@@ -110,19 +110,12 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	protected final AnnotationIntrospector defaultAnnotationIntrospector;
 
 	/**
-	 * The JSON mapper builder used to create the underlying {@link JsonMapper}. This is used to create new
-	 * {@link JsonMapper} instances with the registered modules when needed, e.g. for the {@link #custom(JsonFactory)}
-	 * method.
-	 */
-	protected final JsonMapper.Builder jsonMapperBuilder;
-
-	/**
 	 * Hide constructor.
 	 *
 	 * @param jsonMapper the object mapper to use
 	 */
 	Jackson3JsonBuilder(final JsonMapper.Builder builder, final Consumer<JsonMapper.Builder> builderCustomizer) {
-		this.jsonMapperBuilder = builder;
+		this.defaultAnnotationIntrospector = builder.annotationIntrospector();
 
 		for (Supplier<SimpleModule> moduleSupplier : MODULES.values()) {
 			builder.addModule(moduleSupplier.get());
@@ -132,11 +125,8 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 				.withContentInclusion(Include.NON_NULL)
 				.withValueInclusion(Include.NON_NULL));
 
-		Consumer<SerializationFeature> indentation = isIndentOutput() ? builder::enable : builder::disable;
-		indentation.accept(SerializationFeature.INDENT_OUTPUT);
-
-		this.defaultAnnotationIntrospector = builder.annotationIntrospector();
-		configureSensitivity(SensitiveJackson3AnnotationIntrospector.hideSensitive());
+		configureSensitivity(builder, SensitiveJackson3AnnotationIntrospector.hideSensitive());
+		configureIndent(builder, Indentation.fromBoolean(isIndentOutput()));
 
 		builderCustomizer.accept(builder);
 		indentOutput(builder.isEnabled(SerializationFeature.INDENT_OUTPUT));
@@ -508,7 +498,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> Map<String, Object> toPropertiesMap(final T properties, final Consumer<Exception> onError) {
-		JsonMapper.Builder propertiesJsonMapperBuilder = JsonMapper.builder()
+		JsonMapper.Builder propertiesJsonMapperBuilder = jsonMapper.rebuild()
 				.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
 				.propertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
 		configureSensitivity(propertiesJsonMapperBuilder,
@@ -572,12 +562,17 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	}
 
 	/**
-	 * Configures the underlying {@link JsonMapper.Builder} with the given {@link SensitiveJackson3AnnotationIntrospector}.
+	 * Configures the given {@link JsonMapper.Builder} to indent the JSON output based on the given flag.
 	 *
-	 * @param sensitiveAnnotationIntrospector the sensitive annotation introspector
+	 * @param builder the JSON mapper builder to configure
+	 * @param indentation flag indicating whether to indent the JSON output or not
+	 * @return the configured JSON mapper builder
 	 */
-	public void configureSensitivity(final SensitiveJackson3AnnotationIntrospector sensitiveAnnotationIntrospector) {
-		configureSensitivity(jsonMapperBuilder, sensitiveAnnotationIntrospector, defaultAnnotationIntrospector);
+	public static JsonMapper.Builder configureIndent(final JsonMapper.Builder builder, final Indentation indentation) {
+		return switch (indentation) {
+			case ENABLED -> builder.enable(SerializationFeature.INDENT_OUTPUT);
+			case DISABLED -> builder.disable(SerializationFeature.INDENT_OUTPUT);
+		};
 	}
 
 	/**
@@ -614,14 +609,5 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 */
 	public JsonMapper getJsonMapper() {
 		return jsonMapper;
-	}
-
-	/**
-	 * Returns the JSON mapper builder used to create the underlying {@link JsonMapper}.
-	 *
-	 * @return the JSON mapper builder used to create the underlying {@link JsonMapper}
-	 */
-	public JsonMapper.Builder getJsonMapperBuilder() {
-		return jsonMapperBuilder;
 	}
 }
