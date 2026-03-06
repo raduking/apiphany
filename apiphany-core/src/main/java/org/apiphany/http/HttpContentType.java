@@ -16,8 +16,8 @@ import org.morphix.reflection.Constructors;
  * parsing HTTP headers sent from an HTTP server which might decide not to follow the character sets defined in the
  * {@link ContentType} enumeration.
  * <p>
- * TODO: add support for other parameters besides charset (e.g. boundary for multipart types, version for application/*
- * types, format for text/* types, etc.)
+ * TODO: add support for other parameters besides charset
+ * TODO: add boundary for multipart types, version for application/* types, format for text/* types, etc.
  *
  * @author Radu Sebastian LAZIN
  */

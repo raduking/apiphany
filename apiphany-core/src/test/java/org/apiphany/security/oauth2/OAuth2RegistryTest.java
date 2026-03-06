@@ -159,5 +159,4 @@ class OAuth2RegistryTest {
 		authenticationToken.setExpiration(DEFAULT_EXPIRATION.plusSeconds(EXPIRES_IN));
 		return authenticationToken;
 	}
-
 }
