@@ -105,10 +105,11 @@ public class ExchangeClientBuilder {
 			final Class<? extends DecoratingExchangeClient> decoratorClientClass) {
 		Constructor<? extends DecoratingExchangeClient> resourceConstructor =
 				Constructors.Safe.getDeclared(decoratorClientClass, ScopedResource.class);
+		String ecClassName = ExchangeClient.class.getName();
 		if (scopedResource.isManaged()) {
 			Require.that(null != resourceConstructor, IllegalStateException::new,
-					"Decorating exchange client class {} must have a constructor with one parameter of type {}",
-					decoratorClientClass.getName(), ScopedResource.class.getName());
+					"Decorating exchange client class {} must have a constructor with one parameter of type {}<{}>",
+					decoratorClientClass.getName(), ScopedResource.class.getName(), ecClassName);
 			return Constructors.IgnoreAccess.newInstance(resourceConstructor, scopedResource);
 		}
 		// this can happen only when the initial client is unmanaged
@@ -116,8 +117,8 @@ public class ExchangeClientBuilder {
 		if (null == resourceConstructor) {
 			clientConstructor = Constructors.Safe.getDeclared(decoratorClientClass, ExchangeClient.class);
 			Require.that(null != clientConstructor, IllegalStateException::new,
-					"Decorating exchange client class {} must have a constructor with one parameter of type {} or {}",
-					decoratorClientClass.getName(), ExchangeClient.class.getName(), ScopedResource.class.getName());
+					"Decorating exchange client class {} must have a constructor with one parameter of type {} or {}<{}>",
+					decoratorClientClass.getName(), ecClassName, ScopedResource.class.getName(), ecClassName);
 		}
 		return null != resourceConstructor
 				? Constructors.IgnoreAccess.newInstance(resourceConstructor, scopedResource)
@@ -150,9 +151,9 @@ public class ExchangeClientBuilder {
 	 * @return new exchange client
 	 */
 	protected static ExchangeClient build(final Class<? extends ExchangeClient> clientClass, final ClientProperties clientProperties) {
-		Constructor<? extends ExchangeClient> constructor = Constructors.getDeclared(clientClass, ClientProperties.class);
+		Constructor<? extends ExchangeClient> constructor = Constructors.Safe.getDeclared(clientClass, ClientProperties.class);
 		Require.that(null != constructor, IllegalStateException::new,
-				"When client properties are not set exchange client class {} must not have a constructor with one parameter of type {}",
+				"When client properties are set exchange client class {} must not have a constructor with one parameter of type {}",
 				clientClass.getName(), ClientProperties.class.getName());
 		return Constructors.IgnoreAccess.newInstance(constructor, clientProperties);
 	}
@@ -271,5 +272,4 @@ public class ExchangeClientBuilder {
 	public SecuredExchangeClientBuilder securedWith() {
 		return decoratedWithBuilder(SecuredExchangeClientBuilder.class);
 	}
-
 }

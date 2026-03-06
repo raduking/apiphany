@@ -98,5 +98,4 @@ public class StringHttpContentConverter implements HttpContentConverter<String> 
 		 */
 		private static final StringHttpContentConverter INSTANCE = new StringHttpContentConverter();
 	}
-
 }

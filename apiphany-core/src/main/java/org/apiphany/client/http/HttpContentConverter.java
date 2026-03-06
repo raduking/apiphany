@@ -32,5 +32,4 @@ public interface HttpContentConverter<T> extends ContentConverter<T> {
 	default <V> List<String> getContentTypes(final V headers, final HeaderValues chain) {
 		return getHeaderValues(HttpHeader.CONTENT_TYPE, headers, chain);
 	}
-
 }
