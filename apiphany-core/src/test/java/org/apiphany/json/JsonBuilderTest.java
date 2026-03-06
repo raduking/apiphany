@@ -77,8 +77,8 @@ class JsonBuilderTest {
 	void shouldConvertObjectToPropertiesMap() {
 		Map<String, Object> result = jsonBuilder.toPropertiesMap(new A(CUSTOMER_ID1, TENANT_ID1), null);
 
-		assertThat(result.get("customerId"), equalTo(CUSTOMER_ID1));
-		assertThat(result.get("tenantId"), equalTo(TENANT_ID1));
+		assertThat(result.get("customer-id"), equalTo(CUSTOMER_ID1));
+		assertThat(result.get("tenant-id"), equalTo(TENANT_ID1));
 	}
 
 	@Test

@@ -19,6 +19,7 @@
 - Added `Jackson2JsonBuilder.custom(JsonFactory)` to build a custom `Jackson2JsonBuilder`.
 - Changed all integration tests modules to use the `org.apiphany.tests` base package so that package protected stuff doesn't leak in.
 - Added Jackson 3 support (`jackson-databind` version `3.1.0`).
+- Upgraded `morphix-all` to `1.0.24`.
 
 ---
 
