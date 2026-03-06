@@ -119,7 +119,7 @@ public class ExchangeLogger {
 			final ApiRequest<T> apiRequest,
 			final ApiResponse<T> apiResponse,
 			final Duration duration) {
-		Exception exception = apiResponse.getException();
+		Exception exception = Nullables.apply(apiResponse, ApiResponse::getException);
 		loggingFunction.log(LOG_MESSAGE_ERROR,
 				clientClass,
 				apiRequest.getMethod(),
@@ -130,7 +130,7 @@ public class ExchangeLogger {
 				Nullables.apply(apiResponse, ApiResponse::getStatus),
 				exception,
 				Temporals.toSeconds(duration.toMillis()));
-		loggingFunction.log("{}", apiResponse.getErrorMessage(), exception);
+		loggingFunction.log("{}", Nullables.apply(apiResponse, ApiResponse::getErrorMessage), exception);
 	}
 
 	/**

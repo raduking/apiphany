@@ -224,4 +224,13 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	public OAuth2TokenProvider getTokenProvider() {
 		return tokenProvider;
 	}
+
+	/**
+	 * Returns the token exchange client that does the token requests.
+	 *
+	 * @return the token exchange client that does the token requests
+	 */
+	protected ExchangeClient getTokenExchangeClient() {
+		return tokenExchangeClient.unwrap();
+	}
 }
