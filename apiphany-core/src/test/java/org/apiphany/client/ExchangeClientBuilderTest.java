@@ -8,6 +8,7 @@ import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
 import org.apiphany.lang.ScopedResource;
 import org.junit.jupiter.api.Test;
+import org.morphix.lang.Messages;
 
 /**
  * Test class for {@link ExchangeClientBuilder}.
@@ -44,6 +45,18 @@ class ExchangeClientBuilderTest {
 
 		public OtherDecoratingExchangeClient(final ExchangeClient delegate) {
 			super(delegate);
+		}
+
+		@Override
+		public <T, U> ApiResponse<U> exchange(final ApiRequest<T> request) {
+			return null;
+		}
+	}
+
+	static class InvalidDecoratingExchangeClient extends DecoratingExchangeClient {
+
+		public InvalidDecoratingExchangeClient(@SuppressWarnings("unused") final String invalidParameter) {
+			super((ExchangeClient) null);
 		}
 
 		@Override
@@ -164,5 +177,63 @@ class ExchangeClientBuilderTest {
 		assertThat(client.getClass(), equalTo(DummyDecoratingExchangeClient.class));
 		assertThat(innerClient.getClass(), equalTo(OtherDecoratingExchangeClient.class));
 		assertThat(innermostClient.getClass(), equalTo(DummyExchangeClient.class));
+	}
+
+	@Test
+	void shouldThroweExceptionWhenDecoratingWithInvalidDecoratorAndFirstClientIsManaged() throws Exception {
+		ExchangeClientBuilder builder = ExchangeClientBuilder.create()
+				.client(DummyExchangeClient.class)
+				.decoratedWith(InvalidDecoratingExchangeClient.class);
+
+		IllegalStateException exception = assertThrows(IllegalStateException.class, builder::build);
+
+		assertThat(exception.getMessage(), equalTo("Decorating exchange client class "
+				+ InvalidDecoratingExchangeClient.class.getName() + " must have a constructor with one parameter of type "
+				+ ScopedResource.class.getName() + "<" + ExchangeClient.class.getName() + ">"));
+	}
+
+	@Test
+	void shouldThrowExceptionWhenDecoratingWithInvalidDecoratorAndFirstClientIsUnmanaged() throws Exception {
+		DummyExchangeClient dummyClient = new DummyExchangeClient();
+		dummyClient.close();
+
+		ExchangeClientBuilder builder = ExchangeClientBuilder.create()
+				.client(dummyClient)
+				.decoratedWith(InvalidDecoratingExchangeClient.class);
+
+		IllegalStateException exception = assertThrows(IllegalStateException.class, builder::build);
+
+		assertThat(exception.getMessage(),
+				equalTo(Messages.message("Decorating exchange client class {} must have a constructor with one parameter of type {} or {}<{}>",
+						InvalidDecoratingExchangeClient.class.getName(), ExchangeClient.class.getName(), ScopedResource.class.getName(),
+						ExchangeClient.class.getName())));
+	}
+
+	@Test
+	void shouldThrowExceptionWhenBuildingManagedClientWithoutClientPropertiesSetAndNoDefaultConstructor() {
+		ExchangeClientBuilder builder = ExchangeClientBuilder.create()
+				.client(InvalidDecoratingExchangeClient.class);
+
+		IllegalStateException exception = assertThrows(IllegalStateException.class, builder::build);
+
+		assertThat(exception.getMessage(),
+				equalTo(Messages.message(
+						"When client properties are not set exchange client class {} must have a default constructor",
+						InvalidDecoratingExchangeClient.class.getName())));
+	}
+
+	@Test
+	void shouldThrowExceptionWhenBuildingManagedClientWithoutClientPropertiesSetAndConstructorWithClientProperties() {
+		ClientProperties clientProperties = new ClientProperties();
+		ExchangeClientBuilder builder = ExchangeClientBuilder.create()
+				.client(DummyExchangeClient.class)
+				.properties(clientProperties);
+
+		IllegalStateException exception = assertThrows(IllegalStateException.class, builder::build);
+
+		assertThat(exception.getMessage(),
+				equalTo(Messages.message(
+						"When client properties are set exchange client class {} must not have a constructor with one parameter of type {}",
+						DummyExchangeClient.class.getName(), ClientProperties.class.getName())));
 	}
 }
