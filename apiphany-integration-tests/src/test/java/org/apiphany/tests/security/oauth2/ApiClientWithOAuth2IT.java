@@ -21,6 +21,7 @@ import org.apiphany.http.HttpException;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.ScopedResource;
 import org.apiphany.lang.Strings;
+import org.apiphany.security.AuthenticationException;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationTokenProvider;
 import org.apiphany.security.AuthenticationType;
@@ -260,15 +261,16 @@ class ApiClientWithOAuth2IT extends ITWithJavaSunOAuth2Server {
 		oAuth2Properties.setRegistration(Map.of(MY_SIMPLE_APP, clientRegistration, "another-app", clientRegistration));
 		clientProperties.setCustomProperties(oAuth2Properties);
 
-		IllegalStateException exception = null;
+		AuthenticationException exception = null;
 		try (OAuth2v11ApiClient client = new OAuth2v11ApiClient(clientProperties)) {
-			// empty
-		} catch (IllegalStateException e) {
+			client.setBleedExceptions(true);
+			client.getName();
+		} catch (AuthenticationException e) {
 			exception = e;
 		}
 
 		assertNotNull(exception);
-		assertThat(exception.getMessage(), equalTo("No valid client registration found!"));
+		assertThat(exception.getMessage(), equalTo("Missing authentication token"));
 	}
 
 	@Test

@@ -1,5 +1,9 @@
 package org.apiphany.security.oauth2.client;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.DecoratingExchangeClient;
 import org.apiphany.client.ExchangeClient;
@@ -13,6 +17,7 @@ import org.apiphany.security.oauth2.OAuth2ResolvedRegistration;
 import org.apiphany.security.oauth2.OAuth2TokenProvider;
 import org.apiphany.security.oauth2.OAuth2TokenProviderSpec;
 import org.apiphany.security.token.client.TokenHttpExchangeClient;
+import org.morphix.lang.Messages;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +49,11 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	private final OAuth2TokenProvider tokenProvider;
 
 	/**
+	 * List of initialization errors.
+	 */
+	private final List<String> initializationErrors = new ArrayList<>();
+
+	/**
 	 * Decorates an exchange client with OAuth2 authentication.
 	 * <p>
 	 * If no client registration name is provided, the default one will be used, but only if there is exactly one
@@ -72,6 +82,9 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 					.build();
 			this.tokenProvider = OAuth2TokenProvider.of(specification);
 		} else {
+			for (String error : initializationErrors) {
+				LOGGER.warn(error);
+			}
 			this.tokenProvider = null;
 		}
 		setAuthenticationScheme(HttpAuthScheme.BEARER);
@@ -158,15 +171,17 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	private boolean initialize() { // NOSONAR we don't care about the parent class private method
 		ClientProperties clientProperties = getClientProperties();
 		if (null == clientProperties) {
-			LOGGER.warn("[{}] No client properties defined!", getName());
+			initializationErrors.add(Messages.message("[{}] No client properties defined!", getName()));
 			return false;
 		}
 		if (clientProperties.isDisabled()) {
-			LOGGER.warn("[{}] OAuth2 client is disabled!", getName());
+			initializationErrors.add(Messages.message("[{}] Client is disabled!", getName()));
 			return false;
 		}
 		if (null == resolvedRegistration) {
-			throw new IllegalStateException("No valid client registration found!");
+			initializationErrors.add(Messages.message("[{}] No client registration found,"
+					+ " if multiple registrations are present client registration name must be specified!", getName()));
+			return false;
 		}
 		return true;
 	}
@@ -232,5 +247,16 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	 */
 	protected ExchangeClient getTokenExchangeClient() {
 		return tokenExchangeClient.unwrap();
+	}
+
+	/**
+	 * Returns the list of initialization errors. If the list is empty, the initialization was successful and the client
+	 * should work as expected. If the list is not empty, the client is not properly initialized and may not work as
+	 * expected.
+	 *
+	 * @return the list of initialization errors
+	 */
+	public List<String> getInitializationErrors() {
+		return Collections.unmodifiableList(initializationErrors);
 	}
 }
