@@ -573,7 +573,7 @@ public class ApiClient implements AutoCloseable {
 	private <T> ApiResponse<T> exchange(final ApiRequest<T> apiRequest, final ExchangeClient exchangeClient, final BasicMeters activeMeters) {
 		return activeMeters.wrap(
 				() -> exchangeClient.exchange(apiRequest),
-				ApiResponse::isSuccessful,
+				ApiClient::isSuccessful,
 				e -> buildErrorResponse(e, apiRequest, exchangeClient));
 	}
 
@@ -586,7 +586,7 @@ public class ApiClient implements AutoCloseable {
 	 * @param duration the duration of the exchange
 	 */
 	private <T> void logExchange(final ApiRequest<T> apiRequest, final ApiResponse<T> apiResponse, final Duration duration) {
-		if (apiResponse.isSuccessful()) {
+		if (isSuccessful(apiResponse)) {
 			ExchangeLogger.logSuccess(LOGGER::debug, getClass(), apiRequest, apiResponse, duration);
 		} else {
 			ExchangeLogger.logError(LOGGER::error, getClass(), apiRequest, apiResponse, duration);
@@ -594,7 +594,20 @@ public class ApiClient implements AutoCloseable {
 	}
 
 	/**
-	 * Builds an error response.
+	 * Returns true if the API response is successful.
+	 *
+	 * @param apiResponse API response object
+	 * @return true if the API response is successful, false otherwise
+	 */
+	private static boolean isSuccessful(final ApiResponse<?> apiResponse) {
+		return null != apiResponse && apiResponse.isSuccessful();
+	}
+
+	/**
+	 * Builds an error response. This method is to be used when the API client needs to build the error response in case of
+	 * an exception during the exchange. The default implementation builds an error response with the given exception, API
+	 * request and exchange client, but it can be overridden by the implementing client to provide more specific error
+	 * responses based on the exception and the request.
 	 *
 	 * @param <T> response body type
 	 *

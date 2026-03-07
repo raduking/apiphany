@@ -871,5 +871,4 @@ public class ClientProperties {
 			this.gzip = gzip;
 		}
 	}
-
 }

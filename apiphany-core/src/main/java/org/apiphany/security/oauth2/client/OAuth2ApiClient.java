@@ -171,6 +171,7 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 			throw new UnsupportedOperationException("Unsupported authorization grant type: " + grantType);
 		}
 		return switch (method) {
+			case null -> throw new IllegalArgumentException("Client authentication method must not be null in client registration");
 			case CLIENT_SECRET_BASIC -> getTokenWithClientSecretBasic();
 			case CLIENT_SECRET_POST -> getTokenWithClientSecretPost();
 			case CLIENT_SECRET_JWT -> getTokenWithClientSecretJwt();

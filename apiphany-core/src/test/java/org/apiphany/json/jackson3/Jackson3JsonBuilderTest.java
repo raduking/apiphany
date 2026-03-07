@@ -25,6 +25,7 @@ import java.util.function.Supplier;
 
 import org.apiphany.io.IOStreams;
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.json.JsonBuilder.Indentation;
 import org.apiphany.json.jackson3.serializers.SimpleExceptionSerializer;
 import org.apiphany.lang.Strings;
 import org.junit.jupiter.api.Nested;
@@ -71,7 +72,7 @@ class Jackson3JsonBuilderTest extends Jackson3Test {
 	class ToJsonTests {
 
 		@Test
-		void shouldTransformObjectToJsonWithSpecificJackson2JsonBuilder() {
+		void shouldTransformObjectToJsonWithSpecificJackson3JsonBuilder() {
 			Jackson3JsonBuilder jacksonJsonBuilder = Jackson3JsonBuilder.custom(builder -> {
 				builder.disable(SerializationFeature.INDENT_OUTPUT);
 				builder.propertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
@@ -87,7 +88,7 @@ class Jackson3JsonBuilderTest extends Jackson3Test {
 		}
 
 		@Test
-		void shouldTransformObjectToJsonWithSpecificJackson2JsonBuilderRecursive() {
+		void shouldTransformObjectToJsonWithSpecificJackson3JsonBuilderRecursive() {
 			Jackson3JsonBuilder jacksonJsonBuilder1 = Jackson3JsonBuilder.custom(builder -> {
 				builder.disable(SerializationFeature.INDENT_OUTPUT);
 				builder.propertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
@@ -143,7 +144,7 @@ class Jackson3JsonBuilderTest extends Jackson3Test {
 			Map<String, B> elements = Map.of(CUSTOMER_ONE, new B(CUSTOMER_ID1, TENANT_ID1));
 			a.setElements(elements);
 
-			// inner Jackson2JsonBuilder will be ignored if the inner call is made through JsonBuilder.
+			// inner Jackson3JsonBuilder will be ignored if the inner call is made through JsonBuilder.
 			Object json1 = JsonBuilder.with(jacksonJsonBuilder1,
 					() -> Jackson3JsonBuilder.with(jacksonJsonBuilder2, () -> JsonBuilder.toJson(a)));
 
@@ -649,7 +650,33 @@ class Jackson3JsonBuilderTest extends Jackson3Test {
 			CustomJsonFactory customFactory = new CustomJsonFactory();
 			Jackson3JsonBuilder jacksonJsonBuilder = Jackson3JsonBuilder.custom(customFactory);
 
-			assertThat(jacksonJsonBuilder.getJsonMapperBuilder().streamFactory(), equalTo(customFactory));
+			assertThat(jacksonJsonBuilder.getJsonMapper().rebuild().streamFactory(), equalTo(customFactory));
+		}
+	}
+
+	@Nested
+	class JsonIndentationConfigurationTests {
+
+		@Test
+		void shouldConfigureJsonEnabledIndentation() {
+			JsonMapper.Builder builder = mock(JsonMapper.Builder.class);
+			doReturn(builder).when(builder).enable(SerializationFeature.INDENT_OUTPUT);
+
+			builder = Jackson3JsonBuilder.configureIndent(builder, Indentation.ENABLED);
+
+			verify(builder).enable(SerializationFeature.INDENT_OUTPUT);
+			assertThat(builder, sameInstance(builder));
+		}
+
+		@Test
+		void shouldConfigureJsonDisabledIndentation() {
+			JsonMapper.Builder builder = mock(JsonMapper.Builder.class);
+			doReturn(builder).when(builder).disable(SerializationFeature.INDENT_OUTPUT);
+
+			builder = Jackson3JsonBuilder.configureIndent(builder, Indentation.DISABLED);
+
+			verify(builder).disable(SerializationFeature.INDENT_OUTPUT);
+			assertThat(builder, sameInstance(builder));
 		}
 	}
 

@@ -100,7 +100,13 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 		if (isUrlEncoded()) {
 			this.params = RequestParameters.encode(params, getCharset());
 		}
-		return JavaObjects.cast(apiClient.exchange(this));
+		ApiResponse<T> response = JavaObjects.cast(apiClient.exchange(this));
+		if (null == response) {
+			Exception exception = new IllegalStateException("Received null response from exchange client. Exchange client: "
+					+ exchangeClient.getClass().getName() + " must return a non-null response even in case of errors.");
+			response = apiClient.buildErrorResponse(exception, JavaObjects.cast(this), exchangeClient);
+		}
+		return response;
 	}
 
 	/**
