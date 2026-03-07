@@ -363,7 +363,7 @@ class ByteBufferSubscriberTest {
 		@Test
 		@Timeout(5)
 		void shouldAllowOnlyOneThreadToWriteToBuffer() {
-			ByteBufferSubscriber subscriber = new ByteBufferSubscriber(1);
+			ByteBufferSubscriber subscriber = new ByteBufferSubscriber(1, false);
 
 			byte[] data = new byte[1];
 			ByteBuffer buffer = ByteBuffer.wrap(data);
@@ -375,6 +375,8 @@ class ByteBufferSubscriberTest {
 			Threads.execute(tasks, ExecutionType.VIRTUAL);
 
 			assertThat(subscriber.hasBufferLimitExceeded(), equalTo(true));
+			assertThat(subscriber.getReceivedBytesCount(), equalTo(1L));
+			assertThat(subscriber.getBufferCount(), equalTo(1));
 		}
 	}
 

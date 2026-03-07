@@ -129,16 +129,15 @@ public class ByteBufferSubscriber implements Subscriber<ByteBuffer> {
 				.flip();
 
 		int newBytes = copy.remaining();
-		long currentTotal = receivedBytes.get();
-
-		if (currentTotal + newBytes > maxBytes) {
-			bufferTooLarge.set(true);
-			cancel();
-			return;
-		}
 		lock.writeLock().lock();
 		try {
 			if (hasBufferLimitExceeded() || hasError()) {
+				return;
+			}
+			long currentTotal = receivedBytes.get();
+			if (currentTotal + newBytes > maxBytes) {
+				bufferTooLarge.set(true);
+				cancel();
 				return;
 			}
 			receivedBuffers.add(copy);
