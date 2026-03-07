@@ -13,6 +13,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 
 import org.apiphany.ApiRequest;
@@ -32,6 +33,7 @@ import org.apiphany.security.oauth2.OAuth2ClientRegistration;
 import org.apiphany.security.oauth2.OAuth2Properties;
 import org.apiphany.security.oauth2.OAuth2ProviderDetails;
 import org.junit.jupiter.api.Test;
+import org.morphix.lang.JavaObjects;
 
 /**
  * Test class for {@link OAuth2HttpExchangeClientBuilder}.
@@ -78,6 +80,24 @@ class OAuth2HttpExchangeClientBuilderTest {
 		}
 	}
 
+	static class DummyHttpExchangeClient extends DummyExchangeClient implements HttpExchangeClient {
+
+		public DummyHttpExchangeClient() {
+			this(null);
+		}
+
+		public DummyHttpExchangeClient(final ClientProperties properties) {
+			super(properties);
+		}
+
+		@Override
+		public <T, U> ApiResponse<U> exchange(final ApiRequest<T> request) {
+			return JavaObjects.cast(ApiResponse.create(createToken("new-token"))
+					.status(HttpStatus.OK)
+					.build());
+		}
+	}
+
 	@Test
 	@SuppressWarnings("resource")
 	void shouldAlwaysBuildManagedOAuth2HttpExchangeClientWithTheGivenClient() throws Exception {
@@ -92,11 +112,12 @@ class OAuth2HttpExchangeClientBuilderTest {
 		OAuth2HttpExchangeClient client = (OAuth2HttpExchangeClient) oauth2Client.unwrap();
 		assertNull(client.getTokenProvider(), "Token provider should be null because registration is not defined");
 		assertNull(client.getTokenClient(), "Token client should be null because registration is not defined");
+		assertThat(client.getInitializationErrors(), equalTo(List.of("[OAuth2HttpExchangeClient] No client properties defined!")));
 	}
 
 	@Test
 	@SuppressWarnings("resource")
-	void shouldBuildOAuth2HttpExchangeClientWithTheGivenTokenClient() throws Exception {
+	void shouldBuildDisabledOAuth2HttpExchangeClientWithTheGivenTokenClientWhenOAuth2IsNotConfigured() throws Exception {
 		ScopedResource<ExchangeClient> tokenClient = new ScopedResource<>(new DummyExchangeClient());
 		ScopedResource<ExchangeClient> oauth2Client = ExchangeClientBuilder.create()
 				.client(DummyExchangeClient.class)
@@ -115,6 +136,73 @@ class OAuth2HttpExchangeClientBuilderTest {
 
 		assertNull(client.getTokenProvider(), "Token provider should be null because registration is not defined");
 		assertNull(client.getTokenClient(), "Token client should not be null because it was provided");
+		assertThat(client.getInitializationErrors(), equalTo(List.of("[OAuth2HttpExchangeClient] No client properties defined!")));
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldBuildDisabledOAuth2HttpExchangeClientWithTheGivenTokenClientWithEnabledSetToFalseInClientProperties() throws Exception {
+		ClientProperties clientProperties = new ClientProperties();
+		OAuth2Properties oauth2Properties = new OAuth2Properties();
+		oauth2Properties.setRegistration(Map.of(REGISTRATION, buildRegistration(CLIENT, PROVIDER)));
+		oauth2Properties.setProvider(Map.of(PROVIDER, buildProvider(TOKEN_URI)));
+		clientProperties.setCustomProperties(oauth2Properties);
+		clientProperties.setEnabled(false);
+
+		ScopedResource<ExchangeClient> tokenClient = new ScopedResource<>(new DummyExchangeClient());
+		ScopedResource<ExchangeClient> oauth2Client = ExchangeClientBuilder.create()
+				.client(DummyExchangeClient.class)
+				.properties(clientProperties)
+				.securedWith()
+				.oAuth2(builder -> builder.tokenClient(tokenClient.unwrap()))
+				.build();
+		oauth2Client.closeIfManaged();
+
+		assertNotNull(oauth2Client);
+		assertTrue(oauth2Client.isManaged());
+
+		OAuth2HttpExchangeClient client = (OAuth2HttpExchangeClient) oauth2Client.unwrap();
+
+		assertThat(client.getTokenExchangeClient(), sameInstance(tokenClient.unwrap()));
+		assertThat(client.getTokenExchangeClient(), not(sameInstance(client.getExchangeClient())));
+
+		assertNull(client.getTokenProvider(), "Token provider should be null because registration is not defined");
+		assertNull(client.getTokenClient(), "Token client should not be null because it was provided");
+		assertThat(client.getInitializationErrors(), equalTo(List.of("[OAuth2HttpExchangeClient] Client is disabled!")));
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldBuildDisabledOAuth2HttpExchangeClientWithTheGivenTokenClientWhenMultipleRegistrationsAndNoRegistrationName() throws Exception {
+		ClientProperties clientProperties = new ClientProperties();
+		OAuth2Properties oauth2Properties = new OAuth2Properties();
+		oauth2Properties.setRegistration(Map.of(
+				REGISTRATION + 1, buildRegistration(CLIENT + 1, PROVIDER),
+				REGISTRATION + 2, buildRegistration(CLIENT + 2, PROVIDER)));
+		oauth2Properties.setProvider(Map.of(PROVIDER, buildProvider(TOKEN_URI)));
+		clientProperties.setCustomProperties(oauth2Properties);
+
+		ScopedResource<ExchangeClient> tokenClient = new ScopedResource<>(new DummyExchangeClient());
+		ScopedResource<ExchangeClient> oauth2Client = ExchangeClientBuilder.create()
+				.client(DummyExchangeClient.class)
+				.properties(clientProperties)
+				.securedWith()
+				.oAuth2(builder -> builder.tokenClient(tokenClient.unwrap()))
+				.build();
+		oauth2Client.closeIfManaged();
+
+		assertNotNull(oauth2Client);
+		assertTrue(oauth2Client.isManaged());
+
+		OAuth2HttpExchangeClient client = (OAuth2HttpExchangeClient) oauth2Client.unwrap();
+
+		assertThat(client.getTokenExchangeClient(), sameInstance(tokenClient.unwrap()));
+		assertThat(client.getTokenExchangeClient(), not(sameInstance(client.getExchangeClient())));
+
+		assertNull(client.getTokenProvider(), "Token provider should be null because registration is not defined");
+		assertNull(client.getTokenClient(), "Token client should not be null because it was provided");
+		assertThat(client.getInitializationErrors(), equalTo(List.of(
+				"[OAuth2HttpExchangeClient] No client registration found, if multiple registrations are present client registration name must be specified!")));
 	}
 
 	@Test
@@ -184,6 +272,34 @@ class OAuth2HttpExchangeClientBuilderTest {
 			AuthenticationToken token = client.getAuthenticationToken();
 
 			assertThat(token, equalTo(expectedToken));
+		} finally {
+			oauth2Client.closeIfManaged();
+		}
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldBuildAndRetrieveTokenWithGivenTokenExchangeClientClass() throws Exception {
+		ClientProperties clientProperties = new ClientProperties();
+		OAuth2Properties oauth2Properties = new OAuth2Properties();
+		oauth2Properties.setRegistration(Map.of(REGISTRATION, buildRegistration(CLIENT, PROVIDER)));
+		oauth2Properties.setProvider(Map.of(PROVIDER, buildProvider(TOKEN_URI)));
+		clientProperties.setCustomProperties(oauth2Properties);
+
+		ScopedResource<ExchangeClient> oauth2Client = ExchangeClientBuilder.create()
+				.client(DummyExchangeClient.class)
+				.properties(clientProperties)
+				.securedWith()
+				.oAuth2(builder -> builder
+						.tokenClient(DummyHttpExchangeClient.class)
+						.registrationName(REGISTRATION))
+				.build();
+
+		try {
+			OAuth2HttpExchangeClient client = (OAuth2HttpExchangeClient) oauth2Client.unwrap();
+			AuthenticationToken token = client.getAuthenticationToken();
+
+			assertThat(token.getAccessToken(), equalTo("new-token"));
 		} finally {
 			oauth2Client.closeIfManaged();
 		}

@@ -3,6 +3,7 @@ package org.apiphany.http;
 import static org.apiphany.test.Assertions.assertDefaultConstructorThrows;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -68,6 +69,16 @@ class HttpContentTypeTest {
 
 		assertThat(ct.getContentType(), equalTo(ContentType.APPLICATION_JSON));
 		assertThat(ct.getCharset(), equalTo(StandardCharsets.ISO_8859_1));
+	}
+
+	@Test
+	void shouldBuildFromEmptyStringOctetStream() {
+		HttpContentType existing = HttpContentType.from("", "");
+
+		HttpContentType ct = HttpContentType.parse(existing.toString());
+
+		assertThat(ct.getContentType(), equalTo(ContentType.APPLICATION_OCTET_STREAM));
+		assertThat(ct.getCharset(), nullValue());
 	}
 
 	@Test
