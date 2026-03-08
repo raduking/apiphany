@@ -573,7 +573,7 @@ public class ApiClient implements AutoCloseable {
 	private <T> ApiResponse<T> exchange(final ApiRequest<T> apiRequest, final ExchangeClient exchangeClient, final BasicMeters activeMeters) {
 		return activeMeters.wrap(
 				() -> exchangeClient.exchange(apiRequest),
-				ApiClient::isSuccessful,
+				ApiResponse::safeIsSuccessful,
 				e -> buildErrorResponse(e, apiRequest, exchangeClient));
 	}
 
@@ -586,21 +586,11 @@ public class ApiClient implements AutoCloseable {
 	 * @param duration the duration of the exchange
 	 */
 	private <T> void logExchange(final ApiRequest<T> apiRequest, final ApiResponse<T> apiResponse, final Duration duration) {
-		if (isSuccessful(apiResponse)) {
+		if (ApiResponse.safeIsSuccessful(apiResponse)) {
 			ExchangeLogger.logSuccess(LOGGER::debug, getClass(), apiRequest, apiResponse, duration);
 		} else {
 			ExchangeLogger.logError(LOGGER::error, getClass(), apiRequest, apiResponse, duration);
 		}
-	}
-
-	/**
-	 * Returns true if the API response is successful.
-	 *
-	 * @param apiResponse API response object
-	 * @return true if the API response is successful, false otherwise
-	 */
-	private static boolean isSuccessful(final ApiResponse<?> apiResponse) {
-		return null != apiResponse && apiResponse.isSuccessful();
 	}
 
 	/**

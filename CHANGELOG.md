@@ -1,5 +1,12 @@
 ## Release Notes
 
+`1.1.7`
+
+- Added `ApiResponse.safeIsSuccessful` to check if an API response is not null and is successful.
+- Fixed `ByteBufferSubscriber` concurrent buffer size calculation.
+
+---
+
 `1.1.6`
 
 - Added `AbstractHttpExchangeClient.getHeaderValues` method that returns a list with all the values for a given header.
