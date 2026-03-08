@@ -112,8 +112,8 @@ public class ExtendedMasterSecret implements TLSExtension {
 			return true;
 		}
 		if (obj instanceof ExtendedMasterSecret that) {
-			return type == that.type
-					&& Objects.equals(length, that.length);
+			return this.type == that.type
+					&& Objects.equals(this.length, that.length);
 		}
 		return false;
 	}

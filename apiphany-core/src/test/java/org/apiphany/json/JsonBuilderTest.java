@@ -412,7 +412,7 @@ class JsonBuilderTest {
 	class IndentationTests {
 
 		@ParameterizedTest
-		@ValueSource(booleans = {true, false})
+		@ValueSource(booleans = { true, false })
 		void shouldBuildIndentationEnumFromBoolean(final boolean value) {
 			JsonBuilder.Indentation indentation = JsonBuilder.Indentation.fromBoolean(value);
 

@@ -10,58 +10,58 @@ import org.apiphany.io.UInt16;
 import org.junit.jupiter.api.Test;
 
 /**
- * Test class for {@link ExtendedMasterSecret}.
+ * Test class for {@link RenegotiationInfoExtended}.
  *
  * @author Radu Sebastian LAZIN
  */
-class ExtendedMasterSecretTest {
+class RenegotiationInfoExtendedTest {
 
 	@Test
 	void shouldReadFromInputStream() throws Exception {
 		byte[] inputData = new byte[] {
-				0x00, 0x16, // extended_master_secret type
+				0x00, 0x17, // renegotiation_info_extended type
 				0x00, 0x00, // extension length (0 for this extension)
 		};
 
-		ExtendedMasterSecret ems = ExtendedMasterSecret.from(new ByteArrayInputStream(inputData));
+		RenegotiationInfoExtended ems = RenegotiationInfoExtended.from(new ByteArrayInputStream(inputData));
 
-		assertEquals(ExtensionType.EXTENDED_MASTER_SECRET, ems.getType());
+		assertEquals(ExtensionType.RENEGOTIATION_INFO_EXTENDED, ems.getType());
 		assertEquals(UInt16.ZERO, ems.getLength());
 	}
 
 	@Test
 	void shouldEqualSameValuesAndSameReference() {
-		ExtendedMasterSecret ems1 = new ExtendedMasterSecret();
-		ExtendedMasterSecret ems2 = new ExtendedMasterSecret();
+		RenegotiationInfoExtended rie1 = new RenegotiationInfoExtended();
+		RenegotiationInfoExtended rie2 = new RenegotiationInfoExtended();
 
 		// same reference
-		assertEquals(ems1, ems1);
+		assertEquals(rie1, rie1);
 
 		// different instance, same values
-		assertEquals(ems1, ems2);
-		assertEquals(ems2, ems1);
+		assertEquals(rie1, rie2);
+		assertEquals(rie2, rie1);
 
 		// hashCode contract (important for coverage + correctness)
-		assertEquals(ems1.hashCode(), ems2.hashCode());
+		assertEquals(rie1.hashCode(), rie2.hashCode());
 	}
 
 	@Test
 	void shouldNotEqualIfDifferentObjects() {
-		ExtendedMasterSecret ems1 = new ExtendedMasterSecret();
-		ExtendedMasterSecret ems2 = new ExtendedMasterSecret(ExtensionType.EXTENDED_MASTER_SECRET, UInt16.of((short) 0x0005));
+		RenegotiationInfoExtended rie1 = new RenegotiationInfoExtended();
+		RenegotiationInfoExtended rie2 = new RenegotiationInfoExtended(ExtensionType.RENEGOTIATION_INFO_EXTENDED, UInt16.of((short) 0x0005));
 
 		// different objects
-		assertNotEquals(ems1, ems2);
-		assertNotEquals(ems2, ems1);
+		assertNotEquals(rie1, rie2);
+		assertNotEquals(rie2, rie1);
 
 		// different types
-		assertNotEquals(ems1, null);
-		assertNotEquals(ems2, "not-a-status-request");
+		assertNotEquals(rie1, null);
+		assertNotEquals(rie2, "not-a-status-request");
 	}
 
 	@Test
 	void shouldBuildHashcodeWithAllFields() {
-		ExtendedMasterSecret sr = new ExtendedMasterSecret();
+		RenegotiationInfoExtended sr = new RenegotiationInfoExtended();
 
 		int expectedHash = Objects.hash(
 				sr.getType(),
