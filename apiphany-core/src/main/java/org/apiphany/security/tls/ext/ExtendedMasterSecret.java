@@ -3,6 +3,7 @@ package org.apiphany.security.tls.ext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.Objects;
 
 import org.apiphany.io.UInt16;
 import org.apiphany.security.tls.TLSExtension;
@@ -66,7 +67,7 @@ public class ExtendedMasterSecret implements TLSExtension {
 	}
 
 	/**
-	 * Parses an {@link ExtendedMasterSecret} extension with known extension type.
+	 * Parses an {@link ExtendedMasterSecret} extension with known and read extension type.
 	 *
 	 * @param is the input stream containing the extension data
 	 * @param type the expected extension type
@@ -100,6 +101,29 @@ public class ExtendedMasterSecret implements TLSExtension {
 	@Override
 	public String toString() {
 		return TLSObject.serialize(this);
+	}
+
+	/**
+	 * @see Object#equals(Object)
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof ExtendedMasterSecret that) {
+			return type == that.type
+					&& Objects.equals(length, that.length);
+		}
+		return false;
+	}
+
+	/**
+	 * @see Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hash(type, length);
 	}
 
 	/**

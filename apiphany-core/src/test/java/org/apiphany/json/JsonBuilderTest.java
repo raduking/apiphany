@@ -18,7 +18,10 @@ import org.apiphany.lang.LibraryDescriptor;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.annotation.Creator;
 import org.apiphany.lang.annotation.FieldName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.morphix.convert.function.SimpleConverter;
 import org.morphix.lang.function.Consumers;
 import org.morphix.reflection.Constructors;
@@ -403,5 +406,22 @@ class JsonBuilderTest {
 
 		assertThat(response.getError(), equalTo(ERROR));
 		assertThat(response.getErrorDescription(), equalTo(ERROR_DESCRIPTION));
+	}
+
+	@Nested
+	class IndentationTests {
+
+		@ParameterizedTest
+		@ValueSource(booleans = {true, false})
+		void shouldBuildIndentationEnumFromBoolean(final boolean value) {
+			JsonBuilder.Indentation indentation = JsonBuilder.Indentation.fromBoolean(value);
+
+			if (value) {
+				assertThat(indentation, equalTo(JsonBuilder.Indentation.ENABLED));
+			} else {
+				assertThat(indentation, equalTo(JsonBuilder.Indentation.DISABLED));
+			}
+		}
+
 	}
 }
