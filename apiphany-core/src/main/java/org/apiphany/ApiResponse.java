@@ -379,6 +379,16 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	}
 
 	/**
+	 * Returns true if the given response is not null and successful, false otherwise.
+	 *
+	 * @param response the response to check
+	 * @return true if the given response is not null and successful, false otherwise
+	 */
+	public static boolean safeIsSuccessful(final ApiResponse<?> response) {
+		return null != response && response.isSuccessful();
+	}
+
+	/**
 	 * @see ApiMessage#getDisplayHeaders()
 	 */
 	@Override
