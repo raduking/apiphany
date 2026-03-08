@@ -561,7 +561,9 @@ public class ApiClient implements AutoCloseable {
 	}
 
 	/**
-	 * API call for resource with meters on the given exchange client.
+	 * API call for resource with meters on the given exchange client. This method never returns null, it always returns an
+	 * API response object, even in case of exceptions during the exchange, then the API response object contains the
+	 * exception details.
 	 *
 	 * @param <T> request body type
 	 *
@@ -574,7 +576,7 @@ public class ApiClient implements AutoCloseable {
 		return activeMeters.wrap(
 				() -> exchangeClient.exchange(apiRequest),
 				ApiResponse::safeIsSuccessful,
-				e -> buildErrorResponse(e, apiRequest, exchangeClient));
+				exception -> buildErrorResponse(exception, apiRequest, exchangeClient));
 	}
 
 	/**
