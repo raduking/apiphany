@@ -3,6 +3,7 @@ package org.apiphany.security.tls.ext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.Objects;
 
 import org.apiphany.io.UInt16;
 import org.apiphany.security.tls.TLSExtension;
@@ -101,6 +102,29 @@ public class RenegotiationInfoExtended implements TLSExtension {
 	@Override
 	public String toString() {
 		return TLSObject.serialize(this);
+	}
+
+	/**
+	 * @see Object#equals(Object)
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof RenegotiationInfoExtended that) {
+			return this.type == that.type
+					&& Objects.equals(this.length, that.length);
+		}
+		return false;
+	}
+
+	/**
+	 * @see Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hash(type, length);
 	}
 
 	/**

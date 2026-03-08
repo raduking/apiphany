@@ -1,7 +1,9 @@
 package org.apiphany.security.oauth2.client;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -18,6 +20,7 @@ import org.apiphany.http.HttpStatus;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.ScopedResource;
 import org.apiphany.lang.Strings;
+import org.apiphany.security.AuthenticationException;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationType;
 import org.apiphany.security.oauth2.ClientAuthenticationMethod;
@@ -59,6 +62,52 @@ class OAuth2HttpExchangeClientTest {
 
 		clientProperties = new ClientProperties();
 		clientProperties.setCustomProperties(oAuth2Properties);
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldReturnTokenOnGetAuthenticationTokenWhenToken() throws Exception {
+		JavaNetHttpExchangeClient tokenExchangeClient = mock(JavaNetHttpExchangeClient.class);
+		doReturn(AuthenticationType.NONE).when(tokenExchangeClient).getAuthenticationType();
+		doReturn(TOKEN_EXCHANGE_CLIENT).when(tokenExchangeClient).getName();
+
+		AuthenticationToken token = new AuthenticationToken();
+		token.setExpiresIn(300);
+		ApiResponse<AuthenticationToken> apiResponse = ApiResponse.create(token).status(HttpStatus.OK).build();
+		doReturn(apiResponse).when(tokenExchangeClient).exchange(any());
+
+		JavaNetHttpExchangeClient exchangeClient = mock(JavaNetHttpExchangeClient.class);
+		doReturn(clientProperties).when(exchangeClient).getClientProperties();
+		doReturn(AuthenticationType.NONE).when(exchangeClient).getAuthenticationType();
+		doReturn(MAIN_EXCHANGE_CLIENT).when(exchangeClient).getName();
+
+		try (OAuth2HttpExchangeClient client = new OAuth2HttpExchangeClient(exchangeClient, tokenExchangeClient, MY_SIMPLE_APP)) {
+			AuthenticationToken authenticationToken = client.getAuthenticationToken();
+
+			assertThat(authenticationToken, equalTo(token));
+		}
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldThrowExceptionOnGetAuthenticationTokenWhenTokenIsNull() throws Exception {
+		JavaNetHttpExchangeClient tokenExchangeClient = mock(JavaNetHttpExchangeClient.class);
+		doReturn(AuthenticationType.NONE).when(tokenExchangeClient).getAuthenticationType();
+		doReturn(TOKEN_EXCHANGE_CLIENT).when(tokenExchangeClient).getName();
+
+		ApiResponse<AuthenticationToken> apiResponse = ApiResponse.create((AuthenticationToken) null).status(HttpStatus.OK).build();
+		doReturn(apiResponse).when(tokenExchangeClient).exchange(any());
+
+		JavaNetHttpExchangeClient exchangeClient = mock(JavaNetHttpExchangeClient.class);
+		doReturn(clientProperties).when(exchangeClient).getClientProperties();
+		doReturn(AuthenticationType.NONE).when(exchangeClient).getAuthenticationType();
+		doReturn(MAIN_EXCHANGE_CLIENT).when(exchangeClient).getName();
+
+		try (OAuth2HttpExchangeClient client = new OAuth2HttpExchangeClient(exchangeClient, tokenExchangeClient, MY_SIMPLE_APP)) {
+			assertThat(client.getAuthenticationType(), equalTo(AuthenticationType.OAUTH2));
+			AuthenticationException exception = assertThrows(AuthenticationException.class, client::getAuthenticationToken);
+			assertThat(exception.getMessage(), equalTo("Missing authentication token"));
+		}
 	}
 
 	@Test
@@ -132,6 +181,31 @@ class OAuth2HttpExchangeClientTest {
 
 		verify(tokenExchangeClient).close();
 		verify(exchangeClient).close();
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldBuildExchangeClientWithDifferentUnmanagedExchangeAndTokenExchangeClientsAndNotCloseResources() throws Exception {
+		JavaNetHttpExchangeClient tokenExchangeClient = mock(JavaNetHttpExchangeClient.class);
+		doReturn(AuthenticationType.NONE).when(tokenExchangeClient).getAuthenticationType();
+		doReturn(TOKEN_EXCHANGE_CLIENT).when(tokenExchangeClient).getName();
+
+		AuthenticationToken token = new AuthenticationToken();
+		token.setExpiresIn(300);
+		ApiResponse<AuthenticationToken> apiResponse = ApiResponse.create(token).status(HttpStatus.OK).build();
+		doReturn(apiResponse).when(tokenExchangeClient).exchange(any());
+
+		JavaNetHttpExchangeClient exchangeClient = mock(JavaNetHttpExchangeClient.class);
+		doReturn(clientProperties).when(exchangeClient).getClientProperties();
+		doReturn(AuthenticationType.NONE).when(exchangeClient).getAuthenticationType();
+		doReturn(MAIN_EXCHANGE_CLIENT).when(exchangeClient).getName();
+
+		try (OAuth2HttpExchangeClient oAuth2ExchangeClient = new OAuth2HttpExchangeClient(exchangeClient, tokenExchangeClient)) {
+			assertThat(oAuth2ExchangeClient.getTokenClient(), notNullValue());
+		}
+
+		verify(tokenExchangeClient, never()).close();
+		verify(exchangeClient, never()).close();
 	}
 
 	@Test

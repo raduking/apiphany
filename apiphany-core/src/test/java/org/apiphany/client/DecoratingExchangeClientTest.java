@@ -52,4 +52,24 @@ class DecoratingExchangeClientTest {
 			verify(delegate).exchange(request);
 		}
 	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldDelegateGetClientPropertiesCall() throws Exception {
+		try (ExchangeClient delegate = mock(ExchangeClient.class); DecoratingExchangeClient client = new DecoratingExchangeClient(delegate)) {
+			client.getClientProperties();
+
+			verify(delegate).getClientProperties();
+		}
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldDelegateGetAuthenticationTypeCall() throws Exception {
+		try (ExchangeClient delegate = mock(ExchangeClient.class); DecoratingExchangeClient client = new DecoratingExchangeClient(delegate)) {
+			client.getAuthenticationType();
+
+			verify(delegate).getAuthenticationType();
+		}
+	}
 }
