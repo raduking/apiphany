@@ -161,10 +161,10 @@ public class SupportedGroups implements TLSExtension {
 			return true;
 		}
 		if (obj instanceof SupportedGroups that) {
-			return Objects.equals(this.type, that.type) &&
-					Objects.equals(this.length, that.length) &&
-					Objects.equals(this.groupsSize, that.groupsSize) &&
-					Objects.equals(this.groups, that.groups);
+			return Objects.equals(this.type, that.type)
+					&& Objects.equals(this.length, that.length)
+					&& Objects.equals(this.groupsSize, that.groupsSize)
+					&& Objects.equals(this.groups, that.groups);
 		}
 		return false;
 	}

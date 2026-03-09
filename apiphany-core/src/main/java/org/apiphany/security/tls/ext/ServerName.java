@@ -121,10 +121,10 @@ public class ServerName implements TLSObject {
 			return true;
 		}
 		if (obj instanceof ServerName that) {
-			return Objects.equals(this.size, that.size) &&
-					Objects.equals(this.type, that.type) &&
-					Objects.equals(this.length, that.length) &&
-					Objects.equals(this.name, that.name);
+			return Objects.equals(this.size, that.size)
+					&& Objects.equals(this.type, that.type)
+					&& Objects.equals(this.length, that.length)
+					&& Objects.equals(this.name, that.name);
 		}
 		return false;
 	}
