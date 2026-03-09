@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.apiphany.io.ByteSizeable;
 import org.apiphany.io.UInt16;
@@ -150,6 +151,31 @@ public class SignatureAlgorithms implements TLSExtension {
 	@Override
 	public String toString() {
 		return TLSObject.serialize(this);
+	}
+
+	/**
+	 * @see Object#equals(Object)
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof SignatureAlgorithms that) {
+			return Objects.equals(this.type, that.type) &&
+					Objects.equals(this.length, that.length) &&
+					Objects.equals(this.algorithmsSize, that.algorithmsSize) &&
+					Objects.equals(this.algorithms, that.algorithms);
+		}
+		return false;
+	}
+
+	/**
+	 * @see Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hash(type, length, algorithmsSize, algorithms);
 	}
 
 	/**

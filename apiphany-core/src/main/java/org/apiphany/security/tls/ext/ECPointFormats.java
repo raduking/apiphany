@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.apiphany.io.ByteSizeable;
 import org.apiphany.io.UInt16;
@@ -67,6 +68,28 @@ public class ECPointFormats implements TLSExtension {
 	}
 
 	/**
+	 * Constructs an {@link ECPointFormats} extension from a list of point formats.
+	 *
+	 * @param formats the list of supported point formats (0 = uncompressed)
+	 */
+	public ECPointFormats(final List<UInt8> formats) {
+		this(
+				ExtensionType.EC_POINTS_FORMAT,
+				UInt16.of((short) (UInt8.BYTES + formats.size() * UInt8.BYTES)),
+				UInt8.of((byte) formats.size()),
+				formats);
+	}
+
+	/**
+	 * Constructs an {@link ECPointFormats} extension from varargs point formats.
+	 *
+	 * @param formats the supported point formats to include (0 = uncompressed)
+	 */
+	public ECPointFormats(final UInt8... formats) {
+		this(List.of(formats));
+	}
+
+	/**
 	 * Parses an {@link ECPointFormats} extension from an input stream.
 	 *
 	 * @param is the input stream containing the extension data
@@ -125,6 +148,31 @@ public class ECPointFormats implements TLSExtension {
 	@Override
 	public String toString() {
 		return TLSObject.serialize(this);
+	}
+
+	/**
+	 * @see Object#equals(Object)
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof ECPointFormats that) {
+			return Objects.equals(this.type, that.type) &&
+					Objects.equals(this.length, that.length) &&
+					Objects.equals(this.formatsSize, that.formatsSize) &&
+					Objects.equals(this.formats, that.formats);
+		}
+		return false;
+	}
+
+	/**
+	 * @see Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hash(type, length, formatsSize, formats);
 	}
 
 	/**

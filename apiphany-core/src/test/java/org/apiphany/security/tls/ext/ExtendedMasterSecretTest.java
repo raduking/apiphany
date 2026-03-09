@@ -61,12 +61,12 @@ class ExtendedMasterSecretTest {
 
 	@Test
 	void shouldBuildHashcodeWithAllFields() {
-		ExtendedMasterSecret sr = new ExtendedMasterSecret();
+		ExtendedMasterSecret ems = new ExtendedMasterSecret();
 
 		int expectedHash = Objects.hash(
-				sr.getType(),
-				sr.getLength());
+				ems.getType(),
+				ems.getLength());
 
-		assertEquals(expectedHash, sr.hashCode());
+		assertEquals(expectedHash, ems.hashCode());
 	}
 }

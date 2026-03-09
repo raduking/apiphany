@@ -25,7 +25,7 @@ public enum ExtensionType implements TLSObject {
 	/**
 	 * Server Name Indication extension (RFC 6066).
 	 */
-	SERVER_NAME((short) 0x0000, ServerNames::from),
+	SERVER_NAME_INDICATION((short) 0x0000, ServerNames::from),
 
 	/**
 	 * Certificate Status Request extension (RFC 6066).
@@ -68,7 +68,7 @@ public enum ExtensionType implements TLSObject {
 	EXTENDED_MASTER_SECRET((short) 0x0016, ExtendedMasterSecret::from),
 
 	/**
-	 * OpenSSL-specific extended renegotiation indication (non-standard).
+	 * OpenSSL-specific Extended Renegotiation Indication (non-standard).
 	 */
 	RENEGOTIATION_INFO_EXTENDED((short) 0x0017, RenegotiationInfoExtended::from);
 

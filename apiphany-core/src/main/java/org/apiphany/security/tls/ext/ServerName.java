@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 import org.apiphany.io.BytesWrapper;
 import org.apiphany.io.UInt16;
@@ -109,6 +110,31 @@ public class ServerName implements TLSObject {
 	@Override
 	public String toString() {
 		return TLSObject.serialize(this);
+	}
+
+	/**
+	 * @see Object#equals(Object)
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof ServerName that) {
+			return Objects.equals(this.size, that.size) &&
+					Objects.equals(this.type, that.type) &&
+					Objects.equals(this.length, that.length) &&
+					Objects.equals(this.name, that.name);
+		}
+		return false;
+	}
+
+	/**
+	 * @see Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hash(size, type, length, name);
 	}
 
 	/**
