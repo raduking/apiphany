@@ -63,9 +63,26 @@ public class ByteBufferSubscriber implements Subscriber<ByteBuffer> {
 	private final long maxBytes;
 
 	/**
-	 * Flag to determine whether to clear received buffers on cancellation to free up memory.
+	 * Cancel behavior to determine whether to clear buffers on cancellation.
 	 */
-	private final boolean clearOnCancel;
+	private final CancelBehavior cancelBehavior;
+
+	/**
+	 * Enum to define cancel behavior options for the subscriber.
+	 */
+	public static enum CancelBehavior {
+
+		/**
+		 * Clear received buffers on cancellation to free up memory.
+		 */
+		CLEAR_BUFFERS,
+
+		/**
+		 * Retain received buffers on cancellation, allowing retrieval of data even after cancellation. Use with caution to
+		 * avoid memory issues.
+		 */
+		RETAIN_BUFFERS
+	}
 
 	/**
 	 * Default constructor.
@@ -81,21 +98,22 @@ public class ByteBufferSubscriber implements Subscriber<ByteBuffer> {
 	 * @throws IllegalArgumentException if maxBytes is negative
 	 */
 	public ByteBufferSubscriber(final long maxBytes) {
-		this(maxBytes, true);
+		this(maxBytes, CancelBehavior.CLEAR_BUFFERS);
 	}
 
 	/**
 	 * Constructor with configurable max bytes limit.
 	 *
 	 * @param maxBytes maximum number of bytes to store
+	 * @param cancelBehavior behavior to determine whether to clear buffers on cancellation
 	 * @throws IllegalArgumentException if maxBytes is negative
 	 */
-	public ByteBufferSubscriber(final long maxBytes, final boolean clearOnCancel) {
+	public ByteBufferSubscriber(final long maxBytes, final CancelBehavior cancelBehavior) {
 		if (maxBytes < 0) {
 			throw new IllegalArgumentException("maxBytes cannot be negative");
 		}
 		this.maxBytes = maxBytes;
-		this.clearOnCancel = clearOnCancel;
+		this.cancelBehavior = cancelBehavior;
 	}
 
 	/**
@@ -319,7 +337,7 @@ public class ByteBufferSubscriber implements Subscriber<ByteBuffer> {
 		if (subscription != null) {
 			subscription.cancel();
 		}
-		if (clearOnCancel) {
+		if (CancelBehavior.CLEAR_BUFFERS == cancelBehavior) {
 			clear();
 		}
 	}

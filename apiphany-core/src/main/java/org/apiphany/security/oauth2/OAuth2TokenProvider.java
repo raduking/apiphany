@@ -169,9 +169,9 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 * @return the expiration date
 	 */
 	protected Instant getTokenExpiration() {
-		return Nullables.notNull(authenticationToken)
-				.andNotNull(AuthenticationToken::getExpiration)
-				.valueOrDefault(this::getDefaultTokenExpiration);
+		return Nullables.whenNotNull(authenticationToken)
+				.thenNotNull(AuthenticationToken::getExpiration)
+				.orElse(this::getDefaultTokenExpiration);
 	}
 
 	/**
@@ -197,15 +197,16 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 * Updates the authentication token.
 	 */
 	private void updateAuthenticationToken() {
-		LOGGER.debug("[{}] Token expired, requesting new token.", getClientRegistrationName());
+		String clientRegistrationName = getClientRegistrationName();
+		LOGGER.debug("[{}] Token expired, requesting new token.", clientRegistrationName);
 		Instant expiration = Instant.now();
 		try {
 			AuthenticationToken token = getAuthenticationTokenFromClient();
 			token.setExpiration(expiration.plusSeconds(token.getExpiresIn()));
 			setAuthenticationToken(token);
-			LOGGER.debug("[{}] Successfully retrieved new token.", getClientRegistrationName());
+			LOGGER.debug("[{}] Successfully retrieved new token.", clientRegistrationName);
 		} catch (Exception e) {
-			LOGGER.error("[{}] Error retrieving new token.", getClientRegistrationName(), e);
+			LOGGER.error("[{}] Error retrieving new token.", clientRegistrationName, e);
 		}
 		scheduleTokenUpdate();
 	}

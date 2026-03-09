@@ -17,6 +17,7 @@ import java.util.concurrent.Flow.Subscription;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apiphany.io.ByteBufferSubscriber.CancelBehavior;
 import org.apiphany.lang.Bytes;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -363,7 +364,7 @@ class ByteBufferSubscriberTest {
 		@Test
 		@Timeout(5)
 		void shouldAllowOnlyOneThreadToWriteToBuffer() {
-			ByteBufferSubscriber subscriber = new ByteBufferSubscriber(1, false);
+			ByteBufferSubscriber subscriber = new ByteBufferSubscriber(1, CancelBehavior.RETAIN_BUFFERS);
 
 			byte[] data = new byte[1];
 			ByteBuffer buffer = ByteBuffer.wrap(data);
