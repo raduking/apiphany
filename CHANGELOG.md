@@ -5,6 +5,7 @@
 - Added `ApiResponse.safeIsSuccessful` to check if an API response is not null and is successful.
 - Fixed `ByteBufferSubscriber` concurrent buffer size calculation.
 - Added `ByteBufferSubscriber.CancelBehavior` enum that specify all cancel behaviors.
+- Renamed `ExtensionType.SERVER_NAME` to `SERVER_NAME_INDICATION`.
 
 ---
 

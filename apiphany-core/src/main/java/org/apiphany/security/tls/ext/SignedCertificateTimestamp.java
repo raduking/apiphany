@@ -3,6 +3,7 @@ package org.apiphany.security.tls.ext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.Objects;
 
 import org.apiphany.io.BytesWrapper;
 import org.apiphany.io.UInt16;
@@ -47,6 +48,17 @@ public class SignedCertificateTimestamp implements TLSExtension {
 		this.type = type;
 		this.length = length;
 		this.data = data;
+	}
+
+	/**
+	 * Constructs a SignedCertificateTimestamp extension with specified fields.
+	 *
+	 * @param type the extension type (should be SIGNED_CERTIFICATE_TIMESTAMP)
+	 * @param length the length of the SCT data
+	 * @param data the SCT data bytes
+	 */
+	public SignedCertificateTimestamp(final ExtensionType type, final short length, final byte[] data) {
+		this(type, UInt16.of(length), new BytesWrapper(data));
 	}
 
 	/**
@@ -111,6 +123,30 @@ public class SignedCertificateTimestamp implements TLSExtension {
 	@Override
 	public String toString() {
 		return TLSObject.serialize(this);
+	}
+
+	/**
+	 * @see Object#equals(Object)
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof SignedCertificateTimestamp that) {
+			return this.type == that.type
+					&& Objects.equals(this.length, that.length)
+					&& Objects.equals(this.data, that.data);
+		}
+		return false;
+	}
+
+	/**
+	 * @see Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hash(type, length, data);
 	}
 
 	/**

@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.apiphany.io.ByteSizeable;
 import org.apiphany.io.UInt16;
@@ -70,6 +71,15 @@ public class SupportedGroups implements TLSExtension {
 				UInt16.of((short) (namedCurves.size() * NamedCurve.BYTES + UInt16.BYTES)),
 				UInt16.of((short) (namedCurves.size() * NamedCurve.BYTES)),
 				namedCurves);
+	}
+
+	/**
+	 * Constructs a SupportedGroups extension from a variable number of named curves.
+	 *
+	 * @param namedCurves the supported elliptic curves
+	 */
+	public SupportedGroups(final NamedCurve... namedCurves) {
+		this(List.of(namedCurves));
 	}
 
 	/**
@@ -140,6 +150,31 @@ public class SupportedGroups implements TLSExtension {
 	@Override
 	public String toString() {
 		return TLSObject.serialize(this);
+	}
+
+	/**
+	 * @see Object#equals(Object)
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof SupportedGroups that) {
+			return Objects.equals(this.type, that.type) &&
+					Objects.equals(this.length, that.length) &&
+					Objects.equals(this.groupsSize, that.groupsSize) &&
+					Objects.equals(this.groups, that.groups);
+		}
+		return false;
+	}
+
+	/**
+	 * @see Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hash(type, length, groupsSize, groups);
 	}
 
 	/**

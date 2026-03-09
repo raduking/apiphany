@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.apiphany.io.ByteSizeable;
 import org.apiphany.io.UInt16;
@@ -24,7 +25,7 @@ import org.apiphany.security.tls.TLSObject;
 public class ServerNames implements TLSExtension {
 
 	/**
-	 * The extension type (server_name).
+	 * The extension type (server_name_indication).
 	 */
 	private final ExtensionType type;
 
@@ -60,7 +61,7 @@ public class ServerNames implements TLSExtension {
 	 * @param serverNames the list of server names
 	 */
 	public ServerNames(final UInt16 size, final List<ServerName> serverNames) {
-		this(ExtensionType.SERVER_NAME, size, serverNames, true);
+		this(ExtensionType.SERVER_NAME_INDICATION, size, serverNames, true);
 	}
 
 	/**
@@ -70,6 +71,15 @@ public class ServerNames implements TLSExtension {
 	 */
 	public ServerNames(final List<String> names) {
 		this(UInt16.of((short) names.size()), names.stream().map(ServerName::new).toList());
+	}
+
+	/**
+	 * Constructs a {@link ServerNames} extension from varargs host name strings.
+	 *
+	 * @param names the host names to include
+	 */
+	public ServerNames(final String... names) {
+		this(List.of(names));
 	}
 
 	/**
@@ -130,6 +140,30 @@ public class ServerNames implements TLSExtension {
 	@Override
 	public String toString() {
 		return TLSObject.serialize(this);
+	}
+
+	/**
+	 * @see Object#equals(Object)
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof ServerNames that) {
+			return this.type == that.type
+					&& Objects.equals(this.length, that.length)
+					&& Objects.equals(this.entries, that.entries);
+		}
+		return false;
+	}
+
+	/**
+	 * @see Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hash(type, length, entries);
 	}
 
 	/**

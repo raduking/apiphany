@@ -56,17 +56,17 @@ class RenegotiationInfoExtendedTest {
 
 		// different types
 		assertNotEquals(rie1, null);
-		assertNotEquals(rie2, "not-a-status-request");
+		assertNotEquals(rie2, "not-a-renegotiation-info-extended");
 	}
 
 	@Test
 	void shouldBuildHashcodeWithAllFields() {
-		RenegotiationInfoExtended sr = new RenegotiationInfoExtended();
+		RenegotiationInfoExtended rie = new RenegotiationInfoExtended();
 
 		int expectedHash = Objects.hash(
-				sr.getType(),
-				sr.getLength());
+				rie.getType(),
+				rie.getLength());
 
-		assertEquals(expectedHash, sr.hashCode());
+		assertEquals(expectedHash, rie.hashCode());
 	}
 }
