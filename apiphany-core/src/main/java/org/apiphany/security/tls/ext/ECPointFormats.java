@@ -159,10 +159,10 @@ public class ECPointFormats implements TLSExtension {
 			return true;
 		}
 		if (obj instanceof ECPointFormats that) {
-			return Objects.equals(this.type, that.type) &&
-					Objects.equals(this.length, that.length) &&
-					Objects.equals(this.formatsSize, that.formatsSize) &&
-					Objects.equals(this.formats, that.formats);
+			return this.type == that.type
+					&& Objects.equals(this.length, that.length)
+					&& Objects.equals(this.formatsSize, that.formatsSize)
+					&& Objects.equals(this.formats, that.formats);
 		}
 		return false;
 	}

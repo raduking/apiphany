@@ -162,10 +162,10 @@ public class SignatureAlgorithms implements TLSExtension {
 			return true;
 		}
 		if (obj instanceof SignatureAlgorithms that) {
-			return Objects.equals(this.type, that.type) &&
-					Objects.equals(this.length, that.length) &&
-					Objects.equals(this.algorithmsSize, that.algorithmsSize) &&
-					Objects.equals(this.algorithms, that.algorithms);
+			return Objects.equals(this.type, that.type)
+					&& Objects.equals(this.length, that.length)
+					&& Objects.equals(this.algorithmsSize, that.algorithmsSize)
+					&& Objects.equals(this.algorithms, that.algorithms);
 		}
 		return false;
 	}
