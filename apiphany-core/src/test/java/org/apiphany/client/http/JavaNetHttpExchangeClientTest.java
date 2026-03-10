@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -82,77 +83,81 @@ class JavaNetHttpExchangeClientTest {
 	@Mock
 	private ApiClient apiClient;
 
-	@Test
-	void shouldBuildJavaNetHttpExchangeClient() throws Exception {
-		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
-		exchangeClient.close();
+	@Nested
+	class ConstructorTests {
 
-		assertThat(exchangeClient.getClientProperties(), equalTo(ClientProperties.defaults()));
-	}
+		@Test
+		void shouldBuildJavaNetHttpExchangeClient() throws Exception {
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+			exchangeClient.close();
 
-	@Test
-	@SuppressWarnings("resource")
-	void shouldSetDefaultVersionIfProvidedVersionIsNull() throws Exception {
-		HttpClient.Builder httpClientBuilder = mock(HttpClient.Builder.class);
-		HttpClient httpClient = mock(HttpClient.class);
-		doReturn(httpClient).when(httpClientBuilder).build();
+			assertThat(exchangeClient.getClientProperties(), equalTo(ClientProperties.defaults()));
+		}
 
-		ClientProperties properties = new ClientProperties();
-		JavaNetHttpProperties javaNetHttpProperties = new JavaNetHttpProperties();
-		javaNetHttpProperties.getRequest().setVersion(null);
-		properties.setCustomProperties(JavaNetHttpProperties.ROOT, javaNetHttpProperties);
+		@Test
+		@SuppressWarnings("resource")
+		void shouldSetDefaultVersionIfProvidedVersionIsNull() throws Exception {
+			HttpClient.Builder httpClientBuilder = mock(HttpClient.Builder.class);
+			HttpClient httpClient = mock(HttpClient.class);
+			doReturn(httpClient).when(httpClientBuilder).build();
 
-		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient(properties, httpClientBuilder, ClientCustomization.DEFAULT);
-		exchangeClient.close();
+			ClientProperties properties = new ClientProperties();
+			JavaNetHttpProperties javaNetHttpProperties = new JavaNetHttpProperties();
+			javaNetHttpProperties.getRequest().setVersion(null);
+			properties.setCustomProperties(JavaNetHttpProperties.ROOT, javaNetHttpProperties);
 
-		// also check the chain
-		HttpClient.Version version = Nullables.notNull(javaNetHttpProperties)
-				.andNotNull(JavaNetHttpProperties::getRequest)
-				.thenNotNull(JavaNetHttpProperties.Request::getHttpVersion)
-				.orElse(() -> JavaNetHttpProperties.Request.DEFAULT_HTTP_VERSION);
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient(properties, httpClientBuilder, ClientCustomization.DEFAULT);
+			exchangeClient.close();
 
-		assertThat(version, equalTo(Version.HTTP_1_1));
-		verify(httpClientBuilder).version(Version.HTTP_1_1);
-	}
+			// also check the chain
+			HttpClient.Version version = Nullables.notNull(javaNetHttpProperties)
+					.andNotNull(JavaNetHttpProperties::getRequest)
+					.thenNotNull(JavaNetHttpProperties.Request::getHttpVersion)
+					.orElse(() -> JavaNetHttpProperties.Request.DEFAULT_HTTP_VERSION);
 
-	@Test
-	@SuppressWarnings("resource")
-	void shouldNotSetDefaultVersionIfProvidedVersionIsNullAndClientCustomizationIsNone() throws Exception {
-		HttpClient.Builder httpClientBuilder = mock(HttpClient.Builder.class);
-		HttpClient httpClient = mock(HttpClient.class);
-		doReturn(httpClient).when(httpClientBuilder).build();
+			assertThat(version, equalTo(Version.HTTP_1_1));
+			verify(httpClientBuilder).version(Version.HTTP_1_1);
+		}
 
-		ClientProperties properties = new ClientProperties();
-		JavaNetHttpProperties javaNetHttpProperties = new JavaNetHttpProperties();
-		javaNetHttpProperties.getRequest().setVersion(null);
-		properties.setCustomProperties(JavaNetHttpProperties.ROOT, javaNetHttpProperties);
+		@Test
+		@SuppressWarnings("resource")
+		void shouldNotSetDefaultVersionIfProvidedVersionIsNullAndClientCustomizationIsNone() throws Exception {
+			HttpClient.Builder httpClientBuilder = mock(HttpClient.Builder.class);
+			HttpClient httpClient = mock(HttpClient.class);
+			doReturn(httpClient).when(httpClientBuilder).build();
 
-		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient(properties, httpClientBuilder, ClientCustomization.NONE);
-		exchangeClient.close();
+			ClientProperties properties = new ClientProperties();
+			JavaNetHttpProperties javaNetHttpProperties = new JavaNetHttpProperties();
+			javaNetHttpProperties.getRequest().setVersion(null);
+			properties.setCustomProperties(JavaNetHttpProperties.ROOT, javaNetHttpProperties);
 
-		verify(httpClientBuilder, never()).version(Version.HTTP_1_1);
-	}
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient(properties, httpClientBuilder, ClientCustomization.NONE);
+			exchangeClient.close();
 
-	@Test
-	void shouldBuildJavaNetHttpExchangeClientWithProperties() throws Exception {
-		ClientProperties properties = new ClientProperties();
-		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient(properties);
-		exchangeClient.close();
+			verify(httpClientBuilder, never()).version(Version.HTTP_1_1);
+		}
 
-		assertThat(exchangeClient.getClientProperties(), equalTo(properties));
-	}
+		@Test
+		void shouldBuildJavaNetHttpExchangeClientWithProperties() throws Exception {
+			ClientProperties properties = new ClientProperties();
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient(properties);
+			exchangeClient.close();
 
-	@Test
-	void shouldBuildJavaNetHttpExchangeClientWithPropertiesWithPrefix() throws Exception {
-		ClientProperties properties = new ClientProperties();
-		ClientProperties prefixedProperties = new ClientProperties();
-		Map<String, Object> propertiesMap = MapConversions.convertToMap(prefixedProperties, String::valueOf, value -> value);
-		properties.setClient(Map.of("prefixedClient.clientName", propertiesMap));
+			assertThat(exchangeClient.getClientProperties(), equalTo(properties));
+		}
 
-		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient(properties, "prefixedClient", "clientName");
-		exchangeClient.close();
+		@Test
+		void shouldBuildJavaNetHttpExchangeClientWithPropertiesWithPrefix() throws Exception {
+			ClientProperties properties = new ClientProperties();
+			ClientProperties prefixedProperties = new ClientProperties();
+			Map<String, Object> propertiesMap = MapConversions.convertToMap(prefixedProperties, String::valueOf, value -> value);
+			properties.setClient(Map.of("prefixedClient.clientName", propertiesMap));
 
-		assertThat(exchangeClient.getClientProperties(), equalTo(prefixedProperties));
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient(properties, "prefixedClient", "clientName");
+			exchangeClient.close();
+
+			assertThat(exchangeClient.getClientProperties(), equalTo(prefixedProperties));
+		}
 	}
 
 	@Nested
@@ -392,6 +397,71 @@ class JavaNetHttpExchangeClientTest {
 		}
 
 		@Test
+		void shouldBuildResponseFromApiRequestAndHttpResponseWhenBodyIsEmptyBytesAndExpectedString() throws Exception {
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.GET)
+					.responseType(String.class);
+
+			HttpResponse<?> httpResponse = mock(HttpResponse.class);
+			doReturn(HttpStatus.OK.value()).when(httpResponse).statusCode();
+			doReturn(new byte[0]).when(httpResponse).body();
+
+			ApiResponse<?> apiResponse = exchangeClient.buildResponse(request, httpResponse);
+
+			assertThat(apiResponse.getRequest(), equalTo(request));
+			assertNull(apiResponse.getBody());
+			assertThat(apiResponse.getHeaders().size(), equalTo(0));
+		}
+
+		@Test
+		void shouldBuildResponseFromApiRequestAndHttpResponseWhenBodyIsEmptyBytesAndResponseTypeIsBytes() throws Exception {
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.GET)
+					.responseType(byte[].class);
+
+			HttpResponse<?> httpResponse = mock(HttpResponse.class);
+			doReturn(HttpStatus.OK.value()).when(httpResponse).statusCode();
+			doReturn(new byte[0]).when(httpResponse).body();
+
+			ApiResponse<?> apiResponse = exchangeClient.buildResponse(request, httpResponse);
+
+			assertThat(apiResponse.getRequest(), equalTo(request));
+			assertNotNull(apiResponse.getBody());
+			assertThat(((byte[]) apiResponse.getBody()).length, equalTo(0));
+			assertThat(apiResponse.getHeaders().size(), equalTo(0));
+		}
+
+		@Test
+		void shouldBuildResponseFromApiRequestAndHttpResponseWhenBodyIsBytesAndResponseTypeIsString() throws Exception {
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.GET)
+					.responseType(String.class);
+
+			HttpResponse<?> httpResponse = mock(HttpResponse.class);
+			doReturn(HttpStatus.OK.value()).when(httpResponse).statusCode();
+			doReturn("hello".getBytes(Strings.DEFAULT_CHARSET)).when(httpResponse).body();
+
+			ApiResponse<?> apiResponse = exchangeClient.buildResponse(request, httpResponse);
+
+			assertThat(apiResponse.getRequest(), equalTo(request));
+			assertNotNull(apiResponse.getBody());
+			assertThat(apiResponse.getBody(), equalTo("hello"));
+			assertThat(apiResponse.getHeaders().size(), equalTo(0));
+		}
+
+		@Test
 		void shouldThrowExceptionOnBuildResponseFromApiRequestAndHttpResponseWhenResponseTypeIsNotProvided() throws Exception {
 			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
 			exchangeClient.close();
@@ -402,6 +472,7 @@ class JavaNetHttpExchangeClientTest {
 
 			HttpResponse<?> httpResponse = mock(HttpResponse.class);
 			doReturn(HttpStatus.OK.value()).when(httpResponse).statusCode();
+			doReturn(STRING).when(httpResponse).body();
 
 			UnsupportedOperationException exception = assertThrows(UnsupportedOperationException.class,
 					() -> exchangeClient.buildResponse(request, httpResponse));
@@ -409,6 +480,25 @@ class JavaNetHttpExchangeClientTest {
 			assertThat(exception.getMessage(), equalTo(
 					"No content converter found to convert response to: " + ApiRequest.UNKNOWN_RESPONSE_TYPE
 							+ ", for the response content type: null"));
+		}
+
+		@Test
+		void shouldBuildResponseFromApiRequestAndHttpResponseWhenResponseTypeIsNotProvidedAndResponseIsNull() throws Exception {
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.GET);
+
+			HttpResponse<?> httpResponse = mock(HttpResponse.class);
+			doReturn(HttpStatus.OK.value()).when(httpResponse).statusCode();
+
+			ApiResponse<?> apiResponse = exchangeClient.buildResponse(request, httpResponse);
+
+			assertThat(apiResponse.getRequest(), equalTo(request));
+			assertNull(apiResponse.getBody());
+			assertThat(apiResponse.getHeaders().size(), equalTo(0));
 		}
 
 		@Test
@@ -587,103 +677,111 @@ class JavaNetHttpExchangeClientTest {
 		}
 	}
 
-	@Test
-	@SuppressWarnings({ "resource", "unchecked" })
-	void shouldSendRequestAndReturnHttpResponse() throws Exception {
-		HttpClient httpClient = mock(HttpClient.class);
+	@Nested
+	class SendRequestTests {
 
-		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient(ClientProperties.defaults(), httpClient);
-		exchangeClient.close();
+		@Test
+		@SuppressWarnings({ "resource", "unchecked" })
+		void shouldSendRequestAndReturnHttpResponse() throws Exception {
+			HttpClient httpClient = mock(HttpClient.class);
 
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.url(URL)
-				.method(HttpMethod.GET)
-				.responseType(String.class);
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient(ClientProperties.defaults(), httpClient);
+			exchangeClient.close();
 
-		HttpResponse<?> mockedHttpResponse = mock(HttpResponse.class);
-		doReturn(200).when(mockedHttpResponse).statusCode();
-		doReturn("OK").when(mockedHttpResponse).body();
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.GET)
+					.responseType(String.class);
 
-		doReturn(mockedHttpResponse).when(httpClient).send(any(HttpRequest.class), any(BodyHandler.class));
+			HttpResponse<?> mockedHttpResponse = mock(HttpResponse.class);
+			doReturn(200).when(mockedHttpResponse).statusCode();
+			doReturn("OK").when(mockedHttpResponse).body();
 
-		HttpResponse<String> httpResponse = exchangeClient.sendRequest(request, exchangeClient.buildRequest(request));
+			doReturn(mockedHttpResponse).when(httpClient).send(any(HttpRequest.class), any(BodyHandler.class));
 
-		assertThat(httpResponse.statusCode(), equalTo(200));
-		assertThat(httpResponse.body(), equalTo("OK"));
+			HttpResponse<String> httpResponse = exchangeClient.sendRequest(request, exchangeClient.buildRequest(request));
+
+			assertThat(httpResponse.statusCode(), equalTo(200));
+			assertThat(httpResponse.body(), equalTo("OK"));
+		}
+
+		@Test
+		@SuppressWarnings({ "resource", "unchecked" })
+		void shouldThrowExceptionWhenHttpClientThrowsExceptionOnSendRequest() throws Exception {
+			HttpClient httpClient = mock(HttpClient.class);
+
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient(ClientProperties.defaults(), httpClient);
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.GET)
+					.responseType(String.class);
+
+			RuntimeException exceptionToThrow = new RuntimeException(EXPECTED_CONNECTION_ERROR);
+			doThrow(exceptionToThrow).when(httpClient).send(any(HttpRequest.class), any(BodyHandler.class));
+
+			HttpException exception = assertThrows(HttpException.class, // NOSONAR this is exactly what we want to test
+					() -> exchangeClient.sendRequest(request, exchangeClient.buildRequest(request)));
+
+			assertThat(exception.getStatus(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
+			assertThat(exception.getMessage(), equalTo(HttpException.message(HttpStatus.INTERNAL_SERVER_ERROR, EXPECTED_CONNECTION_ERROR)));
+		}
+
+		@Test
+		@SuppressWarnings({ "resource", "unchecked" })
+		void shouldExchangeApiRequestAndReturnApiResponse() throws Exception {
+			HttpClient httpClient = mock(HttpClient.class);
+
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient(ClientProperties.defaults(), httpClient);
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.GET)
+					.responseType(String.class);
+
+			HttpResponse<?> mockedHttpResponse = mock(HttpResponse.class);
+			doReturn(200).when(mockedHttpResponse).statusCode();
+			doReturn("OK").when(mockedHttpResponse).body();
+
+			doReturn(mockedHttpResponse).when(httpClient).send(any(HttpRequest.class), any(BodyHandler.class));
+
+			ApiResponse<?> apiResponse = exchangeClient.exchange(request);
+
+			assertThat(apiResponse.getRequest(), equalTo(request));
+			assertThat(apiResponse.getBody(), equalTo("OK"));
+		}
 	}
 
-	@Test
-	@SuppressWarnings({ "resource", "unchecked" })
-	void shouldThrowExceptionWhenHttpClientThrowsExceptionOnSendRequest() throws Exception {
-		HttpClient httpClient = mock(HttpClient.class);
+	@Nested
+	class GetResponseBodyHandlerTests {
 
-		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient(ClientProperties.defaults(), httpClient);
-		exchangeClient.close();
+		@Test
+		void shouldReturnByteArrayBodyHandlerWhenNoStreamIsProvided() {
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.stream(false)
+					.responseType(String.class);
 
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.url(URL)
-				.method(HttpMethod.GET)
-				.responseType(String.class);
+			BodyHandler<?> bodyHandler = JavaNetHttpExchangeClient.getResponseBodyHandler(request);
 
-		RuntimeException exceptionToThrow = new RuntimeException(EXPECTED_CONNECTION_ERROR);
-		doThrow(exceptionToThrow).when(httpClient).send(any(HttpRequest.class), any(BodyHandler.class));
+			Subscriber<?> subscriber = bodyHandler.apply(null);
 
-		HttpException exception = assertThrows(HttpException.class, // NOSONAR this is exactly what we want to test
-				() -> exchangeClient.sendRequest(request, exchangeClient.buildRequest(request)));
+			assertInstanceOf(HttpResponse.BodySubscribers.ofByteArray().getClass(), subscriber);
+		}
 
-		assertThat(exception.getStatus(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
-		assertThat(exception.getMessage(), equalTo(HttpException.message(HttpStatus.INTERNAL_SERVER_ERROR, EXPECTED_CONNECTION_ERROR)));
-	}
+		@Test
+		void shouldReturnInputStreamBodyHandlerWhenStreamIsProvided() {
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.stream()
+					.responseType(String.class);
 
-	@Test
-	@SuppressWarnings({ "resource", "unchecked" })
-	void shouldExchangeApiRequestAndReturnApiResponse() throws Exception {
-		HttpClient httpClient = mock(HttpClient.class);
+			BodyHandler<?> bodyHandler = JavaNetHttpExchangeClient.getResponseBodyHandler(request);
 
-		JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient(ClientProperties.defaults(), httpClient);
-		exchangeClient.close();
+			Subscriber<?> subscriber = bodyHandler.apply(null);
 
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.url(URL)
-				.method(HttpMethod.GET)
-				.responseType(String.class);
-
-		HttpResponse<?> mockedHttpResponse = mock(HttpResponse.class);
-		doReturn(200).when(mockedHttpResponse).statusCode();
-		doReturn("OK").when(mockedHttpResponse).body();
-
-		doReturn(mockedHttpResponse).when(httpClient).send(any(HttpRequest.class), any(BodyHandler.class));
-
-		ApiResponse<?> apiResponse = exchangeClient.exchange(request);
-
-		assertThat(apiResponse.getRequest(), equalTo(request));
-		assertThat(apiResponse.getBody(), equalTo("OK"));
-	}
-
-	@Test
-	void shouldReturnByteArrayBodyHandlerWhenNoStreamIsProvided() {
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.stream(false)
-				.responseType(String.class);
-
-		BodyHandler<?> bodyHandler = JavaNetHttpExchangeClient.getResponseBodyHandler(request);
-
-		Subscriber<?> subscriber = bodyHandler.apply(null);
-
-		assertInstanceOf(HttpResponse.BodySubscribers.ofByteArray().getClass(), subscriber);
-	}
-
-	@Test
-	void shouldReturnInputStreamBodyHandlerWhenStreamIsProvided() {
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.stream()
-				.responseType(String.class);
-
-		BodyHandler<?> bodyHandler = JavaNetHttpExchangeClient.getResponseBodyHandler(request);
-
-		Subscriber<?> subscriber = bodyHandler.apply(null);
-
-		assertInstanceOf(HttpResponse.BodySubscribers.ofInputStream().getClass(), subscriber);
+			assertInstanceOf(HttpResponse.BodySubscribers.ofInputStream().getClass(), subscriber);
+		}
 	}
 
 	@Nested
@@ -959,39 +1057,47 @@ class JavaNetHttpExchangeClientTest {
 		}
 	}
 
-	@Test
-	void shouldNotFailWhenHeadersAreNullOnAddHeaders() {
-		HttpRequest.Builder requestBuilder = mock(HttpRequest.Builder.class);
+	@Nested
+	class AddHeadersTests {
 
-		JavaNetHttpExchangeClient.addHeaders(requestBuilder, null);
+		@Test
+		void shouldNotFailWhenHeadersAreNullOnAddHeaders() {
+			HttpRequest.Builder requestBuilder = mock(HttpRequest.Builder.class);
 
-		verifyNoInteractions(requestBuilder);
+			JavaNetHttpExchangeClient.addHeaders(requestBuilder, null);
+
+			verifyNoInteractions(requestBuilder);
+		}
+
+		@Test
+		void shouldNotFailWhenHeadersContainNullValuesListOnAddHeaders() {
+			HttpRequest.Builder requestBuilder = mock(HttpRequest.Builder.class);
+			Map<String, List<String>> headers = Headers.of(
+					Header.of("X-Header-1", null),
+					Header.of("X-Header-2", List.of("Value1", "Value2")));
+
+			JavaNetHttpExchangeClient.addHeaders(requestBuilder, headers);
+
+			verify(requestBuilder).header("X-Header-2", "Value1");
+			verify(requestBuilder).header("X-Header-2", "Value2");
+		}
 	}
 
-	@Test
-	void shouldNotFailWhenHeadersContainNullValuesListOnAddHeaders() {
-		HttpRequest.Builder requestBuilder = mock(HttpRequest.Builder.class);
-		Map<String, List<String>> headers = Headers.of(
-				Header.of("X-Header-1", null),
-				Header.of("X-Header-2", List.of("Value1", "Value2")));
+	@Nested
+	class GetUsableTimeoutTests {
 
-		JavaNetHttpExchangeClient.addHeaders(requestBuilder, headers);
+		@Test
+		void shouldReturnANullUsableTimeputFromNull() {
+			Duration timeout = JavaNetHttpExchangeClient.getUsableTimeout(null, t -> null);
 
-		verify(requestBuilder).header("X-Header-2", "Value1");
-		verify(requestBuilder).header("X-Header-2", "Value2");
-	}
+			assertThat(timeout, equalTo(null));
+		}
 
-	@Test
-	void shouldReturnANullUsableTimeputFromNull() {
-		Duration timeout = JavaNetHttpExchangeClient.getUsableTimeout(null, t -> null);
+		@Test
+		void shouldReturnGivenTimeoutWhenUsableAndNotInfinite() {
+			Duration timeout = JavaNetHttpExchangeClient.getUsableTimeout(null, t -> Duration.ofSeconds(10));
 
-		assertThat(timeout, equalTo(null));
-	}
-
-	@Test
-	void shouldReturnGivenTimeoutWhenUsableAndNotInfinite() {
-		Duration timeout = JavaNetHttpExchangeClient.getUsableTimeout(null, t -> Duration.ofSeconds(10));
-
-		assertThat(timeout, equalTo(Duration.ofSeconds(10)));
+			assertThat(timeout, equalTo(Duration.ofSeconds(10)));
+		}
 	}
 }

@@ -18,6 +18,7 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -46,8 +47,10 @@ import org.apiphany.http.ContentEncoding;
 import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.io.InputStreamSupplier;
+import org.apiphany.io.deflate.Deflate;
 import org.apiphany.io.gzip.GZip;
 import org.apiphany.lang.ScopedResource;
+import org.apiphany.lang.Strings;
 import org.apiphany.lang.retry.Retry;
 import org.apiphany.lang.retry.WaitCounter;
 import org.apiphany.security.AuthenticationType;
@@ -313,6 +316,164 @@ class ApiClientWithJavaNetHttpIT {
 
 		wiremock.verify(getRequestedFor(urlEqualTo("/gzip"))
 				.withHeader("Accept-Encoding", containing("gzip")));
+	}
+
+	@Test
+	void shouldDecodeGzipThenDeflateAutomatically() throws Exception {
+		byte[] gzipped = GZip.compress("hello".getBytes(StandardCharsets.UTF_8));
+		byte[] deflateThenGzip = Deflate.compress(gzipped);
+
+		wiremock.stubFor(get("/gzip-deflate")
+				.willReturn(aResponse()
+						.withStatus(200)
+						.withHeader("Content-Encoding", "gzip, deflate")
+						.withBody(deflateThenGzip)));
+
+		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		try (api) {
+			var result = api.client()
+					.http()
+					.get()
+					.header(HttpHeader.ACCEPT_ENCODING, "gzip, deflate")
+					.path("gzip-deflate")
+					.retrieve(String.class)
+					.orNull();
+
+			assertEquals("hello", result);
+		}
+
+		wiremock.verify(getRequestedFor(urlEqualTo("/gzip-deflate"))
+				.withHeader("Accept-Encoding", containing("gzip"))
+				.withHeader("Accept-Encoding", containing("deflate")));
+	}
+
+	@Test
+	void shouldNotFailWhenBodyIsNotActuallyGzipped() throws Exception {
+		wiremock.stubFor(get("/fake-gzip")
+				.willReturn(aResponse()
+						.withStatus(200)
+						.withHeader("Content-Encoding", "gzip")
+						.withBody("hello")));
+
+		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		try (api) {
+			String result = api.client()
+					.http()
+					.get()
+					.header(HttpHeader.ACCEPT_ENCODING, ContentEncoding.GZIP)
+					.path("fake-gzip")
+					.retrieve(String.class)
+					.orNull();
+
+			assertEquals("hello", result);
+		}
+
+		wiremock.verify(getRequestedFor(urlEqualTo("/fake-gzip")));
+	}
+
+	@Test
+	void shouldParseContentEncodingWithSpaces() throws Exception {
+		byte[] gzipped = GZip.compress("hello".getBytes(StandardCharsets.UTF_8));
+		byte[] body = Deflate.compress(gzipped);
+
+		wiremock.stubFor(get("/encoding-spaces")
+				.willReturn(aResponse()
+						.withStatus(200)
+						.withHeader("Content-Encoding", "gzip ,  deflate")
+						.withBody(body)));
+
+		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		try (api) {
+			String result = api.client()
+					.http()
+					.get()
+					.header(HttpHeader.ACCEPT_ENCODING, "gzip, deflate")
+					.path("encoding-spaces")
+					.retrieve(String.class)
+					.orNull();
+
+			assertEquals("hello", result);
+		}
+	}
+
+	@Test
+	void shouldIgnoreUnknownEncoding() throws Exception {
+		byte[] body = GZip.compress("hello".getBytes(StandardCharsets.UTF_8));
+
+		wiremock.stubFor(get("/unknown-encoding")
+				.willReturn(aResponse()
+						.withStatus(200)
+						.withHeader("Content-Encoding", "gzip, weird")
+						.withBody(body)));
+
+		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		try (api) {
+			String result = api.client()
+					.http()
+					.get()
+					.header(HttpHeader.ACCEPT_ENCODING, "gzip")
+					.path("unknown-encoding")
+					.retrieve(String.class)
+					.orNull();
+
+			assertEquals("hello", result);
+		}
+	}
+
+	@Test
+	void shouldNotAutoDecompressDoubleGzip() throws Exception {
+		byte[] onceGzipped = GZip.compress("hello");
+		byte[] doubleGzipped = GZip.compress(onceGzipped);
+
+		wiremock.stubFor(get("/double-gzip")
+				.willReturn(aResponse()
+						.withStatus(200)
+						.withHeader("Content-Encoding", "gzip")
+						.withBody(doubleGzipped)));
+
+		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		try (api) {
+			byte[] result = api.client()
+					.http()
+					.get()
+					.path("double-gzip")
+					.header(HttpHeader.ACCEPT_ENCODING, ContentEncoding.GZIP)
+					.retrieve(byte[].class)
+					.orNull();
+
+			// the content should still be a gzip-ped byte array
+			assertNotNull(result);
+			// must NOT auto-decode twice, so the result is not the original "hello"
+			assertNotEquals("hello", new String(result, Strings.DEFAULT_CHARSET));
+
+			byte[] decompressedTwice = GZip.decompress(result);
+			assertEquals("hello", new String(decompressedTwice, Strings.DEFAULT_CHARSET));
+		}
+
+		wiremock.verify(getRequestedFor(urlEqualTo("/double-gzip"))
+				.withHeader("Accept-Encoding", containing("gzip")));
+	}
+
+	@Test
+	void shouldHandleEmptyGzipResponse() throws Exception {
+		wiremock.stubFor(get("/empty-gzip")
+				.willReturn(aResponse()
+						.withStatus(200)
+						.withHeader("Content-Encoding", "gzip")
+						.withBody(new byte[0])));
+
+		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		try (api) {
+			byte[] result = api.client()
+					.http()
+					.get()
+					.path("empty-gzip")
+					.retrieve(byte[].class)
+					.orNull();
+
+			assertNotNull(result);
+			assertEquals(0, result.length);
+		}
 	}
 
 	@Test

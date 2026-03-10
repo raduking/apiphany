@@ -66,7 +66,7 @@ class ContentEncodingTest {
 	}
 
 	@ParameterizedTest
-	@MethodSource("provideValuesForParsingFromList")
+	@MethodSource("provideValuesForParsingFirstFromList")
 	void shouldParseValueFromAList(final List<String> values, final ContentEncoding expectedEncoding) {
 		ContentEncoding result = ContentEncoding.parseFirst(values);
 
@@ -150,7 +150,19 @@ class ContentEncodingTest {
 		assertThat(result, equalTo(List.of(ContentEncoding.GZIP, ContentEncoding.DEFLATE)));
 	}
 
-	private static Object[][] provideValuesForParsingFromList() {
+	@Test
+	void shouldReturnListWithKnownValuesWhenParsingFromListWithKnownAndUnknownValuesCommaSeparated() {
+		List<ContentEncoding> result = ContentEncoding.parseAll(List.of("unknown, br", "gzip, unknown, zstd", "deflate, gzip"));
+
+		assertThat(result, equalTo(List.of(
+				ContentEncoding.BR,
+				ContentEncoding.GZIP,
+				ContentEncoding.ZSTD,
+				ContentEncoding.DEFLATE,
+				ContentEncoding.GZIP)));
+	}
+
+	private static Object[][] provideValuesForParsingFirstFromList() {
 		return new Object[][] {
 				{ List.of("gzip"), ContentEncoding.GZIP },
 				{ List.of("deflate"), ContentEncoding.DEFLATE },
@@ -161,7 +173,10 @@ class ContentEncodingTest {
 				{ List.of("unknown", "gzip"), ContentEncoding.GZIP },
 				{ List.of("unknown1", "unknown2"), null },
 				{ List.of(), null },
-				{ null, null }
+				{ null, null },
+				{ List.of("unknown", "deflate", "gzip"), ContentEncoding.DEFLATE },
+				{ List.of("br, unknown, gzip"), ContentEncoding.BR },
+				{ List.of("unknown, gzip"), ContentEncoding.GZIP }
 		};
 	}
 

@@ -118,8 +118,10 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	 * Converts the response body to the desired type based on the request configuration and available content converters.
 	 * This method:
 	 * <ul>
+	 * <li>Checks if the body is null or empty and returns null if so</li>
+	 * <li>Checks if the body is already of the desired type and returns it if so</li>
+	 * <li>Checks if the target type is String and uses the {@link StringHttpContentConverter} if so</li>
 	 * <li>Iterates through registered content converters to find a compatible one</li>
-	 * <li>Falls back to string conversion if the target type is String</li>
 	 * <li>Throws an exception if no suitable converter is found</li>
 	 * </ul>
 	 *
@@ -135,10 +137,17 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	 * @throws UnsupportedOperationException if no compatible content converter is found
 	 */
 	protected <T, U, H> U convertBody(final ApiRequest<T> apiRequest, final ApiMimeType mimeType, final H headers, final Object body) {
+		if (null == body) {
+			return null;
+		}
+		Class<?> classResponseType = apiRequest.getClassResponseType();
+		if (null != classResponseType && classResponseType.isInstance(body)) {
+			return JavaObjects.cast(body);
+		}
 		if (body instanceof byte[] bytes && bytes.length == 0) {
 			return null;
 		}
-		if (String.class.equals(apiRequest.getClassResponseType())) {
+		if (Objects.equals(classResponseType, String.class)) {
 			return JavaObjects.cast(StringHttpContentConverter.instance().from(body, mimeType, String.class));
 		}
 		for (ContentConverter<?> contentConverter : getContentConverters()) {

@@ -20,6 +20,30 @@ import org.junit.jupiter.api.Test;
 class ApiMimeTypeTest {
 
 	@Test
+	void shouldConvertStringToBytesAndBackWithAGivenCharset() {
+		String original = "Hello, world!";
+		Charset charset = StandardCharsets.UTF_8;
+
+		byte[] bytes = original.getBytes(charset);
+		String result = new String(bytes, charset);
+
+		assertThat(result, equalTo(original));
+	}
+
+	@Test
+	void shouldConvertBytesToStringAndBackWithAGivenCharset() {
+		String original = "Hello, world!";
+		byte[] originalBytes = original.getBytes(StandardCharsets.UTF_8);
+		String intermediate = new String(originalBytes, StandardCharsets.UTF_8);
+		Charset charset = StandardCharsets.UTF_8;
+
+		byte[] bytes = intermediate.getBytes(charset);
+		String result = new String(bytes, charset);
+
+		assertThat(result, equalTo(original));
+	}
+
+	@Test
 	void shouldReturnNullWhenCharsetCannotBeParsed() {
 		Charset charset = ApiMimeType.parseCharset("<unknown>");
 
