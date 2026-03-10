@@ -18,6 +18,8 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 /**
  * Test class for {@link ApacheHC5Properties}.
+ *
+ * @author Radu Sebastian LAZIN
  */
 class ApacheHC5PropertiesTest {
 

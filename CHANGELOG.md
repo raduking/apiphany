@@ -4,6 +4,7 @@
 
 - Allowed on error handlers to be `null` on `Strings.fromFile` and `Bytes.fromFile`.
 - Changed `URIEncoder.encodePath` to be faster because it doesn't need regular expressions.
+- Added Jackson 3 support to `apiphany-httpclient5`.
 
 ---
 

@@ -245,9 +245,10 @@ public final class TLSLoggingProvider extends Provider {
 		/**
 		 * Constructor.
 		 *
-		 * @throws Exception if an error occurs
+		 * @throws NoSuchAlgorithmException if the algorithm is not found
+		 * @throws NoSuchProviderException if the provider is not found
 		 */
-		public LoggingTlsKeyMaterialGenerator() throws Exception {
+		public LoggingTlsKeyMaterialGenerator() throws NoSuchAlgorithmException, NoSuchProviderException {
 			super("SunTls12KeyMaterial");
 		}
 	}
@@ -262,9 +263,10 @@ public final class TLSLoggingProvider extends Provider {
 		/**
 		 * Constructor.
 		 *
-		 * @throws Exception if an error occurs
+		 * @throws NoSuchAlgorithmException if the algorithm is not found
+		 * @throws NoSuchProviderException if the provider is not found
 		 */
-		public LoggingTlsMasterSecretGenerator() throws Exception {
+		public LoggingTlsMasterSecretGenerator() throws NoSuchAlgorithmException, NoSuchProviderException {
 			super("SunTls12MasterSecret");
 		}
 	}

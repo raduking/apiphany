@@ -22,6 +22,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+/**
+ * Test class for {@link CloseableHttpResponseInputStream}.
+ *
+ * @author Radu Sebastian LAZIN
+ */
 @ExtendWith(MockitoExtension.class)
 class CloseableHttpResponseInputStreamTest {
 
@@ -32,6 +37,7 @@ class CloseableHttpResponseInputStreamTest {
 	private HttpEntity mockEntity;
 
 	@Test
+	@SuppressWarnings("resource")
 	void shouldCreateInputStreamFromResponse() throws Exception {
 		byte[] testData = "test data".getBytes(StandardCharsets.UTF_8);
 		InputStream testInputStream = new ByteArrayInputStream(testData);
@@ -54,6 +60,7 @@ class CloseableHttpResponseInputStreamTest {
 	}
 
 	@Test
+	@SuppressWarnings("resource")
 	void shouldThrowExceptionWhenEntityIsNull() {
 		when(mockResponse.getEntity()).thenReturn(null);
 
@@ -63,6 +70,7 @@ class CloseableHttpResponseInputStreamTest {
 	}
 
 	@Test
+	@SuppressWarnings("resource")
 	void shouldThrowExceptionWhenEntityContentIsNull() throws Exception {
 		when(mockResponse.getEntity()).thenReturn(mockEntity);
 		when(mockEntity.getContent()).thenReturn(null);
@@ -73,6 +81,7 @@ class CloseableHttpResponseInputStreamTest {
 	}
 
 	@Test
+	@SuppressWarnings("resource")
 	void shouldDelegateReadOperations() throws Exception {
 		byte[] testData = "test".getBytes(StandardCharsets.UTF_8);
 		InputStream testInputStream = new ByteArrayInputStream(testData);
@@ -94,6 +103,7 @@ class CloseableHttpResponseInputStreamTest {
 	}
 
 	@Test
+	@SuppressWarnings("resource")
 	void shouldDelegateReadAllBytes() throws Exception {
 		byte[] testData = "test data".getBytes(StandardCharsets.UTF_8);
 		InputStream testInputStream = new ByteArrayInputStream(testData);
@@ -108,6 +118,7 @@ class CloseableHttpResponseInputStreamTest {
 	}
 
 	@Test
+	@SuppressWarnings("resource")
 	void shouldDelegateReadNBytes() throws Exception {
 		byte[] testData = "test data".getBytes(StandardCharsets.UTF_8);
 		InputStream testInputStream = new ByteArrayInputStream(testData);
@@ -127,6 +138,7 @@ class CloseableHttpResponseInputStreamTest {
 	}
 
 	@Test
+	@SuppressWarnings("resource")
 	void shouldCloseResponseWhenStreamIsClosed() throws Exception {
 		when(mockResponse.getEntity()).thenReturn(mockEntity);
 		when(mockEntity.getContent()).thenReturn(new ByteArrayInputStream(new byte[0]));
@@ -139,6 +151,7 @@ class CloseableHttpResponseInputStreamTest {
 	}
 
 	@Test
+	@SuppressWarnings("resource")
 	void shouldPropagateIOExceptionOnClose() throws Exception {
 		when(mockResponse.getEntity()).thenReturn(mockEntity);
 		when(mockEntity.getContent()).thenReturn(new ByteArrayInputStream(new byte[0]));
@@ -150,6 +163,7 @@ class CloseableHttpResponseInputStreamTest {
 	}
 
 	@Test
+	@SuppressWarnings("resource")
 	void shouldImplementHashCodeAndEquals() throws Exception {
 		when(mockResponse.getEntity()).thenReturn(mockEntity);
 		when(mockEntity.getContent()).thenReturn(new ByteArrayInputStream(new byte[0]));
@@ -167,6 +181,7 @@ class CloseableHttpResponseInputStreamTest {
 	}
 
 	@Test
+	@SuppressWarnings("resource")
 	void shouldNotBeEqualWhenResponsesAreDifferent() throws Exception {
 		when(mockResponse.getEntity()).thenReturn(mockEntity);
 		when(mockEntity.getContent()).thenReturn(new ByteArrayInputStream(new byte[0]));

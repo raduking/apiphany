@@ -21,5 +21,4 @@ class ApiphanyHC5Jackson2ModuleProviderTest {
 
 		assertNotNull(moduleSupplier, "The ApiphanyHC5Jackson2Module provider should be loaded with ServiceLoader");
 	}
-
 }
