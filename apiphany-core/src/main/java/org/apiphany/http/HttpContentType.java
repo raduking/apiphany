@@ -118,12 +118,12 @@ public class HttpContentType implements ApiMimeType {
 	public String value() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(getContentType().toString());
-		Charset charset = getCharset();
-		if (null != charset) {
+		Charset activeCharset = getCharset();
+		if (null != activeCharset) {
 			sb.append("; ")
 					.append(Param.CHARSET)
 					.append("=")
-					.append(charset);
+					.append(activeCharset);
 		}
 		return sb.toString();
 	}
@@ -143,12 +143,12 @@ public class HttpContentType implements ApiMimeType {
 	public String normalizedValue() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(getContentType().value().toLowerCase());
-		Charset charset = getCharset();
-		if (charset != null) {
+		Charset activeCharset = getCharset();
+		if (null != activeCharset) {
 			sb.append("; ")
 					.append(Param.CHARSET.toLowerCase())
 					.append("=")
-					.append(charset.name().toLowerCase());
+					.append(activeCharset.name().toLowerCase());
 		}
 		return sb.toString();
 	}

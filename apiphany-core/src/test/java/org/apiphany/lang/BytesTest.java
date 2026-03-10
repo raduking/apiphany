@@ -298,6 +298,13 @@ class BytesTest {
 			assertThat(result, equalTo(Bytes.EMPTY));
 			verify(runnable).run();
 		}
+
+		@Test
+		void shouldReturnEmptyWhenOnErrorIsNull() {
+			byte[] result = Bytes.fromFile("/" + WRONG_FILE_NAME, null);
+
+			assertThat(result, equalTo(Bytes.EMPTY));
+		}
 	}
 
 	public static byte[] generateByteArray(final int n) {
