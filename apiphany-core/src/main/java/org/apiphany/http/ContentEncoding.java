@@ -6,12 +6,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.apiphany.io.deflate.Deflate;
 import org.apiphany.io.gzip.GZip;
 import org.apiphany.lang.collections.Lists;
 import org.morphix.lang.Enums;
 import org.morphix.lang.Nullables;
+import org.morphix.lang.function.ThrowingFunction;
 import org.morphix.lang.function.ToStringFunction;
 import org.morphix.reflection.Constructors;
 
@@ -49,11 +52,7 @@ public enum ContentEncoding {
 		 */
 		@Override
 		public <T> T decode(final T body) {
-			try {
-				return GZip.decompress(body);
-			} catch (Exception e) {
-				throw new IllegalStateException("Failed to decode response body with encoding: " + this, e);
-			}
+			return ContentEncoding.decode(body, this, ThrowingFunction.unchecked(GZip::decompress));
 		}
 	},
 
@@ -64,7 +63,22 @@ public enum ContentEncoding {
 	 * @see <a href="https://www.rfc-editor.org/rfc/rfc1950">RFC 1950: ZLIB Compressed Data Format</a>
 	 * @see <a href="https://www.rfc-editor.org/rfc/rfc1951">RFC 1951: DEFLATE Compressed Data Format</a>
 	 */
-	DEFLATE(Value.DEFLATE),
+	DEFLATE(Value.DEFLATE) {
+
+		/**
+		 * Decodes the given input stream or byte array using DEFLATE decompression.
+		 *
+		 * @param <T> body type
+		 *
+		 * @param body compressed body to decode, can be an InputStream or a byte array
+		 * @return de-compressed body that decodes the original body using DEFLATE decompression
+		 * @throws IllegalStateException if any error occurs during decompression
+		 */
+		@Override
+		public <T> T decode(final T body) {
+			return ContentEncoding.decode(body, this, ThrowingFunction.unchecked(Deflate::decompress));
+		}
+	},
 
 	/**
 	 * Brotli compressed data format (lossless compression algorithm). Provides better compression ratios than gzip at
@@ -209,6 +223,27 @@ public enum ContentEncoding {
 	}
 
 	/**
+	 * Decodes the given body using the specified content encoding and decoder function. This is a utility method that can
+	 * be used to decode a body with any content encoding by providing the appropriate decoder function. If the decoding
+	 * fails, an {@link IllegalStateException} is thrown with details about the failure.
+	 *
+	 * @param <T> body type
+	 *
+	 * @param body the body to decode
+	 * @param contentEncoding the content encoding to use for decoding (used for error messages)
+	 * @param decoder the function that performs the actual decoding logic for the specific content encoding
+	 * @return a decoded body that decodes the original body according to the content encoding
+	 * @throws IllegalStateException if any error occurs during decoding
+	 */
+	public static <T> T decode(final T body, final ContentEncoding contentEncoding, final Function<T, T> decoder) {
+		try {
+			return decoder.apply(body);
+		} catch (Exception e) {
+			throw new IllegalStateException("Failed to decode response body with encoding: " + contentEncoding, e);
+		}
+	}
+
+	/**
 	 * Returns a {@link ContentEncoding} enum from a {@link String}.
 	 *
 	 * @param encoding the string representation of the content encoding
@@ -303,6 +338,11 @@ public enum ContentEncoding {
 	 * Decodes the body based on the given content encoding list. The body is decoded in the reverse order of the content
 	 * encodings, meaning that the last encoding in the list is decoded first. If the body is null or the content encoding
 	 * list is empty, the original body is returned without any decoding.
+	 * <p>
+	 * Currently, only bodies of type {@link InputStream} and {@code byte[]} are decoded. If the body is of any other type,
+	 * it is returned as is without any decoding since the decoding logic is only implemented for these two types. This
+	 * allows for flexibility in handling different body types while still providing decoding functionality for the most
+	 * common types used in HTTP communication.
 	 *
 	 * @param <T> body type
 	 *

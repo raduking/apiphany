@@ -6,6 +6,7 @@
 - Fixed `ByteBufferSubscriber` concurrent buffer size calculation.
 - Added `ByteBufferSubscriber.CancelBehavior` enum that specify all cancel behaviors.
 - Renamed `ExtensionType.SERVER_NAME` to `SERVER_NAME_INDICATION`.
+- Added `Deflate` class similar to `GZip` to handle `deflate` content type compression/decompression.
 
 ---
 

@@ -14,5 +14,4 @@ public interface AuthorizationHeaderProvider {
 	 * @return the value for the Authorization header
 	 */
 	String getAuthorizationHeader();
-
 }
