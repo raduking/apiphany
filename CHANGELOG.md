@@ -1,5 +1,12 @@
 ## Release Notes
 
+`1.1.8`
+
+- Allowed on error handlers to be `null` on `Strings.fromFile` and `Bytes.fromFile`.
+- Changed `URIEncoder.encodePath` to be faster because it doesn't need regular expressions.
+
+---
+
 `1.1.7`
 
 - Added `ApiResponse.safeIsSuccessful` to check if an API response is not null and is successful.

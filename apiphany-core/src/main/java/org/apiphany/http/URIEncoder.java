@@ -20,7 +20,7 @@ public interface URIEncoder {
 	 * @return the encoded string
 	 */
 	static String encodePath(final String string, final Charset charset) {
-		return URLEncoder.encode(string, charset).replaceAll("\\+", "%20");
+		return URLEncoder.encode(string, charset).replace("+", "%20");
 	}
 
 	/**
