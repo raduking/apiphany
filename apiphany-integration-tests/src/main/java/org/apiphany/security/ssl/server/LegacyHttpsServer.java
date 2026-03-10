@@ -180,7 +180,7 @@ public class LegacyHttpsServer implements AutoCloseable {
 			executor.close();
 		} finally {
 			// restore global security property
-			if (originalDisabledAlgorithms != null) {
+			if (null != originalDisabledAlgorithms) {
 				Security.setProperty(PROPERTY_JDK_TLS_DISABLED_ALGORITHMS, originalDisabledAlgorithms);
 				LOGGER.info("Restored {}: {}", PROPERTY_JDK_TLS_DISABLED_ALGORITHMS, originalDisabledAlgorithms);
 			}

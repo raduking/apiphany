@@ -172,7 +172,7 @@ public class BasicHttpResponseParser {
 	 * Checks if the response body is complete based on Content-Length.
 	 */
 	private void checkCompletion() {
-		if (contentLength != null && bodyBuilder.length() >= contentLength) {
+		if (null != contentLength && bodyBuilder.length() >= contentLength) {
 			complete = true;
 		}
 	}

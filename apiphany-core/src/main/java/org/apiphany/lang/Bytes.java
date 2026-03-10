@@ -40,14 +40,14 @@ public final class Bytes {
 		Objects.requireNonNull(arrays, "Input arrays cannot be null");
 		int totalLength = 0;
 		for (byte[] arr : arrays) {
-			if (arr != null) {
+			if (null != arr) {
 				totalLength += arr.length;
 			}
 		}
 		byte[] result = new byte[totalLength];
 		int offset = 0;
 		for (byte[] arr : arrays) {
-			if (arr != null) {
+			if (null != arr) {
 				System.arraycopy(arr, 0, result, offset, arr.length);
 				offset += arr.length;
 			}
