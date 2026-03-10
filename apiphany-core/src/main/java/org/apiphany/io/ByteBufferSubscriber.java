@@ -191,7 +191,7 @@ public class ByteBufferSubscriber implements Subscriber<ByteBuffer> {
 	 */
 	public byte[] getReceivedBytes() {
 		Throwable error = errorReference.get();
-		if (error != null) {
+		if (null != error) {
 			throw new IllegalStateException("Error occurred during subscription", error);
 		}
 
@@ -334,7 +334,7 @@ public class ByteBufferSubscriber implements Subscriber<ByteBuffer> {
 	 */
 	public void cancel() {
 		Subscription subscription = subscriptionReference.get();
-		if (subscription != null) {
+		if (null != subscription) {
 			subscription.cancel();
 		}
 		if (CancelBehavior.CLEAR_BUFFERS == cancelBehavior) {

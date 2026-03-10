@@ -68,7 +68,7 @@ public class OAuth2Registry {
 		Map<String, OAuth2ResolvedRegistration> resolved = new HashMap<>();
 		properties.getRegistration().forEach((name, registration) -> {
 			OAuth2ProviderDetails provider = properties.getProviderDetails(registration);
-			if (provider != null) {
+			if (null != provider) {
 				resolved.put(name, OAuth2ResolvedRegistration.of(name, registration, provider));
 			}
 		});
