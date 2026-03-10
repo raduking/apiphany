@@ -1,5 +1,8 @@
 package org.apiphany.security.tls.ext;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
@@ -29,7 +32,7 @@ class ECPointFormatsTest {
 		assertEquals(ExtensionType.EC_POINTS_FORMAT, ecpf.getType());
 		assertEquals(UInt16.of((short) 2), ecpf.getLength());
 		assertEquals(UInt8.of((byte) 1), ecpf.getFormatsSize());
-		assertEquals(ecpf.getFormats().size(), 1);
+		assertEquals(1, ecpf.getFormats().size());
 		assertEquals(ec, ecpf.getFormats().getFirst());
 	}
 
@@ -59,8 +62,8 @@ class ECPointFormatsTest {
 		assertNotEquals(ecpf2, ecpf1);
 
 		// different types
-		assertNotEquals(ecpf1, null);
-		assertNotEquals(ecpf2, "not-a-server-name-indication");
+		assertThat(ecpf1, not(equalTo(null)));
+		assertThat(ecpf1, not(equalTo("not-ec-point-formats")));
 	}
 
 	@Test

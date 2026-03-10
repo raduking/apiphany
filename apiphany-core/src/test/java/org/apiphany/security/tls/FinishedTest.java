@@ -1,6 +1,7 @@
 package org.apiphany.security.tls;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -93,8 +94,8 @@ class FinishedTest {
 		assertNotEquals(finished2, finished1);
 
 		// different types
-		assertNotEquals(finished1, null);
-		assertNotEquals(finished2, "some string");
+		assertThat(finished1, not(equalTo(null)));
+		assertThat(finished1, not(equalTo("not-a-finished-object")));
 	}
 
 	@Test

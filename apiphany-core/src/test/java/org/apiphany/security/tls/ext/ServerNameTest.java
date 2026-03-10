@@ -1,5 +1,8 @@
 package org.apiphany.security.tls.ext;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
@@ -59,8 +62,8 @@ class ServerNameTest {
 		assertNotEquals(sn2, sn1);
 
 		// different types
-		assertNotEquals(sn1, null);
-		assertNotEquals(sn2, "not-a-server-name");
+		assertThat(sn1, not(equalTo(null)));
+		assertThat(sn1, not(equalTo("not-a-server-name")));
 	}
 
 	@Test

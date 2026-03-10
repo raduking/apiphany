@@ -1,5 +1,8 @@
 package org.apiphany.security.tls;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -109,8 +112,8 @@ class AdditionalAuthenticatedDataTest {
 
 		// different objects
 		assertNotEquals(aad1, aad2);
-		assertNotEquals(aad1, null);
-		assertNotEquals(aad2, "not-an-aad");
+		assertThat(aad1, not(equalTo(null)));
+		assertThat(aad2, not(equalTo("not-an-aad")));
 	}
 
 	@Test

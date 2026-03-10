@@ -1,6 +1,7 @@
 package org.apiphany.security.tls;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -62,8 +63,8 @@ class VersionTest {
 		assertNotEquals(version2, version1);
 
 		// different types
-		assertNotEquals(version1, null);
-		assertNotEquals(version2, "some string");
+		assertThat(version1, not(equalTo(null)));
+		assertThat(version1, not(equalTo("not-a-version")));
 	}
 
 	@Test

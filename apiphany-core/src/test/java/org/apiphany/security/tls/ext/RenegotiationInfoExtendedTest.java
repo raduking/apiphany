@@ -1,5 +1,8 @@
 package org.apiphany.security.tls.ext;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
@@ -55,8 +58,8 @@ class RenegotiationInfoExtendedTest {
 		assertNotEquals(rie2, rie1);
 
 		// different types
-		assertNotEquals(rie1, null);
-		assertNotEquals(rie2, "not-a-renegotiation-info-extended");
+		assertThat(rie1, not(equalTo(null)));
+		assertThat(rie1, not(equalTo("not-renegotiation-info-extended")));
 	}
 
 	@Test

@@ -25,7 +25,7 @@ class ServerHelloDoneTest {
 	}
 
 	@Test
-	void shouldReadFromInputStream() throws Exception {
+	void shouldReadFromInputStream() {
 		ServerHelloDone shd = ServerHelloDone.from(new ByteArrayInputStream(new byte[0]));
 
 		assertNotNull(shd);

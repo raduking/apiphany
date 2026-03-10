@@ -1,5 +1,8 @@
 package org.apiphany.security.tls;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -46,8 +49,11 @@ class SignatureTest {
 
 		// different objects
 		assertNotEquals(sig1, sig2);
-		assertNotEquals(sig1, null);
-		assertNotEquals(sig2, "not-an-aad");
+		assertNotEquals(sig2, sig1);
+
+		// different types
+		assertThat(sig1, not(equalTo(null)));
+		assertThat(sig1, not(equalTo("not-a-signature")));
 	}
 
 	@Test

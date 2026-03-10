@@ -1,5 +1,8 @@
 package org.apiphany.security.tls;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -45,8 +48,10 @@ class ECDHEPublicKeyTest {
 
 		// different objects
 		assertNotEquals(pk1, pk2);
-		assertNotEquals(pk1, null);
-		assertNotEquals(pk2, "not-an-pk");
+
+		// different types
+		assertThat(pk1, not(equalTo(null)));
+		assertThat(pk1, not(equalTo("not-an-ecdhe-public-key")));
 	}
 
 	@Test

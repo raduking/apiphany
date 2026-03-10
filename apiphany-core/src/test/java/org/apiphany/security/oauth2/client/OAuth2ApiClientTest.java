@@ -169,7 +169,7 @@ class OAuth2ApiClientTest {
 
 	@Test
 	@SuppressWarnings({ "resource", "unchecked" })
-	void shouldReturnAuthenticationWithClientSecretBasic() throws Exception {
+	void shouldReturnAuthenticationWithClientSecretBasic() {
 		doReturn(AuthenticationType.NONE).when(exchangeClient).getAuthenticationType();
 		doReturn(MAIN_EXCHANGE_CLIENT).when(exchangeClient).getName();
 		doReturn(HttpMethod.POST).when(exchangeClient).post();
@@ -201,7 +201,7 @@ class OAuth2ApiClientTest {
 		assertThat(headers.size(), equalTo(2));
 		assertThat(Headers.get(HttpHeader.AUTHORIZATION, headers).getFirst(), equalTo(expectedAuthHeader));
 		assertThat(Headers.get(HttpHeader.CONTENT_TYPE, headers).getFirst(), equalTo(ContentType.Value.APPLICATION_FORM_URLENCODED));
-		assertThat(capturedRequest.getUrl().toString(), equalTo(providerDetails.getTokenUri()));
+		assertThat(capturedRequest.getUrl(), equalTo(providerDetails.getTokenUri()));
 		assertThat(capturedRequest.getMethod(), equalTo(HttpMethod.POST));
 	}
 
@@ -239,7 +239,7 @@ class OAuth2ApiClientTest {
 		assertThat(capturedRequest.getBody(), equalTo(body));
 		assertThat(headers.size(), equalTo(1));
 		assertThat(Headers.get(HttpHeader.CONTENT_TYPE, headers).getFirst(), equalTo(ContentType.Value.APPLICATION_FORM_URLENCODED));
-		assertThat(capturedRequest.getUrl().toString(), equalTo(providerDetails.getTokenUri()));
+		assertThat(capturedRequest.getUrl(), equalTo(providerDetails.getTokenUri()));
 		assertThat(capturedRequest.getMethod(), equalTo(HttpMethod.POST));
 	}
 
@@ -279,7 +279,7 @@ class OAuth2ApiClientTest {
 				equalTo(List.of(String.valueOf(OAuth2Parameter.Default.EXPIRES_IN.toSeconds()))));
 		assertThat(headers.size(), equalTo(1));
 		assertThat(Headers.get(HttpHeader.CONTENT_TYPE, headers).getFirst(), equalTo(ContentType.Value.APPLICATION_FORM_URLENCODED));
-		assertThat(capturedRequest.getUrl().toString(), equalTo(providerDetails.getTokenUri()));
+		assertThat(capturedRequest.getUrl(), equalTo(providerDetails.getTokenUri()));
 		assertThat(capturedRequest.getMethod(), equalTo(HttpMethod.POST));
 	}
 
@@ -322,7 +322,7 @@ class OAuth2ApiClientTest {
 				equalTo(List.of(String.valueOf(OAuth2Parameter.Default.EXPIRES_IN.toSeconds()))));
 		assertThat(headers.size(), equalTo(1));
 		assertThat(Headers.get(HttpHeader.CONTENT_TYPE, headers).getFirst(), equalTo(ContentType.Value.APPLICATION_FORM_URLENCODED));
-		assertThat(capturedRequest.getUrl().toString(), equalTo(providerDetails.getTokenUri()));
+		assertThat(capturedRequest.getUrl(), equalTo(providerDetails.getTokenUri()));
 		assertThat(capturedRequest.getMethod(), equalTo(HttpMethod.POST));
 	}
 

@@ -1,5 +1,8 @@
 package org.apiphany.security.tls.ext;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
@@ -55,8 +58,8 @@ class SessionTicketTest {
 		assertNotEquals(st2, st1);
 
 		// different types
-		assertNotEquals(st1, null);
-		assertNotEquals(st2, "not-a-session-ticket");
+		assertThat(st1, not(equalTo(null)));
+		assertThat(st1, not(equalTo("not-a-session-ticket")));
 	}
 
 	@Test

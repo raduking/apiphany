@@ -1,5 +1,8 @@
 package org.apiphany.security.tls;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -23,66 +26,66 @@ class EncryptedAlertTest {
 	@Test
 	void shouldCreateEncryptedAlertWithEncryptedPayload() {
 		Encrypted encryptedPayload = new Encrypted(ENCRYPTED_PAYLOAD);
-		EncryptedAlert appData = new EncryptedAlert(encryptedPayload);
+		EncryptedAlert ea = new EncryptedAlert(encryptedPayload);
 
-		assertArrayEquals(encryptedPayload.toByteArray(), appData.toByteArray());
-		assertArrayEquals(ENCRYPTED_PAYLOAD, appData.toByteArray());
-		assertEquals(ENCRYPTED_PAYLOAD.length, appData.sizeOf());
+		assertArrayEquals(encryptedPayload.toByteArray(), ea.toByteArray());
+		assertArrayEquals(ENCRYPTED_PAYLOAD, ea.toByteArray());
+		assertEquals(ENCRYPTED_PAYLOAD.length, ea.sizeOf());
 	}
 
 	@Test
 	void shouldCreateEncryptedAlertFromInputStream() throws Exception {
 		Encrypted encryptedPayload = new Encrypted(ENCRYPTED_PAYLOAD);
-		EncryptedAlert appData = EncryptedAlert.from(
+		EncryptedAlert ea = EncryptedAlert.from(
 				new ByteArrayInputStream(ENCRYPTED_PAYLOAD),
 				ENCRYPTED_PAYLOAD.length);
 
-		assertArrayEquals(encryptedPayload.toByteArray(), appData.toByteArray());
-		assertArrayEquals(ENCRYPTED_PAYLOAD, appData.toByteArray());
-		assertEquals(ENCRYPTED_PAYLOAD.length, appData.sizeOf());
+		assertArrayEquals(encryptedPayload.toByteArray(), ea.toByteArray());
+		assertArrayEquals(ENCRYPTED_PAYLOAD, ea.toByteArray());
+		assertEquals(ENCRYPTED_PAYLOAD.length, ea.sizeOf());
 	}
 
 	@Test
 	void shouldEqualSameValuesAndSameReference() {
 		Encrypted encryptedPayload1 = new Encrypted(ENCRYPTED_PAYLOAD);
 		Encrypted encryptedPayload2 = new Encrypted(ENCRYPTED_PAYLOAD);
-		EncryptedAlert appData1 = new EncryptedAlert(encryptedPayload1);
-		EncryptedAlert appData2 = new EncryptedAlert(encryptedPayload2);
+		EncryptedAlert ea1 = new EncryptedAlert(encryptedPayload1);
+		EncryptedAlert ea2 = new EncryptedAlert(encryptedPayload2);
 
 		// same reference
-		assertEquals(appData1, appData1);
+		assertEquals(ea1, ea1);
 
 		// different instance, same values
-		assertEquals(appData1, appData2);
-		assertEquals(appData2, appData1);
+		assertEquals(ea1, ea2);
+		assertEquals(ea2, ea1);
 
 		// hashCode contract (important for coverage + correctness)
-		assertEquals(appData1.hashCode(), appData2.hashCode());
+		assertEquals(ea1.hashCode(), ea2.hashCode());
 	}
 
 	@Test
 	void shouldNotEqualIfDifferentObjects() {
 		Encrypted encryptedPayload1 = new Encrypted(ENCRYPTED_PAYLOAD);
 		Encrypted encryptedPayload2 = new Encrypted(new byte[] { 0x05, 0x06, 0x07, 0x08 });
-		EncryptedAlert appData1 = new EncryptedAlert(encryptedPayload1);
-		EncryptedAlert appData2 = new EncryptedAlert(encryptedPayload2);
+		EncryptedAlert ea1 = new EncryptedAlert(encryptedPayload1);
+		EncryptedAlert ea2 = new EncryptedAlert(encryptedPayload2);
 
 		// different values
-		assertNotEquals(appData1, appData2);
-		assertNotEquals(appData2, appData1);
+		assertNotEquals(ea1, ea2);
+		assertNotEquals(ea2, ea1);
 
 		// different types
-		assertNotEquals(appData1, null);
-		assertNotEquals(appData2, "some string");
+		assertThat(ea1, not(equalTo(null)));
+		assertThat(ea1, not(equalTo("not-an-encrypted-alert")));
 	}
 
 	@Test
 	void shouldBuildHashcodeWithAllFields() {
 		Encrypted encryptedPayload = new Encrypted(ENCRYPTED_PAYLOAD);
-		EncryptedAlert appData = new EncryptedAlert(encryptedPayload);
+		EncryptedAlert ea = new EncryptedAlert(encryptedPayload);
 
-		int expectedHashCode = Objects.hash(appData.getEncrypted());
+		int expectedHashCode = Objects.hash(ea.getEncrypted());
 
-		assertEquals(expectedHashCode, appData.hashCode());
+		assertEquals(expectedHashCode, ea.hashCode());
 	}
 }

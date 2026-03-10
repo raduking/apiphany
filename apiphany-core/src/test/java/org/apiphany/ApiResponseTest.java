@@ -283,16 +283,18 @@ class ApiResponseTest {
 	@Nested
 	class OrThrowTests {
 
+		private static final String NOT_SUCCESSFUL = "Not successful";
+
 		@Test
 		void shouldThrowExceptionOnOrThrowWhenNotSuccessful() {
 			ApiResponse<A> response = ApiResponse.create((A) null)
 					.status(HttpStatus.NOT_FOUND)
 					.build();
 
-			IllegalStateException e = assertThrows(IllegalStateException.class,
-					() -> response.orThrow(new IllegalStateException("Not successful")));
+			IllegalStateException ise = new IllegalStateException(NOT_SUCCESSFUL);
+			IllegalStateException e = assertThrows(IllegalStateException.class, () -> response.orThrow(ise));
 
-			assertThat(e.getMessage(), equalTo("Not successful"));
+			assertThat(e.getMessage(), equalTo(NOT_SUCCESSFUL));
 		}
 
 		@Test
@@ -302,7 +304,7 @@ class ApiResponseTest {
 					.status(HttpStatus.OK)
 					.build();
 
-			A result = response.orThrow(new IllegalStateException("Not successful"));
+			A result = response.orThrow(new IllegalStateException(NOT_SUCCESSFUL));
 
 			assertThat(result, equalTo(a));
 		}

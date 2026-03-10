@@ -1,5 +1,8 @@
 package org.apiphany.security.tls;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -23,66 +26,66 @@ class EncryptedHandshakeTest {
 	@Test
 	void shouldCreateEncryptedHandshakeWithEncryptedPayload() {
 		Encrypted encryptedPayload = new Encrypted(ENCRYPTED_PAYLOAD);
-		EncryptedHandshake appData = new EncryptedHandshake(encryptedPayload);
+		EncryptedHandshake eh = new EncryptedHandshake(encryptedPayload);
 
-		assertArrayEquals(encryptedPayload.toByteArray(), appData.toByteArray());
-		assertArrayEquals(ENCRYPTED_PAYLOAD, appData.toByteArray());
-		assertEquals(ENCRYPTED_PAYLOAD.length, appData.sizeOf());
+		assertArrayEquals(encryptedPayload.toByteArray(), eh.toByteArray());
+		assertArrayEquals(ENCRYPTED_PAYLOAD, eh.toByteArray());
+		assertEquals(ENCRYPTED_PAYLOAD.length, eh.sizeOf());
 	}
 
 	@Test
 	void shouldCreateEncryptedHandshakeFromInputStream() throws Exception {
 		Encrypted encryptedPayload = new Encrypted(ENCRYPTED_PAYLOAD);
-		EncryptedHandshake appData = EncryptedHandshake.from(
+		EncryptedHandshake eh = EncryptedHandshake.from(
 				new ByteArrayInputStream(ENCRYPTED_PAYLOAD),
 				ENCRYPTED_PAYLOAD.length);
 
-		assertArrayEquals(encryptedPayload.toByteArray(), appData.toByteArray());
-		assertArrayEquals(ENCRYPTED_PAYLOAD, appData.toByteArray());
-		assertEquals(ENCRYPTED_PAYLOAD.length, appData.sizeOf());
+		assertArrayEquals(encryptedPayload.toByteArray(), eh.toByteArray());
+		assertArrayEquals(ENCRYPTED_PAYLOAD, eh.toByteArray());
+		assertEquals(ENCRYPTED_PAYLOAD.length, eh.sizeOf());
 	}
 
 	@Test
 	void shouldEqualSameValuesAndSameReference() {
 		Encrypted encryptedPayload1 = new Encrypted(ENCRYPTED_PAYLOAD);
 		Encrypted encryptedPayload2 = new Encrypted(ENCRYPTED_PAYLOAD);
-		EncryptedHandshake appData1 = new EncryptedHandshake(encryptedPayload1);
-		EncryptedHandshake appData2 = new EncryptedHandshake(encryptedPayload2);
+		EncryptedHandshake eh1 = new EncryptedHandshake(encryptedPayload1);
+		EncryptedHandshake eh2 = new EncryptedHandshake(encryptedPayload2);
 
 		// same reference
-		assertEquals(appData1, appData1);
+		assertEquals(eh1, eh1);
 
 		// different instance, same values
-		assertEquals(appData1, appData2);
-		assertEquals(appData2, appData1);
+		assertEquals(eh1, eh2);
+		assertEquals(eh2, eh1);
 
 		// hashCode contract (important for coverage + correctness)
-		assertEquals(appData1.hashCode(), appData2.hashCode());
+		assertEquals(eh1.hashCode(), eh2.hashCode());
 	}
 
 	@Test
 	void shouldNotEqualIfDifferentObjects() {
 		Encrypted encryptedPayload1 = new Encrypted(ENCRYPTED_PAYLOAD);
 		Encrypted encryptedPayload2 = new Encrypted(new byte[] { 0x05, 0x06, 0x07, 0x08 });
-		EncryptedHandshake appData1 = new EncryptedHandshake(encryptedPayload1);
-		EncryptedHandshake appData2 = new EncryptedHandshake(encryptedPayload2);
+		EncryptedHandshake eh1 = new EncryptedHandshake(encryptedPayload1);
+		EncryptedHandshake eh2 = new EncryptedHandshake(encryptedPayload2);
 
 		// different values
-		assertNotEquals(appData1, appData2);
-		assertNotEquals(appData2, appData1);
+		assertNotEquals(eh1, eh2);
+		assertNotEquals(eh2, eh1);
 
 		// different types
-		assertNotEquals(appData1, null);
-		assertNotEquals(appData2, "some string");
+		assertThat(eh1, not(equalTo(null)));
+		assertThat(eh1, not(equalTo("not-an-encrypted-handshake")));
 	}
 
 	@Test
 	void shouldBuildHashcodeWithAllFields() {
 		Encrypted encryptedPayload = new Encrypted(ENCRYPTED_PAYLOAD);
-		EncryptedHandshake appData = new EncryptedHandshake(encryptedPayload);
+		EncryptedHandshake eh = new EncryptedHandshake(encryptedPayload);
 
-		int expectedHashCode = Objects.hash(appData.getEncrypted());
+		int expectedHashCode = Objects.hash(eh.getEncrypted());
 
-		assertEquals(expectedHashCode, appData.hashCode());
+		assertEquals(expectedHashCode, eh.hashCode());
 	}
 }

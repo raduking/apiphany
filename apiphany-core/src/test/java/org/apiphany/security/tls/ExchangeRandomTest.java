@@ -1,6 +1,7 @@
 package org.apiphany.security.tls;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -78,8 +79,8 @@ class ExchangeRandomTest {
 		assertNotEquals(er2, er1);
 
 		// different types
-		assertNotEquals(er1, null);
-		assertNotEquals(er2, "some string");
+		assertThat(er1, not(equalTo(null)));
+		assertThat(er1, not(equalTo("not-an-exchange-random")));
 	}
 
 	@Test

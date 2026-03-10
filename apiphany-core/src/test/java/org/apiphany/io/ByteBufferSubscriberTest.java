@@ -186,11 +186,14 @@ class ByteBufferSubscriberTest {
 			TestSubscription subscription = new TestSubscription();
 
 			subscriber.onSubscribe(subscription);
+			subscription.cancel();
 			subscriber.onNext(ByteBuffer.allocate(INT_BUFFER_SIZE + 1));
 			subscriber.onNext(ByteBuffer.allocate(1));
 
 			assertThat(subscription.isCancelled(), equalTo(true));
 			assertThat(subscriber.hasBufferLimitExceeded(), equalTo(true));
+			assertThat(subscriber.getBufferCount(), equalTo(0));
+			assertThat(subscriber.getReceivedBytesCount(), equalTo(0L));
 		}
 
 		@Test
@@ -475,7 +478,7 @@ class ByteBufferSubscriberTest {
 			subscriber.onSubscribe(subscription);
 			subscriber.onError(new RuntimeException("Test error"));
 
-			IllegalStateException e = assertThrows(IllegalStateException.class, () -> subscriber.getReceivedBytes());
+			IllegalStateException e = assertThrows(IllegalStateException.class, subscriber::getReceivedBytes);
 
 			assertThat(e.getMessage(), equalTo("Error occurred during subscription"));
 			assertThat(e.getCause().getMessage(), equalTo("Test error"));

@@ -1,6 +1,7 @@
 package org.apiphany.security.tls;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -10,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Objects;
 
 import org.apiphany.io.BytesWrapper;
@@ -48,8 +50,9 @@ class RawHandshakeBodyTest {
 		RawHandshakeBody body = new RawHandshakeBody(HandshakeType.CERTIFICATE, new BytesWrapper(DATA));
 		byte[] bodyBytes = body.toByteArray();
 
+		InputStream inputStream = new ByteArrayInputStream(bodyBytes);
 		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-				() -> RawHandshakeBody.from(new ByteArrayInputStream(bodyBytes), HandshakeType.CERTIFICATE, -1));
+				() -> RawHandshakeBody.from(inputStream, HandshakeType.CERTIFICATE, -1));
 
 		assertThat(exception.getMessage(), equalTo("Size cannot be negative"));
 	}
@@ -80,8 +83,8 @@ class RawHandshakeBodyTest {
 		assertNotEquals(body2, body1);
 
 		// different types
-		assertNotEquals(body1, null);
-		assertNotEquals(body2, "not-an-aad");
+		assertThat(body1, not(equalTo(null)));
+		assertThat(body1, not(equalTo("not-a-raw-handshake-body")));
 	}
 
 	@Test

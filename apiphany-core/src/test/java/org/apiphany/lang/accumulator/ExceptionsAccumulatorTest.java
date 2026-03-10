@@ -197,20 +197,6 @@ class ExceptionsAccumulatorTest {
 	}
 
 	@Test
-	void shouldNotDoAnythingWhenNoWrappingOrThrowingIsConfiguredOnRest() {
-		ExceptionsAccumulator ea = ExceptionsAccumulator.of(Throw.NONE);
-		for (int i = 0; i < COUNT; ++i) {
-			int n = i;
-			ea.accumulate((Runnable) () -> {
-				throw new RuntimeException(String.valueOf(n));
-			});
-		}
-		ea.rest();
-
-		assertThat(ea.getExceptions(), hasSize(COUNT));
-	}
-
-	@Test
 	void shouldNotDoAnythingWhenNoThrowingIsConfiguredOnRest() {
 		ExceptionsAccumulator ea = ExceptionsAccumulator.of(Throw.NONE);
 		for (int i = 0; i < COUNT; ++i) {

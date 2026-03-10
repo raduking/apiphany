@@ -1,5 +1,8 @@
 package org.apiphany.security.tls;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -44,8 +47,8 @@ class RecordHeaderTest {
 		assertNotEquals(rh2, rh1);
 
 		// different types
-		assertNotEquals(rh1, null);
-		assertNotEquals(rh2, "not-a-record-header");
+		assertThat(rh1, not(equalTo(null)));
+		assertThat(rh1, not(equalTo("not-a-record-header")));
 	}
 
 	@Test
