@@ -234,10 +234,11 @@ public interface Strings {
 	static String toString(final InputStream inputStream, final Charset encoding, final int maxSize, final int bufferSize,
 			final Consumer<Exception> onError) {
 		try {
-			Objects.requireNonNull(onError, "On error handler cannot be null");
 			return toStringOrThrow(inputStream, encoding, maxSize, bufferSize);
 		} catch (Exception e) {
-			onError.accept(e);
+			if (null != onError) {
+				onError.accept(e);
+			}
 			return null;
 		}
 	}
@@ -299,13 +300,13 @@ public interface Strings {
 	static String fromFile(final String path, final Charset encoding, final int bufferSize, final Consumer<Exception> onError) {
 		try {
 			Objects.requireNonNull(path, "File path cannot be null");
-			Objects.requireNonNull(onError, "onError handler cannot be null");
-
 			try (InputStream inputStream = ResourceLocation.ofPath(path).open(path)) {
 				return toStringOrThrow(inputStream, encoding, IOStreams.MAX_BUFFER_SIZE, bufferSize);
 			}
 		} catch (Exception e) {
-			onError.accept(e);
+			if (null != onError) {
+				onError.accept(e);
+			}
 			return null;
 		}
 	}

@@ -70,7 +70,7 @@ public class ByteBufferSubscriber implements Subscriber<ByteBuffer> {
 	/**
 	 * Enum to define cancel behavior options for the subscriber.
 	 */
-	public static enum CancelBehavior {
+	public enum CancelBehavior {
 
 		/**
 		 * Clear received buffers on cancellation to free up memory.

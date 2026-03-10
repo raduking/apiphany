@@ -295,6 +295,16 @@ class StringsTest {
 			verify(runnable).run();
 		}
 
+		@Test
+		void shouldReturnNullOnErrorIfOnErrorConsumerIsNull() throws IOException {
+			String result;
+			try (FileInputStream fileInputStream = new FileInputStream("src/test/resources/text-file.txt")) {
+				result = Strings.toString(fileInputStream, StandardCharsets.UTF_8, 10, -1, null);
+			}
+
+			assertThat(result, nullValue());
+		}
+
 		private static Consumer<Exception> onErrorHandler(final Runnable runnable,
 				final Class<? extends Exception> expectedException, final String expectedMessage) {
 			return e -> {
@@ -344,6 +354,13 @@ class StringsTest {
 
 			assertThat(result, nullValue());
 			verify(runnable).run();
+		}
+
+		@Test
+		void shouldReturnNullOnErrorIfOnErrorConsumerIsNullWhenFromStringThrowsExceptionWhenCalledWithNameCharsetSize() {
+			String result = Strings.fromFile("/unknown-file.txt", StandardCharsets.UTF_8, 10, null);
+
+			assertThat(result, nullValue());
 		}
 
 		@Test
