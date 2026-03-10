@@ -33,7 +33,7 @@ public class Jackson2Library {
 			LibraryDescriptor.of(
 					JACKSON_2_OBJECT_MAPPER_CLASS_NAME,
 					Jackson2JsonBuilder.class,
-					() -> Jackson2JsonBuilder.instance());
+					() -> Jackson2JsonBuilder.instance()); // NOSONAR lambda to avoid direct reference to class
 
 	/**
 	 * Checks if the Jackson 2 JSON library is present in the classpath.

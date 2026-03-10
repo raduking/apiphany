@@ -10,6 +10,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 
@@ -88,9 +90,11 @@ class KeysTest {
 	@Test
 	void shouldThrowSecurityExceptionWhenGeneratingSecretWithInvalidAlgorithmAndKeys() {
 		KeyPair keyPair = Keys.generateKeyPair(XDH);
+		PublicKey publicKey = keyPair.getPublic();
+		PrivateKey privateKey = keyPair.getPrivate();
 
 		SecurityException exception =
-				assertThrows(SecurityException.class, () -> Keys.generateSecret(INVALID_ALGORITHM, keyPair.getPublic(), keyPair.getPrivate()));
+				assertThrows(SecurityException.class, () -> Keys.generateSecret(INVALID_ALGORITHM, publicKey, privateKey));
 
 		assertThat(exception.getMessage(), is("Error generating shared secret"));
 		assertThat(exception.getCause(), is(instanceOf(NoSuchAlgorithmException.class)));
@@ -110,9 +114,10 @@ class KeysTest {
 	@Test
 	void shouldThrowSecurityExceptionWhenGeneratingPublicKeyWithInvalidSpec() {
 		KeyFactory keyFactory = Keys.getKeyFactory(XDH);
+		X509EncodedKeySpec invalidSpec = new X509EncodedKeySpec(new byte[] { 0x00, 0x01, 0x02 });
 
 		SecurityException exception = assertThrows(SecurityException.class,
-				() -> Keys.generatePublicKey(keyFactory, new X509EncodedKeySpec(new byte[] { 0x00, 0x01, 0x02 })));
+				() -> Keys.generatePublicKey(keyFactory, invalidSpec));
 
 		assertThat(exception.getMessage(), is("Error generating public key"));
 		assertThat(exception.getCause(), is(instanceOf(InvalidKeySpecException.class)));
