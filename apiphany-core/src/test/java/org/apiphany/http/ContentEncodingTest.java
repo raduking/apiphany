@@ -29,6 +29,13 @@ import org.morphix.reflection.Constructors;
  */
 class ContentEncodingTest {
 
+	private static final String HELLO_WORLD = "Hello World!";
+	private static final String HELLO_MULTI_LAYER = "Hello multi-layer compression!";
+	private static final String HELLO_COMPRESSED_WORLD = "Hello compressed world!";
+	private static final String HELLO_COMPRESSED_STREAM = "Hello compressed stream!";
+	private static final String HELLO_DECODING_PIPELINE = "Hello decoding pipeline!";
+	private static final String HELLO_LAYERED_COMPRESSION = "Hello layered compression!";
+
 	@ParameterizedTest
 	@EnumSource(ContentEncoding.class)
 	void shouldBuildWithFromStringWithValidValueEvenIfUppercase(final ContentEncoding contentEncoding) {
@@ -166,7 +173,7 @@ class ContentEncodingTest {
 
 	@Test
 	void shouldReturnOriginalBodyWhenEncodingsAreEmpty() {
-		byte[] body = "hello".getBytes(StandardCharsets.UTF_8);
+		byte[] body = HELLO_WORLD.getBytes(StandardCharsets.UTF_8);
 
 		byte[] decoded = ContentEncoding.decodeBody(body, List.of());
 
@@ -174,14 +181,44 @@ class ContentEncodingTest {
 	}
 
 	@Test
+	void shouldReturnOriginalBodyWhenEncodingsIsNull() {
+		byte[] body = HELLO_WORLD.getBytes(StandardCharsets.UTF_8);
+
+		byte[] decoded = ContentEncoding.decodeBody(body, null);
+
+		assertThat(decoded, equalTo(body));
+	}
+
+	@Test
+	@SuppressWarnings("resource")
 	void shouldDecodeBodyWithMultipleEncodingsInReverseOrder() throws Exception {
-		String original = "Hello multi-layer compression!";
+		String original = HELLO_MULTI_LAYER;
+		byte[] deflated = Deflate.compress(original.getBytes(StandardCharsets.UTF_8));
+		byte[] gzipThenDeflate = GZip.compress(deflated);
+		InputStream stream = new ByteArrayInputStream(gzipThenDeflate);
+
+		InputStream decoded = ContentEncoding.decodeBody(stream, List.of(ContentEncoding.DEFLATE, ContentEncoding.GZIP));
+		byte[] result = decoded.readAllBytes();
+
+		assertThat(new String(result, StandardCharsets.UTF_8), equalTo(original));
+	}
+
+	@Test
+	void shouldDecodeBodyWithMultipleEncodingsInReverseOrderFromStream() throws Exception {
+		String original = HELLO_MULTI_LAYER;
 		byte[] deflated = Deflate.compress(original.getBytes(StandardCharsets.UTF_8));
 		byte[] gzipThenDeflate = GZip.compress(deflated);
 
 		byte[] decoded = ContentEncoding.decodeBody(gzipThenDeflate, List.of(ContentEncoding.DEFLATE, ContentEncoding.GZIP));
 
 		assertThat(new String(decoded, StandardCharsets.UTF_8), equalTo(original));
+	}
+
+	@Test
+	void shouldReturnTheSameBodyForUnsupportedTypes() {
+		String decoded = ContentEncoding.decodeBody(HELLO_WORLD, List.of(ContentEncoding.BR));
+
+		assertThat(decoded, equalTo(HELLO_WORLD));
 	}
 
 	@Nested
@@ -194,7 +231,7 @@ class ContentEncodingTest {
 
 		@Test
 		void shouldDecodeGzipEncodedByteArray() throws Exception {
-			String original = "Hello compressed world!";
+			String original = HELLO_COMPRESSED_WORLD;
 			byte[] compressed = gzip(original.getBytes(StandardCharsets.UTF_8));
 
 			byte[] decoded = ContentEncoding.GZIP.decode(compressed);
@@ -206,7 +243,7 @@ class ContentEncodingTest {
 		@Test
 		@SuppressWarnings("resource")
 		void shouldDecodeGzipEncodedInputStream() throws Exception {
-			String original = "Hello compressed stream!";
+			String original = HELLO_COMPRESSED_STREAM;
 			byte[] compressed = gzip(original.getBytes(StandardCharsets.UTF_8));
 			InputStream stream = new ByteArrayInputStream(compressed);
 
@@ -219,7 +256,7 @@ class ContentEncodingTest {
 
 		@Test
 		void shouldDecodeBodyUsingEncodingList() throws Exception {
-			String original = "Hello decoding pipeline!";
+			String original = HELLO_DECODING_PIPELINE;
 			byte[] compressed = gzip(original.getBytes(StandardCharsets.UTF_8));
 
 			byte[] decoded = ContentEncoding.decodeBody(compressed, List.of(ContentEncoding.GZIP));
@@ -229,7 +266,7 @@ class ContentEncodingTest {
 
 		@Test
 		void shouldDecodeBodyInReverseEncodingOrder() throws Exception {
-			String original = "Hello layered compression!";
+			String original = HELLO_LAYERED_COMPRESSION;
 			byte[] gzip1 = gzip(original.getBytes(StandardCharsets.UTF_8));
 			byte[] gzip2 = gzip(gzip1);
 
@@ -257,7 +294,7 @@ class ContentEncodingTest {
 
 		@Test
 		void shouldDecodeDeflateEncodedByteArray() throws Exception {
-			String original = "Hello compressed world!";
+			String original = HELLO_COMPRESSED_WORLD;
 			byte[] compressed = Deflate.compress(original.getBytes(StandardCharsets.UTF_8));
 
 			byte[] decoded = ContentEncoding.DEFLATE.decode(compressed);
@@ -269,7 +306,7 @@ class ContentEncodingTest {
 		@Test
 		@SuppressWarnings("resource")
 		void shouldDecodeDeflateEncodedInputStream() throws Exception {
-			String original = "Hello compressed stream!";
+			String original = HELLO_COMPRESSED_STREAM;
 			byte[] compressed = Deflate.compress(original.getBytes(StandardCharsets.UTF_8));
 			InputStream stream = new ByteArrayInputStream(compressed);
 
