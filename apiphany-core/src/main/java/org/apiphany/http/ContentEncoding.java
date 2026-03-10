@@ -354,13 +354,30 @@ public enum ContentEncoding {
 		if (null == body || Lists.isEmpty(encodings)) {
 			return body;
 		}
-		if (body instanceof InputStream || body instanceof byte[]) {
-			T result = body;
-			for (ContentEncoding encoding : encodings.reversed()) {
-				result = encoding.decode(result);
-			}
-			return result;
+		boolean supported = switch (body) {
+			case InputStream is -> true;
+			case byte[] bytes -> true;
+			default -> false;
+		};
+		return supported ? decodeSupported(body, encodings) : body;
+	}
+
+	/**
+	 * Decodes the body based on the given content encoding list. The body is decoded in the reverse order of the content
+	 * encodings, meaning that the last encoding in the list is decoded first. This method is used internally by
+	 * {@link #decodeBody(Object, List)} to perform the actual decoding logic for supported body types.
+	 *
+	 * @param <T> body type
+	 *
+	 * @param body the body to decode
+	 * @param encodings content encoding list in the order they were applied to the body
+	 * @return decoded body
+	 */
+	private static <T> T decodeSupported(final T body, final List<ContentEncoding> encodings) {
+		T result = body;
+		for (ContentEncoding encoding : encodings.reversed()) {
+			result = encoding.decode(result);
 		}
-		return body;
+		return result;
 	}
 }
