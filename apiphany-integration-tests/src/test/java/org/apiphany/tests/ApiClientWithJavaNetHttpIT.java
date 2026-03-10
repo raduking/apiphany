@@ -915,7 +915,7 @@ class ApiClientWithJavaNetHttpIT {
 					.retrieve();
 
 			assertNull(response.orNull());
-			assertDoesNotThrow(() -> response.orRethrow());
+			assertDoesNotThrow(() -> response.orRethrow()); // NOSONAR lambda to avoid ambiguity
 			assertEquals(200, response.getStatus().getCode());
 			assertEquals(List.of("42"), response.getHeaders().get("X-Test"));
 		}

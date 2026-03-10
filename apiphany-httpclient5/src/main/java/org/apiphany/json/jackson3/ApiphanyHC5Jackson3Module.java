@@ -1,36 +1,36 @@
-package org.apiphany.json.jackson2;
+package org.apiphany.json.jackson3;
 
 import java.io.Serial;
 
 import org.apache.hc.core5.util.Timeout;
-import org.apiphany.json.jackson2.serializers.TimeoutDeserializer;
+import org.apiphany.json.jackson3.serializers.TimeoutDeserializer;
 
-import com.fasterxml.jackson.databind.module.SimpleModule;
+import tools.jackson.databind.module.SimpleModule;
 
 /**
- * Custom Jackson 2 module to register serializers and deserializers for Apache HTTP Client 5 types, such as
+ * Custom Jackson 3 module to register serializers and deserializers for Apache HTTP Client 5 types, such as
  * {@link Timeout}.
  *
  * @author Radu Sebastian LAZIN
  */
-public class ApiphanyHC5Jackson2Module extends SimpleModule {
+public class ApiphanyHC5Jackson3Module extends SimpleModule {
 
 	/**
 	 * Serial version UID for serialization compatibility. This ensures that deserialization will work correctly even if the
 	 * class definition changes,
 	 */
 	@Serial
-	private static final long serialVersionUID = 8414312440407295220L;
+	private static final long serialVersionUID = 5326130072870211174L;
 
 	/**
 	 * Name of the module, used for identification when registering with ObjectMapper.
 	 */
-	public static final String NAME = "apiphany-hc5-jackson2";
+	public static final String NAME = "apiphany-hc5-jackson3";
 
 	/**
 	 * Default constructor that initializes the module with its name.
 	 */
-	public ApiphanyHC5Jackson2Module() {
+	public ApiphanyHC5Jackson3Module() {
 		super(NAME);
 	}
 
@@ -43,7 +43,7 @@ public class ApiphanyHC5Jackson2Module extends SimpleModule {
 	@Override
 	public void setupModule(final SetupContext context) {
 		super.setupModule(context);
-		context.insertAnnotationIntrospector(ApiphanyJackson2AnnotationIntrospector.getInstance());
+		context.insertAnnotationIntrospector(ApiphanyJackson3AnnotationIntrospector.getInstance());
 	}
 
 	/**
@@ -51,7 +51,7 @@ public class ApiphanyHC5Jackson2Module extends SimpleModule {
 	 * uses lazy initialization to ensure that the module is only created when needed, and that it is thread-safe without
 	 * requiring synchronization.
 	 *
-	 * @return a configured instance of {@link ApiphanyHC5Jackson2Module}
+	 * @return a configured instance of {@link ApiphanyHC5Jackson3Module}
 	 */
 	public static SimpleModule instance() {
 		return InstanceHolder.INSTANCE;
@@ -66,7 +66,7 @@ public class ApiphanyHC5Jackson2Module extends SimpleModule {
 		/**
 		 * The singleton instance of the ApiphanyModule, initialized with all necessary serializers and deserializers.
 		 */
-		private static final SimpleModule INSTANCE = new ApiphanyHC5Jackson2Module()
+		private static final SimpleModule INSTANCE = new ApiphanyHC5Jackson3Module()
 				.addDeserializer(Timeout.class, new TimeoutDeserializer());
 	}
 }

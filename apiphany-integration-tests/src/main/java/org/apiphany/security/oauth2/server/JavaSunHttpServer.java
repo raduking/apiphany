@@ -168,7 +168,7 @@ public class JavaSunHttpServer implements AutoCloseable {
 			if (!isAuthorized(exchange)) {
 				return;
 			}
-			switch (method) {
+			switch (method) { // NOSONAR only GET for now, can be extended in the future
 				case GET -> handleGet(exchange);
 				default -> exchange.sendResponseHeaders(HttpStatus.METHOD_NOT_ALLOWED.value(), -1);
 			}
