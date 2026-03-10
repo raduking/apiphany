@@ -194,13 +194,13 @@ public final class Bytes {
 	public static byte[] fromFile(final String path, final Consumer<Exception> onError) {
 		try {
 			Objects.requireNonNull(path, "File path cannot be null");
-			Objects.requireNonNull(onError, "On error consumer cannot be null");
-
 			try (InputStream inputStream = ResourceLocation.ofPath(path).open(path)) {
 				return inputStream.readAllBytes();
 			}
 		} catch (Exception e) {
-			onError.accept(e);
+			if (null != onError) {
+				onError.accept(e);
+			}
 			return EMPTY;
 		}
 	}
