@@ -55,13 +55,20 @@ class ExchangeClientBuilderTest {
 
 	static class InvalidDecoratingExchangeClient extends DecoratingExchangeClient {
 
-		public InvalidDecoratingExchangeClient(@SuppressWarnings("unused") final String invalidParameter) {
+		private String invalidParameter;
+
+		public InvalidDecoratingExchangeClient(final String invalidParameter) {
 			super((ExchangeClient) null);
+			this.invalidParameter = invalidParameter;
 		}
 
 		@Override
 		public <T, U> ApiResponse<U> exchange(final ApiRequest<T> request) {
 			return null;
+		}
+
+		public String getInvalidParameter() {
+			return invalidParameter;
 		}
 	}
 

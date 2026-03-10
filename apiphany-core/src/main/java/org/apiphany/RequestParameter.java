@@ -33,6 +33,13 @@ public record RequestParameter(String name, List<String> values, Charset encodin
 	public static final String NAME_VALUE_SEPARATOR = "=";
 
 	/**
+	 * A constant representing a null list of values for parameters. This can be used to explicitly indicate that a
+	 * parameter has no values, as opposed to an empty list which might indicate that the parameter is present but has no
+	 * values.
+	 */
+	private static final List<String> NULL_LIST = null;
+
+	/**
 	 * Constructs a {@link RequestParameter} instance ensuring the name is not null or blank.
 	 *
 	 * @param name the name of the parameter
@@ -141,7 +148,7 @@ public record RequestParameter(String name, List<String> values, Charset encodin
 	 */
 	public static List<String> toValues(final Object object) {
 		if (null == object) {
-			return null;
+			return NULL_LIST;
 		}
 		return switch (object) {
 			case Collection<?> collection -> toValues(collection);
@@ -160,7 +167,7 @@ public record RequestParameter(String name, List<String> values, Charset encodin
 	 */
 	public static List<String> toValues(final String string) {
 		if (null == string) {
-			return null;
+			return NULL_LIST;
 		}
 		List<String> list = new ArrayList<>();
 		list.add(string);
@@ -175,14 +182,14 @@ public record RequestParameter(String name, List<String> values, Charset encodin
 	 */
 	public static List<String> toValues(final Iterable<?> iterable) {
 		if (null == iterable) {
-			return null;
+			return NULL_LIST;
 		}
 		if (iterable instanceof Collection<?> collection) {
 			return toValues(collection);
 		}
 		Iterator<?> iterator = iterable.iterator();
 		if (!iterator.hasNext()) {
-			return null;
+			return NULL_LIST;
 		}
 		List<String> list = new ArrayList<>();
 		iterator.forEachRemaining(item -> list.add(String.valueOf(item)));
@@ -197,7 +204,7 @@ public record RequestParameter(String name, List<String> values, Charset encodin
 	 */
 	public static List<String> toValues(final Collection<?> collection) {
 		if (null == collection || collection.isEmpty()) {
-			return null;
+			return NULL_LIST;
 		}
 		List<String> list = new ArrayList<>(collection.size());
 		collection.forEach(item -> list.add(String.valueOf(item)));
@@ -212,7 +219,7 @@ public record RequestParameter(String name, List<String> values, Charset encodin
 	 */
 	public static List<String> toValues(final Object[] objects) {
 		if (JavaArrays.isEmpty(objects)) {
-			return null;
+			return NULL_LIST;
 		}
 		List<String> list = new ArrayList<>(objects.length);
 		return ArrayConversions.convertArray(objects, String::valueOf).to(list);
