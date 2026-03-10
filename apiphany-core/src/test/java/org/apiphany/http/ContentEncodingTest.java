@@ -3,10 +3,19 @@ package org.apiphany.http;
 import static org.apiphany.test.Assertions.assertDefaultConstructorThrows;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.zip.GZIPOutputStream;
 
+import org.apiphany.io.deflate.Deflate;
+import org.apiphany.io.gzip.GZip;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -153,5 +162,122 @@ class ContentEncodingTest {
 	void shouldThrowExceptionOnCallingValueConstructor() {
 		UnsupportedOperationException e = assertDefaultConstructorThrows(ContentEncoding.Value.class);
 		assertThat(e.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
+	}
+
+	@Test
+	void shouldReturnOriginalBodyWhenEncodingsAreEmpty() {
+		byte[] body = "hello".getBytes(StandardCharsets.UTF_8);
+
+		byte[] decoded = ContentEncoding.decodeBody(body, List.of());
+
+		assertThat(decoded, equalTo(body));
+	}
+
+	@Test
+	void shouldDecodeBodyWithMultipleEncodingsInReverseOrder() throws Exception {
+		String original = "Hello multi-layer compression!";
+		byte[] deflated = Deflate.compress(original.getBytes(StandardCharsets.UTF_8));
+		byte[] gzipThenDeflate = GZip.compress(deflated);
+
+		byte[] decoded = ContentEncoding.decodeBody(gzipThenDeflate, List.of(ContentEncoding.DEFLATE, ContentEncoding.GZIP));
+
+		assertThat(new String(decoded, StandardCharsets.UTF_8), equalTo(original));
+	}
+
+	@Nested
+	class GZipTests {
+
+		@Test
+		void shouldHaveCorrectValue() {
+			assertThat(ContentEncoding.GZIP.value(), equalTo("gzip"));
+		}
+
+		@Test
+		void shouldDecodeGzipEncodedByteArray() throws Exception {
+			String original = "Hello compressed world!";
+			byte[] compressed = gzip(original.getBytes(StandardCharsets.UTF_8));
+
+			byte[] decoded = ContentEncoding.GZIP.decode(compressed);
+
+			assertThat(decoded, notNullValue());
+			assertThat(new String(decoded, StandardCharsets.UTF_8), equalTo(original));
+		}
+
+		@Test
+		@SuppressWarnings("resource")
+		void shouldDecodeGzipEncodedInputStream() throws Exception {
+			String original = "Hello compressed stream!";
+			byte[] compressed = gzip(original.getBytes(StandardCharsets.UTF_8));
+			InputStream stream = new ByteArrayInputStream(compressed);
+
+			InputStream decoded = ContentEncoding.GZIP.decode(stream);
+			byte[] result = decoded.readAllBytes();
+
+			assertThat(result, notNullValue());
+			assertThat(new String(result, StandardCharsets.UTF_8), equalTo(original));
+		}
+
+		@Test
+		void shouldDecodeBodyUsingEncodingList() throws Exception {
+			String original = "Hello decoding pipeline!";
+			byte[] compressed = gzip(original.getBytes(StandardCharsets.UTF_8));
+
+			byte[] decoded = ContentEncoding.decodeBody(compressed, List.of(ContentEncoding.GZIP));
+
+			assertThat(new String(decoded, StandardCharsets.UTF_8), equalTo(original));
+		}
+
+		@Test
+		void shouldDecodeBodyInReverseEncodingOrder() throws Exception {
+			String original = "Hello layered compression!";
+			byte[] gzip1 = gzip(original.getBytes(StandardCharsets.UTF_8));
+			byte[] gzip2 = gzip(gzip1);
+
+			byte[] decoded = ContentEncoding.decodeBody(gzip2, List.of(ContentEncoding.GZIP, ContentEncoding.GZIP));
+
+			assertThat(new String(decoded, StandardCharsets.UTF_8), equalTo(original));
+		}
+
+		private static byte[] gzip(final byte[] data) throws Exception {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			try (GZIPOutputStream gzip = new GZIPOutputStream(baos)) {
+				gzip.write(data);
+			}
+			return baos.toByteArray();
+		}
+	}
+
+	@Nested
+	class DeflateTests {
+
+		@Test
+		void shouldHaveCorrectValue() {
+			assertThat(ContentEncoding.DEFLATE.value(), equalTo("deflate"));
+		}
+
+		@Test
+		void shouldDecodeDeflateEncodedByteArray() throws Exception {
+			String original = "Hello compressed world!";
+			byte[] compressed = Deflate.compress(original.getBytes(StandardCharsets.UTF_8));
+
+			byte[] decoded = ContentEncoding.DEFLATE.decode(compressed);
+
+			assertThat(decoded, notNullValue());
+			assertThat(new String(decoded, StandardCharsets.UTF_8), equalTo(original));
+		}
+
+		@Test
+		@SuppressWarnings("resource")
+		void shouldDecodeDeflateEncodedInputStream() throws Exception {
+			String original = "Hello compressed stream!";
+			byte[] compressed = Deflate.compress(original.getBytes(StandardCharsets.UTF_8));
+			InputStream stream = new ByteArrayInputStream(compressed);
+
+			InputStream decoded = ContentEncoding.DEFLATE.decode(stream);
+			byte[] result = decoded.readAllBytes();
+
+			assertThat(result, notNullValue());
+			assertThat(new String(result, StandardCharsets.UTF_8), equalTo(original));
+		}
 	}
 }
