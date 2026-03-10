@@ -111,4 +111,17 @@ class GZipTest {
 		assertThat(exception.getMessage(),
 				equalTo("Cannot decompress object of type: class java.lang.String, input must be byte[] or class java.io.InputStream"));
 	}
+
+	@Test
+	void shouldDecompressDoubleCompressedBytes() throws IOException {
+		byte[] compressedText = GZip.compress(TEXT);
+		byte[] doubleCompressedText = GZip.compress(compressedText);
+
+		byte[] decompressedBytes = GZip.decompressToBytes(doubleCompressedText);
+		decompressedBytes = GZip.decompressToBytes(decompressedBytes);
+
+		String resultText = new String(decompressedBytes, Strings.DEFAULT_CHARSET);
+
+		assertThat(resultText, equalTo(TEXT));
+	}
 }

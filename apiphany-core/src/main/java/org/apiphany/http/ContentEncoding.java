@@ -305,9 +305,12 @@ public enum ContentEncoding {
 			return null;
 		}
 		for (String value : values) {
-			ContentEncoding encoding = fromString(value, Nullables.supplyNull());
-			if (null != encoding) {
-				return encoding;
+			String encodingParts[] = value.split(",");
+			for (String encodingPart : encodingParts) {
+				ContentEncoding encoding = fromString(encodingPart.trim(), Nullables.supplyNull());
+				if (null != encoding) {
+					return encoding;
+				}
 			}
 		}
 		return null;
@@ -326,9 +329,12 @@ public enum ContentEncoding {
 		}
 		List<ContentEncoding> encodings = new ArrayList<>(values.size());
 		for (String value : values) {
-			ContentEncoding encoding = fromString(value, Nullables.supplyNull());
-			if (null != encoding) {
-				encodings.add(encoding);
+			String encodingParts[] = value.split(",");
+			for (String encodingPart : encodingParts) {
+				ContentEncoding encoding = fromString(encodingPart.trim(), Nullables.supplyNull());
+				if (null != encoding) {
+					encodings.add(encoding);
+				}
 			}
 		}
 		return encodings;
