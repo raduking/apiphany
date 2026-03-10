@@ -226,8 +226,12 @@ public enum ContentEncoding {
 	 * Decodes the given body using the specified content encoding and decoder function. This is a utility method that can
 	 * be used to decode a body with any content encoding by providing the appropriate decoder function. If the decoding
 	 * fails, an {@link IllegalStateException} is thrown with details about the failure.
+	 * <p>
+	 * Note: the decoder cannot be a UnaryOperator since the body type may change during decoding (e.g. from byte[] to
+	 * InputStream), so a Function is used instead to allow for flexibility in the decoding logic.
 	 *
 	 * @param <T> body type
+	 * @param <U> decoded body type
 	 *
 	 * @param body the body to decode
 	 * @param contentEncoding the content encoding to use for decoding (used for error messages)
@@ -235,7 +239,7 @@ public enum ContentEncoding {
 	 * @return a decoded body that decodes the original body according to the content encoding
 	 * @throws IllegalStateException if any error occurs during decoding
 	 */
-	public static <T> T decode(final T body, final ContentEncoding contentEncoding, final Function<T, T> decoder) {
+	public static <T, U> U decode(final T body, final ContentEncoding contentEncoding, final Function<T, U> decoder) {
 		try {
 			return decoder.apply(body);
 		} catch (Exception e) {
