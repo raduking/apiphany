@@ -154,7 +154,7 @@ public class RequestParameters {
 	 * @return a new map containing the encoded parameters
 	 */
 	public static Map<String, List<String>> encode(final Map<String, List<String>> requestParameters, final Charset encoding) {
-		Map<String, List<String>> encodedParams = new LinkedHashMap<>(requestParameters.size());
+		Map<String, List<String>> encodedParams = LinkedHashMap.newLinkedHashMap(requestParameters.size());
 		requestParameters.forEach((key, values) -> {
 			String encodedName = URIEncoder.encodeParamName(key, encoding);
 			List<String> encodedValues = new ArrayList<>(values.size());

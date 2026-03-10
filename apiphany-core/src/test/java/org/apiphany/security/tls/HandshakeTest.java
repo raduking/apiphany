@@ -1,6 +1,7 @@
 package org.apiphany.security.tls;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -101,8 +102,8 @@ class HandshakeTest {
 		assertNotEquals(handshake2, handshake1);
 
 		// different types
-		assertNotEquals(handshake1, null);
-		assertNotEquals(handshake2, "some string");
+		assertThat(handshake1, not(equalTo(null)));
+		assertThat(handshake1, not(equalTo("not-a-handshake-object")));
 	}
 
 	@Test

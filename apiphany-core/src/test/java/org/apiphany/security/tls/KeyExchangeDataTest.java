@@ -1,6 +1,7 @@
 package org.apiphany.security.tls;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -49,57 +50,57 @@ class KeyExchangeDataTest {
 	@Test
 	void shouldCreateKeyExchangeDataWithDataPayload() {
 		BytesWrapper data = new BytesWrapper(DATA);
-		KeyExchangeData appData = new KeyExchangeData(data);
+		KeyExchangeData keyExchangeData = new KeyExchangeData(data);
 
-		assertArrayEquals(data.toByteArray(), appData.toByteArray());
-		assertArrayEquals(DATA, appData.toByteArray());
-		assertEquals(DATA.length, appData.sizeOf());
+		assertArrayEquals(data.toByteArray(), keyExchangeData.toByteArray());
+		assertArrayEquals(DATA, keyExchangeData.toByteArray());
+		assertEquals(DATA.length, keyExchangeData.sizeOf());
 	}
 
 	@Test
 	void shouldCreateKeyExchangeDataFromInputStream() throws Exception {
 		BytesWrapper data = new BytesWrapper(DATA);
-		KeyExchangeData appData = KeyExchangeData.from(
+		KeyExchangeData keyExchangeData = KeyExchangeData.from(
 				new ByteArrayInputStream(DATA),
 				DATA.length);
 
-		assertArrayEquals(data.toByteArray(), appData.toByteArray());
-		assertArrayEquals(DATA, appData.toByteArray());
-		assertEquals(DATA.length, appData.sizeOf());
+		assertArrayEquals(data.toByteArray(), keyExchangeData.toByteArray());
+		assertArrayEquals(DATA, keyExchangeData.toByteArray());
+		assertEquals(DATA.length, keyExchangeData.sizeOf());
 	}
 
 	@Test
 	void shouldEqualSameValuesAndSameReference() {
 		BytesWrapper data1 = new BytesWrapper(DATA);
 		BytesWrapper data2 = new BytesWrapper(DATA);
-		KeyExchangeData appData1 = new KeyExchangeData(data1);
-		KeyExchangeData appData2 = new KeyExchangeData(data2);
+		KeyExchangeData keyExchangeData1 = new KeyExchangeData(data1);
+		KeyExchangeData keyExchangeData2 = new KeyExchangeData(data2);
 
 		// same reference
-		assertEquals(appData1, appData1);
+		assertEquals(keyExchangeData1, keyExchangeData1);
 
 		// different instance, same values
-		assertEquals(appData1, appData2);
-		assertEquals(appData2, appData1);
+		assertEquals(keyExchangeData1, keyExchangeData2);
+		assertEquals(keyExchangeData2, keyExchangeData1);
 
 		// hashCode contract (important for coverage + correctness)
-		assertEquals(appData1.hashCode(), appData2.hashCode());
+		assertEquals(keyExchangeData1.hashCode(), keyExchangeData2.hashCode());
 	}
 
 	@Test
 	void shouldNotEqualIfDifferentObjects() {
 		BytesWrapper data1 = new BytesWrapper(DATA);
 		BytesWrapper data2 = new BytesWrapper(new byte[] { 0x05, 0x06, 0x07, 0x08 });
-		KeyExchangeData appData1 = new KeyExchangeData(data1);
-		KeyExchangeData appData2 = new KeyExchangeData(data2);
+		KeyExchangeData keyExchangeData1 = new KeyExchangeData(data1);
+		KeyExchangeData keyExchangeData2 = new KeyExchangeData(data2);
 
 		// different values
-		assertNotEquals(appData1, appData2);
-		assertNotEquals(appData2, appData1);
+		assertNotEquals(keyExchangeData1, keyExchangeData2);
+		assertNotEquals(keyExchangeData2, keyExchangeData1);
 
 		// different types
-		assertNotEquals(appData1, null);
-		assertNotEquals(appData2, "some string");
+		assertThat(keyExchangeData1, not(equalTo(null)));
+		assertThat(keyExchangeData1, not(equalTo("not-a-key-exchange-data-object")));
 	}
 
 	@Test

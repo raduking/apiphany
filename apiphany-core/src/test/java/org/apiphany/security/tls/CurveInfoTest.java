@@ -1,5 +1,8 @@
 package org.apiphany.security.tls;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
@@ -40,8 +43,8 @@ class CurveInfoTest {
 		assertNotEquals(ci2, ci1);
 
 		// different types
-		assertNotEquals(ci1, null);
-		assertNotEquals(ci2, "not-a-curve-info");
+		assertThat(ci1, not(equalTo(null)));
+		assertThat(ci1, not(equalTo("not-curve-info")));
 	}
 
 	@Test

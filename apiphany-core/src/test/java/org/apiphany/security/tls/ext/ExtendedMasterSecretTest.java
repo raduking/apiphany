@@ -1,5 +1,8 @@
 package org.apiphany.security.tls.ext;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
@@ -55,8 +58,8 @@ class ExtendedMasterSecretTest {
 		assertNotEquals(ems2, ems1);
 
 		// different types
-		assertNotEquals(ems1, null);
-		assertNotEquals(ems2, "not-a-status-request");
+		assertThat(ems1, not(equalTo(null)));
+		assertThat(ems1, not(equalTo("not-extended-master-secret")));
 	}
 
 	@Test

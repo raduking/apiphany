@@ -1,5 +1,8 @@
 package org.apiphany.security.tls.ext;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -64,8 +67,8 @@ class SignedCertificateTimestampTest {
 		assertNotEquals(ri2, ri1);
 
 		// different types
-		assertNotEquals(ri1, null);
-		assertNotEquals(ri2, "not-a-signed-certificate-timestamp");
+		assertThat(ri1, not(equalTo(null)));
+		assertThat(ri1, not(equalTo("not-a-signed-certificate-timestamp")));
 	}
 
 	@Test

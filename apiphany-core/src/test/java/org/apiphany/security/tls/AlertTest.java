@@ -73,8 +73,8 @@ class AlertTest {
 		assertNotEquals(alert1, alert2);
 		assertNotEquals(alert2, alert1);
 
-		assertNotEquals(alert1, null);
-		assertNotEquals(alert2, "some string");
+		assertNotEquals(alert1, null); // NOSONAR the null check is important for coverage + correctness
+		assertNotEquals(alert2, "some string"); // NOSONAR the different type check is important for coverage + correctness
 	}
 
 	@Test

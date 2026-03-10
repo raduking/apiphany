@@ -1,5 +1,8 @@
 package org.apiphany.security.tls;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -79,8 +82,10 @@ class RSAEncryptedPreMasterTest {
 
 		// different objects
 		assertNotEquals(eps1, eps2);
-		assertNotEquals(eps1, null);
-		assertNotEquals(eps2, "not-an-eps");
+
+		// different types
+		assertThat(eps1, not(equalTo(null)));
+		assertThat(eps1, not(equalTo("not-an-rsa-encrypted-pre-master")));
 	}
 
 	@Test

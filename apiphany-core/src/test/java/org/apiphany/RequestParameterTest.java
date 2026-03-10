@@ -83,16 +83,18 @@ class RequestParameterTest {
 
 	@Test
 	void shouldThrowExceptionWhenBuildingParameterWithConstructorAndNullName() {
+		List<String> values = List.of(VALUE);
 		IllegalArgumentException e =
-				assertThrows(IllegalArgumentException.class, () -> new RequestParameter(null, List.of(VALUE), Strings.DEFAULT_CHARSET));
+				assertThrows(IllegalArgumentException.class, () -> new RequestParameter(null, values, Strings.DEFAULT_CHARSET));
 
 		assertThat(e.getMessage(), equalTo("Parameter name cannot be null"));
 	}
 
 	@Test
 	void shouldThrowExceptionWhenBuildingParameterWithConstructorAndBlankName() {
+		List<String> values = List.of(VALUE);
 		IllegalArgumentException e =
-				assertThrows(IllegalArgumentException.class, () -> new RequestParameter(BLANK_STRING, List.of(VALUE), Strings.DEFAULT_CHARSET));
+				assertThrows(IllegalArgumentException.class, () -> new RequestParameter(BLANK_STRING, values, Strings.DEFAULT_CHARSET));
 
 		assertThat(e.getMessage(), equalTo("Parameter name cannot be blank"));
 	}

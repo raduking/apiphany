@@ -1,5 +1,8 @@
 package org.apiphany.security.tls.ext;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
@@ -63,8 +66,8 @@ class StatusRequestTest {
 		assertNotEquals(sr2, sr1);
 
 		// different types
-		assertNotEquals(sr1, null);
-		assertNotEquals(sr2, "not-a-status-request");
+		assertThat(sr1, not(equalTo(null)));
+		assertThat(sr1, not(equalTo("not-a-status-request")));
 	}
 
 	@Test

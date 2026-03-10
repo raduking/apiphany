@@ -1,5 +1,8 @@
 package org.apiphany.security.tls.ext;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
@@ -27,7 +30,7 @@ class SupportedGroupsTest {
 		assertEquals(ExtensionType.SUPPORTED_GROUPS, sgs.getType());
 		assertEquals(UInt16.of((short) 14), sgs.getLength());
 		assertEquals(UInt16.of((short) 12), sgs.getGroupsSize());
-		assertEquals(sgs.getGroups().size(), 6);
+		assertEquals(6, sgs.getGroups().size());
 	}
 
 	@Test
@@ -56,8 +59,8 @@ class SupportedGroupsTest {
 		assertNotEquals(sgs2, sgs1);
 
 		// different types
-		assertNotEquals(sgs1, null);
-		assertNotEquals(sgs2, "not-a-supported-groups");
+		assertThat(sgs1, not(equalTo(null)));
+		assertThat(sgs1, not(equalTo("not-supported-groups")));
 	}
 
 	@Test

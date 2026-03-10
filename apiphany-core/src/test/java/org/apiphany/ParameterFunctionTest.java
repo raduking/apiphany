@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.apiphany.http.HttpStatus;
 import org.apiphany.openapi.MultiValueStrategy;
 import org.junit.jupiter.api.Test;
 
@@ -263,11 +264,14 @@ class ParameterFunctionTest {
 	@Test
 	void shouldAddListParameterByConvertingEachParameterToStringAndUsingMultiStrategy() {
 		List<Integer> list = List.of(INTEGER_VALUE, TEST_INT_42);
+		List<HttpStatus> httpStatusList = List.of(HttpStatus.OK, HttpStatus.BAD_REQUEST);
 
 		Map<String, List<String>> params = RequestParameters.of(
-				ParameterFunction.<String, Integer>parameter(PARAM_1, list));
+				ParameterFunction.<String, Integer>parameter(PARAM_1, list),
+				ParameterFunction.<String, HttpStatus>parameter("statuses", httpStatusList));
 
 		assertThat(params.get(PARAM_1), equalTo(list.stream().map(String::valueOf).toList()));
+		assertThat(params.get("statuses"), equalTo(httpStatusList.stream().map(HttpStatus::toString).toList()));
 	}
 
 	@Test

@@ -1,5 +1,8 @@
 package org.apiphany.security.tls;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -68,8 +71,10 @@ class ChangeCipherSpecTest {
 
 		// different objects
 		assertNotEquals(ccs1, ccs2);
-		assertNotEquals(ccs1, null);
-		assertNotEquals(ccs1, "some string");
+
+		// different types
+		assertThat(ccs1, not(equalTo(null)));
+		assertThat(ccs1, not(equalTo("not-a-change-cipher-spec")));
 	}
 
 	@Test

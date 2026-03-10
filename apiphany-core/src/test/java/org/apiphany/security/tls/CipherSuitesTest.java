@@ -1,5 +1,8 @@
 package org.apiphany.security.tls;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -21,43 +24,43 @@ class CipherSuitesTest {
 
 	@Test
 	void shouldEqualSameValuesAndSameReference() {
-		CipherSuites certs1 = new CipherSuites(CipherSuite.TLS_AES_128_GCM_SHA256);
-		CipherSuites certs2 = new CipherSuites(CipherSuite.TLS_AES_128_GCM_SHA256);
+		CipherSuites css1 = new CipherSuites(CipherSuite.TLS_AES_128_GCM_SHA256);
+		CipherSuites css2 = new CipherSuites(CipherSuite.TLS_AES_128_GCM_SHA256);
 
 		// same reference
-		assertEquals(certs1, certs1);
+		assertEquals(css1, css1);
 
 		// different instance, same values
-		assertEquals(certs1, certs2);
-		assertEquals(certs2, certs1);
+		assertEquals(css1, css2);
+		assertEquals(css2, css1);
 
 		// hashCode contract (important for coverage + correctness)
-		assertEquals(certs1.hashCode(), certs2.hashCode());
+		assertEquals(css1.hashCode(), css2.hashCode());
 	}
 
 	@Test
 	void shouldNotEqualIfDifferentObjects() {
-		CipherSuites certs1 = new CipherSuites(CipherSuite.TLS_AES_128_GCM_SHA256);
-		CipherSuites certs2 = new CipherSuites(CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384);
+		CipherSuites css1 = new CipherSuites(CipherSuite.TLS_AES_128_GCM_SHA256);
+		CipherSuites css2 = new CipherSuites(CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384);
 
 		// different objects
-		assertNotEquals(certs1, certs2);
-		assertNotEquals(certs2, certs1);
+		assertNotEquals(css1, css2);
+		assertNotEquals(css2, css1);
 
 		// different types
-		assertNotEquals(certs1, null);
-		assertNotEquals(certs2, "not-an-aad");
+		assertThat(css1, not(equalTo(null)));
+		assertThat(css1, not(equalTo("not-cipher-suites")));
 	}
 
 	@Test
 	void shouldBuildHashcodeWithAllFields() {
-		CipherSuites certs = new CipherSuites(CipherSuite.TLS_AES_128_GCM_SHA256);
+		CipherSuites css = new CipherSuites(CipherSuite.TLS_AES_128_GCM_SHA256);
 
 		int expectedHash = Objects.hash(
-				certs.getSize(),
-				certs.getSuites());
+				css.getSize(),
+				css.getSuites());
 
-		assertEquals(expectedHash, certs.hashCode());
+		assertEquals(expectedHash, css.hashCode());
 	}
 
 	@Test
@@ -70,21 +73,21 @@ class CipherSuitesTest {
 				// TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
 				(byte) (0xC0 & 0xFF), 0x24
 		};
-		CipherSuites certs = CipherSuites.from(new ByteArrayInputStream(bytes));
+		CipherSuites css = CipherSuites.from(new ByteArrayInputStream(bytes));
 
-		assertEquals(bytes.length, certs.sizeOf());
-		assertArrayEquals(bytes, certs.toByteArray());
+		assertEquals(bytes.length, css.sizeOf());
+		assertArrayEquals(bytes, css.toByteArray());
 
-		assertEquals(2, certs.getSuites().size());
-		assertEquals(CipherSuite.TLS_AES_128_GCM_SHA256, certs.getSuites().get(0));
-		assertEquals(CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384, certs.getSuites().get(1));
+		assertEquals(2, css.getSuites().size());
+		assertEquals(CipherSuite.TLS_AES_128_GCM_SHA256, css.getSuites().get(0));
+		assertEquals(CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384, css.getSuites().get(1));
 	}
 
 	@Test
 	void shouldSerializeToString() {
-		CipherSuites certs = new CipherSuites(CipherSuite.TLS_AES_128_GCM_SHA256, CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384);
+		CipherSuites css = new CipherSuites(CipherSuite.TLS_AES_128_GCM_SHA256, CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384);
 
-		String result = certs.toString();
+		String result = css.toString();
 
 		assertNotNull(result);
 		assertFalse(Strings.isBlank(result));

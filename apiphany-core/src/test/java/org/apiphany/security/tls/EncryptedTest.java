@@ -1,5 +1,8 @@
 package org.apiphany.security.tls;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -31,57 +34,57 @@ class EncryptedTest {
 	@Test
 	void shouldCreateEncryptedWithEncryptedDataPayload() {
 		BytesWrapper dataPayload = new BytesWrapper(DATA);
-		Encrypted appData = new Encrypted(dataPayload);
+		Encrypted encrypted = new Encrypted(dataPayload);
 
-		assertArrayEquals(dataPayload.toByteArray(), appData.toByteArray());
-		assertArrayEquals(DATA, appData.toByteArray());
-		assertEquals(DATA.length, appData.sizeOf());
+		assertArrayEquals(dataPayload.toByteArray(), encrypted.toByteArray());
+		assertArrayEquals(DATA, encrypted.toByteArray());
+		assertEquals(DATA.length, encrypted.sizeOf());
 	}
 
 	@Test
 	void shouldCreateEncryptedFromInputStream() throws Exception {
 		BytesWrapper dataPayload = new BytesWrapper(DATA);
-		Encrypted appData = Encrypted.from(
+		Encrypted encrypted = Encrypted.from(
 				new ByteArrayInputStream(DATA),
 				DATA.length);
 
-		assertArrayEquals(dataPayload.toByteArray(), appData.toByteArray());
-		assertArrayEquals(DATA, appData.toByteArray());
-		assertEquals(DATA.length, appData.sizeOf());
+		assertArrayEquals(dataPayload.toByteArray(), encrypted.toByteArray());
+		assertArrayEquals(DATA, encrypted.toByteArray());
+		assertEquals(DATA.length, encrypted.sizeOf());
 	}
 
 	@Test
 	void shouldEqualSameValuesAndSameReference() {
 		BytesWrapper dataPayload1 = new BytesWrapper(DATA);
 		BytesWrapper dataPayload2 = new BytesWrapper(DATA);
-		Encrypted appData1 = new Encrypted(dataPayload1);
-		Encrypted appData2 = new Encrypted(dataPayload2);
+		Encrypted encrypted1 = new Encrypted(dataPayload1);
+		Encrypted encrypted2 = new Encrypted(dataPayload2);
 
 		// same reference
-		assertEquals(appData1, appData1);
+		assertEquals(encrypted1, encrypted1);
 
 		// different instance, same values
-		assertEquals(appData1, appData2);
-		assertEquals(appData2, appData1);
+		assertEquals(encrypted1, encrypted2);
+		assertEquals(encrypted2, encrypted1);
 
 		// hashCode contract (important for coverage + correctness)
-		assertEquals(appData1.hashCode(), appData2.hashCode());
+		assertEquals(encrypted1.hashCode(), encrypted2.hashCode());
 	}
 
 	@Test
 	void shouldNotEqualIfDifferentObjects() {
 		BytesWrapper dataPayload1 = new BytesWrapper(DATA);
 		BytesWrapper dataPayload2 = new BytesWrapper(new byte[] { 0x05, 0x06, 0x07, 0x08 });
-		Encrypted appData1 = new Encrypted(dataPayload1);
-		Encrypted appData2 = new Encrypted(dataPayload2);
+		Encrypted encrypted1 = new Encrypted(dataPayload1);
+		Encrypted encrypted2 = new Encrypted(dataPayload2);
 
 		// different values
-		assertNotEquals(appData1, appData2);
-		assertNotEquals(appData2, appData1);
+		assertNotEquals(encrypted1, encrypted2);
+		assertNotEquals(encrypted2, encrypted1);
 
 		// different types
-		assertNotEquals(appData1, null);
-		assertNotEquals(appData2, "some string");
+		assertThat(encrypted1, not(equalTo(null)));
+		assertThat(encrypted1, not(equalTo("not-an-encrypted-object")));
 	}
 
 	@Test
@@ -113,11 +116,11 @@ class EncryptedTest {
 			ciphertext[i] = (byte) (0xA0 + i);
 		}
 
-		byte[] record = new byte[nonceLen + ciphertext.length];
-		System.arraycopy(nonce, 0, record, 0, nonceLen);
-		System.arraycopy(ciphertext, 0, record, nonceLen, ciphertext.length);
+		byte[] rec = new byte[nonceLen + ciphertext.length];
+		System.arraycopy(nonce, 0, rec, 0, nonceLen);
+		System.arraycopy(ciphertext, 0, rec, nonceLen, ciphertext.length);
 
-		Encrypted encrypted = new Encrypted(record);
+		Encrypted encrypted = new Encrypted(rec);
 
 		assertArrayEquals(nonce, encrypted.getNonce(cipher).toByteArray(),
 				"Explicit nonce must be the first bytes");
@@ -144,9 +147,9 @@ class EncryptedTest {
 	@Test
 	void shouldSerializeToString() {
 		BytesWrapper dataPayload = new BytesWrapper(DATA);
-		Encrypted appData = new Encrypted(dataPayload);
+		Encrypted encrypted = new Encrypted(dataPayload);
 
-		String result = appData.toString();
+		String result = encrypted.toString();
 
 		assertNotNull(result);
 		assertFalse(Strings.isBlank(result));

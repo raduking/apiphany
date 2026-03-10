@@ -1,5 +1,8 @@
 package org.apiphany.security.tls;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
@@ -40,8 +43,8 @@ class HandshakeHeaderTest {
 		assertNotEquals(hh2, hh1);
 
 		// different types
-		assertNotEquals(hh1, null);
-		assertNotEquals(hh2, "not-a-handshake-header");
+		assertThat(hh1, not(equalTo(null)));
+		assertThat(hh1, not(equalTo("not-a-handshake-header")));
 	}
 
 	@Test

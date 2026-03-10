@@ -5,6 +5,7 @@ import java.security.SecureRandom;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import javax.crypto.Cipher;
@@ -194,7 +195,7 @@ public enum BulkCipher {
 	/**
 	 * List of bulk ciphers that are not supported by the default SunJCE provider.
 	 */
-	public static final EnumSet<BulkCipher> UNSUPPORTED_SUN_JCE_BULK_CIPHERS = EnumSet.of(
+	public static final Set<BulkCipher> UNSUPPORTED_SUN_JCE_BULK_CIPHERS = EnumSet.of(
 			AES_128_CCM,
 			AES_256_CCM,
 			AES_128_CCM_8,

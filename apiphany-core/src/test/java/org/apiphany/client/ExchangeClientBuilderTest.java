@@ -180,7 +180,7 @@ class ExchangeClientBuilderTest {
 	}
 
 	@Test
-	void shouldThroweExceptionWhenDecoratingWithInvalidDecoratorAndFirstClientIsManaged() throws Exception {
+	void shouldThroweExceptionWhenDecoratingWithInvalidDecoratorAndFirstClientIsManaged() {
 		ExchangeClientBuilder builder = ExchangeClientBuilder.create()
 				.client(DummyExchangeClient.class)
 				.decoratedWith(InvalidDecoratingExchangeClient.class);
@@ -193,7 +193,7 @@ class ExchangeClientBuilderTest {
 	}
 
 	@Test
-	void shouldThrowExceptionWhenDecoratingWithInvalidDecoratorAndFirstClientIsUnmanaged() throws Exception {
+	void shouldThrowExceptionWhenDecoratingWithInvalidDecoratorAndFirstClientIsUnmanaged() {
 		DummyExchangeClient dummyClient = new DummyExchangeClient();
 		dummyClient.close();
 

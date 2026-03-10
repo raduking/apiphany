@@ -1,5 +1,8 @@
 package org.apiphany.security.tls;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
@@ -42,8 +45,8 @@ class SessionIdTest {
 		assertNotEquals(si2, si1);
 
 		// different types
-		assertNotEquals(si1, null);
-		assertNotEquals(si2, "not-a-session-id");
+		assertThat(si1, not(equalTo(null)));
+		assertThat(si1, not(equalTo("not-a-session-id")));
 	}
 
 	@Test

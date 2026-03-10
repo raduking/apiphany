@@ -1,5 +1,8 @@
 package org.apiphany.security.tls.ext;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
@@ -27,7 +30,7 @@ class SignatureAlgorithmsTest {
 		assertEquals(ExtensionType.SIGNATURE_ALGORITHMS, sas.getType());
 		assertEquals(UInt16.of((short) 14), sas.getLength());
 		assertEquals(UInt16.of((short) 12), sas.getAlgorithmsSize());
-		assertEquals(sas.getAlgorithms().size(), 6);
+		assertEquals(6, sas.getAlgorithms().size());
 	}
 
 	@Test
@@ -56,8 +59,8 @@ class SignatureAlgorithmsTest {
 		assertNotEquals(sas2, sas1);
 
 		// different types
-		assertNotEquals(sas1, null);
-		assertNotEquals(sas2, "not-a-signature-algorithms");
+		assertThat(sas1, not(equalTo(null)));
+		assertThat(sas1, not(equalTo("not-signature-algorithms")));
 	}
 
 	@Test
