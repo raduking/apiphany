@@ -9,6 +9,7 @@
 - Upgraded `spotless-maven-plugin` to `3.3.0`.
 - Upgraded `pitest-maven` to `1.22.1`.
 - Upgraded JUnit to `6.0.3`.
+- Changed `testcontainers:junit-jupiter` to `testcontainers:testcontainers-junit-jupiter` and used the same `testcontainers` version.
 
 ---
 
