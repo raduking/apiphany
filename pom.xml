@@ -80,8 +80,7 @@
 		<mockito.version>5.20.0</mockito.version>
 		<logback.version>1.5.31</logback.version>
 		<spring.security.version>6.5.7</spring.security.version>
-		<testcontainers.base.version>2.0.3</testcontainers.base.version>
-		<testcontainers.junit.version>1.21.4</testcontainers.junit.version>
+		<testcontainers.version>2.0.3</testcontainers.version>
 		<testcontainers.keycloak.version>4.1.0</testcontainers.keycloak.version>
 		<nimbus.jose.jwt.version>10.7</nimbus.jose.jwt.version>
 		<oauth2.oidc.sdk.version>11.33</oauth2.oidc.sdk.version>
