@@ -137,10 +137,12 @@ class IterablesTest {
 		}
 
 		@Test
-		void shouldRejectNullIterable() {
-			NullPointerException exception = assertThrows(NullPointerException.class, () -> Iterables.partition(null, 3));
+		void shouldNotRejectNullIterable() {
+			Iterable<List<Integer>> result = Iterables.partition(null, 3);
 
-			assertThat(exception.getMessage(), equalTo("Source iterable must not be null"));
+			List<List<Integer>> partitions = toList(result);
+
+			assertThat(partitions, empty());
 		}
 
 		@Test
