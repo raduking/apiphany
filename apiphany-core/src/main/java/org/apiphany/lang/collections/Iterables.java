@@ -1,7 +1,14 @@
 package org.apiphany.lang.collections;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+
+import org.apiphany.lang.Require;
 
 /**
  * Utility methods for iterables. This class is intended for {@link Iterable} and {@link Collection} types that can be
@@ -38,5 +45,40 @@ public interface Iterables {
 	 */
 	static <T> Collection<T> safe(final Collection<T> collection) {
 		return null == collection ? Collections.emptyList() : collection;
+	}
+
+	/**
+	 * Partitions the given iterable into sublists of the given size. The last sublist may be smaller than the given size if
+	 * the total number of elements in the iterable is not a multiple of the size.
+	 * <p>
+	 * Like all other utility methods of this kind it is not thread safe for speed and brevity.
+	 *
+	 * @param <T> element type
+	 *
+	 * @param src an iterable to partition
+	 * @param size the size of each partition
+	 * @return an iterable of sublists of the given size
+	 */
+	static <T> Iterable<List<T>> partition(final Iterable<T> src, final int size) {
+		Objects.requireNonNull(src, "Source iterable must not be null");
+		Require.that(size > 0, "Size must be greater than 0");
+		return () -> new Iterator<>() {
+			final Iterator<T> it = src.iterator();
+
+			public boolean hasNext() {
+				return it.hasNext();
+			}
+
+			public List<T> next() {
+				if (!it.hasNext()) {
+					throw new NoSuchElementException();
+				}
+				List<T> out = new ArrayList<>(size);
+				for (int i = 0; i < size && it.hasNext(); ++i) {
+					out.add(it.next());
+				}
+				return out;
+			}
+		};
 	}
 }
