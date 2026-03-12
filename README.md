@@ -4,9 +4,11 @@ Simple fluent style Java API to make API calls.
 
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.raduking/apiphany)](https://central.sonatype.com/artifact/io.github.raduking/apiphany)
 [![GitHub Release](https://img.shields.io/github/v/release/raduking/apiphany)](https://github.com/raduking/apiphany/releases)
-[![License](https://img.shields.io/github/license/raduking/apiphany)](https://opensource.org/license/apache-2-0)
+[![Release Date](https://img.shields.io/github/release-date/raduking/apiphany)](https://github.com/raduking/apiphany/releases)  
 [![Java](https://img.shields.io/badge/Java-21+-blue)](https://www.oracle.com/java/technologies/downloads/#java21)
+[![License](https://img.shields.io/github/license/raduking/apiphany)](https://opensource.org/license/apache-2-0)
 [![PRs](https://img.shields.io/github/issues-pr/raduking/apiphany)](https://github.com/raduking/apiphany/pulls)
+[![Javadoc](https://javadoc.io/badge2/io.github.raduking/apiphany/javadoc.svg)](https://javadoc.io/doc/io.github.raduking/apiphany)
 
 #### Status
 
