@@ -1,5 +1,12 @@
 ## Release Notes
 
+`1.1.9`
+
+- Added `Iterables.partition` to partition a given `Iterable` into batches of a given size.
+- Added `Lists.partition` to partition a given `List` into `List` batches of a given size.
+
+---
+
 `1.1.8`
 
 - Allowed on error handlers to be `null` on `Strings.fromFile` and `Bytes.fromFile`.

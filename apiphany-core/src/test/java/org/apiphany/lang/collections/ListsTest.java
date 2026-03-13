@@ -4,6 +4,8 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.sameInstance;
 
@@ -11,6 +13,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -132,68 +135,139 @@ class ListsTest {
 		assertThat(list, hasSize(0));
 	}
 
-	@Test
-	void shouldMerge2SortedLists() {
-		List<Integer> l1 = IntStream.rangeClosed(1, 21)
-				.filter(n -> n % 2 != 0)
-				.boxed()
-				.toList();
-		List<Integer> l2 = IntStream.rangeClosed(1, 21)
-				.filter(n -> n % 2 == 0)
-				.boxed()
-				.toList();
+	@Nested
+	class MergeTest {
 
-		List<Integer> expected = IntStream.rangeClosed(1, 21)
-				.boxed()
-				.toList();
+		@Test
+		void shouldMerge2SortedLists() {
+			List<Integer> l1 = IntStream.rangeClosed(1, 21)
+					.filter(n -> n % 2 != 0)
+					.boxed()
+					.toList();
+			List<Integer> l2 = IntStream.rangeClosed(1, 21)
+					.filter(n -> n % 2 == 0)
+					.boxed()
+					.toList();
 
-		List<Integer> result = Lists.merge(l1, l2);
+			List<Integer> expected = IntStream.rangeClosed(1, 21)
+					.boxed()
+					.toList();
 
-		assertThat(result, equalTo(expected));
+			List<Integer> result = Lists.merge(l1, l2);
 
-		result = Lists.merge(l2, l1);
+			assertThat(result, equalTo(expected));
 
-		assertThat(result, equalTo(expected));
+			result = Lists.merge(l2, l1);
+
+			assertThat(result, equalTo(expected));
+		}
+
+		@Test
+		void shouldMerge2SortedListsWhenElementsAreNotInterleaved() {
+			List<Integer> l1 = IntStream.rangeClosed(1, 20)
+					.boxed()
+					.toList();
+			List<Integer> l2 = IntStream.rangeClosed(21, 40)
+					.boxed()
+					.toList();
+
+			List<Integer> expected = IntStream.rangeClosed(1, 40)
+					.boxed()
+					.toList();
+
+			List<Integer> result = Lists.merge(l1, l2);
+
+			assertThat(result, equalTo(expected));
+
+			result = Lists.merge(l2, l1);
+
+			assertThat(result, equalTo(expected));
+		}
+
+		@Test
+		void shouldSkipNullOrEmptyListAndReturnACopyOfTheOtherOnMerge() {
+			List<Integer> l1 = IntStream.rangeClosed(1, 21)
+					.filter(n -> n % 2 != 0)
+					.boxed()
+					.toList();
+
+			List<Integer> result = Lists.merge(l1, null);
+			assertThat(result, equalTo(l1));
+			assertThat(result, not(sameInstance(l1)));
+
+			result = Lists.merge(null, l1);
+			assertThat(result, equalTo(l1));
+			assertThat(result, not(sameInstance(l1)));
+
+			result = Lists.merge(null, null);
+			assertThat(result, hasSize(0));
+		}
 	}
 
-	@Test
-	void shouldMerge2SortedListsWhenElementsAreNotInterleaved() {
-		List<Integer> l1 = IntStream.rangeClosed(1, 20)
-				.boxed()
-				.toList();
-		List<Integer> l2 = IntStream.rangeClosed(21, 40)
-				.boxed()
-				.toList();
+	@Nested
+	class PartitionTest {
 
-		List<Integer> expected = IntStream.rangeClosed(1, 40)
-				.boxed()
-				.toList();
+		@Test
+		void shouldPartitionIntoEqualSizedChunks() {
+			List<List<Integer>> result = Lists.partition(List.of(1, 2, 3, 4, 5, 6), 3);
 
-		List<Integer> result = Lists.merge(l1, l2);
+			assertThat(result, contains(
+					List.of(1, 2, 3),
+					List.of(4, 5, 6)));
+		}
 
-		assertThat(result, equalTo(expected));
+		@Test
+		void shouldCreateFinalPartialPartition() {
+			List<List<Integer>> result = Lists.partition(List.of(1, 2, 3, 4, 5), 3);
 
-		result = Lists.merge(l2, l1);
+			assertThat(result, contains(
+					List.of(1, 2, 3),
+					List.of(4, 5)));
+		}
 
-		assertThat(result, equalTo(expected));
-	}
+		@Test
+		void shouldReturnSinglePartitionWhenSizeGreaterThanInput() {
+			List<List<Integer>> result = Lists.partition(List.of(1, 2, 3), 10);
 
-	@Test
-	void shouldSkipNullOrEmptyListAndReturnACopyOfTheOtherOnMerge() {
-		List<Integer> l1 = IntStream.rangeClosed(1, 21)
-				.filter(n -> n % 2 != 0)
-				.boxed()
-				.toList();
+			assertThat(result, contains(List.of(1, 2, 3)));
+		}
 
-		List<Integer> result = Lists.merge(l1, null);
-		assertThat(result, equalTo(l1));
-		assertThat(result, not(sameInstance(l1)));
+		@Test
+		void shouldHandleSingleElement() {
+			List<List<Integer>> result = Lists.partition(List.of(1), 3);
 
-		result = Lists.merge(null, l1);
-		assertThat(result, equalTo(l1));
-		assertThat(result, not(sameInstance(l1)));
+			assertThat(result, contains(List.of(1)));
+		}
 
-		result = Lists.merge(null, null);
-		assertThat(result, hasSize(0));
+		@Test
+		void shouldReturnNoPartitionsForEmptyInput() {
+			List<List<Integer>> result = Lists.partition(Collections.emptyList(), 3);
+
+			assertThat(result, empty());
+		}
+
+		@Test
+		void shouldReturnPartitionForEachElementWhenSizeIsOne() {
+			List<List<Integer>> result = Lists.partition(List.of(1, 2, 3), 1);
+
+			assertThat(result, contains(
+					List.of(1),
+					List.of(2),
+					List.of(3)));
+		}
+
+		@Test
+		void shouldNoPartitionsForZeroPositiveSize() {
+			List<List<Integer>> result = Lists.partition(List.of(1, 2, 3), 0);
+
+			assertThat(result, empty());
+		}
+
+		@Test
+		void shouldNoPartitionsForNonPositiveSize() {
+			List<List<Integer>> result = Lists.partition(List.of(1, 2, 3), -10);
+
+			assertThat(result, empty());
+		}
 	}
 }
