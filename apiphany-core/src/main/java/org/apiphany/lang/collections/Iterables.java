@@ -67,10 +67,12 @@ public interface Iterables {
 		return () -> new Iterator<>() {
 			final Iterator<T> it = safe(src).iterator();
 
+			@Override
 			public boolean hasNext() {
 				return it.hasNext();
 			}
 
+			@Override
 			public List<T> next() {
 				if (!it.hasNext()) {
 					throw new NoSuchElementException();
