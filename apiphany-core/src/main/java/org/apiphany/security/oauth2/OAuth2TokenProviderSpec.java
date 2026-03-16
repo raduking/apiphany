@@ -19,7 +19,7 @@ import org.morphix.lang.Nullables;
  * provider is used</li>
  * <li>If no default expiration supplier is provided, the current instant supplier is used</li>
  * </ul>
- * WARNING: The caller is responsible for shutting down the scheduler if a custom one is provided.
+ * WARNING: The caller is responsible for shutting down the scheduler if a custom unmanaged one is provided.
  * <p>
  * The token provider needs a single OAuth2 resolved registration to function. If multiple registrations are needed,
  * multiple token providers must be created.
@@ -222,7 +222,7 @@ public class OAuth2TokenProviderSpec {
 		}
 
 		/**
-		 * Sets the token refresh scheduler.
+		 * Sets the token refresh scheduler. The caller will be responsible for shutting down the scheduler.
 		 *
 		 * @param tokenRefreshScheduler the token refresh scheduler
 		 * @return the builder
@@ -232,7 +232,9 @@ public class OAuth2TokenProviderSpec {
 		}
 
 		/**
-		 * Sets the token refresh scheduler.
+		 * Sets the token refresh scheduler resource. The caller must specify if the scheduler is managed by the provider or
+		 * not. If the scheduler is managed, the provider will be responsible for shutting it down otherwise the caller will be
+		 * responsible.
 		 *
 		 * @param tokenRefreshScheduler the token refresh scheduler
 		 * @return the builder
