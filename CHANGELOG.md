@@ -4,6 +4,7 @@
 
 - Added `Iterables.partition` to partition a given `Iterable` into batches of a given size.
 - Added `Lists.partition` to partition a given `List` into `List` batches of a given size.
+- Added missing `equals` and `hashCode` to `Holder` class.
 
 ---
 
