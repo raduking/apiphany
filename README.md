@@ -29,13 +29,14 @@ Simple fluent style Java API to make API calls.
 
 ### Why Apiphany?
 
-- Because you want everything explicit, everything deterministic, request/response coupled (as it should be). 
+- Because you want everything explicit, everything deterministic, request/response coupled (as it should be).
+- Because you want no hidden behavior, hidden headers, hidden parameters, etc.
 - Because you want to change the underlying HTTP client by changing one line in your client and one dependency.
 - Because you want to be able to use a fluent style API to make API calls in a very easy way.
 - Because you want to be able to mock up API calls without using external HTTP libraries.
 
-Currently, it wraps over the `java.net.http` library but you can easily extend it to use other HTTP clients by implementing the 
-`HttpExchangeClient` interface or by extending the `AbstractHttpExchangeClient`.
+Currently, it wraps over the `java.net.http` library but you can easily extend it to use other HTTP clients/libraries 
+by implementing the `HttpExchangeClient` interface or by extending the `AbstractHttpExchangeClient`.
 
 Support is being developed for other HTTP clients like Apache HttpClient, OkHttp, Spring RestTemplate, etc.
 
