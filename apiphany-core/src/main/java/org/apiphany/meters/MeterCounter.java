@@ -60,5 +60,4 @@ public interface MeterCounter extends Meter {
 	default void increment() {
 		increment(1.0);
 	}
-
 }

@@ -1219,7 +1219,7 @@ class ApiClientWithJavaNetHttpIT {
 
 	@Test
 	void shouldHandleConcurrentRequests() throws Exception {
-		wiremock.stubFor(get(urlMatching("/concurrent.*"))
+		wiremock.stubFor(get(urlMatching("/concurrent/.*"))
 				.willReturn(ok()));
 
 		int threadCount = 50;
