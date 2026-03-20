@@ -40,5 +40,4 @@ public interface MeterTimer extends Meter {
 	 * @param duration the duration to record (must not be negative)
 	 */
 	void record(Duration duration); // NOSONAR
-
 }
