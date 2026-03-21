@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-import org.apiphany.client.ClientLifecycle;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.http.HttpClientFluentAdapter;
@@ -107,13 +106,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 					+ exchangeClient.getClass().getName() + " must return a non-null response even in case of errors.");
 			response = apiClient.buildErrorResponse(exception, JavaObjects.cast(this), exchangeClient);
 		}
-		if (ClientLifecycle.EPHEMERAL == apiClient.getLifecycle()) {
-			try {
-				apiClient.close();
-			} catch (Exception e) {
-				throw new IllegalStateException("Failed to close the API client after retrieving the response", e);
-			}
-		}
+		apiClient.closeIfEphemeral();
 		return response;
 	}
 

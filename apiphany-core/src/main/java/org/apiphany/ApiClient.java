@@ -14,6 +14,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import org.apiphany.client.ClientLifecycle;
@@ -317,6 +318,30 @@ public class ApiClient implements AutoCloseable {
 	}
 
 	/**
+	 * Closes all managed exchange clients if the API client is ephemeral. This method should be called after each request
+	 * in case of an ephemeral client, to ensure that all resources are released after each request.
+	 */
+	protected void closeIfEphemeral() {
+		closeIfEphemeral(e -> LOGGER.error("Error closing API client", e));
+	}
+
+	/**
+	 * Closes all managed exchange clients if the API client is ephemeral, handling any exceptions using the provided
+	 * exception handler.
+	 *
+	 * @param exceptionHandler a consumer to handle exceptions that may occur during closing
+	 */
+	protected void closeIfEphemeral(final Consumer<? super Exception> exceptionHandler) {
+		if (ClientLifecycle.EPHEMERAL == getLifecycle()) {
+			try {
+				close();
+			} catch (Exception e) {
+				exceptionHandler.accept(e);
+			}
+		}
+	}
+
+	/**
 	 * Returns a new {@link ApiClient} object.
 	 *
 	 * @param baseUrl base URL
@@ -581,7 +606,13 @@ public class ApiClient implements AutoCloseable {
 	 * @return API response object
 	 */
 	public <T> CompletableFuture<ApiResponse<T>> asyncExchange(final ApiRequest<T> apiRequest) {
-		return CompletableFuture.supplyAsync(() -> exchange(apiRequest));
+		return CompletableFuture.supplyAsync(() -> {
+	        try {
+	            return exchange(apiRequest);
+	        } finally {
+	            closeIfEphemeral();
+	        }
+	    });
 	}
 
 	/**
