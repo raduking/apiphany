@@ -9,6 +9,7 @@
 - Added more `HttpException` constructors to accommodate response body.
 - Added `HttpException.Builder` to build HTTP exceptions easier.
 - Added `HttpException.exceptionMessage` method that decides the exception message based on message, response body and cause.
+- Added `ClientLifecycle` enum to describe a clients' life cycle.
 
 ---
 
