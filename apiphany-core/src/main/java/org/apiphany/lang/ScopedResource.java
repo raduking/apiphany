@@ -12,6 +12,26 @@ import java.util.function.Consumer;
  * <p>
  * Instances do not change management state; operations that adjust management return new {@link ScopedResource}
  * instances.
+ * <p>
+ * Ownership is decided when the {@code ScopedResource} is created. Code that receives a {@code ScopedResource} should
+ * not try to determine ownership itself and must always call {@link #closeIfManaged()} when the resource is no longer
+ * needed.
+ * 
+ * <h3>Usage Pattern</h3>
+ * 
+ * <pre>
+ * ScopedResource<Client> scoped = ...;
+ * try {
+ *     Resource resource = scoped.unwrap();
+ *     // use resource
+ * } finally {
+ *     scoped.closeIfManaged();
+ * }
+ * </pre>
+ *
+ * <p>
+ * This pattern ensures that resources created internally are properly closed, while externally provided resources are
+ * never accidentally closed.
  *
  * @param <T> the type of the {@link AutoCloseable} resource being wrapped
  *
