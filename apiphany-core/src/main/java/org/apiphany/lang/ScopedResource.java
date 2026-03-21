@@ -16,11 +16,11 @@ import java.util.function.Consumer;
  * Ownership is decided when the {@code ScopedResource} is created. Code that receives a {@code ScopedResource} should
  * not try to determine ownership itself and must always call {@link #closeIfManaged()} when the resource is no longer
  * needed.
- * 
- * <h3>Usage Pattern</h3>
- * 
+ *
+ * <b>Usage Pattern</b>
+ *
  * <pre>
- * ScopedResource<Client> scoped = ...;
+ * ScopedResource&lt;Client&gt; scoped = ...;
  * try {
  *     Resource resource = scoped.unwrap();
  *     // use resource
