@@ -14,11 +14,14 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+import org.apiphany.client.ClientLifecycle;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.ExchangeClientBuilder;
+import org.apiphany.client.http.HttpClientFluentAdapter;
 import org.apiphany.lang.ScopedResource;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.accumulator.DurationAccumulator;
@@ -102,6 +105,14 @@ public class ApiClient implements AutoCloseable {
 	 * API client if the exchange client's life cycle is managed by the API client or not.
 	 */
 	private final Map<AuthenticationType, ScopedResource<ExchangeClient>> exchangeClientsMap = new ConcurrentHashMap<>();
+
+	/**
+	 * The life cycle of the API client, used to manage the life cycle of this ApiClient. This will determine if the
+	 * ApiClient should release all resources after each request or not, essentially determining if this is an ephemeral
+	 * client {@link ClientLifecycle#EPHEMERAL} or a long-lived client {@link ClientLifecycle#LONG_LIVED}. By default it's
+	 * {@link ClientLifecycle#LONG_LIVED}.
+	 */
+	private ClientLifecycle lifecycle = ClientLifecycle.LONG_LIVED;
 
 	/**
 	 * Constructor with exchange clients. Constructing the {@link ApiClient} with multiple exchange clients allows handling
@@ -303,6 +314,30 @@ public class ApiClient implements AutoCloseable {
 			String exchangeClientName = scopedResource.unwrap().getName();
 			LOGGER.debug("Closing: [{}] for [{}:{}]", exchangeClientName, AuthenticationType.class.getSimpleName(), exchangeClientName);
 			scopedResource.closeIfManaged(e -> LOGGER.error("Error closing: [{}]", exchangeClientName, e));
+		}
+	}
+
+	/**
+	 * Closes all managed exchange clients if the API client is ephemeral. This method should be called after each request
+	 * in case of an ephemeral client, to ensure that all resources are released after each request.
+	 */
+	protected void closeIfEphemeral() {
+		closeIfEphemeral(e -> LOGGER.error("Error closing API client", e));
+	}
+
+	/**
+	 * Closes all managed exchange clients if the API client is ephemeral, handling any exceptions using the provided
+	 * exception handler.
+	 *
+	 * @param exceptionHandler a consumer to handle exceptions that may occur during closing
+	 */
+	protected void closeIfEphemeral(final Consumer<? super Exception> exceptionHandler) {
+		if (ClientLifecycle.EPHEMERAL == getLifecycle()) {
+			try {
+				close();
+			} catch (Exception e) {
+				exceptionHandler.accept(e);
+			}
 		}
 	}
 
@@ -519,6 +554,20 @@ public class ApiClient implements AutoCloseable {
 	}
 
 	/**
+	 * Returns an {@link HttpClientFluentAdapter} for fluent syntax. This method can be used safely without any
+	 * ExchangeClientBuilder, as it will use the default exchange client.
+	 *
+	 * @param exchangeClientBuilders an array of exchange client builders to build the exchange clients for the API client.
+	 * @return API client adapter
+	 */
+	@SuppressWarnings("resource")
+	public static HttpClientFluentAdapter http(final ExchangeClientBuilder... exchangeClientBuilders) {
+		ApiClient apiClient = of(exchangeClientBuilders);
+		apiClient.setLifecycle(ClientLifecycle.EPHEMERAL);
+		return apiClient.client().http();
+	}
+
+	/**
 	 * API call for resource.
 	 *
 	 * @param <T> response type
@@ -557,7 +606,13 @@ public class ApiClient implements AutoCloseable {
 	 * @return API response object
 	 */
 	public <T> CompletableFuture<ApiResponse<T>> asyncExchange(final ApiRequest<T> apiRequest) {
-		return CompletableFuture.supplyAsync(() -> exchange(apiRequest));
+		return CompletableFuture.supplyAsync(() -> {
+	        try {
+	            return exchange(apiRequest);
+	        } finally {
+	            closeIfEphemeral();
+	        }
+	    });
 	}
 
 	/**
@@ -744,5 +799,27 @@ public class ApiClient implements AutoCloseable {
 	 */
 	public void setMeterFactory(final MeterFactory meterFactory) {
 		this.meterFactory = meterFactory;
+	}
+
+	/**
+	 * Returns the life cycle of the API client, used to manage the life cycle of this ApiClient. This will determine if the
+	 * ApiClient should release all resources after each request or not, essentially determining if this is an ephemeral
+	 * client of a long-lived client. By default it's {@link ClientLifecycle#LONG_LIVED}.
+	 *
+	 * @return the life cycle of the API client
+	 */
+	protected ClientLifecycle getLifecycle() {
+		return lifecycle;
+	}
+
+	/**
+	 * Sets the life cycle of the API client, used to manage the life cycle of this ApiClient. This will determine if the
+	 * ApiClient should release all resources after each request or not, essentially determining if this is an ephemeral
+	 * client of a long-lived client. By default it's {@link ClientLifecycle#LONG_LIVED}.
+	 *
+	 * @param lifecycle the life cycle to set
+	 */
+	protected void setLifecycle(final ClientLifecycle lifecycle) {
+		this.lifecycle = lifecycle;
 	}
 }

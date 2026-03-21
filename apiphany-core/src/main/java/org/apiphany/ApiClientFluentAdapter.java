@@ -106,6 +106,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 					+ exchangeClient.getClass().getName() + " must return a non-null response even in case of errors.");
 			response = apiClient.buildErrorResponse(exception, JavaObjects.cast(this), exchangeClient);
 		}
+		apiClient.closeIfEphemeral();
 		return response;
 	}
 
@@ -214,7 +215,9 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	}
 
 	/**
-	 * Sets the URL as the base URL and concatenates the given path segments to form the complete URL.
+	 * Sets the URL by concatenating the {@link #getUrl()} or {@link ApiClient#getBaseUrl()} when the first is empty with
+	 * the given path segments to form the complete URL. The path segments will be encoded if {@link #isUrlEncoded()} is
+	 * true otherwise they will be uses as they are.
 	 * <p>
 	 * If you need a specific base URL for this request use any of the methods that set the URL before calling this one or
 	 * just use {@link #url(String, String...)} or {@link #uri(URI, String...)} otherwise the base URL will be resolved as
@@ -243,7 +246,8 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	}
 
 	/**
-	 * Sets the URL by concatenating the {@link ApiClient#getBaseUrl()} with the given path segments encoding them.
+	 * Sets the URL by concatenating the {@link #getUrl()} or {@link ApiClient#getBaseUrl()} when the first is empty with
+	 * the given path segments encoding them to form the complete URL.
 	 *
 	 * @param pathSegments the path segments to append to the URL that will be encoded
 	 * @return this

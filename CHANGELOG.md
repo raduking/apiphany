@@ -1,5 +1,18 @@
 ## Release Notes
 
+`1.1.9`
+
+- Added `Iterables.partition` to partition a given `Iterable` into batches of a given size.
+- Added `Lists.partition` to partition a given `List` into `List` batches of a given size.
+- Added missing `equals` and `hashCode` to `Holder` class.
+- Added `HttpException.getResponseBody` to return the response body if available.
+- Added more `HttpException` constructors to accommodate response body.
+- Added `HttpException.Builder` to build HTTP exceptions easier.
+- Added `HttpException.exceptionMessage` method that decides the exception message based on message, response body and cause.
+- Added `ClientLifecycle` enum to describe a clients' life cycle.
+
+---
+
 `1.1.8`
 
 - Allowed on error handlers to be `null` on `Strings.fromFile` and `Bytes.fromFile`.

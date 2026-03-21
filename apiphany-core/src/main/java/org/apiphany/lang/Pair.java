@@ -36,5 +36,4 @@ public record Pair<L, R>(L left, R right) {
 	public Map<L, R> toMap() {
 		return Map.of(left, right);
 	}
-
 }

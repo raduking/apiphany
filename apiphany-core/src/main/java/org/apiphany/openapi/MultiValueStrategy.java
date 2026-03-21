@@ -185,7 +185,7 @@ public enum MultiValueStrategy {
 
 	/**
 	 * Determines the appropriate {@link MultiValueStrategy} based on the provided {@link QueryParam} annotation. If the
-	 * annotation is null, defaults to {@link #MULTI}.
+	 * annotation is null, defaults to {@link #DEFAULT} ({@link #MULTI}).
 	 *
 	 * @param queryParam the {@link QueryParam} annotation
 	 * @return the corresponding {@link MultiValueStrategy}
@@ -214,12 +214,12 @@ public enum MultiValueStrategy {
 	/**
 	 * Determines the appropriate {@link MultiValueStrategy} based on the provided string representation. The string is
 	 * matched against the known styles in a case-insensitive manner. If the string does not match any known style it
-	 * defaults to {@link #MULTI}.
+	 * defaults to {@link #DEFAULT} ({@link #MULTI}).
 	 *
 	 * @param style the string representation of the parameter style
 	 * @return the corresponding {@link MultiValueStrategy}
 	 */
 	public static MultiValueStrategy from(final String style) {
-		return Enums.from(Strings.safe(style).toLowerCase(), NAME_MAP, () -> MULTI);
+		return Enums.from(Strings.safe(style).toLowerCase(), NAME_MAP, () -> DEFAULT);
 	}
 }

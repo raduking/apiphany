@@ -1,5 +1,7 @@
 package org.apiphany.lang;
 
+import java.util.Objects;
+
 /**
  * Holds a value of type <code>T</code>. This class is useful for legacy/native APIs to be used as output parameters in
  * methods.
@@ -70,5 +72,29 @@ public final class Holder<T> {
 	 */
 	public static <U> Holder<U> of(final U value) {
 		return new Holder<>(value);
+	}
+
+	/**
+	 * @see Object#equals(Object)
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof Holder<?> that) {
+			return this.value == null
+					? that.value == null
+					: Objects.equals(this.value, that.value);
+		}
+		return false;
+	}
+
+	/**
+	 * @see Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(value);
 	}
 }

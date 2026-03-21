@@ -13,6 +13,7 @@ import org.apiphany.lang.Strings;
 import org.apiphany.lang.builder.PropertyNameBuilder;
 import org.morphix.lang.Nullables;
 import org.morphix.lang.Unchecked;
+import org.morphix.lang.function.InstanceFunction;
 import org.morphix.lang.function.Predicates;
 import org.morphix.lang.function.Runnables;
 import org.morphix.reflection.Constructors;
@@ -223,8 +224,8 @@ public record BasicMeters(
 	 * @return a {@link BasicMeters} instance.
 	 */
 	public static <T, U extends Iterable<T>> BasicMeters of(final MeterFactory factory, final String prefix, final U tags) {
-		MeterFactory meterFactory = Nullables.nonNullOrDefault(factory, MeterFactory.instance());
-		Supplier<BasicMeters> basicMetersInstantiator = () -> new BasicMeters(
+		MeterFactory meterFactory = Nullables.nonNullOrDefault(factory, MeterFactory::instance);
+		InstanceFunction<BasicMeters> basicMetersInstantiator = () -> new BasicMeters(
 				meterFactory.timer(prefix, Name.LATENCY, tags),
 				meterFactory.counter(prefix, Name.REQUEST, tags),
 				meterFactory.counter(prefix, Name.RETRY, tags),
