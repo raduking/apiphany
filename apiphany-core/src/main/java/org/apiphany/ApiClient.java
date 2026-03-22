@@ -554,17 +554,12 @@ public class ApiClient implements AutoCloseable {
 	}
 
 	/**
-	 * Returns an {@link HttpClientFluentAdapter} for fluent syntax. This method can be used safely without any
-	 * ExchangeClientBuilder, as it will use the default exchange client.
+	 * Returns an {@link HttpClientFluentAdapter} for fluent syntax.
 	 *
-	 * @param exchangeClientBuilders an array of exchange client builders to build the exchange clients for the API client.
 	 * @return API client adapter
 	 */
-	@SuppressWarnings("resource")
-	public static HttpClientFluentAdapter http(final ExchangeClientBuilder... exchangeClientBuilders) {
-		ApiClient apiClient = of(exchangeClientBuilders);
-		apiClient.setLifecycle(ClientLifecycle.EPHEMERAL);
-		return apiClient.client().http();
+	public HttpClientFluentAdapter http() {
+		return client().http();
 	}
 
 	/**
@@ -607,12 +602,12 @@ public class ApiClient implements AutoCloseable {
 	 */
 	public <T> CompletableFuture<ApiResponse<T>> asyncExchange(final ApiRequest<T> apiRequest) {
 		return CompletableFuture.supplyAsync(() -> {
-	        try {
-	            return exchange(apiRequest);
-	        } finally {
-	            closeIfEphemeral();
-	        }
-	    });
+			try {
+				return exchange(apiRequest);
+			} finally {
+				closeIfEphemeral();
+			}
+		});
 	}
 
 	/**
