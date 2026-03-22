@@ -50,10 +50,11 @@ public class TestDto {
 		if (this == obj) {
 			return true;
 		}
-		if (!(obj instanceof TestDto other)) {
-			return false;
+		if (obj instanceof TestDto that) {
+			return Objects.equals(this.id, that.id)
+					&& this.count == that.count;
 		}
-		return count == other.count && Objects.equals(id, other.id);
+		return false;
 	}
 
 	@Override

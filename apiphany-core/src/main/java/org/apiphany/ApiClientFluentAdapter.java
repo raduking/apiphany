@@ -718,4 +718,13 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	public HttpClientFluentAdapter http() {
 		return HttpClientFluentAdapter.of(this);
 	}
+
+	/**
+	 * Returns the underlying API client.
+	 *
+	 * @return the underlying API client
+	 */
+	protected ApiClient getApiClient() {
+		return apiClient;
+	}
 }
