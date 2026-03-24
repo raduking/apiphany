@@ -57,6 +57,19 @@ class ApiClientCloseTest {
 		}
 	}
 
+	static class NotClosingExchangeClient extends SomeExchangeClient {
+
+		public NotClosingExchangeClient(final ClientProperties clientProperties) {
+			super(clientProperties);
+		}
+
+		@Override
+		public void close() {
+			super.close();
+			throw new RuntimeException("Failed to close exchange client: " + getName());
+		}
+	}
+
 	@Test
 	@SuppressWarnings("resource")
 	void shouldCallCloseOnManagedExchangeClients() throws Exception {
@@ -170,7 +183,7 @@ class ApiClientCloseTest {
 		IllegalStateException e = assertThrows(IllegalStateException.class, () -> new ApiClient(resources));
 
 		assertThat(e.getMessage(), equalTo("Failed to instantiate [" + ApiClient.class.getName() + "]."
-				+ " Client entry for authentication type: [" + AuthenticationType.NONE + ", " + exchangeClient1.getName() + "]"
+				+ " Client entry for authentication type: [" + AuthenticationType.NONE + ":" + exchangeClient1.getName() + "]"
 				+ " already exists when trying to add client: [" + exchangeClient2.getName() + "]"));
 		assertTrue(exchangeClient1.isClosed());
 		assertTrue(exchangeClient2.isClosed());
@@ -188,9 +201,27 @@ class ApiClientCloseTest {
 		IllegalStateException e = assertThrows(IllegalStateException.class, () -> new ApiClient(resources));
 
 		assertThat(e.getMessage(), equalTo("Failed to instantiate [" + ApiClient.class.getName() + "]."
-				+ " Client entry for authentication type: [" + AuthenticationType.NONE + ", " + exchangeClient1.getName() + "]"
+				+ " Client entry for authentication type: [" + AuthenticationType.NONE + ":" + exchangeClient1.getName() + "]"
 				+ " already exists when trying to add client: [" + exchangeClient2.getName() + "]"));
 		assertFalse(exchangeClient1.isClosed());
 		assertFalse(exchangeClient2.isClosed());
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldCallCloseOnAllExchangeClientsEvenIfSomeOfTheCloseMethodsThrowExceptions() {
+		NotClosingExchangeClient exchangeClient1 = new NotClosingExchangeClient(clientProperties);
+		SomeOtherExchangeClient exchangeClient2 = new SomeOtherExchangeClient(clientProperties);
+		ScopedResource<ExchangeClient> scopedResource1 = ScopedResource.managed(exchangeClient1);
+		ScopedResource<ExchangeClient> scopedResource2 = ScopedResource.managed(exchangeClient2);
+		List<ScopedResource<ExchangeClient>> resources = List.of(scopedResource1, scopedResource2);
+
+		IllegalStateException e = assertThrows(IllegalStateException.class, () -> new ApiClient(resources));
+
+		assertThat(e.getMessage(), equalTo("Failed to instantiate [" + ApiClient.class.getName() + "]."
+				+ " Client entry for authentication type: [" + AuthenticationType.NONE + ":" + exchangeClient1.getName() + "]"
+				+ " already exists when trying to add client: [" + exchangeClient2.getName() + "]"));
+		assertTrue(exchangeClient1.isClosed());
+		assertTrue(exchangeClient2.isClosed());
 	}
 }

@@ -32,6 +32,7 @@ import org.apiphany.meters.MeterFactory;
 import org.apiphany.security.AuthenticationType;
 import org.morphix.lang.JavaArrays;
 import org.morphix.lang.JavaObjects;
+import org.morphix.lang.Messages;
 import org.morphix.lang.Nullables;
 import org.morphix.lang.Unchecked;
 import org.morphix.reflection.Fields;
@@ -290,9 +291,9 @@ public class ApiClient implements AutoCloseable {
 	 */
 	protected static IllegalStateException duplicateException(final AuthenticationType authenticationType,
 			final ExchangeClient existingClient, final ExchangeClient newClient) {
-		return new IllegalStateException("Failed to instantiate [" + ApiClient.class.getName() + "]."
-				+ " Client entry for authentication type: [" + authenticationType + ", " + existingClient.getName() + "]"
-				+ " already exists when trying to add client: [" + newClient.getName() + "]");
+		return new IllegalStateException(Messages.message(
+				"Failed to instantiate [{}]. Client entry for authentication type: [{}:{}] already exists when trying to add client: [{}]",
+				ApiClient.class.getName(), authenticationType, existingClient.getName(), newClient.getName()));
 	}
 
 	/**
@@ -311,9 +312,11 @@ public class ApiClient implements AutoCloseable {
 	@SuppressWarnings("resource")
 	protected static void closeExchangeClients(final Collection<ScopedResource<ExchangeClient>> exchangeClients) {
 		for (ScopedResource<ExchangeClient> scopedResource : exchangeClients) {
-			String exchangeClientName = scopedResource.unwrap().getName();
-			LOGGER.debug("Closing: [{}] for [{}:{}]", exchangeClientName, AuthenticationType.class.getSimpleName(), exchangeClientName);
-			scopedResource.closeIfManaged(e -> LOGGER.error("Error closing: [{}]", exchangeClientName, e));
+			ExchangeClient exchangeClient = scopedResource.unwrap();
+			String clientName = exchangeClient.getName();
+			String message = Messages.message("[{}] client entry [{}:{}]", clientName, exchangeClient.getAuthenticationType(), clientName);
+			LOGGER.debug("Closing: {}", message);
+			scopedResource.closeIfManaged(e -> LOGGER.error("Error closing: {}", message, e));
 		}
 	}
 
@@ -322,7 +325,7 @@ public class ApiClient implements AutoCloseable {
 	 * in case of an ephemeral client, to ensure that all resources are released after each request.
 	 */
 	protected void closeIfEphemeral() {
-		closeIfEphemeral(e -> LOGGER.error("Error closing API client", e));
+		closeIfEphemeral(e -> LOGGER.error("Error closing [{}]", ApiClient.class.getName(), e));
 	}
 
 	/**
