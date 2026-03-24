@@ -26,6 +26,6 @@ public interface Api {
 	public static HttpClientFluentAdapter http(final ExchangeClientBuilder... exchangeClientBuilders) {
 		ApiClient apiClient = ApiClient.of(exchangeClientBuilders);
 		apiClient.setLifecycle(ClientLifecycle.EPHEMERAL);
-		return apiClient.client().http();
+		return apiClient.http();
 	}
 }

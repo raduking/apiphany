@@ -353,7 +353,7 @@ class ApiClientTest {
 					+ "[" + ApiClient.class.getName() + "]. "
 					+ "Client entry for authentication type: ["
 					+ AuthenticationType.OAUTH2
-					+ ", "
+					+ ":"
 					+ EXCHANGE_CLIENT_NAME_1
 					+ "] already exists when trying to add client: ["
 					+ EXCHANGE_CLIENT_NAME_2 + "]"));
