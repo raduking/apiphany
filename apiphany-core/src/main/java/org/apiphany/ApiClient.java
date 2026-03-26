@@ -604,13 +604,7 @@ public class ApiClient implements AutoCloseable {
 	 * @return API response object
 	 */
 	public <T> CompletableFuture<ApiResponse<T>> asyncExchange(final ApiRequest<T> apiRequest) {
-		return CompletableFuture.supplyAsync(() -> {
-			try {
-				return exchange(apiRequest);
-			} finally {
-				closeIfEphemeral();
-			}
-		});
+		return CompletableFuture.supplyAsync(() -> exchange(apiRequest));
 	}
 
 	/**
