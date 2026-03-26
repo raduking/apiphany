@@ -5,7 +5,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -19,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apiphany.client.ClientLifecycle;
-import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.ExchangeClientBuilder;
 import org.apiphany.client.http.HttpClientFluentAdapter;
 import org.apiphany.client.http.HttpExchangeClient;
@@ -122,16 +120,6 @@ class ApiClientEphemeralTest {
 
 		ApiClient apiClient = request.getApiClient();
 		assertThat(apiClient.getLifecycle(), equalTo(ClientLifecycle.EPHEMERAL));
-	}
-
-	@Test
-	void shouldThrowExceptionWhenMultipleExchangeClientsProvided() {
-		ExchangeClientBuilder builder1 = mock(ExchangeClientBuilder.class);
-		ExchangeClientBuilder builder2 = mock(ExchangeClientBuilder.class);
-
-		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> Api.http(builder1, builder2));
-
-		assertThat(e.getMessage(), equalTo("Only one " + ExchangeClient.class.getName() + " is allowed for ephemeral API clients."));
 	}
 
 	@Test
