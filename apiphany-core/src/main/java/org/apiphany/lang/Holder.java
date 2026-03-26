@@ -83,9 +83,7 @@ public final class Holder<T> {
 			return true;
 		}
 		if (obj instanceof Holder<?> that) {
-			return this.value == null
-					? that.value == null
-					: Objects.equals(this.value, that.value);
+			return Objects.equals(this.value, that.value);
 		}
 		return false;
 	}

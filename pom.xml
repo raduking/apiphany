@@ -140,8 +140,9 @@
 	<build>
 		<!--
 			Configure plugin management for child modules here.
-			These plugins can be used in child modules but only those defined here will have their versions and configurations
-		managed.
+			These plugins can be used in child modules but only those defined here 
+			will have their versions and configurations managed.
+
 			No executions should be defined here except ones relevant to the main build
 			Only child modules should define executions for their specific needs.
 		-->
@@ -164,6 +165,8 @@
 						<source>${maven.compiler.source}</source>
 						<target>${maven.compiler.target}</target>
 						<release>${maven.compiler.release}</release>
+						<!-- disable annotation processing by default -->
+						<proc>none</proc>
 					</configuration>
 				</plugin>
 
