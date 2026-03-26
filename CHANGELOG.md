@@ -10,6 +10,8 @@
 - Added `HttpException.Builder` to build HTTP exceptions easier.
 - Added `HttpException.exceptionMessage` method that decides the exception message based on message, response body and cause.
 - Added `ClientLifecycle` enum to describe a clients' life cycle.
+- Added `Api` interface for ephemeral API clients, this interface is intended to be used when clients are short lived.
+- Added `ScopedResource.safeClose` to safely close an `AutoCloseable`.
 
 ---
 

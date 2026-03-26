@@ -197,4 +197,22 @@ public class ScopedResource<T extends AutoCloseable> {
 				? ScopedResource.unmanaged(rawCheckedResource)
 				: checkedResource;
 	}
+
+	/**
+	 * Safely closes the given resource, handling any exceptions using the provided exception handler. If the resource is
+	 * null, this method does nothing.
+	 *
+	 * @param resource the resource to close
+	 * @param exceptionHandler a consumer to handle exceptions that may occur during closing
+	 */
+	public static void safeClose(final AutoCloseable resource, final Consumer<? super Exception> exceptionHandler) {
+		if (null == resource) {
+			return;
+		}
+		try {
+			resource.close();
+		} catch (Exception e) {
+			exceptionHandler.accept(e);
+		}
+	}
 }

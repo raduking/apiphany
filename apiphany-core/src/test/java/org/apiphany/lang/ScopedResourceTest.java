@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.Test;
+import org.morphix.lang.function.Consumers;
 
 /**
  * Test class for {@link ScopedResource}.
@@ -217,6 +218,34 @@ class ScopedResourceTest {
 		assertTrue(a.isManaged());
 	}
 
+	@Test
+	@SuppressWarnings("resource")
+	void shouldSafelyCloseTheResourceWithSafeClose() {
+		TestResource resource = new TestResource();
+
+		assertDoesNotThrow(() -> ScopedResource.safeClose(resource, Consumers.noConsumer()));
+
+		assertTrue(resource.isClosed());
+	}
+
+	@Test
+	void shouldNotThrowExceptionOnSafeCloseWithNull() {
+		assertDoesNotThrow(() -> ScopedResource.safeClose(null, Consumers.noConsumer()));
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldSafelyCloseTheResourceWithSafeCloseAndHandleException() {
+		TestResourceExceptionOnClose resource = new TestResourceExceptionOnClose();
+
+		Holder<Exception> caughtException = new Holder<>();
+
+		assertDoesNotThrow(() -> ScopedResource.safeClose(resource, caughtException::setValue));
+
+		assertTrue(resource.isClosed());
+		assertThat(caughtException.getValue().getMessage(), equalTo(TestResourceExceptionOnClose.CLOSE_FAILED));
+	}
+
 	static class TestResource implements AutoCloseable {
 
 		private boolean closed = false;
@@ -224,6 +253,23 @@ class ScopedResourceTest {
 		@Override
 		public void close() {
 			closed = true;
+		}
+
+		public boolean isClosed() {
+			return closed;
+		}
+	}
+
+	static class TestResourceExceptionOnClose implements AutoCloseable {
+
+		private static final String CLOSE_FAILED = "Close failed!";
+
+		private boolean closed = false;
+
+		@Override
+		public void close() {
+			closed = true;
+			throw new RuntimeException(CLOSE_FAILED);
 		}
 
 		public boolean isClosed() {

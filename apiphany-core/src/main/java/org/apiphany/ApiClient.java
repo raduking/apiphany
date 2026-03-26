@@ -314,7 +314,7 @@ public class ApiClient implements AutoCloseable {
 		for (ScopedResource<ExchangeClient> scopedResource : exchangeClients) {
 			ExchangeClient exchangeClient = scopedResource.unwrap();
 			String clientName = exchangeClient.getName();
-			String message = Messages.message("[{}] client entry [{}:{}]", clientName, exchangeClient.getAuthenticationType(), clientName);
+			String message = Messages.message("[{}] for entry [{}:{}]", clientName, exchangeClient.getAuthenticationType(), clientName);
 			LOGGER.debug("Closing: {}", message);
 			scopedResource.closeIfManaged(e -> LOGGER.error("Error closing: {}", message, e));
 		}
@@ -336,11 +336,7 @@ public class ApiClient implements AutoCloseable {
 	 */
 	protected void closeIfEphemeral(final Consumer<? super Exception> exceptionHandler) {
 		if (ClientLifecycle.EPHEMERAL == getLifecycle()) {
-			try {
-				close();
-			} catch (Exception e) {
-				exceptionHandler.accept(e);
-			}
+			ScopedResource.safeClose(this, exceptionHandler);
 		}
 	}
 
