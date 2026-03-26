@@ -12,6 +12,7 @@
 - Added `ClientLifecycle` enum to describe a clients' life cycle.
 - Added `Api` interface for ephemeral API clients, this interface is intended to be used when clients are short lived.
 - Added `ScopedResource.safeClose` to safely close an `AutoCloseable`.
+- Added `HttpMethod.Value` name space class with all HTTP method string constants.
 
 ---
 

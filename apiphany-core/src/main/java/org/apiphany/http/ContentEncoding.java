@@ -128,7 +128,7 @@ public enum ContentEncoding {
 	BZIP2(Value.BZIP2);
 
 	/**
-	 * A utility class containing string constants for the content encoding values. This allows for easy reference to the
+	 * A name space class containing string constants for the content encoding values. This allows for easy reference to the
 	 * standard content encoding strings without hard coding them throughout the code base.
 	 *
 	 * @author Radu Sebastian LAZIN

@@ -5,6 +5,7 @@ import java.util.Objects;
 
 import org.apiphany.RequestMethod;
 import org.morphix.lang.Enums;
+import org.morphix.reflection.Constructors;
 
 /**
  * Represents the standard HTTP methods as defined by the HTTP/1.1 specification and other relevant RFCs. Each method
@@ -19,63 +20,124 @@ public enum HttpMethod implements RequestMethod {
 	 *
 	 * @see <a href="https://www.rfc-editor.org/rfc/rfc9110.html#name-get">RFC 9110, section 9.3.1</a>
 	 */
-	GET("GET"),
+	GET(Value.GET),
 
 	/**
 	 * The HTTP method {@code HEAD}.
 	 *
 	 * @see <a href="https://www.rfc-editor.org/rfc/rfc9110.html#name-head">RFC 9110, section 9.3.2</a>
 	 */
-	HEAD("HEAD"),
+	HEAD(Value.HEAD),
 
 	/**
 	 * The HTTP method {@code POST}.
 	 *
 	 * @see <a href="https://www.rfc-editor.org/rfc/rfc9110.html#name-post">RFC 9110, section 9.3.3</a>
 	 */
-	POST("POST"),
+	POST(Value.POST),
 
 	/**
 	 * The HTTP method {@code PUT}.
 	 *
 	 * @see <a href="https://www.rfc-editor.org/rfc/rfc9110.html#name-put">RFC 9110, section 9.3.4</a>
 	 */
-	PUT("PUT"),
+	PUT(Value.PUT),
 
 	/**
 	 * The HTTP method {@code PATCH}.
 	 *
 	 * @see <a href="https://www.rfc-editor.org/rfc/rfc5789.html#section-2">RFC 5789, section 2</a>
 	 */
-	PATCH("PATCH"),
+	PATCH(Value.PATCH),
 
 	/**
 	 * The HTTP method {@code DELETE}.
 	 *
 	 * @see <a href="https://www.rfc-editor.org/rfc/rfc9110.html#name-delete">RFC 9110, section 9.3.5</a>
 	 */
-	DELETE("DELETE"),
+	DELETE(Value.DELETE),
 
 	/**
 	 * The HTTP method {@code CONNECT}.
 	 *
 	 * @see <a href="https://www.rfc-editor.org/rfc/rfc9110.html#name-connect">RFC 9110, section 9.3.6</a>
 	 */
-	CONNECT("CONNECT"),
+	CONNECT(Value.CONNECT),
 
 	/**
 	 * The HTTP method {@code OPTIONS}.
 	 *
 	 * @see <a href="https://www.rfc-editor.org/rfc/rfc9110.html#name-options">RFC 9110, section 9.3.7</a>
 	 */
-	OPTIONS("OPTIONS"),
+	OPTIONS(Value.OPTIONS),
 
 	/**
 	 * The HTTP method {@code TRACE}.
 	 *
 	 * @see <a href="https://www.rfc-editor.org/rfc/rfc9110.html#name-trace">RFC 9110, section 9.3.8</a>
 	 */
-	TRACE("TRACE");
+	TRACE(Value.TRACE);
+
+	/**
+	 * A name space class containing string constants for the HTTP method values. This allows for easy reference to the HTTP
+	 * method strings without hard coding them throughout the code base.
+	 *
+	 * @author Radu Sebastian LAZIN
+	 */
+	public static class Value {
+
+		/**
+		 * The string value for the HTTP method {@code GET}.
+		 */
+		public static final String GET = "GET";
+
+		/**
+		 * The string value for the HTTP method {@code HEAD}.
+		 */
+		public static final String HEAD = "HEAD";
+
+		/**
+		 * The string value for the HTTP method {@code POST}.
+		 */
+		public static final String POST = "POST";
+
+		/**
+		 * The string value for the HTTP method {@code PUT}.
+		 */
+		public static final String PUT = "PUT";
+
+		/**
+		 * The string value for the HTTP method {@code PATCH}.
+		 */
+		public static final String PATCH = "PATCH";
+
+		/**
+		 * The string value for the HTTP method {@code DELETE}.
+		 */
+		public static final String DELETE = "DELETE";
+
+		/**
+		 * The string value for the HTTP method {@code CONNECT}.
+		 */
+		public static final String CONNECT = "CONNECT";
+
+		/**
+		 * The string value for the HTTP method {@code OPTIONS}.
+		 */
+		public static final String OPTIONS = "OPTIONS";
+
+		/**
+		 * The string value for the HTTP method {@code TRACE}.
+		 */
+		public static final String TRACE = "TRACE";
+
+		/**
+		 * Private constructor to prevent instantiation.
+		 */
+		private Value() {
+			throw Constructors.unsupportedOperationException();
+		}
+	}
 
 	/**
 	 * The name map for easy from string implementation.
@@ -134,5 +196,4 @@ public enum HttpMethod implements RequestMethod {
 	public boolean matches(final String method) {
 		return value().equalsIgnoreCase(method);
 	}
-
 }
