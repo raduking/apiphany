@@ -4,6 +4,7 @@ import static org.apiphany.ParameterFunction.parameter;
 import static org.apiphany.header.HeaderFunction.header;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -33,6 +34,7 @@ import org.apiphany.meters.MeterCounter;
 import org.apiphany.openapi.MultiValueStrategy;
 import org.apiphany.security.AuthenticationType;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -66,33 +68,119 @@ class ApiClientFluentAdapterTest {
 	@Mock
 	private ApiClient apiClient;
 
-	@Test
-	void shouldPopulateAllApiRequestFieldsWhenBuildingWithAnApiRequest() {
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.url(URL)
-				.method(HttpMethod.OPTIONS)
-				.params(PARAMS)
-				.headers(HEADERS)
-				.body(BODY)
-				.charset(StandardCharsets.US_ASCII)
-				.urlEncoded()
-				.stream()
-				.meters(METERS)
-				.retry(RETRY);
+	@Nested
+	class ApiRequestTests {
 
-		ApiClientFluentAdapter result = ApiClientFluentAdapter.of(apiClient)
-				.apiRequest(request);
+		@Test
+		void shouldPopulateRequredApiRequestFieldsWhenBuildingWithAnApiRequest() {
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.OPTIONS)
+					.params(PARAMS)
+					.headers(HEADERS)
+					.body(BODY)
+					.charset(StandardCharsets.US_ASCII)
+					.urlEncoded()
+					.stream()
+					.meters(METERS)
+					.retry(RETRY);
 
-		assertThat(result.getUrl(), equalTo(URL));
-		assertThat(result.getMethod(), equalTo(HttpMethod.OPTIONS));
-		assertThat(result.getParams(), equalTo(PARAMS));
-		assertThat(result.getHeaders(), equalTo(HEADERS));
-		assertThat(result.getBody(), equalTo(BODY));
-		assertThat(result.getCharset(), equalTo(StandardCharsets.US_ASCII));
-		assertTrue(result.isUrlEncoded());
-		assertTrue(result.isStream());
-		assertThat(result.getMeters(), equalTo(METERS));
-		assertThat(result.getRetry(), equalTo(RETRY));
+			ApiClientFluentAdapter result = ApiClientFluentAdapter.of(apiClient)
+					.apiRequest(request);
+
+			assertThat(result.getUrl(), equalTo(URL));
+			assertThat(result.getMethod(), equalTo(HttpMethod.OPTIONS));
+			assertThat(result.getParams(), equalTo(PARAMS));
+			assertThat(result.getHeaders(), equalTo(HEADERS));
+			assertThat(result.getBody(), equalTo(BODY));
+			assertThat(result.getCharset(), equalTo(StandardCharsets.US_ASCII));
+			assertTrue(result.isUrlEncoded());
+			assertTrue(result.isStream());
+			assertThat(result.getMeters(), equalTo(METERS));
+			assertThat(result.getRetry(), equalTo(RETRY));
+		}
+
+		@Test
+		@SuppressWarnings("resource")
+		void shouldNotPopulateExcludedRequestFieldsWhenBuildingWithAnApiRequest() {
+			ExchangeClient exchangeClient = mock(ExchangeClient.class);
+			doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.OPTIONS)
+					.params(PARAMS)
+					.headers(HEADERS)
+					.body(BODY)
+					.charset(StandardCharsets.US_ASCII)
+					.urlEncoded()
+					.stream()
+					.meters(METERS)
+					.retry(RETRY)
+					.authenticationType(AuthenticationType.SESSION)
+					.responseType(String.class);
+
+			ApiClientFluentAdapter result = ApiClientFluentAdapter.of(apiClient)
+					.apiRequest(request);
+
+			assertThat(result.getUrl(), equalTo(URL));
+			assertThat(result.getMethod(), equalTo(HttpMethod.OPTIONS));
+			assertThat(result.getParams(), equalTo(PARAMS));
+			assertThat(result.getHeaders(), equalTo(HEADERS));
+			assertThat(result.getBody(), equalTo(BODY));
+			assertThat(result.getCharset(), equalTo(StandardCharsets.US_ASCII));
+			assertTrue(result.isUrlEncoded());
+			assertTrue(result.isStream());
+			assertThat(result.getMeters(), equalTo(METERS));
+			assertThat(result.getRetry(), equalTo(RETRY));
+
+			assertThat(result.getAuthenticationType(), nullValue());
+			assertThat(result.getResponseType(), nullValue());
+			assertThat(result.getClassResponseType(), nullValue());
+			assertFalse(result.hasGenericType());
+		}
+
+		@Test
+		@SuppressWarnings("resource")
+		void shouldNotPopulateExcludedRequestFieldsWhenBuildingWithAnApiRequestWithGenericClass() {
+			ExchangeClient exchangeClient = mock(ExchangeClient.class);
+			doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.OPTIONS)
+					.params(PARAMS)
+					.headers(HEADERS)
+					.body(BODY)
+					.charset(StandardCharsets.US_ASCII)
+					.urlEncoded()
+					.stream()
+					.meters(METERS)
+					.retry(RETRY)
+					.authenticationType(AuthenticationType.SESSION)
+					.responseType(new GenericClass<List<String>>() {
+						// empty
+					});
+
+			ApiClientFluentAdapter result = ApiClientFluentAdapter.of(apiClient)
+					.apiRequest(request);
+
+			assertThat(result.getUrl(), equalTo(URL));
+			assertThat(result.getMethod(), equalTo(HttpMethod.OPTIONS));
+			assertThat(result.getParams(), equalTo(PARAMS));
+			assertThat(result.getHeaders(), equalTo(HEADERS));
+			assertThat(result.getBody(), equalTo(BODY));
+			assertThat(result.getCharset(), equalTo(StandardCharsets.US_ASCII));
+			assertTrue(result.isUrlEncoded());
+			assertTrue(result.isStream());
+			assertThat(result.getMeters(), equalTo(METERS));
+			assertThat(result.getRetry(), equalTo(RETRY));
+
+			assertThat(result.getAuthenticationType(), nullValue());
+			assertThat(result.getResponseType(), nullValue());
+			assertThat(result.getGenericResponseType(), nullValue());
+			assertFalse(result.hasGenericType());
+		}
 	}
 
 	@Test
