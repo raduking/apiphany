@@ -10,6 +10,8 @@ import java.util.List;
 
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
+import org.apiphany.client.ExchangeClientBuilder;
+import org.apiphany.client.http.HttpExchangeClient;
 import org.apiphany.lang.ScopedResource;
 import org.apiphany.security.AuthenticationType;
 import org.junit.jupiter.api.Test;
@@ -67,6 +69,13 @@ class ApiClientCloseTest {
 		public void close() {
 			super.close();
 			throw new RuntimeException("Failed to close exchange client: " + getName());
+		}
+	}
+
+	static class SomeHttpExchangeClient extends SomeExchangeClient implements HttpExchangeClient {
+
+		public SomeHttpExchangeClient(final ClientProperties clientProperties) {
+			super(clientProperties);
 		}
 	}
 
@@ -223,5 +232,35 @@ class ApiClientCloseTest {
 				+ " already exists when trying to add client: [" + exchangeClient2.getName() + "]"));
 		assertTrue(exchangeClient1.isClosed());
 		assertTrue(exchangeClient2.isClosed());
+	}
+
+	static class SomeCustomExchangeClientBuilder extends ExchangeClientBuilder {
+
+		private ScopedResource<ExchangeClient> scopedClient;
+
+		public SomeCustomExchangeClientBuilder(final ScopedResource<ExchangeClient> scopedClient) {
+			this.scopedClient = scopedClient;
+		}
+
+		@Override
+		public ScopedResource<ExchangeClient> build() {
+			return scopedClient;
+		}
+	}
+
+	@Test
+	@SuppressWarnings({ "resource" })
+	void shouldCloseExchangeClientWithEphemeralClient() {
+		SomeHttpExchangeClient exchangeClient = new SomeHttpExchangeClient(clientProperties);
+		ScopedResource<ExchangeClient> scopedClient = ScopedResource.managed(exchangeClient);
+		SomeCustomExchangeClientBuilder builder = new SomeCustomExchangeClientBuilder(scopedClient);
+
+		Api.http(builder)
+				.get()
+				.url(BASE_URL)
+				.retrieve(String.class)
+				.orNull();
+
+		assertTrue(exchangeClient.isClosed());
 	}
 }

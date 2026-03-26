@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.net.URI;
@@ -18,12 +17,14 @@ import java.util.List;
 import java.util.Map;
 
 import org.apiphany.client.ClientLifecycle;
+import org.apiphany.client.ExchangeClientBuilder;
 import org.apiphany.client.http.HttpExchangeClient;
 import org.apiphany.header.Headers;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
 import org.apiphany.io.ContentType;
+import org.apiphany.lang.ScopedResource;
 import org.apiphany.security.AuthenticationType;
 import org.apiphany.utils.TestDto;
 import org.junit.jupiter.api.Test;
@@ -55,6 +56,9 @@ class ApiClientEphemeralTest {
 	void shouldCallExchangeClientWithProvidedParametersOnPost() throws Exception {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
 		doReturn(AuthenticationType.NONE).when(exchangeClient).getAuthenticationType();
+		ScopedResource<HttpExchangeClient> scopedClient = ScopedResource.managed(exchangeClient);
+		ExchangeClientBuilder builder = mock(ExchangeClientBuilder.class);
+		doReturn(scopedClient).when(builder).build();
 
 		TestDto expected = TestDto.of(ID1, COUNT1);
 		ApiResponse<TestDto> response = ApiResponse.create(expected)
@@ -75,7 +79,7 @@ class ApiClientEphemeralTest {
 		doReturn(HttpMethod.POST).when(exchangeClient).post();
 
 		TestDto result = Api
-				.http(ApiClient.with(exchangeClient))
+				.http(builder)
 				.post()
 				.url(BASE_URL)
 				.path(PATH_TEST)
@@ -92,7 +96,7 @@ class ApiClientEphemeralTest {
 
 		ArgumentCaptor<?> requestCaptor = ArgumentCaptor.forClass(ApiRequest.class);
 		verify(exchangeClient).exchange(JavaObjects.cast(requestCaptor.capture()));
-		verify(exchangeClient, times(0)).close();
+		verify(exchangeClient).close();
 
 		ApiClientFluentAdapter request = JavaObjects.cast(requestCaptor.getValue());
 
