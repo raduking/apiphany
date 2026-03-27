@@ -13,6 +13,21 @@
 - Added `Api` interface for ephemeral API clients, this interface is intended to be used when clients are short lived.
 - Added `ScopedResource.safeClose` to safely close an `AutoCloseable`.
 - Added `HttpMethod.Value` name space class with all HTTP method string constants.
+- Upgraded `mockito-core` to `5.23.0`.
+- Upgraded `logback-core` to `1.5.32`.
+- Upgraded `spring-security-oauth2-client` to `7.0.4`.
+- Upgraded `testcontainers` to `2.0.4`.
+- Upgraded `nimbus-jose-jwt` to `10.8`.
+- Upgraded `oauth2-oidc-sdk` to `11.35`.
+- Upgraded `pitest-maven` to `1.23.0`.
+- Upgraded `maven-compiler-plugin` to `3.15.0`.
+- Upgraded `maven-surefire-plugin` to `3.5.5`.
+- Upgraded `maven-failsafe-plugin` to `3.5.5`.
+- Upgraded `maven-resources-plugin` to `3.5.0`.
+- Upgraded `properties-maven-plugin` to `1.3.0`.
+- Upgraded `maven-source-plugin` to `3.4.0`.
+- Upgraded `maven-javadoc-plugin` to `3.12.0`.
+- Upgraded `maven-enforcer-plugin` to `3.6.2`.
 
 ---
 
