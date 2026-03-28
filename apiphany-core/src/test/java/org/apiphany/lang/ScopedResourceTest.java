@@ -63,10 +63,38 @@ class ScopedResourceTest {
 
 	@Test
 	@SuppressWarnings("resource")
+	void shouldCreateAManagedResourceWithOwnedFactoryMethod() {
+		TestResource resource = new TestResource();
+
+		ScopedResource<TestResource> scopedResource = ScopedResource.owned(resource);
+
+		TestResource retrievedResource = scopedResource.unwrap();
+
+		assertThat(resource, equalTo(retrievedResource));
+		assertTrue(scopedResource.isManaged());
+		assertFalse(scopedResource.isNotManaged());
+	}
+
+	@Test
+	@SuppressWarnings("resource")
 	void shouldCreateAnUnmanagedResourceWithFactoryMethod() {
 		TestResource resource = new TestResource();
 
 		ScopedResource<TestResource> scopedResource = ScopedResource.unmanaged(resource);
+
+		TestResource retrievedResource = scopedResource.unwrap();
+
+		assertThat(resource, equalTo(retrievedResource));
+		assertTrue(scopedResource.isNotManaged());
+		assertFalse(scopedResource.isManaged());
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldCreateAnUnmanagedResourceWithExternalFactoryMethod() {
+		TestResource resource = new TestResource();
+
+		ScopedResource<TestResource> scopedResource = ScopedResource.external(resource);
 
 		TestResource retrievedResource = scopedResource.unwrap();
 
