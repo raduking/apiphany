@@ -159,6 +159,18 @@ public class ScopedResource<T extends AutoCloseable> {
 	}
 
 	/**
+	 * Creates a new managed ScopedResource instance. This is an alias for {@link #managed(AutoCloseable)}.
+	 *
+	 * @param <T> the type of the resource
+	 *
+	 * @param resource the resource to wrap
+	 * @return a new managed ScopedResource instance
+	 */
+	public static <T extends AutoCloseable> ScopedResource<T> owned(final T resource) {
+		return managed(resource);
+	}
+
+	/**
 	 * Creates a new unmanaged ScopedResource instance.
 	 *
 	 * @param <T> the type of the resource
@@ -168,6 +180,18 @@ public class ScopedResource<T extends AutoCloseable> {
 	 */
 	public static <T extends AutoCloseable> ScopedResource<T> unmanaged(final T resource) {
 		return of(resource, Lifecycle.UNMANAGED);
+	}
+
+	/**
+	 * Creates a new unmanaged ScopedResource instance. This is an alias for {@link #unmanaged(AutoCloseable)}.
+	 *
+	 * @param <T> the type of the resource
+	 *
+	 * @param resource the resource to wrap
+	 * @return a new unmanaged ScopedResource instance
+	 */
+	public static <T extends AutoCloseable> ScopedResource<T> external(final T resource) {
+		return unmanaged(resource);
 	}
 
 	/**

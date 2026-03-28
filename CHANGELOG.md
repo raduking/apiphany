@@ -13,6 +13,8 @@
 - Added `Api` interface for ephemeral API clients, this interface is intended to be used when clients are short lived.
 - Added `ScopedResource.safeClose` to safely close an `AutoCloseable`.
 - Added `HttpMethod.Value` name space class with all HTTP method string constants.
+- Added `ScopedResource.owned` as an alias for `ScopedResource.managed`;
+- Added `ScopedResource.external` as an alias for `ScopedResource.unmanaged`;
 - Upgraded `mockito-core` to `5.23.0`.
 - Upgraded `logback-core` to `1.5.32`.
 - Upgraded `spring-security-oauth2-client` to `7.0.4`.
