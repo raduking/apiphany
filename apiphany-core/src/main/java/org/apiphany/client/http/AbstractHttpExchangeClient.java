@@ -249,7 +249,10 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 		U body;
 		if (httpStatus.isError()) {
 			String errorResponseBody = StringHttpContentConverter.from(rawBody, contentType);
-			HttpException exception = new HttpException(httpStatus, errorResponseBody);
+			HttpException exception = HttpException.builder()
+					.status(httpStatus)
+					.responseBody(errorResponseBody)
+					.build();
 			responseBuilder.exception(exception);
 			body = JavaObjects.cast(errorResponseBody);
 		} else {

@@ -18,6 +18,7 @@ import org.apiphany.header.Headers;
 import org.apiphany.http.URIEncoder;
 import org.apiphany.io.OneShotInputStreamSupplier;
 import org.apiphany.lang.Strings;
+import org.apiphany.lang.annotation.Ignored;
 import org.apiphany.lang.collections.Maps;
 import org.apiphany.lang.retry.Retry;
 import org.apiphany.meters.BasicMeters;
@@ -106,6 +107,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 					+ exchangeClient.getClass().getName() + " must return a non-null response even in case of errors.");
 			response = apiClient.buildErrorResponse(exception, JavaObjects.cast(this), exchangeClient);
 		}
+		apiClient.closeIfEphemeral();
 		return response;
 	}
 
@@ -214,7 +216,9 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	}
 
 	/**
-	 * Sets the URL as the base URL and concatenates the given path segments to form the complete URL.
+	 * Sets the URL by concatenating the {@link #getUrl()} or {@link ApiClient#getBaseUrl()} when the first is empty with
+	 * the given path segments to form the complete URL. The path segments will be encoded if {@link #isUrlEncoded()} is
+	 * true otherwise they will be uses as they are.
 	 * <p>
 	 * If you need a specific base URL for this request use any of the methods that set the URL before calling this one or
 	 * just use {@link #url(String, String...)} or {@link #uri(URI, String...)} otherwise the base URL will be resolved as
@@ -243,7 +247,8 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	}
 
 	/**
-	 * Sets the URL by concatenating the {@link ApiClient#getBaseUrl()} with the given path segments encoding them.
+	 * Sets the URL by concatenating the {@link #getUrl()} or {@link ApiClient#getBaseUrl()} when the first is empty with
+	 * the given path segments encoding them to form the complete URL.
 	 *
 	 * @param pathSegments the path segments to append to the URL that will be encoded
 	 * @return this
@@ -662,6 +667,19 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 
 	/**
 	 * Sets all the information from the given API request except the response type and authentication type.
+	 * <p>
+	 * The response type and authentication type are not set from the given API request because the response type is
+	 * expected to be set on the method that calls one of the {@code retrieve} methods and the authentication type is
+	 * expected to be set by the user or internally by the exchange client if not set by the user. This method is useful
+	 * when you want to reuse an API request as a template for another request and you want to change only the response type
+	 * or authentication type or both on the new request.
+	 * <p>
+	 * Fields not set from the given API request:
+	 * <ul>
+	 * <li>{@code classResponseType}</li>
+	 * <li>{@code genericResponseType}</li>
+	 * <li>{@code authenticationType}</li>
+	 * </ul>
 	 *
 	 * @param <T> body type
 	 * @param apiRequest API request object
@@ -704,6 +722,16 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 			throw new IllegalArgumentException("The underlying exchange client cannot be cast to: " + exchangeClientClass);
 		}
 		return JavaObjects.cast(exchangeClient);
+	}
+
+	/**
+	 * Returns the underlying API client.
+	 *
+	 * @return the underlying API client
+	 */
+	@Ignored
+	public ApiClient getApiClient() {
+		return apiClient;
 	}
 
 	/**

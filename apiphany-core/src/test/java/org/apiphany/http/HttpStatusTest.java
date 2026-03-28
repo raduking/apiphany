@@ -1,13 +1,16 @@
 package org.apiphany.http;
 
+import static org.apiphany.test.Assertions.assertDefaultConstructorThrows;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.morphix.reflection.Constructors;
 
 /**
  * Test class for {@link HttpStatus}.
@@ -130,5 +133,11 @@ class HttpStatusTest {
 		HttpStatus.Type result = HttpStatus.Type.fromCode(status.getCode());
 
 		assertThat(result, equalTo(status.type()));
+	}
+
+	@Test
+	void shouldThrowExceptionOnCallingValueConstructor() {
+		UnsupportedOperationException e = assertDefaultConstructorThrows(HttpMethod.Value.class);
+		assertThat(e.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
 	}
 }

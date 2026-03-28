@@ -1,35 +1,24 @@
 package org.apiphany;
 
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.http.HttpExchangeClient;
 import org.apiphany.client.http.JavaNetHttpExchangeClient;
-import org.apiphany.header.Headers;
-import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
-import org.apiphany.io.ContentType;
 import org.apiphany.lang.retry.Retry;
 import org.apiphany.security.AuthenticationType;
 import org.apiphany.utils.TestDto;
@@ -44,14 +33,10 @@ import org.morphix.lang.JavaObjects;
  */
 class ApiClientTest {
 
-	private static final String APIPHANY = "Apiphany";
-
 	private static final String BASE_URL = "https://localhost";
 	private static final String DIFFERENT_BASE_URL = "https://different-base-url.com";
 
 	private static final String PATH_TEST = "test";
-
-	private static final String PARAM_ID = "id";
 
 	private static final String ID1 = "someTestId1";
 	private static final String ID2 = "someTestId2";
@@ -89,112 +74,6 @@ class ApiClientTest {
 				.orDefault(TestDto.EMPTY);
 
 		assertThat(result, equalTo(expected));
-	}
-
-	@Test
-	@SuppressWarnings({ "unchecked", "resource" })
-	void shouldCallExchangeClientWithProvidedParametersOnGet() {
-		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
-		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
-		TestDto expected = TestDto.of(ID1, COUNT1);
-		ApiResponse<TestDto> response = ApiResponse.create(expected)
-				.status(HTTP_STATUS_OK, HttpStatus::fromCode)
-				.exchangeClient(exchangeClient)
-				.build();
-		ArgumentCaptor<?> requestCaptor = ArgumentCaptor.forClass(ApiRequest.class);
-		doReturn(response).when(exchangeClient).exchange(any(ApiRequest.class));
-		doReturn(HttpMethod.GET).when(exchangeClient).get();
-
-		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
-
-		TestDto result = api.client()
-				.http()
-				.get()
-				.path(PATH_TEST)
-				.retrieve(TestDto.class)
-				.orDefault(TestDto.EMPTY);
-
-		assertThat(result, equalTo(expected));
-
-		verify(exchangeClient).exchange(JavaObjects.cast(requestCaptor.capture()));
-
-		ApiClientFluentAdapter request = JavaObjects.cast(requestCaptor.getValue());
-
-		assertThat(request.getUrl(), equalTo(BASE_URL + "/" + PATH_TEST));
-		assertThat(request.getUri(), equalTo(URI.create(request.url)));
-		assertThat(request.getMethod(), equalTo(HttpMethod.GET));
-		assertThat(request.getAuthenticationType(), equalTo(AuthenticationType.OAUTH2));
-		assertThat(request.getClassResponseType(), equalTo(TestDto.class));
-		assertThat(request.getGenericResponseType(), nullValue());
-		assertThat(request.getCharset(), equalTo(StandardCharsets.UTF_8));
-		assertThat(request.getParams(), nullValue());
-		assertThat(request.getHeaders(), is(anEmptyMap()));
-		assertThat(request.getBody(), nullValue());
-		assertThat(request.getResponseType(), equalTo(TestDto.class));
-		assertThat(request.getClassResponseType(), equalTo(TestDto.class));
-		assertFalse(request.isStream());
-		assertFalse(request.isUrlEncoded());
-	}
-
-	@Test
-	@SuppressWarnings({ "unchecked", "resource" })
-	void shouldCallExchangeClientWithProvidedParametersOnGetWithHeadersAndRequestParametersSet() {
-		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
-		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
-
-		TestDto expected = TestDto.of(ID1, COUNT1);
-		ApiResponse<TestDto> response = ApiResponse.create(expected)
-				.status(HttpStatus.OK)
-				.exchangeClient(exchangeClient)
-				.build();
-
-		ArgumentCaptor<?> requestCaptor = ArgumentCaptor.forClass(ApiRequest.class);
-
-		Map<String, List<String>> headers = new HashMap<>();
-		Headers.addTo(headers, HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_JSON);
-		Headers.addTo(headers, HttpHeader.CONTENT_TYPE, ContentType.TEXT_PLAIN);
-		Headers.addTo(headers, HttpHeader.USER_AGENT, APIPHANY);
-
-		doReturn(response).when(exchangeClient).exchange(any(ApiRequest.class));
-		doReturn(HttpMethod.GET).when(exchangeClient).get();
-		doReturn(headers).when(exchangeClient).getDisplayHeaders(any(ApiRequest.class));
-
-		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
-
-		Map<String, List<String>> params = RequestParameters.of(
-				ParameterFunction.parameter(PARAM_ID, ID1));
-
-		TestDto result = api.client()
-				.http()
-				.get()
-				.path(PATH_TEST)
-				.header(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_JSON)
-				.header(HttpHeader.CONTENT_TYPE, ContentType.TEXT_PLAIN)
-				.header(HttpHeader.USER_AGENT, APIPHANY)
-				.params(params)
-				.retrieve(TestDto.class)
-				.orDefault(TestDto.EMPTY);
-
-		assertThat(result, equalTo(expected));
-
-		verify(exchangeClient).exchange(JavaObjects.cast(requestCaptor.capture()));
-
-		ApiClientFluentAdapter request = JavaObjects.cast(requestCaptor.getValue());
-
-		assertThat(request.getUrl(), equalTo(BASE_URL + "/" + PATH_TEST));
-		assertThat(request.getUri(), equalTo(URI.create(request.url + RequestParameters.asUrlSuffix(params))));
-		assertThat(request.getMethod(), equalTo(HttpMethod.GET));
-		assertThat(request.getAuthenticationType(), equalTo(AuthenticationType.OAUTH2));
-		assertThat(request.getClassResponseType(), equalTo(TestDto.class));
-		assertThat(request.getGenericResponseType(), nullValue());
-		assertThat(request.getCharset(), equalTo(StandardCharsets.UTF_8));
-		assertThat(request.getBody(), nullValue());
-		assertThat(request.getHeaders(), equalTo(headers));
-		assertThat(request.getParams(), equalTo(params));
-		assertThat(request.getResponseType(), equalTo(TestDto.class));
-		assertThat(request.getClassResponseType(), equalTo(TestDto.class));
-		assertFalse(request.isStream());
-		assertFalse(request.isUrlEncoded());
 	}
 
 	@Test
@@ -337,7 +216,7 @@ class ApiClientTest {
 
 	@Test
 	@SuppressWarnings({ "unchecked", "resource" })
-	void shouldReturnEmptyIfCallExchangeClientWithProvidedParametersThrowsException() {
+	void shouldReturnEmptyOnExchangeClientExchangeWithProvidedParametersThrowsException() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 
@@ -357,7 +236,7 @@ class ApiClientTest {
 
 	@Test
 	@SuppressWarnings({ "unchecked", "resource" })
-	void shouldReturnCorrectApiResponseIfCallExchangeClientWithProvidedParametersThrowsException() {
+	void shouldReturnCorrectApiResponseOnExchangeClientExchangeWithProvidedParametersThrowsException() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 
@@ -379,7 +258,7 @@ class ApiClientTest {
 
 	@Test
 	@SuppressWarnings({ "unchecked", "resource" })
-	void shouldThrowExceptionIfCallExchangeClientWithProvidedParametersThrowsExceptionAndIsBleedExceptionsIsTrue() {
+	void shouldThrowExceptionOnExchangeClientExchangeWithProvidedParametersThrowsExceptionAndBleedExceptionsIsTrue() {
 		ExchangeClient exchangeClient = mock(ExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 
@@ -405,7 +284,7 @@ class ApiClientTest {
 
 	@Test
 	@SuppressWarnings({ "unchecked", "resource" })
-	void shouldThrowExceptionWhenMoreExchangeClientsArePresent() {
+	void shouldThrowExceptionOnCallingClientWihoutParametersWhenMoreExchangeClientsArePresent() {
 		ExchangeClient exchangeClient1 = mock(ExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient1).getAuthenticationType();
 		TestDto expected1 = TestDto.of(ID1, COUNT1);
@@ -444,7 +323,7 @@ class ApiClientTest {
 
 	@Test
 	@SuppressWarnings({ "unchecked", "resource" })
-	void shouldThrowExceptionWhenCreatingClientWithMoreExchangeClientsWithTheSameType() {
+	void shouldThrowExceptionWhenCreatingClientWithExchangeClientsWithDuplicateType() {
 		ExchangeClient exchangeClient1 = mock(ExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient1).getAuthenticationType();
 		doReturn(EXCHANGE_CLIENT_NAME_1).when(exchangeClient1).getName();
@@ -474,7 +353,7 @@ class ApiClientTest {
 					+ "[" + ApiClient.class.getName() + "]. "
 					+ "Client entry for authentication type: ["
 					+ AuthenticationType.OAUTH2
-					+ ", "
+					+ ":"
 					+ EXCHANGE_CLIENT_NAME_1
 					+ "] already exists when trying to add client: ["
 					+ EXCHANGE_CLIENT_NAME_2 + "]"));

@@ -4,9 +4,11 @@ Simple fluent style Java API to make API calls.
 
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.raduking/apiphany)](https://central.sonatype.com/artifact/io.github.raduking/apiphany)
 [![GitHub Release](https://img.shields.io/github/v/release/raduking/apiphany)](https://github.com/raduking/apiphany/releases)
-[![License](https://img.shields.io/github/license/raduking/apiphany)](https://opensource.org/license/apache-2-0)
+[![Release Date](https://img.shields.io/github/release-date/raduking/apiphany)](https://github.com/raduking/apiphany/releases)  
 [![Java](https://img.shields.io/badge/Java-21+-blue)](https://www.oracle.com/java/technologies/downloads/#java21)
+[![License](https://img.shields.io/github/license/raduking/apiphany)](https://opensource.org/license/apache-2-0)
 [![PRs](https://img.shields.io/github/issues-pr/raduking/apiphany)](https://github.com/raduking/apiphany/pulls)
+[![Javadoc](https://javadoc.io/badge2/io.github.raduking/apiphany/javadoc.svg)](https://javadoc.io/doc/io.github.raduking/apiphany)
 
 #### Status
 
@@ -27,13 +29,14 @@ Simple fluent style Java API to make API calls.
 
 ### Why Apiphany?
 
-- Because you want everything explicit, everything deterministic, request/response coupled (as it should be). 
+- Because you want everything explicit, everything deterministic, request/response coupled (as it should be).
+- Because you want no hidden behavior, hidden headers, hidden parameters, etc.
 - Because you want to change the underlying HTTP client by changing one line in your client and one dependency.
 - Because you want to be able to use a fluent style API to make API calls in a very easy way.
 - Because you want to be able to mock up API calls without using external HTTP libraries.
 
-Currently, it wraps over the `java.net.http` library but you can easily extend it to use other HTTP clients by implementing the 
-`HttpExchangeClient` interface or by extending the `AbstractHttpExchangeClient`.
+Currently, it wraps over the `java.net.http` library but you can easily extend it to use other HTTP clients/libraries 
+by implementing the `HttpExchangeClient` interface or by extending the `AbstractHttpExchangeClient`.
 
 Support is being developed for other HTTP clients like Apache HttpClient, OkHttp, Spring RestTemplate, etc.
 
@@ -43,7 +46,7 @@ Support is being developed for other HTTP clients like Apache HttpClient, OkHttp
 
 ### Releases
 
-Current release `1.1.8`
+Current release `1.1.9`
 
 ### Getting Started
 
@@ -53,7 +56,7 @@ Maven: add this dependency to your `pom.xml`
 <dependency>
     <groupId>io.github.raduking</groupId>
     <artifactId>apiphany</artifactId>
-    <version>1.1.8</version>
+    <version>1.1.9</version>
 </dependency>
 ```
 

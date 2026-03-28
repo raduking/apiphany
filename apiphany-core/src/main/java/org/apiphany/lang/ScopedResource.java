@@ -12,6 +12,26 @@ import java.util.function.Consumer;
  * <p>
  * Instances do not change management state; operations that adjust management return new {@link ScopedResource}
  * instances.
+ * <p>
+ * Ownership is decided when the {@code ScopedResource} is created. Code that receives a {@code ScopedResource} should
+ * not try to determine ownership itself and must always call {@link #closeIfManaged()} when the resource is no longer
+ * needed.
+ *
+ * <b>Usage Pattern</b>
+ *
+ * <pre>
+ * ScopedResource&lt;Client&gt; scoped = ...;
+ * try {
+ *     Resource resource = scoped.unwrap();
+ *     // use resource
+ * } finally {
+ *     scoped.closeIfManaged();
+ * }
+ * </pre>
+ *
+ * <p>
+ * This pattern ensures that resources created internally are properly closed, while externally provided resources are
+ * never accidentally closed.
  *
  * @param <T> the type of the {@link AutoCloseable} resource being wrapped
  *
@@ -139,6 +159,18 @@ public class ScopedResource<T extends AutoCloseable> {
 	}
 
 	/**
+	 * Creates a new managed ScopedResource instance. This is an alias for {@link #managed(AutoCloseable)}.
+	 *
+	 * @param <T> the type of the resource
+	 *
+	 * @param resource the resource to wrap
+	 * @return a new managed ScopedResource instance
+	 */
+	public static <T extends AutoCloseable> ScopedResource<T> owned(final T resource) {
+		return managed(resource);
+	}
+
+	/**
 	 * Creates a new unmanaged ScopedResource instance.
 	 *
 	 * @param <T> the type of the resource
@@ -148,6 +180,18 @@ public class ScopedResource<T extends AutoCloseable> {
 	 */
 	public static <T extends AutoCloseable> ScopedResource<T> unmanaged(final T resource) {
 		return of(resource, Lifecycle.UNMANAGED);
+	}
+
+	/**
+	 * Creates a new unmanaged ScopedResource instance. This is an alias for {@link #unmanaged(AutoCloseable)}.
+	 *
+	 * @param <T> the type of the resource
+	 *
+	 * @param resource the resource to wrap
+	 * @return a new unmanaged ScopedResource instance
+	 */
+	public static <T extends AutoCloseable> ScopedResource<T> external(final T resource) {
+		return unmanaged(resource);
 	}
 
 	/**
@@ -176,5 +220,23 @@ public class ScopedResource<T extends AutoCloseable> {
 		return rawCheckedResource == resource.unwrap()
 				? ScopedResource.unmanaged(rawCheckedResource)
 				: checkedResource;
+	}
+
+	/**
+	 * Safely closes the given resource, handling any exceptions using the provided exception handler. If the resource is
+	 * null, this method does nothing.
+	 *
+	 * @param resource the resource to close
+	 * @param exceptionHandler a consumer to handle exceptions that may occur during closing
+	 */
+	public static void safeClose(final AutoCloseable resource, final Consumer<? super Exception> exceptionHandler) {
+		if (null == resource) {
+			return;
+		}
+		try {
+			resource.close();
+		} catch (Exception e) {
+			exceptionHandler.accept(e);
+		}
 	}
 }

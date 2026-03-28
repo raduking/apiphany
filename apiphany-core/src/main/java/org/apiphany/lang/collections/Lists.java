@@ -191,4 +191,34 @@ public interface Lists {
 		}
 		return result;
 	}
+
+	/**
+	 * Partitions the given list into sublists of the specified size. The last sublist may be smaller if the total number of
+	 * elements is not divisible by {@code size}. If the input list is {@code null}, empty, or {@code size <= 0}, an empty
+	 * list is returned.
+	 * <p>
+	 * The returned partitions are independent immutable lists and are not backed by the original list. Changes to the input
+	 * list after calling this method do not affect the returned partitions.
+	 * <p>
+	 * Time complexity is {@code O(n)} where {@code n} is the size of the input list.
+	 *
+	 * @param <T> element type
+	 *
+	 * @param list the list to partition
+	 * @param size the maximum size of each sublist
+	 * @return a list of sublists, where each sublist has at most 'size' elements
+	 */
+	static <T> List<List<T>> partition(final List<T> list, final int size) {
+		if (isEmpty(list) || size <= 0) {
+			return Collections.emptyList();
+		}
+		int partitions = (list.size() + size - 1) / size;
+		List<List<T>> result = new ArrayList<>(partitions);
+		int n = list.size();
+		for (int i = 0; i < n; i += size) {
+			int end = Math.min(i + size, n);
+			result.add(List.copyOf(list.subList(i, end)));
+		}
+		return result;
+	}
 }

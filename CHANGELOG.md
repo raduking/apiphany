@@ -1,5 +1,38 @@
 ## Release Notes
 
+`1.1.9`
+
+- Added `Iterables.partition` to partition a given `Iterable` into batches of a given size.
+- Added `Lists.partition` to partition a given `List` into `List` batches of a given size.
+- Added missing `equals` and `hashCode` to `Holder` class.
+- Added `HttpException.getResponseBody` to return the response body if available.
+- Added more `HttpException` constructors to accommodate response body.
+- Added `HttpException.Builder` to build HTTP exceptions easier.
+- Added `HttpException.exceptionMessage` method that decides the exception message based on message, response body and cause.
+- Added `ClientLifecycle` enum to describe a clients' life cycle.
+- Added `Api` interface for ephemeral API clients, this interface is intended to be used when clients are short lived.
+- Added `ScopedResource.safeClose` to safely close an `AutoCloseable`.
+- Added `HttpMethod.Value` name space class with all HTTP method string constants.
+- Added `ScopedResource.owned` as an alias for `ScopedResource.managed`;
+- Added `ScopedResource.external` as an alias for `ScopedResource.unmanaged`;
+- Upgraded `mockito-core` to `5.23.0`.
+- Upgraded `logback-core` to `1.5.32`.
+- Upgraded `spring-security-oauth2-client` to `7.0.4`.
+- Upgraded `testcontainers` to `2.0.4`.
+- Upgraded `nimbus-jose-jwt` to `10.8`.
+- Upgraded `oauth2-oidc-sdk` to `11.35`.
+- Upgraded `pitest-maven` to `1.23.0`.
+- Upgraded `maven-compiler-plugin` to `3.15.0`.
+- Upgraded `maven-surefire-plugin` to `3.5.5`.
+- Upgraded `maven-failsafe-plugin` to `3.5.5`.
+- Upgraded `maven-resources-plugin` to `3.5.0`.
+- Upgraded `properties-maven-plugin` to `1.3.0`.
+- Upgraded `maven-source-plugin` to `3.4.0`.
+- Upgraded `maven-javadoc-plugin` to `3.12.0`.
+- Upgraded `maven-enforcer-plugin` to `3.6.2`.
+
+---
+
 `1.1.8`
 
 - Allowed on error handlers to be `null` on `Strings.fromFile` and `Bytes.fromFile`.
