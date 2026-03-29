@@ -1,5 +1,17 @@
 ## Release Notes
 
+`1.2.0`
+
+- Removed `ScopedResource` since it's already present in `org.morphix.lang.resource`.
+- Removed `Lifecycle` since it's already present in `org.morphix.lang.resource`.
+- Removed `org.apiphany.lang.accumulator` since it's already present int `org.morphix.lang.accumulator`.
+- Removed `org.apiphany.lang.collections` since it's already present int `org.morphix.lang.collections`.
+- Removed `org.apiphany.lang.retry` since it's already present int `org.morphix.lang.retry`.
+- Removed `Temporals` since it's already present in `org.morphix.lang`.
+- Upgraded `morphix-all` to `1.0.27`.
+
+---
+
 `1.1.9`
 
 - Added `Iterables.partition` to partition a given `Iterable` into batches of a given size.

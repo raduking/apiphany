@@ -7,8 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.ExchangeClientBuilder;
-import org.apiphany.lang.ScopedResource;
 import org.junit.jupiter.api.Test;
+import org.morphix.lang.resource.ScopedResource;
 
 /**
  * Test class for {@link SecuredExchangeClientBuilder}.

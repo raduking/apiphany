@@ -9,8 +9,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
-import org.apiphany.lang.ScopedResource;
 import org.morphix.lang.function.Consumers;
+import org.morphix.lang.resource.ScopedResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

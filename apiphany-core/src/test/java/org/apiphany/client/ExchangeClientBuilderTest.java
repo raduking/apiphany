@@ -6,9 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
-import org.apiphany.lang.ScopedResource;
 import org.junit.jupiter.api.Test;
 import org.morphix.lang.Messages;
+import org.morphix.lang.resource.ScopedResource;
 
 /**
  * Test class for {@link ExchangeClientBuilder}.

@@ -8,7 +8,6 @@ import org.apiphany.client.ClientProperties;
 import org.apiphany.client.DecoratingExchangeClient;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.http.HttpAuthScheme;
-import org.apiphany.lang.ScopedResource;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationTokenProvider;
 import org.apiphany.security.AuthenticationType;
@@ -18,6 +17,7 @@ import org.apiphany.security.oauth2.OAuth2TokenProvider;
 import org.apiphany.security.oauth2.OAuth2TokenProviderSpec;
 import org.apiphany.security.token.client.TokenHttpExchangeClient;
 import org.morphix.lang.Messages;
+import org.morphix.lang.resource.ScopedResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

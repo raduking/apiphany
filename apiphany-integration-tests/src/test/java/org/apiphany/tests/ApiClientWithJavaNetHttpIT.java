@@ -49,15 +49,15 @@ import org.apiphany.http.HttpHeader;
 import org.apiphany.io.InputStreamSupplier;
 import org.apiphany.io.deflate.Deflate;
 import org.apiphany.io.gzip.GZip;
-import org.apiphany.lang.ScopedResource;
 import org.apiphany.lang.Strings;
-import org.apiphany.lang.retry.Retry;
-import org.apiphany.lang.retry.WaitCounter;
 import org.apiphany.security.AuthenticationType;
 import org.apiphany.test.io.OneShotInputStream;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.morphix.lang.resource.ScopedResource;
+import org.morphix.lang.retry.Retry;
+import org.morphix.lang.retry.WaitCounter;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;

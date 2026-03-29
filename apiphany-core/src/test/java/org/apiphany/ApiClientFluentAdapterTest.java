@@ -27,8 +27,6 @@ import org.apiphany.client.ExchangeClient;
 import org.apiphany.header.Header;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.lang.Strings;
-import org.apiphany.lang.retry.Retry;
-import org.apiphany.lang.retry.WaitCounter;
 import org.apiphany.meters.BasicMeters;
 import org.apiphany.meters.MeterCounter;
 import org.apiphany.openapi.MultiValueStrategy;
@@ -39,6 +37,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.morphix.lang.retry.Retry;
+import org.morphix.lang.retry.WaitCounter;
 import org.morphix.reflection.GenericClass;
 
 import io.micrometer.core.instrument.Counter;

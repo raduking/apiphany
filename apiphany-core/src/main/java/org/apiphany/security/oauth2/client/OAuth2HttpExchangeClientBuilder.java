@@ -2,7 +2,7 @@ package org.apiphany.security.oauth2.client;
 
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.ExchangeClientBuilder;
-import org.apiphany.lang.ScopedResource;
+import org.morphix.lang.resource.ScopedResource;
 
 /**
  * OAuth2 exchange clients builder.

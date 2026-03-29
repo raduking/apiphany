@@ -3,7 +3,7 @@ package org.apiphany.client;
 import java.util.Objects;
 
 import org.apiphany.ApiRequest;
-import org.apiphany.lang.ScopedResource;
+import org.morphix.lang.resource.ScopedResource;
 
 /**
  * Base class for HTTP exchange clients that decorate another exchange client.

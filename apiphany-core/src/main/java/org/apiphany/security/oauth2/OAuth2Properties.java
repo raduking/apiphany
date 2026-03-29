@@ -3,7 +3,7 @@ package org.apiphany.security.oauth2;
 import java.util.Map;
 
 import org.apiphany.json.JsonBuilder;
-import org.apiphany.lang.collections.Maps;
+import org.morphix.lang.collections.Maps;
 
 /**
  * Configuration properties for OAuth2 authentication. Contains provider details and client registration information.

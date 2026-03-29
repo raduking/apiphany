@@ -8,8 +8,8 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import org.apiphany.lang.Require;
-import org.apiphany.lang.collections.Lists;
 import org.apiphany.openapi.MultiValueStrategy;
+import org.morphix.lang.collections.Lists;
 
 /**
  * Functional interface for defining how parameters are inserted into a map. This interface is used to build parameter

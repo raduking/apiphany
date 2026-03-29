@@ -19,7 +19,6 @@ import org.apiphany.client.ExchangeClientBuilder;
 import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.http.HttpException;
 import org.apiphany.json.JsonBuilder;
-import org.apiphany.lang.ScopedResource;
 import org.apiphany.lang.Strings;
 import org.apiphany.security.AuthenticationException;
 import org.apiphany.security.AuthenticationToken;
@@ -37,6 +36,7 @@ import org.apiphany.security.oauth2.server.JavaSunHttpServer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.morphix.lang.JavaObjects;
+import org.morphix.lang.resource.ScopedResource;
 
 /**
  * Test class for {@link ApiClient} with {@link OAuth2HttpExchangeClient}.

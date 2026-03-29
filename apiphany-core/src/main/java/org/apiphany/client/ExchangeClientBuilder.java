@@ -7,11 +7,11 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import org.apiphany.client.http.JavaNetHttpExchangeClient;
-import org.apiphany.lang.Lifecycle;
 import org.apiphany.lang.Require;
-import org.apiphany.lang.ScopedResource;
 import org.apiphany.security.client.SecuredExchangeClientBuilder;
 import org.morphix.lang.function.Consumers;
+import org.morphix.lang.resource.Lifecycle;
+import org.morphix.lang.resource.ScopedResource;
 import org.morphix.reflection.Constructors;
 import org.morphix.reflection.Methods;
 

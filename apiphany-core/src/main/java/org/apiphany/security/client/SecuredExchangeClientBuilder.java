@@ -4,9 +4,9 @@ import java.util.function.Consumer;
 
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.ExchangeClientBuilder;
-import org.apiphany.lang.ScopedResource;
 import org.apiphany.security.oauth2.client.OAuth2HttpExchangeClientBuilder;
 import org.morphix.lang.function.Consumers;
+import org.morphix.lang.resource.ScopedResource;
 
 /**
  * Secured exchange client builder.

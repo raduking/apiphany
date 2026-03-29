@@ -26,12 +26,12 @@ import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
 import org.apiphany.io.ContentType;
-import org.apiphany.lang.ScopedResource;
 import org.apiphany.security.AuthenticationType;
 import org.apiphany.utils.TestDto;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.morphix.lang.JavaObjects;
+import org.morphix.lang.resource.ScopedResource;
 
 /**
  * Test class for {@link ApiClient} meters.

@@ -5,8 +5,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Supplier;
 
-import org.apiphany.lang.ScopedResource;
 import org.morphix.lang.Nullables;
+import org.morphix.lang.resource.ScopedResource;
 
 /**
  * OAuth2 token provider specification. Holds the configuration needed to create an OAuth2 token provider.

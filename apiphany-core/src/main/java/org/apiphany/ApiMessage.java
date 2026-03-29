@@ -9,7 +9,7 @@ import org.apiphany.header.Headers;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.annotation.FieldName;
 import org.apiphany.lang.annotation.Ignored;
-import org.apiphany.lang.collections.Maps;
+import org.morphix.lang.collections.Maps;
 
 /**
  * Represents a message in an API context, containing a body and a set of headers. This class is generic, allowing the

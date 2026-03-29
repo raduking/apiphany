@@ -7,8 +7,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import org.apiphany.ApiRequest;
-import org.apiphany.lang.ScopedResource;
 import org.junit.jupiter.api.Test;
+import org.morphix.lang.resource.ScopedResource;
 
 /**
  * Test class for {@link DecoratingExchangeClient}.
