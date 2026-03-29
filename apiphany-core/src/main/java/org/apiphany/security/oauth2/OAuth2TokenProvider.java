@@ -9,14 +9,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
-import org.apiphany.lang.ScopedResource;
-import org.apiphany.lang.retry.Retry;
-import org.apiphany.lang.retry.WaitCounter;
 import org.apiphany.security.AuthenticationException;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationTokenProvider;
 import org.morphix.lang.Comparables;
 import org.morphix.lang.Nullables;
+import org.morphix.lang.resource.ScopedResource;
+import org.morphix.lang.retry.Retry;
+import org.morphix.lang.retry.WaitCounter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

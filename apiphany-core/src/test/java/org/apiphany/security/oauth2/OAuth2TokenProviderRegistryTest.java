@@ -23,11 +23,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.BiConsumer;
 
-import org.apiphany.lang.ScopedResource;
 import org.apiphany.lang.Strings;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationTokenProvider;
 import org.junit.jupiter.api.Test;
+import org.morphix.lang.resource.ScopedResource;
 
 /**
  * Test class for {@link OAuth2TokenProviderRegistry}.

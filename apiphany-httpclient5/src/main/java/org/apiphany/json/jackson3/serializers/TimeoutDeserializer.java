@@ -5,7 +5,7 @@ import java.time.Duration;
 
 import org.apache.hc.core5.util.Timeout;
 import org.apiphany.lang.Strings;
-import org.apiphany.lang.Temporals;
+import org.morphix.lang.Temporals;
 
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonParser;

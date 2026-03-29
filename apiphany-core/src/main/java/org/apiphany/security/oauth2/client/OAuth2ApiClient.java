@@ -18,7 +18,6 @@ import org.apiphany.http.HttpAuthScheme;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.io.ContentType;
 import org.apiphany.json.JsonBuilder;
-import org.apiphany.lang.ScopedResource;
 import org.apiphany.lang.Strings;
 import org.apiphany.security.AuthenticationException;
 import org.apiphany.security.AuthenticationToken;
@@ -31,6 +30,7 @@ import org.apiphany.security.oauth2.ClientAuthenticationMethod;
 import org.apiphany.security.oauth2.OAuth2ClientRegistration;
 import org.apiphany.security.oauth2.OAuth2Parameter;
 import org.apiphany.security.oauth2.OAuth2ProviderDetails;
+import org.morphix.lang.resource.ScopedResource;
 
 /**
  * Specialized {@link ApiClient} for OAuth2 authentication flows. Handles token acquisition and management for OAuth2

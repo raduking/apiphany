@@ -19,12 +19,12 @@ import org.apiphany.client.http.HttpExchangeClient;
 import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
-import org.apiphany.lang.retry.Retry;
 import org.apiphany.security.AuthenticationType;
 import org.apiphany.utils.TestDto;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.morphix.lang.JavaObjects;
+import org.morphix.lang.retry.Retry;
 
 /**
  * Test class for {@link ApiClient}.

@@ -11,9 +11,9 @@ import java.util.function.Supplier;
 
 import org.apiphany.io.deflate.Deflate;
 import org.apiphany.io.gzip.GZip;
-import org.apiphany.lang.collections.Lists;
 import org.morphix.lang.Enums;
 import org.morphix.lang.Nullables;
+import org.morphix.lang.collections.Lists;
 import org.morphix.lang.function.ThrowingFunction;
 import org.morphix.lang.function.ToStringFunction;
 import org.morphix.reflection.Constructors;

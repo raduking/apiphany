@@ -18,7 +18,6 @@ import org.apiphany.client.ClientProperties;
 import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.http.HttpStatus;
 import org.apiphany.json.JsonBuilder;
-import org.apiphany.lang.ScopedResource;
 import org.apiphany.lang.Strings;
 import org.apiphany.security.AuthenticationException;
 import org.apiphany.security.AuthenticationToken;
@@ -31,6 +30,7 @@ import org.apiphany.security.oauth2.OAuth2TokenProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.morphix.lang.JavaObjects;
+import org.morphix.lang.resource.ScopedResource;
 import org.morphix.reflection.Fields;
 
 /**

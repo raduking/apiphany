@@ -7,7 +7,7 @@ import java.time.Duration;
 
 import org.apache.hc.core5.util.Timeout;
 import org.apiphany.lang.Strings;
-import org.apiphany.lang.Temporals;
+import org.morphix.lang.Temporals;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;

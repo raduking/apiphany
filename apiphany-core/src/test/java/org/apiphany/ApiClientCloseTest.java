@@ -15,10 +15,10 @@ import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.ExchangeClientBuilder;
 import org.apiphany.client.http.HttpExchangeClient;
 import org.apiphany.lang.Holder;
-import org.apiphany.lang.ScopedResource;
 import org.apiphany.security.AuthenticationType;
 import org.junit.jupiter.api.Test;
 import org.morphix.lang.JavaObjects;
+import org.morphix.lang.resource.ScopedResource;
 
 /**
  * Test class for {@link ApiClient} close behavior.

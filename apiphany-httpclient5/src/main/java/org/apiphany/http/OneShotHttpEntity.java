@@ -8,8 +8,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.io.entity.AbstractHttpEntity;
-import org.apiphany.lang.ScopedResource;
 import org.morphix.lang.function.ThrowingConsumer;
+import org.morphix.lang.resource.ScopedResource;
 
 /**
  * An {@link AbstractHttpEntity} that wraps a non-repeatable {@link InputStream}. This entity is designed to be consumed

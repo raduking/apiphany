@@ -3,9 +3,9 @@ package org.apiphany;
 import java.time.Duration;
 
 import org.apiphany.lang.Strings;
-import org.apiphany.lang.Temporals;
 import org.apiphany.lang.function.LoggingFunction;
 import org.morphix.lang.Nullables;
+import org.morphix.lang.Temporals;
 import org.morphix.reflection.Constructors;
 
 /**

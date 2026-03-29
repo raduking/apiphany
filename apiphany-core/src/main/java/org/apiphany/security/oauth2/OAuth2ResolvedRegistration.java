@@ -3,8 +3,8 @@ package org.apiphany.security.oauth2;
 import java.util.Set;
 
 import org.apiphany.lang.Strings;
-import org.apiphany.lang.collections.Maps;
 import org.morphix.lang.Nullables;
+import org.morphix.lang.collections.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

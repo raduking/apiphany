@@ -34,10 +34,10 @@ import org.apiphany.http.HttpStatus;
 import org.apiphany.io.InputStreamSupplier;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
-import org.apiphany.lang.collections.Lists;
-import org.apiphany.lang.collections.Maps;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Nullables;
+import org.morphix.lang.collections.Lists;
+import org.morphix.lang.collections.Maps;
 
 /**
  * HTTP exchange client based on the default Java {@link HttpClient}. The default HTTP version used is HTTP/1.1.

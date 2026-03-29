@@ -3,7 +3,7 @@ package org.apiphany;
 import java.lang.reflect.Constructor;
 import java.util.List;
 
-import org.apiphany.lang.collections.Lists;
+import org.morphix.lang.collections.Lists;
 import org.morphix.reflection.Constructors;
 
 /**

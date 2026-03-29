@@ -31,7 +31,6 @@ import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
 import org.apiphany.io.ContentType;
 import org.apiphany.json.JsonBuilder;
-import org.apiphany.lang.ScopedResource;
 import org.apiphany.lang.Strings;
 import org.apiphany.security.AuthenticationException;
 import org.apiphany.security.AuthenticationToken;
@@ -49,6 +48,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.morphix.lang.resource.ScopedResource;
 
 /**
  * Test class for {@link OAuth2ApiClient}.

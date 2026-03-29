@@ -7,7 +7,6 @@ import org.apiphany.client.DecoratingExchangeClient;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.header.HeaderValues;
 import org.apiphany.http.HttpAuthScheme;
-import org.apiphany.lang.ScopedResource;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationTokenProvider;
 import org.apiphany.security.AuthenticationType;
@@ -15,6 +14,7 @@ import org.apiphany.security.AuthorizationHeaderProvider;
 import org.apiphany.security.client.http.AuthorizationHttpExchangeClient;
 import org.apiphany.security.token.TokenProperties;
 import org.morphix.lang.Nullables;
+import org.morphix.lang.resource.ScopedResource;
 
 /**
  * Authorizes all requests with the provided token and authorization scheme in the client properties. Base class for all
