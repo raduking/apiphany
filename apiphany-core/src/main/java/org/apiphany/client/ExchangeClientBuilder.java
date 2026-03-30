@@ -97,8 +97,10 @@ public class ExchangeClientBuilder {
 				scopedResource = ScopedResource.managed(client);
 			}
 		} catch (Exception e) {
-			scopedResource.closeIfManaged(closeException ->
-					LOGGER.warn("Failed to close exchange client after exception while building the client", closeException));
+			String exchangeClientName = scopedResource.unwrap().getName();
+			scopedResource.closeIfManaged(
+					closeException -> LOGGER.warn("Failed to close exchange client {} on building error",
+							exchangeClientName, closeException));
 			Unchecked.Undeclared.reThrow(e);
 		}
 		return scopedResource;
