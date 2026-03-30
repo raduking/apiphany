@@ -9,11 +9,14 @@ import java.util.function.Consumer;
 import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.lang.Require;
 import org.apiphany.security.client.SecuredExchangeClientBuilder;
+import org.morphix.lang.Unchecked;
 import org.morphix.lang.function.Consumers;
 import org.morphix.lang.resource.Lifecycle;
 import org.morphix.lang.resource.ScopedResource;
 import org.morphix.reflection.Constructors;
 import org.morphix.reflection.Methods;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Exchange client builder.
@@ -21,6 +24,11 @@ import org.morphix.reflection.Methods;
  * @author Radu Sebastian LAZIN
  */
 public class ExchangeClientBuilder {
+
+	/**
+	 * The logger object.
+	 */
+	private static final Logger LOGGER = LoggerFactory.getLogger(ExchangeClientBuilder.class);
 
 	/**
 	 * Delegate exchange client builder. This is used when decorating builders and has priority over the other fields.
@@ -83,9 +91,15 @@ public class ExchangeClientBuilder {
 		ExchangeClient client = managed ? build(exchangeClientClass) : exchangeClient;
 
 		ScopedResource<ExchangeClient> scopedResource = ScopedResource.of(client, Lifecycle.from(managed));
-		for (Class<? extends DecoratingExchangeClient> decoratorClientClass : decoratorClientClasses) {
-			client = build(scopedResource, decoratorClientClass);
-			scopedResource = ScopedResource.managed(client);
+		try {
+			for (Class<? extends DecoratingExchangeClient> decoratorClientClass : decoratorClientClasses) {
+				client = build(scopedResource, decoratorClientClass);
+				scopedResource = ScopedResource.managed(client);
+			}
+		} catch (Exception e) {
+			scopedResource.closeIfManaged(closeException ->
+					LOGGER.warn("Failed to close exchange client after exception while building the client", closeException));
+			Unchecked.Undeclared.reThrow(e);
 		}
 		return scopedResource;
 	}

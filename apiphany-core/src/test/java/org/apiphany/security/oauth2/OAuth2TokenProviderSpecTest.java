@@ -3,6 +3,7 @@ package org.apiphany.security.oauth2;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Instant;
 import java.util.concurrent.Executors;
@@ -19,13 +20,17 @@ import org.junit.jupiter.api.Test;
 class OAuth2TokenProviderSpecTest {
 
 	@Test
-	void shouldCreateWithDefaults() {
+	@SuppressWarnings("resource")
+	void shouldCreateWithDefaults() throws Exception {
 		OAuth2TokenProviderSpec config = OAuth2TokenProviderSpec.builder().build();
 
 		assertNotNull(config.getTokenProviderProperties());
 		assertNotNull(config.getTokenRefreshScheduler());
 		assertNotNull(config.getTokenClientSupplier());
 		assertNotNull(config.getDefaultExpirationSupplier());
+		assertTrue(config.getTokenRefreshScheduler().isManaged());
+
+		config.getTokenRefreshScheduler().closeIfManaged();
 	}
 
 	@Test
@@ -56,13 +61,16 @@ class OAuth2TokenProviderSpecTest {
 	}
 
 	@Test
-	void shouldReturnNullAuthenticationTokenProviderWhenUsingDefaultSupplier() {
-		OAuth2TokenProviderSpec config = OAuth2TokenProviderSpec.builder().build();
+	@SuppressWarnings("resource")
+	void shouldReturnNullAuthenticationTokenProviderWhenUsingDefaultSupplier() throws Exception {
+		OAuth2TokenProviderSpec spec = OAuth2TokenProviderSpec.builder().build();
 
-		var tokenProvider = config.getTokenClientSupplier().get(
+		var tokenProvider = spec.getTokenClientSupplier().get(
 				new OAuth2ClientRegistration(),
 				new OAuth2ProviderDetails());
 
 		assertNull(tokenProvider);
+
+		spec.getTokenRefreshScheduler().closeIfManaged();
 	}
 }

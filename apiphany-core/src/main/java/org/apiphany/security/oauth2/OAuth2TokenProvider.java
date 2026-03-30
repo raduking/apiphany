@@ -130,7 +130,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 * Safely closes the token refresh scheduler.
 	 */
 	@SuppressWarnings("resource")
-	private void closeTokenRefreshScheduler() {
+	private void closeTokenRefreshScheduler() throws Exception{
 		ScheduledExecutorService scheduler = tokenRefreshScheduler.unwrap();
 		boolean cancelled = null == scheduledFuture;
 		if (!cancelled) {
@@ -138,7 +138,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 			cancelled = retry.until(() -> scheduledFuture.cancel(false), Boolean::booleanValue);
 		}
 		if (cancelled) {
-			scheduler.close();
+			tokenRefreshScheduler.closeIfManaged();
 		} else {
 			List<Runnable> runningTasks = scheduler.shutdownNow();
 			LOGGER.warn("Still running tasks count: {}", runningTasks.size());

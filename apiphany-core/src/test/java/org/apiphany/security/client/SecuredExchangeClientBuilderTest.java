@@ -46,7 +46,7 @@ class SecuredExchangeClientBuilderTest {
 	}
 
 	@Test
-	void shouldBuildExchangeClientWithOAuth2Security() {
+	void shouldBuildExchangeClientWithOAuth2Security() throws Exception {
 		ExchangeClientBuilder builder = ExchangeClientBuilder.create()
 				.client(DummyExchangeClient.class)
 				.securedWith()
@@ -54,7 +54,11 @@ class SecuredExchangeClientBuilderTest {
 
 		ScopedResource<ExchangeClient> exchangeClient = builder.build();
 
-		assertNotNull(exchangeClient);
+		try {
+			assertNotNull(exchangeClient);
+		} finally {
+			exchangeClient.close();
+		}
 	}
 
 	@Test

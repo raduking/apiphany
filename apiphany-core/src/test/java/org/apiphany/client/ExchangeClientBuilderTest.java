@@ -187,7 +187,7 @@ class ExchangeClientBuilderTest {
 	}
 
 	@Test
-	void shouldThroweExceptionWhenDecoratingWithInvalidDecoratorAndFirstClientIsManaged() {
+	void shouldThrowExceptionWhenDecoratingWithInvalidDecoratorAndFirstClientIsManaged() {
 		ExchangeClientBuilder builder = ExchangeClientBuilder.create()
 				.client(DummyExchangeClient.class)
 				.decoratedWith(InvalidDecoratingExchangeClient.class);
