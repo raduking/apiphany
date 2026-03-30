@@ -118,13 +118,14 @@ class OAuth2HttpExchangeClientBuilderTest {
 	@Test
 	@SuppressWarnings("resource")
 	void shouldBuildDisabledOAuth2HttpExchangeClientWithTheGivenTokenClientWhenOAuth2IsNotConfigured() throws Exception {
-		ScopedResource<ExchangeClient> tokenClient = new ScopedResource<>(new DummyExchangeClient());
+		ScopedResource<ExchangeClient> tokenClient = ScopedResource.managed(new DummyExchangeClient());
 		ScopedResource<ExchangeClient> oauth2Client = ExchangeClientBuilder.create()
 				.client(DummyExchangeClient.class)
 				.securedWith()
 				.oAuth2(builder -> builder.tokenClient(tokenClient.unwrap()))
 				.build();
 		oauth2Client.closeIfManaged();
+		tokenClient.closeIfManaged();
 
 		assertNotNull(oauth2Client);
 		assertTrue(oauth2Client.isManaged());
@@ -149,7 +150,7 @@ class OAuth2HttpExchangeClientBuilderTest {
 		clientProperties.setCustomProperties(oauth2Properties);
 		clientProperties.setEnabled(false);
 
-		ScopedResource<ExchangeClient> tokenClient = new ScopedResource<>(new DummyExchangeClient());
+		ScopedResource<ExchangeClient> tokenClient = ScopedResource.managed(new DummyExchangeClient());
 		ScopedResource<ExchangeClient> oauth2Client = ExchangeClientBuilder.create()
 				.client(DummyExchangeClient.class)
 				.properties(clientProperties)
@@ -157,6 +158,7 @@ class OAuth2HttpExchangeClientBuilderTest {
 				.oAuth2(builder -> builder.tokenClient(tokenClient.unwrap()))
 				.build();
 		oauth2Client.closeIfManaged();
+		tokenClient.closeIfManaged();
 
 		assertNotNull(oauth2Client);
 		assertTrue(oauth2Client.isManaged());
@@ -182,7 +184,7 @@ class OAuth2HttpExchangeClientBuilderTest {
 		oauth2Properties.setProvider(Map.of(PROVIDER, buildProvider(TOKEN_URI)));
 		clientProperties.setCustomProperties(oauth2Properties);
 
-		ScopedResource<ExchangeClient> tokenClient = new ScopedResource<>(new DummyExchangeClient());
+		ScopedResource<ExchangeClient> tokenClient = ScopedResource.managed(new DummyExchangeClient());
 		ScopedResource<ExchangeClient> oauth2Client = ExchangeClientBuilder.create()
 				.client(DummyExchangeClient.class)
 				.properties(clientProperties)
@@ -190,6 +192,7 @@ class OAuth2HttpExchangeClientBuilderTest {
 				.oAuth2(builder -> builder.tokenClient(tokenClient.unwrap()))
 				.build();
 		oauth2Client.closeIfManaged();
+		tokenClient.closeIfManaged();
 
 		assertNotNull(oauth2Client);
 		assertTrue(oauth2Client.isManaged());

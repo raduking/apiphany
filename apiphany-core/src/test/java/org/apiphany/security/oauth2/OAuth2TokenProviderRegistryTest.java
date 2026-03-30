@@ -146,6 +146,8 @@ class OAuth2TokenProviderRegistryTest {
 		assertThat(ex.getMessage(), equalTo("An OAuth2 token provider with name '" + PROVIDER_NAME_MY_PROVIDER + "' is already registered."));
 
 		verify(secondProvider).close();
+
+		first.close();
 	}
 
 	@Test
