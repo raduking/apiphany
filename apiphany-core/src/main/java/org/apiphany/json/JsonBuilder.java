@@ -8,8 +8,6 @@ import java.util.function.Supplier;
 
 import org.apiphany.json.jackson2.Jackson2Library;
 import org.apiphany.json.jackson3.Jackson3Library;
-import org.apiphany.lang.LibraryDescriptor;
-import org.apiphany.lang.LibraryInitializer;
 import org.apiphany.lang.Strings;
 import org.morphix.convert.Converter;
 import org.morphix.convert.MapConversions;
@@ -18,6 +16,8 @@ import org.morphix.lang.Case;
 import org.morphix.lang.function.Suppliers;
 import org.morphix.reflection.Constructors;
 import org.morphix.reflection.GenericClass;
+import org.morphix.runtime.Libraries;
+import org.morphix.runtime.OptionalLibrary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -188,8 +188,8 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 * @return a JSON builder
 	 */
 	@SafeVarargs
-	protected static JsonBuilder initializeInstance(final LibraryDescriptor<? extends JsonBuilder>... libraryDescriptors) {
-		return LibraryInitializer.instance(() -> {
+	protected static JsonBuilder initializeInstance(final OptionalLibrary<? extends JsonBuilder>... libraryDescriptors) {
+		return Libraries.instance(() -> {
 			LOGGER.warn("{}, JsonBuilder.toJson will only build JSONs like { \"identity\":\"<class-name>@<identity-hashcode>\" }!",
 					ErrorMessage.JSON_LIBRARY_NOT_FOUND);
 			return new JsonBuilder();

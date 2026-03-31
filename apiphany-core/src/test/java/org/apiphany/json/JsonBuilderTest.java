@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import org.apiphany.lang.LibraryDescriptor;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.annotation.Creator;
 import org.apiphany.lang.annotation.FieldName;
@@ -27,6 +26,7 @@ import org.morphix.lang.function.Consumers;
 import org.morphix.reflection.Constructors;
 import org.morphix.reflection.GenericClass;
 import org.morphix.reflection.MemberAccessor;
+import org.morphix.runtime.OptionalLibrary;
 
 /**
  * Test class for {@link JsonBuilder}.
@@ -328,7 +328,7 @@ class JsonBuilderTest {
 
 	@Test
 	void shouldReturnAJsonBuilderInstanceIfNoLibraryInfoIsProvided() {
-		JsonBuilder instance = JsonBuilder.initializeInstance((LibraryDescriptor<? extends JsonBuilder>[]) null);
+		JsonBuilder instance = JsonBuilder.initializeInstance((OptionalLibrary<? extends JsonBuilder>[]) null);
 
 		assertThat(instance.getClass(), equalTo(JsonBuilder.class));
 	}
