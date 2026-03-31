@@ -8,7 +8,9 @@
 - Removed `org.apiphany.lang.collections` since it's already present int `org.morphix.lang.collections`.
 - Removed `org.apiphany.lang.retry` since it's already present int `org.morphix.lang.retry`.
 - Removed `Temporals` since it's already present in `org.morphix.lang`.
-- Upgraded `morphix-all` to `1.0.27`.
+- Removed `LibraryDescriptor` since it's already present in `org.morphix.runtime.OptionalLibrary`.
+- Removed `LibraryInitializer` since it's already present in `org.morphix.runtime.Libraries`.
+- Upgraded `morphix-all` to `1.0.28`.
 
 ---
 

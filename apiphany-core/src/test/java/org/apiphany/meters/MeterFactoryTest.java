@@ -12,8 +12,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apiphany.lang.LibraryDescriptor;
 import org.junit.jupiter.api.Test;
+import org.morphix.runtime.OptionalLibrary;
 
 /**
  * Test class for {@link MeterFactory}.
@@ -113,14 +113,14 @@ class MeterFactoryTest {
 
 	@Test
 	void shouldReturnNewMeterFactoryInstanceOnInitializeWithNull() {
-		MeterFactory meterFactory = MeterFactory.initializeInstance((LibraryDescriptor<? extends MeterFactory>[]) null);
+		MeterFactory meterFactory = MeterFactory.initializeInstance((OptionalLibrary<? extends MeterFactory>[]) null);
 
 		assertThat(meterFactory.getClass(), equalTo(MeterFactory.class));
 	}
 
 	@Test
 	void shouldReturnNewMeterFactoryInstanceOnInitializeWhenLibraryIsNotAvailable() {
-		MeterFactory meterFactory = MeterFactory.initializeInstance(LibraryDescriptor.notPresent(DummyMeterFactory.class));
+		MeterFactory meterFactory = MeterFactory.initializeInstance(OptionalLibrary.notPresent(DummyMeterFactory.class));
 
 		assertThat(meterFactory.getClass(), equalTo(MeterFactory.class));
 	}

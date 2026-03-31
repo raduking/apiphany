@@ -3,8 +3,8 @@ package org.apiphany.json.jackson3;
 import java.util.List;
 
 import org.apiphany.json.JsonBuilder;
-import org.apiphany.lang.LibraryDescriptor;
 import org.morphix.reflection.Constructors;
+import org.morphix.runtime.OptionalLibrary;
 
 /**
  * Utility class for Jackson 3 JSON library related operations.
@@ -36,8 +36,8 @@ public class Jackson3Library {
 	 * <p>
 	 * WARNING: Instance function needs to be lambda not method reference to avoid direct reference to class.
 	 */
-	public static final LibraryDescriptor<? extends JsonBuilder> DESCRIPTOR =
-			LibraryDescriptor.of(
+	public static final OptionalLibrary<? extends JsonBuilder> DESCRIPTOR =
+			OptionalLibrary.of(
 					List.of(JACKSON_3_OBJECT_MAPPER_CLASS_NAME, JACKSON_3_JSON_SERIALIZE_AS_CLASS_NAME),
 					Jackson3JsonBuilder.class,
 					() -> Jackson3JsonBuilder.instance()); // NOSONAR method reference would cause class loading issues
@@ -48,7 +48,7 @@ public class Jackson3Library {
 	 * @return {@code true} if the Jackson 3 JSON library is present, {@code false} otherwise
 	 */
 	public static boolean isPresent() {
-		return DESCRIPTOR.isLibraryPresent();
+		return DESCRIPTOR.isPresent();
 	}
 
 	/**

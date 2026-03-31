@@ -3,10 +3,10 @@ package org.apiphany.meters;
 import java.util.Collections;
 import java.util.List;
 
-import org.apiphany.lang.LibraryDescriptor;
-import org.apiphany.lang.LibraryInitializer;
 import org.apiphany.lang.builder.PropertyNameBuilder;
 import org.apiphany.meters.micrometer.MicrometerLibrary;
+import org.morphix.runtime.Libraries;
+import org.morphix.runtime.OptionalLibrary;
 
 /**
  * Factory for creating {@link MeterCounter} and {@link MeterTimer} instances with optional tags.
@@ -42,8 +42,8 @@ public class MeterFactory {
 	 * @return a meter factory
 	 */
 	@SafeVarargs
-	protected static MeterFactory initializeInstance(final LibraryDescriptor<? extends MeterFactory>... libraryDescriptors) {
-		return LibraryInitializer.instance(MeterFactory::new, libraryDescriptors);
+	protected static MeterFactory initializeInstance(final OptionalLibrary<? extends MeterFactory>... libraryDescriptors) {
+		return Libraries.instance(MeterFactory::new, libraryDescriptors);
 	}
 
 	/**

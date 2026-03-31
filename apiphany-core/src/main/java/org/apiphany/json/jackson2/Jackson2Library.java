@@ -1,8 +1,8 @@
 package org.apiphany.json.jackson2;
 
 import org.apiphany.json.JsonBuilder;
-import org.apiphany.lang.LibraryDescriptor;
 import org.morphix.reflection.Constructors;
+import org.morphix.runtime.OptionalLibrary;
 
 /**
  * Utility class for Jackson 2 JSON library related operations.
@@ -29,8 +29,8 @@ public class Jackson2Library {
 	 * <p>
 	 * WARNING: Instance function needs to be lambda not method reference to avoid direct reference to class.
 	 */
-	public static final LibraryDescriptor<? extends JsonBuilder> DESCRIPTOR =
-			LibraryDescriptor.of(
+	public static final OptionalLibrary<? extends JsonBuilder> DESCRIPTOR =
+			OptionalLibrary.of(
 					JACKSON_2_OBJECT_MAPPER_CLASS_NAME,
 					Jackson2JsonBuilder.class,
 					() -> Jackson2JsonBuilder.instance()); // NOSONAR lambda to avoid direct reference to class
@@ -41,7 +41,7 @@ public class Jackson2Library {
 	 * @return {@code true} if the Jackson 2 JSON library is present, {@code false} otherwise
 	 */
 	public static boolean isPresent() {
-		return DESCRIPTOR.isLibraryPresent();
+		return DESCRIPTOR.isPresent();
 	}
 
 	/**
