@@ -2,6 +2,7 @@ package org.apiphany.security.oauth2.client;
 
 import static org.apiphany.ParameterFunction.parameter;
 
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.PrivateKey;
 import java.time.Duration;
@@ -298,13 +299,15 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 		String headerJson = Strings.removeAllWhitespace(JsonBuilder.toJson(header));
 		String payloadJson = Strings.removeAllWhitespace(JsonBuilder.toJson(claims));
 
-		String headerB64 = BASE64_URL_ENCODER.encodeToString(headerJson.getBytes(StandardCharsets.UTF_8));
-		String payloadB64 = BASE64_URL_ENCODER.encodeToString(payloadJson.getBytes(StandardCharsets.UTF_8));
-		String signingInput = headerB64 + "." + payloadB64;
+		Charset charset = StandardCharsets.UTF_8;
+		String headerB64 = BASE64_URL_ENCODER.encodeToString(headerJson.getBytes(charset));
+		String payloadB64 = BASE64_URL_ENCODER.encodeToString(payloadJson.getBytes(charset));
 
-		byte[] signature = MessageDigestAlgorithm.SHA256.hmac(
-				clientSecret.getBytes(StandardCharsets.UTF_8), signingInput.getBytes(StandardCharsets.UTF_8));
-		return signingInput + "." + BASE64_URL_ENCODER.encodeToString(signature);
+		String signingInput = String.join(".", headerB64, payloadB64);
+		byte[] signature = MessageDigestAlgorithm.SHA256.hmac(clientSecret.getBytes(charset), signingInput.getBytes(charset));
+		String signatureB64 = BASE64_URL_ENCODER.encodeToString(signature);
+
+		return String.join(".", signingInput, signatureB64);
 	}
 
 	/**
@@ -324,13 +327,15 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 		String headerJson = Strings.removeAllWhitespace(JsonBuilder.toJson(header));
 		String payloadJson = Strings.removeAllWhitespace(JsonBuilder.toJson(claims));
 
-		String headerB64 = BASE64_URL_ENCODER.encodeToString(headerJson.getBytes(StandardCharsets.UTF_8));
-		String payloadB64 = BASE64_URL_ENCODER.encodeToString(payloadJson.getBytes(StandardCharsets.UTF_8));
-		String signingInput = headerB64 + "." + payloadB64;
+		Charset charset = StandardCharsets.UTF_8;
+		String headerB64 = BASE64_URL_ENCODER.encodeToString(headerJson.getBytes(charset));
+		String payloadB64 = BASE64_URL_ENCODER.encodeToString(payloadJson.getBytes(charset));
 
-		byte[] signature = Signer.sign(privateKey, algorithm, signingInput.getBytes(StandardCharsets.UTF_8));
+		String signingInput = String.join(".", headerB64, payloadB64);
+		byte[] signature = Signer.sign(privateKey, algorithm, signingInput.getBytes(charset));
+		String signatureB64 = BASE64_URL_ENCODER.encodeToString(signature);
 
-		return signingInput + "." + BASE64_URL_ENCODER.encodeToString(signature);
+		return String.join(".", signingInput, signatureB64);
 	}
 
 	/**

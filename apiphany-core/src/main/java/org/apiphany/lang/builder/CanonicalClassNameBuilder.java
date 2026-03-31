@@ -6,7 +6,7 @@ package org.apiphany.lang.builder;
  *
  * @author Radu Sebastian LAZIN
  */
-public class CanonicalClassNameBuilder extends DelimitedStringBuilder {
+public class CanonicalClassNameBuilder extends DelimitedStringBuilder<CanonicalClassNameBuilder> {
 
 	/**
 	 * The default delimiter used to separate class name segments (e.g., package and class names).

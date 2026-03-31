@@ -24,5 +24,4 @@ class CanonicalClassNameBuilderTest {
 
 		assertThat(name, equalTo(ApiClient.class.getCanonicalName()));
 	}
-
 }

@@ -270,6 +270,7 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 	@SuppressWarnings("resource")
 	public void close() throws Exception {
 		if (!closing.compareAndSet(false, true)) {
+			LOGGER.warn("Registry is already closing or closed, skipping close operation.");
 			return;
 		}
 		for (Map.Entry<String, ScopedResource<OAuth2TokenProvider>> entry : providers.entrySet()) {

@@ -1,12 +1,16 @@
 package org.apiphany.lang.builder;
 
+import org.morphix.lang.JavaObjects;
+
 /**
  * A simple builder for constructing strings delimited by a specified delimiter. This class provides methods to append
  * paths or segments to the string, ensuring proper delimiter placement.
  *
+ * @param <T> the type of the builder, used for method chaining
+ *
  * @author Radu Sebastian LAZIN
  */
-public class DelimitedStringBuilder {
+public class DelimitedStringBuilder<T extends DelimitedStringBuilder<T>> {
 
 	/**
 	 * The underlying {@link StringBuilder} used to construct the delimited string.
@@ -33,13 +37,24 @@ public class DelimitedStringBuilder {
 	}
 
 	/**
+	 * Returns the current instance cast to the generic type T for method chaining.
+	 *
+	 * @return this instance cast to type T
+	 */
+	private T self() {
+		return JavaObjects.cast(this);
+	}
+
+	/**
 	 * Creates a new instance of {@link DelimitedStringBuilder} with the specified delimiter.
+	 *
+	 * @param <T> the type of the builder, used for method chaining
 	 *
 	 * @param delimiter the delimiter to use between segments.
 	 * @return a new {@link DelimitedStringBuilder} instance.
 	 */
-	public static DelimitedStringBuilder builder(final String delimiter) {
-		return new DelimitedStringBuilder(delimiter);
+	public static <T extends DelimitedStringBuilder<T>> DelimitedStringBuilder<T> builder(final String delimiter) {
+		return new DelimitedStringBuilder<>(delimiter);
 	}
 
 	/**
@@ -47,15 +62,17 @@ public class DelimitedStringBuilder {
 	 * provided paths. The first path is the delimiter and is used to initialize the builder, and subsequent paths are
 	 * appended.
 	 *
+	 * @param <T> the type of the builder, used for method chaining
+	 *
 	 * @param paths the initial paths to add to the constructed string.
 	 * @return a new {@link DelimitedStringBuilder} instance with the specified paths.
 	 * @throws IllegalArgumentException if the provided paths array is null or empty.
 	 */
-	public static DelimitedStringBuilder of(final String... paths) {
+	public static <T extends DelimitedStringBuilder<T>> DelimitedStringBuilder<T> of(final String... paths) {
 		if (null == paths || paths.length == 0) {
 			throw new IllegalArgumentException("Parameter paths should not be null or empty");
 		}
-		DelimitedStringBuilder builder = builder(paths[0]);
+		DelimitedStringBuilder<T> builder = builder(paths[0]);
 		for (int i = 1; i < paths.length; ++i) {
 			builder.path(paths[i]);
 		}
@@ -78,7 +95,7 @@ public class DelimitedStringBuilder {
 	 * @return this {@link DelimitedStringBuilder} instance for method chaining.
 	 * @throws IllegalArgumentException if the provided path is null.
 	 */
-	public DelimitedStringBuilder path(final String path) {
+	public T path(final String path) {
 		if (null == path) {
 			throw new IllegalArgumentException("Parameter path should not be null");
 		}
@@ -86,7 +103,7 @@ public class DelimitedStringBuilder {
 			stringBuilder.append(delimiter);
 		}
 		stringBuilder.append(path);
-		return this;
+		return self();
 	}
 
 	/**
@@ -96,14 +113,14 @@ public class DelimitedStringBuilder {
 	 * @return this {@link DelimitedStringBuilder} instance for method chaining.
 	 * @throws IllegalArgumentException if the provided paths array is null.
 	 */
-	public DelimitedStringBuilder path(final String... paths) {
+	public T path(final String... paths) {
 		if (null == paths) {
 			throw new IllegalArgumentException("Parameter paths should not be null");
 		}
 		for (String path : paths) {
 			path(path);
 		}
-		return this;
+		return self();
 	}
 
 	/**
@@ -112,9 +129,9 @@ public class DelimitedStringBuilder {
 	 *
 	 * @return this {@link DelimitedStringBuilder} instance for method chaining.
 	 */
-	public DelimitedStringBuilder asSuffix() {
+	public T asSuffix() {
 		this.isSuffix = true;
-		return this;
+		return self();
 	}
 
 	/**
