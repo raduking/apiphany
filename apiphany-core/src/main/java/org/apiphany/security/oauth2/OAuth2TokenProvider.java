@@ -118,9 +118,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 */
 	@Override
 	public void close() throws Exception {
-		if (tokenRefreshScheduler.isManaged()) {
-			closeTokenRefreshScheduler();
-		}
+		tokenRefreshScheduler.closeIfManaged(this::customCloseTokenRefreshScheduler);
 		if (getTokenClient() instanceof AutoCloseable closeable) {
 			closeable.close();
 		}
@@ -130,7 +128,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 * Safely closes the token refresh scheduler.
 	 */
 	@SuppressWarnings("resource")
-	private void closeTokenRefreshScheduler() throws Exception {
+	private void customCloseTokenRefreshScheduler() {
 		ScheduledExecutorService scheduler = tokenRefreshScheduler.unwrap();
 		boolean cancelled = null == scheduledFuture;
 		if (!cancelled) {
@@ -138,7 +136,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 			cancelled = retry.until(() -> scheduledFuture.cancel(false), Boolean::booleanValue);
 		}
 		if (cancelled) {
-			tokenRefreshScheduler.closeIfManaged();
+			scheduler.close();
 		} else {
 			List<Runnable> runningTasks = scheduler.shutdownNow();
 			LOGGER.warn("Still running tasks count: {}", runningTasks.size());

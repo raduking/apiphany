@@ -14,9 +14,9 @@ import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.ExchangeClientBuilder;
 import org.apiphany.client.http.HttpExchangeClient;
-import org.apiphany.lang.Holder;
 import org.apiphany.security.AuthenticationType;
 import org.junit.jupiter.api.Test;
+import org.morphix.lang.Holder;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.resource.ScopedResource;
 

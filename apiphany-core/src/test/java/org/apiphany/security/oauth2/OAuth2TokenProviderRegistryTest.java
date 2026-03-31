@@ -22,6 +22,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import org.apiphany.lang.Strings;
 import org.apiphany.security.AuthenticationToken;
@@ -78,7 +79,7 @@ class OAuth2TokenProviderRegistryTest {
 
 		assertThat(retrievedProvider, equalTo(provider));
 
-		verify(resource).closeIfManaged(any());
+		verify(resource).closeIfManaged(any(Consumer.class));
 	}
 
 	@Test
@@ -104,7 +105,7 @@ class OAuth2TokenProviderRegistryTest {
 
 		assertThat(retrievedProvider, equalTo(null));
 
-		verify(resource).closeIfManaged(any());
+		verify(resource).closeIfManaged(any(Consumer.class));
 	}
 
 	@Test
@@ -122,7 +123,7 @@ class OAuth2TokenProviderRegistryTest {
 
 		assertThat(ex.getMessage(), equalTo("An OAuth2 token provider with name '" + PROVIDER_NAME_MY_PROVIDER + "' is already registered."));
 
-		verify(second).closeIfManaged(any());
+		verify(second).closeIfManaged(any(Consumer.class));
 	}
 
 	@Test
@@ -151,7 +152,7 @@ class OAuth2TokenProviderRegistryTest {
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "resource" })
 	void shouldRejectAddWhenRegistryClosing() throws Exception {
 		OAuth2Registry mockRegistry = mock(OAuth2Registry.class);
 		OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.of(mockRegistry);
@@ -164,7 +165,7 @@ class OAuth2TokenProviderRegistryTest {
 
 		assertThat(ex.getMessage(), equalTo("Cannot add new OAuth2 token provider " + PROVIDER_NAME_MY_PROVIDER + " to a closing registry."));
 
-		verify(resource).closeIfManaged(any());
+		verify(resource).closeIfManaged(any(Consumer.class));
 	}
 
 	@Test
@@ -224,7 +225,7 @@ class OAuth2TokenProviderRegistryTest {
 			registry.close();
 		}
 
-		verify(tokenProvider).closeIfManaged(any());
+		verify(tokenProvider).closeIfManaged(any(Consumer.class));
 	}
 
 	@Test
@@ -535,7 +536,7 @@ class OAuth2TokenProviderRegistryTest {
 
 		for (ScopedResource<OAuth2TokenProvider> resource : resources) {
 			if (resource != registeredResource) {
-				verify(resource, atLeastOnce()).closeIfManaged(any());
+				verify(resource, atLeastOnce()).closeIfManaged(any(Consumer.class));
 			}
 		}
 	}

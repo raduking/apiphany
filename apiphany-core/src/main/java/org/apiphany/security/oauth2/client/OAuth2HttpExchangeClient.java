@@ -64,6 +64,7 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	 * @param clientRegistrationName the wanted client registration name
 	 * @throws IllegalStateException if no valid client registration is found
 	 */
+	@SuppressWarnings("resource")
 	public OAuth2HttpExchangeClient(
 			final ScopedResource<ExchangeClient> exchangeClient,
 			final ScopedResource<ExchangeClient> tokenExchangeClient,
@@ -77,8 +78,8 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 		if (initialize()) {
 			OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
 					.registration(resolvedRegistration)
-					.tokenClientSupplier((clientRegistration, providerDetails) -> new OAuth2ApiClient(clientRegistration, providerDetails,
-							tokenExchangeClient.unwrap()))
+					.tokenClientSupplier((clientRegistration, providerDetails) -> new OAuth2ApiClient(
+							clientRegistration, providerDetails, tokenExchangeClient.unwrap()))
 					.build();
 			this.tokenProvider = OAuth2TokenProvider.of(specification);
 		} else {
@@ -97,6 +98,7 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	 * @param tokenExchangeClient exchange client doing the token refresh
 	 * @param clientRegistrationName the wanted client registration name
 	 */
+	@SuppressWarnings("resource")
 	public OAuth2HttpExchangeClient(
 			final ExchangeClient exchangeClient,
 			final ExchangeClient tokenExchangeClient,

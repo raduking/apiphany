@@ -57,6 +57,7 @@ public class TokenHttpExchangeClient extends DecoratingExchangeClient implements
 	 *
 	 * @param exchangeClient actual exchange client making the request
 	 */
+	@SuppressWarnings("resource")
 	protected TokenHttpExchangeClient(final ExchangeClient exchangeClient) {
 		this(ScopedResource.unmanaged(exchangeClient));
 	}

@@ -38,6 +38,7 @@ public class DecoratingExchangeClient implements DelegatingExchangeClient {
 	 *
 	 * @param delegate actual exchange client making the request
 	 */
+	@SuppressWarnings("resource")
 	public DecoratingExchangeClient(final ExchangeClient delegate) {
 		this(ScopedResource.unmanaged(delegate));
 	}
@@ -57,6 +58,7 @@ public class DecoratingExchangeClient implements DelegatingExchangeClient {
 	 * @return the delegate exchange client
 	 */
 	@Override
+	@SuppressWarnings("resource")
 	public ExchangeClient getExchangeClient() {
 		return getDelegate().unwrap();
 	}
