@@ -741,15 +741,14 @@ public record BasicMeters(
 	 * @return the sanitized class name and method name in the format "ClassName.method-name".
 	 */
 	public static String toFullMethodName(final String className, final String methodName) {
-		PropertyNameBuilder sb = PropertyNameBuilder.builder();
-		int lastIndexOfDot = className.lastIndexOf(".");
-		sb = sb.path(lastIndexOfDot != -1 ? className.substring(lastIndexOfDot + 1) : className);
+		int lastDot = className.lastIndexOf('.');
+		String simpleClassName = lastDot != -1 ? className.substring(lastDot + 1) : className;
 
-		int lastIndexOfDollar = methodName.lastIndexOf("$");
-		sb = sb.path(lastIndexOfDollar != -1
-				? methodName.substring(0, lastIndexOfDollar).replace("$", "-")
-				: methodName);
+		int lastDollar = methodName.lastIndexOf('$');
+		String sanitizedMethodName = lastDollar != -1
+				? methodName.substring(0, lastDollar).replace('$', '-')
+				: methodName;
 
-		return sb.build();
+		return String.join(PropertyNameBuilder.DELIMITER, simpleClassName, sanitizedMethodName);
 	}
 }

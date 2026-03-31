@@ -57,7 +57,7 @@ class DelimitedStringBuilderTest {
 
 	@Test
 	void shouldThrowExceptionIfPathIsNull() {
-		DelimitedStringBuilder dsb = DelimitedStringBuilder.builder(DELIMITER);
+		DelimitedStringBuilder<?> dsb = DelimitedStringBuilder.builder(DELIMITER);
 		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> dsb.path((String) null));
 
 		assertThat(e.getMessage(), equalTo("Parameter path should not be null"));
@@ -65,10 +65,9 @@ class DelimitedStringBuilderTest {
 
 	@Test
 	void shouldThrowExceptionIfPathsIsNull() {
-		DelimitedStringBuilder dsb = DelimitedStringBuilder.builder(DELIMITER);
+		DelimitedStringBuilder<?> dsb = DelimitedStringBuilder.builder(DELIMITER);
 		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> dsb.path((String[]) null));
 
 		assertThat(e.getMessage(), equalTo("Parameter paths should not be null"));
 	}
-
 }

@@ -56,5 +56,4 @@ class PropertyNameBuilderTest {
 
 		assertThat(e.getMessage(), equalTo("Parameter paths should not be null"));
 	}
-
 }
