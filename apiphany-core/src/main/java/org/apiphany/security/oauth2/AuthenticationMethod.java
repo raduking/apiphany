@@ -1,7 +1,9 @@
 package org.apiphany.security.oauth2;
 
 import java.util.Map;
+import java.util.Objects;
 
+import org.apiphany.lang.annotation.Creator;
 import org.morphix.lang.Enums;
 
 /**
@@ -67,12 +69,15 @@ public enum AuthenticationMethod {
 
 	/**
 	 * Converts a string value to the corresponding AuthenticationMethod enum constant.
+	 * <p>
+	 * It accept case-insensitive values.
 	 *
 	 * @param method the authentication method string to convert
 	 * @return the matching AuthenticationMethod enum constant
 	 * @throws IllegalArgumentException if no matching authentication method is found
 	 */
+	@Creator
 	public static AuthenticationMethod fromString(final String method) {
-		return Enums.fromString(method, NAME_MAP, values());
+		return Enums.fromString(Objects.requireNonNull(method).toLowerCase(), NAME_MAP, values());
 	}
 }

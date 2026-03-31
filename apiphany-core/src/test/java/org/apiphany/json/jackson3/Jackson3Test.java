@@ -33,7 +33,7 @@ class Jackson3Test {
 
 	private static Class<?> getSerializeAs() {
 		try {
-			return Class.forName("com.fasterxml.jackson.databind.annotation.JsonSerializeAs");
+			return Class.forName("com.fasterxml.jackson.annotation.JsonSerializeAs");
 		} catch (ClassNotFoundException e) {
 			return createJsonSerializeAsAnnotation();
 		}
@@ -41,7 +41,7 @@ class Jackson3Test {
 
 	private static Class<?> getDeserializeAs() {
 		try {
-			return Class.forName("com.fasterxml.jackson.databind.annotation.JsonDeserializeAs");
+			return Class.forName("com.fasterxml.jackson.annotation.JsonDeserializeAs");
 		} catch (ClassNotFoundException e) {
 			return createJsonDeserializeAsAnnotation();
 		}

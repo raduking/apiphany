@@ -128,7 +128,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 			this.objectMapper.registerModule(moduleSupplier.get());
 		}
 		indentOutput(isIndentOutput());
-		this.objectMapper.setSerializationInclusion(Include.NON_NULL);
+		this.objectMapper.setDefaultPropertyInclusion(Include.NON_NULL);
 		this.objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 
 		this.defaultAnnotationIntrospector = objectMapper.getSerializationConfig().getAnnotationIntrospector();
@@ -170,6 +170,16 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 */
 	public static Jackson2JsonBuilder custom(final JsonFactory jsonFactory) {
 		return new Jackson2JsonBuilder(jsonFactory);
+	}
+
+	/**
+	 * Creates a new JSON builder with the given {@link ObjectMapper}.
+	 *
+	 * @param objectMapper the object mapper to use for the underlying {@link ObjectMapper}
+	 * @return a new JSON builder with the given {@link ObjectMapper}
+	 */
+	public static Jackson2JsonBuilder custom(final ObjectMapper objectMapper) {
+		return new Jackson2JsonBuilder(objectMapper);
 	}
 
 	/**
