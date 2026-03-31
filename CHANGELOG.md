@@ -10,7 +10,7 @@
 - Removed `Temporals` since it's already present in `org.morphix.lang`.
 - Removed `LibraryDescriptor` since it's already present in `org.morphix.runtime.OptionalLibrary`.
 - Removed `LibraryInitializer` since it's already present in `org.morphix.runtime.Libraries`.
-- Upgraded `morphix-all` to `1.0.28`.
+- Upgraded `morphix-all` to `1.0.29`.
 
 ---
 
