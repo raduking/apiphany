@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -25,6 +26,7 @@ import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apiphany.lang.Strings;
 import org.apiphany.security.AuthenticationException;
@@ -33,10 +35,12 @@ import org.apiphany.security.AuthenticationTokenProvider;
 import org.apiphany.security.token.client.TokenHttpExchangeClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.morphix.lang.resource.ScopedResource;
+import org.morphix.lang.thread.Threads;
 
 /**
  * Test class for {@link OAuth2TokenProvider}.
@@ -584,11 +588,58 @@ class OAuth2TokenProviderTest {
 		assertThat(e.getMessage(), equalTo("Missing authentication token"));
 	}
 
+	@Test
+	@Timeout(5)
+	void shouldInitializeSchedulerAndRetrieveMultipleTokensWithDefaultScheduler() {
+		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
+		doReturn(clientRegistration).when(oAuth2Properties).getClientRegistration(CLIENT_REGISTRATION_NAME);
+		doReturn(true).when(clientRegistration).hasClientId();
+		doReturn(true).when(clientRegistration).hasClientSecret();
+		doReturn(Map.of(PROVIDER_NAME, providerDetails)).when(oAuth2Properties).getProvider();
+		doReturn(providerDetails).when(oAuth2Properties).getProviderDetails(clientRegistration);
+
+		int retrievals = 5;
+		Duration tokenValidity = Duration.ofSeconds(1);
+
+		AtomicInteger tokenRetrievalCount = new AtomicInteger(0);
+		doAnswer(answer -> {
+			AuthenticationToken token = createToken(tokenValidity);
+			tokenRetrievalCount.incrementAndGet();
+			return token;
+		}).when(tokenClient).getAuthenticationToken();
+
+		Duration expirationErrorMargin = tokenValidity.minusMillis(10);
+		Duration minRefreshInterval = Duration.ofMillis(10);
+
+		OAuth2TokenProviderProperties properties = new OAuth2TokenProviderProperties();
+		properties.setExpirationErrorMargin(expirationErrorMargin);
+		properties.setMinRefreshInterval(minRefreshInterval);
+
+		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
+				.properties(properties)
+				.registration(oAuth2Properties, CLIENT_REGISTRATION_NAME)
+				.tokenClientSupplier((cr, pd) -> tokenClient)
+				.build();
+
+		tokenProvider = OAuth2TokenProvider.of(specification);
+
+		boolean result = Threads.waitUntil(() -> tokenRetrievalCount.get() == retrievals);
+
+		assertTrue(result);
+		assertTrue(tokenProvider.isSchedulerEnabled());
+		verify(tokenClient, times(retrievals)).getAuthenticationToken();
+	}
+
 	private static AuthenticationToken createToken() {
+		AuthenticationToken authenticationToken = createToken(Duration.ofSeconds(EXPIRES_IN));
+		authenticationToken.setExpiration(DEFAULT_EXPIRATION.plusSeconds(EXPIRES_IN));
+		return authenticationToken;
+	}
+
+	private static AuthenticationToken createToken(final Duration expiresIn) {
 		AuthenticationToken authenticationToken = new AuthenticationToken();
 		authenticationToken.setAccessToken(TOKEN);
-		authenticationToken.setExpiresIn(EXPIRES_IN);
-		authenticationToken.setExpiration(DEFAULT_EXPIRATION.plusSeconds(EXPIRES_IN));
+		authenticationToken.setExpiresIn(expiresIn.toSeconds());
 		return authenticationToken;
 	}
 }

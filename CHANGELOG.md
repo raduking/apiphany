@@ -11,6 +11,7 @@
 - Removed `LibraryDescriptor` since it's already present in `org.morphix.runtime.OptionalLibrary`.
 - Removed `LibraryInitializer` since it's already present in `org.morphix.runtime.Libraries`.
 - Upgraded `morphix-all` to `1.0.29`.
+- Added `AuthenticationToken.setExpiresIn(Duration)` for more explicit setting of expiration as a duration.
 
 ---
 

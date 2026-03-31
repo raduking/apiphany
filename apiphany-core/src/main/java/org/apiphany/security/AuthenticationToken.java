@@ -170,6 +170,15 @@ public class AuthenticationToken {
 	}
 
 	/**
+	 * Sets the time until the access token expires using a {@link Duration}.
+	 *
+	 * @param expiresIn the duration until the access token expires.
+	 */
+	public void setExpiresIn(final Duration expiresIn) {
+		setExpiresIn(expiresIn.getSeconds());
+	}
+
+	/**
 	 * Sets the exact instant when the token expires.
 	 *
 	 * @param expiration the instant when the token expires.
