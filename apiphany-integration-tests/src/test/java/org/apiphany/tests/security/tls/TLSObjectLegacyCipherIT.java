@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.apiphany.json.JsonBuilder;
-import org.apiphany.lang.Pair;
 import org.apiphany.lang.Strings;
 import org.apiphany.net.Sockets;
 import org.apiphany.security.KeyPairs;
@@ -30,6 +29,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.morphix.lang.Pair;
 
 /**
  * Test class for {@link TLSObject} hierarchy with legacy cipher suite.

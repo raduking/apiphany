@@ -185,6 +185,7 @@ public class ApiClient implements AutoCloseable {
 	 * @param baseUrl base URL to which all paths will be appended
 	 * @param exchangeClient exchange client
 	 */
+	@SuppressWarnings("resource")
 	protected ApiClient(final String baseUrl, final ExchangeClient exchangeClient) {
 		this(baseUrl, ScopedResource.unmanaged(exchangeClient));
 	}
@@ -270,6 +271,7 @@ public class ApiClient implements AutoCloseable {
 	 * @param exchangeClientBuilders exchange client builders
 	 * @return list of scoped exchange clients
 	 */
+	@SuppressWarnings("resource")
 	private static List<ScopedResource<ExchangeClient>> buildExchangeClientsList(final ExchangeClientBuilder... exchangeClientBuilders) {
 		if (JavaArrays.isEmpty(exchangeClientBuilders)) {
 			return List.of(withDefaultClient().build());
@@ -711,6 +713,7 @@ public class ApiClient implements AutoCloseable {
 	 * @param authenticationType authentication type
 	 * @return an exchange client
 	 */
+	@SuppressWarnings("resource")
 	public ExchangeClient getExchangeClient(final AuthenticationType authenticationType) {
 		return Nullables.apply(exchangeClientsMap.get(authenticationType), ScopedResource::unwrap, () -> {
 			throw new IllegalStateException("No ExchangeClient found for authentication type: " + authenticationType);

@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import org.apiphany.lang.Holder;
 import org.apiphany.lang.LibraryDescriptor;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.annotation.Creator;
@@ -23,6 +22,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.morphix.convert.function.SimpleConverter;
+import org.morphix.lang.Holder;
 import org.morphix.lang.function.Consumers;
 import org.morphix.reflection.Constructors;
 import org.morphix.reflection.GenericClass;
@@ -108,7 +108,7 @@ class JsonBuilderTest {
 		SimpleConverter<String, String> converter = s -> {
 			throw new RuntimeException("Conversion failed");
 		};
-		Holder<String> holder = Holder.noValue();
+		Holder<String> holder = Holder.empty();
 		Consumer<Exception> errorConsumer = e -> {
 			holder.setValue(e.getMessage());
 		};

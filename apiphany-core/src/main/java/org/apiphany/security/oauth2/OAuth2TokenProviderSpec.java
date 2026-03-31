@@ -227,6 +227,7 @@ public class OAuth2TokenProviderSpec {
 		 * @param tokenRefreshScheduler the token refresh scheduler
 		 * @return the builder
 		 */
+		@SuppressWarnings("resource")
 		public Builder tokenRefreshScheduler(final ScheduledExecutorService tokenRefreshScheduler) {
 			return tokenRefreshScheduler(ScopedResource.unmanaged(tokenRefreshScheduler));
 		}

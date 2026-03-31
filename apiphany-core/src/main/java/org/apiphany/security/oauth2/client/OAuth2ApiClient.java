@@ -88,6 +88,7 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 	 * @param providerDetails the OAuth2 provider configuration details
 	 * @param httpExchangeClient the HTTP exchange client to use for requests
 	 */
+	@SuppressWarnings("resource")
 	public OAuth2ApiClient(final OAuth2ClientRegistration clientRegistration, final OAuth2ProviderDetails providerDetails,
 			final ExchangeClient httpExchangeClient) {
 		this(clientRegistration, providerDetails, ScopedResource.unmanaged(httpExchangeClient));
@@ -100,6 +101,7 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 	 * @param providerDetails the OAuth2 provider configuration details
 	 * @param exchangeClientBuilder the HTTP exchange client to use for requests
 	 */
+	@SuppressWarnings("resource")
 	public OAuth2ApiClient(final OAuth2ClientRegistration clientRegistration, final OAuth2ProviderDetails providerDetails,
 			final ExchangeClientBuilder exchangeClientBuilder) {
 		this(clientRegistration, providerDetails, exchangeClientBuilder.build());
@@ -130,6 +132,7 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 	 * @param providerDetails the OAuth2 provider configuration details
 	 * @param httpExchangeClient the HTTP exchange client to use for requests
 	 */
+	@SuppressWarnings("resource")
 	public OAuth2ApiClient(final OAuth2ClientRegistration clientRegistration, final OAuth2ProviderDetails providerDetails,
 			final PrivateKey privateKey, final JwsAlgorithm signingAlgorithm, final ExchangeClient httpExchangeClient) {
 		this(clientRegistration, providerDetails, privateKey, signingAlgorithm, ScopedResource.unmanaged(httpExchangeClient));
@@ -144,6 +147,7 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 	 * @param signingAlgorithm the signing algorithm used to sign the client assertion
 	 * @param exchangeClientBuilder the HTTP exchange client to use for requests
 	 */
+	@SuppressWarnings("resource")
 	public OAuth2ApiClient(final OAuth2ClientRegistration clientRegistration, final OAuth2ProviderDetails providerDetails,
 			final PrivateKey privateKey, final JwsAlgorithm signingAlgorithm, final ExchangeClientBuilder exchangeClientBuilder) {
 		this(clientRegistration, providerDetails, privateKey, signingAlgorithm, exchangeClientBuilder.build());

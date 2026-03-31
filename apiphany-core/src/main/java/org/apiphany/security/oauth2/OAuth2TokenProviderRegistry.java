@@ -92,6 +92,7 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 	 * @param createdProviderCustomizer a consumer that is called when a new provider is created
 	 * @return an OAuth2 token provider registry based on the given OAuth2 registry
 	 */
+	@SuppressWarnings("resource")
 	public static OAuth2TokenProviderRegistry of(
 			final OAuth2Registry oAuth2Registry,
 			final OAuth2TokenClientSupplier tokenClientSupplier,
@@ -199,6 +200,7 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 	 * @throws IllegalStateException if an OAuth2 token provider with the given name is already registered or if the
 	 *     registry is closing
 	 */
+	@SuppressWarnings("resource")
 	public void add(final String name, final ScopedResource<OAuth2TokenProvider> provider) {
 		if (closing.get()) {
 			provider.closeIfManaged(
@@ -240,6 +242,7 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 	 * @param name the name of the OAuth2 token provider
 	 * @return the OAuth2 token provider registered with the given name, or null if no provider is found
 	 */
+	@SuppressWarnings("resource")
 	public OAuth2TokenProvider getProvider(final String name) {
 		ScopedResource<OAuth2TokenProvider> scopedProvider = providers.get(name);
 		if (null == scopedProvider) {
@@ -264,6 +267,7 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 	 * @see AutoCloseable#close()
 	 */
 	@Override
+	@SuppressWarnings("resource")
 	public void close() throws Exception {
 		if (!closing.compareAndSet(false, true)) {
 			return;
