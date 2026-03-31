@@ -3,6 +3,8 @@ package org.apiphany.security.ssl;
 import java.util.Map;
 import java.util.Objects;
 
+import org.apiphany.lang.annotation.AsValue;
+import org.apiphany.lang.annotation.Creator;
 import org.morphix.lang.Enums;
 
 /**
@@ -94,9 +96,14 @@ public enum SSLProtocol {
 	public static final int TLS_1_2_MASTER_SECRET_LENGTH = 48;
 
 	/**
+	 * The value map for easy from string implementation.
+	 */
+	private static final Map<String, SSLProtocol> VALUE_MAP = Enums.buildNameMap(values());
+
+	/**
 	 * The name map for easy from string implementation.
 	 */
-	private static final Map<String, SSLProtocol> NAME_MAP = Enums.buildNameMap(values());
+	private static final Map<String, SSLProtocol> NAME_MAP = Enums.buildNameMap(values(), SSLProtocol::name);
 
 	/**
 	 * The version map for easy from string implementation.
@@ -148,6 +155,7 @@ public enum SSLProtocol {
 	 *
 	 * @return the string value
 	 */
+	@AsValue
 	public String value() {
 		return value;
 	}
@@ -185,8 +193,10 @@ public enum SSLProtocol {
 	 * @param value the SSL protocol as string
 	 * @return a SSL protocol enum
 	 */
+	@Creator
 	public static SSLProtocol fromString(final String value) {
-		return Enums.fromString(Objects.requireNonNull(value), NAME_MAP, values());
+		return Enums.from(Objects.requireNonNull(value), NAME_MAP,
+				() -> Enums.fromString(value, VALUE_MAP, values()));
 	}
 
 	/**

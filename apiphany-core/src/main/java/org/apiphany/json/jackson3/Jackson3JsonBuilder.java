@@ -22,6 +22,7 @@ import tools.jackson.core.json.JsonFactory;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.AnnotationIntrospector;
 import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.MapperFeature;
 import tools.jackson.databind.ObjectWriter;
 import tools.jackson.databind.PropertyNamingStrategies;
 import tools.jackson.databind.SerializationFeature;
@@ -121,6 +122,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 			builder.addModule(moduleSupplier.get());
 		}
 		builder.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+		builder.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS, true);
 		builder.changeDefaultPropertyInclusion(inclusion -> inclusion
 				.withContentInclusion(Include.NON_NULL)
 				.withValueInclusion(Include.NON_NULL));
@@ -472,7 +474,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 */
 	@Override
 	public <T> T fromPropertiesMap(final Map<String, Object> propertiesMap, final Class<T> cls, final Consumer<Exception> onError) {
-		JsonMapper.Builder propertiesJsonMapperBuilder = JsonMapper.builder()
+		JsonMapper.Builder propertiesJsonMapperBuilder = jsonMapper.rebuild()
 				.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 				.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
 				.propertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);

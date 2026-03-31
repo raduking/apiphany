@@ -10,8 +10,13 @@
 - Removed `Temporals` since it's already present in `org.morphix.lang`.
 - Removed `LibraryDescriptor` since it's already present in `org.morphix.runtime.OptionalLibrary`.
 - Removed `LibraryInitializer` since it's already present in `org.morphix.runtime.Libraries`.
-- Upgraded `morphix-all` to `1.0.29`.
 - Added `AuthenticationToken.setExpiresIn(Duration)` for more explicit setting of expiration as a duration.
+- Added creation and value annotations to `AuthenticationMethod`.
+- Changed `AuthenticationMethod.fromString` to support case-insensitive strings.
+- Changed `SSLProtocol.fromString` to support both `name` and `value` string.
+- Upgraded `morphix-all` to `1.0.29`.
+- Upgraded Jackson 2 to `2.21.2`.
+- Upgraded Jackson 3 to `3.1.1`.
 
 ---
 

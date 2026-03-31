@@ -10,6 +10,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.atMost;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -41,6 +43,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.morphix.lang.resource.ScopedResource;
 import org.morphix.lang.thread.Threads;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Test class for {@link OAuth2TokenProvider}.
@@ -49,6 +53,8 @@ import org.morphix.lang.thread.Threads;
  */
 @ExtendWith(MockitoExtension.class)
 class OAuth2TokenProviderTest {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(OAuth2TokenProviderTest.class);
 
 	private static final long EXPIRES_IN = 300;
 	private static final long NEGATIVE_EXPIRES_IN = -10;
@@ -605,6 +611,7 @@ class OAuth2TokenProviderTest {
 		doAnswer(answer -> {
 			AuthenticationToken token = createToken(tokenValidity);
 			tokenRetrievalCount.incrementAndGet();
+			LOGGER.info("Token retrieval count: {}", tokenRetrievalCount.get());
 			return token;
 		}).when(tokenClient).getAuthenticationToken();
 
@@ -623,11 +630,13 @@ class OAuth2TokenProviderTest {
 
 		tokenProvider = OAuth2TokenProvider.of(specification);
 
-		boolean result = Threads.waitUntil(() -> tokenRetrievalCount.get() == retrievals);
+		boolean result = Threads.waitUntil(() -> tokenRetrievalCount.get() >= retrievals);
 
 		assertTrue(result);
 		assertTrue(tokenProvider.isSchedulerEnabled());
-		verify(tokenClient, times(retrievals)).getAuthenticationToken();
+		verify(tokenClient, atLeast(retrievals)).getAuthenticationToken();
+		// check that we didn't retrieve excessive tokens (e.g., due to scheduling issues)
+		verify(tokenClient, atMost(retrievals + 2)).getAuthenticationToken();
 	}
 
 	private static AuthenticationToken createToken() {

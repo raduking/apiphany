@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.stream.Stream;
 
+import org.apiphany.json.JsonBuilder;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -42,5 +43,51 @@ class SSLProtocolTest {
 	void shouldReturnCorrectHandshakeVersion(final SSLProtocol sslProtocol, final Short version) {
 		boolean validVersion = sslProtocol.handshakeVersion() == version;
 		assertTrue(validVersion);
+	}
+
+	static class TestDto {
+
+		private SSLProtocol sslProtocol;
+
+		public SSLProtocol getSslProtocol() {
+			return sslProtocol;
+		}
+
+		public void setSslProtocol(final SSLProtocol sslProtocol) {
+			this.sslProtocol = sslProtocol;
+		}
+	}
+
+	@ParameterizedTest
+	@EnumSource(SSLProtocol.class)
+	void shouldSerializeAndDeserializeWithJackson(final SSLProtocol sslProtocol) {
+		TestDto test = new TestDto();
+		test.setSslProtocol(sslProtocol);
+
+		String json = JsonBuilder.toJson(test);
+
+		TestDto result = JsonBuilder.fromJson(json, TestDto.class);
+
+		assertThat(result.getSslProtocol(), equalTo(sslProtocol));
+	}
+
+	@ParameterizedTest
+	@EnumSource(SSLProtocol.class)
+	void shouldDeserializeFromValue(final SSLProtocol sslProtocol) {
+		String json = "{\"sslProtocol\":\"" + sslProtocol.value() + "\"}";
+
+		TestDto result = JsonBuilder.fromJson(json, TestDto.class);
+
+		assertThat(result.getSslProtocol(), equalTo(sslProtocol));
+	}
+
+	@ParameterizedTest
+	@EnumSource(SSLProtocol.class)
+	void shouldDeserializeFromName(final SSLProtocol sslProtocol) {
+		String json = "{\"sslProtocol\":\"" + sslProtocol.name() + "\"}";
+
+		TestDto result = JsonBuilder.fromJson(json, TestDto.class);
+
+		assertThat(result.getSslProtocol(), equalTo(sslProtocol));
 	}
 }
