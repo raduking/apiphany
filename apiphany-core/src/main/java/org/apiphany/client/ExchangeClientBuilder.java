@@ -76,34 +76,78 @@ public class ExchangeClientBuilder {
 	 *
 	 * @return a new exchange client pair with life cycle management information
 	 */
-	@SuppressWarnings("resource")
 	public ScopedResource<ExchangeClient> build() {
-		if (null != this.delegate) {
-			return delegate.build();
-		}
-		if (null != this.exchangeClient && null != this.exchangeClientClass) {
-			throw new IllegalStateException("Cannot set both exchange client instance and exchange client class");
-		}
-		if (null == this.exchangeClient && null == this.exchangeClientClass) {
-			throw new IllegalStateException("Either exchange client instance or exchange client class must be set");
-		}
-		boolean managed = null == exchangeClient;
-		ExchangeClient client = managed ? build(exchangeClientClass) : exchangeClient;
+		return build(Unchecked.Undeclared::reThrow);
+	}
 
-		ScopedResource<ExchangeClient> scopedResource = ScopedResource.of(client, Lifecycle.from(managed));
+	/**
+	 * Builds the exchange client based on the builder members.
+	 *
+	 * @param buildErrorHandler error handler to be called if an exception occurs during the build process
+	 * @return a new exchange client resource with life cycle management information
+	 */
+	@SuppressWarnings("resource")
+	protected ScopedResource<ExchangeClient> build(final Consumer<Exception> buildErrorHandler) {
+		if (null != delegate) {
+			return delegateBuild(buildErrorHandler);
+		}
+		ScopedResource<ExchangeClient> scopedResource = buildMainClient(buildErrorHandler);
+		if (null == scopedResource) {
+			return null;
+		}
 		try {
 			for (Class<? extends DecoratingExchangeClient> decoratorClientClass : decoratorClientClasses) {
-				client = build(scopedResource, decoratorClientClass);
-				scopedResource = ScopedResource.managed(client);
+				ExchangeClient decoratorClient = build(scopedResource, decoratorClientClass);
+				scopedResource = ScopedResource.managed(decoratorClient);
 			}
 		} catch (Exception e) {
 			String exchangeClientName = scopedResource.unwrap().getName();
 			scopedResource.closeIfManaged(
-					closeException -> LOGGER.warn("Failed to close exchange client {} on building error",
+					closeException -> LOGGER.warn("Error closing exchange client {} on build error",
 							exchangeClientName, closeException));
-			Unchecked.Undeclared.reThrow(e);
+			buildErrorHandler.accept(e);
 		}
 		return scopedResource;
+	}
+
+	/**
+	 * Builds the main exchange client based on the exchange client class or exchange client instance. If both are set an
+	 * exception is thrown. If none of them is set an exception is thrown.
+	 *
+	 * @param buildErrorHandler
+	 * @return a new exchange client resource with life cycle management information
+	 */
+	@SuppressWarnings("resource")
+	protected ScopedResource<ExchangeClient> buildMainClient(final Consumer<Exception> buildErrorHandler) {
+		try {
+			if (null != exchangeClient && null != exchangeClientClass) {
+				throw new IllegalStateException("Cannot set both exchange client instance and exchange client class");
+			}
+			if (null == exchangeClient && null == exchangeClientClass) {
+				throw new IllegalStateException("Either exchange client instance or exchange client class must be set");
+			}
+			boolean managed = null == exchangeClient;
+			ExchangeClient client = managed ? build(exchangeClientClass) : exchangeClient;
+			return ScopedResource.of(client, Lifecycle.from(managed));
+		} catch (Exception e) {
+			buildErrorHandler.accept(e);
+			return null;
+		}
+	}
+
+	/**
+	 * Builds the exchange client based on the delegate builder.
+	 *
+	 * @param buildErrorHandler error handler to be called if an exception occurs during the build process
+	 * @return a new exchange client resource with life cycle management information
+	 */
+	protected ScopedResource<ExchangeClient> delegateBuild(final Consumer<Exception> buildErrorHandler) {
+		try {
+			return delegate.build();
+		} catch (Exception e) {
+			buildErrorHandler.accept(e);
+			return null;
+		}
 	}
 
 	/**
