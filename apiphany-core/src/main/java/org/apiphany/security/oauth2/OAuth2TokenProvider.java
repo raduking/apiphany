@@ -91,7 +91,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 		this.defaultExpirationSupplier = specification.getDefaultExpirationSupplier();
 
 		if (null == registration) {
-			LOGGER.warn("No registration provided for OAuth2TokenProvider, token retrieval will be disabled.");
+			LOGGER.warn("[{}] No registration provided, token retrieval will be disabled.", getName());
 			this.tokenClient = null;
 		} else {
 			OAuth2TokenClientSupplier supplier = specification.getTokenClientSupplier();
@@ -118,6 +118,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 */
 	@Override
 	public void close() throws Exception {
+		setSchedulerEnabled(false);
 		tokenRefreshScheduler.closeIfManaged(this::customCloseTokenRefreshScheduler);
 		if (getTokenClient() instanceof AutoCloseable closeable) {
 			closeable.close();
@@ -130,7 +131,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	@SuppressWarnings("resource")
 	private void customCloseTokenRefreshScheduler() {
 		ScheduledExecutorService scheduler = tokenRefreshScheduler.unwrap();
-		boolean cancelled = null == scheduledFuture;
+		boolean cancelled = null == scheduledFuture || scheduledFuture.isDone();
 		if (!cancelled) {
 			Retry retry = Retry.of(WaitCounter.of(getProperties().getMaxTaskCloseAttempts(), getProperties().getCloseTaskRetryInterval()));
 			cancelled = retry.until(() -> scheduledFuture.cancel(false), Boolean::booleanValue);
@@ -139,7 +140,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 			scheduler.close();
 		} else {
 			List<Runnable> runningTasks = scheduler.shutdownNow();
-			LOGGER.warn("Still running tasks count: {}", runningTasks.size());
+			LOGGER.warn("[{}] Still running tasks count: {}", getName(), runningTasks.size());
 		}
 	}
 
@@ -149,7 +150,19 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 * @return client registration name
 	 */
 	public String getClientRegistrationName() {
-		return registration.getClientRegistrationName();
+		return Nullables.whenNotNull(registration,
+				OAuth2ResolvedRegistration::getClientRegistrationName,
+				() -> OAuth2ResolvedRegistration.UNKNOWN_REGISTRATION_NAME);
+	}
+
+	/**
+	 * Returns the name of this token provider, which is the same as the client registration name making this method a
+	 * simple alias for {@link #getClientRegistrationName()}.
+	 *
+	 * @return the name of this token provider
+	 */
+	public String getName() {
+		return getClientRegistrationName();
 	}
 
 	/**
@@ -197,6 +210,10 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	private void updateAuthenticationToken() {
 		String clientRegistrationName = getClientRegistrationName();
 		LOGGER.debug("[{}] Token expired, requesting new token.", clientRegistrationName);
+		if (isSchedulerDisabled()) {
+			LOGGER.debug("[{}] Scheduler is disabled, skipping token update.", clientRegistrationName);
+			return;
+		}
 		Instant expiration = Instant.now();
 		try {
 			AuthenticationToken token = getAuthenticationTokenFromClient();
@@ -205,8 +222,9 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 			LOGGER.debug("[{}] Successfully retrieved new token.", clientRegistrationName);
 		} catch (Exception e) {
 			LOGGER.error("[{}] Error retrieving new token.", clientRegistrationName, e);
+		} finally {
+			scheduleTokenUpdate();
 		}
-		scheduleTokenUpdate();
 	}
 
 	/**
