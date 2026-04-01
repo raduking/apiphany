@@ -58,7 +58,7 @@
 
 		<!-- Dependencies versions -->
 		<morphix.version>1.0.29</morphix.version>
-		<micrometer.version>1.15.7</micrometer.version>
+		<micrometer.version>1.15.10</micrometer.version>
 		<jackson2.version>2.21.2</jackson2.version>
 		<jackson3.version>3.1.1</jackson3.version>
 		<slf4j.version>2.0.17</slf4j.version>
@@ -84,7 +84,7 @@
 		<testcontainers.keycloak.version>4.1.0</testcontainers.keycloak.version>
 		<nimbus.jose.jwt.version>10.8</nimbus.jose.jwt.version>
 		<oauth2.oidc.sdk.version>11.35</oauth2.oidc.sdk.version>
-		<wiremock.version>3.13.1</wiremock.version>
+		<wiremock.version>3.13.2</wiremock.version>
 
 		<!-- Dependencies used by plugins versions -->
 		<org.eclipse.jdt.core.version>3.44.0</org.eclipse.jdt.core.version>
