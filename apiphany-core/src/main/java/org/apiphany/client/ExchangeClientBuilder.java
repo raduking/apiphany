@@ -114,7 +114,7 @@ public class ExchangeClientBuilder {
 	 * Builds the main exchange client based on the exchange client class or exchange client instance. If both are set an
 	 * exception is thrown. If none of them is set an exception is thrown.
 	 *
-	 * @param buildErrorHandler
+	 * @param buildErrorHandler error handler to be called if an exception occurs during the build process
 	 * @return a new exchange client resource with life cycle management information
 	 */
 	@SuppressWarnings("resource")
