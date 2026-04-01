@@ -17,8 +17,10 @@
 - Upgraded `morphix-all` to `1.0.29`.
 - Upgraded Jackson 2 to `2.21.2`.
 - Upgraded Jackson 3 to `3.1.1`.
+- Upgraded Micrometer to `1.15.10`.
 - Added `ExecutionWrapper` functional interface which adds AOP like decorating functionality but without annotations.
 - Changed `OAuth2TokenProvider` to disable scheduler when closing and stop retrieving tokens when scheduler was disabled.
+- Upgraded Wiremock to `3.13.2`.
 
 ---
 

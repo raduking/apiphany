@@ -15,6 +15,7 @@ import org.apiphany.lang.annotation.FieldName;
 import org.apiphany.lang.annotation.FieldOrder;
 import org.apiphany.lang.annotation.Ignored;
 import org.apiphany.security.Sensitive;
+import org.apiphany.tests.json.JsonBuilderIT.GenericTypeTests.GenericDTO;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.morphix.reflection.GenericClass;
@@ -64,83 +65,91 @@ class JsonBuilderIT {
 		}
 	}
 
-	@Test
-	void shouldTransformObjectToJsonAndReadItBack() {
-		SimpleDTO a1 = new SimpleDTO(ID, NAME);
+	@Nested
+	class BasicTests {
 
-		Object json1 = Strings.removeAllWhitespace(JsonBuilder.toJson(a1));
+		@Test
+		void shouldTransformObjectToJsonAndReadItBack() {
+			SimpleDTO a1 = new SimpleDTO(ID, NAME);
 
-		SimpleDTO a2 = JsonBuilder.fromJson(json1, SimpleDTO.class);
+			Object json1 = Strings.removeAllWhitespace(JsonBuilder.toJson(a1));
 
-		Object json2 = Strings.removeAllWhitespace(JsonBuilder.toJson(a2));
+			SimpleDTO a2 = JsonBuilder.fromJson(json1, SimpleDTO.class);
 
-		assertThat(json1, equalTo(json2));
-	}
+			Object json2 = Strings.removeAllWhitespace(JsonBuilder.toJson(a2));
 
-	@Test
-	void shouldTransformGenericObjectToJsonAndReadItBack() {
-		List<SimpleDTO> list1 = List.of(new SimpleDTO(ID, NAME));
-
-		Object json1 = Strings.removeAllWhitespace(JsonBuilder.toJson(list1));
-
-		List<SimpleDTO> list2 = JsonBuilder.fromJson(json1, new GenericClass<>() {
-			// empty
-		});
-
-		Object json2 = Strings.removeAllWhitespace(JsonBuilder.toJson(list2));
-
-		assertThat(json1, equalTo(json2));
-	}
-
-	static class GenericDTO<T> {
-
-		private T value;
-
-		public GenericDTO() {
-			// empty
+			assertThat(json1, equalTo(json2));
 		}
 
-		public GenericDTO(final T value) {
-			this.value = value;
-		}
+		@Test
+		void shouldTransformGenericObjectToJsonAndReadItBack() {
+			List<SimpleDTO> list1 = List.of(new SimpleDTO(ID, NAME));
 
-		public T getValue() {
-			return value;
-		}
+			Object json1 = Strings.removeAllWhitespace(JsonBuilder.toJson(list1));
 
-		public void setValue(final T value) {
-			this.value = value;
+			List<SimpleDTO> list2 = JsonBuilder.fromJson(json1, new GenericClass<>() {
+				// empty
+			});
+
+			Object json2 = Strings.removeAllWhitespace(JsonBuilder.toJson(list2));
+
+			assertThat(json1, equalTo(json2));
 		}
 	}
 
-	@Test
-	void shouldTransformGenericObjectWithGenericFieldToJsonAndReadItBack() {
-		GenericDTO<SimpleDTO> a1 = new GenericDTO<>(new SimpleDTO(ID, NAME));
+	@Nested
+	class GenericTypeTests {
 
-		Object json1 = Strings.removeAllWhitespace(JsonBuilder.toJson(a1));
+		static class GenericDTO<T> {
 
-		GenericDTO<SimpleDTO> a2 = JsonBuilder.fromJson(json1, new GenericClass<>() {
-			// empty
-		});
+			private T value;
 
-		Object json2 = Strings.removeAllWhitespace(JsonBuilder.toJson(a2));
+			public GenericDTO() {
+				// empty
+			}
 
-		assertThat(json1, equalTo(json2));
-	}
+			public GenericDTO(final T value) {
+				this.value = value;
+			}
 
-	@Test
-	void shouldTransformGenericObjectWithGenericFieldOfGenericTypeToJsonAndReadItBack() {
-		GenericDTO<List<SimpleDTO>> a1 = new GenericDTO<>(List.of(new SimpleDTO(ID, NAME)));
+			public T getValue() {
+				return value;
+			}
 
-		Object json1 = Strings.removeAllWhitespace(JsonBuilder.toJson(a1));
+			public void setValue(final T value) {
+				this.value = value;
+			}
+		}
 
-		GenericDTO<List<SimpleDTO>> a2 = JsonBuilder.fromJson(json1, new GenericClass<>() {
-			// empty
-		});
+		@Test
+		void shouldTransformGenericObjectWithGenericFieldToJsonAndReadItBack() {
+			GenericDTO<SimpleDTO> a1 = new GenericDTO<>(new SimpleDTO(ID, NAME));
 
-		Object json2 = Strings.removeAllWhitespace(JsonBuilder.toJson(a2));
+			Object json1 = Strings.removeAllWhitespace(JsonBuilder.toJson(a1));
 
-		assertThat(json1, equalTo(json2));
+			GenericDTO<SimpleDTO> a2 = JsonBuilder.fromJson(json1, new GenericClass<>() {
+				// empty
+			});
+
+			Object json2 = Strings.removeAllWhitespace(JsonBuilder.toJson(a2));
+
+			assertThat(json1, equalTo(json2));
+		}
+
+		@Test
+		void shouldTransformGenericObjectWithGenericFieldOfGenericTypeToJsonAndReadItBack() {
+			GenericDTO<List<SimpleDTO>> a1 = new GenericDTO<>(List.of(new SimpleDTO(ID, NAME)));
+
+			Object json1 = Strings.removeAllWhitespace(JsonBuilder.toJson(a1));
+
+			GenericDTO<List<SimpleDTO>> a2 = JsonBuilder.fromJson(json1, new GenericClass<>() {
+				// empty
+			});
+
+			Object json2 = Strings.removeAllWhitespace(JsonBuilder.toJson(a2));
+
+			assertThat(json1, equalTo(json2));
+		}
 	}
 
 	@Nested
@@ -431,73 +440,77 @@ class JsonBuilderIT {
 		}
 	}
 
-	static class Java8TimeDTO {
+	@Nested
+	class Java8TimeTests {
 
-		private LocalDate date;
+		static class Java8TimeDTO {
 
-		public Java8TimeDTO() {
-			// empty
+			private LocalDate date;
+
+			public Java8TimeDTO() {
+				// empty
+			}
+
+			public Java8TimeDTO(final LocalDate date) {
+				this.date = date;
+			}
+
+			public java.time.LocalDate getDate() {
+				return date;
+			}
+
+			public void setDate(final LocalDate date) {
+				this.date = date;
+			}
 		}
 
-		public Java8TimeDTO(final LocalDate date) {
-			this.date = date;
+		@Test
+		void shouldTransformObjectWithJava8TimeToJsonAndReadItBack() {
+			Java8TimeDTO a1 = new Java8TimeDTO(LocalDate.of(2026, 2, 6));
+
+			Object json1 = Strings.removeAllWhitespace(JsonBuilder.toJson(a1));
+
+			Java8TimeDTO a2 = JsonBuilder.fromJson(json1, Java8TimeDTO.class);
+
+			Object json2 = Strings.removeAllWhitespace(JsonBuilder.toJson(a2));
+
+			assertThat(json1, equalTo(json2));
+			assertThat(json1, equalTo("{\"date\":\"2026-02-06\"}"));
 		}
 
-		public java.time.LocalDate getDate() {
-			return date;
+		static class LocalDateTimeDTO {
+
+			private LocalDateTime dateTime;
+
+			public LocalDateTimeDTO() {
+				// empty
+			}
+
+			public LocalDateTimeDTO(final LocalDateTime dateTime) {
+				this.dateTime = dateTime;
+			}
+
+			public LocalDateTime getDateTime() {
+				return dateTime;
+			}
+
+			public void setDateTime(final LocalDateTime dateTime) {
+				this.dateTime = dateTime;
+			}
 		}
 
-		public void setDate(final LocalDate date) {
-			this.date = date;
+		@Test
+		void shouldTransformObjectWithLocalDateTimeToJsonAndReadItBack() {
+			LocalDateTimeDTO a1 = new LocalDateTimeDTO(LocalDateTime.of(2026, 2, 6, 12, 30, 11));
+
+			Object json1 = Strings.removeAllWhitespace(JsonBuilder.toJson(a1));
+
+			LocalDateTimeDTO a2 = JsonBuilder.fromJson(json1, LocalDateTimeDTO.class);
+
+			Object json2 = Strings.removeAllWhitespace(JsonBuilder.toJson(a2));
+
+			assertThat(json1, equalTo(json2));
+			assertThat(json1, equalTo("{\"dateTime\":\"2026-02-06T12:30:11\"}"));
 		}
-	}
-
-	@Test
-	void shouldTransformObjectWithJava8TimeToJsonAndReadItBack() {
-		Java8TimeDTO a1 = new Java8TimeDTO(LocalDate.of(2026, 2, 6));
-
-		Object json1 = Strings.removeAllWhitespace(JsonBuilder.toJson(a1));
-
-		Java8TimeDTO a2 = JsonBuilder.fromJson(json1, Java8TimeDTO.class);
-
-		Object json2 = Strings.removeAllWhitespace(JsonBuilder.toJson(a2));
-
-		assertThat(json1, equalTo(json2));
-		assertThat(json1, equalTo("{\"date\":\"2026-02-06\"}"));
-	}
-
-	static class LocalDateTimeDTO {
-
-		private LocalDateTime dateTime;
-
-		public LocalDateTimeDTO() {
-			// empty
-		}
-
-		public LocalDateTimeDTO(final LocalDateTime dateTime) {
-			this.dateTime = dateTime;
-		}
-
-		public LocalDateTime getDateTime() {
-			return dateTime;
-		}
-
-		public void setDateTime(final LocalDateTime dateTime) {
-			this.dateTime = dateTime;
-		}
-	}
-
-	@Test
-	void shouldTransformObjectWithLocalDateTimeToJsonAndReadItBack() {
-		LocalDateTimeDTO a1 = new LocalDateTimeDTO(LocalDateTime.of(2026, 2, 6, 12, 30, 11));
-
-		Object json1 = Strings.removeAllWhitespace(JsonBuilder.toJson(a1));
-
-		LocalDateTimeDTO a2 = JsonBuilder.fromJson(json1, LocalDateTimeDTO.class);
-
-		Object json2 = Strings.removeAllWhitespace(JsonBuilder.toJson(a2));
-
-		assertThat(json1, equalTo(json2));
-		assertThat(json1, equalTo("{\"dateTime\":\"2026-02-06T12:30:11\"}"));
 	}
 }
