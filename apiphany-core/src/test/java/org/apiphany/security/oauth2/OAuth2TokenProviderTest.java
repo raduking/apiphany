@@ -41,6 +41,7 @@ import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.morphix.lang.Holder;
 import org.morphix.lang.resource.ScopedResource;
 import org.morphix.lang.thread.Threads;
 import org.slf4j.Logger;
@@ -65,6 +66,8 @@ class OAuth2TokenProviderTest {
 	private static final String CLIENT_REGISTRATION_NAME = "bubu";
 	private static final String PROVIDER_NAME = "mumu";
 
+	private static final AtomicInteger COUNTER = new AtomicInteger(0);
+
 	@Mock
 	private AuthenticationTokenProvider tokenClient;
 
@@ -78,6 +81,8 @@ class OAuth2TokenProviderTest {
 	private OAuth2Properties oAuth2Properties;
 
 	private OAuth2TokenProvider tokenProvider;
+
+	private String clientRegistrationName = unique(CLIENT_REGISTRATION_NAME);
 
 	@AfterEach
 	void tearDown() throws Exception {
@@ -387,7 +392,7 @@ class OAuth2TokenProviderTest {
 		doReturn(Map.of(PROVIDER_NAME, providerDetails)).when(oAuth2Properties).getProvider();
 		doReturn(providerDetails).when(oAuth2Properties).getProviderDetails(clientRegistration);
 
-		doThrow(new RuntimeException("Error getting token")).when(tokenClient).getAuthenticationToken();
+		doThrow(new RuntimeException("BOOM! Error getting token")).when(tokenClient).getAuthenticationToken();
 
 		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
 				.registration(oAuth2Properties, CLIENT_REGISTRATION_NAME)
@@ -596,7 +601,7 @@ class OAuth2TokenProviderTest {
 
 	@Test
 	@Timeout(5)
-	void shouldInitializeSchedulerAndRetrieveMultipleTokensWithDefaultScheduler() {
+	void shouldInitializeSchedulerAndRetrieveMultipleTokensWithDefaultScheduler() throws Exception {
 		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
 		doReturn(clientRegistration).when(oAuth2Properties).getClientRegistration(CLIENT_REGISTRATION_NAME);
 		doReturn(true).when(clientRegistration).hasClientId();
@@ -610,13 +615,14 @@ class OAuth2TokenProviderTest {
 		AtomicInteger tokenRetrievalCount = new AtomicInteger(0);
 		doAnswer(answer -> {
 			AuthenticationToken token = createToken(tokenValidity);
-			tokenRetrievalCount.incrementAndGet();
-			LOGGER.info("Token retrieval count: {}", tokenRetrievalCount.get());
+			int count = tokenRetrievalCount.incrementAndGet();
+			LOGGER.info("Token retrieval count: {}", count);
 			return token;
 		}).when(tokenClient).getAuthenticationToken();
 
 		Duration expirationErrorMargin = tokenValidity.minusMillis(10);
-		Duration minRefreshInterval = Duration.ofMillis(10);
+		Duration minRefreshInterval = Duration.ofMillis(20);
+		Duration pollingInterval = Duration.ofMillis(10);
 
 		OAuth2TokenProviderProperties properties = new OAuth2TokenProviderProperties();
 		properties.setExpirationErrorMargin(expirationErrorMargin);
@@ -628,15 +634,65 @@ class OAuth2TokenProviderTest {
 				.tokenClientSupplier((cr, pd) -> tokenClient)
 				.build();
 
-		tokenProvider = OAuth2TokenProvider.of(specification);
+		boolean reachedRetrievals = false;
+		try (OAuth2TokenProvider localTokenProvider = OAuth2TokenProvider.of(specification)) {
+			reachedRetrievals = Threads.waitUntil(() -> tokenRetrievalCount.get() >= retrievals, Duration.ZERO, pollingInterval);
+		}
 
-		boolean result = Threads.waitUntil(() -> tokenRetrievalCount.get() >= retrievals);
-
-		assertTrue(result);
-		assertTrue(tokenProvider.isSchedulerEnabled());
+		assertTrue(reachedRetrievals);
 		verify(tokenClient, atLeast(retrievals)).getAuthenticationToken();
 		// check that we didn't retrieve excessive tokens (e.g., due to scheduling issues)
 		verify(tokenClient, atMost(retrievals + 2)).getAuthenticationToken();
+	}
+
+	@Test
+	@Timeout(5)
+	@SuppressWarnings("resource")
+	void shouldInitializeSchedulerAndNotRetrieveTokensAfterDefaultSchedulerIsDisabled() throws Exception {
+		doReturn(Map.of(clientRegistrationName, clientRegistration)).when(oAuth2Properties).getRegistration();
+		doReturn(clientRegistration).when(oAuth2Properties).getClientRegistration(clientRegistrationName);
+		doReturn(true).when(clientRegistration).hasClientId();
+		doReturn(true).when(clientRegistration).hasClientSecret();
+		doReturn(Map.of(PROVIDER_NAME, providerDetails)).when(oAuth2Properties).getProvider();
+		doReturn(providerDetails).when(oAuth2Properties).getProviderDetails(clientRegistration);
+
+		Duration tokenValidity = Duration.ofSeconds(1);
+		AtomicInteger tokenRetrievalCount = new AtomicInteger(0);
+
+		Duration expirationErrorMargin = tokenValidity.minusMillis(10);
+		Duration minRefreshInterval = Duration.ofMillis(10);
+
+		OAuth2TokenProviderProperties properties = new OAuth2TokenProviderProperties();
+		properties.setExpirationErrorMargin(expirationErrorMargin);
+		properties.setMinRefreshInterval(minRefreshInterval);
+
+		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
+				.properties(properties)
+				.registration(oAuth2Properties, clientRegistrationName)
+				.tokenClientSupplier((cr, pd) -> tokenClient)
+				.build();
+
+		Holder<OAuth2TokenProvider> tokenProviderHolder = Holder.empty();
+		doAnswer(answer -> {
+			AuthenticationToken token = createToken(tokenValidity);
+			int count = tokenRetrievalCount.incrementAndGet();
+			LOGGER.info("Token retrieval count: {}", count);
+			if (count > 1) {
+				tokenProviderHolder.getValue().setSchedulerEnabled(false);
+			}
+			return token;
+		}).when(tokenClient).getAuthenticationToken();
+
+		OAuth2TokenProvider localTokenProvider = OAuth2TokenProvider.of(specification);
+		tokenProviderHolder.setValue(localTokenProvider);
+
+		boolean reachedRetrievals = false;
+		try (localTokenProvider) {
+			reachedRetrievals = Threads.waitUntil(() -> tokenRetrievalCount.get() >= 2);
+		}
+
+		assertTrue(reachedRetrievals);
+		verify(tokenClient, times(2)).getAuthenticationToken();
 	}
 
 	private static AuthenticationToken createToken() {
@@ -650,5 +706,9 @@ class OAuth2TokenProviderTest {
 		authenticationToken.setAccessToken(TOKEN);
 		authenticationToken.setExpiresIn(expiresIn.toSeconds());
 		return authenticationToken;
+	}
+
+	private static String unique(final String prefix) {
+		return prefix + String.format("%02d", COUNTER.incrementAndGet());
 	}
 }
