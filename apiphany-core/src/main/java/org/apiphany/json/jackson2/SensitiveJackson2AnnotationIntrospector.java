@@ -2,6 +2,7 @@ package org.apiphany.json.jackson2;
 
 import java.io.Serial;
 
+import org.apiphany.json.jackson2.serializers.RedactedValueSerializer;
 import org.apiphany.security.Sensitive;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -69,9 +70,26 @@ public class SensitiveJackson2AnnotationIntrospector extends NopAnnotationIntros
 	@Override
 	public Access findPropertyAccess(final Annotated ann) {
 		if (enabled && ann.hasAnnotation(Sensitive.class)) {
-			return JsonProperty.Access.WRITE_ONLY;
+			Sensitive sensitive = ann.getAnnotation(Sensitive.class);
+			if (sensitive.visibility() == Sensitive.Visibility.HIDDEN) {
+				return JsonProperty.Access.WRITE_ONLY;
+			}
 		}
 		return super.findPropertyAccess(ann);
+	}
+
+	/**
+	 * @see AnnotationIntrospector#findSerializer(Annotated)
+	 */
+	@Override
+	public Object findSerializer(final Annotated ann) {
+		if (enabled && ann.hasAnnotation(Sensitive.class)) {
+			Sensitive sensitive = ann.getAnnotation(Sensitive.class);
+			if (sensitive.visibility() == Sensitive.Visibility.REDACTED) {
+				return new RedactedValueSerializer();
+			}
+		}
+		return super.findSerializer(ann);
 	}
 
 	/**

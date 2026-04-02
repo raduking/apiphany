@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.function.Function;
 
 import org.apiphany.lang.Strings;
+import org.apiphany.security.Sensitive;
 
 /**
  * Represents a node in a chain of responsibility for resolving HTTP header values. Each instance can either handle a
@@ -18,7 +19,7 @@ public class HeaderValues {
 	/**
 	 * The string used to redact sensitive information.
 	 */
-	public static final String REDACTED = "REDACTED";
+	public static final String REDACTED = Sensitive.Value.REDACTED;
 
 	/**
 	 * The next {@link HeaderValues} in the chain of responsibility. If {@code null}, this represents the end of the chain.

@@ -19,6 +19,7 @@ import org.apiphany.header.Headers;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.security.AuthenticationType;
+import org.apiphany.security.Sensitive;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -173,7 +174,12 @@ class HttpExchangeClientTest {
 
 		assertThat(headersForDisplay, equalTo(Map.of(
 				"Content-Type", List.of("application/json"),
-				"Authorization", List.of(HeaderValues.REDACTED))));
+				"Authorization", List.of(Sensitive.Value.REDACTED))));
+	}
+
+	@Test
+	void shouldHaveTheSameRedactedValueAsSensitiveValueRedacted() {
+		assertThat(HeaderValues.REDACTED, equalTo(Sensitive.Value.REDACTED));
 	}
 
 	static class DummyHttpExchangeClient implements HttpExchangeClient {

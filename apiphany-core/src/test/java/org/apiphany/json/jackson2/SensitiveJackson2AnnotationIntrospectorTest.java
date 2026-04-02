@@ -5,7 +5,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
+import org.apiphany.json.jackson2.serializers.RedactedValueSerializer;
 import org.apiphany.security.Sensitive;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
@@ -18,39 +20,123 @@ import com.fasterxml.jackson.databind.introspect.Annotated;
  */
 class SensitiveJackson2AnnotationIntrospectorTest {
 
-	@Test
-	void shouldReturnAccessWriteOnlyWhenSensitivityEnabled() {
-		SensitiveJackson2AnnotationIntrospector introspector = SensitiveJackson2AnnotationIntrospector.hideSensitive();
+	@Nested
+	class FindPropertyAccessTests {
 
-		Annotated annotated = mock(Annotated.class);
-		doReturn(true).when(annotated).hasAnnotation(Sensitive.class);
+		@Test
+		void shouldReturnAccessWriteOnlyWhenSensitivityEnabled() {
+			SensitiveJackson2AnnotationIntrospector introspector = SensitiveJackson2AnnotationIntrospector.hideSensitive();
 
-		Access access = introspector.findPropertyAccess(annotated);
+			Sensitive sensitive = mock(Sensitive.class);
+			doReturn(Sensitive.Visibility.HIDDEN).when(sensitive).visibility();
 
-		assertThat(access, equalTo(Access.WRITE_ONLY));
+			Annotated annotated = mock(Annotated.class);
+			doReturn(true).when(annotated).hasAnnotation(Sensitive.class);
+			doReturn(sensitive).when(annotated).getAnnotation(Sensitive.class);
+
+			Access access = introspector.findPropertyAccess(annotated);
+
+			assertThat(access, equalTo(Access.WRITE_ONLY));
+		}
+
+		@Test
+		void shouldReturnNullAccessWhenSensitivityEnabledButVisibilityIsRedacted() {
+			SensitiveJackson2AnnotationIntrospector introspector = SensitiveJackson2AnnotationIntrospector.hideSensitive();
+
+			Sensitive sensitive = mock(Sensitive.class);
+			doReturn(Sensitive.Visibility.REDACTED).when(sensitive).visibility();
+
+			Annotated annotated = mock(Annotated.class);
+			doReturn(true).when(annotated).hasAnnotation(Sensitive.class);
+			doReturn(sensitive).when(annotated).getAnnotation(Sensitive.class);
+
+			Access access = introspector.findPropertyAccess(annotated);
+
+			assertThat(access, equalTo(null));
+		}
+
+		@Test
+		void shouldReturnNullAccessWhenNoSensitiveAnnotationPresent() {
+			SensitiveJackson2AnnotationIntrospector introspector = SensitiveJackson2AnnotationIntrospector.hideSensitive();
+
+			Annotated annotated = mock(Annotated.class);
+			doReturn(false).when(annotated).hasAnnotation(Sensitive.class);
+
+			Access access = introspector.findPropertyAccess(annotated);
+
+			assertThat(access, equalTo(null));
+		}
+
+		@Test
+		void shouldReturnNullAccessWhenSensitivityDisabled() {
+			SensitiveJackson2AnnotationIntrospector introspector = SensitiveJackson2AnnotationIntrospector.allowSensitive();
+
+			Annotated annotated = mock(Annotated.class);
+			doReturn(true).when(annotated).hasAnnotation(Sensitive.class);
+
+			Access access = introspector.findPropertyAccess(annotated);
+
+			assertThat(access, equalTo(null));
+		}
 	}
 
-	@Test
-	void shouldReturnNullAccessWhenNoSensitiveAnnotationPresent() {
-		SensitiveJackson2AnnotationIntrospector introspector = SensitiveJackson2AnnotationIntrospector.hideSensitive();
+	@Nested
+	class FindSerializerTests {
 
-		Annotated annotated = mock(Annotated.class);
-		doReturn(false).when(annotated).hasAnnotation(Sensitive.class);
+		@Test
+		void shouldReturnNullSerializerWhenSensitivityEnabled() {
+			SensitiveJackson2AnnotationIntrospector introspector = SensitiveJackson2AnnotationIntrospector.hideSensitive();
 
-		Access access = introspector.findPropertyAccess(annotated);
+			Sensitive sensitive = mock(Sensitive.class);
+			doReturn(Sensitive.Visibility.HIDDEN).when(sensitive).visibility();
 
-		assertThat(access, equalTo(null));
-	}
+			Annotated annotated = mock(Annotated.class);
+			doReturn(true).when(annotated).hasAnnotation(Sensitive.class);
+			doReturn(sensitive).when(annotated).getAnnotation(Sensitive.class);
 
-	@Test
-	void shouldReturnNullAccessWhenSensitivityDisabled() {
-		SensitiveJackson2AnnotationIntrospector introspector = SensitiveJackson2AnnotationIntrospector.allowSensitive();
+			Object serializer = introspector.findSerializer(annotated);
 
-		Annotated annotated = mock(Annotated.class);
-		doReturn(true).when(annotated).hasAnnotation(Sensitive.class);
+			assertThat(serializer, equalTo(null));
+		}
 
-		Access access = introspector.findPropertyAccess(annotated);
+		@Test
+		void shouldReturnRedactedValueSerializerWhenSensitivityEnabledButVisibilityIsRedacted() {
+			SensitiveJackson2AnnotationIntrospector introspector = SensitiveJackson2AnnotationIntrospector.hideSensitive();
 
-		assertThat(access, equalTo(null));
+			Sensitive sensitive = mock(Sensitive.class);
+			doReturn(Sensitive.Visibility.REDACTED).when(sensitive).visibility();
+
+			Annotated annotated = mock(Annotated.class);
+			doReturn(true).when(annotated).hasAnnotation(Sensitive.class);
+			doReturn(sensitive).when(annotated).getAnnotation(Sensitive.class);
+
+			Object serializer = introspector.findSerializer(annotated);
+
+			assertThat(serializer.getClass(), equalTo(RedactedValueSerializer.class));
+		}
+
+		@Test
+		void shouldReturnNullAccessWhenNoSensitiveAnnotationPresent() {
+			SensitiveJackson2AnnotationIntrospector introspector = SensitiveJackson2AnnotationIntrospector.hideSensitive();
+
+			Annotated annotated = mock(Annotated.class);
+			doReturn(false).when(annotated).hasAnnotation(Sensitive.class);
+
+			Object serializer = introspector.findSerializer(annotated);
+
+			assertThat(serializer, equalTo(null));
+		}
+
+		@Test
+		void shouldReturnNullAccessWhenSensitivityDisabled() {
+			SensitiveJackson2AnnotationIntrospector introspector = SensitiveJackson2AnnotationIntrospector.allowSensitive();
+
+			Annotated annotated = mock(Annotated.class);
+			doReturn(true).when(annotated).hasAnnotation(Sensitive.class);
+
+			Object serializer = introspector.findSerializer(annotated);
+
+			assertThat(serializer, equalTo(null));
+		}
 	}
 }

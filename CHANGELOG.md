@@ -1,5 +1,13 @@
 ## Release Notes
 
+`1.2.1`
+
+- Added `Sensitive.Visibility` enumeration to define how the sensitive field should behave on serialization.
+- Added `Sensitive.Value.REDACTED` constant to be used instead of `HeaderValues.REDACTED`.
+- Added support to `JsonBuilder` to show redacted sensitive fields.
+
+---
+
 `1.2.0`
 
 - Removed `ScopedResource` since it's already present in `org.morphix.lang.resource`.
