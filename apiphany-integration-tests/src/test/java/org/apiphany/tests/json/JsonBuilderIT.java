@@ -32,6 +32,7 @@ class JsonBuilderIT {
 
 	private static final String ID = "id1";
 	private static final String NAME = "name1";
+	private static final String PASSWORD = "p123";
 
 	static class SimpleDTO {
 
@@ -155,18 +156,18 @@ class JsonBuilderIT {
 	@Nested
 	class ApiphanyAnnotationTests {
 
-		static class ApiphanyDTO {
+		static class SensitiveDTO {
 
 			String id;
 
 			@Sensitive
 			String password;
 
-			public ApiphanyDTO() {
+			public SensitiveDTO() {
 				// empty
 			}
 
-			public ApiphanyDTO(final String id, final String password) {
+			public SensitiveDTO(final String id, final String password) {
 				this.id = id;
 				this.password = password;
 			}
@@ -190,11 +191,107 @@ class JsonBuilderIT {
 
 		@Test
 		void shouldNotIncludeSensitiveFieldsInJson() {
-			ApiphanyDTO dto = new ApiphanyDTO(ID, "p123");
+			SensitiveDTO dto = new SensitiveDTO(ID, PASSWORD);
 
 			String json = Strings.removeAllWhitespace(JsonBuilder.toJson(dto));
 
 			assertThat(json, equalTo("{\"id\":\"id1\"}"));
+		}
+
+		static class RedactedDTO {
+
+			String id;
+
+			@Sensitive(visibility = Sensitive.Visibility.REDACTED)
+			String password;
+
+			public RedactedDTO() {
+				// empty
+			}
+
+			public RedactedDTO(final String id, final String password) {
+				this.id = id;
+				this.password = password;
+			}
+
+			public String getId() {
+				return id;
+			}
+
+			public void setId(final String id) {
+				this.id = id;
+			}
+
+			public String getPassword() {
+				return password;
+			}
+
+			public void setPassword(final String password) {
+				this.password = password;
+			}
+		}
+
+		@Test
+		void shouldRedactSensitiveFieldsInJson() {
+			RedactedDTO dto = new RedactedDTO(ID, PASSWORD);
+
+			String json = Strings.removeAllWhitespace(JsonBuilder.toJson(dto));
+
+			assertThat(json, equalTo("{\"id\":\"id1\",\"password\":\"" + Sensitive.Value.REDACTED + "\"}"));
+		}
+
+		static class CombinedSensitiveDTO {
+
+			String id;
+
+			@Sensitive(visibility = Sensitive.Visibility.REDACTED)
+			String password;
+
+			@Sensitive(visibility = Sensitive.Visibility.HIDDEN)
+			String secret;
+
+			public CombinedSensitiveDTO() {
+				// empty
+			}
+
+			public CombinedSensitiveDTO(final String id, final String password, final String secret) {
+				this.id = id;
+				this.password = password;
+				this.secret = secret;
+			}
+
+			public String getId() {
+				return id;
+			}
+
+			public void setId(final String id) {
+				this.id = id;
+			}
+
+			public String getPassword() {
+				return password;
+			}
+
+			public void setPassword(final String password) {
+				this.password = password;
+			}
+
+			public String getSecret() {
+				return secret;
+			}
+
+			public void setSecret(final String secret) {
+				this.secret = secret;
+			}
+		}
+
+		@Test
+		void shouldRedactAndHideSensitiveFieldsInJson() {
+			CombinedSensitiveDTO dto = new CombinedSensitiveDTO(ID, PASSWORD, "s123");
+
+			String json = Strings.removeAllWhitespace(JsonBuilder.toJson(dto));
+
+			assertThat(json, equalTo("{\"id\":\"id1\",\"password\":\"" + Sensitive.Value.REDACTED + "\"}"));
 		}
 
 		static class NoDefaultConstructorDTO {

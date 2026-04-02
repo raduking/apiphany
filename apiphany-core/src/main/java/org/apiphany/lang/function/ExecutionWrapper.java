@@ -71,6 +71,7 @@ public interface ExecutionWrapper<T> {
 	 * original supplier without any additional behavior.
 	 *
 	 * @param <T> the type of the supplier's result
+	 *
 	 * @return an identity wrapper that does not modify the behavior of the supplier
 	 */
 	static <T> ExecutionWrapper<T> identity() {
@@ -81,9 +82,10 @@ public interface ExecutionWrapper<T> {
 	 * Creates a wrapper that executes the given {@code before} runnable before the supplier and the given {@code after}
 	 * runnable after the supplier. This allows you to easily add pre- and post-execution behavior around a supplier.
 	 *
+	 * @param <T> the type of the supplier's result
+	 *
 	 * @param before the runnable to be executed before the supplier
 	 * @param after the runnable to be executed after the supplier
-	 * @param <T> the type of the supplier's result
 	 * @return a wrapper that executes the given runnables before and after the supplier
 	 */
 	static <T> ExecutionWrapper<T> around(final Runnable before, final Runnable after) {
