@@ -120,12 +120,10 @@ public class ExchangeClientBuilder {
 	@SuppressWarnings("resource")
 	protected ScopedResource<ExchangeClient> buildMainClient(final Consumer<Exception> buildErrorHandler) {
 		try {
-			if (null != exchangeClient && null != exchangeClientClass) {
-				throw new IllegalStateException("Cannot set both exchange client instance and exchange client class");
-			}
-			if (null == exchangeClient && null == exchangeClientClass) {
-				throw new IllegalStateException("Either exchange client instance or exchange client class must be set");
-			}
+			Require.that(null == exchangeClientClass || null == exchangeClient, IllegalStateException::new,
+					"Cannot set both exchange client instance and exchange client class");
+			Require.that(null != exchangeClientClass || null != exchangeClient, IllegalStateException::new,
+					"Either exchange client instance or exchange client class must be set");
 			boolean managed = null == exchangeClient;
 			ExchangeClient client = managed ? build(exchangeClientClass) : exchangeClient;
 			return ScopedResource.of(client, Lifecycle.from(managed));
