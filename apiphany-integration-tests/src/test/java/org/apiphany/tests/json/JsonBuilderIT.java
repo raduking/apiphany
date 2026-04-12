@@ -6,6 +6,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
@@ -16,6 +17,7 @@ import org.apiphany.lang.annotation.FieldOrder;
 import org.apiphany.lang.annotation.Ignored;
 import org.apiphany.security.Sensitive;
 import org.apiphany.tests.json.JsonBuilderIT.GenericTypeTests.GenericDTO;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.morphix.reflection.GenericClass;
@@ -292,6 +294,118 @@ class JsonBuilderIT {
 			String json = Strings.removeAllWhitespace(JsonBuilder.toJson(dto));
 
 			assertThat(json, equalTo("{\"id\":\"id1\",\"password\":\"" + Sensitive.Value.REDACTED + "\"}"));
+		}
+
+		static class ComplexRedactedDTO {
+
+			@Sensitive(visibility = Sensitive.Visibility.REDACTED)
+			private List<String> passwordHistory;
+
+			@Sensitive(visibility = Sensitive.Visibility.REDACTED)
+			private Map<String, String> securityQA;
+
+			@Sensitive(visibility = Sensitive.Visibility.REDACTED)
+			private CreditCard creditCard;
+
+			public ComplexRedactedDTO() {
+				// empty
+			}
+
+			public ComplexRedactedDTO(final List<String> passwordHistory, final Map<String, String> securityQA, final CreditCard creditCard) {
+				this.passwordHistory = passwordHistory;
+				this.securityQA = securityQA;
+				this.creditCard = creditCard;
+			}
+
+			public List<String> getPasswordHistory() {
+				return passwordHistory;
+			}
+
+			public void setPasswordHistory(final List<String> passwordHistory) {
+				this.passwordHistory = passwordHistory;
+			}
+
+			public Map<String, String> getSecurityQA() {
+				return securityQA;
+			}
+
+			public void setSecurityQA(final Map<String, String> securityQA) {
+				this.securityQA = securityQA;
+			}
+
+			public CreditCard getCreditCard() {
+				return creditCard;
+			}
+
+			public void setCreditCard(final CreditCard creditCard) {
+				this.creditCard = creditCard;
+			}
+		}
+
+		static class CreditCard {
+
+			private String number;
+			private String expiry;
+
+			public CreditCard() {
+				// empty
+			}
+
+			public CreditCard(final String number, final String expiry) {
+				this.number = number;
+				this.expiry = expiry;
+			}
+
+			public String getNumber() {
+				return number;
+			}
+
+			public void setNumber(final String number) {
+				this.number = number;
+			}
+
+			public String getExpiry() {
+				return expiry;
+			}
+
+			public void setExpiry(final String expiry) {
+				this.expiry = expiry;
+			}
+		}
+
+		@Test
+		void shouldRedactComplexSensitiveFieldsInJson() {
+			ComplexRedactedDTO dto = new ComplexRedactedDTO(
+					List.of("p1", "p2"),
+					Map.of("q1", "a1", "q2", "a2"),
+					new CreditCard("4111111111111111", "12/25"));
+
+			String json = Strings.removeAllWhitespace(JsonBuilder.toJson(dto));
+
+			assertThat(json,
+					equalTo("{\"passwordHistory\":[\"" + Sensitive.Value.REDACTED + "\"],"
+							+ "\"securityQA\":{\"redacted\":\"" + Sensitive.Value.REDACTED + "\"},"
+							+ "\"creditCard\":\"" + Sensitive.Value.REDACTED + "\"}"));
+		}
+
+		@Disabled("This test fails because the redaction of complex types is not recursive, but it should be. This is a known issue that will be fixed in a future release.")
+		@Test
+		void shouldRedactComplexSensitiveFieldsInJsonGoingRecursively() {
+			ComplexRedactedDTO dto = new ComplexRedactedDTO(
+					List.of("p1", "p2"),
+					Map.of("q1", "a1", "q2", "a2"),
+					new CreditCard("4111111111111111", "12/25"));
+
+			String json = Strings.removeAllWhitespace(JsonBuilder.toJson(dto));
+
+			assertThat(json,
+					equalTo("{\"passwordHistory\":[\"" + Sensitive.Value.REDACTED + "\"],"
+							+ "\"securityQA\":{\"redacted\":\"" + Sensitive.Value.REDACTED + "\"},"
+							+ "\"creditCard\":{"
+							+ "\"number\":\"" + Sensitive.Value.REDACTED + "\","
+							+ "\"expiry\":\"" + Sensitive.Value.REDACTED + "\""
+							+ "}"
+							+ "}"));
 		}
 
 		static class NoDefaultConstructorDTO {

@@ -111,7 +111,14 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	protected final AnnotationIntrospector defaultAnnotationIntrospector;
 
 	/**
-	 * Hide constructor.
+	 * Constructor with extra configurations:
+	 * <ul>
+	 * <li>do not fail on empty beans</li>
+	 * <li>for some strange reason in Jackson 3 the properties are sorted alphabetically by default so we change the default
+	 * to be the same as in Jackson 2, which is to keep the order of the properties as they are in the class</li>
+	 * <li>accept case insensitive enums</li>
+	 * <li>do not serialize null values</li>
+	 * </ul>
 	 *
 	 * @param jsonMapper the object mapper to use
 	 */
@@ -123,6 +130,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 		}
 		builder.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 		builder.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS, true);
+		builder.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, false);
 		builder.changeDefaultPropertyInclusion(inclusion -> inclusion
 				.withContentInclusion(Include.NON_NULL)
 				.withValueInclusion(Include.NON_NULL));
