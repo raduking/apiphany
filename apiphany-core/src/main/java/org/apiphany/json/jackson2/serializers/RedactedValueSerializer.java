@@ -35,7 +35,7 @@ public class RedactedValueSerializer extends JsonSerializer<Object> implements C
 	 *
 	 * @param type the type of the value being serialized
 	 */
-	private RedactedValueSerializer(final JavaType type) {
+	protected RedactedValueSerializer(final JavaType type) {
 		this.type = type;
 	}
 
@@ -44,17 +44,27 @@ public class RedactedValueSerializer extends JsonSerializer<Object> implements C
 	 */
 	@Override
 	public void serialize(final Object value, final JsonGenerator gen, final SerializerProvider serializers) throws IOException {
-		if (null != type && type.isCollectionLikeType()) {
+		if (null == value) {
+			gen.writeNull();
+			return;
+		}
+		if (null == type) {
+			gen.writeString(Sensitive.Value.REDACTED);
+			return;
+		}
+		if (type.isCollectionLikeType() || type.isArrayType()) {
 			gen.writeStartArray();
 			gen.writeString(Sensitive.Value.REDACTED);
 			gen.writeEndArray();
-		} else if (type != null && type.isMapLikeType()) {
-			gen.writeStartObject();
-			gen.writeStringField("redacted", Sensitive.Value.REDACTED);
-			gen.writeEndObject();
-		} else {
-			gen.writeString(Sensitive.Value.REDACTED);
+			return;
 		}
+		if (type.isMapLikeType()) {
+			gen.writeStartObject();
+			gen.writeStringField(Sensitive.Field.SERIALIZED_NAME, Sensitive.Value.REDACTED);
+			gen.writeEndObject();
+			return;
+		}
+		gen.writeString(Sensitive.Value.REDACTED);
 	}
 
 	/**
@@ -62,9 +72,18 @@ public class RedactedValueSerializer extends JsonSerializer<Object> implements C
 	 */
 	@Override
 	public JsonSerializer<?> createContextual(final SerializerProvider provider, final BeanProperty property) {
-		if (null != property) {
-			return new RedactedValueSerializer(property.getType());
+		if (null == property) {
+			return this;
 		}
-		return this;
+		return new RedactedValueSerializer(property.getType());
+	}
+
+	/**
+	 * Returns the type of the value being serialized.
+	 *
+	 * @return the type of the value being serialized
+	 */
+	public JavaType getType() {
+		return type;
 	}
 }

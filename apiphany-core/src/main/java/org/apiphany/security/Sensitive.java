@@ -45,6 +45,27 @@ public @interface Sensitive {
 	}
 
 	/**
+	 * Defines field name constants for handling sensitive data in map-like structures.
+	 *
+	 * @author Radu Sebastian LAZIN
+	 */
+	public static class Field {
+
+		/**
+		 * Constant representing the field name used when redacting sensitive data in map-like structures. This can be used as a
+		 * placeholder key when the actual keys of a map should not be exposed.
+		 */
+		public static final String SERIALIZED_NAME = "redacted";
+
+		/**
+		 * Private constructor to prevent instantiation of this utility class.
+		 */
+		private Field() {
+			throw Constructors.unsupportedOperationException();
+		}
+	}
+
+	/**
 	 * Enum representing the visibility strategies for handling sensitive data. The {@link Visibility#HIDDEN} strategy hides
 	 * the sensitive data by not including it in the output, while the {@link Visibility#REDACTED} strategy redacts the
 	 * sensitive data by replacing it with the string defined in {@link Value#REDACTED}.

@@ -652,6 +652,18 @@ class Jackson2JsonBuilderTest {
 		}
 	}
 
+	@Nested
+	class InstanceTests {
+
+		@Test
+		void shouldReturnSingletonInstance() {
+			Jackson2JsonBuilder instance1 = Jackson2JsonBuilder.instance();
+			Jackson2JsonBuilder instance2 = Jackson2JsonBuilder.instance();
+
+			assertThat(instance1, sameInstance(instance2));
+		}
+	}
+
 	static class A {
 
 		private Map<String, B> elements;

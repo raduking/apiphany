@@ -34,7 +34,7 @@ public class RedactedValueSerializer extends StdSerializer<Object> {
 	 *
 	 * @param type the type of the value being serialized
 	 */
-	private RedactedValueSerializer(final JavaType type) {
+	protected RedactedValueSerializer(final JavaType type) {
 		super(Object.class);
 		this.type = type;
 	}
@@ -45,17 +45,27 @@ public class RedactedValueSerializer extends StdSerializer<Object> {
 	@Override
 	@SuppressWarnings("resource")
 	public void serialize(final Object value, final JsonGenerator gen, final SerializationContext ctxt) throws JacksonException {
-		if (null != type && type.isCollectionLikeType()) {
+		if (null == value) {
+			gen.writeNull();
+			return;
+		}
+		if (null == type) {
+			gen.writeString(Sensitive.Value.REDACTED);
+			return;
+		}
+		if (type.isCollectionLikeType() || type.isArrayType()) {
 			gen.writeStartArray();
 			gen.writeString(Sensitive.Value.REDACTED);
 			gen.writeEndArray();
-		} else if (null != type && type.isMapLikeType()) {
-			gen.writeStartObject();
-			gen.writeStringProperty("redacted", Sensitive.Value.REDACTED);
-			gen.writeEndObject();
-		} else {
-			gen.writeString(Sensitive.Value.REDACTED);
+			return;
 		}
+		if (type.isMapLikeType()) {
+			gen.writeStartObject();
+			gen.writeStringProperty(Sensitive.Field.SERIALIZED_NAME, Sensitive.Value.REDACTED);
+			gen.writeEndObject();
+			return;
+		}
+		gen.writeString(Sensitive.Value.REDACTED);
 	}
 
 	/**
@@ -63,9 +73,18 @@ public class RedactedValueSerializer extends StdSerializer<Object> {
 	 */
 	@Override
 	public ValueSerializer<?> createContextual(final SerializationContext ctxt, final BeanProperty property) {
-		if (null != property) {
-			return new RedactedValueSerializer(property.getType());
+		if (null == property) {
+			return this;
 		}
-		return this;
+		return new RedactedValueSerializer(property.getType());
+	}
+
+	/**
+	 * Returns the type of the value being serialized.
+	 *
+	 * @return the type of the value being serialized
+	 */
+	public JavaType getType() {
+		return type;
 	}
 }
