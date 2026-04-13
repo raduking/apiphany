@@ -2,21 +2,17 @@ package org.apiphany.security.oauth2;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
+import org.apiphany.logging.Slf4jLoggerAdapter;
 import org.apiphany.security.AuthenticationException;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationTokenProvider;
 import org.morphix.lang.Comparables;
 import org.morphix.lang.Nullables;
-import org.morphix.lang.resource.ScopedResource;
 import org.morphix.lang.retry.Retry;
 import org.morphix.lang.retry.WaitCounter;
+import org.morphix.lang.thread.ReschedulingTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,19 +36,9 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	private static final Logger LOGGER = LoggerFactory.getLogger(OAuth2TokenProvider.class);
 
 	/**
-	 * The client doing the token refresh.
+	 * The self rescheduling task that handles the token refresh scheduling.
 	 */
-	private final AuthenticationTokenProvider tokenClient;
-
-	/**
-	 * Token retrieval scheduler.
-	 */
-	private final ScopedResource<ScheduledExecutorService> tokenRefreshScheduler;
-
-	/**
-	 * Scheduler enabled flag.
-	 */
-	private final AtomicBoolean schedulerEnabled = new AtomicBoolean(false);
+	private final ReschedulingTask selfReschedulingTask;
 
 	/**
 	 * The OAuth2 resolved registration for this provider.
@@ -60,24 +46,24 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	private final OAuth2ResolvedRegistration registration;
 
 	/**
-	 * Supplies the default token expiration.
-	 */
-	private final Supplier<Instant> defaultExpirationSupplier;
-
-	/**
 	 * The specific options for this provider.
 	 */
 	private final OAuth2TokenProviderProperties properties;
 
 	/**
-	 * The scheduled future to stop.
+	 * The client doing the token refresh.
 	 */
-	private ScheduledFuture<?> scheduledFuture;
+	private final AuthenticationTokenProvider tokenClient;
 
 	/**
 	 * The authentication token.
 	 */
 	private AuthenticationToken authenticationToken;
+
+	/**
+	 * Supplies the default token expiration.
+	 */
+	private final Supplier<Instant> defaultExpirationSupplier;
 
 	/**
 	 * Creates a new authentication token provider.
@@ -87,7 +73,6 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	public OAuth2TokenProvider(final OAuth2TokenProviderSpec specification) {
 		this.properties = specification.getTokenProviderProperties();
 		this.registration = specification.getResolvedRegistration();
-		this.tokenRefreshScheduler = specification.getTokenRefreshScheduler();
 		this.defaultExpirationSupplier = specification.getDefaultExpirationSupplier();
 
 		if (null == registration) {
@@ -97,10 +82,30 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 			OAuth2TokenClientSupplier supplier = specification.getTokenClientSupplier();
 			this.tokenClient = supplier.get(registration.getClientRegistration(), registration.getProviderDetails());
 		}
+		this.selfReschedulingTask = newReschedulingTask(specification);
+
 		if (null != tokenClient) {
-			setSchedulerEnabled(true);
-			updateAuthenticationToken();
+			enable();
 		}
+	}
+
+	/**
+	 * Builds a new self rescheduling task for this token provider.
+	 *
+	 * @param specification the OAuth2 token provider specification
+	 * @return a new self rescheduling task for this token provider
+	 */
+	@SuppressWarnings("resource")
+	private ReschedulingTask newReschedulingTask(final OAuth2TokenProviderSpec specification) {
+		return ReschedulingTask.builder()
+				.name(getName())
+				.task(this::updateAuthenticationToken)
+				.nextDelay(this::getNextUpdateDelay)
+				.minDelay(properties.getMinRefreshInterval())
+				.scheduler(specification.getTokenRefreshScheduler())
+				.taskCancelRetry(Retry.of(WaitCounter.of(properties.getMaxTaskCloseAttempts(), properties.getCloseTaskRetryInterval())))
+				.logger(Slf4jLoggerAdapter.of(LOGGER))
+				.build();
 	}
 
 	/**
@@ -118,29 +123,9 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 */
 	@Override
 	public void close() throws Exception {
-		setSchedulerEnabled(false);
-		tokenRefreshScheduler.closeIfManaged(this::customCloseTokenRefreshScheduler);
+		selfReschedulingTask.close();
 		if (getTokenClient() instanceof AutoCloseable closeable) {
 			closeable.close();
-		}
-	}
-
-	/**
-	 * Safely closes the token refresh scheduler.
-	 */
-	@SuppressWarnings("resource")
-	private void customCloseTokenRefreshScheduler() {
-		ScheduledExecutorService scheduler = tokenRefreshScheduler.unwrap();
-		boolean cancelled = null == scheduledFuture || scheduledFuture.isDone();
-		if (!cancelled) {
-			Retry retry = Retry.of(WaitCounter.of(getProperties().getMaxTaskCloseAttempts(), getProperties().getCloseTaskRetryInterval()));
-			cancelled = retry.until(() -> scheduledFuture.cancel(false), Boolean::booleanValue);
-		}
-		if (cancelled) {
-			scheduler.close();
-		} else {
-			List<Runnable> runningTasks = scheduler.shutdownNow();
-			LOGGER.warn("[{}] Still running tasks count: {}", getName(), runningTasks.size());
 		}
 	}
 
@@ -180,9 +165,16 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 * @return the expiration date
 	 */
 	protected Instant getTokenExpiration() {
-		return Nullables.whenNotNull(authenticationToken)
-				.thenNotNull(AuthenticationToken::getExpiration)
-				.orElse(this::getDefaultTokenExpiration);
+		if (null == authenticationToken) {
+			LOGGER.warn("[{}] No authentication token available, using default expiration.", getName());
+			return getDefaultTokenExpiration();
+		}
+		Instant expiration = authenticationToken.getExpiration();
+		if (null == expiration) {
+			LOGGER.warn("[{}] No expiration date in authentication token, using default expiration.", getName());
+			return getDefaultTokenExpiration();
+		}
+		return expiration;
 	}
 
 	/**
@@ -210,10 +202,6 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	private void updateAuthenticationToken() {
 		String clientRegistrationName = getClientRegistrationName();
 		LOGGER.debug("[{}] Token expired, requesting new token.", clientRegistrationName);
-		if (isSchedulerDisabled()) {
-			LOGGER.debug("[{}] Scheduler is disabled, skipping token update.", clientRegistrationName);
-			return;
-		}
 		Instant expiration = Instant.now();
 		try {
 			AuthenticationToken token = getAuthenticationTokenFromClient();
@@ -222,8 +210,6 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 			LOGGER.debug("[{}] Successfully retrieved new token.", clientRegistrationName);
 		} catch (Exception e) {
 			LOGGER.error("[{}] Error retrieving new token.", clientRegistrationName, e);
-		} finally {
-			scheduleTokenUpdate();
 		}
 	}
 
@@ -245,15 +231,17 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	}
 
 	/**
-	 * Schedules the token update.
+	 * Returns the delay until the next token update. The delay is calculated as the time until the token expiration minus
+	 * the error margin defined in {@link OAuth2TokenProviderProperties}. If the calculated delay is negative, it returns
+	 * the minimum refresh interval defined in {@link OAuth2TokenProviderProperties}.
+	 *
+	 * @return the delay until the next token update
 	 */
-	@SuppressWarnings("resource")
-	private void scheduleTokenUpdate() {
+	private Duration getNextUpdateDelay() {
 		Instant expiration = getTokenExpiration().minus(getProperties().getExpirationErrorMargin());
 		Instant scheduled = Comparables.max(expiration, Instant.now());
 		Duration delay = Duration.between(Instant.now(), scheduled);
-		delay = Comparables.max(delay, getProperties().getMinRefreshInterval());
-		scheduledFuture = tokenRefreshScheduler.unwrap().schedule(this::updateAuthenticationToken, delay.toMillis(), TimeUnit.MILLISECONDS);
+		return Comparables.max(delay, getProperties().getMinRefreshInterval());
 	}
 
 	/**
@@ -262,7 +250,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 * @return true if the scheduler is enabled, false otherwise
 	 */
 	public boolean isSchedulerEnabled() {
-		return schedulerEnabled.get();
+		return selfReschedulingTask.isEnabled();
 	}
 
 	/**
@@ -275,12 +263,21 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	}
 
 	/**
-	 * Enables/disables the scheduler.
+	 * Enables the scheduler if it is not already enabled.
 	 *
-	 * @param schedulerEnabled scheduler enable flag
+	 * @return true if the scheduler was enabled, false if it was already enabled
 	 */
-	public void setSchedulerEnabled(final boolean schedulerEnabled) {
-		this.schedulerEnabled.set(schedulerEnabled);
+	public boolean enable() {
+		return selfReschedulingTask.enable();
+	}
+
+	/**
+	 * Disables the scheduler if it is not already disabled.
+	 *
+	 * @return true if the scheduler was disabled, false if it was already disabled
+	 */
+	public boolean disable() {
+		return selfReschedulingTask.disable();
 	}
 
 	/**

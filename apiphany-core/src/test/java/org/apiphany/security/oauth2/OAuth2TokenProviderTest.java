@@ -678,7 +678,7 @@ class OAuth2TokenProviderTest {
 			int count = tokenRetrievalCount.incrementAndGet();
 			LOGGER.info("Token retrieval count: {}", count);
 			if (count > 1) {
-				tokenProviderHolder.getValue().setSchedulerEnabled(false);
+				tokenProviderHolder.getValue().disable();
 			}
 			return token;
 		}).when(tokenClient).getAuthenticationToken();

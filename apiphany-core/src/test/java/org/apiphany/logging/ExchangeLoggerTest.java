@@ -1,4 +1,4 @@
-package org.apiphany;
+package org.apiphany.logging;
 
 import static org.apiphany.test.Assertions.assertDefaultConstructorThrows;
 import static org.hamcrest.MatcherAssert.assertThat;
