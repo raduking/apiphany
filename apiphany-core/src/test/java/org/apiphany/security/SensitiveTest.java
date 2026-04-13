@@ -26,4 +26,10 @@ class SensitiveTest {
 		UnsupportedOperationException unsupportedOperationException = assertDefaultConstructorThrows(Sensitive.Value.class);
 		assertThat(unsupportedOperationException.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
 	}
+
+	@Test
+	void shouldThrowExceptionOnCallingFieldConstructor() {
+		UnsupportedOperationException unsupportedOperationException = assertDefaultConstructorThrows(Sensitive.Field.class);
+		assertThat(unsupportedOperationException.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
+	}
 }

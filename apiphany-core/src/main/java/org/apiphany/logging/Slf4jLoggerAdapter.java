@@ -51,4 +51,13 @@ public final class Slf4jLoggerAdapter implements LoggerAdapter {
 			case ERROR -> logger.error(message, args);
 		}
 	}
+
+	/**
+	 * Returns the underlying SLF4J logger instance.
+	 *
+	 * @return the SLF4J logger instance to which log messages are delegated
+	 */
+	public Logger getLogger() {
+		return logger;
+	}
 }
