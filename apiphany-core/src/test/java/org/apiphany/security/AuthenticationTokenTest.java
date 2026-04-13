@@ -5,6 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.Duration;
 import java.time.Instant;
 
 import org.apiphany.lang.Strings;
@@ -60,5 +61,13 @@ class AuthenticationTokenTest {
 		boolean result = token.isExpired();
 
 		assertFalse(result);
+	}
+
+	@Test
+	void shouldSetExpiresInWithDuration() {
+		AuthenticationToken token = new AuthenticationToken();
+		token.setExpiresIn(Duration.ofSeconds(10));
+
+		assertThat(token.getExpiresIn(), equalTo(10L));
 	}
 }

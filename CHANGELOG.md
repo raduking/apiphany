@@ -5,6 +5,9 @@
 - Added `Sensitive.Visibility` enumeration to define how the sensitive field should behave on serialization.
 - Added `Sensitive.Value.REDACTED` constant to be used instead of `HeaderValues.REDACTED`.
 - Added support to `JsonBuilder` to show redacted sensitive fields.
+- Upgraded `morphix-all` to `1.0.30`.
+- Removed unused `ExecutionWrapper` since it is already present in MorphiX.
+- Removed `LoggingFunction` since is already present in MorphiX.
 
 ---
 

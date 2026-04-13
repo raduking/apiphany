@@ -23,6 +23,7 @@ import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.ExchangeClientBuilder;
 import org.apiphany.client.http.HttpClientFluentAdapter;
 import org.apiphany.lang.Strings;
+import org.apiphany.logging.ExchangeLogger;
 import org.apiphany.meters.BasicMeters;
 import org.apiphany.meters.MeterFactory;
 import org.apiphany.security.AuthenticationType;
