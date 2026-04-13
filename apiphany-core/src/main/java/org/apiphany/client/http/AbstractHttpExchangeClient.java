@@ -4,6 +4,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
 
 import javax.net.ssl.SSLContext;
 
@@ -20,13 +22,10 @@ import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpHeaderValues;
 import org.apiphany.http.HttpStatus;
 import org.apiphany.io.ContentType;
-import org.apiphany.json.jackson2.Jackson2JsonHttpContentConverter;
-import org.apiphany.json.jackson2.Jackson2Library;
-import org.apiphany.json.jackson3.Jackson3JsonHttpContentConverter;
-import org.apiphany.json.jackson3.Jackson3Library;
 import org.apiphany.security.ssl.SSLContexts;
 import org.apiphany.security.ssl.SSLProperties;
 import org.morphix.lang.JavaObjects;
+import org.morphix.lang.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,10 +94,11 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 		contentConverters.add(new StringHttpContentConverter());
 
 		// TODO: abstract away the converter registration and discovery
-		if (Jackson3Library.isPresent()) {
-			contentConverters.add(new Jackson3JsonHttpContentConverter<>());
-		} else if (Jackson2Library.isPresent()) {
-			contentConverters.add(new Jackson2JsonHttpContentConverter<>());
+		for (Pair<BooleanSupplier, Supplier<HttpContentConverter<?>>> converter : HttpContentConverter.JSON_CONTENT_CONVERTERS) {
+			if (converter.left().getAsBoolean()) {
+				contentConverters.add(converter.right().get());
+				break;
+			}
 		}
 	}
 
