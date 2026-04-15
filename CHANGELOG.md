@@ -1,5 +1,11 @@
 ## Release Notes
 
+`1.2.2`
+
+- Upgraded `morphix-all` to `1.0.31`.
+
+---
+
 `1.2.1`
 
 - Added `Sensitive.Visibility` enumeration to define how the sensitive field should behave on serialization.
