@@ -6,6 +6,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Supplier;
 
 import org.morphix.lang.Nullables;
+import org.morphix.lang.function.ExecutionWrapper;
 import org.morphix.lang.resource.ScopedResource;
 
 /**
@@ -57,6 +58,12 @@ public class OAuth2TokenProviderSpec {
 	private final Supplier<Instant> defaultExpirationSupplier;
 
 	/**
+	 * The wrapper for the token update execution. This can be used to add retry logic, logging, etc. around the token
+	 * update process.
+	 */
+	private final ExecutionWrapper<Void> updateTokenWrapper;
+
+	/**
 	 * Constructor with builder.
 	 *
 	 * @param builder the builder
@@ -70,6 +77,7 @@ public class OAuth2TokenProviderSpec {
 				() -> ScopedResource.managed(OAuth2TokenProviderSpec.defaultSchedulerExecutor()));
 		this.defaultExpirationSupplier = Nullables.nonNullOrDefault(builder.defaultExpirationSupplier,
 				() -> Instant::now);
+		this.updateTokenWrapper = Nullables.nonNullOrDefault(builder.updateTokenWrapper, ExecutionWrapper::identity);
 	}
 
 	/**
@@ -138,6 +146,16 @@ public class OAuth2TokenProviderSpec {
 	}
 
 	/**
+	 * Returns the wrapper for the token update execution. This can be used to add retry logic, logging, etc. around the
+	 * token update process.
+	 *
+	 * @return the wrapper for the token update execution
+	 */
+	public ExecutionWrapper<Void> getUpdateTokenWrapper() {
+		return updateTokenWrapper;
+	}
+
+	/**
 	 * Builder for OAuth2 token provider specification.
 	 *
 	 * @author Radu Sebastian LAZIN
@@ -168,6 +186,12 @@ public class OAuth2TokenProviderSpec {
 		 * The default expiration supplier.
 		 */
 		private Supplier<Instant> defaultExpirationSupplier;
+
+		/**
+		 * The wrapper for the token update execution. This can be used to add retry logic, logging, etc. around the token
+		 * update process.
+		 */
+		private ExecutionWrapper<Void> updateTokenWrapper;
 
 		/**
 		 * Hidden constructor.
@@ -206,8 +230,7 @@ public class OAuth2TokenProviderSpec {
 		 * @return the builder
 		 */
 		public Builder registration(final OAuth2Properties oAuth2Properties, final String clientRegistrationName) {
-			this.registration = OAuth2ResolvedRegistration.of(oAuth2Properties, clientRegistrationName);
-			return this;
+			return registration(OAuth2ResolvedRegistration.of(oAuth2Properties, clientRegistrationName));
 		}
 
 		/**
@@ -264,6 +287,18 @@ public class OAuth2TokenProviderSpec {
 		 */
 		public Builder defaultExpirationSupplier(final Supplier<Instant> defaultExpirationSupplier) {
 			this.defaultExpirationSupplier = defaultExpirationSupplier;
+			return this;
+		}
+
+		/**
+		 * Sets the wrapper for the token update execution. This can be used to add retry logic, logging, etc. around the token
+		 * update process.
+		 *
+		 * @param updateTokenWrapper the wrapper for the token update execution
+		 * @return the builder
+		 */
+		public Builder updateTokenWrapper(final ExecutionWrapper<Void> updateTokenWrapper) {
+			this.updateTokenWrapper = updateTokenWrapper;
 			return this;
 		}
 

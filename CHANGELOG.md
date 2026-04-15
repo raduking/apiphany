@@ -2,7 +2,9 @@
 
 `1.2.2`
 
-- Upgraded `morphix-all` to `1.0.31`.
+- Upgraded `morphix-all` to `1.0.32`.
+- Added `ExecutionWrapper` to `OAuth2TokenProviderSpec` to be able to configure the update token wrapper.
+- Added `ExecutionWrapper` to `OAuth2TokenProvider` rescheduling task configured in the `OAuth2TokenProviderSpec`.
 
 ---
 
@@ -14,6 +16,8 @@
 - Upgraded `morphix-all` to `1.0.30`.
 - Removed unused `ExecutionWrapper` since it is already present in MorphiX.
 - Removed `LoggingFunction` since is already present in MorphiX.
+- Moved `ExchangeLogger` to `logging` package.
+- Added `Slf4jLoggingAdapter` as a `LoggingAdapter` implementation for SLF4J.
 
 ---
 

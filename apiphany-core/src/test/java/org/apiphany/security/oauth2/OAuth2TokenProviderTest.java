@@ -25,12 +25,15 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apiphany.lang.Strings;
+import org.apiphany.logging.Slf4jLoggerAdapter;
 import org.apiphany.security.AuthenticationException;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationTokenProvider;
@@ -42,6 +45,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.morphix.lang.Holder;
+import org.morphix.lang.function.ExecutionWrapper;
+import org.morphix.lang.function.ExecutionWrappers;
+import org.morphix.lang.function.LoggerAdapter.LoggingLevel;
 import org.morphix.lang.resource.ScopedResource;
 import org.morphix.lang.thread.Threads;
 import org.slf4j.Logger;
@@ -612,6 +618,54 @@ class OAuth2TokenProviderTest {
 		int retrievals = 5;
 		Duration tokenValidity = Duration.ofSeconds(1);
 
+		CountDownLatch tokenRetrievalLatch = new CountDownLatch(retrievals);
+		AtomicInteger tokenRetrievalCount = new AtomicInteger(0);
+		doAnswer(answer -> {
+			AuthenticationToken token = createToken(tokenValidity);
+			int count = tokenRetrievalCount.incrementAndGet();
+			LOGGER.info("Token retrieval count: {}", count);
+			tokenRetrievalLatch.countDown();
+			return token;
+		}).when(tokenClient).getAuthenticationToken();
+
+		Duration expirationErrorMargin = tokenValidity.minusMillis(10);
+		Duration minRefreshInterval = Duration.ofMillis(20);
+
+		OAuth2TokenProviderProperties properties = new OAuth2TokenProviderProperties();
+		properties.setExpirationErrorMargin(expirationErrorMargin);
+		properties.setMinRefreshInterval(minRefreshInterval);
+
+		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
+				.properties(properties)
+				.registration(oAuth2Properties, CLIENT_REGISTRATION_NAME)
+				.tokenClientSupplier((cr, pd) -> tokenClient)
+				.build();
+
+		boolean reachedRetrievals = false;
+		try (OAuth2TokenProvider localTokenProvider = OAuth2TokenProvider.of(specification)) {
+			reachedRetrievals = Threads.safeWait(tokenRetrievalLatch, Duration.ofSeconds(3));
+		}
+
+		assertTrue(reachedRetrievals);
+		assertThat(tokenRetrievalCount.get(), equalTo(retrievals));
+
+		verify(tokenClient, times(retrievals)).getAuthenticationToken();
+	}
+
+	@Test
+	@Timeout(5)
+	@SuppressWarnings("resource")
+	void shouldInitializeSchedulerAndRetrieveMultipleTokensWithCustomScheduler() throws Exception {
+		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
+		doReturn(clientRegistration).when(oAuth2Properties).getClientRegistration(CLIENT_REGISTRATION_NAME);
+		doReturn(true).when(clientRegistration).hasClientId();
+		doReturn(true).when(clientRegistration).hasClientSecret();
+		doReturn(Map.of(PROVIDER_NAME, providerDetails)).when(oAuth2Properties).getProvider();
+		doReturn(providerDetails).when(oAuth2Properties).getProviderDetails(clientRegistration);
+
+		int retrievals = 5;
+		Duration tokenValidity = Duration.ofSeconds(1);
+
 		AtomicInteger tokenRetrievalCount = new AtomicInteger(0);
 		doAnswer(answer -> {
 			AuthenticationToken token = createToken(tokenValidity);
@@ -632,6 +686,7 @@ class OAuth2TokenProviderTest {
 				.properties(properties)
 				.registration(oAuth2Properties, CLIENT_REGISTRATION_NAME)
 				.tokenClientSupplier((cr, pd) -> tokenClient)
+				.tokenRefreshScheduler(ScopedResource.managed(Executors.newSingleThreadScheduledExecutor()))
 				.build();
 
 		boolean reachedRetrievals = false;
@@ -693,6 +748,62 @@ class OAuth2TokenProviderTest {
 
 		assertTrue(reachedRetrievals);
 		verify(tokenClient, times(2)).getAuthenticationToken();
+	}
+
+	@Test
+	@Timeout(5)
+	void shouldInitializeSchedulerAndRetrieveMultipleTokensWithDefaultSchedulerAndExecutionWrapper() throws Exception {
+		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
+		doReturn(clientRegistration).when(oAuth2Properties).getClientRegistration(CLIENT_REGISTRATION_NAME);
+		doReturn(true).when(clientRegistration).hasClientId();
+		doReturn(true).when(clientRegistration).hasClientSecret();
+		doReturn(Map.of(PROVIDER_NAME, providerDetails)).when(oAuth2Properties).getProvider();
+		doReturn(providerDetails).when(oAuth2Properties).getProviderDetails(clientRegistration);
+
+		int retrievals = 5;
+		Duration tokenValidity = Duration.ofSeconds(1);
+
+		CountDownLatch tokenRetrievalLatch = new CountDownLatch(retrievals);
+		AtomicInteger tokenRetrievalCount = new AtomicInteger(0);
+		doAnswer(answer -> {
+			AuthenticationToken token = createToken(tokenValidity);
+			int count = tokenRetrievalCount.incrementAndGet();
+			LOGGER.info("Token retrieval count: {}", count);
+			tokenRetrievalLatch.countDown();
+			return token;
+		}).when(tokenClient).getAuthenticationToken();
+
+		Duration expirationErrorMargin = tokenValidity.minusMillis(10);
+		Duration minRefreshInterval = Duration.ofMillis(20);
+
+		OAuth2TokenProviderProperties properties = new OAuth2TokenProviderProperties();
+		properties.setExpirationErrorMargin(expirationErrorMargin);
+		properties.setMinRefreshInterval(minRefreshInterval);
+
+		AtomicInteger executionWrapperCount = new AtomicInteger(0);
+		ExecutionWrapper<Void> count = s -> {
+			LOGGER.info("Execution wrapper invocation count: {}", executionWrapperCount.incrementAndGet());
+			return s;
+		};
+		ExecutionWrapper<Void> log = ExecutionWrappers.log(Slf4jLoggerAdapter.of(LOGGER), LoggingLevel.WARN, CLIENT_REGISTRATION_NAME + "-wrapper");
+
+		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
+				.properties(properties)
+				.registration(oAuth2Properties, CLIENT_REGISTRATION_NAME)
+				.tokenClientSupplier((cr, pd) -> tokenClient)
+				.updateTokenWrapper(count.andThen(log))
+				.build();
+
+		boolean reachedRetrievals = false;
+		try (OAuth2TokenProvider localTokenProvider = OAuth2TokenProvider.of(specification)) {
+			reachedRetrievals = Threads.safeWait(tokenRetrievalLatch, Duration.ofSeconds(3));
+		}
+
+		assertTrue(reachedRetrievals);
+		assertThat(tokenRetrievalCount.get(), equalTo(retrievals));
+		assertThat(executionWrapperCount.get(), equalTo(retrievals));
+
+		verify(tokenClient, times(retrievals)).getAuthenticationToken();
 	}
 
 	private static AuthenticationToken createToken() {
