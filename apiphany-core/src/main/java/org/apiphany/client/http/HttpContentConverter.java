@@ -28,7 +28,7 @@ public interface HttpContentConverter<T> extends ContentConverter<T> {
 	 * Default content converters with their presence checks. The converters are registered in order of preference, with the
 	 * most preferred converter first.
 	 */
-	static final List<Pair<BooleanSupplier, Supplier<HttpContentConverter<?>>>> JSON_CONTENT_CONVERTERS = List.of(
+	static final List<Pair<BooleanSupplier, Supplier<HttpContentConverter<?>>>> JSON_CONVERTERS = List.of(
 			Pair.of(Jackson3Library::isPresent, Jackson3JsonHttpContentConverter::new),
 			Pair.of(Jackson2Library::isPresent, Jackson2JsonHttpContentConverter::new));
 
