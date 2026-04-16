@@ -65,7 +65,7 @@ class OAuth2HttpExchangeClientTest {
 
 	@Test
 	@SuppressWarnings("resource")
-	void shouldReturnTokenOnGetAuthenticationTokenWhenToken() throws Exception {
+	void shouldReturnTokenOnGetAuthenticationTokenWhenTokenIsAvailable() throws Exception {
 		JavaNetHttpExchangeClient tokenExchangeClient = mock(JavaNetHttpExchangeClient.class);
 		doReturn(AuthenticationType.NONE).when(tokenExchangeClient).getAuthenticationType();
 		doReturn(TOKEN_EXCHANGE_CLIENT).when(tokenExchangeClient).getName();

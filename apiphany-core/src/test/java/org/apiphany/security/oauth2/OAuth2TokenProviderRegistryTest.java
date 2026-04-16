@@ -232,11 +232,22 @@ class OAuth2TokenProviderRegistryTest {
 	@SuppressWarnings("resource")
 	void shouldCreateRegistryFromTokenSupplierFactories() throws Exception {
 		OAuth2Registry mockRegistry = mock(OAuth2Registry.class);
-		OAuth2TokenProvider tokenProvider = mock(OAuth2TokenProvider.class);
-		doReturn(CLIENT_REGISTRATION_NAME).when(tokenProvider).getClientRegistrationName();
+
+		OAuth2ResolvedRegistration registration1 = mock(OAuth2ResolvedRegistration.class);
+		doReturn(CLIENT_REGISTRATION_1).when(registration1).getClientRegistrationName();
+		OAuth2ResolvedRegistration registration2 = mock(OAuth2ResolvedRegistration.class);
+		doReturn(CLIENT_REGISTRATION_2).when(registration2).getClientRegistrationName();
+
+		doReturn(List.of(registration1, registration2)).when(mockRegistry).entries();
+
+		OAuth2TokenProvider tokenProvider1 = mock(OAuth2TokenProvider.class);
+		doReturn(CLIENT_REGISTRATION_1).when(tokenProvider1).getClientRegistrationName();
+
+		OAuth2TokenProvider tokenProvider2 = mock(OAuth2TokenProvider.class);
+		doReturn(CLIENT_REGISTRATION_2).when(tokenProvider2).getClientRegistrationName();
 
 		OAuth2TokenClientSupplier tokenClientSupplier = (r, d) -> mock(AuthenticationTokenProvider.class);
-		doReturn(List.of(tokenProvider)).when(mockRegistry).tokenProviders(any());
+		doReturn(tokenProvider1).doReturn(tokenProvider2).when(mockRegistry).tokenProvider(any(), any());
 
 		OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.of(
 				mockRegistry,
@@ -245,22 +256,35 @@ class OAuth2TokenProviderRegistryTest {
 
 		registry.close();
 
-		assertThat(registry.getProviders(), hasSize(1));
-		assertThat(registry.getProviderNames(), hasSize(1));
-		assertThat(registry.getProviderNames().getFirst(), equalTo(nameConverter(CLIENT_REGISTRATION_NAME)));
+		assertThat(registry.getProviders(), hasSize(2));
+		assertThat(registry.getProviderNames(), hasSize(2));
+		assertThat(registry.getProviderNames(),
+				containsInAnyOrder(nameConverter(CLIENT_REGISTRATION_1), nameConverter(CLIENT_REGISTRATION_2)));
 
-		verify(mockRegistry).tokenProviders(tokenClientSupplier);
+		verify(mockRegistry).tokenProvider(CLIENT_REGISTRATION_1, tokenClientSupplier);
+		verify(mockRegistry).tokenProvider(CLIENT_REGISTRATION_2, tokenClientSupplier);
 	}
 
 	@Test
 	@SuppressWarnings("resource")
 	void shouldCreateRegistryFromTokenSupplierFactoriesWithoutNameConverters() throws Exception {
 		OAuth2Registry mockRegistry = mock(OAuth2Registry.class);
-		OAuth2TokenProvider tokenProvider = mock(OAuth2TokenProvider.class);
-		doReturn(CLIENT_REGISTRATION_NAME).when(tokenProvider).getClientRegistrationName();
+
+		OAuth2ResolvedRegistration registration1 = mock(OAuth2ResolvedRegistration.class);
+		doReturn(CLIENT_REGISTRATION_1).when(registration1).getClientRegistrationName();
+		OAuth2ResolvedRegistration registration2 = mock(OAuth2ResolvedRegistration.class);
+		doReturn(CLIENT_REGISTRATION_2).when(registration2).getClientRegistrationName();
+
+		doReturn(List.of(registration1, registration2)).when(mockRegistry).entries();
+
+		OAuth2TokenProvider tokenProvider1 = mock(OAuth2TokenProvider.class);
+		doReturn(CLIENT_REGISTRATION_1).when(tokenProvider1).getClientRegistrationName();
+
+		OAuth2TokenProvider tokenProvider2 = mock(OAuth2TokenProvider.class);
+		doReturn(CLIENT_REGISTRATION_2).when(tokenProvider2).getClientRegistrationName();
 
 		OAuth2TokenClientSupplier tokenClientSupplier = (r, d) -> mock(AuthenticationTokenProvider.class);
-		doReturn(List.of(tokenProvider)).when(mockRegistry).tokenProviders(any());
+		doReturn(tokenProvider1).doReturn(tokenProvider2).when(mockRegistry).tokenProvider(any(), any());
 
 		OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.of(
 				mockRegistry,
@@ -268,24 +292,36 @@ class OAuth2TokenProviderRegistryTest {
 
 		registry.close();
 
-		assertThat(registry.getProviders(), hasSize(1));
-		assertThat(registry.getProviderNames(), hasSize(1));
-		assertThat(registry.getProviderNames().getFirst(), equalTo(CLIENT_REGISTRATION_NAME));
+		assertThat(registry.getProviders(), hasSize(2));
+		assertThat(registry.getProviderNames(), hasSize(2));
+		assertThat(registry.getProviderNames(), containsInAnyOrder(CLIENT_REGISTRATION_1, CLIENT_REGISTRATION_2));
 
-		verify(mockRegistry).tokenProviders(tokenClientSupplier);
+		verify(mockRegistry).tokenProvider(CLIENT_REGISTRATION_1, tokenClientSupplier);
+		verify(mockRegistry).tokenProvider(CLIENT_REGISTRATION_2, tokenClientSupplier);
 	}
 
 	@Test
 	@SuppressWarnings({ "resource", "unchecked" })
 	void shouldCreateRegistryFromTokenSupplierFactoriesWithCustomizer() throws Exception {
+		BiConsumer<String, OAuth2TokenProvider> customizer = mock(BiConsumer.class);
+
 		OAuth2Registry mockRegistry = mock(OAuth2Registry.class);
-		OAuth2TokenProvider tokenProvider = mock(OAuth2TokenProvider.class);
-		doReturn(CLIENT_REGISTRATION_NAME).when(tokenProvider).getClientRegistrationName();
+
+		OAuth2ResolvedRegistration registration1 = mock(OAuth2ResolvedRegistration.class);
+		doReturn(CLIENT_REGISTRATION_1).when(registration1).getClientRegistrationName();
+		OAuth2ResolvedRegistration registration2 = mock(OAuth2ResolvedRegistration.class);
+		doReturn(CLIENT_REGISTRATION_2).when(registration2).getClientRegistrationName();
+
+		doReturn(List.of(registration1, registration2)).when(mockRegistry).entries();
+
+		OAuth2TokenProvider tokenProvider1 = mock(OAuth2TokenProvider.class);
+		doReturn(CLIENT_REGISTRATION_1).when(tokenProvider1).getClientRegistrationName();
+
+		OAuth2TokenProvider tokenProvider2 = mock(OAuth2TokenProvider.class);
+		doReturn(CLIENT_REGISTRATION_2).when(tokenProvider2).getClientRegistrationName();
 
 		OAuth2TokenClientSupplier tokenClientSupplier = (r, d) -> mock(AuthenticationTokenProvider.class);
-		doReturn(List.of(tokenProvider)).when(mockRegistry).tokenProviders(any());
-
-		BiConsumer<String, OAuth2TokenProvider> customizer = mock(BiConsumer.class);
+		doReturn(tokenProvider1).doReturn(tokenProvider2).when(mockRegistry).tokenProvider(any(), any());
 
 		OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.of(
 				mockRegistry,
@@ -295,14 +331,19 @@ class OAuth2TokenProviderRegistryTest {
 
 		registry.close();
 
-		String expectedName = nameConverter(CLIENT_REGISTRATION_NAME);
+		String expectedName1 = nameConverter(CLIENT_REGISTRATION_1);
+		String expectedName2 = nameConverter(CLIENT_REGISTRATION_2);
 
-		assertThat(registry.getProviders(), hasSize(1));
-		assertThat(registry.getProviderNames(), hasSize(1));
-		assertThat(registry.getProviderNames().getFirst(), equalTo(expectedName));
+		assertThat(registry.getProviders(), hasSize(2));
+		assertThat(registry.getProviderNames(), hasSize(2));
+		assertThat(registry.getProviderNames(),
+				containsInAnyOrder(nameConverter(CLIENT_REGISTRATION_1), nameConverter(CLIENT_REGISTRATION_2)));
 
-		verify(mockRegistry).tokenProviders(tokenClientSupplier);
-		verify(customizer).accept(expectedName, tokenProvider);
+		verify(mockRegistry).tokenProvider(CLIENT_REGISTRATION_1, tokenClientSupplier);
+		verify(mockRegistry).tokenProvider(CLIENT_REGISTRATION_2, tokenClientSupplier);
+
+		verify(customizer).accept(expectedName1, tokenProvider1);
+		verify(customizer).accept(expectedName2, tokenProvider2);
 	}
 
 	@Test
