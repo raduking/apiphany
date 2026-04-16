@@ -10,6 +10,7 @@ import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
 import org.morphix.lang.function.Consumers;
+import org.morphix.lang.function.Predicates;
 import org.morphix.lang.resource.ScopedResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,20 +93,12 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 	 * @param createdProviderCustomizer a consumer that is called when a new provider is created
 	 * @return an OAuth2 token provider registry based on the given OAuth2 registry
 	 */
-	@SuppressWarnings("resource")
 	public static OAuth2TokenProviderRegistry of(
 			final OAuth2Registry oAuth2Registry,
 			final OAuth2TokenClientSupplier tokenClientSupplier,
 			final UnaryOperator<String> providerNameConverter,
 			final BiConsumer<String, OAuth2TokenProvider> createdProviderCustomizer) {
-		OAuth2TokenProviderRegistry registry = of(oAuth2Registry);
-		List<OAuth2TokenProvider> tokenProviders = oAuth2Registry.tokenProviders(tokenClientSupplier);
-		for (OAuth2TokenProvider provider : tokenProviders) {
-			String providerName = providerNameConverter.apply(provider.getClientRegistrationName());
-			registry.add(providerName, ScopedResource.managed(provider));
-			createdProviderCustomizer.accept(providerName, provider);
-		}
-		return registry;
+		return of(oAuth2Registry, tokenClientSupplier, providerNameConverter, Predicates.acceptAll(), createdProviderCustomizer);
 	}
 
 	/**
