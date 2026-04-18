@@ -20,6 +20,10 @@ import org.slf4j.LoggerFactory;
  * Registry for OAuth2 token providers. This class allows thread safe adding, retrieving, and managing OAuth2 token
  * providers by name. It supports automatic resource management and ensures proper cleanup of providers when the
  * registry is closed.
+ * <p>
+ * When constructing the token provider registry prefer using the builder method for more complex configurations, as it
+ * provides a more fluent API and better readability when multiple optional parameters are involved, such as the
+ * provider name converter, provider name filter, and created provider customizer.
  *
  * @author Radu Sebastian LAZIN
  */
@@ -142,6 +146,10 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 	 * filtered out, no token provider is created for the corresponding client registration.
 	 * <p>
 	 * Note: The filter is applied on the converted provider name.
+	 * <p>
+	 * Prefer using the builder method for more complex configurations, as it provides a more fluent API and better
+	 * readability when multiple optional parameters are involved, such as the provider name converter, provider name
+	 * filter, and created provider customizer.
 	 *
 	 * @param oAuth2Registry the OAuth2 registry must not be null
 	 * @param tokenClientSupplier supplies a token provider client based on the client registration and provider details
