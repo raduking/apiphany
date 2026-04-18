@@ -11,7 +11,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * OAuth2 registry which holds all the registrations and providers defined by {@link OAuth2Properties}.
+ * OAuth2 registry which holds all the resolved registrations defined by {@link OAuth2Properties}.
+ * <p>
+ * This class also provides utility methods to create {@link OAuth2TokenProvider} instances based on the resolved
+ * registrations. The caller is responsible for handling the life cycle of the returned token providers.
  *
  * @author Radu Sebastian LAZIN
  */
@@ -109,11 +112,21 @@ public class OAuth2Registry {
 	 * @return a new OAuth2 token provider
 	 */
 	public OAuth2TokenProvider tokenProvider(final String clientRegistrationName, final OAuth2TokenClientSupplier tokenClientSupplier) {
+		return tokenProvider(clientRegistrationName, OAuth2TokenProviderSpec.builder().tokenClientSupplier(tokenClientSupplier));
+	}
+
+	/**
+	 * Returns a new OAuth2 token provider based on the given parameters. The caller is responsible for handling the life
+	 * cycle of the returned token provider.
+	 *
+	 * @param clientRegistrationName the client registration name
+	 * @param specBuilder the builder for the token provider specification
+	 * @return a new OAuth2 token provider
+	 */
+	public OAuth2TokenProvider tokenProvider(final String clientRegistrationName, final OAuth2TokenProviderSpec.Builder specBuilder) {
 		OAuth2ResolvedRegistration registration = get(clientRegistrationName);
-		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
-				.registration(registration)
-				.tokenClientSupplier(tokenClientSupplier)
-				.build();
+		specBuilder.registration(registration);
+		OAuth2TokenProviderSpec specification = specBuilder.build();
 		return OAuth2TokenProvider.of(specification);
 	}
 
