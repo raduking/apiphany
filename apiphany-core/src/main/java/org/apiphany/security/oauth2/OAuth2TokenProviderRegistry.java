@@ -333,7 +333,7 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 		 * A function that maps the client registration name to the token provider name. This is an optional field and if not
 		 * set, the registry will use the client registration name as the token provider name.
 		 */
-		private UnaryOperator<String> providerNameConverter;
+		private UnaryOperator<String> providerNameConverter = UnaryOperator.identity();
 
 		/**
 		 * A predicate to filter which providers to include by their converted name. This is an optional field and if not set,
@@ -341,14 +341,14 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 		 * control which providers to create based on their final name in the registry, not just based on the client
 		 * registration name.
 		 */
-		private Predicate<String> providerNameFilter;
+		private Predicate<String> providerNameFilter = Predicates.acceptAll();
 
 		/**
 		 * A consumer that is called when a new provider is created. This is an optional field and if not set, the registry will
 		 * not perform any additional actions when a provider is created. The consumer accepts the provider name and the created
 		 * provider instance, so it can be used for additional initialization or logging after the provider is created.
 		 */
-		private BiConsumer<String, OAuth2TokenProvider> providerPostConstruct;
+		private BiConsumer<String, OAuth2TokenProvider> providerPostConstruct = Consumers.noBiConsumer();
 
 		/**
 		 * Default constructor.
