@@ -15,11 +15,11 @@ import javax.net.ssl.TrustManagerFactory;
 
 import org.apiphany.io.ResourceLocation;
 import org.apiphany.lang.Strings;
+import org.apiphany.logging.Slf4jLoggerAdapter;
 import org.morphix.lang.JavaArrays;
 import org.morphix.lang.Nullables;
+import org.morphix.lang.function.LoggerAdapter;
 import org.morphix.reflection.Constructors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Utility methods for working with Java SSL like key stores, trust stores, SSL context, etc.
@@ -33,7 +33,7 @@ public final class SSLContexts {
 	/**
 	 * Logger for this class.
 	 */
-	private static final Logger LOGGER = LoggerFactory.getLogger(SSLContexts.class);
+	private static final LoggerAdapter LOGGER = Slf4jLoggerAdapter.of(SSLContexts.class);
 
 	/**
 	 * Creates a new SSL context based on the provided properties.

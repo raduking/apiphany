@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apiphany.logging.Slf4jLoggerAdapter;
+import org.morphix.lang.function.LoggerAdapter;
 
 /**
  * OAuth2 registry which holds all the resolved registrations defined by {@link OAuth2Properties}.
@@ -23,7 +23,7 @@ public class OAuth2Registry {
 	/**
 	 * The class logger.
 	 */
-	private static final Logger LOGGER = LoggerFactory.getLogger(OAuth2Registry.class);
+	private static final LoggerAdapter LOGGER = Slf4jLoggerAdapter.of(OAuth2Registry.class);
 
 	/**
 	 * Resolved registrations entries map.

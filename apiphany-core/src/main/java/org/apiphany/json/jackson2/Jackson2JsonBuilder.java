@@ -14,9 +14,9 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.logging.Slf4jLoggerAdapter;
+import org.morphix.lang.function.LoggerAdapter;
 import org.morphix.reflection.GenericClass;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonFactory;
@@ -55,7 +55,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	/**
 	 * Logger instance.
 	 */
-	private static final Logger LOGGER = LoggerFactory.getLogger(Jackson2JsonBuilder.class);
+	private static final LoggerAdapter LOGGER = Slf4jLoggerAdapter.of(Jackson2JsonBuilder.class);
 
 	/**
 	 * Singleton instance holder.

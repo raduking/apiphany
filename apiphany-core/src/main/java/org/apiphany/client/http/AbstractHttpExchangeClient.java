@@ -22,12 +22,12 @@ import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpHeaderValues;
 import org.apiphany.http.HttpStatus;
 import org.apiphany.io.ContentType;
+import org.apiphany.logging.Slf4jLoggerAdapter;
 import org.apiphany.security.ssl.SSLContexts;
 import org.apiphany.security.ssl.SSLProperties;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.morphix.lang.function.LoggerAdapter;
 
 /**
  * Abstract HTTP exchange client which holds all the common information needed to build an HTTP exchange client.
@@ -39,7 +39,7 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	/**
 	 * Class logger.
 	 */
-	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractHttpExchangeClient.class);
+	private static final LoggerAdapter LOGGER = Slf4jLoggerAdapter.of(AbstractHttpExchangeClient.class);
 
 	/**
 	 * Client properties.
