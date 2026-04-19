@@ -1,5 +1,13 @@
 ## Release Notes
 
+`1.2.3`
+
+- Added `OAuth2Registry.tokenProvider(String, OAuth2TokenProviderSpec.Builder)` to create a new provider by specifying the builder.
+- Added `OAuth2TokenProviderRegistry.Builder` to build registries using the builder for better flexibility.
+- Renamed `OAuth2TokenProviderRegistry.add` to `addProvider` to match the `getProvider` method.
+
+---
+
 `1.2.2`
 
 - Upgraded `morphix-all` to `1.0.32`.

@@ -73,7 +73,7 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 				OAuth2TokenProviderSpec.Builder specBuilder = OAuth2TokenProviderSpec.builder();
 				builder.specCustomizer.accept(specBuilder);
 				OAuth2TokenProvider provider = oAuth2Registry.tokenProvider(clientRegistrationName, specBuilder);
-				add(providerName, ScopedResource.managed(provider));
+				addProvider(providerName, ScopedResource.managed(provider));
 				builder.providerPostConstruct.accept(providerName, provider);
 			} else {
 				LOGGER.info("Skipping OAuth2 token provider creation for client registration: '{}' "
@@ -229,7 +229,7 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 	 *     registry is closing
 	 */
 	@SuppressWarnings("resource")
-	public void add(final String name, final ScopedResource<OAuth2TokenProvider> provider) {
+	public void addProvider(final String name, final ScopedResource<OAuth2TokenProvider> provider) {
 		if (closing.get()) {
 			provider.closeIfManaged(
 					e -> LOGGER.error("Error closing OAuth2 token provider: '{}' when adding to a closing registry.", name, e));
