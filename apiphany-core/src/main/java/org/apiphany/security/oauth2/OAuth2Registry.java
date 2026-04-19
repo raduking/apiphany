@@ -28,7 +28,7 @@ public class OAuth2Registry {
 	/**
 	 * Resolved registrations entries map.
 	 */
-	private final Map<String, OAuth2ResolvedRegistration> entries;
+	private final Map<String, OAuth2ResolvedRegistration> registrations;
 
 	/**
 	 * Constructor with OAuth2 properties.
@@ -36,7 +36,7 @@ public class OAuth2Registry {
 	 * @param properties the properties to build the registrations on
 	 */
 	private OAuth2Registry(final OAuth2Properties properties) {
-		this.entries = buildResolvedRegistrations(properties);
+		this.registrations = resolve(properties);
 	}
 
 	/**
@@ -64,7 +64,7 @@ public class OAuth2Registry {
 	 * @param properties the OAuth2 properties
 	 * @return the resolved registration entries
 	 */
-	private static Map<String, OAuth2ResolvedRegistration> buildResolvedRegistrations(final OAuth2Properties properties) {
+	private static Map<String, OAuth2ResolvedRegistration> resolve(final OAuth2Properties properties) {
 		if (null == properties || null == properties.getRegistration()) {
 			return Collections.emptyMap();
 		}
@@ -86,7 +86,7 @@ public class OAuth2Registry {
 	 */
 	public OAuth2ResolvedRegistration get(final String clientRegistrationName) {
 		OAuth2ResolvedRegistration registration =
-				entries.get(Objects.requireNonNull(clientRegistrationName, "clientRegistrationName must not be null"));
+				registrations.get(Objects.requireNonNull(clientRegistrationName, "clientRegistrationName must not be null"));
 		if (null == registration) {
 			LOGGER.warn("[{}] No OAuth2 client provided for client registration in: {}.registration.{}",
 					clientRegistrationName, OAuth2Properties.ROOT, clientRegistrationName);
@@ -100,7 +100,7 @@ public class OAuth2Registry {
 	 * @return the resolved registration entries
 	 */
 	public Collection<OAuth2ResolvedRegistration> entries() {
-		return entries.values();
+		return registrations.values();
 	}
 
 	/**
@@ -138,6 +138,8 @@ public class OAuth2Registry {
 	 * @return a list of OAuth2 token providers based on this registry
 	 */
 	public List<OAuth2TokenProvider> tokenProviders(final OAuth2TokenClientSupplier tokenClientSupplier) {
-		return entries.keySet().stream().map(registrationName -> tokenProvider(registrationName, tokenClientSupplier)).toList();
+		return registrations.keySet().stream()
+				.map(registrationName -> tokenProvider(registrationName, tokenClientSupplier))
+				.toList();
 	}
 }

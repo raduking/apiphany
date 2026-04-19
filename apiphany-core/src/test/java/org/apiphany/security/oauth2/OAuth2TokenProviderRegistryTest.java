@@ -71,7 +71,7 @@ class OAuth2TokenProviderRegistryTest {
 
 			OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.of(mockRegistry);
 
-			registry.add(PROVIDER_NAME_MY_PROVIDER, resource);
+			registry.addProvider(PROVIDER_NAME_MY_PROVIDER, resource);
 			registry.close();
 
 			OAuth2TokenProvider retrievedProvider = registry.getProvider(PROVIDER_NAME_MY_PROVIDER);
@@ -97,7 +97,7 @@ class OAuth2TokenProviderRegistryTest {
 
 			OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.of(mockRegistry);
 
-			registry.add(PROVIDER_NAME_MY_PROVIDER, resource);
+			registry.addProvider(PROVIDER_NAME_MY_PROVIDER, resource);
 			registry.close();
 
 			OAuth2TokenProvider retrievedProvider = registry.getProvider("unknownProvider");
@@ -122,9 +122,9 @@ class OAuth2TokenProviderRegistryTest {
 			ScopedResource<OAuth2TokenProvider> first = mock(ScopedResource.class);
 			ScopedResource<OAuth2TokenProvider> second = mock(ScopedResource.class);
 
-			registry.add(PROVIDER_NAME_MY_PROVIDER, first);
+			registry.addProvider(PROVIDER_NAME_MY_PROVIDER, first);
 
-			IllegalStateException ex = assertThrows(IllegalStateException.class, () -> registry.add(PROVIDER_NAME_MY_PROVIDER, second));
+			IllegalStateException ex = assertThrows(IllegalStateException.class, () -> registry.addProvider(PROVIDER_NAME_MY_PROVIDER, second));
 
 			assertThat(ex.getMessage(), equalTo("An OAuth2 token provider with name '" + PROVIDER_NAME_MY_PROVIDER + "' is already registered."));
 
@@ -145,9 +145,9 @@ class OAuth2TokenProviderRegistryTest {
 
 			doThrow(new RuntimeException(ERROR_MESSAGE)).when(secondProvider).close();
 
-			registry.add(PROVIDER_NAME_MY_PROVIDER, first);
+			registry.addProvider(PROVIDER_NAME_MY_PROVIDER, first);
 
-			IllegalStateException ex = assertThrows(IllegalStateException.class, () -> registry.add(PROVIDER_NAME_MY_PROVIDER, second));
+			IllegalStateException ex = assertThrows(IllegalStateException.class, () -> registry.addProvider(PROVIDER_NAME_MY_PROVIDER, second));
 
 			assertThat(ex.getMessage(), equalTo("An OAuth2 token provider with name '" + PROVIDER_NAME_MY_PROVIDER + "' is already registered."));
 
@@ -166,7 +166,7 @@ class OAuth2TokenProviderRegistryTest {
 
 			ScopedResource<OAuth2TokenProvider> resource = mock(ScopedResource.class);
 
-			IllegalStateException ex = assertThrows(IllegalStateException.class, () -> registry.add(PROVIDER_NAME_MY_PROVIDER, resource));
+			IllegalStateException ex = assertThrows(IllegalStateException.class, () -> registry.addProvider(PROVIDER_NAME_MY_PROVIDER, resource));
 
 			assertThat(ex.getMessage(), equalTo("Cannot add new OAuth2 token provider " + PROVIDER_NAME_MY_PROVIDER + " to a closing registry."));
 
@@ -186,7 +186,7 @@ class OAuth2TokenProviderRegistryTest {
 			ScopedResource<OAuth2TokenProvider> resource = ScopedResource.managed(provider);
 			doThrow(new RuntimeException(ERROR_MESSAGE)).when(provider).close();
 
-			IllegalStateException ex = assertThrows(IllegalStateException.class, () -> registry.add(PROVIDER_NAME_MY_PROVIDER, resource));
+			IllegalStateException ex = assertThrows(IllegalStateException.class, () -> registry.addProvider(PROVIDER_NAME_MY_PROVIDER, resource));
 
 			assertThat(ex.getMessage(), equalTo("Cannot add new OAuth2 token provider " + PROVIDER_NAME_MY_PROVIDER + " to a closing registry."));
 
@@ -207,8 +207,8 @@ class OAuth2TokenProviderRegistryTest {
 
 			doThrow(new RuntimeException(ERROR_MESSAGE)).when(providerBad).close();
 
-			registry.add(PROVIDER_NAME_GOOD, good);
-			registry.add(PROVIDER_NAME_BAD, bad);
+			registry.addProvider(PROVIDER_NAME_GOOD, good);
+			registry.addProvider(PROVIDER_NAME_BAD, bad);
 
 			registry.close();
 
@@ -813,8 +813,8 @@ class OAuth2TokenProviderRegistryTest {
 			ScopedResource<OAuth2TokenProvider> provider2 = mock(ScopedResource.class);
 			doReturn(mock(OAuth2TokenProvider.class)).when(provider2).unwrap();
 
-			registry.add(PROVIDER_NAME_1, provider1);
-			registry.add(PROVIDER_NAME_2, provider2);
+			registry.addProvider(PROVIDER_NAME_1, provider1);
+			registry.addProvider(PROVIDER_NAME_2, provider2);
 
 			registry.close();
 
@@ -847,7 +847,7 @@ class OAuth2TokenProviderRegistryTest {
 
 						startTasksGate.await();
 
-						registry.add(PROVIDER_NAME_MY_PROVIDER, resource);
+						registry.addProvider(PROVIDER_NAME_MY_PROVIDER, resource);
 					} catch (Exception ignored) {
 						// expected exception when duplicate or closing
 					} finally {
@@ -900,7 +900,7 @@ class OAuth2TokenProviderRegistryTest {
 
 			ScopedResource<OAuth2TokenProvider> tokenProvider = mock(ScopedResource.class);
 
-			registry.add(PROVIDER_NAME_MY_PROVIDER, tokenProvider);
+			registry.addProvider(PROVIDER_NAME_MY_PROVIDER, tokenProvider);
 
 			for (int i = 0; i < CLOSE_COUNT; ++i) {
 				registry.close();
