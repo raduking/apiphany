@@ -10,11 +10,11 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
+import org.apiphany.logging.Slf4jLoggerAdapter;
 import org.morphix.lang.function.Consumers;
+import org.morphix.lang.function.LoggerAdapter;
 import org.morphix.lang.function.Predicates;
 import org.morphix.lang.resource.ScopedResource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Registry for OAuth2 token providers. This class allows thread safe adding, retrieving, and managing OAuth2 token
@@ -32,7 +32,7 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 	/**
 	 * The class logger.
 	 */
-	private static final Logger LOGGER = LoggerFactory.getLogger(OAuth2TokenProviderRegistry.class);
+	private static final LoggerAdapter LOGGER = Slf4jLoggerAdapter.of(OAuth2TokenProviderRegistry.class);
 
 	/**
 	 * The registered providers map.

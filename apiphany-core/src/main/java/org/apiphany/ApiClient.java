@@ -24,6 +24,7 @@ import org.apiphany.client.ExchangeClientBuilder;
 import org.apiphany.client.http.HttpClientFluentAdapter;
 import org.apiphany.lang.Strings;
 import org.apiphany.logging.ExchangeLogger;
+import org.apiphany.logging.Slf4jLoggerAdapter;
 import org.apiphany.meters.BasicMeters;
 import org.apiphany.meters.MeterFactory;
 import org.apiphany.security.AuthenticationType;
@@ -34,13 +35,12 @@ import org.morphix.lang.Nullables;
 import org.morphix.lang.Unchecked;
 import org.morphix.lang.accumulator.DurationAccumulator;
 import org.morphix.lang.collections.Lists;
+import org.morphix.lang.function.LoggerAdapter;
 import org.morphix.lang.resource.ScopedResource;
 import org.morphix.lang.retry.Retry;
 import org.morphix.reflection.Fields;
 import org.morphix.reflection.GenericClass;
 import org.morphix.reflection.predicates.MemberPredicates;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Generic client for API calls.
@@ -52,7 +52,7 @@ public class ApiClient implements AutoCloseable {
 	/**
 	 * Class logger.
 	 */
-	private static final Logger LOGGER = LoggerFactory.getLogger(ApiClient.class);
+	private static final LoggerAdapter LOGGER = Slf4jLoggerAdapter.of(ApiClient.class);
 
 	/**
 	 * <code>"api"</code> string used in most APIs.

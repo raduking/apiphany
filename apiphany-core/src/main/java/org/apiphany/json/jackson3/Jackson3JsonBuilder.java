@@ -10,10 +10,10 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.logging.Slf4jLoggerAdapter;
 import org.morphix.lang.function.Consumers;
+import org.morphix.lang.function.LoggerAdapter;
 import org.morphix.reflection.GenericClass;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
@@ -49,7 +49,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	/**
 	 * Logger instance.
 	 */
-	private static final Logger LOGGER = LoggerFactory.getLogger(Jackson3JsonBuilder.class);
+	private static final LoggerAdapter LOGGER = Slf4jLoggerAdapter.of(Jackson3JsonBuilder.class);
 
 	/**
 	 * Singleton instance holder.

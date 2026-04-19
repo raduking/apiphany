@@ -3,10 +3,10 @@ package org.apiphany.security.oauth2;
 import java.util.Set;
 
 import org.apiphany.lang.Strings;
+import org.apiphany.logging.Slf4jLoggerAdapter;
 import org.morphix.lang.Nullables;
 import org.morphix.lang.collections.Maps;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.morphix.lang.function.LoggerAdapter;
 
 /**
  * Class representing a complete OAuth2 client registration information. This is basically a wrapper over the client
@@ -39,7 +39,7 @@ public class OAuth2ResolvedRegistration {
 	/**
 	 * The class logger.
 	 */
-	private static final Logger LOGGER = LoggerFactory.getLogger(OAuth2ResolvedRegistration.class);
+	private static final LoggerAdapter LOGGER = Slf4jLoggerAdapter.of(OAuth2ResolvedRegistration.class);
 
 	/**
 	 * The unknown registration name constant.

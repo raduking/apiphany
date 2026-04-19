@@ -9,17 +9,17 @@ import java.util.function.Supplier;
 import org.apiphany.json.jackson2.Jackson2Library;
 import org.apiphany.json.jackson3.Jackson3Library;
 import org.apiphany.lang.Strings;
+import org.apiphany.logging.Slf4jLoggerAdapter;
 import org.morphix.convert.Converter;
 import org.morphix.convert.MapConversions;
 import org.morphix.convert.function.SimpleConverter;
 import org.morphix.lang.Case;
+import org.morphix.lang.function.LoggerAdapter;
 import org.morphix.lang.function.Suppliers;
 import org.morphix.reflection.Constructors;
 import org.morphix.reflection.GenericClass;
 import org.morphix.runtime.Libraries;
 import org.morphix.runtime.OptionalLibrary;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This will serialize/de-serialize any JSON serializable/deserializable object to {@link String}/{@link Object}. This
@@ -42,7 +42,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	/**
 	 * Logger instance.
 	 */
-	private static final Logger LOGGER = LoggerFactory.getLogger(JsonBuilder.class);
+	private static final LoggerAdapter LOGGER = Slf4jLoggerAdapter.of(JsonBuilder.class);
 
 	/**
 	 * Namespace for configurable properties.

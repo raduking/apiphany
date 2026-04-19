@@ -8,6 +8,7 @@ import org.apiphany.client.ClientProperties;
 import org.apiphany.client.DecoratingExchangeClient;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.http.HttpAuthScheme;
+import org.apiphany.logging.Slf4jLoggerAdapter;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationTokenProvider;
 import org.apiphany.security.AuthenticationType;
@@ -17,9 +18,8 @@ import org.apiphany.security.oauth2.OAuth2TokenProvider;
 import org.apiphany.security.oauth2.OAuth2TokenProviderSpec;
 import org.apiphany.security.token.client.TokenHttpExchangeClient;
 import org.morphix.lang.Messages;
+import org.morphix.lang.function.LoggerAdapter;
 import org.morphix.lang.resource.ScopedResource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * OAuth2 exchange client, this class decorates an existing {@link ExchangeClient} with automatic OAuth2 support.
@@ -31,7 +31,7 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	/**
 	 * The class logger.
 	 */
-	private static final Logger LOGGER = LoggerFactory.getLogger(OAuth2HttpExchangeClient.class);
+	private static final LoggerAdapter LOGGER = Slf4jLoggerAdapter.of(OAuth2HttpExchangeClient.class);
 
 	/**
 	 * The exchange client doing the token refresh.
