@@ -11,6 +11,7 @@ import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
 import org.apiphany.logging.Slf4jLoggerAdapter;
+import org.morphix.lang.Nullables;
 import org.morphix.lang.function.Consumers;
 import org.morphix.lang.function.LoggerAdapter;
 import org.morphix.lang.function.Predicates;
@@ -93,50 +94,16 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 
 	/**
 	 * Creates an OAuth2 token provider registry based on the given OAuth2 registry. This registry will be empty because to
-	 * create the token providers the caller must provide a token client supplier and token provider name converter.
+	 * create the token providers the caller must provide at least a token client supplier.
+	 * <p>
+	 * When this method is used the caller will have to manually create and add the token providers to the registry using
+	 * the {@link #addProvider(String, ScopedResource)} method.
 	 *
 	 * @param oAuth2Registry the OAuth2 registry must not be null
 	 * @return an empty OAuth2 token provider registry
 	 */
 	public static OAuth2TokenProviderRegistry of(final OAuth2Registry oAuth2Registry) {
 		return new OAuth2TokenProviderRegistry(oAuth2Registry);
-	}
-
-	/**
-	 * Creates an OAuth2 token provider registry based on the given OAuth2 registry. When building the token providers, the
-	 * given token client supplier is used and when building the provider name the token provider name converter is used.
-	 *
-	 * @param oAuth2Registry the OAuth2 registry must not be null
-	 * @param tokenClientSupplier supplies a token provider client based on the client registration and provider details
-	 * @param providerNameConverter a function that maps the client registration name to the token provider name
-	 * @return an OAuth2 token provider registry based on the given OAuth2 registry
-	 */
-	public static OAuth2TokenProviderRegistry of(
-			final OAuth2Registry oAuth2Registry,
-			final OAuth2TokenClientSupplier tokenClientSupplier,
-			final UnaryOperator<String> providerNameConverter) {
-		return of(oAuth2Registry, tokenClientSupplier, providerNameConverter, Consumers.noBiConsumer());
-	}
-
-	/**
-	 * Creates an OAuth2 token provider registry based on the given OAuth2 registry. When building the token providers, the
-	 * given token client supplier is used and when building the provider name the token provider name converter is used.
-	 * <p>
-	 * For controlling which providers to create, use the other method that accepts a provider name filter:
-	 * {@code #of(OAuth2Registry, OAuth2TokenClientSupplier, UnaryOperator, Predicate, BiConsumer)} .
-	 *
-	 * @param oAuth2Registry the OAuth2 registry must not be null
-	 * @param tokenClientSupplier supplies a token provider client based on the client registration and provider details
-	 * @param providerNameConverter a function that maps the client registration name to the token provider name
-	 * @param createdProviderCustomizer a consumer that is called when a new provider is created
-	 * @return an OAuth2 token provider registry based on the given OAuth2 registry
-	 */
-	public static OAuth2TokenProviderRegistry of(
-			final OAuth2Registry oAuth2Registry,
-			final OAuth2TokenClientSupplier tokenClientSupplier,
-			final UnaryOperator<String> providerNameConverter,
-			final BiConsumer<String, OAuth2TokenProvider> createdProviderCustomizer) {
-		return of(oAuth2Registry, tokenClientSupplier, providerNameConverter, Predicates.acceptAll(), createdProviderCustomizer);
 	}
 
 	/**
@@ -189,20 +156,40 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 	}
 
 	/**
-	 * Creates an OAuth2 token provider registry based on the given OAuth2 properties. This will build the underlying OAuth2
-	 * registry based on the given OAuth2 properties and then create the token providers using the given token client
-	 * supplier and token provider name function for the provider name.
+	 * Creates an OAuth2 token provider registry based on the given OAuth2 registry. When building the token providers, the
+	 * given token client supplier is used and when building the provider name the token provider name converter is used.
 	 *
-	 * @param oAuth2Properties the OAuth2 properties
+	 * @param oAuth2Registry the OAuth2 registry must not be null
 	 * @param tokenClientSupplier supplies a token provider client based on the client registration and provider details
 	 * @param providerNameConverter a function that maps the client registration name to the token provider name
-	 * @return an OAuth2 token provider registry based on the given OAuth2 properties
+	 * @return an OAuth2 token provider registry based on the given OAuth2 registry
 	 */
 	public static OAuth2TokenProviderRegistry of(
-			final OAuth2Properties oAuth2Properties,
+			final OAuth2Registry oAuth2Registry,
 			final OAuth2TokenClientSupplier tokenClientSupplier,
 			final UnaryOperator<String> providerNameConverter) {
-		return of(OAuth2Registry.of(oAuth2Properties), tokenClientSupplier, providerNameConverter);
+		return of(oAuth2Registry, tokenClientSupplier, providerNameConverter, Consumers.noBiConsumer());
+	}
+
+	/**
+	 * Creates an OAuth2 token provider registry based on the given OAuth2 registry. When building the token providers, the
+	 * given token client supplier is used and when building the provider name the token provider name converter is used.
+	 * <p>
+	 * For controlling which providers to create, use the other method that accepts a provider name filter:
+	 * {@code #of(OAuth2Registry, OAuth2TokenClientSupplier, UnaryOperator, Predicate, BiConsumer)} .
+	 *
+	 * @param oAuth2Registry the OAuth2 registry must not be null
+	 * @param tokenClientSupplier supplies a token provider client based on the client registration and provider details
+	 * @param providerNameConverter a function that maps the client registration name to the token provider name
+	 * @param createdProviderCustomizer a consumer that is called when a new provider is created
+	 * @return an OAuth2 token provider registry based on the given OAuth2 registry
+	 */
+	public static OAuth2TokenProviderRegistry of(
+			final OAuth2Registry oAuth2Registry,
+			final OAuth2TokenClientSupplier tokenClientSupplier,
+			final UnaryOperator<String> providerNameConverter,
+			final BiConsumer<String, OAuth2TokenProvider> createdProviderCustomizer) {
+		return of(oAuth2Registry, tokenClientSupplier, providerNameConverter, Predicates.acceptAll(), createdProviderCustomizer);
 	}
 
 	/**
@@ -218,6 +205,23 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 			final OAuth2Properties oAuth2Properties,
 			final OAuth2TokenClientSupplier tokenClientSupplier) {
 		return of(OAuth2Registry.of(oAuth2Properties), tokenClientSupplier);
+	}
+
+	/**
+	 * Creates an OAuth2 token provider registry based on the given OAuth2 properties. This will build the underlying OAuth2
+	 * registry based on the given OAuth2 properties and then create the token providers using the given token client
+	 * supplier and token provider name function for the provider name.
+	 *
+	 * @param oAuth2Properties the OAuth2 properties
+	 * @param tokenClientSupplier supplies a token provider client based on the client registration and provider details
+	 * @param providerNameConverter a function that maps the client registration name to the token provider name
+	 * @return an OAuth2 token provider registry based on the given OAuth2 properties
+	 */
+	public static OAuth2TokenProviderRegistry of(
+			final OAuth2Properties oAuth2Properties,
+			final OAuth2TokenClientSupplier tokenClientSupplier,
+			final UnaryOperator<String> providerNameConverter) {
+		return of(OAuth2Registry.of(oAuth2Properties), tokenClientSupplier, providerNameConverter);
 	}
 
 	/**
@@ -327,13 +331,13 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 		 * scheduler and token client supplier. The builder is initialized with default values, so it can be used without any
 		 * customization if the defaults are sufficient.
 		 */
-		private Consumer<OAuth2TokenProviderSpec.Builder> specCustomizer = Consumers.noConsumer();
+		private Consumer<OAuth2TokenProviderSpec.Builder> specCustomizer;
 
 		/**
 		 * A function that maps the client registration name to the token provider name. This is an optional field and if not
 		 * set, the registry will use the client registration name as the token provider name.
 		 */
-		private UnaryOperator<String> providerNameConverter = UnaryOperator.identity();
+		private UnaryOperator<String> providerNameConverter;
 
 		/**
 		 * A predicate to filter which providers to include by their converted name. This is an optional field and if not set,
@@ -341,14 +345,14 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 		 * control which providers to create based on their final name in the registry, not just based on the client
 		 * registration name.
 		 */
-		private Predicate<String> providerNameFilter = Predicates.acceptAll();
+		private Predicate<String> providerNameFilter;
 
 		/**
 		 * A consumer that is called when a new provider is created. This is an optional field and if not set, the registry will
 		 * not perform any additional actions when a provider is created. The consumer accepts the provider name and the created
 		 * provider instance, so it can be used for additional initialization or logging after the provider is created.
 		 */
-		private BiConsumer<String, OAuth2TokenProvider> providerPostConstruct = Consumers.noBiConsumer();
+		private BiConsumer<String, OAuth2TokenProvider> providerPostConstruct;
 
 		/**
 		 * Default constructor.
@@ -446,6 +450,10 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 		 * @return a new OAuth2 token provider registry based on the provided configuration
 		 */
 		public OAuth2TokenProviderRegistry build() {
+			specCustomizer = Nullables.nonNullOrDefault(specCustomizer, Consumers::noConsumer);
+			providerNameConverter = Nullables.nonNullOrDefault(providerNameConverter, UnaryOperator::identity);
+			providerNameFilter = Nullables.nonNullOrDefault(providerNameFilter, Predicates::acceptAll);
+			providerPostConstruct = Nullables.nonNullOrDefault(providerPostConstruct, Consumers::noBiConsumer);
 			return new OAuth2TokenProviderRegistry(this);
 		}
 	}
