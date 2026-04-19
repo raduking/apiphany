@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import org.morphix.lang.function.LoggerAdapter;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * SLF4J-based implementation of {@link LoggerAdapter}.
@@ -36,6 +37,18 @@ public final class Slf4jLoggerAdapter implements LoggerAdapter {
 	 */
 	public static Slf4jLoggerAdapter of(final Logger logger) {
 		return new Slf4jLoggerAdapter(logger);
+	}
+
+	/**
+	 * Creates a new {@code Slf4jLoggerAdapter} instance that delegates to an SLF4J logger associated with the specified
+	 * class.
+	 *
+	 * @param clazz the class for which the SLF4J logger will be created
+	 * @return a new {@code Slf4jLoggerAdapter} instance
+	 * @throws NullPointerException if the provided class is null
+	 */
+	public static Slf4jLoggerAdapter of(final Class<?> clazz) {
+		return of(LoggerFactory.getLogger(Objects.requireNonNull(clazz, "class must not be null")));
 	}
 
 	/**

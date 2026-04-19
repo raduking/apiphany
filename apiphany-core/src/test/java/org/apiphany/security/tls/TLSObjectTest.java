@@ -3,8 +3,8 @@ package org.apiphany.security.tls;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import org.apiphany.lang.LoggingFormat;
 import org.apiphany.lang.Strings;
+import org.apiphany.logging.LoggingFormat;
 import org.junit.jupiter.api.Test;
 
 /**

@@ -1,4 +1,4 @@
-package org.apiphany.lang;
+package org.apiphany.logging;
 
 import java.util.Map;
 

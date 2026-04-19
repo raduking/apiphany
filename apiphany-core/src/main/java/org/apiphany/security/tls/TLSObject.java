@@ -4,8 +4,8 @@ import org.apiphany.io.BinaryRepresentable;
 import org.apiphany.io.ByteSizeable;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Hex;
-import org.apiphany.lang.LoggingFormat;
 import org.apiphany.lang.Strings;
+import org.apiphany.logging.LoggingFormat;
 
 /**
  * Marker interface for all objects that participate in TLS protocol communication.
