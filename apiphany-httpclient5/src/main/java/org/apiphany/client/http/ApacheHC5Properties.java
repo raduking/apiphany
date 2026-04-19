@@ -8,6 +8,7 @@ import org.apache.hc.core5.http.ParseException;
 import org.apache.hc.core5.http.ProtocolVersion;
 import org.apache.hc.core5.util.Timeout;
 import org.apiphany.json.JsonBuilder;
+import org.morphix.reflection.Constructors;
 
 /**
  * Apache HTTP Client 5 properties.
@@ -20,6 +21,29 @@ public class ApacheHC5Properties {
 	 * The root property prefix for Apache HTTP Client 5 configuration.
 	 */
 	public static final String ROOT = "http-client5";
+
+	/**
+	 * Constants for property values.
+	 */
+	public static class TimeoutValue {
+
+		/**
+		 * String constant for the "disabled" timeout value, which represents a timeout that is effectively turned off.
+		 */
+		public static final String DISABLED = "disabled";
+
+		/**
+		 * String constant for the "infinite" timeout value, which represents a timeout that never expires.
+		 */
+		public static final String INFINITE = "infinite";
+
+		/**
+		 * Private constructor to prevent instantiation, as it is intended to be a utility class containing only constants.
+		 */
+		private TimeoutValue() {
+			throw Constructors.unsupportedOperationException();
+		}
+	}
 
 	/**
 	 * Specific Apache HTTP Client 5 connection properties.

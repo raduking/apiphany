@@ -6,6 +6,7 @@ import java.text.ParseException;
 import java.time.Duration;
 
 import org.apache.hc.core5.util.Timeout;
+import org.apiphany.client.http.ApacheHC5Properties.TimeoutValue;
 import org.apiphany.lang.Strings;
 import org.morphix.lang.Temporals;
 
@@ -42,8 +43,11 @@ public class TimeoutDeserializer extends StdDeserializer<Timeout> {
 		if (Strings.isEmpty(value)) {
 			return null;
 		}
-		if ("infinite".equalsIgnoreCase(value)) {
+		if (TimeoutValue.INFINITE.equalsIgnoreCase(value)) {
 			return Timeout.INFINITE;
+		}
+		if (TimeoutValue.DISABLED.equalsIgnoreCase(value)) {
+			return Timeout.DISABLED;
 		}
 		try {
 			Duration duration = Temporals.parseSimpleDuration(value);

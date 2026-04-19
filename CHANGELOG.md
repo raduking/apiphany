@@ -8,6 +8,8 @@
 - Added `OAuth2TokenClientSupplier.supplyNull` static method that supplies a `null` token client.
 - Added `Slf4jLoggingAdapter.of(Class)` to directly build a SLF4J logger for a given class.
 - Moved `LoggingFormat` enum to `logging` package.
+- Added `ApacheHC5Properties.TimeoutValue.DISABLED` string value for disabled timeouts.
+- Added `ApacheHC5Properties.TimeoutValue.INFINITE` string value for infinite timeouts.
 
 ---
 
