@@ -69,15 +69,12 @@ public class OAuth2TokenProviderSpec {
 	 * @param builder the builder
 	 */
 	private OAuth2TokenProviderSpec(final Builder builder) {
-		this.properties = Nullables.nonNullOrDefault(builder.properties, OAuth2TokenProviderProperties::defaults);
+		this.properties = builder.properties;
 		this.registration = builder.registration;
-		this.tokenClientSupplier = Nullables.nonNullOrDefault(builder.tokenClientSupplier,
-				() -> (clientRegistration, providerDetails) -> null);
-		this.tokenRefreshScheduler = Nullables.nonNullOrDefault(builder.tokenRefreshScheduler,
-				() -> ScopedResource.managed(OAuth2TokenProviderSpec.defaultSchedulerExecutor()));
-		this.defaultExpirationSupplier = Nullables.nonNullOrDefault(builder.defaultExpirationSupplier,
-				() -> Instant::now);
-		this.updateTokenWrapper = Nullables.nonNullOrDefault(builder.updateTokenWrapper, ExecutionWrapper::identity);
+		this.tokenClientSupplier = builder.tokenClientSupplier;
+		this.tokenRefreshScheduler = builder.tokenRefreshScheduler;
+		this.defaultExpirationSupplier = builder.defaultExpirationSupplier;
+		this.updateTokenWrapper = builder.updateTokenWrapper;
 	}
 
 	/**
@@ -308,6 +305,11 @@ public class OAuth2TokenProviderSpec {
 		 * @return the OAuth2 token provider specification
 		 */
 		public OAuth2TokenProviderSpec build() {
+			properties = Nullables.nonNullOrDefault(properties, OAuth2TokenProviderProperties::defaults);
+			tokenClientSupplier = Nullables.nonNullOrDefault(tokenClientSupplier, OAuth2TokenClientSupplier::supplyNull);
+			tokenRefreshScheduler = Nullables.nonNullOrDefault(tokenRefreshScheduler, () -> ScopedResource.managed(defaultSchedulerExecutor()));
+			defaultExpirationSupplier = Nullables.nonNullOrDefault(defaultExpirationSupplier, () -> Instant::now);
+			updateTokenWrapper = Nullables.nonNullOrDefault(updateTokenWrapper, ExecutionWrapper::identity);
 			return new OAuth2TokenProviderSpec(this);
 		}
 	}

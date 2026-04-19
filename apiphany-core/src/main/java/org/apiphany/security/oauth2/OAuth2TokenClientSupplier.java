@@ -22,4 +22,13 @@ public interface OAuth2TokenClientSupplier {
 	 * @return an AuthenticationTokenProvider based on the given client registration and provider details
 	 */
 	AuthenticationTokenProvider get(OAuth2ClientRegistration clientRegistration, OAuth2ProviderDetails providerDetails);
+
+	/**
+	 * Returns a supplier that always returns null.
+	 *
+	 * @return a supplier that always returns null
+	 */
+	static OAuth2TokenClientSupplier supplyNull() {
+		return (clientRegistration, providerDetails) -> null;
+	}
 }
