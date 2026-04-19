@@ -10,11 +10,10 @@ import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationTokenProvider;
 import org.morphix.lang.Comparables;
 import org.morphix.lang.Nullables;
+import org.morphix.lang.function.LoggerAdapter;
 import org.morphix.lang.retry.Retry;
 import org.morphix.lang.retry.WaitCounter;
 import org.morphix.lang.thread.ReschedulingTask;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * OAuth2 token provider component, this class provides a non-expired token by requesting a new one on expiration time.
@@ -33,7 +32,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	/**
 	 * The logger object.
 	 */
-	private static final Logger LOGGER = LoggerFactory.getLogger(OAuth2TokenProvider.class);
+	private static final LoggerAdapter LOGGER = Slf4jLoggerAdapter.of(OAuth2TokenProvider.class);
 
 	/**
 	 * The self rescheduling task that handles the token refresh scheduling.
@@ -86,6 +85,8 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 
 		if (null != tokenClient) {
 			enable();
+		} else {
+			LOGGER.warn("[{}] No token client provided, token retrieval will be disabled.", getName());
 		}
 	}
 
@@ -105,7 +106,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 				.scheduler(specification.getTokenRefreshScheduler())
 				.taskCancelRetry(Retry.of(WaitCounter.of(properties.getMaxTaskCloseAttempts(), properties.getCloseTaskRetryInterval())))
 				.executionWrapper(specification.getUpdateTokenWrapper())
-				.logger(Slf4jLoggerAdapter.of(LOGGER))
+				.logger(LOGGER)
 				.build();
 	}
 

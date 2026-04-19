@@ -25,9 +25,16 @@ class Slf4jLoggerAdapterTest {
 
 	@Test
 	void shouldNotAcceptNullLogger() {
-		NullPointerException e = assertThrows(NullPointerException.class, () -> Slf4jLoggerAdapter.of(null));
+		NullPointerException e = assertThrows(NullPointerException.class, () -> Slf4jLoggerAdapter.of((Logger) null));
 
 		assertThat(e.getMessage(), is("logger must not be null"));
+	}
+
+	@Test
+	void shouldNotAcceptNullClass() {
+		NullPointerException e = assertThrows(NullPointerException.class, () -> Slf4jLoggerAdapter.of((Class<?>) null));
+
+		assertThat(e.getMessage(), is("class must not be null"));
 	}
 
 	@Test
@@ -37,6 +44,13 @@ class Slf4jLoggerAdapterTest {
 		Slf4jLoggerAdapter adapter = assertDoesNotThrow(() -> Slf4jLoggerAdapter.of(slf4jLogger));
 
 		assertThat(adapter.getLogger(), is(slf4jLogger));
+	}
+
+	@Test
+	void shouldCreateAdapterWithValidClass() {
+		Slf4jLoggerAdapter adapter = assertDoesNotThrow(() -> Slf4jLoggerAdapter.of(Slf4jLoggerAdapterTest.class));
+
+		assertThat(adapter.getLogger().getName(), is(Slf4jLoggerAdapterTest.class.getName()));
 	}
 
 	@Test
