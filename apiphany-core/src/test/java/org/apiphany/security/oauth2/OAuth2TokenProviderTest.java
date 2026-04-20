@@ -99,11 +99,9 @@ class OAuth2TokenProviderTest {
 
 	@Test
 	void shouldReturnTokenDefaultExpirationWhenTokenIsNull() {
-		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
+		tokenProvider = OAuth2TokenProvider.builder()
 				.defaultExpirationSupplier(() -> DEFAULT_EXPIRATION)
 				.build();
-
-		tokenProvider = OAuth2TokenProvider.of(specification);
 
 		Instant expiration = tokenProvider.getTokenExpiration();
 
@@ -112,11 +110,9 @@ class OAuth2TokenProviderTest {
 
 	@Test
 	void shouldReturnTokenDefaultExpirationWhenAuthenticationTokenExpirationIsNull() {
-		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
+		tokenProvider = OAuth2TokenProvider.builder()
 				.defaultExpirationSupplier(() -> DEFAULT_EXPIRATION)
 				.build();
-
-		tokenProvider = OAuth2TokenProvider.of(specification);
 
 		tokenProvider.setAuthenticationToken(new AuthenticationToken());
 
@@ -132,11 +128,9 @@ class OAuth2TokenProviderTest {
 		authenticationToken.setExpiresIn(EXPIRES_IN);
 		authenticationToken.setExpiration(DEFAULT_EXPIRATION.plusSeconds(EXPIRES_IN));
 
-		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
+		tokenProvider = OAuth2TokenProvider.builder()
 				.defaultExpirationSupplier(() -> DEFAULT_EXPIRATION)
 				.build();
-
-		tokenProvider = OAuth2TokenProvider.of(specification);
 
 		tokenProvider.setAuthenticationToken(authenticationToken);
 
@@ -147,20 +141,16 @@ class OAuth2TokenProviderTest {
 
 	@Test
 	void shouldNotInitializeSchedulerIfTheRegistrationsMapIsNull() {
-		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder().build();
-
-		tokenProvider = OAuth2TokenProvider.of(specification);
+		tokenProvider = OAuth2TokenProvider.builder().build();
 
 		assertFalse(tokenProvider.isSchedulerEnabled());
 	}
 
 	@Test
 	void shouldNotInitializeSchedulerIfBuiltWithNullOAuth2Properties() {
-		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
+		tokenProvider = OAuth2TokenProvider.builder()
 				.registration((OAuth2Properties) null)
 				.build();
-
-		tokenProvider = OAuth2TokenProvider.of(specification);
 
 		assertFalse(tokenProvider.isSchedulerEnabled());
 	}
@@ -169,11 +159,9 @@ class OAuth2TokenProviderTest {
 	void shouldNotInitializeSchedulerIfTheRegistrationsMapIsEmpty() {
 		doReturn(Collections.emptyMap()).when(oAuth2Properties).getRegistration();
 
-		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
+		tokenProvider = OAuth2TokenProvider.builder()
 				.registration(oAuth2Properties)
 				.build();
-
-		tokenProvider = OAuth2TokenProvider.of(specification);
 
 		assertTrue(tokenProvider.isSchedulerDisabled());
 	}
@@ -182,11 +170,9 @@ class OAuth2TokenProviderTest {
 	void shouldNotInitializeSchedulerIfTheProvidersMapIsNull() {
 		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
 
-		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
+		tokenProvider = OAuth2TokenProvider.builder()
 				.registration(oAuth2Properties)
 				.build();
-
-		tokenProvider = OAuth2TokenProvider.of(specification);
 
 		assertFalse(tokenProvider.isSchedulerEnabled());
 	}
@@ -196,11 +182,9 @@ class OAuth2TokenProviderTest {
 		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
 		doReturn(Collections.emptyMap()).when(oAuth2Properties).getProvider();
 
-		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
+		tokenProvider = OAuth2TokenProvider.builder()
 				.registration(oAuth2Properties, CLIENT_REGISTRATION_NAME)
 				.build();
-
-		tokenProvider = OAuth2TokenProvider.of(specification);
 
 		assertFalse(tokenProvider.isSchedulerEnabled());
 	}
@@ -210,11 +194,9 @@ class OAuth2TokenProviderTest {
 		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
 		doReturn(Map.of(PROVIDER_NAME, providerDetails)).when(oAuth2Properties).getProvider();
 
-		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
+		tokenProvider = OAuth2TokenProvider.builder()
 				.registration(oAuth2Properties, "missing-registration")
 				.build();
-
-		tokenProvider = OAuth2TokenProvider.of(specification);
 
 		assertFalse(tokenProvider.isSchedulerEnabled());
 	}
@@ -225,11 +207,9 @@ class OAuth2TokenProviderTest {
 		doReturn(clientRegistration).when(oAuth2Properties).getClientRegistration(CLIENT_REGISTRATION_NAME);
 		doReturn(Map.of(PROVIDER_NAME, providerDetails)).when(oAuth2Properties).getProvider();
 
-		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
+		tokenProvider = OAuth2TokenProvider.builder()
 				.registration(oAuth2Properties, CLIENT_REGISTRATION_NAME)
 				.build();
-
-		tokenProvider = OAuth2TokenProvider.of(specification);
 
 		assertFalse(tokenProvider.isSchedulerEnabled());
 	}
@@ -241,11 +221,9 @@ class OAuth2TokenProviderTest {
 		doReturn(true).when(clientRegistration).hasClientId();
 		doReturn(Map.of(PROVIDER_NAME, providerDetails)).when(oAuth2Properties).getProvider();
 
-		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
+		tokenProvider = OAuth2TokenProvider.builder()
 				.registration(oAuth2Properties, CLIENT_REGISTRATION_NAME)
 				.build();
-
-		tokenProvider = OAuth2TokenProvider.of(specification);
 
 		assertFalse(tokenProvider.isSchedulerEnabled());
 	}
@@ -258,12 +236,10 @@ class OAuth2TokenProviderTest {
 		doReturn(true).when(clientRegistration).hasClientSecret();
 		doReturn(Map.of(PROVIDER_NAME, providerDetails)).when(oAuth2Properties).getProvider();
 
-		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
+		tokenProvider = OAuth2TokenProvider.builder()
 				.registration(oAuth2Properties, CLIENT_REGISTRATION_NAME)
 				.tokenClientSupplier((cr, pd) -> tokenClient)
 				.build();
-
-		tokenProvider = OAuth2TokenProvider.of(specification);
 
 		assertFalse(tokenProvider.isSchedulerEnabled());
 	}
@@ -276,11 +252,9 @@ class OAuth2TokenProviderTest {
 				"clientRegistrationName2", clientRegistration2);
 		doReturn(registration).when(oAuth2Properties).getRegistration();
 
-		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
+		tokenProvider = OAuth2TokenProvider.builder()
 				.registration(oAuth2Properties)
 				.build();
-
-		tokenProvider = OAuth2TokenProvider.of(specification);
 
 		assertFalse(tokenProvider.isSchedulerEnabled());
 	}
@@ -297,12 +271,10 @@ class OAuth2TokenProviderTest {
 		AuthenticationToken authenticationToken = createToken();
 		doReturn(authenticationToken).when(tokenClient).getAuthenticationToken();
 
-		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
+		tokenProvider = OAuth2TokenProvider.builder()
 				.registration(oAuth2Properties, CLIENT_REGISTRATION_NAME)
 				.tokenClientSupplier((cr, pd) -> tokenClient)
 				.build();
-
-		tokenProvider = OAuth2TokenProvider.of(specification);
 
 		assertTrue(tokenProvider.isSchedulerEnabled());
 		assertFalse(tokenProvider.isSchedulerDisabled());
@@ -333,13 +305,11 @@ class OAuth2TokenProviderTest {
 		doReturn(true).when(scheduledFuture).cancel(false);
 		doReturn(scheduledFuture).when(scheduledExecutorService).schedule(any(Runnable.class), anyLong(), any());
 
-		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
+		tokenProvider = OAuth2TokenProvider.builder()
 				.registration(oAuth2Properties, CLIENT_REGISTRATION_NAME)
 				.tokenRefreshScheduler(ScopedResource.managed(scheduledExecutorService))
 				.tokenClientSupplier((cr, pd) -> tokenClient)
 				.build();
-
-		tokenProvider = OAuth2TokenProvider.of(specification);
 
 		assertTrue(tokenProvider.isSchedulerEnabled());
 		verify(expiration).minus(AuthenticationToken.EXPIRATION_ERROR_MARGIN);
@@ -375,14 +345,12 @@ class OAuth2TokenProviderTest {
 		properties.setExpirationErrorMargin(expirationErrorMargin);
 		properties.setMinRefreshInterval(minRefreshInterval);
 
-		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
+		tokenProvider = OAuth2TokenProvider.builder()
 				.properties(properties)
 				.registration(oAuth2Properties, CLIENT_REGISTRATION_NAME)
 				.tokenRefreshScheduler(ScopedResource.managed(scheduledExecutorService))
 				.tokenClientSupplier((cr, pd) -> tokenClient)
 				.build();
-
-		tokenProvider = OAuth2TokenProvider.of(specification);
 
 		assertTrue(tokenProvider.isSchedulerEnabled());
 		verify(expiration).minus(expirationErrorMargin);
@@ -400,12 +368,10 @@ class OAuth2TokenProviderTest {
 
 		doThrow(new RuntimeException("BOOM! Error getting token")).when(tokenClient).getAuthenticationToken();
 
-		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
+		tokenProvider = OAuth2TokenProvider.builder()
 				.registration(oAuth2Properties, CLIENT_REGISTRATION_NAME)
 				.tokenClientSupplier((cr, pd) -> tokenClient)
 				.build();
-
-		tokenProvider = OAuth2TokenProvider.of(specification);
 
 		AuthenticationException e = assertThrows(AuthenticationException.class, tokenProvider::getAuthenticationToken);
 		assertThat(e.getMessage(), equalTo("Missing authentication token"));
@@ -422,12 +388,10 @@ class OAuth2TokenProviderTest {
 
 		doReturn(null).when(tokenClient).getAuthenticationToken();
 
-		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
+		tokenProvider = OAuth2TokenProvider.builder()
 				.registration(oAuth2Properties, CLIENT_REGISTRATION_NAME)
 				.tokenClientSupplier((cr, pd) -> tokenClient)
 				.build();
-
-		tokenProvider = OAuth2TokenProvider.of(specification);
 
 		AuthenticationException e = assertThrows(AuthenticationException.class, tokenProvider::getAuthenticationToken);
 		assertThat(e.getMessage(), equalTo("Missing authentication token"));
@@ -446,12 +410,10 @@ class OAuth2TokenProviderTest {
 		invalidToken.setExpiresIn(NEGATIVE_EXPIRES_IN);
 		doReturn(invalidToken).when(tokenClient).getAuthenticationToken();
 
-		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
+		tokenProvider = OAuth2TokenProvider.builder()
 				.registration(oAuth2Properties, CLIENT_REGISTRATION_NAME)
 				.tokenClientSupplier((cr, pd) -> tokenClient)
 				.build();
-
-		tokenProvider = OAuth2TokenProvider.of(specification);
 
 		AuthenticationException e = assertThrows(AuthenticationException.class, tokenProvider::getAuthenticationToken);
 		assertThat(e.getMessage(), equalTo("Missing authentication token"));
@@ -476,14 +438,14 @@ class OAuth2TokenProviderTest {
 		doReturn(true).when(scheduledFuture).cancel(false);
 		doReturn(scheduledFuture).when(scheduledExecutorService).schedule(any(Runnable.class), anyLong(), any());
 
-		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
+		OAuth2TokenProvider localTokenProvider = OAuth2TokenProvider.builder()
 				.registration(oAuth2Properties, CLIENT_REGISTRATION_NAME)
 				.tokenRefreshScheduler(ScopedResource.managed(scheduledExecutorService))
 				.tokenClientSupplier((cr, pd) -> localTokenClient)
 				.build();
 
 		AuthenticationToken token = null;
-		try (OAuth2TokenProvider localTokenProvider = OAuth2TokenProvider.of(specification)) {
+		try (localTokenProvider) {
 			token = localTokenProvider.getAuthenticationToken();
 		}
 
@@ -516,14 +478,14 @@ class OAuth2TokenProviderTest {
 		OAuth2TokenProviderProperties properties = OAuth2TokenProviderProperties.defaults();
 		properties.setMaxTaskCloseAttempts(maxAttempts);
 
-		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
+		OAuth2TokenProvider localTokenProvider = OAuth2TokenProvider.builder()
 				.properties(properties)
 				.registration(oAuth2Properties)
 				.tokenRefreshScheduler(ScopedResource.managed(scheduledExecutorService))
 				.tokenClientSupplier((cr, pd) -> localTokenClient)
 				.build();
 
-		try (OAuth2TokenProvider localTokenProvider = OAuth2TokenProvider.of(specification)) {
+		try (localTokenProvider) {
 			// empty
 		}
 
@@ -543,12 +505,12 @@ class OAuth2TokenProviderTest {
 
 		ScheduledExecutorService scheduledExecutorService = mock(ScheduledExecutorService.class);
 
-		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
+		OAuth2TokenProvider localTokenProvider = OAuth2TokenProvider.builder()
 				.registration(oAuth2Properties)
 				.tokenRefreshScheduler(ScopedResource.managed(scheduledExecutorService))
 				.build();
 
-		try (OAuth2TokenProvider localTokenProvider = OAuth2TokenProvider.of(specification)) {
+		try (localTokenProvider) {
 			// empty
 		}
 
@@ -567,12 +529,12 @@ class OAuth2TokenProviderTest {
 
 		ScheduledExecutorService scheduledExecutorService = mock(ScheduledExecutorService.class);
 
-		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
+		OAuth2TokenProvider localTokenProvider = OAuth2TokenProvider.builder()
 				.registration(oAuth2Properties)
 				.tokenRefreshScheduler(scheduledExecutorService)
 				.build();
 
-		try (OAuth2TokenProvider localTokenProvider = OAuth2TokenProvider.of(specification)) {
+		try (localTokenProvider) {
 			// empty
 		}
 
@@ -591,13 +553,13 @@ class OAuth2TokenProviderTest {
 
 		ScheduledExecutorService scheduledExecutorService = mock(ScheduledExecutorService.class);
 
-		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
+		OAuth2TokenProvider localTokenProvider = OAuth2TokenProvider.builder()
 				.registration(oAuth2Properties)
 				.tokenRefreshScheduler(scheduledExecutorService)
 				.build();
 
 		AuthenticationException e = null;
-		try (OAuth2TokenProvider localTokenProvider = OAuth2TokenProvider.of(specification)) {
+		try (localTokenProvider) {
 			e = assertThrows(AuthenticationException.class, localTokenProvider::getAuthenticationToken);
 		}
 
@@ -635,14 +597,14 @@ class OAuth2TokenProviderTest {
 		properties.setExpirationErrorMargin(expirationErrorMargin);
 		properties.setMinRefreshInterval(minRefreshInterval);
 
-		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
+		OAuth2TokenProvider localTokenProvider = OAuth2TokenProvider.builder()
 				.properties(properties)
 				.registration(oAuth2Properties, CLIENT_REGISTRATION_NAME)
 				.tokenClientSupplier((cr, pd) -> tokenClient)
 				.build();
 
 		boolean reachedRetrievals = false;
-		try (OAuth2TokenProvider localTokenProvider = OAuth2TokenProvider.of(specification)) {
+		try (localTokenProvider) {
 			reachedRetrievals = Threads.safeWait(tokenRetrievalLatch, Duration.ofSeconds(3));
 		}
 
@@ -682,15 +644,13 @@ class OAuth2TokenProviderTest {
 		properties.setExpirationErrorMargin(expirationErrorMargin);
 		properties.setMinRefreshInterval(minRefreshInterval);
 
-		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
+		boolean reachedRetrievals = false;
+		try (OAuth2TokenProvider localProvider = OAuth2TokenProvider.builder()
 				.properties(properties)
 				.registration(oAuth2Properties, CLIENT_REGISTRATION_NAME)
 				.tokenClientSupplier((cr, pd) -> tokenClient)
 				.tokenRefreshScheduler(ScopedResource.managed(Executors.newSingleThreadScheduledExecutor()))
-				.build();
-
-		boolean reachedRetrievals = false;
-		try (OAuth2TokenProvider localTokenProvider = OAuth2TokenProvider.of(specification)) {
+				.build()) {
 			reachedRetrievals = Threads.waitUntil(() -> tokenRetrievalCount.get() >= retrievals, Duration.ZERO, pollingInterval);
 		}
 
@@ -721,12 +681,6 @@ class OAuth2TokenProviderTest {
 		properties.setExpirationErrorMargin(expirationErrorMargin);
 		properties.setMinRefreshInterval(minRefreshInterval);
 
-		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
-				.properties(properties)
-				.registration(oAuth2Properties, clientRegistrationName)
-				.tokenClientSupplier((cr, pd) -> tokenClient)
-				.build();
-
 		Holder<OAuth2TokenProvider> tokenProviderHolder = Holder.empty();
 		doAnswer(answer -> {
 			AuthenticationToken token = createToken(tokenValidity);
@@ -738,7 +692,12 @@ class OAuth2TokenProviderTest {
 			return token;
 		}).when(tokenClient).getAuthenticationToken();
 
-		OAuth2TokenProvider localTokenProvider = OAuth2TokenProvider.of(specification);
+		OAuth2TokenProvider localTokenProvider = OAuth2TokenProvider.builder()
+				.properties(properties)
+				.registration(oAuth2Properties, clientRegistrationName)
+				.tokenClientSupplier((cr, pd) -> tokenClient)
+				.build();
+
 		tokenProviderHolder.setValue(localTokenProvider);
 
 		boolean reachedRetrievals = false;
@@ -787,7 +746,7 @@ class OAuth2TokenProviderTest {
 		};
 		ExecutionWrapper<Void> log = ExecutionWrappers.log(Slf4jLoggerAdapter.of(LOGGER), LoggingLevel.WARN, CLIENT_REGISTRATION_NAME + "-wrapper");
 
-		OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
+		OAuth2TokenProvider localTokenProvider = OAuth2TokenProvider.builder()
 				.properties(properties)
 				.registration(oAuth2Properties, CLIENT_REGISTRATION_NAME)
 				.tokenClientSupplier((cr, pd) -> tokenClient)
@@ -795,7 +754,7 @@ class OAuth2TokenProviderTest {
 				.build();
 
 		boolean reachedRetrievals = false;
-		try (OAuth2TokenProvider localTokenProvider = OAuth2TokenProvider.of(specification)) {
+		try (localTokenProvider) {
 			reachedRetrievals = Threads.safeWait(tokenRetrievalLatch, Duration.ofSeconds(3));
 		}
 

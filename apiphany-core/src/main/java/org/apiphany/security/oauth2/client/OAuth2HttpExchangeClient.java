@@ -15,7 +15,6 @@ import org.apiphany.security.AuthenticationType;
 import org.apiphany.security.oauth2.OAuth2Properties;
 import org.apiphany.security.oauth2.OAuth2ResolvedRegistration;
 import org.apiphany.security.oauth2.OAuth2TokenProvider;
-import org.apiphany.security.oauth2.OAuth2TokenProviderSpec;
 import org.apiphany.security.token.client.TokenHttpExchangeClient;
 import org.morphix.lang.Messages;
 import org.morphix.lang.function.LoggerAdapter;
@@ -76,12 +75,11 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 		this.resolvedRegistration = OAuth2ResolvedRegistration.of(oAuth2Properties, clientRegistrationName);
 
 		if (initialize()) {
-			OAuth2TokenProviderSpec specification = OAuth2TokenProviderSpec.builder()
+			this.tokenProvider = OAuth2TokenProvider.builder()
 					.registration(resolvedRegistration)
 					.tokenClientSupplier((clientRegistration, providerDetails) -> new OAuth2ApiClient(
 							clientRegistration, providerDetails, tokenExchangeClient.unwrap()))
 					.build();
-			this.tokenProvider = OAuth2TokenProvider.of(specification);
 		} else {
 			for (String error : initializationErrors) {
 				LOGGER.warn(error);

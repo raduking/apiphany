@@ -239,7 +239,7 @@ class OAuth2TokenProviderRegistryTest {
 			doReturn(CLIENT_REGISTRATION_2).when(tokenProvider2).getClientRegistrationName();
 
 			OAuth2TokenClientSupplier tokenClientSupplier = mock(OAuth2TokenClientSupplier.class);
-			doReturn(tokenProvider1).doReturn(tokenProvider2).when(mockRegistry).tokenProvider(any(), any(OAuth2TokenProviderSpec.Builder.class));
+			doReturn(tokenProvider1).doReturn(tokenProvider2).when(mockRegistry).tokenProvider(any(), any(OAuth2TokenProvider.Builder.class));
 
 			OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.of(
 					mockRegistry,
@@ -253,8 +253,8 @@ class OAuth2TokenProviderRegistryTest {
 			assertThat(registry.getProviderNames(),
 					containsInAnyOrder(nameConverter(CLIENT_REGISTRATION_1), nameConverter(CLIENT_REGISTRATION_2)));
 
-			verify(mockRegistry).tokenProvider(eq(CLIENT_REGISTRATION_1), any(OAuth2TokenProviderSpec.Builder.class));
-			verify(mockRegistry).tokenProvider(eq(CLIENT_REGISTRATION_2), any(OAuth2TokenProviderSpec.Builder.class));
+			verify(mockRegistry).tokenProvider(eq(CLIENT_REGISTRATION_1), any(OAuth2TokenProvider.Builder.class));
+			verify(mockRegistry).tokenProvider(eq(CLIENT_REGISTRATION_2), any(OAuth2TokenProvider.Builder.class));
 		}
 
 		@Test
@@ -276,7 +276,7 @@ class OAuth2TokenProviderRegistryTest {
 			doReturn(CLIENT_REGISTRATION_2).when(tokenProvider2).getClientRegistrationName();
 
 			OAuth2TokenClientSupplier tokenClientSupplier = mock(OAuth2TokenClientSupplier.class);
-			doReturn(tokenProvider1).doReturn(tokenProvider2).when(mockRegistry).tokenProvider(any(), any(OAuth2TokenProviderSpec.Builder.class));
+			doReturn(tokenProvider1).doReturn(tokenProvider2).when(mockRegistry).tokenProvider(any(), any(OAuth2TokenProvider.Builder.class));
 
 			OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.of(
 					mockRegistry,
@@ -288,8 +288,8 @@ class OAuth2TokenProviderRegistryTest {
 			assertThat(registry.getProviderNames(), hasSize(2));
 			assertThat(registry.getProviderNames(), containsInAnyOrder(CLIENT_REGISTRATION_1, CLIENT_REGISTRATION_2));
 
-			verify(mockRegistry).tokenProvider(eq(CLIENT_REGISTRATION_1), any(OAuth2TokenProviderSpec.Builder.class));
-			verify(mockRegistry).tokenProvider(eq(CLIENT_REGISTRATION_2), any(OAuth2TokenProviderSpec.Builder.class));
+			verify(mockRegistry).tokenProvider(eq(CLIENT_REGISTRATION_1), any(OAuth2TokenProvider.Builder.class));
+			verify(mockRegistry).tokenProvider(eq(CLIENT_REGISTRATION_2), any(OAuth2TokenProvider.Builder.class));
 		}
 
 		@Test
@@ -313,7 +313,7 @@ class OAuth2TokenProviderRegistryTest {
 			doReturn(CLIENT_REGISTRATION_2).when(tokenProvider2).getClientRegistrationName();
 
 			OAuth2TokenClientSupplier tokenClientSupplier = mock(OAuth2TokenClientSupplier.class);
-			doReturn(tokenProvider1).doReturn(tokenProvider2).when(mockRegistry).tokenProvider(any(), any(OAuth2TokenProviderSpec.Builder.class));
+			doReturn(tokenProvider1).doReturn(tokenProvider2).when(mockRegistry).tokenProvider(any(), any(OAuth2TokenProvider.Builder.class));
 
 			OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.of(
 					mockRegistry,
@@ -331,8 +331,8 @@ class OAuth2TokenProviderRegistryTest {
 			assertThat(registry.getProviderNames(),
 					containsInAnyOrder(nameConverter(CLIENT_REGISTRATION_1), nameConverter(CLIENT_REGISTRATION_2)));
 
-			verify(mockRegistry).tokenProvider(eq(CLIENT_REGISTRATION_1), any(OAuth2TokenProviderSpec.Builder.class));
-			verify(mockRegistry).tokenProvider(eq(CLIENT_REGISTRATION_2), any(OAuth2TokenProviderSpec.Builder.class));
+			verify(mockRegistry).tokenProvider(eq(CLIENT_REGISTRATION_1), any(OAuth2TokenProvider.Builder.class));
+			verify(mockRegistry).tokenProvider(eq(CLIENT_REGISTRATION_2), any(OAuth2TokenProvider.Builder.class));
 
 			verify(customizer).accept(expectedName1, tokenProvider1);
 			verify(customizer).accept(expectedName2, tokenProvider2);
@@ -349,7 +349,7 @@ class OAuth2TokenProviderRegistryTest {
 			OAuth2TokenProvider tokenProvider = mock(OAuth2TokenProvider.class);
 
 			OAuth2TokenClientSupplier tokenClientSupplier = mock(OAuth2TokenClientSupplier.class);
-			doReturn(tokenProvider).when(mockRegistry).tokenProvider(eq(CLIENT_REGISTRATION_NAME), any(OAuth2TokenProviderSpec.Builder.class));
+			doReturn(tokenProvider).when(mockRegistry).tokenProvider(eq(CLIENT_REGISTRATION_NAME), any(OAuth2TokenProvider.Builder.class));
 
 			BiConsumer<String, OAuth2TokenProvider> customizer = mock(BiConsumer.class);
 
@@ -369,7 +369,7 @@ class OAuth2TokenProviderRegistryTest {
 			assertThat(registry.getProviderNames().getFirst(), equalTo(expectedName));
 
 			verify(mockRegistry).entries();
-			verify(mockRegistry).tokenProvider(eq(CLIENT_REGISTRATION_NAME), any(OAuth2TokenProviderSpec.Builder.class));
+			verify(mockRegistry).tokenProvider(eq(CLIENT_REGISTRATION_NAME), any(OAuth2TokenProvider.Builder.class));
 			verify(customizer).accept(expectedName, tokenProvider);
 		}
 
@@ -389,7 +389,7 @@ class OAuth2TokenProviderRegistryTest {
 			OAuth2TokenProvider tokenProvider = mock(OAuth2TokenProvider.class);
 
 			OAuth2TokenClientSupplier tokenClientSupplier = mock(OAuth2TokenClientSupplier.class);
-			doReturn(tokenProvider).when(mockRegistry).tokenProvider(any(), any(OAuth2TokenProviderSpec.Builder.class));
+			doReturn(tokenProvider).when(mockRegistry).tokenProvider(any(), any(OAuth2TokenProvider.Builder.class));
 
 			BiConsumer<String, OAuth2TokenProvider> customizer = mock(BiConsumer.class);
 
@@ -411,10 +411,10 @@ class OAuth2TokenProviderRegistryTest {
 
 			verify(mockRegistry).entries();
 
-			verify(mockRegistry, never()).tokenProvider(eq(CLIENT_REGISTRATION_1), any(OAuth2TokenProviderSpec.Builder.class));
+			verify(mockRegistry, never()).tokenProvider(eq(CLIENT_REGISTRATION_1), any(OAuth2TokenProvider.Builder.class));
 			verify(customizer, never()).accept(expectedRegistration1Name, tokenProvider);
 
-			verify(mockRegistry).tokenProvider(eq(CLIENT_REGISTRATION_2), any(OAuth2TokenProviderSpec.Builder.class));
+			verify(mockRegistry).tokenProvider(eq(CLIENT_REGISTRATION_2), any(OAuth2TokenProvider.Builder.class));
 			verify(customizer).accept(expectedRegistration2Name, tokenProvider);
 		}
 
@@ -526,11 +526,11 @@ class OAuth2TokenProviderRegistryTest {
 			doReturn(CLIENT_REGISTRATION_2).when(tokenProvider2).getClientRegistrationName();
 
 			OAuth2TokenClientSupplier tokenClientSupplier = mock(OAuth2TokenClientSupplier.class);
-			doReturn(tokenProvider1).doReturn(tokenProvider2).when(mockRegistry).tokenProvider(any(), any(OAuth2TokenProviderSpec.Builder.class));
+			doReturn(tokenProvider1).doReturn(tokenProvider2).when(mockRegistry).tokenProvider(any(), any(OAuth2TokenProvider.Builder.class));
 
 			OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.builder()
 					.oAuth2Registry(mockRegistry)
-					.customizeSpec(builder -> builder.tokenClientSupplier(tokenClientSupplier))
+					.customizeProvider(builder -> builder.tokenClientSupplier(tokenClientSupplier))
 					.providerNameConverter(OAuth2TokenProviderRegistryTest::nameConverter)
 					.build();
 
@@ -541,8 +541,8 @@ class OAuth2TokenProviderRegistryTest {
 			assertThat(registry.getProviderNames(),
 					containsInAnyOrder(nameConverter(CLIENT_REGISTRATION_1), nameConverter(CLIENT_REGISTRATION_2)));
 
-			verify(mockRegistry).tokenProvider(eq(CLIENT_REGISTRATION_1), any(OAuth2TokenProviderSpec.Builder.class));
-			verify(mockRegistry).tokenProvider(eq(CLIENT_REGISTRATION_2), any(OAuth2TokenProviderSpec.Builder.class));
+			verify(mockRegistry).tokenProvider(eq(CLIENT_REGISTRATION_1), any(OAuth2TokenProvider.Builder.class));
+			verify(mockRegistry).tokenProvider(eq(CLIENT_REGISTRATION_2), any(OAuth2TokenProvider.Builder.class));
 		}
 
 		@Test
@@ -564,11 +564,11 @@ class OAuth2TokenProviderRegistryTest {
 			doReturn(CLIENT_REGISTRATION_2).when(tokenProvider2).getClientRegistrationName();
 
 			OAuth2TokenClientSupplier tokenClientSupplier = mock(OAuth2TokenClientSupplier.class);
-			doReturn(tokenProvider1).doReturn(tokenProvider2).when(mockRegistry).tokenProvider(any(), any(OAuth2TokenProviderSpec.Builder.class));
+			doReturn(tokenProvider1).doReturn(tokenProvider2).when(mockRegistry).tokenProvider(any(), any(OAuth2TokenProvider.Builder.class));
 
 			OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.builder()
 					.oAuth2Registry(mockRegistry)
-					.customizeSpec(builder -> builder.tokenClientSupplier(tokenClientSupplier))
+					.customizeProvider(builder -> builder.tokenClientSupplier(tokenClientSupplier))
 					.build();
 
 			registry.close();
@@ -577,8 +577,8 @@ class OAuth2TokenProviderRegistryTest {
 			assertThat(registry.getProviderNames(), hasSize(2));
 			assertThat(registry.getProviderNames(), containsInAnyOrder(CLIENT_REGISTRATION_1, CLIENT_REGISTRATION_2));
 
-			verify(mockRegistry).tokenProvider(eq(CLIENT_REGISTRATION_1), any(OAuth2TokenProviderSpec.Builder.class));
-			verify(mockRegistry).tokenProvider(eq(CLIENT_REGISTRATION_2), any(OAuth2TokenProviderSpec.Builder.class));
+			verify(mockRegistry).tokenProvider(eq(CLIENT_REGISTRATION_1), any(OAuth2TokenProvider.Builder.class));
+			verify(mockRegistry).tokenProvider(eq(CLIENT_REGISTRATION_2), any(OAuth2TokenProvider.Builder.class));
 		}
 
 		@Test
@@ -602,11 +602,11 @@ class OAuth2TokenProviderRegistryTest {
 			doReturn(CLIENT_REGISTRATION_2).when(tokenProvider2).getClientRegistrationName();
 
 			OAuth2TokenClientSupplier tokenClientSupplier = mock(OAuth2TokenClientSupplier.class);
-			doReturn(tokenProvider1).doReturn(tokenProvider2).when(mockRegistry).tokenProvider(any(), any(OAuth2TokenProviderSpec.Builder.class));
+			doReturn(tokenProvider1).doReturn(tokenProvider2).when(mockRegistry).tokenProvider(any(), any(OAuth2TokenProvider.Builder.class));
 
 			OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.builder()
 					.oAuth2Registry(mockRegistry)
-					.customizeSpec(builder -> builder.tokenClientSupplier(tokenClientSupplier))
+					.customizeProvider(builder -> builder.tokenClientSupplier(tokenClientSupplier))
 					.providerNameConverter(OAuth2TokenProviderRegistryTest::nameConverter)
 					.providerPostConstruct(customizer)
 					.build();
@@ -621,8 +621,8 @@ class OAuth2TokenProviderRegistryTest {
 			assertThat(registry.getProviderNames(),
 					containsInAnyOrder(nameConverter(CLIENT_REGISTRATION_1), nameConverter(CLIENT_REGISTRATION_2)));
 
-			verify(mockRegistry).tokenProvider(eq(CLIENT_REGISTRATION_1), any(OAuth2TokenProviderSpec.Builder.class));
-			verify(mockRegistry).tokenProvider(eq(CLIENT_REGISTRATION_2), any(OAuth2TokenProviderSpec.Builder.class));
+			verify(mockRegistry).tokenProvider(eq(CLIENT_REGISTRATION_1), any(OAuth2TokenProvider.Builder.class));
+			verify(mockRegistry).tokenProvider(eq(CLIENT_REGISTRATION_2), any(OAuth2TokenProvider.Builder.class));
 
 			verify(customizer).accept(expectedName1, tokenProvider1);
 			verify(customizer).accept(expectedName2, tokenProvider2);
@@ -639,13 +639,13 @@ class OAuth2TokenProviderRegistryTest {
 			OAuth2TokenProvider tokenProvider = mock(OAuth2TokenProvider.class);
 
 			OAuth2TokenClientSupplier tokenClientSupplier = mock(OAuth2TokenClientSupplier.class);
-			doReturn(tokenProvider).when(mockRegistry).tokenProvider(eq(CLIENT_REGISTRATION_NAME), any(OAuth2TokenProviderSpec.Builder.class));
+			doReturn(tokenProvider).when(mockRegistry).tokenProvider(eq(CLIENT_REGISTRATION_NAME), any(OAuth2TokenProvider.Builder.class));
 
 			BiConsumer<String, OAuth2TokenProvider> customizer = mock(BiConsumer.class);
 
 			OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.builder()
 					.oAuth2Registry(mockRegistry)
-					.customizeSpec(builder -> builder.tokenClientSupplier(tokenClientSupplier))
+					.customizeProvider(builder -> builder.tokenClientSupplier(tokenClientSupplier))
 					.providerNameConverter(OAuth2TokenProviderRegistryTest::nameConverter)
 					.providerNameFilter(convertedName -> true)
 					.providerPostConstruct(customizer)
@@ -660,7 +660,7 @@ class OAuth2TokenProviderRegistryTest {
 			assertThat(registry.getProviderNames().getFirst(), equalTo(expectedName));
 
 			verify(mockRegistry).entries();
-			verify(mockRegistry).tokenProvider(eq(CLIENT_REGISTRATION_NAME), any(OAuth2TokenProviderSpec.Builder.class));
+			verify(mockRegistry).tokenProvider(eq(CLIENT_REGISTRATION_NAME), any(OAuth2TokenProvider.Builder.class));
 			verify(customizer).accept(expectedName, tokenProvider);
 		}
 
@@ -680,13 +680,13 @@ class OAuth2TokenProviderRegistryTest {
 			OAuth2TokenProvider tokenProvider = mock(OAuth2TokenProvider.class);
 
 			OAuth2TokenClientSupplier tokenClientSupplier = mock(OAuth2TokenClientSupplier.class);
-			doReturn(tokenProvider).when(mockRegistry).tokenProvider(any(), any(OAuth2TokenProviderSpec.Builder.class));
+			doReturn(tokenProvider).when(mockRegistry).tokenProvider(any(), any(OAuth2TokenProvider.Builder.class));
 
 			BiConsumer<String, OAuth2TokenProvider> customizer = mock(BiConsumer.class);
 
 			OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.builder()
 					.oAuth2Registry(mockRegistry)
-					.customizeSpec(builder -> builder.tokenClientSupplier(tokenClientSupplier))
+					.customizeProvider(builder -> builder.tokenClientSupplier(tokenClientSupplier))
 					.providerNameConverter(OAuth2TokenProviderRegistryTest::nameConverter)
 					.providerNameFilter(convertedName -> !convertedName.equals(nameConverter(CLIENT_REGISTRATION_1)))
 					.providerPostConstruct(customizer)
@@ -703,10 +703,10 @@ class OAuth2TokenProviderRegistryTest {
 
 			verify(mockRegistry).entries();
 
-			verify(mockRegistry, never()).tokenProvider(eq(CLIENT_REGISTRATION_1), any(OAuth2TokenProviderSpec.Builder.class));
+			verify(mockRegistry, never()).tokenProvider(eq(CLIENT_REGISTRATION_1), any(OAuth2TokenProvider.Builder.class));
 			verify(customizer, never()).accept(expectedRegistration1Name, tokenProvider);
 
-			verify(mockRegistry).tokenProvider(eq(CLIENT_REGISTRATION_2), any(OAuth2TokenProviderSpec.Builder.class));
+			verify(mockRegistry).tokenProvider(eq(CLIENT_REGISTRATION_2), any(OAuth2TokenProvider.Builder.class));
 			verify(customizer).accept(expectedRegistration2Name, tokenProvider);
 		}
 
@@ -741,7 +741,7 @@ class OAuth2TokenProviderRegistryTest {
 
 			OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.builder()
 					.oAuth2Properties(mockProperties)
-					.customizeSpec(builder -> builder.tokenClientSupplier(tokenClientSupplier))
+					.customizeProvider(builder -> builder.tokenClientSupplier(tokenClientSupplier))
 					.providerNameConverter(OAuth2TokenProviderRegistryTest::nameConverter)
 					.build();
 
@@ -785,7 +785,7 @@ class OAuth2TokenProviderRegistryTest {
 
 			OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.builder()
 					.oAuth2Properties(mockProperties)
-					.customizeSpec(builder -> builder.tokenClientSupplier(tokenClientSupplier))
+					.customizeProvider(builder -> builder.tokenClientSupplier(tokenClientSupplier))
 					.build();
 
 			registry.close();

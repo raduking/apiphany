@@ -112,7 +112,7 @@ public class OAuth2Registry {
 	 * @return a new OAuth2 token provider
 	 */
 	public OAuth2TokenProvider tokenProvider(final String clientRegistrationName, final OAuth2TokenClientSupplier tokenClientSupplier) {
-		return tokenProvider(clientRegistrationName, OAuth2TokenProviderSpec.builder().tokenClientSupplier(tokenClientSupplier));
+		return tokenProvider(clientRegistrationName, OAuth2TokenProvider.builder().tokenClientSupplier(tokenClientSupplier));
 	}
 
 	/**
@@ -120,14 +120,13 @@ public class OAuth2Registry {
 	 * cycle of the returned token provider.
 	 *
 	 * @param clientRegistrationName the client registration name
-	 * @param specBuilder the builder for the token provider specification
+	 * @param providerBuilder the builder for the token provider
 	 * @return a new OAuth2 token provider
 	 */
-	public OAuth2TokenProvider tokenProvider(final String clientRegistrationName, final OAuth2TokenProviderSpec.Builder specBuilder) {
+	public OAuth2TokenProvider tokenProvider(final String clientRegistrationName, final OAuth2TokenProvider.Builder providerBuilder) {
 		OAuth2ResolvedRegistration registration = get(clientRegistrationName);
-		specBuilder.registration(registration);
-		OAuth2TokenProviderSpec specification = specBuilder.build();
-		return OAuth2TokenProvider.of(specification);
+		providerBuilder.registration(registration);
+		return providerBuilder.build();
 	}
 
 	/**
