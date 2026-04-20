@@ -7,6 +7,8 @@
 - Added `OAuth2Registry.tokenProvider(String, OAuth2TokenProvider.Builder)` to create a new provider by specifying the builder.
 - Added `OAuth2TokenProviderRegistry.Builder` to build registries using the builder for better flexibility.
 - Renamed `OAuth2TokenProviderRegistry.add` to `addProvider` to match the `getProvider` method.
+- Removed most factory methods from `OAuth2TokenProviderRegistry` and only kept the simplest ones to promote builder usage.
+- Added `OAuth2TokenProviderRegistry.getProvider(String, Function)` to control missing provider behavior.
 - Added `OAuth2TokenClientSupplier.supplyNull` static method that supplies a `null` token client.
 - Added `Slf4jLoggingAdapter.of(Class)` to directly build a SLF4J logger for a given class.
 - Moved `LoggingFormat` enum to `logging` package.
