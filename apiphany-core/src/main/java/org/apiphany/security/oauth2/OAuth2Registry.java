@@ -3,7 +3,6 @@ package org.apiphany.security.oauth2;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -101,44 +100,5 @@ public class OAuth2Registry {
 	 */
 	public Collection<OAuth2ResolvedRegistration> entries() {
 		return registrations.values();
-	}
-
-	/**
-	 * Returns a new OAuth2 token provider based on the given parameters. The caller is responsible for handling the life
-	 * cycle of the returned token provider.
-	 *
-	 * @param clientRegistrationName the client registration name
-	 * @param tokenClientSupplier the supplier for the client that will make the actual token requests
-	 * @return a new OAuth2 token provider
-	 */
-	public OAuth2TokenProvider tokenProvider(final String clientRegistrationName, final OAuth2TokenClientSupplier tokenClientSupplier) {
-		return tokenProvider(clientRegistrationName, OAuth2TokenProvider.builder().tokenClientSupplier(tokenClientSupplier));
-	}
-
-	/**
-	 * Returns a new OAuth2 token provider based on the given parameters. The caller is responsible for handling the life
-	 * cycle of the returned token provider.
-	 *
-	 * @param clientRegistrationName the client registration name
-	 * @param providerBuilder the builder for the token provider
-	 * @return a new OAuth2 token provider
-	 */
-	public OAuth2TokenProvider tokenProvider(final String clientRegistrationName, final OAuth2TokenProvider.Builder providerBuilder) {
-		OAuth2ResolvedRegistration registration = get(clientRegistrationName);
-		providerBuilder.registration(registration);
-		return providerBuilder.build();
-	}
-
-	/**
-	 * Returns a list of new OAuth2 token providers based on this registry. The caller is responsible for handling the life
-	 * cycle of the returned token providers.
-	 *
-	 * @param tokenClientSupplier the supplier for the client that will make the actual token requests
-	 * @return a list of OAuth2 token providers based on this registry
-	 */
-	public List<OAuth2TokenProvider> tokenProviders(final OAuth2TokenClientSupplier tokenClientSupplier) {
-		return registrations.keySet().stream()
-				.map(registrationName -> tokenProvider(registrationName, tokenClientSupplier))
-				.toList();
 	}
 }
