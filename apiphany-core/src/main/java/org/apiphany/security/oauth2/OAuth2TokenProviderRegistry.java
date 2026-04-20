@@ -71,9 +71,9 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 			String clientRegistrationName = registration.getClientRegistrationName();
 			String providerName = builder.providerNameConverter.apply(clientRegistrationName);
 			if (builder.providerNameFilter.test(providerName)) {
-				OAuth2TokenProviderSpec.Builder specBuilder = OAuth2TokenProviderSpec.builder();
-				builder.specCustomizer.accept(specBuilder);
-				OAuth2TokenProvider provider = oAuth2Registry.tokenProvider(clientRegistrationName, specBuilder);
+				OAuth2TokenProvider.Builder providerBuilder = OAuth2TokenProvider.builder();
+				builder.providerCustomizer.accept(providerBuilder);
+				OAuth2TokenProvider provider = oAuth2Registry.tokenProvider(clientRegistrationName, providerBuilder);
 				addProvider(providerName, ScopedResource.managed(provider));
 				builder.providerPostConstruct.accept(providerName, provider);
 			} else {
@@ -133,7 +133,7 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 			final BiConsumer<String, OAuth2TokenProvider> createdProviderCustomizer) {
 		return builder()
 				.oAuth2Registry(oAuth2Registry)
-				.customizeSpec(specBuilder -> specBuilder
+				.customizeProvider(specBuilder -> specBuilder
 						.tokenClientSupplier(tokenClientSupplier))
 				.providerNameConverter(providerNameConverter)
 				.providerNameFilter(providerNameFilter)
@@ -325,13 +325,13 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 		private OAuth2Registry oAuth2Registry;
 
 		/**
-		 * The token provider specification builder that is used for building the token providers for the client registrations
-		 * in the underlying OAuth2 registry. This builder is used as a base for building the token provider specifications for
+		 * The token provider builder customizer that is used for building the token providers for the client registrations in
+		 * the underlying OAuth2 registry. This builder is used as a base for building the token provider specifications for
 		 * each client registration and can be customized with common configuration for all providers, such as the token refresh
 		 * scheduler and token client supplier. The builder is initialized with default values, so it can be used without any
 		 * customization if the defaults are sufficient.
 		 */
-		private Consumer<OAuth2TokenProviderSpec.Builder> specCustomizer;
+		private Consumer<OAuth2TokenProvider.Builder> providerCustomizer;
 
 		/**
 		 * A function that maps the client registration name to the token provider name. This is an optional field and if not
@@ -391,12 +391,12 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 		 * as the token refresh scheduler and token client supplier. The builder is initialized with default values, so it can
 		 * be used without any customization if the defaults are sufficient.
 		 *
-		 * @param specCustomizer the token provider specification builder customizer to be used for building the token providers
-		 *     for the client registrations in the underlying OAuth2 registry
+		 * @param providerCustomizer the token provider builder customizer to be used for building the token providers for the
+		 *     client registrations in the underlying OAuth2 registry
 		 * @return this builder instance for chaining
 		 */
-		public Builder customizeSpec(final Consumer<OAuth2TokenProviderSpec.Builder> specCustomizer) {
-			this.specCustomizer = specCustomizer;
+		public Builder customizeProvider(final Consumer<OAuth2TokenProvider.Builder> providerCustomizer) {
+			this.providerCustomizer = providerCustomizer;
 			return this;
 		}
 
@@ -450,7 +450,7 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 		 * @return a new OAuth2 token provider registry based on the provided configuration
 		 */
 		public OAuth2TokenProviderRegistry build() {
-			specCustomizer = Nullables.nonNullOrDefault(specCustomizer, Consumers::noConsumer);
+			providerCustomizer = Nullables.nonNullOrDefault(providerCustomizer, Consumers::noConsumer);
 			providerNameConverter = Nullables.nonNullOrDefault(providerNameConverter, UnaryOperator::identity);
 			providerNameFilter = Nullables.nonNullOrDefault(providerNameFilter, Predicates::acceptAll);
 			providerPostConstruct = Nullables.nonNullOrDefault(providerPostConstruct, Consumers::noBiConsumer);

@@ -2,7 +2,9 @@
 
 `1.2.3`
 
-- Added `OAuth2Registry.tokenProvider(String, OAuth2TokenProviderSpec.Builder)` to create a new provider by specifying the builder.
+- Removed `OAuth2TokenProviderSpec` and transformed it into `OAuth2TokenProvider.Builder` to reduce confusion.
+- Removed `OAuth2TokenProvider.of` factory method since now providers must be constructed via builder.
+- Added `OAuth2Registry.tokenProvider(String, OAuth2TokenProvider.Builder)` to create a new provider by specifying the builder.
 - Added `OAuth2TokenProviderRegistry.Builder` to build registries using the builder for better flexibility.
 - Renamed `OAuth2TokenProviderRegistry.add` to `addProvider` to match the `getProvider` method.
 - Added `OAuth2TokenClientSupplier.supplyNull` static method that supplies a `null` token client.
