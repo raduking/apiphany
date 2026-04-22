@@ -55,22 +55,38 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 	 *
 	 * @param builder the builder containing the configuration for the registry
 	 */
-	@SuppressWarnings("resource")
 	private OAuth2TokenProviderRegistry(final Builder builder) {
 		this.oAuth2Registry = Objects.requireNonNull(builder.oAuth2Registry, "OAuth2 registry cannot be null");
 		for (OAuth2ResolvedRegistration registration : oAuth2Registry.entries()) {
-			String clientRegistrationName = registration.getClientRegistrationName();
-			String providerName = builder.providerNameConverter.apply(clientRegistrationName);
-			if (builder.providerNameFilter.test(providerName)) {
-				OAuth2TokenProvider.Builder providerBuilder = OAuth2TokenProvider.builder().registration(registration);
-				builder.providerBuilderCustomizer.accept(providerBuilder);
-				OAuth2TokenProvider provider = providerBuilder.build();
-				addProvider(providerName, ScopedResource.managed(provider));
-				builder.providerPostConstruct.accept(providerName, provider);
-			} else {
-				LOGGER.info("Skipping OAuth2 token provider creation for client registration: '{}' "
-						+ "as the provider name: '{}' was filtered out.", clientRegistrationName, providerName);
-			}
+			addProvider(registration, builder);
+		}
+	}
+
+	/**
+	 * Adds a new OAuth2 token provider to the registry based on the given client registration name and builder
+	 * configuration. This method will use the builder's provider name converter to determine the provider name and the
+	 * provider name filter to determine whether to include the provider in the registry. If the provider is included, it
+	 * will use the builder's provider customizer to customize the token provider specification and then create the provider
+	 * using the underlying OAuth2 registry. After the provider is created, the builder's provider post construct consumer
+	 * will be called with the provider name and the created provider instance.
+	 *
+	 * @param registration the resolved client registration to build the token provider for
+	 * @param builder the builder containing the configuration for building the token provider, including the provider name
+	 *     converter, provider name filter, provider customizer, and provider post construct consumer
+	 */
+	@SuppressWarnings("resource")
+	private void addProvider(final OAuth2ResolvedRegistration registration, final Builder builder) {
+		String clientRegistrationName = registration.getClientRegistrationName();
+		String providerName = builder.providerNameConverter.apply(clientRegistrationName);
+		if (builder.providerNameFilter.test(providerName)) {
+			OAuth2TokenProvider.Builder providerBuilder = OAuth2TokenProvider.builder().registration(registration);
+			builder.providerBuilderCustomizer.accept(providerBuilder);
+			OAuth2TokenProvider provider = providerBuilder.build();
+			addProvider(providerName, ScopedResource.managed(provider));
+			builder.providerPostConstruct.accept(providerName, provider);
+		} else {
+			LOGGER.info("Skipping OAuth2 token provider creation for client registration: '{}' "
+					+ "as the provider name: '{}' was filtered out.", clientRegistrationName, providerName);
 		}
 	}
 
