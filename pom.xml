@@ -63,7 +63,7 @@
 		<jackson3.version>3.1.1</jackson3.version>
 		<slf4j.version>2.0.17</slf4j.version>
 
-		<httpclient5.version>5.5.1</httpclient5.version>
+		<httpclient5.version>5.5.2</httpclient5.version>
 
 		<!-- Java / Maven properties -->
 		<java.version>21</java.version>
@@ -82,8 +82,8 @@
 		<spring.security.version>7.0.4</spring.security.version>
 		<testcontainers.version>2.0.4</testcontainers.version>
 		<testcontainers.keycloak.version>4.1.0</testcontainers.keycloak.version>
-		<nimbus.jose.jwt.version>10.8</nimbus.jose.jwt.version>
-		<oauth2.oidc.sdk.version>11.35</oauth2.oidc.sdk.version>
+		<nimbus.jose.jwt.version>10.9</nimbus.jose.jwt.version>
+		<oauth2.oidc.sdk.version>11.37</oauth2.oidc.sdk.version>
 		<wiremock.version>3.13.2</wiremock.version>
 
 		<!-- Dependencies used by plugins versions -->

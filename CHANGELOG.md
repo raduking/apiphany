@@ -4,7 +4,7 @@
 
 - Removed `OAuth2TokenProviderSpec` and transformed it into `OAuth2TokenProvider.Builder` to reduce confusion.
 - Removed `OAuth2TokenProvider.of` factory method since now providers must be constructed via builder.
-- Added `OAuth2Registry.tokenProvider(String, OAuth2TokenProvider.Builder)` to create a new provider by specifying the builder.
+- Removed `OAuth2Registry.tokenProvider` methods in favor of using the provider builder.
 - Added `OAuth2TokenProviderRegistry.Builder` to build registries using the builder for better flexibility.
 - Renamed `OAuth2TokenProviderRegistry.add` to `addProvider` to match the `getProvider` method.
 - Removed most factory methods from `OAuth2TokenProviderRegistry` and only kept the simplest ones to promote builder usage.
@@ -14,6 +14,8 @@
 - Moved `LoggingFormat` enum to `logging` package.
 - Added `ApacheHC5Properties.TimeoutValue.DISABLED` string value for disabled timeouts.
 - Added `ApacheHC5Properties.TimeoutValue.INFINITE` string value for infinite timeouts.
+- Upgraded `nimbus-jose-jwt` to `10.9`.
+- Upgraded `oauth2-oidc-sdk` to `11.37`.
 
 ---
 
