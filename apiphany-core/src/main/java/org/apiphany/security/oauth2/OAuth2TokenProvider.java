@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.apiphany.logging.Slf4jLoggerAdapter;
@@ -112,7 +113,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 				.minDelay(properties.getMinRefreshInterval())
 				.scheduler(scheduler)
 				.taskCancelRetry(Retry.of(WaitCounter.of(properties.getMaxTaskCloseAttempts(), properties.getCloseTaskRetryInterval())))
-				.executionWrapper(builder.updateTokenWrapper)
+				.executionWrapper(builder.updateTokenWrapperFunction.apply(getName()))
 				.logger(LOGGER)
 				.build();
 	}
@@ -387,7 +388,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 		 * The wrapper for the token update execution. This can be used to add retry logic, logging, etc. around the token
 		 * update process.
 		 */
-		private ExecutionWrapper<Void> updateTokenWrapper = ExecutionWrapper.identity();
+		private Function<String, ExecutionWrapper<Void>> updateTokenWrapperFunction = name -> ExecutionWrapper.identity();
 
 		/**
 		 * Hidden constructor.
@@ -487,14 +488,16 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 		}
 
 		/**
-		 * Sets the wrapper for the token update execution. This can be used to add retry logic, logging, etc. around the token
-		 * update process.
+		 * Sets the wrapper function for the token update execution. This can be used to add retry logic, logging, etc. around
+		 * the token update process. The function receives the token provider name as a parameter and must return the execution
+		 * wrapper to be used for that provider.
 		 *
-		 * @param updateTokenWrapper the wrapper for the token update execution
+		 * @param updateTokenWrapperFunction the wrapper function for the token update execution
 		 * @return the builder
 		 */
-		public Builder updateTokenWrapper(final ExecutionWrapper<Void> updateTokenWrapper) {
-			this.updateTokenWrapper = Objects.requireNonNull(updateTokenWrapper, "Update token execution wrapper cannot be null");
+		public Builder updateTokenWrapper(final Function<String, ExecutionWrapper<Void>> updateTokenWrapperFunction) {
+			Objects.requireNonNull(updateTokenWrapperFunction, "Update token execution wrapper function cannot be null");
+			this.updateTokenWrapperFunction = updateTokenWrapperFunction;
 			return this;
 		}
 
