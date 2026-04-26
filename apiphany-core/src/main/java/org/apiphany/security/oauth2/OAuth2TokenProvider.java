@@ -2,6 +2,7 @@ package org.apiphany.security.oauth2;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Supplier;
@@ -100,13 +101,16 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 * @param builder the OAuth2 token provider builder
 	 * @return a new self rescheduling task for this token provider
 	 */
+	@SuppressWarnings("resource")
 	private ReschedulingTask newReschedulingTask(final Builder builder) {
+		ScopedResource<ScheduledExecutorService> scheduler =
+				Nullables.nonNullOrDefault(builder.tokenRefreshScheduler, () -> ScopedResource.managed(defaultScheduler()));
 		return ReschedulingTask.builder()
 				.name(getName())
 				.task(this::updateAuthenticationToken)
 				.nextDelay(this::getNextUpdateDelay)
 				.minDelay(properties.getMinRefreshInterval())
-				.scheduler(builder.tokenRefreshScheduler)
+				.scheduler(scheduler)
 				.taskCancelRetry(Retry.of(WaitCounter.of(properties.getMaxTaskCloseAttempts(), properties.getCloseTaskRetryInterval())))
 				.executionWrapper(builder.updateTokenWrapper)
 				.logger(LOGGER)
@@ -327,7 +331,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 *
 	 * @return the scheduled executor service
 	 */
-	public static ScheduledExecutorService defaultSchedulerExecutor() {
+	public static ScheduledExecutorService defaultScheduler() {
 		return Executors.newScheduledThreadPool(0, Thread.ofVirtual().factory());
 	}
 
@@ -357,7 +361,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 		/**
 		 * The properties.
 		 */
-		private OAuth2TokenProviderProperties properties;
+		private OAuth2TokenProviderProperties properties = OAuth2TokenProviderProperties.defaults();
 
 		/**
 		 * The registration.
@@ -367,7 +371,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 		/**
 		 * The token client supplier.
 		 */
-		private OAuth2TokenClientSupplier tokenClientSupplier;
+		private OAuth2TokenClientSupplier tokenClientSupplier = OAuth2TokenClientSupplier.supplyNull();
 
 		/**
 		 * The token refresh scheduler.
@@ -377,13 +381,13 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 		/**
 		 * The default expiration supplier.
 		 */
-		private Supplier<Instant> defaultExpirationSupplier;
+		private Supplier<Instant> defaultExpirationSupplier = Instant::now;
 
 		/**
 		 * The wrapper for the token update execution. This can be used to add retry logic, logging, etc. around the token
 		 * update process.
 		 */
-		private ExecutionWrapper<Void> updateTokenWrapper;
+		private ExecutionWrapper<Void> updateTokenWrapper = ExecutionWrapper.identity();
 
 		/**
 		 * Hidden constructor.
@@ -399,7 +403,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 		 * @return the builder
 		 */
 		public Builder properties(final OAuth2TokenProviderProperties properties) {
-			this.properties = properties;
+			this.properties = Objects.requireNonNull(properties, "OAuth2 token provider properties cannot be null");
 			return this;
 		}
 
@@ -467,7 +471,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 		 * @return the builder
 		 */
 		public Builder tokenClientSupplier(final OAuth2TokenClientSupplier tokenClientSupplier) {
-			this.tokenClientSupplier = tokenClientSupplier;
+			this.tokenClientSupplier = Objects.requireNonNull(tokenClientSupplier, "Token client supplier cannot be null");
 			return this;
 		}
 
@@ -478,7 +482,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 		 * @return the builder
 		 */
 		public Builder defaultExpirationSupplier(final Supplier<Instant> defaultExpirationSupplier) {
-			this.defaultExpirationSupplier = defaultExpirationSupplier;
+			this.defaultExpirationSupplier = Objects.requireNonNull(defaultExpirationSupplier, "Default expiration supplier cannot be null");
 			return this;
 		}
 
@@ -490,7 +494,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 		 * @return the builder
 		 */
 		public Builder updateTokenWrapper(final ExecutionWrapper<Void> updateTokenWrapper) {
-			this.updateTokenWrapper = updateTokenWrapper;
+			this.updateTokenWrapper = Objects.requireNonNull(updateTokenWrapper, "Update token execution wrapper cannot be null");
 			return this;
 		}
 
@@ -500,11 +504,6 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 		 * @return the OAuth2 token provider
 		 */
 		public OAuth2TokenProvider build() {
-			properties = Nullables.nonNullOrDefault(properties, OAuth2TokenProviderProperties::defaults);
-			tokenClientSupplier = Nullables.nonNullOrDefault(tokenClientSupplier, OAuth2TokenClientSupplier::supplyNull);
-			tokenRefreshScheduler = Nullables.nonNullOrDefault(tokenRefreshScheduler, () -> ScopedResource.managed(defaultSchedulerExecutor()));
-			defaultExpirationSupplier = Nullables.nonNullOrDefault(defaultExpirationSupplier, () -> Instant::now);
-			updateTokenWrapper = Nullables.nonNullOrDefault(updateTokenWrapper, ExecutionWrapper::identity);
 			return new OAuth2TokenProvider(this);
 		}
 	}
