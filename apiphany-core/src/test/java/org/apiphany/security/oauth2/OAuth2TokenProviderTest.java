@@ -23,7 +23,9 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
@@ -750,7 +752,7 @@ class OAuth2TokenProviderTest {
 				.properties(properties)
 				.registration(oAuth2Properties, CLIENT_REGISTRATION_NAME)
 				.tokenClientSupplier((cr, pd) -> tokenClient)
-				.updateTokenWrapper(count.andThen(log))
+				.updateTokenWrapper(name -> count.andThen(log))
 				.build();
 
 		boolean reachedRetrievals = false;
@@ -761,6 +763,61 @@ class OAuth2TokenProviderTest {
 		assertTrue(reachedRetrievals);
 		assertThat(tokenRetrievalCount.get(), equalTo(retrievals));
 		assertThat(executionWrapperCount.get(), equalTo(retrievals));
+
+		verify(tokenClient, times(retrievals)).getAuthenticationToken();
+	}
+
+	@Test
+	@Timeout(5)
+	void shouldInitializeSchedulerAndRetrieveMultipleTokensWithDefaultSchedulerAndNamedExecutionWrapper() throws Exception {
+		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
+		doReturn(clientRegistration).when(oAuth2Properties).getClientRegistration(CLIENT_REGISTRATION_NAME);
+		doReturn(true).when(clientRegistration).hasClientId();
+		doReturn(true).when(clientRegistration).hasClientSecret();
+		doReturn(Map.of(PROVIDER_NAME, providerDetails)).when(oAuth2Properties).getProvider();
+		doReturn(providerDetails).when(oAuth2Properties).getProviderDetails(clientRegistration);
+
+		int retrievals = 5;
+		Duration tokenValidity = Duration.ofSeconds(1);
+
+		CountDownLatch tokenRetrievalLatch = new CountDownLatch(retrievals);
+		AtomicInteger tokenRetrievalCount = new AtomicInteger(0);
+		doAnswer(answer -> {
+			AuthenticationToken token = createToken(tokenValidity);
+			int count = tokenRetrievalCount.incrementAndGet();
+			LOGGER.info("Token retrieval count: {}", count);
+			tokenRetrievalLatch.countDown();
+			return token;
+		}).when(tokenClient).getAuthenticationToken();
+
+		Duration expirationErrorMargin = tokenValidity.minusMillis(10);
+		Duration minRefreshInterval = Duration.ofMillis(20);
+
+		OAuth2TokenProviderProperties properties = new OAuth2TokenProviderProperties();
+		properties.setExpirationErrorMargin(expirationErrorMargin);
+		properties.setMinRefreshInterval(minRefreshInterval);
+
+		List<String> namesAdded = new ArrayList<>();
+		ExecutionWrapper<Void> log = ExecutionWrappers.log(Slf4jLoggerAdapter.of(LOGGER), LoggingLevel.WARN, CLIENT_REGISTRATION_NAME + "-wrapper");
+
+		OAuth2TokenProvider localTokenProvider = OAuth2TokenProvider.builder()
+				.properties(properties)
+				.registration(oAuth2Properties, CLIENT_REGISTRATION_NAME)
+				.tokenClientSupplier((cr, pd) -> tokenClient)
+				.updateTokenWrapper(name -> getExecutionWrapper(name, namesAdded).andThen(log))
+				.build();
+
+		boolean reachedRetrievals = false;
+		try (localTokenProvider) {
+			reachedRetrievals = Threads.safeWait(tokenRetrievalLatch, Duration.ofSeconds(3));
+		}
+
+		assertTrue(reachedRetrievals);
+		assertThat(tokenRetrievalCount.get(), equalTo(retrievals));
+		assertThat(namesAdded.size(), equalTo(retrievals));
+		for (String name : namesAdded) {
+			assertThat(name, equalTo(CLIENT_REGISTRATION_NAME));
+		}
 
 		verify(tokenClient, times(retrievals)).getAuthenticationToken();
 	}
@@ -780,5 +837,13 @@ class OAuth2TokenProviderTest {
 
 	private static String unique(final String prefix) {
 		return prefix + String.format("%02d", COUNTER.incrementAndGet());
+	}
+
+	private static ExecutionWrapper<Void> getExecutionWrapper(final String name, final List<String> namesAdded) {
+		return s -> {
+			namesAdded.add(name);
+			LOGGER.info("Execution wrapper '{}' invoked", name);
+			return s;
+		};
 	}
 }
