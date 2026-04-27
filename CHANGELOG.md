@@ -16,6 +16,7 @@
 - Added `ApacheHC5Properties.TimeoutValue.INFINITE` string value for infinite timeouts.
 - Upgraded `nimbus-jose-jwt` to `10.9`.
 - Upgraded `oauth2-oidc-sdk` to `11.37`.
+- Upgraded `httpclient5` to `5.5.2`.
 
 ---
 
