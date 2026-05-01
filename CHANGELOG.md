@@ -1,5 +1,12 @@
 ## Release Notes
 
+`1.2.4`
+
+- Added `Headers.addTo` without header value to add just a header.
+- Added support for iterable header values when using `Headers.addTo` with header value.
+
+---
+
 `1.2.3`
 
 - Removed `OAuth2TokenProviderSpec` and transformed it into `OAuth2TokenProvider.Builder` to reduce confusion.
