@@ -83,6 +83,28 @@ class HeadersTest {
 	}
 
 	@Test
+	void shouldNotAddNullHeaderValueButAddHeader() {
+		Headers.addTo(headers, N2, null);
+
+		var expected = Map.of(
+				N1, List.of(V1, V2),
+				N2, List.of());
+
+		assertThat(headers, equalTo(expected));
+	}
+
+	@Test
+	void shouldNotAddEmptyHeaderValueButAddHeader() {
+		Headers.addTo(headers, N2, "");
+
+		var expected = Map.of(
+				N1, List.of(V1, V2),
+				N2, List.of());
+
+		assertThat(headers, equalTo(expected));
+	}
+
+	@Test
 	void shouldNotAddAnythingIfHeaderNameIsNull() {
 		var headersToAdd = new HashMap<String, List<String>>() {
 			@Serial

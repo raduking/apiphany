@@ -11,7 +11,6 @@ import java.util.function.Function;
 
 import org.apiphany.lang.Strings;
 import org.morphix.lang.JavaObjects;
-import org.morphix.lang.Nullables;
 import org.morphix.lang.collections.Lists;
 import org.morphix.lang.collections.Maps;
 
@@ -51,7 +50,7 @@ public interface Headers {
 	static <N, H> void addTo(final Map<String, List<String>> existingHeaders, final Map<N, H> headers) {
 		for (Map.Entry<N, H> header : Maps.safe(headers).entrySet()) {
 			N headerName = header.getKey();
-			Object headerValue = Nullables.nonNullOrDefault(header.getValue(), "");
+			Object headerValue = header.getValue();
 			addTo(existingHeaders, headerName, headerValue);
 		}
 	}
@@ -68,7 +67,7 @@ public interface Headers {
 	 * @param headerValue header value
 	 */
 	static <N, H> void addTo(final Map<String, List<String>> existingHeaders, final N headerName, final H headerValue) {
-		if (null == headerName || null == headerValue) {
+		if (null == headerName) {
 			return;
 		}
 		Collection<?> headerCollection = headerValue instanceof Collection<?>
