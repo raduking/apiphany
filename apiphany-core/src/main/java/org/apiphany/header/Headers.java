@@ -68,7 +68,7 @@ public interface Headers {
 	 * @param headerValue header value
 	 */
 	static <N, H> void addTo(final Map<String, List<String>> existingHeaders, final N headerName, final H headerValue) {
-		if (null == headerName) {
+		if (null == headerName || null == headerValue) {
 			return;
 		}
 		Collection<?> headerCollection = headerValue instanceof Collection<?>
