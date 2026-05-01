@@ -1,7 +1,7 @@
 package org.apiphany.header;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -10,7 +10,6 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 
 import org.apiphany.lang.Strings;
-import org.morphix.lang.JavaObjects;
 import org.morphix.lang.collections.Lists;
 import org.morphix.lang.collections.Maps;
 
@@ -70,17 +69,32 @@ public interface Headers {
 		if (null == headerName) {
 			return;
 		}
-		Collection<?> headerCollection = headerValue instanceof Collection<?>
-				? JavaObjects.cast(headerValue)
-				: Collections.singletonList(headerValue);
-
+		Iterable<?> headerValues = switch (headerValue) {
+			case null -> Collections.emptyList();
+			case Iterable<?> iterable -> iterable;
+			case Object[] array -> Arrays.asList(array);
+			default -> Collections.singletonList(headerValue);
+		};
 		List<String> existing = existingHeaders.computeIfAbsent(headerName.toString(), k -> new ArrayList<>());
-		headerCollection.forEach(hv -> {
+		headerValues.forEach(hv -> {
 			String stringValue = Strings.safeToString(hv);
 			if (Strings.isNotEmpty(stringValue)) {
 				existing.add(stringValue);
 			}
 		});
+	}
+
+	/**
+	 * Adds a header to existing headers with null value. The method preserves all header values, including duplicates so
+	 * that multiple values for the same header name are allowed and not overwritten.
+	 *
+	 * @param <N> header name type
+	 *
+	 * @param existingHeaders existing headers
+	 * @param headerName header name
+	 */
+	static <N> void addTo(final Map<String, List<String>> existingHeaders, final N headerName) {
+		addTo(existingHeaders, headerName, null);
 	}
 
 	/**
