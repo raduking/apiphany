@@ -49,7 +49,7 @@ public interface Headers {
 	static <N, H> void addTo(final Map<String, List<String>> existingHeaders, final Map<N, H> headers) {
 		for (Map.Entry<N, H> header : Maps.safe(headers).entrySet()) {
 			N headerName = header.getKey();
-			Object headerValue = header.getValue();
+			H headerValue = header.getValue();
 			addTo(existingHeaders, headerName, headerValue);
 		}
 	}
@@ -198,7 +198,6 @@ public interface Headers {
 			return Collections.emptyList();
 		}
 		String headerKey = Strings.safeToString(header);
-
 		List<String> values = headers.get(headerKey);
 		if (null != values) {
 			return values;
