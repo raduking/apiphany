@@ -71,6 +71,7 @@ public interface Headers {
 		}
 		Iterable<?> headerValues = switch (headerValue) {
 			case null -> Collections.emptyList();
+			case String string when Strings.isBlank(string) -> Collections.emptyList();
 			case Iterable<?> iterable -> iterable;
 			case Object[] array -> Arrays.asList(array);
 			default -> Collections.singletonList(headerValue);
