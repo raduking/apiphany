@@ -257,7 +257,8 @@ class HeadersTest {
 					Arguments.of((String) null, (String) null),
 					Arguments.of((String) null, ""),
 					Arguments.of("", (String) null),
-					Arguments.of("", ""));
+					Arguments.of("", ""),
+					Arguments.of(" ", " "));
 		}
 	}
 
