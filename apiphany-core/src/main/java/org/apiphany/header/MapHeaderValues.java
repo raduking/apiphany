@@ -48,9 +48,9 @@ public class MapHeaderValues extends HeaderValues {
 	}
 
 	/**
-	 * Checks if the specified header with the given value exists in a Map structure or delegates to the next handler in the
-	 * chain. If the input headers object is a {@link Map}, this method checks for the presence of the header and its value
-	 * using {@link Headers#contains(Object, Object, Map)}. Otherwise, it passes the request to the next
+	 * Checks if the specified header with the given value exists in a {@link Map} structure or delegates to the next
+	 * handler in the chain. If the input headers object is a {@link Map}, this method checks for the presence of the header
+	 * and its value using {@link Headers#contains(Object, Object, Map)}. Otherwise, it passes the request to the next
 	 * {@link HeaderValues} in the chain.
 	 *
 	 * @param <N> header name type

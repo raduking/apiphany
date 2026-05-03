@@ -14,7 +14,14 @@ import org.morphix.lang.collections.Lists;
 import org.morphix.lang.collections.Maps;
 
 /**
- * Utility methods for headers map and string header values.
+ * This interface provides utility methods to create and manipulate headers represented as a {@link Map} of header names
+ * to {@link List}s of header values. The headers handled by this interface are always a
+ * {@code Map<String, List<String>>} structure, where the keys are header names and the values are lists of header
+ * values.
+ * <p>
+ * It includes methods to add headers, check for the presence of headers and their values, and retrieve header values
+ * from the map. The methods are designed to handle various types of header values, including nulls, strings, iterables,
+ * and arrays, while ensuring that all header values are preserved without overwriting duplicates.
  *
  * @author Radu Sebastian LAZIN
  */
