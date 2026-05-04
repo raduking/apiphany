@@ -4,6 +4,7 @@
 
 - Added `Headers.addTo` without header value to add just a header.
 - Added support for iterable header values when using `Headers.addTo` with header value.
+- Upgraded `morphix-all` to `1.0.33`.
 
 ---
 
