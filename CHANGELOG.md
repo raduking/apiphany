@@ -2,9 +2,10 @@
 
 `1.2.4`
 
+- Upgraded `morphix-all` to `1.0.33`.
 - Added `Headers.addTo` without header value to add just a header.
 - Added support for iterable header values when using `Headers.addTo` with header value.
-- Upgraded `morphix-all` to `1.0.33`.
+- Added `RandomStrings` class with utility methods to generate random strings.
 
 ---
 
