@@ -19,7 +19,7 @@ Simple fluent style Java API to make API calls.
 
 ### Languages and Tools
 
-<div style="display: inline-block; white-space: nowrap;">
+<div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
   <a href="https://www.java.com" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/java/java-original.svg" alt="java" width="40" height="40"/></a>
   <a href="https://maven.apache.org/" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/maven/maven-original.svg" alt="maven" width="40" height="40"/></a>
   <a href="https://junit.org/" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/junit/junit-plain.svg" alt="junit" width="40" height="40"/></a>
