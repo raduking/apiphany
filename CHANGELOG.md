@@ -1,5 +1,16 @@
 ## Release Notes
 
+`1.2.5`
+
+- Upgraded Micrometer to `1.15.11`.
+- Upgraded Jackson 3 to `3.1.3`.
+- Upgraded `testcontainers` to `2.0.5`.
+- Upgraded `testcontainers-keycloak` to `4.2.1`.
+- Upgraded `spring-security-oauth2-client` to `7.0.5`.
+- Upgraded `pitest-maven` to `1.23.1`.
+
+---
+
 `1.2.4`
 
 - Upgraded `morphix-all` to `1.0.33`.
