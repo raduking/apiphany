@@ -58,9 +58,9 @@
 
 		<!-- Dependencies versions -->
 		<morphix.version>1.0.33</morphix.version>
-		<micrometer.version>1.15.10</micrometer.version>
+		<micrometer.version>1.15.11</micrometer.version>
 		<jackson2.version>2.21.2</jackson2.version>
-		<jackson3.version>3.1.1</jackson3.version>
+		<jackson3.version>3.1.3</jackson3.version>
 		<slf4j.version>2.0.17</slf4j.version>
 
 		<httpclient5.version>5.5.2</httpclient5.version>
@@ -79,9 +79,9 @@
 		<junit.jupiter.version>6.0.3</junit.jupiter.version>
 		<mockito.version>5.23.0</mockito.version>
 		<logback.version>1.5.32</logback.version>
-		<spring.security.version>7.0.4</spring.security.version>
-		<testcontainers.version>2.0.4</testcontainers.version>
-		<testcontainers.keycloak.version>4.1.0</testcontainers.keycloak.version>
+		<spring.security.version>7.0.5</spring.security.version>
+		<testcontainers.version>2.0.5</testcontainers.version>
+		<testcontainers.keycloak.version>4.2.1</testcontainers.keycloak.version>
 		<nimbus.jose.jwt.version>10.9</nimbus.jose.jwt.version>
 		<oauth2.oidc.sdk.version>11.37</oauth2.oidc.sdk.version>
 		<wiremock.version>3.13.2</wiremock.version>
@@ -96,7 +96,7 @@
 		<central.publishing.maven.plugin.version>0.10.0</central.publishing.maven.plugin.version>
 
 		<!-- Testing plugins versions -->
-		<pitest.maven.plugin.version>1.23.0</pitest.maven.plugin.version>
+		<pitest.maven.plugin.version>1.23.1</pitest.maven.plugin.version>
 		<pitest.junit5.plugin.version>1.2.3</pitest.junit5.plugin.version>
 		<jacoco.maven.plugin.version>0.8.14</jacoco.maven.plugin.version>
 		<maven.project.info.reports.plugin.version>3.9.0</maven.project.info.reports.plugin.version>
