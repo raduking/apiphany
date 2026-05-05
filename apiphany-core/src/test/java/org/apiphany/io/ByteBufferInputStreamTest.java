@@ -132,7 +132,7 @@ class ByteBufferInputStreamTest {
 		int result = bis.read(bytes);
 
 		assertThat(result, equalTo(BYTES.length));
-		for (int i = 0; i < BYTES.length; i++) {
+		for (int i = 0; i < BYTES.length; ++i) {
 			assertThat(bytes[i], equalTo(BYTES[i]));
 		}
 	}
@@ -149,10 +149,10 @@ class ByteBufferInputStreamTest {
 		int result = bis.read(bytes);
 
 		assertThat(result, equalTo(BYTES.length));
-		for (int i = 0; i < BYTES.length; i++) {
+		for (int i = 0; i < BYTES.length; ++i) {
 			assertThat(bytes[i], equalTo(BYTES[i]));
 		}
-		for (int i = BYTES.length; i < bytes.length; i++) {
+		for (int i = BYTES.length; i < bytes.length; ++i) {
 			assertThat(bytes[i], equalTo(fillByte));
 		}
 	}

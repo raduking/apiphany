@@ -109,10 +109,10 @@ class EncryptedTest {
 		byte[] nonce = new byte[nonceLen];
 		byte[] ciphertext = new byte[32];
 
-		for (int i = 0; i < nonceLen; i++) {
+		for (int i = 0; i < nonceLen; ++i) {
 			nonce[i] = (byte) i;
 		}
-		for (int i = 0; i < ciphertext.length; i++) {
+		for (int i = 0; i < ciphertext.length; ++i) {
 			ciphertext[i] = (byte) (0xA0 + i);
 		}
 
@@ -132,7 +132,7 @@ class EncryptedTest {
 	@MethodSource("nonAeadCiphers")
 	void nonAeadEncryptedMustNotExposeNonce(final BulkCipher cipher) {
 		byte[] data = new byte[48];
-		for (int i = 0; i < data.length; i++) {
+		for (int i = 0; i < data.length; ++i) {
 			data[i] = (byte) i;
 		}
 

@@ -59,7 +59,7 @@ public class BasicHttpResponseParser {
 		this.statusLine = headerLines[0];
 		this.headers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
-		for (int i = 1; i < headerLines.length; i++) {
+		for (int i = 1; i < headerLines.length; ++i) {
 			String[] header = headerLines[i].split(":\\s*", 2);
 			if (header.length == 2) {
 				headers.put(header[0], header[1]);
