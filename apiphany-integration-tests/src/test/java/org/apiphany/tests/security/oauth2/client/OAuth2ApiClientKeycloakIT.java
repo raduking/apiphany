@@ -52,12 +52,14 @@ class OAuth2ApiClientKeycloakIT {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(OAuth2ApiClientKeycloakIT.class);
 
+	private static final String KEYCLOAK_IMAGE = "quay.io/keycloak/keycloak";
+	private static final String KEYCLOAK_VERSION = "26.6";
 	private static final String KEYCLOAK_TOKEN_PATH = "/realms/test-realm/protocol/openid-connect/token";
 	private static final String KEYCLOAK_REALM_NAME = "test-realm";
 
 	@SuppressWarnings("resource")
 	@Container
-	private static final KeycloakContainer KEYCLOAK_CONTAINER = new KeycloakContainer()
+	private static final KeycloakContainer KEYCLOAK_CONTAINER = new KeycloakContainer(KEYCLOAK_IMAGE + ":" + KEYCLOAK_VERSION)
 			.withRealmImportFile("security/oauth2/keycloak-realm-config.json");
 
 	private OAuth2ClientRegistration clientRegistration;
