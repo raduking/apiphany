@@ -178,7 +178,7 @@ public class Hex {
 			}
 			if (verbose) {
 				sb.append(" ");
-				for (int j = 0; j < width; j++) {
+				for (int j = 0; j < width; ++j) {
 					if (i + j < bytes.length) {
 						char c = (char) (bytes[i + j] & 0xFF);
 						sb.append((c >= 32 && c < 127) ? c : '.');

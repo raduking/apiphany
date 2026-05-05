@@ -255,7 +255,7 @@ class ProtocolOverridingSSLSocketFactoryTest {
 		ExecutorService executor = Executors.newFixedThreadPool(threadCount);
 		List<Future<Socket>> futures = new ArrayList<>();
 
-		for (int i = 0; i < threadCount; i++) {
+		for (int i = 0; i < threadCount; ++i) {
 			futures.add(executor.submit(() -> factory.createSocket()));
 		}
 

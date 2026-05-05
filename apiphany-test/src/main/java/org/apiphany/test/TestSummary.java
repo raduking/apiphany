@@ -180,7 +180,7 @@ public class TestSummary {
 			Document doc = createDocumentBuilderFactory().newDocumentBuilder().parse(f);
 			NodeList suites = doc.getElementsByTagName("testsuite");
 
-			for (int i = 0; i < suites.getLength(); i++) {
+			for (int i = 0; i < suites.getLength(); ++i) {
 				var e = suites.item(i);
 
 				s.tests += getIntAttr(e, "tests");

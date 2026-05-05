@@ -162,7 +162,7 @@ class ExchangeKeysTest {
 		};
 
 		byte[] exchangeKeysBytes = new byte[length];
-		for (int i = 0; i < length; i++) {
+		for (int i = 0; i < length; ++i) {
 			exchangeKeysBytes[i] = (byte) i;
 		}
 		return exchangeKeysBytes;
