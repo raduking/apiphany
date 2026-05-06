@@ -78,7 +78,7 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	 * @param clientName client name
 	 */
 	public JavaNetHttpExchangeClient(final ClientProperties clientProperties, final String prefix, final String clientName) {
-		this(clientProperties.getClientProperties(prefix, clientName));
+		this(clientProperties.getClientProperties(prefix, clientName, ClientProperties.class));
 	}
 
 	/**

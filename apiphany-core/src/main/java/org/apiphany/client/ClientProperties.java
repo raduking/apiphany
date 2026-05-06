@@ -6,11 +6,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.annotation.Ignored;
+import org.morphix.lang.JavaArrays;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.collections.Maps;
 import org.morphix.lang.function.Consumers;
@@ -85,7 +87,7 @@ public class ClientProperties {
 	/**
 	 * Returns a JSON representation of this {@link ClientProperties} object.
 	 *
-	 * @return a JSON string representing this object.
+	 * @return a JSON string representing this object
 	 */
 	@Override
 	public String toString() {
@@ -122,7 +124,7 @@ public class ClientProperties {
 	/**
 	 * Returns whether the client is enabled.
 	 *
-	 * @return true if the client is enabled, false otherwise.
+	 * @return true if the client is enabled, false otherwise
 	 */
 	public boolean isEnabled() {
 		return enabled;
@@ -131,7 +133,7 @@ public class ClientProperties {
 	/**
 	 * Sets whether the client is enabled.
 	 *
-	 * @param enabled true to enable the client, false to disable it.
+	 * @param enabled true to enable the client, false to disable it
 	 */
 	public void setEnabled(final boolean enabled) {
 		this.enabled = enabled;
@@ -140,7 +142,7 @@ public class ClientProperties {
 	/**
 	 * Returns whether the client is disabled.
 	 *
-	 * @return true if the client is disabled, false otherwise.
+	 * @return true if the client is disabled, false otherwise
 	 */
 	@Ignored
 	public boolean isDisabled() {
@@ -150,7 +152,7 @@ public class ClientProperties {
 	/**
 	 * Returns the base URL for the client.
 	 *
-	 * @return the base URL.
+	 * @return the base URL
 	 */
 	public String getBaseUrl() {
 		return baseUrl;
@@ -159,7 +161,7 @@ public class ClientProperties {
 	/**
 	 * Sets the base URL for the client.
 	 *
-	 * @param baseUrl the base URL to set.
+	 * @param baseUrl the base URL to set
 	 */
 	public void setBaseUrl(final String baseUrl) {
 		this.baseUrl = baseUrl;
@@ -168,7 +170,7 @@ public class ClientProperties {
 	/**
 	 * Returns the timeout configuration for the client.
 	 *
-	 * @return the timeout configuration.
+	 * @return the timeout configuration
 	 */
 	public Timeout getTimeout() {
 		return timeout;
@@ -177,7 +179,7 @@ public class ClientProperties {
 	/**
 	 * Sets the timeout configuration for the client.
 	 *
-	 * @param timeout the timeout configuration to set.
+	 * @param timeout the timeout configuration to set
 	 */
 	public void setTimeout(final Timeout timeout) {
 		this.timeout = timeout;
@@ -186,7 +188,7 @@ public class ClientProperties {
 	/**
 	 * Returns the connection configuration for the client.
 	 *
-	 * @return the connection configuration.
+	 * @return the connection configuration
 	 */
 	public Connection getConnection() {
 		return connection;
@@ -195,7 +197,7 @@ public class ClientProperties {
 	/**
 	 * Sets the connection configuration for the client.
 	 *
-	 * @param connections the connection configuration to set.
+	 * @param connections the connection configuration to set
 	 */
 	public void setConnection(final Connection connections) {
 		this.connection = connections;
@@ -204,7 +206,7 @@ public class ClientProperties {
 	/**
 	 * Returns the compression configuration for the client.
 	 *
-	 * @return the compression configuration.
+	 * @return the compression configuration
 	 */
 	public Compression getCompression() {
 		return compression;
@@ -213,7 +215,7 @@ public class ClientProperties {
 	/**
 	 * Sets the compression configuration for the client.
 	 *
-	 * @param compression the compression configuration to set.
+	 * @param compression the compression configuration to set
 	 */
 	public void setCompression(final Compression compression) {
 		this.compression = compression;
@@ -222,29 +224,102 @@ public class ClientProperties {
 	/**
 	 * Retrieves client-specific properties for a given client prefix and name.
 	 *
-	 * @param <T> the type of the client properties.
-	 * @param clientPrefix the prefix for the client properties.
-	 * @param clientName the name of the client.
-	 * @return the client properties as an instance of the specified type.
+	 * @param <T> the type of the client properties
+	 *
+	 * @param clientPrefix the prefix for the client properties
+	 * @param clientName the name of the client
+	 * @param cls the client properties class to map the properties to
+	 * @return the client properties as an instance of the specified type
 	 */
-	public <T extends ClientProperties> T getClientProperties(final String clientPrefix, final String clientName) {
-		String fullPath = clientPrefix + "." + clientName;
-		Map<String, Object> clientProperties = getPropertiesMap(this::getClient, fullPath);
-		return JavaObjects.cast(JsonBuilder.fromMap(clientProperties, getClass(), e -> {
-			throw new IllegalStateException("Error reading properties from: " + fullPath);
-		}));
+	public <T extends ClientProperties> T getClientProperties(final String clientPrefix, final String clientName, final Class<T> cls) {
+		return getClientProperties(clientPrefix + "." + clientName, cls);
+	}
+
+	/**
+	 * Retrieves client-specific properties for a given client path.
+	 *
+	 * @param <T> the type of the client properties
+	 *
+	 * @param path the path for the client properties
+	 * @param cls the client properties class to map the properties to
+	 * @return the client properties as an instance of the specified type
+	 */
+	public <T extends ClientProperties> T getClientProperties(final String path, final Class<T> cls) {
+		return getClientProperties(path, cls, e -> {
+			throw new IllegalStateException("Error reading properties from: " + path, e);
+		});
+	}
+
+	/**
+	 * Retrieves client-specific properties for a given client path.
+	 *
+	 * @param <T> the type of the client properties
+	 *
+	 * @param path the path for the client properties
+	 * @param cls the client properties class to map the properties to
+	 * @param onError the consumer to handle any exceptions that occur during mapping
+	 * @return the client properties for the specific path as an instance of the specified type
+	 */
+	public <T extends ClientProperties> T getClientProperties(final String path, final Class<T> cls, final Consumer<Exception> onError) {
+		Map<String, Object> clientProperties = getPropertiesMap(this::getClient, path);
+		return JsonBuilder.fromMap(clientProperties, cls, onError);
+	}
+
+	/**
+	 * Sets client-specific properties for a given client prefix and name.
+	 *
+	 * @param <T> the type of the client properties
+	 *
+	 * @param clientPrefix the prefix for the client properties
+	 * @param clientName the name of the client
+	 * @param properties the client properties to set
+	 */
+	public <T extends ClientProperties> void setClientProperties(final String clientPrefix, final String clientName, final T properties) {
+		setClientProperties(clientPrefix + "." + clientName, properties);
+	}
+
+	/**
+	 * Sets client-specific properties for a given client prefix and name.
+	 *
+	 * @param <T> the type of the client properties
+	 *
+	 * @param path the path for the client properties
+	 * @param properties the client properties to set
+	 */
+	public <T extends ClientProperties> void setClientProperties(final String path, final T properties) {
+		setClientProperties(path, properties, e -> {
+			throw new IllegalStateException("Error writing properties for path: '" + path + "'", e);
+		});
+	}
+
+	/**
+	 * Sets client-specific properties for a given client path.
+	 *
+	 * @param <T> the type of the client properties
+	 *
+	 * @param path the path for the client properties
+	 * @param properties the client properties to set
+	 * @param onError the consumer to handle any exceptions that occur during mapping
+	 */
+	public <T extends ClientProperties> void setClientProperties(final String path, final T properties, final Consumer<Exception> onError) {
+		Map<String, Object> propertiesMap = JsonBuilder.toMap(properties, onError);
+		try {
+			setPropertiesMap(this::getClient, path, propertiesMap);
+		} catch (IllegalArgumentException e) {
+			onError.accept(e);
+		}
 	}
 
 	/**
 	 * Helper method to retrieve a nested properties map from a root supplier and a full path.
 	 *
-	 * @param rootSupplier the supplier for the root properties map.
-	 * @param fullPath the full path to the nested properties.
-	 * @return the nested properties map.
+	 * @param rootSupplier the supplier for the root properties map
+	 * @param fullPath the full path to the nested properties
+	 * @return the nested properties map
 	 */
 	private static Map<String, Object> getPropertiesMap(final Supplier<Map<String, Object>> rootSupplier, final String fullPath) {
 		Map<String, Object> actualProps = rootSupplier.get();
-		if (null == actualProps) {
+		if (Maps.isEmpty(actualProps)) {
 			return Collections.emptyMap();
 		}
 		String[] paths = fullPath.split("\\.");
@@ -261,9 +336,36 @@ public class ClientProperties {
 	}
 
 	/**
+	 * Helper method to set a nested properties map to a root supplier and a full path.
+	 *
+	 * @param rootSupplier the supplier for the root properties map
+	 * @param fullPath the full path to the nested properties
+	 * @param properties the properties map to set
+	 */
+	private static void setPropertiesMap(final Supplier<Map<String, Object>> rootSupplier, final String fullPath,
+			final Map<String, Object> properties) {
+		String[] paths = fullPath.split("\\.");
+		if (JavaArrays.isEmpty(paths)) {
+			throw new IllegalArgumentException("fullPath cannot be empty");
+		}
+		Map<String, Object> actualProps = rootSupplier.get();
+		for (String path : paths) {
+			Object props = actualProps.get(path);
+			if (props instanceof Map<?, ?> mapProps) {
+				actualProps = JavaObjects.cast(mapProps);
+			} else {
+				Map<String, Object> newProps = new HashMap<>();
+				actualProps.put(path, newProps);
+				actualProps = newProps;
+			}
+		}
+		actualProps.put(paths[paths.length - 1], properties);
+	}
+
+	/**
 	 * Returns the client-specific properties map.
 	 *
-	 * @return the client properties map.
+	 * @return the client properties map
 	 */
 	public Map<String, Object> getClient() {
 		return client;
@@ -272,7 +374,7 @@ public class ClientProperties {
 	/**
 	 * Sets the client-specific properties map.
 	 *
-	 * @param client the client properties map to set.
+	 * @param client the client properties map to set
 	 */
 	public void setClient(final Map<String, Object> client) {
 		this.client = client;
@@ -281,7 +383,7 @@ public class ClientProperties {
 	/**
 	 * Returns the custom properties map.
 	 *
-	 * @return the custom properties map.
+	 * @return the custom properties map
 	 */
 	public Map<String, Object> getCustom() {
 		return custom;
@@ -290,7 +392,7 @@ public class ClientProperties {
 	/**
 	 * Sets the custom properties map.
 	 *
-	 * @param custom the custom properties map to set.
+	 * @param custom the custom properties map to set
 	 */
 	public void setCustom(final Map<String, Object> custom) {
 		this.custom = custom;
@@ -299,53 +401,108 @@ public class ClientProperties {
 	/**
 	 * Sets the custom properties for the given prefix.
 	 *
-	 * @param <T> the type of the custom properties.
-	 * @param prefix the prefix for the custom properties.
-	 * @param properties the object containing the custom properties.
+	 * @param <T> the type of the custom properties
+	 * @param prefix the prefix for the custom properties
+	 * @param properties the object containing the custom properties
 	 */
 	public <T> void setCustomProperties(final String prefix, final T properties) {
-		this.custom.put(prefix, JsonBuilder.toMap(properties, Consumers.noConsumer()));
+		setCustomProperties(prefix, properties, Consumers.noConsumer());
+	}
+
+	/**
+	 * Sets the custom properties for the given prefix.
+	 *
+	 * @param <T> the type of the custom properties
+	 * @param prefix the prefix for the custom properties
+	 * @param properties the object containing the custom properties
+	 * @param onError the consumer to handle any exceptions that occur during mapping
+	 */
+	public <T> void setCustomProperties(final String prefix, final T properties, final Consumer<Exception> onError) {
+		this.custom.put(prefix, JsonBuilder.toMap(properties, onError));
 	}
 
 	/**
 	 * Sets the custom properties mapped to the specified class using a static {@code ROOT} field as the prefix.
 	 *
-	 * @param <T> the type of the custom properties.
-	 * @param properties the object containing the custom properties.
+	 * @param <T> the type of the custom properties
+	 *
+	 * @param properties the object containing the custom properties
 	 */
 	public <T> void setCustomProperties(final T properties) {
-		String prefix = getCustomPropertiesPrefix(properties.getClass());
-		setCustomProperties(prefix, properties);
+		setCustomProperties(properties, Consumers.noConsumer());
+	}
+
+	/**
+	 * Sets the custom properties mapped to the specified class using a static {@code ROOT} field as the prefix.
+	 *
+	 * @param <T> the type of the custom properties
+	 *
+	 * @param properties the object containing the custom properties
+	 */
+	public <T> void setCustomProperties(final T properties, final Consumer<Exception> onError) {
+		String prefix = getCustomPropertiesPrefix(properties.getClass(), onError);
+		setCustomProperties(prefix, properties, onError);
 	}
 
 	/**
 	 * Retrieves custom properties for a given prefix and maps them to the specified class. If the custom properties are not
 	 * found {@code null} is returned.
 	 *
-	 * @param <T> the type of the custom properties.
-	 * @param prefix the prefix for the custom properties.
-	 * @param cls the class to map the properties to.
-	 * @return the custom properties as an instance of the specified class.
+	 * @param <T> the type of the custom properties
+	 *
+	 * @param prefix the prefix for the custom properties
+	 * @param cls the class to map the properties to
+	 * @return the custom properties as an instance of the specified class
 	 */
 	public <T> T getCustomProperties(final String prefix, final Class<T> cls) {
+		return getCustomProperties(prefix, cls, Consumers.noConsumer());
+	}
+
+	/**
+	 * Retrieves custom properties for a given prefix and maps them to the specified class. If the custom properties are not
+	 * found {@code null} is returned.
+	 *
+	 * @param <T> the type of the custom properties
+	 *
+	 * @param prefix the prefix for the custom properties
+	 * @param cls the class to map the properties to
+	 * @param onError the consumer to handle any exceptions that occur during mapping
+	 * @return the custom properties as an instance of the specified class
+	 */
+	public <T> T getCustomProperties(final String prefix, final Class<T> cls, final Consumer<Exception> onError) {
 		Map<String, Object> properties = getPropertiesMap(this::getCustom, prefix);
 		if (Maps.isEmpty(properties)) {
 			return null;
 		}
-		return JsonBuilder.fromMap(properties, cls, Consumers.noConsumer());
+		return JsonBuilder.fromMap(properties, cls, onError);
 	}
 
 	/**
 	 * Retrieves custom properties mapped to the specified class using a static {@code ROOT} field defined in the custom
 	 * properties class as the prefix.
 	 *
-	 * @param <T> the type of the custom properties.
-	 * @param cls the class to map the properties to.
-	 * @return the custom properties as an instance of the specified class.
+	 * @param <T> the type of the custom properties
+	 *
+	 * @param cls the class to map the properties to
+	 * @return the custom properties as an instance of the specified class
 	 */
 	public <T> T getCustomProperties(final Class<T> cls) {
-		String prefix = getCustomPropertiesPrefix(cls);
-		return getCustomProperties(prefix, cls);
+		return getCustomProperties(cls, Consumers.noConsumer());
+	}
+
+	/**
+	 * Retrieves custom properties mapped to the specified class using a static {@code ROOT} field defined in the custom
+	 * properties class as the prefix.
+	 *
+	 * @param <T> the type of the custom properties
+	 *
+	 * @param cls the class to map the properties to
+	 * @param onError the consumer to handle any exceptions that occur during mapping
+	 * @return the custom properties as an instance of the specified class
+	 */
+	public <T> T getCustomProperties(final Class<T> cls, final Consumer<Exception> onError) {
+		String prefix = getCustomPropertiesPrefix(cls, onError);
+		return getCustomProperties(prefix, cls, onError);
 	}
 
 	/**
@@ -353,14 +510,16 @@ public class ClientProperties {
 	 * {@link #CUSTOM_PROPERTIES_PREFIX_FIELD_NAME}.
 	 *
 	 * @param <T> custom properties type
+	 *
 	 * @param cls custom properties class
+	 * @param onError the consumer to handle any exceptions that occur during mapping
 	 * @return custom properties prefix
 	 */
-	private static <T> String getCustomPropertiesPrefix(final Class<T> cls) {
+	private static <T> String getCustomPropertiesPrefix(final Class<T> cls, final Consumer<Exception> onError) {
 		String prefix = Fields.IgnoreAccess.getStatic(cls, CUSTOM_PROPERTIES_PREFIX_FIELD_NAME);
 		if (null == prefix) {
-			throw new IllegalStateException("No static field named:" + CUSTOM_PROPERTIES_PREFIX_FIELD_NAME
-					+ " defined in: " + cls.getCanonicalName() + " found to be used as custom properties prefix.");
+			onError.accept(new IllegalStateException("No static field named:" + CUSTOM_PROPERTIES_PREFIX_FIELD_NAME
+					+ " defined in: " + cls.getCanonicalName() + " found to be used as custom properties prefix."));
 		}
 		return prefix;
 	}
@@ -516,7 +675,7 @@ public class ClientProperties {
 		public static final Duration INFINITE = ZERO;
 
 		/**
-		 * Connection timeout.
+		 * Connect timeout.
 		 */
 		private Duration connect = INFINITE;
 
