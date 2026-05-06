@@ -1,9 +1,11 @@
 {
 	"enabled": true,
+	"baseUrl": "http://localhost:8080",
 	"timeout": {
 		"connect": "PT0S",
 		"connectionRequest": "PT0S",
-		"socket": "PT0S"
+		"socket": "PT0S",
+		"request": "PT0S"
 	},
 	"connection": {
 		"timeToLive": "PT30S",
@@ -19,7 +21,8 @@
 			"timeout": {
 				"connect": "PT0S",
 				"connectionRequest": "PT0S",
-				"socket": "PT0S"
+				"socket": "PT0S",
+				"request": "PT0S"
 			},
 			"connection": {
 				"timeToLive": "PT30S",

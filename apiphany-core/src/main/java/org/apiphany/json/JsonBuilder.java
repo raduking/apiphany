@@ -14,8 +14,8 @@ import org.morphix.convert.Converter;
 import org.morphix.convert.MapConversions;
 import org.morphix.convert.function.SimpleConverter;
 import org.morphix.lang.Case;
+import org.morphix.lang.JavaObjects;
 import org.morphix.lang.function.LoggerAdapter;
-import org.morphix.lang.function.Suppliers;
 import org.morphix.reflection.Constructors;
 import org.morphix.reflection.GenericClass;
 import org.morphix.runtime.Libraries;
@@ -394,7 +394,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 * @return wanted object
 	 */
 	public <T> T fromPropertiesMap(final Map<String, Object> propertiesMap, final Class<T> cls, final Consumer<Exception> onError) {
-		return convert(propertiesMap, map -> Converter.convert(map).to(cls), Suppliers.supplyNull(), onError);
+		return convert(propertiesMap, map -> Converter.convert(map).to(cls), () -> Constructors.newInstance(cls), onError);
 	}
 
 	/**
@@ -428,7 +428,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 */
 	protected static <T, R> R convert(final T source, final SimpleConverter<T, R> converter, final Supplier<R> fallbackSupplier,
 			final Consumer<? super Exception> onError) {
-		if (null == source) {
+		if (JavaObjects.isEmpty(source)) {
 			return fallbackSupplier.get();
 		}
 		try {

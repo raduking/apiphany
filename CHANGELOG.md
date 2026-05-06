@@ -2,6 +2,12 @@
 
 `1.2.5`
 
+- Upgraded `morphix-all` to `1.0.34`.
+- Added `ClientProperties.setCustomProperties` with error handler in case an exception is wanted when reading custom properties.
+- Added `ClientProperties.getCustomProperties` with error handler in case an exception is wanted when reading custom properties.
+- Added `ClientProperties.setClientProperties` methods to be able to dynamically set client properties.
+- Added `ClientProperties.getClientProperties` with error handler in case an exception is wanted when reading client properties.
+- Changed `JsonBuilder.fromPropertiesMap` default method to behave like the Jackson implementations when it comes to empty maps.
 - Upgraded Micrometer to `1.15.11`.
 - Upgraded Jackson 3 to `3.1.3`.
 - Upgraded `testcontainers` to `2.0.5`.

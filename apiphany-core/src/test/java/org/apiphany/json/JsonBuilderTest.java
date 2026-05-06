@@ -1,6 +1,7 @@
 package org.apiphany.json;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -85,10 +86,17 @@ class JsonBuilderTest {
 	}
 
 	@Test
-	void shouldReturnNullOnFromPropertiesMapWhenMapIsNull() {
-		Object result = jsonBuilder.fromPropertiesMap(null, null, Consumers.noConsumer());
+	void shouldReturnObjectOnFromPropertiesMapWhenMapIsNull() {
+		Object result = jsonBuilder.fromPropertiesMap(null, Object.class, Consumers.noConsumer());
 
-		assertThat(result, equalTo(null));
+		assertThat(result, not(equalTo(null)));
+	}
+
+	@Test
+	void shouldReturnObjectOnFromPropertiesMapWhenMapIsEmpty() {
+		Object result = jsonBuilder.fromPropertiesMap(Collections.emptyMap(), Object.class, Consumers.noConsumer());
+
+		assertThat(result, not(equalTo(null)));
 	}
 
 	@Test

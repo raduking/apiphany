@@ -40,13 +40,6 @@
 	</scm>
 
 	<properties>
-
-		<!-- Testing plugin versions -->
-		<pitest.maven.plugin.version>1.22.0</pitest.maven.plugin.version>
-		<pitest.junit5.plugin.version>1.2.3</pitest.junit5.plugin.version>
-		<jacoco.maven.plugin.version>0.8.14</jacoco.maven.plugin.version>
-		<maven.project.info.reports.plugin.version>3.9.0</maven.project.info.reports.plugin.version>
-
 		<!-- Testing properties -->
 		<!--
 			The apiphanyArgLine property is only used during the build process of the library 
@@ -55,6 +48,7 @@
 		-->
 		<apiphanyArgLine>
 			-Djson-builder.to-json.indent-output=true
+			-Dmorphix.leak.detection.level=simple
 			-XX:+EnableDynamicAgentLoading
 			-Xshare:off
 			--add-opens java.base/javax.net.ssl=ALL-UNNAMED
