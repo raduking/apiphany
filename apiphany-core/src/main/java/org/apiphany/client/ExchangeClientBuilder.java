@@ -226,11 +226,13 @@ public class ExchangeClientBuilder {
 	}
 
 	/**
-	 * Builds an exchange client based on the client class and client properties. The exchange client class must have a
-	 * constructor with one parameter of type {@link ClientProperties}.
+	 * Builds an exchange client based on the client class and client properties and client arguments. The exchange client
+	 * class must have a constructor with one parameter of type {@link ClientProperties} and extra parameters with the same
+	 * types and in the same order as the client arguments.
 	 *
 	 * @param clientClass exchange client class
 	 * @param clientProperties client properties object
+	 * @param clientArguments client arguments
 	 * @return new exchange client
 	 */
 	protected static ExchangeClient build(final Class<? extends ExchangeClient> clientClass, final ClientProperties clientProperties,
@@ -238,10 +240,10 @@ public class ExchangeClientBuilder {
 		if (Lists.isEmpty(clientArguments)) {
 			return build(clientClass, clientProperties);
 		}
-		Class<?>[] argumentClasses = new Class<?>[clientArguments.size() + 1];
-		argumentClasses[0] = ClientProperties.class;
+		Class<?>[] parameterTypes = new Class<?>[clientArguments.size() + 1];
+		parameterTypes[0] = ClientProperties.class;
 		for (int i = 0; i < clientArguments.size(); ++i) {
-			argumentClasses[i + 1] = clientArguments.get(i).getClass();
+			parameterTypes[i + 1] = clientArguments.get(i).getClass();
 		}
 		Object[] arguments = new Object[clientArguments.size() + 1];
 		arguments[0] = clientProperties;
@@ -250,11 +252,10 @@ public class ExchangeClientBuilder {
 			Require.that(null != argument, IllegalStateException::new, "Client argument at index {} must not be null", i);
 			arguments[i + 1] = argument;
 		}
-		Constructor<? extends ExchangeClient> constructor = Constructors.Safe.getDeclared(clientClass, argumentClasses);
+		Constructor<? extends ExchangeClient> constructor = Constructors.Safe.findOneMatching(clientClass, parameterTypes);
 		Require.that(null != constructor, IllegalStateException::new,
-				"When client properties and arguments are set exchange client class {} must not have a constructor"
-						+ " with one parameter of type {} and parameters of types {}",
-				clientClass.getName(), ClientProperties.class.getName(), argumentClasses);
+				"Client {} must have a constructor matching the client arguments provided in the builder: {}",
+				clientClass.getName(), List.of(parameterTypes));
 		return Constructors.IgnoreAccess.newInstance(constructor, arguments);
 	}
 
