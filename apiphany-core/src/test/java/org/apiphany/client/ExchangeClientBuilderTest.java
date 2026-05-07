@@ -14,6 +14,7 @@ import org.apiphany.client.ExchangeClientBuilderTest.Builders.ThrowingExchangeCl
 import org.apiphany.client.ExchangeClientBuilderTest.Clients.DummyDecoratingExchangeClient;
 import org.apiphany.client.ExchangeClientBuilderTest.Clients.DummyExchangeClient;
 import org.apiphany.client.ExchangeClientBuilderTest.Clients.InvalidDecoratingExchangeClient;
+import org.apiphany.client.ExchangeClientBuilderTest.Clients.MultipleArgumentConstructorExchangeClient;
 import org.apiphany.client.ExchangeClientBuilderTest.Clients.NotClosingDecoratingExchangeClient;
 import org.apiphany.client.ExchangeClientBuilderTest.Clients.OtherDecoratingExchangeClient;
 import org.junit.jupiter.api.Nested;
@@ -35,6 +36,9 @@ class ExchangeClientBuilderTest {
 	private static final List<String> EXCLUSIVE_FIELDS = List.of("exchangeClientClass", "exchangeClient", "exchangeClientResource");
 	private static final String EXPECTED_EXCLUSIVE_FIELDS_EXCEPTION_MESSAGE =
 			Messages.message("One and only one of the following fields must be set: {}", EXCLUSIVE_FIELDS);
+
+	private static final String TEST_STRING = "test";
+	private static final int TEST_INT_42 = 42;
 
 	interface Clients {
 
@@ -115,6 +119,47 @@ class ExchangeClientBuilderTest {
 			public void close() throws Exception {
 				super.close();
 				throw new RuntimeException(BOOM_TEST_EXCEPTION);
+			}
+		}
+
+		static class MultipleArgumentConstructorExchangeClient implements ExchangeClient {
+
+			private final ClientProperties properties;
+			private final Integer arg1;
+			private final String arg2;
+
+			private boolean closed = false;
+
+			public MultipleArgumentConstructorExchangeClient(final ClientProperties properties, final Integer arg1, final String arg2) {
+				this.properties = properties;
+				this.arg1 = arg1;
+				this.arg2 = arg2;
+			}
+
+			@Override
+			public <T, U> ApiResponse<U> exchange(final ApiRequest<T> request) {
+				return null;
+			}
+
+			@Override
+			public void close() throws Exception {
+				this.closed = true;
+			}
+
+			public boolean isClosed() {
+				return closed;
+			}
+
+			public ClientProperties getProperties() {
+				return properties;
+			}
+
+			public Integer getArg1() {
+				return arg1;
+			}
+
+			public String getArg2() {
+				return arg2;
 			}
 		}
 	}
@@ -261,6 +306,31 @@ class ExchangeClientBuilderTest {
 
 			assertThat(client.getClass(), equalTo(DummyExchangeClient.class));
 			assertThat(closed, equalTo(false));
+		}
+
+		@Test
+		@SuppressWarnings("resource")
+		void shouldConstructClientUsingClientClassWithMultipleArgumentConstructor() throws Exception {
+			Integer arg1 = TEST_INT_42;
+			String arg2 = TEST_STRING;
+			ClientProperties clientProperties = new ClientProperties();
+
+			ExchangeClientBuilder builder = ExchangeClientBuilder.create()
+					.client(MultipleArgumentConstructorExchangeClient.class)
+					.arguments(arg1, arg2)
+					.properties(clientProperties);
+
+			ExchangeClient client = null;
+			try (ScopedResource<ExchangeClient> scopedClient = builder.build()) {
+				client = scopedClient.unwrap();
+			}
+
+			assertThat(client.getClass(), equalTo(MultipleArgumentConstructorExchangeClient.class));
+			MultipleArgumentConstructorExchangeClient multiArgClient = (MultipleArgumentConstructorExchangeClient) client;
+
+			assertThat(multiArgClient.getProperties(), equalTo(clientProperties));
+			assertThat(multiArgClient.getArg1(), equalTo(TEST_INT_42));
+			assertThat(multiArgClient.getArg2(), equalTo(TEST_STRING));
 		}
 	}
 

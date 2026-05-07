@@ -14,6 +14,7 @@ import org.apiphany.lang.Require;
 import org.apiphany.logging.Slf4jLoggerAdapter;
 import org.apiphany.security.client.SecuredExchangeClientBuilder;
 import org.morphix.lang.Unchecked;
+import org.morphix.lang.collections.Lists;
 import org.morphix.lang.function.Consumers;
 import org.morphix.lang.function.LoggerAdapter;
 import org.morphix.lang.resource.ScopedResource;
@@ -56,6 +57,13 @@ public class ExchangeClientBuilder {
 	 * Client properties.
 	 */
 	protected ClientProperties clientProperties;
+
+	/**
+	 * Client arguments. These are used when the exchange client class has a constructor with parameters different than
+	 * {@link ClientProperties}. The client arguments must be in the same order as the constructor parameters and the
+	 * exchange client class must have only one constructor with the same number of parameters as the client arguments.
+	 */
+	private List<Object> clientArguments = new LinkedList<>();
 
 	/**
 	 * Decorator client classes. These are always managed by the builder.
@@ -209,12 +217,45 @@ public class ExchangeClientBuilder {
 	 */
 	protected ExchangeClient build(final Class<? extends ExchangeClient> clientClass) {
 		if (null != clientProperties) {
-			return build(clientClass, clientProperties);
+			return build(clientClass, clientProperties, clientArguments);
 		}
 		Constructor<? extends ExchangeClient> constructor = Constructors.Safe.getDefault(clientClass);
 		Require.that(null != constructor, IllegalStateException::new,
 				"When client properties are not set exchange client class {} must have a default constructor", clientClass.getName());
 		return Constructors.IgnoreAccess.newInstance(constructor);
+	}
+
+	/**
+	 * Builds an exchange client based on the client class and client properties. The exchange client class must have a
+	 * constructor with one parameter of type {@link ClientProperties}.
+	 *
+	 * @param clientClass exchange client class
+	 * @param clientProperties client properties object
+	 * @return new exchange client
+	 */
+	protected static ExchangeClient build(final Class<? extends ExchangeClient> clientClass, final ClientProperties clientProperties,
+			final List<Object> clientArguments) {
+		if (Lists.isEmpty(clientArguments)) {
+			return build(clientClass, clientProperties);
+		}
+		Class<?>[] argumentClasses = new Class<?>[clientArguments.size() + 1];
+		argumentClasses[0] = ClientProperties.class;
+		for (int i = 0; i < clientArguments.size(); ++i) {
+			argumentClasses[i + 1] = clientArguments.get(i).getClass();
+		}
+		Object[] arguments = new Object[clientArguments.size() + 1];
+		arguments[0] = clientProperties;
+		for (int i = 0; i < clientArguments.size(); ++i) {
+			Object argument = clientArguments.get(i);
+			Require.that(null != argument, IllegalStateException::new, "Client argument at index {} must not be null", i);
+			arguments[i + 1] = argument;
+		}
+		Constructor<? extends ExchangeClient> constructor = Constructors.Safe.getDeclared(clientClass, argumentClasses);
+		Require.that(null != constructor, IllegalStateException::new,
+				"When client properties and arguments are set exchange client class {} must not have a constructor"
+						+ " with one parameter of type {} and parameters of types {}",
+				clientClass.getName(), ClientProperties.class.getName(), argumentClasses);
+		return Constructors.IgnoreAccess.newInstance(constructor, arguments);
 	}
 
 	/**
@@ -284,6 +325,50 @@ public class ExchangeClientBuilder {
 	public ExchangeClientBuilder properties(final ClientProperties clientProperties) {
 		this.clientProperties = clientProperties;
 		return this;
+	}
+
+	/**
+	 * Adds a client argument. Client arguments are used when the exchange client class has a constructor with parameters
+	 * different than {@link ClientProperties}. The client arguments must be in the same order as the constructor parameters
+	 * and the exchange client class must have only one constructor with the same number of parameters as the client
+	 * arguments.
+	 *
+	 * @param argument client argument to add
+	 * @return this
+	 */
+	public ExchangeClientBuilder argument(final Object argument) {
+		Require.that(null != argument, IllegalStateException::new, "Client arguments must not contain null values");
+		this.clientArguments.add(argument);
+		return this;
+	}
+
+	/**
+	 * Adds client arguments. Client arguments are used when the exchange client class has a constructor with parameters
+	 * different than {@link ClientProperties}. The client arguments must be in the same order as the constructor parameters
+	 * and the exchange client class must have only one constructor with the same number of parameters as the client
+	 * arguments.
+	 *
+	 * @param arguments client arguments to add
+	 * @return this
+	 */
+	public ExchangeClientBuilder arguments(final List<Object> arguments) {
+		for (Object clientArgument : arguments) {
+			argument(clientArgument);
+		}
+		return this;
+	}
+
+	/**
+	 * Adds client arguments. Client arguments are used when the exchange client class has a constructor with parameters
+	 * different than {@link ClientProperties}. The client arguments must be in the same order as the constructor parameters
+	 * and the exchange client class must have only one constructor with the same number of parameters as the client
+	 * arguments.
+	 *
+	 * @param clientArguments client arguments to add
+	 * @return this
+	 */
+	public ExchangeClientBuilder arguments(final Object... clientArguments) {
+		return arguments(List.of(clientArguments));
 	}
 
 	/**
