@@ -531,6 +531,24 @@ public class ApiClient implements AutoCloseable {
 	}
 
 	/**
+	 * Returns an exchange client builder with the given exchange client resource set.
+	 * <p>
+	 * This method is to be used in conjunction with the constructors or factory methods that accept exchange client
+	 * builders. When this method is used, the API client does will manage the life cycle of the exchange client, based on
+	 * the management flag of the provided scoped resource, so the caller should not close the exchange client if the scoped
+	 * resource is managed, otherwise the caller is responsible for closing the exchange client if needed.
+	 * <p>
+	 * This method should be used when an instance of exchange client is already created. Prefer using {@link #with(Class)}
+	 * or {@link #withClient(Class)} when possible, so that the builder can manage the life cycle of the exchange client.
+	 *
+	 * @param exchangeClientResource scoped exchange client resource
+	 * @return exchange client builder
+	 */
+	public static ExchangeClientBuilder with(final ScopedResource<ExchangeClient> exchangeClientResource) {
+		return ExchangeClient.builder().client(exchangeClientResource);
+	}
+
+	/**
 	 * Returns an exchange client builder with the default exchange client and given properties set.
 	 * <p>
 	 * This method is to be used in conjunction with the constructors or factory methods that accept exchange client

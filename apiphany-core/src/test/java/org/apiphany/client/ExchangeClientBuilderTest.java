@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
@@ -24,6 +25,7 @@ import org.morphix.reflection.Fields;
 class ExchangeClientBuilderTest {
 
 	private static final String BOOM_TEST_EXCEPTION = "BOOM! Test exception";
+	private static final List<String> EXCLUSIVE_FIELDS = List.of("exchangeClientClass", "exchangeClient", "exchangeClientResource");
 
 	static class DummyExchangeClient implements ExchangeClient {
 		@Override
@@ -119,7 +121,8 @@ class ExchangeClientBuilderTest {
 
 			IllegalStateException exception = assertThrows(IllegalStateException.class, builder::build);
 
-			assertThat(exception.getMessage(), equalTo("Cannot set both exchange client instance and exchange client class"));
+			assertThat(exception.getMessage(),
+					equalTo(Messages.message("Only one of the following fields must be set: {}", EXCLUSIVE_FIELDS)));
 		}
 	}
 
@@ -133,7 +136,7 @@ class ExchangeClientBuilderTest {
 
 			AtomicInteger errorHandlerCallCount = new AtomicInteger(0);
 			Consumer<Exception> errorHandler = e -> {
-				assertThat(e.getMessage(), equalTo("Cannot set both exchange client instance and exchange client class"));
+				assertThat(e.getMessage(), equalTo(Messages.message("Only one of the following fields must be set: {}", EXCLUSIVE_FIELDS)));
 				errorHandlerCallCount.incrementAndGet();
 			};
 			ScopedResource<ExchangeClient> result = builder.build(errorHandler);
@@ -150,7 +153,7 @@ class ExchangeClientBuilderTest {
 
 			IllegalStateException exception = assertThrows(IllegalStateException.class, builder::build);
 
-			assertThat(exception.getMessage(), equalTo("Either exchange client instance or exchange client class must be set"));
+			assertThat(exception.getMessage(), equalTo(Messages.message("Only one of the following fields must be set: {}", EXCLUSIVE_FIELDS)));
 		}
 	}
 
