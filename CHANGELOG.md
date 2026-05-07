@@ -1,5 +1,12 @@
 ## Release Notes
 
+`1.2.6`
+
+- Added `ExchangeClientBuilder.client(ScopedResource)` to add support for instance resource management for exchange clients.
+- Added `ApiClient.with(ScopedResource)` to add support for instance resource management for exchange clients.
+
+---
+
 `1.2.5`
 
 - Upgraded `morphix-all` to `1.0.34`.

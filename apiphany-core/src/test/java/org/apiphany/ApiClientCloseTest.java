@@ -106,7 +106,7 @@ class ApiClientCloseTest {
 
 	@Test
 	@SuppressWarnings("resource")
-	void shouldCallCloseOnManagedExchangeClientsBuiltWithApiClientExchangeClientMethod() throws Exception {
+	void shouldCallCloseOnManagedExchangeClientsBuiltWithApiClientWithExchangeClientClassMethod() throws Exception {
 		ApiClient api = ApiClient.of(BASE_URL,
 				ApiClient.with(SomeExchangeClient.class)
 						.properties(clientProperties));
@@ -118,6 +118,66 @@ class ApiClientCloseTest {
 		api.close();
 
 		assertTrue(exchangeClient.isClosed());
+	}
+
+	@Test
+	void shouldNotCallCloseOnManagedExchangeClientsBuiltWithApiClientWithExchangeClientMethod() throws Exception {
+		SomeExchangeClient exchangeClient = new SomeExchangeClient(clientProperties);
+		ApiClient api = ApiClient.of(BASE_URL,
+				ApiClient.with(exchangeClient)
+						.properties(clientProperties));
+
+		try {
+			assertFalse(exchangeClient.isClosed());
+
+			api.close();
+
+			assertFalse(exchangeClient.isClosed());
+		} finally {
+			exchangeClient.close();
+		}
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldCallCloseOnManagedExchangeClientsBuiltWithApiClientWithManagedScopedResourceMethod() throws Exception {
+		SomeExchangeClient exchangeClient = new SomeExchangeClient(clientProperties);
+		ScopedResource<ExchangeClient> scopedResource = ScopedResource.managed(exchangeClient);
+
+		ApiClient api = ApiClient.of(BASE_URL,
+				ApiClient.with(scopedResource)
+						.properties(clientProperties));
+
+		try {
+			assertFalse(exchangeClient.isClosed());
+
+			api.close();
+
+			assertTrue(exchangeClient.isClosed());
+		} finally {
+			scopedResource.closeIfManaged();
+		}
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldNotCallCloseOnManagedExchangeClientsBuiltWithApiClientWithUnmanagedScopedResourceMethod() throws Exception {
+		SomeExchangeClient exchangeClient = new SomeExchangeClient(clientProperties);
+		ScopedResource<ExchangeClient> scopedResource = ScopedResource.unmanaged(exchangeClient);
+
+		ApiClient api = ApiClient.of(BASE_URL,
+				ApiClient.with(scopedResource)
+						.properties(clientProperties));
+
+		try {
+			assertFalse(exchangeClient.isClosed());
+
+			api.close();
+
+			assertFalse(exchangeClient.isClosed());
+		} finally {
+			scopedResource.closeIfManaged();
+		}
 	}
 
 	@Test
