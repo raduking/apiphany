@@ -332,6 +332,24 @@ class ExchangeClientBuilderTest {
 			assertThat(multiArgClient.getArg1(), equalTo(TEST_INT_42));
 			assertThat(multiArgClient.getArg2(), equalTo(TEST_STRING));
 		}
+
+		@Test
+		void shouldThrowExceptionConstructClientUsingClientClassWithMultipleArgumentConstructorAndWrongArgumentType() {
+			Integer arg1 = TEST_INT_42;
+			String arg2 = TEST_STRING;
+			ClientProperties clientProperties = new ClientProperties();
+
+			ExchangeClientBuilder builder = ExchangeClientBuilder.create()
+					.client(MultipleArgumentConstructorExchangeClient.class)
+					.arguments(arg2, arg1)
+					.properties(clientProperties);
+
+			IllegalStateException exception = assertThrows(IllegalStateException.class, builder::build);
+
+			assertThat(exception.getMessage(), equalTo(Messages.message(
+					"Client {} must have a constructor matching the client arguments provided in the builder: {}",
+					MultipleArgumentConstructorExchangeClient.class.getName(), List.of(ClientProperties.class, String.class, Integer.class))));
+		}
 	}
 
 	@Nested
