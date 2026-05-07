@@ -12,8 +12,8 @@ import java.util.function.Supplier;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.annotation.Ignored;
-import org.morphix.lang.JavaArrays;
 import org.morphix.lang.JavaObjects;
+import org.morphix.lang.Messages;
 import org.morphix.lang.collections.Maps;
 import org.morphix.lang.function.Consumers;
 import org.morphix.reflection.Constructors;
@@ -223,6 +223,9 @@ public class ClientProperties {
 
 	/**
 	 * Retrieves client-specific properties for a given client prefix and name.
+	 * <p>
+	 * The returned properties will be a new object so modifying it will not affect the properties stored in this class
+	 * until the modified properties are set back using {@link #setClientProperties(String, String, ClientProperties)}.
 	 *
 	 * @param <T> the type of the client properties
 	 *
@@ -237,6 +240,9 @@ public class ClientProperties {
 
 	/**
 	 * Retrieves client-specific properties for a given client path.
+	 * <p>
+	 * The returned properties will be a new object so modifying it will not affect the properties stored in this class
+	 * until the modified properties are set back using {@link #setClientProperties(String, String, ClientProperties)}.
 	 *
 	 * @param <T> the type of the client properties
 	 *
@@ -245,13 +251,14 @@ public class ClientProperties {
 	 * @return the client properties as an instance of the specified type
 	 */
 	public <T extends ClientProperties> T getClientProperties(final String path, final Class<T> cls) {
-		return getClientProperties(path, cls, e -> {
-			throw new IllegalStateException("Error reading properties from: " + path, e);
-		});
+		return getClientProperties(path, cls, getClientPropertiesErrorHandler("Error reading properties for path: '{}'", path));
 	}
 
 	/**
 	 * Retrieves client-specific properties for a given client path.
+	 * <p>
+	 * The returned properties will be a new object so modifying it will not affect the properties stored in this class
+	 * until the modified properties are set back using {@link #setClientProperties(String, String, ClientProperties)}.
 	 *
 	 * @param <T> the type of the client properties
 	 *
@@ -287,9 +294,7 @@ public class ClientProperties {
 	 * @param properties the client properties to set
 	 */
 	public <T extends ClientProperties> void setClientProperties(final String path, final T properties) {
-		setClientProperties(path, properties, e -> {
-			throw new IllegalStateException("Error writing properties for path: '" + path + "'", e);
-		});
+		setClientProperties(path, properties, getClientPropertiesErrorHandler("Error writing properties for path: '{}'", path));
 	}
 
 	/**
@@ -311,13 +316,27 @@ public class ClientProperties {
 	}
 
 	/**
+	 * Returns an error handler when reading client properties for a given path.
+	 *
+	 * @param template the message template for the error
+	 * @param args the arguments for the message template
+	 * @return a consumer that handles exceptions by throwing an IllegalStateException with a message built from the
+	 * provided template and arguments
+	 */
+	protected Consumer<Exception> getClientPropertiesErrorHandler(final String template, final Object... args) {
+		return e -> {
+			throw new IllegalStateException(Messages.message(template, args), e);
+		};
+	}
+
+	/**
 	 * Helper method to retrieve a nested properties map from a root supplier and a full path.
 	 *
 	 * @param rootSupplier the supplier for the root properties map
 	 * @param fullPath the full path to the nested properties
 	 * @return the nested properties map
 	 */
-	private static Map<String, Object> getPropertiesMap(final Supplier<Map<String, Object>> rootSupplier, final String fullPath) {
+	protected static Map<String, Object> getPropertiesMap(final Supplier<Map<String, Object>> rootSupplier, final String fullPath) {
 		Map<String, Object> actualProps = rootSupplier.get();
 		if (Maps.isEmpty(actualProps)) {
 			return Collections.emptyMap();
@@ -342,14 +361,15 @@ public class ClientProperties {
 	 * @param fullPath the full path to the nested properties
 	 * @param properties the properties map to set
 	 */
-	private static void setPropertiesMap(final Supplier<Map<String, Object>> rootSupplier, final String fullPath,
+	protected static void setPropertiesMap(final Supplier<Map<String, Object>> rootSupplier, final String fullPath,
 			final Map<String, Object> properties) {
-		String[] paths = fullPath.split("\\.");
-		if (JavaArrays.isEmpty(paths)) {
+		if (Strings.isEmpty(fullPath)) {
 			throw new IllegalArgumentException("fullPath cannot be empty");
 		}
+		String[] paths = fullPath.split("\\.", -1);
 		Map<String, Object> actualProps = rootSupplier.get();
-		for (String path : paths) {
+		for (int i = 0; i < paths.length - 1; ++i) {
+			String path = paths[i];
 			Object props = actualProps.get(path);
 			if (props instanceof Map<?, ?> mapProps) {
 				actualProps = JavaObjects.cast(mapProps);
@@ -507,19 +527,38 @@ public class ClientProperties {
 
 	/**
 	 * Returns the custom properties prefix by searching for the static field name
+	 * {@link #CUSTOM_PROPERTIES_PREFIX_FIELD_NAME} and handles any exceptions that occur during retrieval by passing them
+	 * to the provided error handler.
+	 *
+	 * @param <T> the type of the custom properties
+	 *
+	 * @param cls the class to retrieve the custom properties prefix from
+	 * @param onError the consumer to handle any exceptions that occur during retrieval
+	 * @return the custom properties prefix, or null if an exception occurs during retrieval
+	 */
+	protected <T> String getCustomPropertiesPrefix(final Class<T> cls, final Consumer<Exception> onError) {
+		try {
+			return getCustomPropertiesPrefix(cls);
+		} catch (Exception e) {
+			onError.accept(e);
+			return null;
+		}
+	}
+
+	/**
+	 * Returns the custom properties prefix by searching for the static field name
 	 * {@link #CUSTOM_PROPERTIES_PREFIX_FIELD_NAME}.
 	 *
 	 * @param <T> custom properties type
 	 *
 	 * @param cls custom properties class
-	 * @param onError the consumer to handle any exceptions that occur during mapping
 	 * @return custom properties prefix
 	 */
-	private static <T> String getCustomPropertiesPrefix(final Class<T> cls, final Consumer<Exception> onError) {
-		String prefix = Fields.IgnoreAccess.getStatic(cls, CUSTOM_PROPERTIES_PREFIX_FIELD_NAME);
+	protected static <T> String getCustomPropertiesPrefix(final Class<T> cls) {
+		String prefix = Fields.Safe.getStatic(cls, CUSTOM_PROPERTIES_PREFIX_FIELD_NAME);
 		if (null == prefix) {
-			onError.accept(new IllegalStateException("No static field named:" + CUSTOM_PROPERTIES_PREFIX_FIELD_NAME
-					+ " defined in: " + cls.getCanonicalName() + " found to be used as custom properties prefix."));
+			throw new IllegalStateException("No static field named:" + CUSTOM_PROPERTIES_PREFIX_FIELD_NAME
+					+ " defined in: " + cls.getCanonicalName() + " found to be used as custom properties prefix.");
 		}
 		return prefix;
 	}
@@ -969,9 +1008,9 @@ public class ClientProperties {
 	public static class Compression {
 
 		/**
-		 * Indicates whether GZIP compression is enabled.
+		 * Indicates whether GZIP compression is enabled, defaults to false.
 		 */
-		private Boolean gzip;
+		private Boolean gzip = Boolean.FALSE;
 
 		/**
 		 * Default constructor.
@@ -1028,6 +1067,15 @@ public class ClientProperties {
 		 */
 		public void setGzip(final Boolean gzip) {
 			this.gzip = gzip;
+		}
+
+		/**
+		 * Returns the GZIP compression setting as a {@link Boolean} object.
+		 *
+		 * @return the GZIP compression setting as a {@link Boolean} object.
+		 */
+		public Boolean getGzip() {
+			return gzip;
 		}
 	}
 }
