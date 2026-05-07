@@ -13,6 +13,8 @@ import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Test class for {@link ClientProperties}.
@@ -20,6 +22,8 @@ import org.junit.jupiter.api.Test;
  * @author Radu Sebastian LAZIN
  */
 class ClientPropertiesTest {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(ClientPropertiesTest.class);
 
 	private static final String ROOT = "ROOT";
 
@@ -95,6 +99,18 @@ class ClientPropertiesTest {
 		}
 
 		@Test
+		void shouldThrowIllegalStateExceptionOnGetClientPropertiesErrorHandler() {
+			ClientProperties clientProperties = new ClientProperties();
+
+			Consumer<Exception> onError = clientProperties.getClientPropertiesErrorHandler("{}-{}", "a", "b");
+
+			Exception exception = new Exception("Boom!");
+			IllegalStateException e = assertThrows(IllegalStateException.class, () -> onError.accept(exception));
+
+			assertThat(e.getMessage(), equalTo("a-b"));
+		}
+
+		@Test
 		void shouldReturnNestedClientPropertiesForExistingNestedClientPropertiesWithCorrectType() {
 			ClientProperties clientProperties = new ClientProperties();
 			ClientProperties expected = new ClientProperties();
@@ -109,13 +125,76 @@ class ClientPropertiesTest {
 		}
 
 		@Test
+		void shouldReturnDeepNestedClientPropertiesForExistingNestedClientProperties() {
+			ClientProperties clientProperties = new ClientProperties();
+			ClientProperties nested1 = new ClientProperties();
+			nested1.setEnabled(true);
+			ClientProperties nested2 = new ClientProperties();
+			nested2.setEnabled(true);
+			nested2.getCompression().setGzip(true);
+			nested1.setClientProperties("nested-root", "nested-client", nested2);
+			clientProperties.setClientProperties("some-root", "some-client", nested1);
+
+			ClientProperties actual1 = clientProperties.getClientProperties("some-root", "some-client", ClientProperties.class);
+			ClientProperties actual2 = actual1.getClientProperties("nested-root", "nested-client", ClientProperties.class);
+
+			LOGGER.info("Actual nested client map class: {}", actual2.getClient().getClass().getCanonicalName());
+			LOGGER.info("Expected nested client map class: {}", nested2.getClient().getClass().getCanonicalName());
+
+			assertThat(actual2.getClass(), equalTo(nested1.getClass()));
+			assertThat(actual2.isEnabled(), equalTo(nested1.isEnabled()));
+			assertThat(actual2, equalTo(nested2));
+			assertThat(actual1, equalTo(nested1));
+		}
+
+		@Test
+		void shouldReturnDeepNestedClientPropertiesForExistingNestedClientPropertiesWithFullPath() {
+			ClientProperties clientProperties = new ClientProperties();
+			ClientProperties nested1 = new ClientProperties();
+			nested1.setEnabled(true);
+			ClientProperties nested2 = new ClientProperties();
+			nested2.setEnabled(true);
+			nested2.getCompression().setGzip(true);
+			nested1.setClientProperties("nested-root", "nested-client", nested2);
+
+			clientProperties.setClientProperties("some-root", "some-client", nested1);
+			clientProperties.setClientProperties("some-root.some-client.client.nested-root", "nested-client", nested2);
+
+			ClientProperties actual1 = clientProperties.getClientProperties("some-root", "some-client", ClientProperties.class);
+			ClientProperties actual2 = actual1.getClientProperties("nested-root", "nested-client", ClientProperties.class);
+
+			LOGGER.info("Actual nested client map class: {}", actual2.getClient().getClass().getCanonicalName());
+			LOGGER.info("Expected nested client map class: {}", nested2.getClient().getClass().getCanonicalName());
+
+			assertThat(actual2.getClass(), equalTo(nested1.getClass()));
+			assertThat(actual2.isEnabled(), equalTo(nested1.isEnabled()));
+			assertThat(actual2, equalTo(nested2));
+			assertThat(actual1, equalTo(nested1));
+		}
+
+		@Test
 		void shouldThrowExceptionWhenTryingToSetClientPropertiesWithEmptyPaths() {
 			ClientProperties clientProperties = new ClientProperties();
 			ClientProperties nested = new ClientProperties();
 			IllegalStateException e =
-					assertThrows(IllegalStateException.class, () -> clientProperties.setClientProperties("", "", nested));
+					assertThrows(IllegalStateException.class, () -> clientProperties.setClientProperties("", nested));
 
-			assertThat(e.getMessage(), equalTo("Error writing properties for path: '.'"));
+			assertThat(e.getMessage(), equalTo("Error writing properties for path: ''"));
+			assertThat(e.getCause().getMessage(), equalTo("fullPath cannot be empty"));
+		}
+
+		@Test
+		void shouldCallOnErrorWhenTryingToSetClientPropertiesWithEmptyPaths() {
+			ClientProperties clientProperties = new ClientProperties();
+			ClientProperties nested = new ClientProperties();
+
+			AtomicInteger onErrorCalled = new AtomicInteger(0);
+			Consumer<Exception> onError = e -> {
+				onErrorCalled.incrementAndGet();
+			};
+			clientProperties.setClientProperties("", nested, onError);
+
+			assertThat(onErrorCalled.get(), equalTo(1));
 		}
 	}
 
@@ -178,6 +257,32 @@ class ClientPropertiesTest {
 			assertThat(actual.getKey1(), equalTo(expected.getKey1()));
 			assertThat(actual.getKey2(), equalTo(expected.getKey2()));
 			assertThat(actual.toString(), equalTo(expected.toString()));
+		}
+
+		@Test
+		void shouldThrowExceptionWhenTryingToSetCustomPropertiesPrefixForClassWithoutRootStaticField() {
+			IllegalStateException e =
+					assertThrows(IllegalStateException.class, () -> ClientProperties.getCustomPropertiesPrefix(CustomProperties.class));
+
+			assertThat(e.getMessage(), equalTo("No static field named:" + ClientProperties.CUSTOM_PROPERTIES_PREFIX_FIELD_NAME
+					+ " defined in: " + CustomProperties.class.getCanonicalName()
+					+ " found to be used as custom properties prefix."));
+		}
+
+		@Test
+		void shouldReturnNullAndCallOnErrorWhenTryingToSetCustomPropertiesPrefixForClassWithoutRootStaticField() {
+			ClientProperties clientProperties = new ClientProperties();
+
+			AtomicInteger onErrorCalled = new AtomicInteger(0);
+			Consumer<Exception> onError = e -> {
+				onErrorCalled.incrementAndGet();
+				assertThat(e, notNullValue());
+			};
+
+			String result = clientProperties.getCustomPropertiesPrefix(CustomProperties.class, onError);
+
+			assertThat(onErrorCalled.get(), equalTo(1));
+			assertThat(result, equalTo(null));
 		}
 	}
 

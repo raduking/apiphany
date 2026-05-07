@@ -4,6 +4,8 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import java.time.Duration;
+
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.junit.jupiter.api.Test;
@@ -26,15 +28,21 @@ class ClientPropertiesTimeoutTest {
 		String json = Strings.removeAllWhitespace(clientPropertiesJson);
 
 		ClientProperties clientProperties1 = JsonBuilder.fromJson(json, ClientProperties.class);
+		ClientProperties.Timeout timeout = clientProperties1.getTimeout();
+		timeout.setConnect(Duration.ofMillis(CONNECT_TIMEOUT));
+		timeout.setConnectionRequest(Duration.ofMillis(CONNECTION_REQUEST_TIMEOUT));
+		timeout.setSocket(Duration.ofMillis(SOCKET_TIMEOUT));
+		timeout.setRequest(Duration.ofMillis(REQUEST_TIMEOUT));
 
 		assertThat(clientProperties1, notNullValue());
 
-		String result = clientProperties1.getTimeout().toString();
+		String stringProperties = clientProperties1.toString();
+		ClientProperties clientProperties2 = JsonBuilder.fromJson(stringProperties, ClientProperties.class);
 
-		ClientProperties clientProperties2 = JsonBuilder.fromJson(result, ClientProperties.class);
-		String expected = clientProperties2.getTimeout().toString();
+		ClientProperties.Timeout expected = clientProperties2.getTimeout();
 
-		assertThat(result, equalTo(expected));
+		assertThat(timeout, equalTo(expected));
+		assertThat(timeout.toString(), equalTo(expected.toString()));
 	}
 
 	@Test
@@ -44,15 +52,23 @@ class ClientPropertiesTimeoutTest {
 
 		ClientProperties clientProperties = JsonBuilder.fromJson(json, ClientProperties.class);
 		ClientProperties nestedClientProperties1 = clientProperties.getClientProperties("", "some-client", ClientProperties.class);
+		ClientProperties.Timeout timeout = nestedClientProperties1.getTimeout();
+		timeout.setConnect(Duration.ofMillis(CONNECT_TIMEOUT));
+		timeout.setConnectionRequest(Duration.ofMillis(CONNECTION_REQUEST_TIMEOUT));
+		timeout.setSocket(Duration.ofMillis(SOCKET_TIMEOUT));
+		timeout.setRequest(Duration.ofMillis(REQUEST_TIMEOUT));
+		clientProperties.setClientProperties("", "some-client", nestedClientProperties1);
 
 		assertThat(nestedClientProperties1, notNullValue());
 
-		String result = nestedClientProperties1.getTimeout().toString();
+		String stringProperties = clientProperties.toString();
+		clientProperties = JsonBuilder.fromJson(stringProperties, ClientProperties.class);
+		ClientProperties nestedClientProperties2 = clientProperties.getClientProperties("", "some-client", ClientProperties.class);
 
-		ClientProperties nestedClientProperties2 = JsonBuilder.fromJson(result, ClientProperties.class);
-		String expected = nestedClientProperties2.getTimeout().toString();
+		ClientProperties.Timeout expected = nestedClientProperties2.getTimeout();
 
-		assertThat(result, equalTo(expected));
+		assertThat(timeout, equalTo(expected));
+		assertThat(timeout.toString(), equalTo(expected.toString()));
 	}
 
 	@Test
