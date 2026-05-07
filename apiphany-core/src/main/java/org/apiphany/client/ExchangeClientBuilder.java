@@ -134,7 +134,7 @@ public class ExchangeClientBuilder {
 
 			int nonNullFields = (int) fieldsMap.values().stream().filter(Objects::nonNull).count();
 			Require.that(1 == nonNullFields, IllegalStateException::new,
-					"Only one of the following fields must be set: {}", fieldsMap.keySet());
+					"One and only one of the following fields must be set: {}", fieldsMap.keySet());
 
 			if (null != exchangeClientClass) {
 				return ScopedResource.managed(build(exchangeClientClass));
