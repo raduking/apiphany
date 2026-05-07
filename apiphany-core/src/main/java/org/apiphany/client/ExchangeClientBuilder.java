@@ -2,8 +2,11 @@ package org.apiphany.client;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import org.apiphany.client.http.JavaNetHttpExchangeClient;
@@ -13,7 +16,6 @@ import org.apiphany.security.client.SecuredExchangeClientBuilder;
 import org.morphix.lang.Unchecked;
 import org.morphix.lang.function.Consumers;
 import org.morphix.lang.function.LoggerAdapter;
-import org.morphix.lang.resource.Lifecycle;
 import org.morphix.lang.resource.ScopedResource;
 import org.morphix.reflection.Constructors;
 import org.morphix.reflection.Methods;
@@ -44,6 +46,11 @@ public class ExchangeClientBuilder {
 	 * Exchange client for which the caller will manage the life cycle.
 	 */
 	private ExchangeClient exchangeClient;
+
+	/**
+	 * Exchange client with life cycle management information.
+	 */
+	private ScopedResource<ExchangeClient> exchangeClientResource;
 
 	/**
 	 * Client properties.
@@ -120,13 +127,23 @@ public class ExchangeClientBuilder {
 	@SuppressWarnings("resource")
 	protected ScopedResource<ExchangeClient> buildMainClient(final Consumer<Exception> buildErrorHandler) {
 		try {
-			Require.that(null == exchangeClientClass || null == exchangeClient, IllegalStateException::new,
-					"Cannot set both exchange client instance and exchange client class");
-			Require.that(null != exchangeClientClass || null != exchangeClient, IllegalStateException::new,
-					"Either exchange client instance or exchange client class must be set");
-			boolean managed = null == exchangeClient;
-			ExchangeClient client = managed ? build(exchangeClientClass) : exchangeClient;
-			return ScopedResource.of(client, Lifecycle.from(managed));
+			Map<String, Object> fieldsMap = new LinkedHashMap<>();
+			fieldsMap.put("exchangeClientClass", exchangeClientClass);
+			fieldsMap.put("exchangeClient", exchangeClient);
+			fieldsMap.put("exchangeClientResource", exchangeClientResource);
+
+			int nonNullFields = (int) fieldsMap.values().stream().filter(Objects::nonNull).count();
+			Require.that(1 == nonNullFields, IllegalStateException::new,
+					"Only one of the following fields must be set: {}", fieldsMap.keySet());
+
+			if (null != exchangeClientClass) {
+				return ScopedResource.managed(build(exchangeClientClass));
+			}
+			if (null != exchangeClient) {
+				return ScopedResource.unmanaged(exchangeClient);
+			}
+			// we know that here this is the only non-null field
+			return exchangeClientResource;
 		} catch (Exception e) {
 			buildErrorHandler.accept(e);
 			return null;
@@ -235,6 +252,17 @@ public class ExchangeClientBuilder {
 	 */
 	public ExchangeClientBuilder client(final ExchangeClient client) {
 		this.exchangeClient = client;
+		return this;
+	}
+
+	/**
+	 * Sets the exchange client with life cycle management information.
+	 *
+	 * @param clientResource client resource to set
+	 * @return this
+	 */
+	public ExchangeClientBuilder client(final ScopedResource<ExchangeClient> clientResource) {
+		this.exchangeClientResource = clientResource;
 		return this;
 	}
 
