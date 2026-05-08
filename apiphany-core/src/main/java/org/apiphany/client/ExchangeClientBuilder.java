@@ -2,6 +2,8 @@ package org.apiphany.client;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -22,7 +24,15 @@ import org.morphix.reflection.Constructors;
 import org.morphix.reflection.Methods;
 
 /**
- * Exchange client builder.
+ * Exchange client builder that can be used to build exchange clients in a flexible way. It supports:
+ *
+ * <ul>
+ * <li>building exchange clients based on an exchange client class or an exchange client instance.</li>
+ * <li>decorating exchange clients with decorating exchange client classes or decorating exchange client builders.</li>
+ * <li>delegating the building process to another builder.</li>
+ * <li>client properties and client arguments that can be used when the exchange client class has a constructor with
+ * parameters.</li>
+ * </ul>
  *
  * @author Radu Sebastian LAZIN
  */
@@ -135,27 +145,34 @@ public class ExchangeClientBuilder {
 	@SuppressWarnings("resource")
 	protected ScopedResource<ExchangeClient> buildMainClient(final Consumer<Exception> buildErrorHandler) {
 		try {
-			Map<String, Object> fieldsMap = new LinkedHashMap<>();
-			fieldsMap.put("exchangeClientClass", exchangeClientClass);
-			fieldsMap.put("exchangeClient", exchangeClient);
-			fieldsMap.put("exchangeClientResource", exchangeClientResource);
-
-			int nonNullFields = (int) fieldsMap.values().stream().filter(Objects::nonNull).count();
-			Require.that(1 == nonNullFields, IllegalStateException::new,
-					"One and only one of the following fields must be set: {}", fieldsMap.keySet());
-
+			Map<String, Object> fieldsMap = getExclusiveRequiredFields();
+			long nonNullFields = fieldsMap.values().stream().filter(Objects::nonNull).count();
+			requireThat(1 == nonNullFields, "One and only one of the following fields must be set: {}", fieldsMap.keySet());
 			if (null != exchangeClientClass) {
 				return ScopedResource.managed(build(exchangeClientClass));
 			}
 			if (null != exchangeClient) {
 				return ScopedResource.unmanaged(exchangeClient);
 			}
-			// we know that here this is the only non-null field
 			return exchangeClientResource;
 		} catch (Exception e) {
 			buildErrorHandler.accept(e);
 			return null;
 		}
+	}
+
+	/**
+	 * Returns a map of the exclusive required fields. These are the fields of the builder of which only one can be set. The
+	 * returned map is an ordered unmodifiable map to keep the field order in case of error messages.
+	 *
+	 * @return a map of the exclusive required fields
+	 */
+	public Map<String, Object> getExclusiveRequiredFields() {
+		Map<String, Object> fieldsMap = new LinkedHashMap<>();
+		fieldsMap.put("exchangeClientClass", exchangeClientClass);
+		fieldsMap.put("exchangeClient", exchangeClient);
+		fieldsMap.put("exchangeClientResource", exchangeClientResource);
+		return Collections.unmodifiableMap(fieldsMap);
 	}
 
 	/**
@@ -190,7 +207,7 @@ public class ExchangeClientBuilder {
 				Constructors.Safe.getDeclared(decoratorClientClass, ScopedResource.class);
 		String exchangeClientClassName = ExchangeClient.class.getName();
 		if (scopedResource.isManaged()) {
-			Require.that(null != resourceConstructor, IllegalStateException::new,
+			requireThat(null != resourceConstructor,
 					"Decorating exchange client class {} must have a constructor with one parameter of type {}<{}>",
 					decoratorClientClass.getName(), ScopedResource.class.getName(), exchangeClientClassName);
 			return Constructors.IgnoreAccess.newInstance(resourceConstructor, scopedResource);
@@ -199,7 +216,7 @@ public class ExchangeClientBuilder {
 		Constructor<? extends DecoratingExchangeClient> clientConstructor = null;
 		if (null == resourceConstructor) {
 			clientConstructor = Constructors.Safe.getDeclared(decoratorClientClass, ExchangeClient.class);
-			Require.that(null != clientConstructor, IllegalStateException::new,
+			requireThat(null != clientConstructor,
 					"Decorating exchange client class {} must have a constructor with one parameter of type {} or {}<{}>",
 					decoratorClientClass.getName(), exchangeClientClassName, ScopedResource.class.getName(), exchangeClientClassName);
 		}
@@ -220,7 +237,7 @@ public class ExchangeClientBuilder {
 			return build(clientClass, clientProperties, clientArguments);
 		}
 		Constructor<? extends ExchangeClient> constructor = Constructors.Safe.getDefault(clientClass);
-		Require.that(null != constructor, IllegalStateException::new,
+		requireThat(null != constructor,
 				"When client properties are not set exchange client class {} must have a default constructor", clientClass.getName());
 		return Constructors.IgnoreAccess.newInstance(constructor);
 	}
@@ -249,11 +266,10 @@ public class ExchangeClientBuilder {
 		arguments[0] = clientProperties;
 		for (int i = 0; i < clientArguments.size(); ++i) {
 			Object argument = clientArguments.get(i);
-			Require.that(null != argument, IllegalStateException::new, "Client argument at index {} must not be null", i);
 			arguments[i + 1] = argument;
 		}
 		Constructor<? extends ExchangeClient> constructor = Constructors.Safe.findOneMatching(clientClass, parameterTypes);
-		Require.that(null != constructor, IllegalStateException::new,
+		requireThat(null != constructor,
 				"Client {} must have a constructor matching the client arguments provided in the builder: {}",
 				clientClass.getName(), List.of(parameterTypes));
 		return Constructors.IgnoreAccess.newInstance(constructor, arguments);
@@ -269,7 +285,7 @@ public class ExchangeClientBuilder {
 	 */
 	protected static ExchangeClient build(final Class<? extends ExchangeClient> clientClass, final ClientProperties clientProperties) {
 		Constructor<? extends ExchangeClient> constructor = Constructors.Safe.getDeclared(clientClass, ClientProperties.class);
-		Require.that(null != constructor, IllegalStateException::new,
+		requireThat(null != constructor,
 				"When client properties are set exchange client class {} must not have a constructor with one parameter of type {}",
 				clientClass.getName(), ClientProperties.class.getName());
 		return Constructors.IgnoreAccess.newInstance(constructor, clientProperties);
@@ -338,7 +354,7 @@ public class ExchangeClientBuilder {
 	 * @return this
 	 */
 	public ExchangeClientBuilder argument(final Object argument) {
-		Require.that(null != argument, IllegalStateException::new, "Client arguments must not contain null values");
+		requireThat(null != argument, "Client argument must not be null");
 		this.clientArguments.add(argument);
 		return this;
 	}
@@ -369,7 +385,7 @@ public class ExchangeClientBuilder {
 	 * @return this
 	 */
 	public ExchangeClientBuilder arguments(final Object... clientArguments) {
-		return arguments(List.of(clientArguments));
+		return arguments(Arrays.asList(clientArguments));
 	}
 
 	/**
@@ -387,17 +403,20 @@ public class ExchangeClientBuilder {
 	 * Decorates this builder with another decorating builder.
 	 * <p>
 	 * The decorating builder class must have a static {@code create} method that returns a new instance of the decorating
-	 * builder.
-	 * <p>
-	 * The decorating builder is actually a new instance copies this builder and then applies the given customizer.
+	 * builder. The decorating builder is a new instance copies this builders client properties and then applies the given
+	 * customizer.
 	 *
 	 * @param <T> decorating builder type
+	 *
 	 * @param decoratingBuilderClass decorating builder class
 	 * @param decoratorCustomizer decorator customizer
 	 * @return new decorating exchange client builder
 	 */
 	public <T extends ExchangeClientBuilder> T decoratedWithBuilder(final Class<T> decoratingBuilderClass, final Consumer<T> decoratorCustomizer) {
 		Method createMethod = Methods.Safe.getOneDeclared("create", decoratingBuilderClass);
+		requireThat(null != createMethod,
+				"Decorating builder class {} must have a static create method with no parameters returning an instance of the builder",
+				decoratingBuilderClass.getName());
 		T decoratorBuilder = Methods.IgnoreAccess.invoke(createMethod, null);
 		decoratorBuilder.delegate(this);
 		decoratorBuilder.properties(clientProperties);
@@ -409,11 +428,11 @@ public class ExchangeClientBuilder {
 	 * Decorates this builder with another decorating builder.
 	 * <p>
 	 * The decorating builder class must have a static {@code create} method that returns a new instance of the decorating
-	 * builder.
-	 * <p>
-	 * The decorating builder is actually a new instance copies this builder and then applies the given customizer.
+	 * builder. The decorating builder is a new instance copies this builders client properties and then applies the given
+	 * customizer.
 	 *
 	 * @param <T> decorating builder type
+	 *
 	 * @param decoratingBuilderClass decorating builder class
 	 * @return new decorating exchange client builder
 	 */
@@ -428,6 +447,7 @@ public class ExchangeClientBuilder {
 	 * {@link ScopedResource} depending on whether this builder has an exchange client class set or not.
 	 *
 	 * @param <T> decorating exchange client type
+	 *
 	 * @param decoratingClientClass decorating exchange client class
 	 * @return new decorating exchange client builder
 	 */
@@ -443,5 +463,17 @@ public class ExchangeClientBuilder {
 	 */
 	public SecuredExchangeClientBuilder securedWith() {
 		return decoratedWithBuilder(SecuredExchangeClientBuilder.class);
+	}
+
+	/**
+	 * Short hand for {@code Require.that(condition, IllegalStateException::new, messageTemplate, messageArgs)}.
+	 *
+	 * @param condition the condition to check
+	 * @param messageTemplate the error message template
+	 * @param messageArgs the error message arguments
+	 * @see Require#that(boolean, java.util.function.Function, String, Object...)
+	 */
+	protected static void requireThat(final boolean condition, final String messageTemplate, final Object... messageArgs) {
+		Require.that(condition, IllegalStateException::new, messageTemplate, messageArgs);
 	}
 }
