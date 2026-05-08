@@ -1,5 +1,6 @@
 package org.apiphany.client;
 
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -10,13 +11,18 @@ import java.util.function.Consumer;
 
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
+import org.apiphany.client.ExchangeClientBuilderTest.Builders.DecoratingExchangeClientBuilder;
+import org.apiphany.client.ExchangeClientBuilderTest.Builders.DelegateExchangeClientBuilder;
+import org.apiphany.client.ExchangeClientBuilderTest.Builders.InvalidDecoratingExchangeClientBuilder;
 import org.apiphany.client.ExchangeClientBuilderTest.Builders.ThrowingExchangeClientBuilder;
+import org.apiphany.client.ExchangeClientBuilderTest.Clients.ClientPropertiesExchangeClient;
 import org.apiphany.client.ExchangeClientBuilderTest.Clients.DummyDecoratingExchangeClient;
 import org.apiphany.client.ExchangeClientBuilderTest.Clients.DummyExchangeClient;
 import org.apiphany.client.ExchangeClientBuilderTest.Clients.InvalidDecoratingExchangeClient;
 import org.apiphany.client.ExchangeClientBuilderTest.Clients.MultipleArgumentConstructorExchangeClient;
 import org.apiphany.client.ExchangeClientBuilderTest.Clients.NotClosingDecoratingExchangeClient;
 import org.apiphany.client.ExchangeClientBuilderTest.Clients.OtherDecoratingExchangeClient;
+import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.morphix.lang.Messages;
@@ -122,6 +128,35 @@ class ExchangeClientBuilderTest {
 			}
 		}
 
+		static class ClientPropertiesExchangeClient implements ExchangeClient {
+
+			private final ClientProperties properties;
+
+			private boolean closed = false;
+
+			public ClientPropertiesExchangeClient(final ClientProperties properties) {
+				this.properties = properties;
+			}
+
+			@Override
+			public <T, U> ApiResponse<U> exchange(final ApiRequest<T> request) {
+				return null;
+			}
+
+			@Override
+			public void close() throws Exception {
+				this.closed = true;
+			}
+
+			public boolean isClosed() {
+				return closed;
+			}
+
+			public ClientProperties getProperties() {
+				return properties;
+			}
+		}
+
 		static class MultipleArgumentConstructorExchangeClient implements ExchangeClient {
 
 			private final ClientProperties properties;
@@ -166,6 +201,21 @@ class ExchangeClientBuilderTest {
 
 	interface Builders {
 
+		static class DelegateExchangeClientBuilder extends ExchangeClientBuilder {
+
+			private ExchangeClient exchangeClient;
+
+			public DelegateExchangeClientBuilder(final ExchangeClient exchangeClient) {
+				super();
+				this.exchangeClient = exchangeClient;
+			}
+
+			@Override
+			public ScopedResource<ExchangeClient> build() {
+				return ScopedResource.managed(exchangeClient);
+			}
+		}
+
 		static class ThrowingExchangeClientBuilder extends ExchangeClientBuilder {
 
 			public ThrowingExchangeClientBuilder() {
@@ -176,6 +226,26 @@ class ExchangeClientBuilderTest {
 			public ScopedResource<ExchangeClient> build() {
 				throw new RuntimeException(BOOM_TEST_EXCEPTION);
 			}
+		}
+
+		static class DecoratingExchangeClientBuilder extends ExchangeClientBuilder {
+
+			public DecoratingExchangeClientBuilder() {
+				super();
+			}
+
+			public static DecoratingExchangeClientBuilder create() {
+				return new DecoratingExchangeClientBuilder();
+			}
+		}
+
+		static class InvalidDecoratingExchangeClientBuilder extends ExchangeClientBuilder {
+
+			public InvalidDecoratingExchangeClientBuilder() {
+				super();
+			}
+
+			// missing create method
 		}
 	}
 
@@ -310,6 +380,27 @@ class ExchangeClientBuilderTest {
 
 		@Test
 		@SuppressWarnings("resource")
+		void shouldConstructClientUsingClientClassWithClientPropertiesConstructor() throws Exception {
+			ClientProperties clientProperties = new ClientProperties();
+
+			ExchangeClientBuilder builder = ExchangeClientBuilder.create()
+					.client(ClientPropertiesExchangeClient.class)
+					.properties(clientProperties);
+
+			ExchangeClient client = null;
+			try (ScopedResource<ExchangeClient> scopedClient = builder.build()) {
+				client = scopedClient.unwrap();
+			}
+
+			assertThat(client.getClass(), equalTo(ClientPropertiesExchangeClient.class));
+			ClientPropertiesExchangeClient singleArgClient = (ClientPropertiesExchangeClient) client;
+
+			assertThat(singleArgClient.getProperties(), equalTo(clientProperties));
+			assertThat(singleArgClient.isClosed(), equalTo(true));
+		}
+
+		@Test
+		@SuppressWarnings("resource")
 		void shouldConstructClientUsingClientClassWithMultipleArgumentConstructor() throws Exception {
 			Integer arg1 = TEST_INT_42;
 			String arg2 = TEST_STRING;
@@ -349,6 +440,33 @@ class ExchangeClientBuilderTest {
 			assertThat(exception.getMessage(), equalTo(Messages.message(
 					"Client {} must have a constructor matching the client arguments provided in the builder: {}",
 					MultipleArgumentConstructorExchangeClient.class.getName(), List.of(ClientProperties.class, String.class, Integer.class))));
+		}
+
+		@Test
+		void shouldThrowExceptionConstructClientUsingClientClassWithMultipleArgumentConstructorAndNullArgument() {
+			Integer arg1 = TEST_INT_42;
+			ClientProperties clientProperties = new ClientProperties();
+
+			ExchangeClientBuilder builder = ExchangeClientBuilder.create()
+					.client(MultipleArgumentConstructorExchangeClient.class)
+					.properties(clientProperties);
+
+			IllegalStateException exception = assertThrows(IllegalStateException.class, () -> builder.arguments(arg1, null));
+
+			assertThat(exception.getMessage(), equalTo("Client argument must not be null"));
+		}
+
+		@Test
+		@SuppressWarnings("resource")
+		void shouldConstructClientUsingDefaultClient() throws Exception {
+			ExchangeClientBuilder builder = ExchangeClientBuilder.create().withDefaultClient();
+
+			ExchangeClient client = null;
+			try (ScopedResource<ExchangeClient> scopedClient = builder.build()) {
+				client = scopedClient.unwrap();
+			}
+
+			assertThat(client.getClass(), equalTo(JavaNetHttpExchangeClient.class));
 		}
 	}
 
@@ -517,6 +635,45 @@ class ExchangeClientBuilderTest {
 	}
 
 	@Nested
+	class DecoratingExchangeClientBuildersTests {
+
+		@Test
+		@SuppressWarnings("resource")
+		void shouldDecorateWithAnotherExchangeClientBuilder() throws Exception {
+			DummyExchangeClient dummyClient = new DummyExchangeClient();
+
+			ExchangeClientBuilder builder = ExchangeClientBuilder.create()
+					.client(dummyClient)
+					.decoratedWithBuilder(DecoratingExchangeClientBuilder.class);
+
+			ExchangeClient client = null;
+			try (ScopedResource<ExchangeClient> scopedClient = builder.build()) {
+				client = scopedClient.unwrap();
+			}
+
+			try {
+				assertThat(client, sameInstance(dummyClient));
+				assertThat(dummyClient.isClosed(), equalTo(false));
+			} finally {
+				dummyClient.close();
+			}
+		}
+
+		@Test
+		void shouldThrowExceptionWhenDecoratingWithInvalidExchangeClientBuilder() {
+			ExchangeClientBuilder builder = ExchangeClientBuilder.create()
+					.client(DummyExchangeClient.class);
+
+			IllegalStateException exception =
+					assertThrows(IllegalStateException.class, () -> builder.decoratedWithBuilder(InvalidDecoratingExchangeClientBuilder.class));
+
+			assertThat(exception.getMessage(), equalTo("Decorating builder class "
+					+ InvalidDecoratingExchangeClientBuilder.class.getName()
+					+ " must have a static create method with no parameters returning an instance of the builder"));
+		}
+	}
+
+	@Nested
 	class ManagedClientConstructionValidationTests {
 
 		@Test
@@ -567,6 +724,23 @@ class ExchangeClientBuilderTest {
 
 			assertThat(scopedClient, equalTo(null));
 			assertThat(errorHandlerCallCount.get(), equalTo(1));
+		}
+
+		@Test
+		@SuppressWarnings("resource")
+		void shouldIgnoreCurrentBuildWhenDelegateIsSet() throws Exception {
+			DummyExchangeClient dummyClient = new DummyExchangeClient();
+			ExchangeClientBuilder builder = ExchangeClientBuilder.create()
+					.client(DummyExchangeClient.class)
+					.delegate(new DelegateExchangeClientBuilder(dummyClient));
+
+			ExchangeClient client = null;
+			try (ScopedResource<ExchangeClient> scopedClient = builder.build()) {
+				client = scopedClient.unwrap();
+			}
+
+			assertThat(client, equalTo(dummyClient));
+			assertThat(dummyClient.isClosed(), equalTo(true));
 		}
 	}
 }
