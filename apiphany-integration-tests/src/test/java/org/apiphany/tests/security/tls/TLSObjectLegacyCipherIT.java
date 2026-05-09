@@ -16,6 +16,7 @@ import org.apiphany.security.ssl.SSLProperties;
 import org.apiphany.security.ssl.SSLProtocol;
 import org.apiphany.security.ssl.server.LegacyHttpsServer;
 import org.apiphany.security.tls.CipherSuite;
+import org.apiphany.security.tls.SignatureAlgorithm;
 import org.apiphany.security.tls.TLSLoggingProvider;
 import org.apiphany.security.tls.TLSObject;
 import org.apiphany.security.tls.client.MinimalTLSClient;
@@ -46,6 +47,13 @@ class TLSObjectLegacyCipherIT {
 
 	private static final String LOCALHOST = "localhost";
 	private static final int PORT = Sockets.findAvailableTcpPort();
+
+	@SuppressWarnings("deprecation")
+	private static final List<SignatureAlgorithm> SIGNATURE_ALGORITHMS = List.of(
+			SignatureAlgorithm.RSA_PKCS1_SHA1,
+			SignatureAlgorithm.RSA_PKCS1_SHA256,
+			SignatureAlgorithm.RSA_PKCS1_SHA384,
+			SignatureAlgorithm.RSA_PKCS1_SHA512);
 
 	private static Pair<Process, Thread> serverInfo;
 
@@ -90,7 +98,8 @@ class TLSObjectLegacyCipherIT {
 
 		byte[] serverFinished = null;
 		List<CipherSuite> cipherSuites = List.of(CipherSuite.TLS_RSA_WITH_RC4_128_SHA);
-		try (MinimalTLSClient client = new MinimalTLSClient(LOCALHOST, port, DEBUG_SOCKET_TIMEOUT, clientKeyPair, cipherSuites)) {
+		try (MinimalTLSClient client =
+				new MinimalTLSClient(LOCALHOST, port, DEBUG_SOCKET_TIMEOUT, clientKeyPair, cipherSuites, SIGNATURE_ALGORITHMS)) {
 			serverFinished = client.performHandshake();
 		} finally {
 			server.close();
@@ -105,7 +114,8 @@ class TLSObjectLegacyCipherIT {
 		byte[] serverFinished =
 				ForkedHttpsServerRunner.on(LegacyHttpsServer.class, SSL_PROPERTIES_JSON_FILE, LOCALHOST, DEBUG_SOCKET_TIMEOUT, true, (host, port) -> {
 					List<CipherSuite> cipherSuites = List.of(CipherSuite.TLS_RSA_WITH_RC4_128_SHA);
-					try (MinimalTLSClient client = new MinimalTLSClient(host, port, DEBUG_SOCKET_TIMEOUT, CLIENT_KEY_PAIR, cipherSuites)) {
+					try (MinimalTLSClient client =
+							new MinimalTLSClient(host, port, DEBUG_SOCKET_TIMEOUT, CLIENT_KEY_PAIR, cipherSuites, SIGNATURE_ALGORITHMS)) {
 						return client.performHandshake();
 					}
 				});
@@ -127,7 +137,8 @@ class TLSObjectLegacyCipherIT {
 	void shouldPerformTLS12HandshakeWithUnsupportedCipherSuitesWithResetSSL(final CipherSuite cipherSuite) throws Exception {
 		byte[] serverFinished = null;
 		List<CipherSuite> cipherSuites = List.of(cipherSuite);
-		try (MinimalTLSClient client = new MinimalTLSClient(LOCALHOST, PORT, DEBUG_SOCKET_TIMEOUT, CLIENT_KEY_PAIR, cipherSuites)) {
+		try (MinimalTLSClient client =
+				new MinimalTLSClient(LOCALHOST, PORT, DEBUG_SOCKET_TIMEOUT, CLIENT_KEY_PAIR, cipherSuites, SIGNATURE_ALGORITHMS)) {
 			serverFinished = client.performHandshake();
 		}
 

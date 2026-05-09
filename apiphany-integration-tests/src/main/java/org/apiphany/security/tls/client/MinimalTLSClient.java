@@ -113,6 +113,7 @@ public class MinimalTLSClient implements AutoCloseable {
 	private InputStream in;
 
 	private final List<CipherSuite> cipherSuites;
+	private final List<SignatureAlgorithm> signatureAlgorithms;
 
 	private long clientSequenceNumber = 0;
 	private long serverSequenceNumber = 0;
@@ -126,7 +127,7 @@ public class MinimalTLSClient implements AutoCloseable {
 	private final List<Handshake> handshakeMessages = new ArrayList<>();
 
 	public MinimalTLSClient(final String host, final int port, final Duration socketTimeout, final KeyPair clientKeyPair,
-			final List<CipherSuite> cipherSuites) {
+			final List<CipherSuite> cipherSuites, final List<SignatureAlgorithm> signatureAlgorithms) {
 		this.sslProtocol = SSLProtocol.TLS_1_2;
 		this.host = host;
 		this.port = port;
@@ -138,10 +139,21 @@ public class MinimalTLSClient implements AutoCloseable {
 			}
 		}
 		this.cipherSuites = cipherSuites;
+		this.signatureAlgorithms = signatureAlgorithms;
+	}
+
+	public MinimalTLSClient(final String host, final int port, final Duration socketTimeout, final KeyPair clientKeyPair,
+			final List<CipherSuite> cipherSuites) {
+		this(host, port, socketTimeout, clientKeyPair, cipherSuites, SignatureAlgorithm.STRONG_ALGORITHMS);
 	}
 
 	public MinimalTLSClient(final String host, final int port, final KeyPair clientKeyPair, final List<CipherSuite> cipherSuites) {
-		this(host, port, DEFAULT_SOCKET_TIMEOUT, clientKeyPair, cipherSuites);
+		this(host, port, DEFAULT_SOCKET_TIMEOUT, clientKeyPair, cipherSuites, SignatureAlgorithm.STRONG_ALGORITHMS);
+	}
+
+	public MinimalTLSClient(final String host, final int port, final KeyPair clientKeyPair, final List<CipherSuite> cipherSuites,
+			final List<SignatureAlgorithm> signatureAlgorithms) {
+		this(host, port, DEFAULT_SOCKET_TIMEOUT, clientKeyPair, cipherSuites, signatureAlgorithms);
 	}
 
 	@Override
@@ -180,6 +192,9 @@ public class MinimalTLSClient implements AutoCloseable {
 		if (tlsRecord.getHeader().getType() == RecordContentType.ALERT) {
 			Alert alert = tlsRecord.getFragment(Alert.class);
 			LOGGER.error("Received alert: level={}, description={}", alert.getLevel(), alert.getDisplayDescription());
+			if (AlertLevel.FATAL == alert.getLevel()) {
+				throw new SSLException("Received fatal alert: " + alert.getDisplayDescription());
+			}
 		}
 		return tlsRecord;
 	}
@@ -188,7 +203,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		connect();
 
 		// 1. Send Client Hello (maybe make a builder)
-		ClientHello clientHello = new ClientHello(cipherSuites, List.of(host), SUPPORTED_NAMED_CURVES, SignatureAlgorithm.STRONG_ALGORITHMS);
+		ClientHello clientHello = new ClientHello(cipherSuites, List.of(host), SUPPORTED_NAMED_CURVES, signatureAlgorithms);
 		Record clientHelloRecord = new Record(SSLProtocol.TLS_1_0, clientHello);
 		sendRecord(clientHelloRecord);
 		accumulateHandshakes(clientHelloRecord.getFragments(Handshake.class));
