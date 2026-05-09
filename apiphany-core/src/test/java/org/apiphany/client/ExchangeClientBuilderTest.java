@@ -39,7 +39,7 @@ import org.morphix.reflection.Fields;
 class ExchangeClientBuilderTest {
 
 	private static final String BOOM_TEST_EXCEPTION = "BOOM! Simulated exception";
-	private static final List<String> EXCLUSIVE_FIELDS = List.of("exchangeClientClass", "exchangeClient", "exchangeClientResource");
+	private static final List<String> EXCLUSIVE_FIELDS = List.of("exchangeClientClass", "exchangeClientResource");
 	private static final String EXPECTED_EXCLUSIVE_FIELDS_EXCEPTION_MESSAGE =
 			Messages.message("One and only one of the following fields must be set: {}", EXCLUSIVE_FIELDS);
 
@@ -422,6 +422,48 @@ class ExchangeClientBuilderTest {
 			assertThat(multiArgClient.getProperties(), equalTo(clientProperties));
 			assertThat(multiArgClient.getArg1(), equalTo(TEST_INT_42));
 			assertThat(multiArgClient.getArg2(), equalTo(TEST_STRING));
+		}
+
+		@Test
+		@SuppressWarnings("resource")
+		void shouldConstructClientUsingClientClassWithMultipleArgumentConstructorWithClientPropertiesInAnyOrder() throws Exception {
+			Integer arg1 = TEST_INT_42;
+			String arg2 = TEST_STRING;
+			ClientProperties clientProperties = new ClientProperties();
+
+			ExchangeClientBuilder builder1 = ExchangeClientBuilder.create()
+					.client(MultipleArgumentConstructorExchangeClient.class)
+					.properties(clientProperties)
+					.arguments(arg1, arg2);
+
+			ExchangeClientBuilder builder2 = ExchangeClientBuilder.create()
+					.client(MultipleArgumentConstructorExchangeClient.class)
+					.arguments(arg1, arg2)
+					.properties(clientProperties);
+
+			ExchangeClient client1 = null;
+			try (ScopedResource<ExchangeClient> scopedClient = builder1.build()) {
+				client1 = scopedClient.unwrap();
+			}
+
+			ExchangeClient client2 = null;
+			try (ScopedResource<ExchangeClient> scopedClient = builder2.build()) {
+				client2 = scopedClient.unwrap();
+			}
+
+			assertThat(client1.getClass(), equalTo(MultipleArgumentConstructorExchangeClient.class));
+			MultipleArgumentConstructorExchangeClient multiArgClient1 = (MultipleArgumentConstructorExchangeClient) client1;
+
+			assertThat(multiArgClient1.getProperties(), equalTo(clientProperties));
+			assertThat(multiArgClient1.getArg1(), equalTo(TEST_INT_42));
+			assertThat(multiArgClient1.getArg2(), equalTo(TEST_STRING));
+
+			assertThat(client2.getClass(), equalTo(MultipleArgumentConstructorExchangeClient.class));
+			MultipleArgumentConstructorExchangeClient multiArgClient2 = (MultipleArgumentConstructorExchangeClient) client2;
+
+			assertThat(multiArgClient2.getProperties(), equalTo(clientProperties));
+			assertThat(multiArgClient2.getArg1(), equalTo(TEST_INT_42));
+			assertThat(multiArgClient2.getArg2(), equalTo(TEST_STRING));
 		}
 
 		@Test

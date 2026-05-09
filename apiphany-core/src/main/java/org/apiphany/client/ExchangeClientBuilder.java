@@ -54,11 +54,6 @@ public class ExchangeClientBuilder {
 	private Class<? extends ExchangeClient> exchangeClientClass;
 
 	/**
-	 * Exchange client for which the caller will manage the life cycle.
-	 */
-	private ExchangeClient exchangeClient;
-
-	/**
 	 * Exchange client with life cycle management information.
 	 */
 	private ScopedResource<ExchangeClient> exchangeClientResource;
@@ -151,9 +146,6 @@ public class ExchangeClientBuilder {
 			if (null != exchangeClientClass) {
 				return ScopedResource.managed(build(exchangeClientClass));
 			}
-			if (null != exchangeClient) {
-				return ScopedResource.unmanaged(exchangeClient);
-			}
 			return exchangeClientResource;
 		} catch (Exception e) {
 			buildErrorHandler.accept(e);
@@ -170,7 +162,6 @@ public class ExchangeClientBuilder {
 	public Map<String, Object> getExclusiveRequiredFields() {
 		Map<String, Object> fieldsMap = new LinkedHashMap<>();
 		fieldsMap.put("exchangeClientClass", exchangeClientClass);
-		fieldsMap.put("exchangeClient", exchangeClient);
 		fieldsMap.put("exchangeClientResource", exchangeClientResource);
 		return Collections.unmodifiableMap(fieldsMap);
 	}
@@ -308,9 +299,9 @@ public class ExchangeClientBuilder {
 	 * @param client client to set.
 	 * @return this
 	 */
+	@SuppressWarnings("resource")
 	public ExchangeClientBuilder client(final ExchangeClient client) {
-		this.exchangeClient = client;
-		return this;
+		return client(ScopedResource.unmanaged(client));
 	}
 
 	/**
