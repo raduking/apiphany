@@ -2,6 +2,7 @@ package org.apiphany.security.oauth2.client;
 
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.ExchangeClientBuilder;
+import org.morphix.lang.Nullables;
 import org.morphix.lang.resource.ScopedResource;
 
 /**
@@ -56,11 +57,10 @@ public class OAuth2HttpExchangeClientBuilder extends ExchangeClientBuilder {
 		ScopedResource<ExchangeClient> clientResource = super.build();
 		ScopedResource<ExchangeClient> tokenClientResource = clientResource;
 		if (null != tokenExchangeClientClass || null != tokenExchangeClient) {
-			tokenClientResource = ExchangeClientBuilder.create()
-					.client(tokenExchangeClientClass)
-					.client(tokenExchangeClient)
-					.properties(clientProperties)
-					.build();
+			ExchangeClientBuilder builder = ExchangeClientBuilder.create();
+			Nullables.<Class<? extends ExchangeClient>>whenNotNull(tokenExchangeClientClass, builder::client);
+			Nullables.<ExchangeClient>whenNotNull(tokenExchangeClient, builder::client);
+			tokenClientResource = builder.properties(clientProperties).build();
 		}
 		ExchangeClient exchangeClient = new OAuth2HttpExchangeClient(clientResource, tokenClientResource, registrationName);
 		return ScopedResource.managed(exchangeClient);
