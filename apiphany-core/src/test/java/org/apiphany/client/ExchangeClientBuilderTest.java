@@ -3,6 +3,7 @@ package org.apiphany.client;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
@@ -15,9 +16,9 @@ import org.apiphany.client.ExchangeClientBuilderTest.Builders.DecoratingExchange
 import org.apiphany.client.ExchangeClientBuilderTest.Builders.DelegateExchangeClientBuilder;
 import org.apiphany.client.ExchangeClientBuilderTest.Builders.InvalidDecoratingExchangeClientBuilder;
 import org.apiphany.client.ExchangeClientBuilderTest.Builders.ThrowingExchangeClientBuilder;
-import org.apiphany.client.ExchangeClientBuilderTest.Clients.ClientPropertiesExchangeClient;
 import org.apiphany.client.ExchangeClientBuilderTest.Clients.DummyDecoratingExchangeClient;
 import org.apiphany.client.ExchangeClientBuilderTest.Clients.DummyExchangeClient;
+import org.apiphany.client.ExchangeClientBuilderTest.Clients.DummyExchangeClientWithProperties;
 import org.apiphany.client.ExchangeClientBuilderTest.Clients.InvalidDecoratingExchangeClient;
 import org.apiphany.client.ExchangeClientBuilderTest.Clients.MultipleArgumentConstructorExchangeClient;
 import org.apiphany.client.ExchangeClientBuilderTest.Clients.NotClosingDecoratingExchangeClient;
@@ -39,7 +40,7 @@ import org.morphix.reflection.Fields;
 class ExchangeClientBuilderTest {
 
 	private static final String BOOM_TEST_EXCEPTION = "BOOM! Simulated exception";
-	private static final List<String> EXCLUSIVE_FIELDS = List.of("exchangeClientClass", "exchangeClientResource");
+	private static final List<String> EXCLUSIVE_FIELDS = List.of("delegate", "exchangeClientClass", "exchangeClientResource");
 	private static final String EXPECTED_EXCLUSIVE_FIELDS_EXCEPTION_MESSAGE =
 			Messages.message("One and only one of the following fields must be set: {}", EXCLUSIVE_FIELDS);
 
@@ -128,13 +129,13 @@ class ExchangeClientBuilderTest {
 			}
 		}
 
-		static class ClientPropertiesExchangeClient implements ExchangeClient {
+		static class DummyExchangeClientWithProperties implements ExchangeClient {
 
 			private final ClientProperties properties;
 
 			private boolean closed = false;
 
-			public ClientPropertiesExchangeClient(final ClientProperties properties) {
+			public DummyExchangeClientWithProperties(final ClientProperties properties) {
 				this.properties = properties;
 			}
 
@@ -152,7 +153,9 @@ class ExchangeClientBuilderTest {
 				return closed;
 			}
 
-			public ClientProperties getProperties() {
+			@Override
+			@SuppressWarnings("unchecked")
+			public ClientProperties getClientProperties() {
 				return properties;
 			}
 		}
@@ -384,7 +387,7 @@ class ExchangeClientBuilderTest {
 			ClientProperties clientProperties = new ClientProperties();
 
 			ExchangeClientBuilder builder = ExchangeClientBuilder.create()
-					.client(ClientPropertiesExchangeClient.class)
+					.client(DummyExchangeClientWithProperties.class)
 					.properties(clientProperties);
 
 			ExchangeClient client = null;
@@ -392,10 +395,10 @@ class ExchangeClientBuilderTest {
 				client = scopedClient.unwrap();
 			}
 
-			assertThat(client.getClass(), equalTo(ClientPropertiesExchangeClient.class));
-			ClientPropertiesExchangeClient singleArgClient = (ClientPropertiesExchangeClient) client;
+			assertThat(client.getClass(), equalTo(DummyExchangeClientWithProperties.class));
+			DummyExchangeClientWithProperties singleArgClient = (DummyExchangeClientWithProperties) client;
 
-			assertThat(singleArgClient.getProperties(), equalTo(clientProperties));
+			assertThat(singleArgClient.getClientProperties(), equalTo(clientProperties));
 			assertThat(singleArgClient.isClosed(), equalTo(true));
 		}
 
@@ -496,6 +499,27 @@ class ExchangeClientBuilderTest {
 			IllegalStateException exception = assertThrows(IllegalStateException.class, () -> builder.arguments(arg1, null));
 
 			assertThat(exception.getMessage(), equalTo("Client argument must not be null"));
+		}
+
+		@Test
+		void shouldThrowExceptionConstructClientUsingClientClassWithMultipleArgumentConstructorAndBuiltClient() {
+			Integer arg1 = TEST_INT_42;
+			String arg2 = TEST_STRING;
+			ClientProperties clientProperties = new ClientProperties();
+
+			Exception exception = null;
+			try (DummyExchangeClient dummyClient = new DummyExchangeClient()) {
+				ExchangeClientBuilder.create()
+						.client(dummyClient)
+						.arguments(arg1, arg2)
+						.properties(clientProperties);
+			} catch (Exception e) {
+				exception = e;
+			}
+
+			assertNotNull(exception);
+			assertThat(exception.getMessage(), equalTo(
+					"Client argument cannot be set in builder when client class is not set (client class is required to use client arguments)"));
 		}
 
 		@Test
@@ -702,6 +726,30 @@ class ExchangeClientBuilderTest {
 		}
 
 		@Test
+		@SuppressWarnings("resource")
+		void shouldCDecorateWithAnotherExchangeClientBuilderAndCopyPropertiesFromClient() throws Exception {
+			ClientProperties clientProperties = new ClientProperties();
+			DummyExchangeClientWithProperties dummyClient = new DummyExchangeClientWithProperties(clientProperties);
+
+			ExchangeClientBuilder builder = ExchangeClientBuilder.create()
+					.client(dummyClient)
+					.decoratedWithBuilder(DecoratingExchangeClientBuilder.class);
+
+			ExchangeClient client = null;
+			try (ScopedResource<ExchangeClient> scopedClient = builder.build()) {
+				client = scopedClient.unwrap();
+			}
+
+			try {
+				assertThat(client, sameInstance(dummyClient));
+				assertThat(dummyClient.isClosed(), equalTo(false));
+				assertThat(builder.clientProperties, equalTo(clientProperties));
+			} finally {
+				dummyClient.close();
+			}
+		}
+
+		@Test
 		void shouldThrowExceptionWhenDecoratingWithInvalidExchangeClientBuilder() {
 			ExchangeClientBuilder builder = ExchangeClientBuilder.create()
 					.client(DummyExchangeClient.class);
@@ -773,7 +821,6 @@ class ExchangeClientBuilderTest {
 		void shouldIgnoreCurrentBuildWhenDelegateIsSet() throws Exception {
 			DummyExchangeClient dummyClient = new DummyExchangeClient();
 			ExchangeClientBuilder builder = ExchangeClientBuilder.create()
-					.client(DummyExchangeClient.class)
 					.delegate(new DelegateExchangeClientBuilder(dummyClient));
 
 			ExchangeClient client = null;

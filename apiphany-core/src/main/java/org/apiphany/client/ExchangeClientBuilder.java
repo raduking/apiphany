@@ -108,9 +108,6 @@ public class ExchangeClientBuilder {
 	 */
 	@SuppressWarnings("resource")
 	protected ScopedResource<ExchangeClient> build(final Consumer<Exception> buildErrorHandler) {
-		if (null != delegate) {
-			return delegateBuild(buildErrorHandler);
-		}
 		ScopedResource<ExchangeClient> scopedResource = buildMainClient(buildErrorHandler);
 		if (null == scopedResource) {
 			return null;
@@ -139,14 +136,18 @@ public class ExchangeClientBuilder {
 	 */
 	@SuppressWarnings("resource")
 	protected ScopedResource<ExchangeClient> buildMainClient(final Consumer<Exception> buildErrorHandler) {
+		Map<String, Object> fieldsMap = getExclusiveRequiredFields();
+		long nonNullFields = fieldsMap.values().stream().filter(Objects::nonNull).count();
 		try {
-			Map<String, Object> fieldsMap = getExclusiveRequiredFields();
-			long nonNullFields = fieldsMap.values().stream().filter(Objects::nonNull).count();
 			requireThat(1 == nonNullFields, "One and only one of the following fields must be set: {}", fieldsMap.keySet());
-			if (null != exchangeClientClass) {
-				return ScopedResource.managed(build(exchangeClientClass));
+			if (null != delegate) {
+				return delegate.build();
 			}
-			return exchangeClientResource;
+			if (null != exchangeClientResource) {
+				return exchangeClientResource;
+			}
+			ExchangeClient exchangeClient = build(exchangeClientClass);
+			return ScopedResource.managed(exchangeClient);
 		} catch (Exception e) {
 			buildErrorHandler.accept(e);
 			return null;
@@ -161,24 +162,10 @@ public class ExchangeClientBuilder {
 	 */
 	public Map<String, Object> getExclusiveRequiredFields() {
 		Map<String, Object> fieldsMap = new LinkedHashMap<>();
+		fieldsMap.put("delegate", delegate);
 		fieldsMap.put("exchangeClientClass", exchangeClientClass);
 		fieldsMap.put("exchangeClientResource", exchangeClientResource);
 		return Collections.unmodifiableMap(fieldsMap);
-	}
-
-	/**
-	 * Builds the exchange client based on the delegate builder.
-	 *
-	 * @param buildErrorHandler error handler to be called if an exception occurs during the build process
-	 * @return a new exchange client resource with life cycle management information
-	 */
-	protected ScopedResource<ExchangeClient> delegateBuild(final Consumer<Exception> buildErrorHandler) {
-		try {
-			return delegate.build();
-		} catch (Exception e) {
-			buildErrorHandler.accept(e);
-			return null;
-		}
 	}
 
 	/**
@@ -301,7 +288,8 @@ public class ExchangeClientBuilder {
 	 */
 	@SuppressWarnings("resource")
 	public ExchangeClientBuilder client(final ExchangeClient client) {
-		return client(ScopedResource.unmanaged(client));
+		return client(ScopedResource.unmanaged(client))
+				.properties(client.getClientProperties());
 	}
 
 	/**
@@ -340,12 +328,19 @@ public class ExchangeClientBuilder {
 	 * different than {@link ClientProperties}. The client arguments must be in the same order as the constructor parameters
 	 * and the exchange client class must have only one constructor with the same number of parameters as the client
 	 * arguments.
+	 * <p>
+	 * Client arguments cannot be set if the exchange client class is not set because the client arguments are used to find
+	 * the constructor of the exchange client class and if the exchange client class is not set the client arguments cannot
+	 * be used.
 	 *
 	 * @param argument client argument to add
 	 * @return this
+	 * @throws IllegalStateException if the exchange client class is not set
 	 */
 	public ExchangeClientBuilder argument(final Object argument) {
 		requireThat(null != argument, "Client argument must not be null");
+		requireThat(null != exchangeClientClass,
+				"Client argument cannot be set in builder when client class is not set (client class is required to use client arguments)");
 		this.clientArguments.add(argument);
 		return this;
 	}
@@ -355,9 +350,14 @@ public class ExchangeClientBuilder {
 	 * different than {@link ClientProperties}. The client arguments must be in the same order as the constructor parameters
 	 * and the exchange client class must have only one constructor with the same number of parameters as the client
 	 * arguments.
+	 * <p>
+	 * Client arguments cannot be set if the exchange client class is not set because the client arguments are used to find
+	 * the constructor of the exchange client class and if the exchange client class is not set the client arguments cannot
+	 * be used.
 	 *
 	 * @param arguments client arguments to add
 	 * @return this
+	 * @throws IllegalStateException if the exchange client class is not set
 	 */
 	public ExchangeClientBuilder arguments(final List<Object> arguments) {
 		for (Object clientArgument : arguments) {
@@ -371,9 +371,14 @@ public class ExchangeClientBuilder {
 	 * different than {@link ClientProperties}. The client arguments must be in the same order as the constructor parameters
 	 * and the exchange client class must have only one constructor with the same number of parameters as the client
 	 * arguments.
+	 * <p>
+	 * Client arguments cannot be set if the exchange client class is not set because the client arguments are used to find
+	 * the constructor of the exchange client class and if the exchange client class is not set the client arguments cannot
+	 * be used.
 	 *
 	 * @param clientArguments client arguments to add
 	 * @return this
+	 * @throws IllegalStateException if the exchange client class is not set
 	 */
 	public ExchangeClientBuilder arguments(final Object... clientArguments) {
 		return arguments(Arrays.asList(clientArguments));
