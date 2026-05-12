@@ -8,6 +8,7 @@
 - Added `ExchangeClientBuilder.arguments` for supporting exchange clients with multiple argument constructors.
 - Added `ExchangeClientBuilder.argument` for supporting exchange clients with multiple argument constructors.
 - Added `ContentEncoding.isSupportedBodyType` static method to check if a body type is supported to decode.
+- Added `apiphany-spring` module.
 
 ---
 
