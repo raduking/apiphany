@@ -458,6 +458,7 @@ public class ClientProperties {
 	 * @param <T> the type of the custom properties
 	 *
 	 * @param properties the object containing the custom properties
+	 * @param onError the consumer to handle any exceptions that occur during mapping
 	 */
 	public <T> void setCustomProperties(final T properties, final Consumer<Exception> onError) {
 		String prefix = getCustomPropertiesPrefix(properties.getClass(), onError);

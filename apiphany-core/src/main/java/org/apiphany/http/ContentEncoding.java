@@ -372,6 +372,8 @@ public enum ContentEncoding {
 	 * types are supported for decoding since the decoding logic is implemented for these two types. If the body is of any
 	 * other type, it is considered unsupported for decoding and will be returned as is without any decoding.
 	 *
+	 * @param <T> body type
+	 *
 	 * @param body the body to check
 	 * @return true if the body is of a supported type for decoding, false otherwise
 	 */

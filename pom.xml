@@ -44,6 +44,7 @@
 		<!-- Main modules -->
 		<module>apiphany-core</module>
 		<module>apiphany-httpclient5</module>
+		<module>apiphany-spring</module>
 		<module>apiphany-test</module>
 		<module>apiphany-integration-tests</module>
 
