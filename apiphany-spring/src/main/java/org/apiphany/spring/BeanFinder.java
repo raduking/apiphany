@@ -4,7 +4,8 @@ import java.util.function.Consumer;
 
 /**
  * Interface with default getBean methods which is useful when in a class hierarchy beans need to be retrieved from the
- * application context.
+ * application context. This interface provides composition over inheritance, as it can be implemented by any class,
+ * without the need to extend a specific base class.
  *
  * @author Radu Sebastian LAZIN
  */
