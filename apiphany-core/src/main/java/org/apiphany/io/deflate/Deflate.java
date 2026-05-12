@@ -57,6 +57,7 @@ public class Deflate {
 	 * De-compress a DEFLATE input (byte[] or InputStream) to the same output type.
 	 *
 	 * @param <T> input type
+	 *
 	 * @param input input to decompress
 	 * @return decompressed result
 	 * @throws IOException on error

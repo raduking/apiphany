@@ -3,8 +3,11 @@
 `1.2.6`
 
 - Upgraded `morphix-all` to `1.0.35`.
-- Added `ExchangeClientBuilder.client(ScopedResource)` to add support for instance resource management for exchange clients.
 - Added `ApiClient.with(ScopedResource)` to add support for instance resource management for exchange clients.
+- Added `ExchangeClientBuilder.client(ScopedResource)` to add support for instance resource management for exchange clients.
+- Added `ExchangeClientBuilder.arguments` for supporting exchange clients with multiple argument constructors.
+- Added `ExchangeClientBuilder.argument` for supporting exchange clients with multiple argument constructors.
+- Added `ContentEncoding.isSupportedBodyType` static method to check if a body type is supported to decode.
 
 ---
 
