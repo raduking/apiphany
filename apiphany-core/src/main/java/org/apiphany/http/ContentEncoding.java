@@ -364,12 +364,23 @@ public enum ContentEncoding {
 		if (null == body || Lists.isEmpty(encodings)) {
 			return body;
 		}
-		boolean supported = switch (body) {
+		return isSupportedBodyType(body) ? decodeSupportedBody(body, encodings) : body;
+	}
+
+	/**
+	 * Checks if the given body is of a supported type for decoding. Currently, only {@link InputStream} and {@code byte[]}
+	 * types are supported for decoding since the decoding logic is implemented for these two types. If the body is of any
+	 * other type, it is considered unsupported for decoding and will be returned as is without any decoding.
+	 *
+	 * @param body the body to check
+	 * @return true if the body is of a supported type for decoding, false otherwise
+	 */
+	public static <T> boolean isSupportedBodyType(final T body) {
+		return switch (body) {
 			case InputStream is -> true;
 			case byte[] bytes -> true;
 			default -> false;
 		};
-		return supported ? decodeSupported(body, encodings) : body;
 	}
 
 	/**
@@ -383,7 +394,7 @@ public enum ContentEncoding {
 	 * @param encodings content encoding list in the order they were applied to the body
 	 * @return decoded body
 	 */
-	private static <T> T decodeSupported(final T body, final List<ContentEncoding> encodings) {
+	private static <T> T decodeSupportedBody(final T body, final List<ContentEncoding> encodings) {
 		T result = body;
 		for (ContentEncoding encoding : encodings.reversed()) {
 			result = encoding.decode(result);
