@@ -73,4 +73,24 @@ public interface Status {
 				? String.join(" ", message(status), message)
 				: message(status);
 	}
+
+	/**
+	 * An interface for objects that are aware of their status. Implementing classes can provide a status that describes
+	 * their current state or outcome of operations.
+	 * <p>
+	 * Implementations of this interface can be used in various contexts where it's important to check the status of an
+	 * object, such as API responses, operation results, or any other scenario where status information is relevant to the
+	 * consumer of the object.
+	 *
+	 * @author Radu Sebastian LAZIN
+	 */
+	interface Aware {
+
+		/**
+		 * Gets the status associated with this object.
+		 *
+		 * @return the status, or {@code null} if no status is available
+		 */
+		Status getStatus();
+	}
 }

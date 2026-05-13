@@ -262,4 +262,48 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 				.body(body)
 				.build();
 	}
+
+	/**
+	 * Customizes the given {@link HttpException.Builder} based on the provided throwable. This method extracts the HTTP
+	 * status and response body from the throwable and sets them in the builder. Subclasses can override this method to
+	 * provide additional customization logic if needed.
+	 *
+	 * @param throwable the throwable to extract information from
+	 * @param builder the HttpException.Builder to customize
+	 */
+	protected void customizeHttpException(final Throwable throwable, final HttpException.Builder builder) {
+		builder
+				.status(extractHttpStatus(throwable))
+				.responseBody(extractResponseBody(throwable));
+	}
+
+	/**
+	 * Extracts the HTTP status from the given throwable. If the throwable is an instance of {@link HttpException}, it
+	 * returns the status from the exception, otherwise, it returns {@link HttpStatus#INTERNAL_SERVER_ERROR}. Subclasses can
+	 * override this method to provide custom logic for extracting the HTTP status from different types of exceptions.
+	 *
+	 * @param throwable the throwable to extract the status from
+	 * @return the extracted HTTP status
+	 */
+	protected HttpStatus extractHttpStatus(final Throwable throwable) {
+		return switch (throwable) {
+			case HttpException httpException -> httpException.getStatus();
+			default -> HttpStatus.INTERNAL_SERVER_ERROR;
+		};
+	}
+
+	/**
+	 * Extracts the response body from the given throwable. If the throwable is an instance of {@link HttpException}, it
+	 * returns the response body from the exception, otherwise, it returns {@code null}. Subclasses can override this method
+	 * to provide custom logic for extracting the response body from different types of exceptions.
+	 *
+	 * @param throwable the throwable to extract the response body from
+	 * @return the extracted response body, or {@code null} if not applicable
+	 */
+	protected String extractResponseBody(final Throwable throwable) {
+		return switch (throwable) {
+			case HttpException httpException -> httpException.getResponseBody();
+			default -> null;
+		};
+	}
 }

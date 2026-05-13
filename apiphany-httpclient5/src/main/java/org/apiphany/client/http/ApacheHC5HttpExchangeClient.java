@@ -105,12 +105,15 @@ public class ApacheHC5HttpExchangeClient extends AbstractHttpExchangeClient {
 	 * @param httpClientBuilder the HTTP client builder
 	 */
 	private void customize(final HttpClientBuilder httpClientBuilder) {
-		if (!ApacheHC5Properties.Connection.DEFAULT_FOLLOW_REDIRECTS) {
-			httpClientBuilder.disableRedirectHandling();
-		}
 		ApacheHC5Properties properties = getCustomProperties(ApacheHC5Properties.class);
 		if (null == properties) {
+			if (!ApacheHC5Properties.Connection.DEFAULT_FOLLOW_REDIRECTS) {
+				httpClientBuilder.disableRedirectHandling();
+			}
 			return;
+		}
+		if (!properties.getConnection().isFollowRedirects()) {
+			httpClientBuilder.disableRedirectHandling();
 		}
 		this.httpVersion = properties.getRequest().getHttpProtocolVersion();
 	}

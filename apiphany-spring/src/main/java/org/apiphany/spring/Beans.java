@@ -140,9 +140,10 @@ public class Beans {
 	 *
 	 * @param beanSupplier a supplier that provides the logic to retrieve the bean
 	 * @param beanId an identifier for the bean, used for logging purposes in case of an error
-	 * @param onError a consumer that handles any exceptions that occur during the bean
+	 * @param onError a consumer that handles any exceptions that occur during the bean retrieval process
+	 * @return the retrieved bean, or {@code null} if an error occurs
 	 */
-	public static <T> T getBean(Supplier<Object> beanSupplier, Object beanId, Consumer<Exception> onError) {
+	public static <T> T getBean(final Supplier<Object> beanSupplier, final Object beanId, final Consumer<Exception> onError) {
 		try {
 			return JavaObjects.cast(beanSupplier.get());
 		} catch (Exception e) {
