@@ -1,7 +1,9 @@
 package org.apiphany.http;
 
 import java.io.Serial;
+import java.util.function.BiConsumer;
 
+import org.apiphany.BodyAware;
 import org.apiphany.Status;
 import org.morphix.lang.function.ThrowingSupplier;
 
@@ -17,7 +19,7 @@ import org.morphix.lang.function.ThrowingSupplier;
  *
  * @author Radu Sebastian LAZIN
  */
-public class HttpException extends RuntimeException {
+public class HttpException extends RuntimeException implements Status.Aware, BodyAware<String> {
 
 	/**
 	 * Serial version UID.
@@ -116,6 +118,7 @@ public class HttpException extends RuntimeException {
 	 *
 	 * @return the HTTP status.
 	 */
+	@Override
 	public HttpStatus getStatus() {
 		return status;
 	}
@@ -127,6 +130,16 @@ public class HttpException extends RuntimeException {
 	 */
 	public int getStatusCode() {
 		return getStatus().value();
+	}
+
+	/**
+	 * Returns the response body associated with this exception, if available.
+	 *
+	 * @return the response body, or null if not available.
+	 */
+	@Override
+	public String getBody() {
+		return getResponseBody();
 	}
 
 	/**
@@ -150,12 +163,32 @@ public class HttpException extends RuntimeException {
 	 * @return the value supplied
 	 */
 	public static <T> T ifThrows(final ThrowingSupplier<T> throwingSupplier, final HttpStatus httpStatus) {
+		return ifThrows(throwingSupplier, (throwable, builder) -> builder.status(httpStatus));
+	}
+
+	/**
+	 * Returns the value supplied by the supplier if no exception is thrown, otherwise it wraps the throwable thrown by the
+	 * supplier into a {@link HttpException}. If the exception is already an instance of {@link HttpException}, it is
+	 * re-thrown without wrapping. The exception will have the status set to the value returned by the provided
+	 * {@code httpStatusFunction} based on the throwable.
+	 *
+	 * @param <T> return type
+	 *
+	 * @param throwingSupplier supplier
+	 * @param httpExceptionCustomizer a BiConsumer that accepts the thrown throwable and an HttpException.Builder, allowing
+	 *     customization of the HttpException based on the throwable
+	 * @return the value supplied
+	 */
+	public static <T> T ifThrows(final ThrowingSupplier<T> throwingSupplier,
+			final BiConsumer<Throwable, HttpException.Builder> httpExceptionCustomizer) {
 		try {
 			return throwingSupplier.get();
 		} catch (HttpException e) {
 			throw e;
-		} catch (Throwable e) {
-			throw HttpException.builder().status(httpStatus).cause(e).build();
+		} catch (Throwable t) {
+			HttpException.Builder builder = HttpException.builder().cause(t);
+			httpExceptionCustomizer.accept(t, builder);
+			throw builder.build();
 		}
 	}
 

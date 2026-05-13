@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 
@@ -12,11 +12,11 @@
 		<relativePath>../../pom.xml</relativePath>
 	</parent>
 
-	<artifactId>apiphany-httpclient5-tests</artifactId>
+	<artifactId>apiphany-spring-tests</artifactId>
 	<packaging>jar</packaging>
 
 	<name>${project.groupId}:${project.artifactId}</name>
-	<description>Apiphany Apache HTTP Client 5 integration tests</description>
+	<description>Apiphany tests</description>
 	<url>https://github.com/raduking/apiphany</url>
 
 	<licenses>
@@ -45,18 +45,11 @@
 	</properties>
 
 	<dependencies>
-
-		<!-- Apache HTTP Client 5 -->
-		<dependency>
-			<groupId>org.apache.httpcomponents.client5</groupId>
-			<artifactId>httpclient5</artifactId>
-			<version>${httpclient5.version}</version>
-		</dependency>
-
-		<!-- Apiphany with Apache HTTP Client 5 support -->
+	
+		<!-- Apiphany -->
 		<dependency>
 			<groupId>io.github.raduking</groupId>
-			<artifactId>apiphany-httpclient5</artifactId>
+			<artifactId>apiphany-spring</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
@@ -197,15 +190,7 @@
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-failsafe-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>integration-test</goal>
-							<goal>verify</goal>
-						</goals>
-					</execution>
-				</executions>
+				<artifactId>maven-surefire-plugin</artifactId>
 			</plugin>
 
 			<!-- Code formatting -->

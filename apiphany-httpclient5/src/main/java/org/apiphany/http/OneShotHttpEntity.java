@@ -67,8 +67,7 @@ public final class OneShotHttpEntity extends AbstractHttpEntity {
 	@Override
 	public InputStream getContent() {
 		if (consumed.getAndSet(true)) {
-			throw new IllegalStateException(
-					"Stream is not repeatable and has already been consumed.");
+			throw new IllegalStateException("Stream is not repeatable and has already been consumed.");
 		}
 		return original.unwrap();
 	}

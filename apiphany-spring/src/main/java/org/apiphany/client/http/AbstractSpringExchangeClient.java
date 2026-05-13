@@ -3,6 +3,7 @@ package org.apiphany.client.http;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
@@ -10,14 +11,19 @@ import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.http.ContentEncoding;
 import org.apiphany.http.HttpContentType;
+import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpStatus;
+import org.apiphany.io.InputStreamSupplier;
+import org.apiphany.lang.Strings;
+import org.apiphany.spring.http.SpringHttpRequests;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.collections.Maps;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpStatusCodeException;
 
 /**
  * Abstract exchange client implemented with Spring.
@@ -55,9 +61,11 @@ public abstract class AbstractSpringExchangeClient extends AbstractHttpExchangeC
 		apiRequest.addHeaders(getTracingHeaders());
 		apiRequest.addHeaders(getCommonHeaders());
 
-		HttpEntity<T> httpEntity = buildRequest(apiRequest);
-		ResponseEntity<U> responseEntity = sendRequest(apiRequest, httpEntity);
-		return buildResponse(apiRequest, responseEntity);
+		return HttpException.ifThrows(() -> {
+			HttpEntity<T> httpEntity = buildRequest(apiRequest);
+			ResponseEntity<U> responseEntity = sendRequest(apiRequest, httpEntity);
+			return buildResponse(apiRequest, responseEntity);
+		}, this::customizeHttpException);
 	}
 
 	/**
@@ -76,7 +84,35 @@ public abstract class AbstractSpringExchangeClient extends AbstractHttpExchangeC
 		if (Maps.isNotEmpty(existingHeaders)) {
 			existingHeaders.forEach(headers::addAll);
 		}
-		return new HttpEntity<>(apiRequest.getBody(), headers);
+		T body = apiRequest.getBody();
+		if (null == body) {
+			return new HttpEntity<>(headers);
+		}
+		return createHttpEntity(headers, body);
+	}
+
+	/**
+	 * Creates an HTTP entity from the given headers and body. This method handles different types of request bodies, such
+	 * as strings, byte arrays, input streams, and suppliers of input streams. If the body is a supplier, it will be
+	 * evaluated to get the actual body value. For other types of bodies, it will be converted to a string using
+	 * {@link Strings#safeToString}.
+	 *
+	 * @param <T> request entity type
+	 *
+	 * @param headers the HTTP headers to include in the entity
+	 * @param body the body of the request
+	 * @return the created HTTP entity
+	 */
+	public <T> HttpEntity<T> createHttpEntity(final HttpHeaders headers, final T body) {
+		HttpEntity<?> httpEntity = switch (body) {
+			case String str -> new HttpEntity<>(str, headers);
+			case byte[] bytes -> new HttpEntity<>(bytes, headers);
+			case InputStream inputStream -> SpringHttpRequests.createHttpEntity(inputStream, headers);
+			case InputStreamSupplier inputStreamSupplier -> SpringHttpRequests.createHttpEntity(inputStreamSupplier.get(), headers);
+			case Supplier<?> supplier -> createHttpEntity(headers, supplier.get());
+			default -> new HttpEntity<>(Strings.safeToString(body), headers);
+		};
+		return JavaObjects.cast(httpEntity);
 	}
 
 	/**
@@ -122,5 +158,37 @@ public abstract class AbstractSpringExchangeClient extends AbstractHttpExchangeC
 			responseType = byte[].class;
 		}
 		return JavaObjects.cast(responseType);
+	}
+
+	/**
+	 * Extracts the HTTP status from the given throwable. If the throwable is an instance of {@link HttpException}, it
+	 * returns the status from the exception. If the throwable is an instance of {@link HttpStatusCodeException}, it returns
+	 * the status code from the exception. Otherwise, it returns {@link HttpStatus#INTERNAL_SERVER_ERROR}.
+	 *
+	 * @param throwable the throwable to extract the status from
+	 * @return the extracted HTTP status
+	 */
+	@Override
+	protected HttpStatus extractHttpStatus(final Throwable throwable) {
+		return switch (throwable) {
+			case HttpStatusCodeException httpStatusCodeException -> HttpStatus.fromCode(httpStatusCodeException.getStatusCode().value());
+			default -> super.extractHttpStatus(throwable);
+		};
+	}
+
+	/**
+	 * Extracts the response body from the given throwable. If the throwable is an instance of {@link HttpException}, it
+	 * returns the response body from the exception. If the throwable is an instance of {@link HttpStatusCodeException}, it
+	 * returns the response body as a string from the exception. Otherwise, it returns {@code null}.
+	 *
+	 * @param throwable the throwable to extract the response body from
+	 * @return the extracted response body, or {@code null} if not applicable
+	 */
+	@Override
+	protected String extractResponseBody(final Throwable throwable) {
+		return switch (throwable) {
+			case HttpStatusCodeException httpStatusCodeException -> httpStatusCodeException.getResponseBodyAsString();
+			default -> super.extractResponseBody(throwable);
+		};
 	}
 }

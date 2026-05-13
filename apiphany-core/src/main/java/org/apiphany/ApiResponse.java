@@ -497,6 +497,20 @@ public class ApiResponse<T> extends ApiMessage<T> {
 		}
 
 		/**
+		 * Sets the response body based on an exception if it implements {@link BodyAware}.
+		 *
+		 * @param exception the exception to extract body from
+		 * @return this builder instance
+		 */
+		@SuppressWarnings("unchecked")
+		public Builder<T> body(final Exception exception) {
+			if (exception instanceof BodyAware<?> bodyAwareException) {
+				return body((T) bodyAwareException.getBody());
+			}
+			return this;
+		}
+
+		/**
 		 * Sets the response headers.
 		 *
 		 * @param headers the response headers (cannot be null)
@@ -532,6 +546,19 @@ public class ApiResponse<T> extends ApiMessage<T> {
 		}
 
 		/**
+		 * Sets the response status based on an exception if it implements {@link Status.Aware}.
+		 *
+		 * @param exception the exception to extract status from
+		 * @return this builder instance
+		 */
+		public Builder<T> status(final Exception exception) {
+			if (exception instanceof Status.Aware statusAwareException) {
+				return status(statusAwareException.getStatus());
+			}
+			return this;
+		}
+
+		/**
 		 * Sets the request associated with this response.
 		 *
 		 * @param request the request
@@ -554,6 +581,16 @@ public class ApiResponse<T> extends ApiMessage<T> {
 		}
 
 		/**
+		 * Sets the error message based on an exception's message.
+		 *
+		 * @param exception the exception to extract the error message from
+		 * @return this builder instance
+		 */
+		public Builder<T> errorMessage(final Exception exception) {
+			return errorMessage(exception.getMessage());
+		}
+
+		/**
 		 * Sets the error message prefix.
 		 *
 		 * @param errorMessagePrefix the error message prefix
@@ -572,7 +609,9 @@ public class ApiResponse<T> extends ApiMessage<T> {
 		 */
 		public Builder<T> exception(final Exception exception) {
 			this.exception = exception;
-			return errorMessage(exception.getMessage());
+			return status(exception)
+					.body(exception)
+					.errorMessage(exception);
 		}
 
 		/**

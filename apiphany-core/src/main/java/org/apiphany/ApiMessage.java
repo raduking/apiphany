@@ -19,7 +19,7 @@ import org.morphix.lang.collections.Maps;
  *
  * @author Radu Sebastian LAZIN
  */
-public class ApiMessage<T> {
+public class ApiMessage<T> implements BodyAware<T> {
 
 	/**
 	 * The body of the message, which can be any object.
@@ -64,6 +64,7 @@ public class ApiMessage<T> {
 	 *
 	 * @return the body of the message.
 	 */
+	@Override
 	public T getBody() {
 		return body;
 	}

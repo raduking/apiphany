@@ -8,7 +8,18 @@
 - Added `ExchangeClientBuilder.arguments` for supporting exchange clients with multiple argument constructors.
 - Added `ExchangeClientBuilder.argument` for supporting exchange clients with multiple argument constructors.
 - Added `ContentEncoding.isSupportedBodyType` static method to check if a body type is supported to decode.
-- Added `apiphany-spring` module.
+- Added `Status.Aware` interface to implement when an object has a status.
+- Added `BodyAware` interface to implement when an object has a body.
+- Updated `HttpException` to implement `Status.Aware` and `BodyAware`.
+- Added `HttpException.getBody` that delegates to `HttpException.getResponseBody`.
+- Added `HttpException.ifThrows(ThrowingSupplier, BiConsumer)` to be able to customize the building of the `HttpException`.
+- Updated `ApiMessage` to implement `BodyAware`.
+- Added `ApiResponse.Builder.status(Exception)` which sets the status if the given `Exception` is also `Status.Aware`.
+- Added `ApiResponse.Builder.body(Exception)` which sets the body if the given `Exception` is also `Status.Aware`.
+- Added `ApiResponse.Builder.errorMessage(Exception)` which sets the error message to be the exceptions error message.
+- Changed `apiphany-httpclient5` to be provided by the dependency user, not bundled in the library.
+- Added `apiphany-spring` module with full `RestTemplate` support currently defaulting to use Apache HTTP Client 5.
+- Added `apiphany-spring-tests` integration tests module for `apiphany-spring`.
 
 ---
 
