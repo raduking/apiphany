@@ -78,6 +78,15 @@ public class ApacheHC5Properties {
 	}
 
 	/**
+	 * Returns a new instance of {@link ApacheHC5Properties} with default values.
+	 *
+	 * @return a new instance of ApacheHC5Properties with default values
+	 */
+	public static ApacheHC5Properties withDefaults() {
+		return new ApacheHC5Properties();
+	}
+
+	/**
 	 * @see #toString()
 	 */
 	@Override
@@ -209,44 +218,59 @@ public class ApacheHC5Properties {
 	public static class Connection {
 
 		/**
-		 * Default time to live: 30 seconds.
+		 * Constants for default connection property values.
+		 *
+		 * @author Radu Sebastian LAZIN
 		 */
-		public static final Timeout DEFAULT_TIME_TO_LIVE = Timeout.ofSeconds(30);
+		public static class Default {
 
-		/**
-		 * Default maximum total connections per pool: 100.
-		 */
-		public static final int DEFAULT_MAX_TOTAL = 100;
+			/**
+			 * Default time to live: 30 seconds.
+			 */
+			public static final Timeout TIME_TO_LIVE = Timeout.ofSeconds(30);
 
-		/**
-		 * Default maximum per route connections: 100.
-		 */
-		public static final int DEFAULT_MAX_PER_ROUTE = 100;
+			/**
+			 * Default maximum total connections per pool: 100.
+			 */
+			public static final int MAX_TOTAL = 100;
 
-		/**
-		 * Default flag indicating whether redirects should be followed: false.
-		 */
-		public static final boolean DEFAULT_FOLLOW_REDIRECTS = false;
+			/**
+			 * Default maximum per route connections: 100.
+			 */
+			public static final int MAX_PER_ROUTE = 100;
+
+			/**
+			 * Default flag indicating whether redirects should be followed: false.
+			 */
+			public static final boolean FOLLOW_REDIRECTS = false;
+
+			/**
+			 * Hide constructor.
+			 */
+			private Default() {
+				// empty
+			}
+		}
 
 		/**
 		 * Time to live.
 		 */
-		private Timeout timeToLive = DEFAULT_TIME_TO_LIVE;
+		private Timeout timeToLive = Default.TIME_TO_LIVE;
 
 		/**
 		 * Maximum total connections.
 		 */
-		private int maxTotal = DEFAULT_MAX_TOTAL;
+		private int maxTotal = Default.MAX_TOTAL;
 
 		/**
 		 * Maximum per route connections.
 		 */
-		private int maxPerRoute = DEFAULT_MAX_PER_ROUTE;
+		private int maxPerRoute = Default.MAX_PER_ROUTE;
 
 		/**
 		 * Flag indicating whether redirects should be followed.
 		 */
-		private boolean followRedirects = DEFAULT_FOLLOW_REDIRECTS;
+		private boolean followRedirects = Default.FOLLOW_REDIRECTS;
 
 		/**
 		 * Default constructor.

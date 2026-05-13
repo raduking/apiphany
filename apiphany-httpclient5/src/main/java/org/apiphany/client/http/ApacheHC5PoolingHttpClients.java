@@ -12,6 +12,7 @@ import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuil
 import org.apache.hc.core5.http.io.SocketConfig;
 import org.apache.hc.core5.util.Timeout;
 import org.apiphany.client.ClientProperties;
+import org.morphix.lang.Nullables;
 import org.morphix.lang.function.Consumers;
 
 /**
@@ -76,13 +77,35 @@ public interface ApacheHC5PoolingHttpClients {
 				? createRequestConfig(clientProperties)
 				: createRequestConfig(apacheHC5Properties);
 
+		return createHttpClientBuilder(apacheHC5Properties, connectionManager, requestConfig, httpClientBuilderCustomizer)
+				.build();
+	}
+
+	/**
+	 * Returns a configured HTTP client builder based on the given Apache HTTP Client 5 properties, connection manager and
+	 * request configuration.
+	 *
+	 * @param apacheHC5Properties Apache HTTP Client 5 properties
+	 * @param connectionManager HTTP client connection manager
+	 * @param requestConfig HTTP client request configuration
+	 * @param httpClientBuilderCustomizer HTTP client builder customizer
+	 * @return HTTP client builder
+	 */
+	static HttpClientBuilder createHttpClientBuilder(
+			final ApacheHC5Properties apacheHC5Properties,
+			final PoolingHttpClientConnectionManager connectionManager,
+			final RequestConfig requestConfig,
+			final Consumer<HttpClientBuilder> httpClientBuilderCustomizer) {
 		HttpClientBuilder httpClientBuilder = HttpClients.custom()
 				.setConnectionManager(connectionManager)
 				.setDefaultRequestConfig(requestConfig)
 				.disableContentCompression();
+		ApacheHC5Properties properties = Nullables.nonNullOrDefault(apacheHC5Properties, ApacheHC5Properties::withDefaults);
+		if (!properties.getConnection().isFollowRedirects()) {
+			httpClientBuilder = httpClientBuilder.disableRedirectHandling();
+		}
 		httpClientBuilderCustomizer.accept(httpClientBuilder);
-
-		return httpClientBuilder.build();
+		return httpClientBuilder;
 	}
 
 	/**
@@ -135,8 +158,9 @@ public interface ApacheHC5PoolingHttpClients {
 		ClientProperties.Timeout timeout = clientProperties.getTimeout();
 		return RequestConfig.custom()
 				.setConnectionRequestTimeout(Timeout.of(timeout.getConnectionRequest()))
-				.setProtocolUpgradeEnabled(false)
+				.setProtocolUpgradeEnabled(RequestConfig.DEFAULT.isProtocolUpgradeEnabled())
 				.setResponseTimeout(Timeout.of(timeout.getRequest()))
+				.setRedirectsEnabled(ApacheHC5Properties.Connection.Default.FOLLOW_REDIRECTS)
 				.build();
 	}
 
@@ -151,6 +175,7 @@ public interface ApacheHC5PoolingHttpClients {
 				.setConnectionRequestTimeout(apacheHC5Properties.getConnectionRequest().getTimeout())
 				.setProtocolUpgradeEnabled(apacheHC5Properties.getRequest().isProtocolUpgradeEnabled())
 				.setResponseTimeout(apacheHC5Properties.getRequest().getRequestTimeout())
+				.setRedirectsEnabled(apacheHC5Properties.getConnection().isFollowRedirects())
 				.build();
 	}
 
