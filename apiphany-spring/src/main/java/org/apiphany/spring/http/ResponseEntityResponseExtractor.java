@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
+import org.morphix.lang.JavaObjects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -18,7 +19,9 @@ import org.springframework.web.client.UnknownContentTypeException;
 
 /**
  * Response extractor implementation that reads the response body and headers to a {@link ResponseEntity} of a given
- * type.
+ * type. This is a simplified version of Spring's {@link org.springframework.web.client.HttpMessageConverterExtractor}
+ * that returns a {@link ResponseEntity} instead of just the body, and throws an {@link UnknownContentTypeException} if
+ * no suitable message converter is found for the response content type.
  *
  * @param <T> the type of the response body
  *
@@ -58,7 +61,9 @@ public class ResponseEntityResponseExtractor<T> implements ResponseExtractor<Res
 	@Override
 	public ResponseEntity<T> extractData(final ClientHttpResponse response) throws IOException {
 		T body = extractRawData(response);
-		return ResponseEntity.status(response.getStatusCode()).headers(response.getHeaders()).body(body);
+		return ResponseEntity.status(response.getStatusCode())
+				.headers(response.getHeaders())
+				.body(body);
 	}
 
 	/**
@@ -73,22 +78,20 @@ public class ResponseEntityResponseExtractor<T> implements ResponseExtractor<Res
 		MediaType contentType = getContentType(response);
 		try {
 			for (HttpMessageConverter<?> messageConverter : messageConverters) {
-				if (this.responseClass != null && messageConverter.canRead(responseClass, contentType)) {
+				if (null != responseClass && messageConverter.canRead(responseClass, contentType)) {
 					if (LOGGER.isDebugEnabled()) {
 						LOGGER.debug("Reading to [{}] as \"{}\"", responseClass.getName(), contentType);
 					}
-					@SuppressWarnings("unchecked")
-					HttpMessageConverter<T> converter = (HttpMessageConverter<T>) messageConverter;
-					return converter.read(this.responseClass, response);
+					HttpMessageConverter<T> converter = JavaObjects.cast(messageConverter);
+					return converter.read(responseClass, response);
 				}
 			}
 		} catch (IOException | HttpMessageNotReadableException ex) {
 			throw new RestClientException("Error while extracting response for type [" +
 					responseClass + "] and content type [" + contentType + "]", ex);
 		}
-		throw new UnknownContentTypeException(responseClass, contentType,
-				response.getStatusCode(), response.getStatusText(),
-				response.getHeaders(), getResponseBody(response));
+		throw new UnknownContentTypeException(responseClass, contentType, response.getStatusCode(), // NOSONAR
+				response.getStatusText(), response.getHeaders(), getResponseBody(response));
 	}
 
 	/**
@@ -102,7 +105,7 @@ public class ResponseEntityResponseExtractor<T> implements ResponseExtractor<Res
 		MediaType contentType = response.getHeaders().getContentType();
 		if (contentType == null) {
 			if (LOGGER.isTraceEnabled()) {
-				LOGGER.trace("No content-type, using 'application/octet-stream'");
+				LOGGER.trace("No content-type, using '{}'", MediaType.APPLICATION_OCTET_STREAM_VALUE);
 			}
 			contentType = MediaType.APPLICATION_OCTET_STREAM;
 		}
@@ -119,8 +122,10 @@ public class ResponseEntityResponseExtractor<T> implements ResponseExtractor<Res
 		try {
 			return FileCopyUtils.copyToByteArray(response.getBody());
 		} catch (IOException ex) {
-			// ignore
+			if (LOGGER.isTraceEnabled()) {
+				LOGGER.trace("Error while reading response body for error handling", ex);
+			}
+			return new byte[0];
 		}
-		return new byte[0];
 	}
 }
