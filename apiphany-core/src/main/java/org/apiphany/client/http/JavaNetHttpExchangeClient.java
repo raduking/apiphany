@@ -249,7 +249,8 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 		Map<String, List<String>> headers = Nullables.apply(httpResponse.headers(), HttpHeaders::map);
 
 		List<String> encodings = getHeaderValues(HttpHeader.CONTENT_ENCODING, headers);
-		R responseBody = ContentEncoding.decodeBody(httpResponse.body(), ContentEncoding.parseAll(encodings));
+		List<ContentEncoding> contentEncodings = ContentEncoding.parseAll(encodings);
+		R responseBody = ContentEncoding.decodeBody(httpResponse.body(), contentEncodings);
 
 		List<String> contentTypes = getHeaderValues(HttpHeader.CONTENT_TYPE, headers);
 		HttpContentType contentType = HttpContentType.parse(contentTypes);

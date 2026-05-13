@@ -230,7 +230,8 @@ public class ApacheHC5HttpExchangeClient extends AbstractHttpExchangeClient {
 		Map<String, List<String>> headers = Nullables.whenNotNull(response.getHeaders(), ApacheHC5HttpExchangeClient::toHttpHeadersMap);
 
 		List<String> encodings = getHeaderValues(HttpHeader.CONTENT_ENCODING, headers);
-		U responseBody = ContentEncoding.decodeBody(getResponseBody(apiRequest, httpEntity), ContentEncoding.parseAll(encodings));
+		List<ContentEncoding> contentEncodings = ContentEncoding.parseAll(encodings);
+		U responseBody = ContentEncoding.decodeBody(getResponseBody(apiRequest, httpEntity), contentEncodings);
 
 		List<String> contentTypes = getHeaderValues(HttpHeader.CONTENT_TYPE, headers);
 		HttpContentType contentType = HttpContentType.parse(contentTypes);

@@ -1,6 +1,7 @@
 package org.apiphany.spring;
 
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.function.Consumers;
@@ -63,13 +64,7 @@ public class Beans {
 	 * @return a bean
 	 */
 	public static <T> T getBean(final String beanName, final ApplicationContext ctx, final Consumer<Exception> onError) {
-		try {
-			return JavaObjects.cast(ctx.getBean(beanName));
-		} catch (Exception e) {
-			LOGGER.trace(Message.BEAN_NOT_FOUND, beanName);
-			onError.accept(e);
-			return null;
-		}
+		return getBean(() -> ctx.getBean(beanName), beanName, onError);
 	}
 
 	/**
@@ -107,13 +102,7 @@ public class Beans {
 	 * @return a bean
 	 */
 	public static <T> T getBean(final Class<?> beanClass, final ApplicationContext ctx, final Consumer<Exception> onError) {
-		try {
-			return JavaObjects.cast(ctx.getBean(beanClass));
-		} catch (Exception e) {
-			LOGGER.trace(Message.BEAN_NOT_FOUND, beanClass);
-			onError.accept(e);
-			return null;
-		}
+		return getBean(() -> ctx.getBean(beanClass), beanClass, onError);
 	}
 
 	/**
@@ -125,7 +114,7 @@ public class Beans {
 	 * @return a bean
 	 */
 	public static <T> T getBean(final Class<?> beanClass, final ApplicationContext ctx) {
-		return getBean(beanClass, ctx, e -> LOGGER.error(Message.BEAN_NOT_FOUND, beanClass));
+		return getBean(beanClass, ctx, e -> LOGGER.error(Message.BEAN_NOT_FOUND, beanClass, e));
 	}
 
 	/**
@@ -138,7 +127,31 @@ public class Beans {
 	 * @return a bean
 	 */
 	public static <T> T getBean(final Class<?> beanClass, final Class<?> neededInClass, final ApplicationContext ctx) {
-		return getBean(beanClass, ctx, e -> LOGGER.error(Message.BEAN_NOT_FOUND_NEEDED_IN, beanClass, neededInClass));
+		return getBean(beanClass, ctx, e -> LOGGER.error(Message.BEAN_NOT_FOUND_NEEDED_IN, beanClass, neededInClass, e));
+	}
+
+	/**
+	 * Returns a bean using the given supplier, which can be used to retrieve the bean from any source, such as an
+	 * application context or a custom bean registry. The method handles any exceptions that may occur during the retrieval
+	 * process and allows the caller to specify a custom error handling strategy through the {@code onError} consumer. If an
+	 * exception occurs, the method logs the error and returns {@code null}.
+	 *
+	 * @param <T> the type of the bean to be retrieved
+	 *
+	 * @param beanSupplier a supplier that provides the logic to retrieve the bean
+	 * @param beanId an identifier for the bean, used for logging purposes in case of an error
+	 * @param onError a consumer that handles any exceptions that occur during the bean
+	 */
+	public static <T> T getBean(Supplier<Object> beanSupplier, Object beanId, Consumer<Exception> onError) {
+		try {
+			return JavaObjects.cast(beanSupplier.get());
+		} catch (Exception e) {
+			if (LOGGER.isTraceEnabled()) {
+				LOGGER.trace(Message.BEAN_NOT_FOUND, beanId, e);
+			}
+			onError.accept(e);
+			return null;
+		}
 	}
 
 	/**
