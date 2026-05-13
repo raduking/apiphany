@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.List;
 
 import org.apache.hc.client5.http.classic.HttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apiphany.ApiRequest;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.http.HttpMethod;
@@ -75,8 +76,7 @@ public class RestTemplateExchangeClient extends AbstractSpringExchangeClient {
 		RestTemplateBuilder customizedBuilder = restTemplateBuilder;
 
 		HttpClient httpClient = ApacheHC5PoolingHttpClients.createClient(getClientProperties(),
-				ApacheHC5PoolingHttpClients.noCustomizer(), Consumers.noConsumer(), httpClientBuilder -> httpClientBuilder
-						.disableRedirectHandling());
+				ApacheHC5PoolingHttpClients.noCustomizer(), Consumers.noConsumer(), HttpClientBuilder::disableRedirectHandling);
 		HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
 
 		customizedBuilder = customizedBuilder.requestFactory(() -> requestFactory);
@@ -87,6 +87,7 @@ public class RestTemplateExchangeClient extends AbstractSpringExchangeClient {
 				new ResourceHttpMessageConverter());
 
 		customizedBuilder = customizedBuilder.messageConverters(messageConverters);
+		// TODO: externalize client request factory for multi-client support
 		return customizedBuilder;
 	}
 

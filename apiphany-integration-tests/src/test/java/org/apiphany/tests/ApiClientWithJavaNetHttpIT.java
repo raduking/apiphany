@@ -46,9 +46,11 @@ import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.http.ContentEncoding;
 import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
+import org.apiphany.io.ContentType;
 import org.apiphany.io.InputStreamSupplier;
 import org.apiphany.io.deflate.Deflate;
 import org.apiphany.io.gzip.GZip;
+import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.security.AuthenticationType;
 import org.apiphany.test.io.OneShotInputStream;
@@ -67,6 +69,9 @@ import com.jayway.jsonpath.JsonPath;
 
 /**
  * Test class for {@link ApiClient} using {@link JavaNetHttpExchangeClient}.
+ * <p>
+ * TODO: group tests into nested classes based on functionality (e.g. redirects, gzip handling, error handling, etc.) to
+ * improve readability.
  *
  * @author Radu Sebastian LAZIN
  */
@@ -269,6 +274,56 @@ class ApiClientWithJavaNetHttpIT {
 		}
 
 		wiremock.verify(getRequestedFor(urlEqualTo("/json")));
+	}
+
+	record MyDtoWithToString(String name) {
+		@Override
+		public String toString() {
+			return "My name is " + name;
+		}
+	}
+
+	@Test
+	void shouldNotSerializeJsonWhenHeaderIsNotSet() throws Exception {
+		wiremock.stubFor(post("/json")
+				.willReturn(aResponse()
+						.withStatus(200)));
+
+		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		try (api) {
+			api.client()
+					.http()
+					.post()
+					.path("json")
+					.body(new MyDtoWithToString("john"))
+					.retrieve();
+		}
+
+		wiremock.verify(postRequestedFor(urlEqualTo("/json"))
+				.withRequestBody(equalTo("My name is john")));
+	}
+
+	@Test
+	void shouldSerializeJsonWithJsonBuilderWhenContentTypeIsSet() throws Exception {
+		wiremock.stubFor(post("/json")
+				.willReturn(aResponse()
+						.withStatus(200)));
+
+		MyDtoWithToString dto = new MyDtoWithToString("john");
+		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		try (api) {
+			api.client()
+					.http()
+					.post()
+					.path("json")
+					.header(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_JSON)
+					.body(dto)
+					.retrieve();
+		}
+
+		wiremock.verify(postRequestedFor(urlEqualTo("/json"))
+				.withHeader("Content-Type", equalTo("application/json"))
+				.withRequestBody(equalTo(JsonBuilder.toJson(dto))));
 	}
 
 	@Test
@@ -795,7 +850,8 @@ class ApiClientWithJavaNetHttpIT {
 
 	@Test
 	void shouldHandleEmptyBody200() throws Exception {
-		// some clients behave differently for Content-Length: 0 vs no body.
+		// some clients behave differently for Content-Length: 0 vs no body. We want to ensure that the ApiClient handles both
+		// cases correctly.
 		wiremock.stubFor(get("/empty")
 				.willReturn(aResponse()
 						.withStatus(200)

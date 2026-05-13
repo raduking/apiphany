@@ -59,22 +59,19 @@ public class HttpEntityRequestCallback<T, U> implements RequestCallback {
 	@Override
 	public void doWithRequest(final ClientHttpRequest request) throws IOException {
 		HttpHeaders requestHeaders = request.getHeaders();
-		MediaType requestContentType = requestHeaders.getContentType();
-		HttpHeaders httpHeaders = requestEntity.getHeaders();
+
+		HttpHeaders requestEntityHeaders = requestEntity.getHeaders();
+		MediaType requestContentType = requestEntityHeaders.getContentType();
 		Object requestBody = requestEntity.getBody();
 		Class<T> requestBodyClass = requestBody != null ? (Class<T>) requestBody.getClass() : null;
 
 		if (null == requestBody) {
-			if (!httpHeaders.isEmpty()) {
-				httpHeaders.forEach((key, values) -> requestHeaders.put(key, new ArrayList<>(values)));
-			}
+			addHeaders(requestHeaders, requestEntityHeaders);
 			return;
 		}
 		for (HttpMessageConverter<?> messageConverter : messageConverters) {
 			if (messageConverter.canWrite(requestBodyClass, requestContentType)) {
-				if (!requestHeaders.isEmpty()) {
-					requestHeaders.forEach((key, values) -> httpHeaders.put(key, new ArrayList<>(values)));
-				}
+				addHeaders(requestHeaders, requestEntityHeaders);
 				logBody(requestBody, requestContentType, messageConverter);
 				HttpMessageConverter<Object> converter = (HttpMessageConverter<Object>) messageConverter;
 				converter.write(requestBody, requestContentType, request);
@@ -86,6 +83,18 @@ public class HttpEntityRequestCallback<T, U> implements RequestCallback {
 			message += " and content type \"" + requestContentType + "\"";
 		}
 		throw new RestClientException(message);
+	}
+
+	/**
+	 * Adds the headers from the request entity to the request headers.
+	 *
+	 * @param requestHeaders the request headers to add to
+	 * @param requestEntityHeaders the request entity headers to add
+	 */
+	private static void addHeaders(final HttpHeaders requestHeaders, final HttpHeaders requestEntityHeaders) {
+		if (!requestHeaders.isEmpty()) {
+			requestHeaders.forEach((key, values) -> requestEntityHeaders.put(key, new ArrayList<>(values)));
+		}
 	}
 
 	/**
