@@ -59,7 +59,7 @@ public class ResponseEntityResponseExtractor<T> implements ResponseExtractor<Res
 	 * @see ResponseExtractor#extractData(ClientHttpResponse)
 	 */
 	@Override
-	public ResponseEntity<T> extractData(final ClientHttpResponse response) throws IOException {
+	public ResponseEntity<T> extractData(final ClientHttpResponse response) throws IOException { // NOSONAR
 		T body = extractRawData(response);
 		return ResponseEntity.status(response.getStatusCode())
 				.headers(response.getHeaders())

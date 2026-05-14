@@ -85,11 +85,11 @@
 		<testcontainers.version>2.0.5</testcontainers.version>
 		<testcontainers.keycloak.version>4.2.1</testcontainers.keycloak.version>
 		<nimbus.jose.jwt.version>10.9</nimbus.jose.jwt.version>
-		<oauth2.oidc.sdk.version>11.37</oauth2.oidc.sdk.version>
+		<oauth2.oidc.sdk.version>11.37.1</oauth2.oidc.sdk.version>
 		<wiremock.version>3.13.2</wiremock.version>
 
 		<!-- Dependencies used by plugins versions -->
-		<org.eclipse.jdt.core.version>3.44.0</org.eclipse.jdt.core.version>
+		<org.eclipse.jdt.core.version>3.45.0</org.eclipse.jdt.core.version>
 		<eclipse.formatter.version>4.38</eclipse.formatter.version>
 		<code.format.version>1.0.0</code.format.version>
 
