@@ -1,7 +1,6 @@
 package org.apiphany.http;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.morphix.lang.collections.Lists;
@@ -12,7 +11,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.lang.Nullable;
 import org.springframework.web.client.RequestCallback;
 import org.springframework.web.client.RestClientException;
 
@@ -24,7 +22,7 @@ import org.springframework.web.client.RestClientException;
  *
  * @author Radu Sebastian LAZIN
  */
-public class HttpEntityRequestCallback<T, U> implements RequestCallback {
+public class HttpEntityRequestCallback<T> implements RequestCallback {
 
 	/**
 	 * Logger for this class.
@@ -64,14 +62,14 @@ public class HttpEntityRequestCallback<T, U> implements RequestCallback {
 		MediaType requestContentType = requestEntityHeaders.getContentType();
 		Object requestBody = requestEntity.getBody();
 		if (null == requestBody) {
-			copyHeaders(requestEntityHeaders, requestHeaders);
+			SpringHttpRequests.copyHeaders(requestEntityHeaders, requestHeaders);
 			return;
 		}
 
 		Class<T> requestBodyClass = (Class<T>) requestBody.getClass();
 		for (HttpMessageConverter<?> messageConverter : messageConverters) {
 			if (messageConverter.canWrite(requestBodyClass, requestContentType)) {
-				copyHeaders(requestEntityHeaders, requestHeaders);
+				SpringHttpRequests.copyHeaders(requestEntityHeaders, requestHeaders);
 				logBody(requestBody, requestContentType, messageConverter);
 				HttpMessageConverter<Object> converter = (HttpMessageConverter<Object>) messageConverter;
 				converter.write(requestBody, requestContentType, request);
@@ -86,25 +84,13 @@ public class HttpEntityRequestCallback<T, U> implements RequestCallback {
 	}
 
 	/**
-	 * Copies/adds the headers from the request entity to the request headers.
-	 *
-	 * @param source the request entity headers to add
-	 * @param target the request headers to add to
-	 */
-	private static void copyHeaders(final HttpHeaders source, final HttpHeaders target) {
-		if (!source.isEmpty()) {
-			source.forEach((key, values) -> target.put(key, new ArrayList<>(values)));
-		}
-	}
-
-	/**
 	 * Logs the request body and content type if debug logging is enabled.
 	 *
 	 * @param body the request body to log
 	 * @param mediaType the content type of the request, may be null
 	 * @param converter the HttpMessageConverter used to write the request body
 	 */
-	private static void logBody(final Object body, @Nullable final MediaType mediaType, final HttpMessageConverter<?> converter) {
+	private static void logBody(final Object body, final MediaType mediaType, final HttpMessageConverter<?> converter) {
 		if (LOGGER.isDebugEnabled()) {
 			if (null != mediaType) {
 				LOGGER.debug("Writing [{}] as \"{}\"", body, mediaType);
