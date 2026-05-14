@@ -2,6 +2,10 @@
 
 `1.2.7`
 
+- Upgraded `oauth2-oidc-sdk` to `11.37.1`.
+- Upgraded `org.eclipse.jdt.core` to `3.45.0`.
+- Upgraded `spotless-maven-plugin` to `3.4.0`.
+
 ---
 
 `1.2.6`
