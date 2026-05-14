@@ -2,6 +2,7 @@ package org.apiphany.http;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.http.HttpClient;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -9,14 +10,20 @@ import java.util.Objects;
 
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apiphany.client.ClientProperties;
+import org.apiphany.client.ClientProperties.Timeout;
 import org.apiphany.client.http.ApacheHC5PoolingHttpClients;
+import org.apiphany.client.http.JavaNetHttpExchangeClient;
+import org.apiphany.client.http.JavaNetHttpProperties;
+import org.apiphany.client.http.RestTemplateProperties;
+import org.apiphany.lang.Strings;
 import org.morphix.lang.collections.Lists;
 import org.morphix.lang.resource.ScopedResource;
-import org.morphix.reflection.Reflection;
+import org.springframework.boot.http.client.JdkHttpClientBuilder;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 
 /**
@@ -99,12 +106,42 @@ public class CloseableHttpRequestFactory implements ClientHttpRequestFactory, Au
 	 *
 	 * @param clientProperties client properties
 	 * @return a {@link CloseableHttpRequestFactory} that delegates to an appropriate implementation
+	 * @throws IllegalArgumentException if the client library specified in the client properties is not blank but does not
+	 *     match any known libraries
 	 */
 	public static CloseableHttpRequestFactory detect(final ClientProperties clientProperties) {
-		if (Reflection.isClassPresent("org.apache.hc.client5.http.impl.classic.CloseableHttpClient")) {
+		RestTemplateProperties restTemplateProperties = clientProperties.getCustomProperties(RestTemplateProperties.class);
+		if (null != restTemplateProperties) {
+			CloseableHttpRequestFactory factory = detect(clientProperties, restTemplateProperties.getClientLibrary());
+			if (null != factory) {
+				return factory;
+			}
+		}
+		if (ApacheHC5Library.isPresent()) {
 			return HttpComponents.create(clientProperties);
 		}
-		return Simple.create(clientProperties);
+		return JavaNet.create(clientProperties);
+	}
+
+	/**
+	 * Detects the usable {@link CloseableHttpRequestFactory} implementation based on the given client library name and
+	 * client properties.
+	 *
+	 * @param clientProperties client properties
+	 * @param clientLibrary the client library name to use for detection (e.g., "http-client5" or "simple")
+	 * @return a {@link CloseableHttpRequestFactory} that delegates to an appropriate implementation based on the given
+	 * client library name, or {@code null} if the client library name is blank or does not match any known libraries
+	 * @throws IllegalArgumentException if the client library name is not blank but does not match any known libraries
+	 */
+	public static CloseableHttpRequestFactory detect(final ClientProperties clientProperties, final String clientLibrary) {
+		if (Strings.isBlank(clientLibrary)) {
+			return null;
+		}
+		return switch (clientLibrary.toLowerCase()) {
+			case ApacheHC5Library.CLIENT_NAME -> HttpComponents.create(clientProperties);
+			case JavaNetHttpProperties.ROOT -> JavaNet.create(clientProperties);
+			default -> throw new IllegalArgumentException("Unsupported client library: " + clientLibrary);
+		};
 	}
 
 	/**
@@ -145,7 +182,7 @@ public class CloseableHttpRequestFactory implements ClientHttpRequestFactory, Au
 	 *
 	 * @author Radu Sebastian LAZIN
 	 */
-	public static class Simple {
+	public static class JavaNet {
 
 		/**
 		 * Creates a new {@link CloseableHttpRequestFactory} that delegates to a {@link SimpleClientHttpRequestFactory} based on
@@ -155,14 +192,20 @@ public class CloseableHttpRequestFactory implements ClientHttpRequestFactory, Au
 		 * @return a new {@link CloseableHttpRequestFactory} that delegates to a {@link SimpleClientHttpRequestFactory} based on
 		 * the given client properties
 		 */
+		@SuppressWarnings("resource")
 		public static CloseableHttpRequestFactory create(final ClientProperties clientProperties) { // NOSONAR
-			return CloseableHttpRequestFactory.of(new SimpleClientHttpRequestFactory());
+			HttpClient httpClient = new JdkHttpClientBuilder()
+					.withCustomizer(httpClientBuilder -> JavaNetHttpExchangeClient.customize(httpClientBuilder, clientProperties, null))
+					.build(null);
+			JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory(httpClient);
+			requestFactory.setReadTimeout(JavaNetHttpExchangeClient.getUsableTimeout(clientProperties.getTimeout(), Timeout::getRequest));
+			return CloseableHttpRequestFactory.of(requestFactory, httpClient);
 		}
 
 		/**
 		 * Private constructor.
 		 */
-		private Simple() {
+		private JavaNet() {
 			// empty
 		}
 	}

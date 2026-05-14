@@ -55,7 +55,9 @@ public class HttpEntityRequestCallback<T> implements RequestCallback {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void doWithRequest(final ClientHttpRequest request) throws IOException {
+		// we will overwrite the request headers with the headers from the request entity -> no hidden headers
 		HttpHeaders requestHeaders = request.getHeaders();
+		requestHeaders.clear();
 
 		HttpHeaders requestEntityHeaders = requestEntity.getHeaders();
 		MediaType requestContentType = requestEntityHeaders.getContentType();

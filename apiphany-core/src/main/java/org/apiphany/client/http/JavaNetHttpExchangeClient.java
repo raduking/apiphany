@@ -19,6 +19,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import javax.net.ssl.SSLContext;
+
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientCustomization;
@@ -141,8 +143,20 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	 * @return the customized HTTP client builder
 	 */
 	private HttpClient.Builder customize(final HttpClient.Builder httpClientBuilder) {
-		ClientProperties properties = getClientProperties();
-		JavaNetHttpProperties httpProperties = getCustomProperties(JavaNetHttpProperties.class);
+		return customize(httpClientBuilder, getClientProperties(), getSslContext());
+	}
+
+	/**
+	 * Customizes the HTTP client builder based on the given client properties and SSL context.
+	 *
+	 * @param httpClientBuilder HTTP client builder
+	 * @param clientProperties client properties
+	 * @param sslContext SSL context to set in the HTTP client builder
+	 * @return the customized HTTP client builder
+	 */
+	public static HttpClient.Builder customize(final HttpClient.Builder httpClientBuilder, final ClientProperties clientProperties,
+			final SSLContext sslContext) {
+		JavaNetHttpProperties httpProperties = clientProperties.getCustomProperties(JavaNetHttpProperties.class);
 
 		// HTTP version
 		HttpClient.Version version = Nullables.notNull(httpProperties)
@@ -152,11 +166,15 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 		httpClientBuilder.version(version);
 
 		// SSL context
-		Nullables.notNull(getSslContext()).then(httpClientBuilder::sslContext);
+		Nullables.notNull(sslContext).then(httpClientBuilder::sslContext);
 
 		// Timeouts
-		Nullables.notNull(getUsableTimeout(properties.getTimeout(), Timeout::getConnect))
+		Nullables.notNull(getUsableTimeout(clientProperties.getTimeout(), Timeout::getConnect))
 				.then(httpClientBuilder::connectTimeout);
+
+		// Follow redirects
+		boolean followRedirects = clientProperties.getConnection().isFollowRedirects();
+		httpClientBuilder.followRedirects(followRedirects ? HttpClient.Redirect.NORMAL : HttpClient.Redirect.NEVER);
 		return httpClientBuilder;
 	}
 
@@ -342,7 +360,7 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	 * @param timeoutExtractor function to extract the timeout value from the timeout object
 	 * @return the usable timeout value or null if no timeout should be applied
 	 */
-	protected static Duration getUsableTimeout(final Timeout timeout, final Function<Timeout, Duration> timeoutExtractor) {
+	public static Duration getUsableTimeout(final Timeout timeout, final Function<Timeout, Duration> timeoutExtractor) {
 		Duration timeoutValue = timeoutExtractor.apply(timeout);
 		if (null == timeoutValue) {
 			return null;
