@@ -64,14 +64,14 @@ public class HttpEntityRequestCallback<T, U> implements RequestCallback {
 		MediaType requestContentType = requestEntityHeaders.getContentType();
 		Object requestBody = requestEntity.getBody();
 		if (null == requestBody) {
-			addHeaders(requestHeaders, requestEntityHeaders);
+			copyHeaders(requestEntityHeaders, requestHeaders);
 			return;
 		}
 
 		Class<T> requestBodyClass = (Class<T>) requestBody.getClass();
 		for (HttpMessageConverter<?> messageConverter : messageConverters) {
 			if (messageConverter.canWrite(requestBodyClass, requestContentType)) {
-				addHeaders(requestHeaders, requestEntityHeaders);
+				copyHeaders(requestEntityHeaders, requestHeaders);
 				logBody(requestBody, requestContentType, messageConverter);
 				HttpMessageConverter<Object> converter = (HttpMessageConverter<Object>) messageConverter;
 				converter.write(requestBody, requestContentType, request);
@@ -86,14 +86,14 @@ public class HttpEntityRequestCallback<T, U> implements RequestCallback {
 	}
 
 	/**
-	 * Adds the headers from the request entity to the request headers.
+	 * Copies/adds the headers from the request entity to the request headers.
 	 *
-	 * @param requestHeaders the request headers to add to
-	 * @param requestEntityHeaders the request entity headers to add
+	 * @param source the request entity headers to add
+	 * @param target the request headers to add to
 	 */
-	private static void addHeaders(final HttpHeaders requestHeaders, final HttpHeaders requestEntityHeaders) {
-		if (!requestHeaders.isEmpty()) {
-			requestHeaders.forEach((key, values) -> requestEntityHeaders.put(key, new ArrayList<>(values)));
+	private static void copyHeaders(final HttpHeaders source, final HttpHeaders target) {
+		if (!source.isEmpty()) {
+			source.forEach((key, values) -> target.put(key, new ArrayList<>(values)));
 		}
 	}
 

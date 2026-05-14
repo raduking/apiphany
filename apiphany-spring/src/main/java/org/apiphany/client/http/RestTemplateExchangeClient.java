@@ -3,19 +3,16 @@ package org.apiphany.client.http;
 import java.net.URI;
 import java.util.List;
 
-import org.apache.hc.client5.http.classic.HttpClient;
-import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apiphany.ApiRequest;
 import org.apiphany.client.ClientProperties;
+import org.apiphany.http.CloseableHttpRequestFactory;
 import org.apiphany.http.HttpEntityRequestCallback;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.ResponseEntityResponseExtractor;
 import org.apiphany.http.SpringHttpRequests;
-import org.morphix.lang.function.Consumers;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.ResourceHttpMessageConverter;
@@ -35,7 +32,13 @@ public class RestTemplateExchangeClient extends AbstractSpringExchangeClient {
 	/**
 	 * The underlying REST template.
 	 */
-	private RestTemplate restTemplate;
+	private final RestTemplate restTemplate;
+
+	/**
+	 * The HTTP request factory used by the underlying REST template. This field is kept as a reference to ensure that any
+	 * resources associated with the request factory can be properly closed when the client is closed.
+	 */
+	private final CloseableHttpRequestFactory requestFactory;
 
 	/**
 	 * Constructor with client properties and REST template builder used to build the underlying {@link RestTemplate}.
@@ -45,6 +48,7 @@ public class RestTemplateExchangeClient extends AbstractSpringExchangeClient {
 	 */
 	public RestTemplateExchangeClient(final ClientProperties clientProperties, final RestTemplateBuilder restTemplateBuilder) {
 		super(clientProperties);
+		this.requestFactory = CloseableHttpRequestFactory.detect(getClientProperties());
 		this.restTemplate = customize(restTemplateBuilder).build();
 	}
 
@@ -75,10 +79,6 @@ public class RestTemplateExchangeClient extends AbstractSpringExchangeClient {
 	private RestTemplateBuilder customize(final RestTemplateBuilder restTemplateBuilder) {
 		RestTemplateBuilder customizedBuilder = restTemplateBuilder;
 
-		HttpClient httpClient = ApacheHC5PoolingHttpClients.createClient(getClientProperties(),
-				ApacheHC5PoolingHttpClients.noCustomizer(), Consumers.noConsumer(), HttpClientBuilder::disableRedirectHandling);
-		HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
-
 		customizedBuilder = customizedBuilder.requestFactory(() -> requestFactory);
 
 		List<HttpMessageConverter<?>> messageConverters = List.of(
@@ -87,7 +87,6 @@ public class RestTemplateExchangeClient extends AbstractSpringExchangeClient {
 				new ResourceHttpMessageConverter());
 
 		customizedBuilder = customizedBuilder.messageConverters(messageConverters);
-		// TODO: externalize client request factory for multi-client support
 		return customizedBuilder;
 	}
 
@@ -96,7 +95,7 @@ public class RestTemplateExchangeClient extends AbstractSpringExchangeClient {
 	 */
 	@Override
 	public void close() throws Exception {
-		// empty
+		requestFactory.close();
 	}
 
 	/**
