@@ -63,12 +63,12 @@ public class HttpEntityRequestCallback<T, U> implements RequestCallback {
 		HttpHeaders requestEntityHeaders = requestEntity.getHeaders();
 		MediaType requestContentType = requestEntityHeaders.getContentType();
 		Object requestBody = requestEntity.getBody();
-		Class<T> requestBodyClass = requestBody != null ? (Class<T>) requestBody.getClass() : null;
-
 		if (null == requestBody) {
 			addHeaders(requestHeaders, requestEntityHeaders);
 			return;
 		}
+
+		Class<T> requestBodyClass = (Class<T>) requestBody.getClass();
 		for (HttpMessageConverter<?> messageConverter : messageConverters) {
 			if (messageConverter.canWrite(requestBodyClass, requestContentType)) {
 				addHeaders(requestHeaders, requestEntityHeaders);
@@ -104,7 +104,7 @@ public class HttpEntityRequestCallback<T, U> implements RequestCallback {
 	 * @param mediaType the content type of the request, may be null
 	 * @param converter the HttpMessageConverter used to write the request body
 	 */
-	private void logBody(final Object body, @Nullable final MediaType mediaType, final HttpMessageConverter<?> converter) {
+	private static void logBody(final Object body, @Nullable final MediaType mediaType, final HttpMessageConverter<?> converter) {
 		if (LOGGER.isDebugEnabled()) {
 			if (null != mediaType) {
 				LOGGER.debug("Writing [{}] as \"{}\"", body, mediaType);
