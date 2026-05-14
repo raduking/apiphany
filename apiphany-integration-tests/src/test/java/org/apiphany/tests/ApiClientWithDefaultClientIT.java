@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -51,7 +52,6 @@ import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.security.AuthenticationType;
 import org.apiphany.test.io.OneShotInputStream;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.morphix.lang.retry.Retry;
@@ -82,7 +82,7 @@ import com.jayway.jsonpath.JsonPath;
  *
  * @author Radu Sebastian LAZIN
  */
-class ApiClientWithJavaNetHttpIT {
+class ApiClientWithDefaultClientIT {
 
 	@RegisterExtension
 	private static final WireMockExtension wiremock =
@@ -107,6 +107,20 @@ class ApiClientWithJavaNetHttpIT {
 		};
 	}
 
+	protected boolean supportsRedirects() {
+		return false;
+	}
+
+	protected ClientProperties clientProperties() {
+		return new ClientProperties();
+	}
+
+	protected ApiClient apiClient() {
+		return ApiClient.of(baseUrl(), ApiClient
+				.with(exchangeClientClass())
+				.properties(clientProperties()));
+	}
+
 	@Test
 	void shouldReturnBody() throws Exception {
 		wiremock.stubFor(get("/hello")
@@ -114,7 +128,7 @@ class ApiClientWithJavaNetHttpIT {
 						.withStatus(200)
 						.withBody("world")));
 
-		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (api) {
 			String result = api.client()
 					.http()
@@ -141,7 +155,7 @@ class ApiClientWithJavaNetHttpIT {
 						.withStatus(200)
 						.withBody("OK")));
 
-		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (api) {
 			var result = api.client()
 					.http()
@@ -159,9 +173,10 @@ class ApiClientWithJavaNetHttpIT {
 		wiremock.verify(0, getRequestedFor(urlEqualTo("/target")));
 	}
 
-	@Disabled("Redirects are not yet supported by JavaNetHttpExchangeClient")
 	@Test
 	void shouldFollowRedirectsWhenEnabled() throws Exception {
+		assumeTrue(supportsRedirects(), "This client does not support redirects");
+
 		wiremock.stubFor(get("/redirect")
 				.willReturn(aResponse()
 						.withStatus(302)
@@ -172,9 +187,7 @@ class ApiClientWithJavaNetHttpIT {
 						.withStatus(200)
 						.withBody("OK")));
 
-		ClientProperties properties = new ClientProperties();
-		ApiClient api = ApiClient.of(baseUrl(),
-				ApiClient.with(exchangeClientClass()).properties(properties));
+		ApiClient api = apiClient();
 		try (api) {
 			var result = api
 					.client()
@@ -197,7 +210,7 @@ class ApiClientWithJavaNetHttpIT {
 				.willReturn(aResponse()
 						.withStatus(200)));
 
-		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (api) {
 			api.client()
 					.http()
@@ -218,7 +231,7 @@ class ApiClientWithJavaNetHttpIT {
 						.withStatus(200)
 						.withBody("Foo OK")));
 
-		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (api) {
 			String result = api.client()
 					.http()
@@ -249,7 +262,7 @@ class ApiClientWithJavaNetHttpIT {
 								    {"name":"john"}
 								""")));
 
-		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (api) {
 			var result = api.client()
 					.http()
@@ -277,7 +290,7 @@ class ApiClientWithJavaNetHttpIT {
 				.willReturn(aResponse()
 						.withStatus(200)));
 
-		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (api) {
 			api.client()
 					.http()
@@ -298,7 +311,7 @@ class ApiClientWithJavaNetHttpIT {
 						.withStatus(200)));
 
 		MyDtoWithToString dto = new MyDtoWithToString("john");
-		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (api) {
 			api.client()
 					.http()
@@ -319,9 +332,9 @@ class ApiClientWithJavaNetHttpIT {
 		wiremock.stubFor(post("/body")
 				.willReturn(aResponse().withStatus(200)));
 
-		ApiClient client = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
-		try (client) {
-			client.client()
+		ApiClient api = apiClient();
+		try (api) {
+			api.client()
 					.http()
 					.post()
 					.path("body")
@@ -344,7 +357,7 @@ class ApiClientWithJavaNetHttpIT {
 						.withHeader("Content-Encoding", "gzip")
 						.withBody(gzipped)));
 
-		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (api) {
 			var result = api.client()
 					.http()
@@ -372,7 +385,7 @@ class ApiClientWithJavaNetHttpIT {
 						.withHeader("Content-Encoding", "gzip, deflate")
 						.withBody(deflateThenGzip)));
 
-		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (api) {
 			var result = api.client()
 					.http()
@@ -398,7 +411,7 @@ class ApiClientWithJavaNetHttpIT {
 						.withHeader("Content-Encoding", "gzip")
 						.withBody("hello")));
 
-		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (api) {
 			String result = api.client()
 					.http()
@@ -425,7 +438,7 @@ class ApiClientWithJavaNetHttpIT {
 						.withHeader("Content-Encoding", "gzip ,  deflate")
 						.withBody(body)));
 
-		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (api) {
 			String result = api.client()
 					.http()
@@ -449,7 +462,7 @@ class ApiClientWithJavaNetHttpIT {
 						.withHeader("Content-Encoding", "gzip, weird")
 						.withBody(body)));
 
-		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (api) {
 			String result = api.client()
 					.http()
@@ -474,7 +487,7 @@ class ApiClientWithJavaNetHttpIT {
 						.withHeader("Content-Encoding", "gzip")
 						.withBody(doubleGzipped)));
 
-		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (api) {
 			byte[] result = api.client()
 					.http()
@@ -505,7 +518,7 @@ class ApiClientWithJavaNetHttpIT {
 						.withHeader("Content-Encoding", "gzip")
 						.withBody(new byte[0])));
 
-		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (api) {
 			byte[] result = api.client()
 					.http()
@@ -525,7 +538,7 @@ class ApiClientWithJavaNetHttpIT {
 				.willReturn(aResponse()
 						.withStatus(404)));
 
-		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (api) {
 			var result = api.client()
 					.http()
@@ -547,7 +560,7 @@ class ApiClientWithJavaNetHttpIT {
 						.withStatus(404)
 						.withBody("This is a not found body")));
 
-		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (api) {
 			ApiResponse<String> result = api.client()
 					.http()
@@ -569,7 +582,7 @@ class ApiClientWithJavaNetHttpIT {
 				.willReturn(aResponse()
 						.withStatus(500)));
 
-		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (api) {
 			var result = api.client()
 					.http()
@@ -591,7 +604,7 @@ class ApiClientWithJavaNetHttpIT {
 						.withStatus(500)
 						.withBody("This is a server error body")));
 
-		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (api) {
 			ApiResponse<String> result = api.client()
 					.http()
@@ -614,7 +627,7 @@ class ApiClientWithJavaNetHttpIT {
 						.withFixedDelay(3000)
 						.withStatus(200)));
 
-		ClientProperties properties = new ClientProperties();
+		ClientProperties properties = clientProperties();
 		properties.getTimeout().setConnect(Duration.ofMillis(100));
 		properties.getTimeout().setRequest(Duration.ofMillis(100));
 
@@ -644,7 +657,7 @@ class ApiClientWithJavaNetHttpIT {
 						.withStatus(200)
 						.withBody("post no body")));
 
-		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (api) {
 			String result = api.client()
 					.http()
@@ -669,7 +682,7 @@ class ApiClientWithJavaNetHttpIT {
 						.withStatus(200)
 						.withBody("no accept header")));
 
-		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (api) {
 			String result = api.client()
 					.http()
@@ -694,7 +707,7 @@ class ApiClientWithJavaNetHttpIT {
 						.withStatus(200)
 						.withBody("no accept-encoding header")));
 
-		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (api) {
 			String result = api.client()
 					.http()
@@ -718,7 +731,7 @@ class ApiClientWithJavaNetHttpIT {
 						.withHeader("Content-Type", "text/plain")
 						.withBody("the string body")));
 
-		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (api) {
 			var result = api.client()
 					.http()
@@ -745,7 +758,7 @@ class ApiClientWithJavaNetHttpIT {
 						.withStatus(200)
 						.withBody("case sensitive header")));
 
-		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (api) {
 			String result = api.client()
 					.http()
@@ -771,7 +784,7 @@ class ApiClientWithJavaNetHttpIT {
 						.withStatus(500)
 						.withBody("flaky error response")));
 
-		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (api) {
 			ApiResponse<String> response = api.client()
 					.http()
@@ -794,7 +807,7 @@ class ApiClientWithJavaNetHttpIT {
 						.withStatus(307)
 						.withHeader("Location", "/target")));
 
-		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (api) {
 			ApiResponse<?> response = api.client()
 					.http()
@@ -819,7 +832,7 @@ class ApiClientWithJavaNetHttpIT {
 						.withStatus(200)
 						.withBody("chunked body")));
 
-		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (api) {
 			String result = api.client()
 					.http()
@@ -845,7 +858,7 @@ class ApiClientWithJavaNetHttpIT {
 						.withStatus(200)
 						.withHeader("Content-Length", "0")));
 
-		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (api) {
 			String result = api.client()
 					.http()
@@ -867,7 +880,7 @@ class ApiClientWithJavaNetHttpIT {
 				.willReturn(aResponse()
 						.withStatus(204)));
 
-		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (api) {
 			ApiResponse<?> response = api.client()
 					.http()
@@ -888,7 +901,7 @@ class ApiClientWithJavaNetHttpIT {
 				.willReturn(aResponse()
 						.withStatus(200)));
 
-		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (api) {
 			ApiResponse<?> response = api.client()
 					.http()
@@ -911,7 +924,7 @@ class ApiClientWithJavaNetHttpIT {
 				.willReturn(aResponse()
 						.withStatus(200)));
 
-		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (api) {
 			api.client().http().get().path("reuse").retrieve();
 			api.client().http().get().path("reuse").retrieve();
@@ -928,7 +941,7 @@ class ApiClientWithJavaNetHttpIT {
 						.withHeader("Content-Type", "text/plain; charset=ISO-8859-1")
 						.withBody(new byte[] { (byte) 0xE9 }))); // é in ISO-8859-1
 
-		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (api) {
 			String result = api.client()
 					.http()
@@ -950,7 +963,7 @@ class ApiClientWithJavaNetHttpIT {
 						.withStatus(200)
 						.withHeader("X-Test", "42")));
 
-		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (api) {
 			ApiResponse<?> response = api.client()
 					.http()
@@ -974,7 +987,7 @@ class ApiClientWithJavaNetHttpIT {
 						.withStatus(200)
 						.withBody("multiple headers")));
 
-		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (api) {
 			String result = api.client()
 					.http()
@@ -1001,7 +1014,7 @@ class ApiClientWithJavaNetHttpIT {
 						.withHeader("Content-Type", "application/json")
 						.withBody("{ invalid json")));
 
-		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (api) {
 			assertThrows(Exception.class, () -> api.client()
 					.http()
@@ -1031,7 +1044,7 @@ class ApiClientWithJavaNetHttpIT {
 						.withStatus(200)
 						.withBody("OK")));
 
-		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (api) {
 			String result = api.client()
 					.http()
@@ -1064,7 +1077,7 @@ class ApiClientWithJavaNetHttpIT {
 				.willReturn(aResponse()
 						.withStatus(200)));
 
-		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (api) {
 			assertThrows(Exception.class, () -> api.client()
 					.http()
@@ -1098,7 +1111,7 @@ class ApiClientWithJavaNetHttpIT {
 						.withStatus(200)
 						.withBody("hi")));
 
-		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (api) {
 			String result = api.client()
 					.http()
@@ -1134,7 +1147,7 @@ class ApiClientWithJavaNetHttpIT {
 						.withStatus(200)
 						.withBody("hi")));
 
-		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (api) {
 			String result = api.client()
 					.http()
@@ -1179,7 +1192,7 @@ class ApiClientWithJavaNetHttpIT {
 
 		Supplier<InputStream> brokenSupplier = () -> alreadyOpened;
 
-		ApiClient api = ApiClient.of(baseUrl(), ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (api) {
 			String result = api.client()
 					.http()
@@ -1226,8 +1239,10 @@ class ApiClientWithJavaNetHttpIT {
 
 		ApiClient api = ApiClient.of(baseUrl(),
 				ApiClient.with(tokenClient)
+						.properties(clientProperties())
 						.decoratedWith(CountingHttpExchangeClient.class),
 				ApiClient.with(sessionClient)
+						.properties(clientProperties())
 						.decoratedWith(CountingHttpExchangeClient.class));
 		try (tokenClient; sessionClient; api) {
 			String tokenResult = api.client(AuthenticationType.TOKEN)
@@ -1269,8 +1284,7 @@ class ApiClientWithJavaNetHttpIT {
 		int threadCount = 50;
 		ExecutorService exe = Executors.newVirtualThreadPerTaskExecutor();
 
-		ApiClient api = ApiClient.of(baseUrl(),
-				ApiClient.with(exchangeClientClass()));
+		ApiClient api = apiClient();
 		try (exe; api) {
 			List<CompletableFuture<String>> futures = IntStream.range(0, threadCount)
 					.mapToObj(i -> CompletableFuture.supplyAsync(() -> api.client()

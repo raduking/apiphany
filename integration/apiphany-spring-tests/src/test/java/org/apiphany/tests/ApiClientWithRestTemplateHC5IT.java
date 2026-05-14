@@ -10,7 +10,7 @@ import org.apiphany.security.AuthenticationType;
  *
  * @author Radu Sebastian LAZIN
  */
-public class ApiClientWithRestTemplateIT extends ApiClientWithJavaNetHttpIT {
+public class ApiClientWithRestTemplateHC5IT extends ApiClientWithDefaultClientIT {
 
 	@Override
 	protected Class<? extends ExchangeClient> exchangeClientClass() {
@@ -18,7 +18,7 @@ public class ApiClientWithRestTemplateIT extends ApiClientWithJavaNetHttpIT {
 	}
 
 	@Override
-	public ExchangeClient getClient(final AuthenticationType authType) {
+	protected ExchangeClient getClient(final AuthenticationType authType) {
 		return new RestTemplateExchangeClient() {
 			@Override
 			public AuthenticationType getAuthenticationType() {

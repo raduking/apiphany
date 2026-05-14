@@ -5,6 +5,9 @@
 - Upgraded `oauth2-oidc-sdk` to `11.37.1`.
 - Upgraded `org.eclipse.jdt.core` to `3.45.0`.
 - Upgraded `spotless-maven-plugin` to `3.4.0`.
+- Added `ApacheHC5Library` utility class for Apache HTTP Client 5 library discovery and naming.
+- Added `CloseableHttpRequestFactory` to be able to close its resources when it's closed.
+- Moved HTTP client specific code from `RestTemplateExchangeClient` to `CloseableHttpRequestFactory`.
 
 ---
 

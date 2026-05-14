@@ -572,34 +572,59 @@ public class ClientProperties {
 	public static class Connection {
 
 		/**
-		 * Default time to live: 30 seconds.
+		 * Constants for default connection property values.
+		 *
+		 * @author Radu Sebastian LAZIN
 		 */
-		public static final Duration DEFAULT_TIME_TO_LIVE = Duration.ofSeconds(30);
+		public static class Default {
 
-		/**
-		 * Default maximum total connections per pool.
-		 */
-		public static final int DEFAULT_MAX_TOTAL = 100;
+			/**
+			 * Default time to live: 30 seconds.
+			 */
+			public static final Duration TIME_TO_LIVE = Duration.ofSeconds(30);
 
-		/**
-		 * Default maximum per route connections.
-		 */
-		public static final int DEFAULT_MAX_PER_ROUTE = 100;
+			/**
+			 * Default maximum total connections per pool: 100.
+			 */
+			public static final int MAX_TOTAL = 100;
+
+			/**
+			 * Default maximum per route connections: 100.
+			 */
+			public static final int MAX_PER_ROUTE = 100;
+
+			/**
+			 * Default flag indicating whether redirects should be followed: false.
+			 */
+			public static final boolean FOLLOW_REDIRECTS = false;
+
+			/**
+			 * Hide constructor.
+			 */
+			private Default() {
+				// empty
+			}
+		}
 
 		/**
 		 * Time to live.
 		 */
-		private Duration timeToLive = DEFAULT_TIME_TO_LIVE;
+		private Duration timeToLive = Default.TIME_TO_LIVE;
 
 		/**
 		 * Maximum total connections.
 		 */
-		private int maxTotal = DEFAULT_MAX_TOTAL;
+		private int maxTotal = Default.MAX_TOTAL;
 
 		/**
 		 * Maximum per route connections.
 		 */
-		private int maxPerRoute = DEFAULT_MAX_PER_ROUTE;
+		private int maxPerRoute = Default.MAX_PER_ROUTE;
+
+		/**
+		 * Flag indicating whether redirects should be followed.
+		 */
+		private boolean followRedirects = Default.FOLLOW_REDIRECTS;
 
 		/**
 		 * Default constructor.
@@ -629,7 +654,8 @@ public class ClientProperties {
 			if (obj instanceof Connection that) {
 				return this.maxTotal == that.maxTotal
 						&& this.maxPerRoute == that.maxPerRoute
-						&& Objects.equals(this.timeToLive, that.timeToLive);
+						&& Objects.equals(this.timeToLive, that.timeToLive)
+						&& this.followRedirects == that.followRedirects;
 			}
 			return false;
 		}
@@ -694,6 +720,24 @@ public class ClientProperties {
 		 */
 		public void setTimeToLive(final Duration timeToLive) {
 			this.timeToLive = timeToLive;
+		}
+
+		/**
+		 * Returns whether redirects should be followed.
+		 *
+		 * @return true if redirects should be followed, false otherwise.
+		 */
+		public boolean isFollowRedirects() {
+			return followRedirects;
+		}
+
+		/**
+		 * Sets whether redirects should be followed.
+		 *
+		 * @param followRedirects true to follow redirects, false otherwise.
+		 */
+		public void setFollowRedirects(final boolean followRedirects) {
+			this.followRedirects = followRedirects;
 		}
 	}
 
