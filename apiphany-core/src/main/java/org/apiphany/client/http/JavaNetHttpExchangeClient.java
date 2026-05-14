@@ -233,8 +233,6 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 
 	/**
 	 * Builds the {@link ApiResponse} based on the {@link HttpResponse} object.
-	 * <p>
-	 * TODO: implement response handling for non 2xx responses and other than JSON media type
 	 *
 	 * @param <T> request body type
 	 * @param <U> response body type
