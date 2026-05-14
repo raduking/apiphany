@@ -1,6 +1,7 @@
 package org.apiphany.http;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,18 @@ public class SpringHttpRequests {
 	 */
 	public static HttpMethod getHttpMethod(final String method) {
 		return HttpMethod.valueOf(method);
+	}
+
+	/**
+	 * Copies/adds the headers from the source to the target headers.
+	 *
+	 * @param source the headers to copy from
+	 * @param target the headers to copy to
+	 */
+	public static void copyHeaders(final HttpHeaders source, final HttpHeaders target) {
+		if (!source.isEmpty()) {
+			source.forEach((key, values) -> target.put(key, new ArrayList<>(values)));
+		}
 	}
 
 	/**

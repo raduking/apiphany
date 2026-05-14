@@ -131,7 +131,7 @@ public class RestTemplateExchangeClient extends AbstractSpringExchangeClient {
 	 * @param responseType the class of the response entity
 	 * @return the request callback
 	 */
-	public <T, U> RequestCallback httpEntityCallback(@Nullable final HttpEntity<T> requestEntity, final Class<U> responseType) {
+	protected <T, U> RequestCallback httpEntityCallback(@Nullable final HttpEntity<T> requestEntity, final Class<U> responseType) {
 		return new HttpEntityRequestCallback<>(requestEntity, restTemplate.getMessageConverters());
 	}
 
