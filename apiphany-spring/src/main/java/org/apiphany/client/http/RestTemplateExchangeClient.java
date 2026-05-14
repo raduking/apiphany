@@ -17,7 +17,6 @@ import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.ResourceHttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
-import org.springframework.lang.Nullable;
 import org.springframework.web.client.RequestCallback;
 import org.springframework.web.client.ResponseExtractor;
 import org.springframework.web.client.RestTemplate;
@@ -116,7 +115,7 @@ public class RestTemplateExchangeClient extends AbstractSpringExchangeClient {
 		var springHttpMethod = SpringHttpRequests.getHttpMethod(httpMethod.value());
 		Class<U> responseType = getResponseType(apiRequest);
 
-		RequestCallback requestCallback = httpEntityCallback(httpEntity, responseType);
+		RequestCallback requestCallback = httpEntityCallback(httpEntity);
 		ResponseExtractor<ResponseEntity<U>> responseExtractor = responseEntityExtractor(responseType);
 		return restTemplate.execute(uri, springHttpMethod, requestCallback, responseExtractor);
 	}
@@ -125,13 +124,11 @@ public class RestTemplateExchangeClient extends AbstractSpringExchangeClient {
 	 * Creates a request callback that writes the HTTP request entity to the HTTP request.
 	 *
 	 * @param <T> request entity type
-	 * @param <U> response entity type
 	 *
-	 * @param requestEntity the HTTP request entity
 	 * @param responseType the class of the response entity
 	 * @return the request callback
 	 */
-	protected <T, U> RequestCallback httpEntityCallback(@Nullable final HttpEntity<T> requestEntity, final Class<U> responseType) {
+	protected <T> RequestCallback httpEntityCallback(final HttpEntity<T> requestEntity) {
 		return new HttpEntityRequestCallback<>(requestEntity, restTemplate.getMessageConverters());
 	}
 
