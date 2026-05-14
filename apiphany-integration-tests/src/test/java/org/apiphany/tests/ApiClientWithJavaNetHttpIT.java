@@ -31,17 +31,14 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
 import org.apiphany.ApiClient;
-import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
-import org.apiphany.client.DecoratingExchangeClient;
 import org.apiphany.client.ExchangeClient;
-import org.apiphany.client.http.HttpExchangeClient;
+import org.apiphany.client.http.CountingHttpExchangeClient;
 import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.http.ContentEncoding;
 import org.apiphany.http.HttpException;
@@ -57,7 +54,6 @@ import org.apiphany.test.io.OneShotInputStream;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.morphix.lang.resource.ScopedResource;
 import org.morphix.lang.retry.Retry;
 import org.morphix.lang.retry.WaitCounter;
 
@@ -68,7 +64,18 @@ import com.github.tomakehurst.wiremock.stubbing.ServeEvent;
 import com.jayway.jsonpath.JsonPath;
 
 /**
- * Test class for {@link ApiClient} using {@link JavaNetHttpExchangeClient}.
+ * Test class with WireMock for {@link ApiClient} using {@link JavaNetHttpExchangeClient} and serves as a base class for
+ * all other ApiClient integration tests that use other http clients.
+ * <p>
+ * The main purpose of this class is to verify that the ApiClient works correctly with Java's built-in HttpClient as the
+ * underlying HTTP client, since this is what the ApiClient uses by default if no other HTTP client is available on the
+ * classpath. This ensures that the ApiClient can be used in environments where no third-party HTTP client libraries are
+ * available, such as in a Java SE environment without additional dependencies.
+ * <p>
+ * For other clients, we can extend this class and override the {@link #exchangeClientClass()} to return the appropriate
+ * client class, {@link #getClient(AuthenticationType)} method to return an instance of that client with the specified
+ * authentication type, and then we can reuse all the tests defined in this class to verify that the ApiClient works
+ * correctly with that client as well.
  * <p>
  * TODO: group tests into nested classes based on functionality (e.g. redirects, gzip handling, error handling, etc.) to
  * improve readability.
@@ -91,32 +98,13 @@ class ApiClientWithJavaNetHttpIT {
 		return JavaNetHttpExchangeClient.class;
 	}
 
-	public ExchangeClient getClient(final AuthenticationType authType) {
+	protected ExchangeClient getClient(final AuthenticationType authType) {
 		return new JavaNetHttpExchangeClient() {
 			@Override
 			public AuthenticationType getAuthenticationType() {
 				return authType;
 			}
 		};
-	}
-
-	static class CountingHttpExchangeClient extends DecoratingExchangeClient implements HttpExchangeClient {
-
-		private final AtomicInteger requestCount = new AtomicInteger(0);
-
-		public CountingHttpExchangeClient(final ScopedResource<ExchangeClient> delegate) {
-			super(delegate);
-		}
-
-		@Override
-		public <T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest) {
-			requestCount.incrementAndGet();
-			return super.exchange(apiRequest);
-		}
-
-		public int getRequestCount() {
-			return requestCount.get();
-		}
 	}
 
 	@Test

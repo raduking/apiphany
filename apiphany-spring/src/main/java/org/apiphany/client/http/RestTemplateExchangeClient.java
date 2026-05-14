@@ -125,7 +125,7 @@ public class RestTemplateExchangeClient extends AbstractSpringExchangeClient {
 	 *
 	 * @param <T> request entity type
 	 *
-	 * @param responseType the class of the response entity
+	 * @param requestEntity the HTTP request entity to write to the HTTP request
 	 * @return the request callback
 	 */
 	protected <T> RequestCallback httpEntityCallback(final HttpEntity<T> requestEntity) {
