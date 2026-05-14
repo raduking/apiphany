@@ -2,6 +2,7 @@ package org.apiphany.client.http;
 
 import java.io.InputStream;
 import java.net.http.HttpClient;
+import java.net.http.HttpClient.Builder;
 import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublisher;
@@ -154,8 +155,7 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	 * @param sslContext SSL context to set in the HTTP client builder
 	 * @return the customized HTTP client builder
 	 */
-	public static HttpClient.Builder customize(final HttpClient.Builder httpClientBuilder, final ClientProperties clientProperties,
-			final SSLContext sslContext) {
+	public static Builder customize(final Builder httpClientBuilder, final ClientProperties clientProperties, final SSLContext sslContext) {
 		JavaNetHttpProperties httpProperties = clientProperties.getCustomProperties(JavaNetHttpProperties.class);
 
 		// HTTP version
@@ -166,11 +166,11 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 		httpClientBuilder.version(version);
 
 		// SSL context
-		Nullables.notNull(sslContext).then(httpClientBuilder::sslContext);
+		Nullables.whenNotNull(sslContext, httpClientBuilder::sslContext);
 
 		// Timeouts
-		Nullables.notNull(getUsableTimeout(clientProperties.getTimeout(), Timeout::getConnect))
-				.then(httpClientBuilder::connectTimeout);
+		Duration connectTimeout = getUsableTimeout(clientProperties.getTimeout(), Timeout::getConnect);
+		Nullables.whenNotNull(connectTimeout, httpClientBuilder::connectTimeout);
 
 		// Follow redirects
 		boolean followRedirects = clientProperties.getConnection().isFollowRedirects();

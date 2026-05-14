@@ -120,7 +120,7 @@ public class CloseableHttpRequestFactory implements ClientHttpRequestFactory, Au
 		if (ApacheHC5Library.isPresent()) {
 			return HttpComponents.create(clientProperties);
 		}
-		return JavaNet.create(clientProperties);
+		return JavaNetHttp.create(clientProperties);
 	}
 
 	/**
@@ -139,7 +139,7 @@ public class CloseableHttpRequestFactory implements ClientHttpRequestFactory, Au
 		}
 		return switch (clientLibrary.toLowerCase()) {
 			case ApacheHC5Library.CLIENT_NAME -> HttpComponents.create(clientProperties);
-			case JavaNetHttpProperties.ROOT -> JavaNet.create(clientProperties);
+			case JavaNetHttpProperties.ROOT -> JavaNetHttp.create(clientProperties);
 			default -> throw new IllegalArgumentException("Unsupported client library: " + clientLibrary);
 		};
 	}
@@ -182,7 +182,7 @@ public class CloseableHttpRequestFactory implements ClientHttpRequestFactory, Au
 	 *
 	 * @author Radu Sebastian LAZIN
 	 */
-	public static class JavaNet {
+	public static class JavaNetHttp {
 
 		/**
 		 * Creates a new {@link CloseableHttpRequestFactory} that delegates to a {@link SimpleClientHttpRequestFactory} based on
@@ -205,7 +205,7 @@ public class CloseableHttpRequestFactory implements ClientHttpRequestFactory, Au
 		/**
 		 * Private constructor.
 		 */
-		private JavaNet() {
+		private JavaNetHttp() {
 			// empty
 		}
 	}

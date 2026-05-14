@@ -8,6 +8,8 @@
 - Added `ApacheHC5Library` utility class for Apache HTTP Client 5 library discovery and naming.
 - Added `CloseableHttpRequestFactory` to be able to close its resources when it's closed.
 - Moved HTTP client specific code from `RestTemplateExchangeClient` to `CloseableHttpRequestFactory`.
+- Added fallback to Java net HTTP client if Apache HTTP Client 5 library is not present in the classpath in `RestTemplateExchangeClient`.
+- Added follow redirects property `ClientProperties.Connection` to configure redirect behavior.
 
 ---
 
