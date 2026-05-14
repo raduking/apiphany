@@ -1,4 +1,4 @@
-package org.apiphany.spring.http;
+package org.apiphany.http;
 
 import java.io.IOException;
 import java.util.ArrayList;
