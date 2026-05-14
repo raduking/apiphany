@@ -17,8 +17,7 @@ import org.springframework.web.client.RestClientException;
 /**
  * Request callback implementation that writes the body and headers of a given {@link HttpEntity} to the request.
  *
- * @param <T> the type of the request body
- * @param <U> the type of the response body
+ * @param <T> the request body type
  *
  * @author Radu Sebastian LAZIN
  */
