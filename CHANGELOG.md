@@ -4,6 +4,8 @@
 
 - Added `JavaNetHttpClients` with utility methods for the default Java net HTTP client library.
 - Added `JavaNetHttpLibrary` utility class for Java net HTTP library discovery and naming.
+- Added missing `equals` and `hashCode` to `JavaNetHttpProperties`.
+- Fixed missing `baseUrl` field in `equals` and `hashCode` in `ClientProperties`.
 - Added `ApacheHC5Library` utility class for Apache HTTP Client 5 library discovery and naming.
 - Added `CloseableHttpRequestFactory` to be able to close its resources when it's closed.
 - Moved HTTP client specific code from `RestTemplateExchangeClient` to `CloseableHttpRequestFactory`.

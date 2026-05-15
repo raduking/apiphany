@@ -104,6 +104,7 @@ public class ClientProperties {
 		}
 		if (obj instanceof ClientProperties that) {
 			return this.enabled == that.enabled
+					&& Objects.equals(this.baseUrl, that.baseUrl)
 					&& Objects.equals(this.timeout, that.timeout)
 					&& Objects.equals(this.connection, that.connection)
 					&& Objects.equals(this.compression, that.compression)
@@ -118,7 +119,7 @@ public class ClientProperties {
 	 */
 	@Override
 	public int hashCode() {
-		return Objects.hash(enabled, timeout, connection, compression, client, custom);
+		return Objects.hash(enabled, baseUrl, timeout, connection, compression, client, custom);
 	}
 
 	/**
