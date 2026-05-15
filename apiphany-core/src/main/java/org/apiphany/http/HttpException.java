@@ -163,7 +163,7 @@ public class HttpException extends RuntimeException implements Status.Aware, Bod
 	 * @return the value supplied
 	 */
 	public static <T> T ifThrows(final ThrowingSupplier<T> throwingSupplier, final HttpStatus httpStatus) {
-		return ifThrows(throwingSupplier, (throwable, builder) -> builder.status(httpStatus));
+		return ifThrows(throwingSupplier, (builder, throwable) -> builder.status(httpStatus));
 	}
 
 	/**
@@ -180,14 +180,14 @@ public class HttpException extends RuntimeException implements Status.Aware, Bod
 	 * @return the value supplied
 	 */
 	public static <T> T ifThrows(final ThrowingSupplier<T> throwingSupplier,
-			final BiConsumer<Throwable, HttpException.Builder> httpExceptionCustomizer) {
+			final BiConsumer<HttpException.Builder, Throwable> httpExceptionCustomizer) {
 		try {
 			return throwingSupplier.get();
 		} catch (HttpException e) {
 			throw e;
 		} catch (Throwable t) {
 			HttpException.Builder builder = HttpException.builder().cause(t);
-			httpExceptionCustomizer.accept(t, builder);
+			httpExceptionCustomizer.accept(builder, t);
 			throw builder.build();
 		}
 	}

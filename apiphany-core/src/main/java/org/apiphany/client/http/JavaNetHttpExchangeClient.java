@@ -19,6 +19,7 @@ import java.util.function.Supplier;
 
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
+import org.apiphany.RequestMethod;
 import org.apiphany.client.ClientCustomization;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ClientProperties.Timeout;
@@ -199,7 +200,10 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 				.uri(apiRequest.getUri());
 		addHeaders(httpRequestBuilder, apiRequest.getHeaders());
 
-		HttpMethod httpMethod = apiRequest.getMethod();
+		RequestMethod requestMethod = apiRequest.getMethod();
+		if (!(requestMethod instanceof HttpMethod httpMethod)) {
+			throw new UnsupportedOperationException("HTTP method " + requestMethod + " is not supported!");
+		}
 		switch (httpMethod) {
 			case GET -> httpRequestBuilder.GET();
 			case PUT -> httpRequestBuilder.PUT(toBodyPublisher(apiRequest));

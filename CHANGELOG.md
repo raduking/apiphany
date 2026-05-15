@@ -11,6 +11,7 @@
 - Moved HTTP client specific code from `RestTemplateExchangeClient` to `CloseableHttpRequestFactory`.
 - Added fallback to Java net HTTP client if Apache HTTP Client 5 library is not present in the classpath in `RestTemplateExchangeClient`.
 - Added follow redirects property `ClientProperties.Connection` to configure redirect behavior.
+- Added `ApiMethod.UNDEFINED_NAME` to be used for `ApiMethod.UNDEFINED` instead of `null`.
 - Renamed `SpringHttpRequests` to `SpringHttpSupport`.
 - Upgraded `oauth2-oidc-sdk` to `11.37.1`.
 - Upgraded `org.eclipse.jdt.core` to `3.45.0`.
