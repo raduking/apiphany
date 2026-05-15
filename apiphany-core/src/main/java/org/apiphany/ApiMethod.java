@@ -1,5 +1,7 @@
 package org.apiphany;
 
+import org.morphix.reflection.Constructors;
+
 /**
  * Represents an API-specific method that implements the {@link RequestMethod} interface.
  * <p>
@@ -16,15 +18,32 @@ package org.apiphany;
 public record ApiMethod(String name) implements RequestMethod {
 
 	/**
-	 * Constant representing an undefined or unknown method name. This value can be used in logging, error messages, or as a
-	 * default value when the method name is not available.
+	 * Namespace class for constant values related to {@link ApiMethod}. This class is not intended to be instantiated and
+	 * serves as a container for constants that can be used throughout the codebase to represent specific values related to
+	 * API methods.
+	 *
+	 * @author Radu Sebastian LAZIN
 	 */
-	public static final String UNDEFINED_NAME = "<undefined>";
+	public static class Value {
+
+		/**
+		 * Constant representing an undefined or unknown method name. This value can be used in logging, error messages, or as a
+		 * default value when the method name is not available.
+		 */
+		public static final String UNDEFINED = "<undefined>";
+
+		/**
+		 * Private constructor.
+		 */
+		private Value() {
+			throw Constructors.unsupportedOperationException();
+		}
+	}
 
 	/**
 	 * Constant representing an undefined or unknown API method. This instance is created with a {@code null} name.
 	 */
-	public static final ApiMethod UNDEFINED = ApiMethod.of(UNDEFINED_NAME);
+	public static final ApiMethod UNDEFINED = ApiMethod.of(Value.UNDEFINED);
 
 	/**
 	 * Factory method for creating new {@code ApiMethod} instances.
