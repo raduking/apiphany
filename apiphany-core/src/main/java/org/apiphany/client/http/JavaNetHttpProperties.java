@@ -1,6 +1,7 @@
 package org.apiphany.client.http;
 
 import java.net.http.HttpClient.Version;
+import java.util.Objects;
 
 import org.apiphany.client.ClientProperties;
 import org.apiphany.http.HttpMessages;
@@ -60,6 +61,28 @@ public class JavaNetHttpProperties {
 	@Override
 	public String toString() {
 		return JsonBuilder.toJson(this);
+	}
+
+	/**
+	 * @see Object#equals(Object)
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof JavaNetHttpProperties that) {
+			return Objects.equals(this.request, that.request);
+		}
+		return false;
+	}
+
+	/**
+	 * @see Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hash(request);
 	}
 
 	/**
@@ -133,6 +156,28 @@ public class JavaNetHttpProperties {
 		 */
 		public String getVersion() {
 			return version;
+		}
+
+		/**
+		 * @see Object#equals(Object)
+		 */
+		@Override
+		public boolean equals(final Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (obj instanceof Request that) {
+				return Objects.equals(this.version, that.version);
+			}
+			return false;
+		}
+
+		/**
+		 * @see Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			return Objects.hash(version);
 		}
 
 		/**

@@ -70,6 +70,8 @@ public class SpringHttpSupport {
 	/**
 	 * Creates a new {@link HttpEntity} with the given content and headers.
 	 *
+	 * @param <T> the type of the content in the HTTP entity
+	 *
 	 * @param content the content to include in the HTTP entity
 	 * @param headers the HTTP headers to include in the HTTP entity
 	 * @return a new {@link HttpEntity} with the given content and headers
