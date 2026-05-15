@@ -1,4 +1,4 @@
-package org.apiphany.client.http;
+package org.apiphany.http;
 
 import java.net.http.HttpClient;
 import java.time.Duration;
@@ -10,6 +10,7 @@ import javax.net.ssl.SSLContext;
 
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ClientProperties.Timeout;
+import org.apiphany.client.http.JavaNetHttpProperties;
 import org.morphix.lang.Nullables;
 import org.morphix.lang.function.Suppliers;
 
