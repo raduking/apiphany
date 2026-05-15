@@ -9,7 +9,7 @@ import org.apiphany.http.CloseableHttpRequestFactory;
 import org.apiphany.http.HttpEntityRequestCallback;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.ResponseEntityResponseExtractor;
-import org.apiphany.http.SpringHttpRequests;
+import org.apiphany.http.SpringHttpSupport;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
@@ -110,9 +110,9 @@ public class RestTemplateExchangeClient extends AbstractSpringExchangeClient {
 	 */
 	@Override
 	protected <T, U> ResponseEntity<U> sendRequest(final ApiRequest<T> apiRequest, final HttpEntity<T> httpEntity) {
-		URI uri = SpringHttpRequests.getUriComponentsBuilder(apiRequest.getUrl(), apiRequest.getParams()).build().toUri();
+		URI uri = SpringHttpSupport.getUriComponentsBuilder(apiRequest.getUrl(), apiRequest.getParams()).build().toUri();
 		HttpMethod httpMethod = apiRequest.getMethod();
-		var springHttpMethod = SpringHttpRequests.getHttpMethod(httpMethod.value());
+		var springHttpMethod = SpringHttpSupport.getHttpMethod(httpMethod.value());
 		Class<U> responseType = getResponseType(apiRequest);
 
 		RequestCallback requestCallback = httpEntityCallback(httpEntity);

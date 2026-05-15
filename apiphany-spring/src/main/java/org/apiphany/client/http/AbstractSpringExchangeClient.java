@@ -14,7 +14,7 @@ import org.apiphany.http.HttpContentType;
 import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpStatus;
-import org.apiphany.http.SpringHttpRequests;
+import org.apiphany.http.SpringHttpSupport;
 import org.apiphany.io.InputStreamSupplier;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
@@ -107,13 +107,13 @@ public abstract class AbstractSpringExchangeClient extends AbstractHttpExchangeC
 	 */
 	protected <T> HttpEntity<T> createHttpEntity(final ApiRequest<T> apiRequest, final T body, final HttpHeaders headers) {
 		HttpEntity<?> httpEntity = switch (body) {
-			case String str -> new HttpEntity<>(str, headers);
-			case byte[] bytes -> new HttpEntity<>(bytes, headers);
-			case InputStream inputStream -> SpringHttpRequests.createHttpEntity(inputStream, headers);
-			case InputStreamSupplier inputStreamSupplier -> SpringHttpRequests.createHttpEntity(inputStreamSupplier.get(), headers);
+			case String str -> SpringHttpSupport.createHttpEntity(str, headers);
+			case byte[] bytes -> SpringHttpSupport.createHttpEntity(bytes, headers);
+			case InputStream inputStream -> SpringHttpSupport.createHttpEntity(inputStream, headers);
+			case InputStreamSupplier inputStreamSupplier -> SpringHttpSupport.createHttpEntity(inputStreamSupplier.get(), headers);
 			case Supplier<?> supplier -> createHttpEntity(apiRequest, JavaObjects.cast(supplier.get()), headers);
-			case Object obj when isContentJson(apiRequest) -> new HttpEntity<>(JsonBuilder.toJson(body), headers);
-			default -> new HttpEntity<>(Strings.safeToString(body), headers);
+			case Object obj when isContentJson(apiRequest) -> SpringHttpSupport.createHttpEntity(JsonBuilder.toJson(body), headers);
+			default -> SpringHttpSupport.createHttpEntity(Strings.safeToString(body), headers);
 		};
 		return JavaObjects.cast(httpEntity);
 	}

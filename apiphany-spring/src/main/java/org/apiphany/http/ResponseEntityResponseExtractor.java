@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
+import org.apiphany.lang.Strings;
 import org.morphix.lang.JavaObjects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,12 +76,12 @@ public class ResponseEntityResponseExtractor<T> implements ResponseExtractor<Res
 	 * @throws IOException if an I/O error occurs while reading the response body
 	 */
 	public T extractRawData(final ClientHttpResponse response) throws IOException {
-		MediaType contentType = getContentType(response);
+		MediaType contentType = SpringHttpSupport.getContentType(response);
 		try {
 			for (HttpMessageConverter<?> messageConverter : messageConverters) {
 				if (null != responseClass && messageConverter.canRead(responseClass, contentType)) {
 					if (LOGGER.isDebugEnabled()) {
-						LOGGER.debug("Reading to [{}] as \"{}\"", responseClass.getName(), contentType);
+						LOGGER.debug("Reading to [{}] as {}", Strings.envelope("\"", responseClass.getName()), contentType);
 					}
 					HttpMessageConverter<T> converter = JavaObjects.cast(messageConverter);
 					return converter.read(responseClass, response);
@@ -92,24 +93,6 @@ public class ResponseEntityResponseExtractor<T> implements ResponseExtractor<Res
 		}
 		throw new UnknownContentTypeException(responseClass, contentType, response.getStatusCode(), // NOSONAR
 				response.getStatusText(), response.getHeaders(), getResponseBody(response));
-	}
-
-	/**
-	 * Determine the Content-Type of the response based on the "Content-Type" header or otherwise default to
-	 * {@link MediaType#APPLICATION_OCTET_STREAM}.
-	 *
-	 * @param response the response
-	 * @return the MediaType, or "application/octet-stream"
-	 */
-	protected MediaType getContentType(final ClientHttpResponse response) {
-		MediaType contentType = response.getHeaders().getContentType();
-		if (contentType == null) {
-			if (LOGGER.isTraceEnabled()) {
-				LOGGER.trace("No content-type, using '{}'", MediaType.APPLICATION_OCTET_STREAM_VALUE);
-			}
-			contentType = MediaType.APPLICATION_OCTET_STREAM;
-		}
-		return contentType;
 	}
 
 	/**
