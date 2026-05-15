@@ -16,9 +16,15 @@ package org.apiphany;
 public record ApiMethod(String name) implements RequestMethod {
 
 	/**
+	 * Constant representing an undefined or unknown method name. This value can be used in logging, error messages, or as a
+	 * default value when the method name is not available.
+	 */
+	public static final String UNDEFINED_NAME = "<undefined>";
+
+	/**
 	 * Constant representing an undefined or unknown API method. This instance is created with a {@code null} name.
 	 */
-	public static final ApiMethod UNDEFINED = ApiMethod.of(null);
+	public static final ApiMethod UNDEFINED = ApiMethod.of(UNDEFINED_NAME);
 
 	/**
 	 * Factory method for creating new {@code ApiMethod} instances.

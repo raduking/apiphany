@@ -268,11 +268,11 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	 * status and response body from the throwable and sets them in the builder. Subclasses can override this method to
 	 * provide additional customization logic if needed.
 	 *
+	 * @param httpExceptionBuilder the HttpException.Builder to customize
 	 * @param throwable the throwable to extract information from
-	 * @param builder the HttpException.Builder to customize
 	 */
-	protected void customizeHttpException(final Throwable throwable, final HttpException.Builder builder) {
-		builder
+	protected void customizeHttpExceptionBuilder(final HttpException.Builder httpExceptionBuilder, final Throwable throwable) {
+		httpExceptionBuilder
 				.status(extractHttpStatus(throwable))
 				.responseBody(extractResponseBody(throwable));
 	}

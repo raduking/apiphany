@@ -118,6 +118,10 @@ public class ApiRequest<T> extends ApiMessage<T> {
 	 * @return the full URI
 	 */
 	public URI getUri() {
+		String baseUrl = getUrl();
+		if (Strings.isEmpty(baseUrl)) {
+			return null;
+		}
 		return URI.create(getUrl() + RequestParameters.asUrlSuffix(getParams()));
 	}
 

@@ -27,4 +27,10 @@ class ApiMethodTest {
 
 		assertThat(method.value(), equalTo(SOME_NAME));
 	}
+
+	@Test
+	void shouldReturnUndefinedNameOnUndefined() {
+		assertThat(ApiMethod.UNDEFINED.toString(), equalTo(ApiMethod.UNDEFINED_NAME));
+		assertThat(ApiMethod.UNDEFINED.value(), equalTo(ApiMethod.UNDEFINED_NAME));
+	}
 }

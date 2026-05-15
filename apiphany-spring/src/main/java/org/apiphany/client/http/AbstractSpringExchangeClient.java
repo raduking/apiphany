@@ -66,7 +66,7 @@ public abstract class AbstractSpringExchangeClient extends AbstractHttpExchangeC
 			HttpEntity<T> httpEntity = buildRequest(apiRequest);
 			ResponseEntity<U> responseEntity = sendRequest(apiRequest, httpEntity);
 			return buildResponse(apiRequest, responseEntity);
-		}, this::customizeHttpException);
+		}, super::customizeHttpExceptionBuilder);
 	}
 
 	/**
