@@ -11,9 +11,6 @@ import java.util.Objects;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ClientProperties.Timeout;
-import org.apiphany.client.http.ApacheHC5PoolingHttpClients;
-import org.apiphany.client.http.JavaNetHttpClients;
-import org.apiphany.client.http.JavaNetHttpProperties;
 import org.apiphany.client.http.RestTemplateProperties;
 import org.apiphany.lang.Strings;
 import org.morphix.lang.collections.Lists;
@@ -117,7 +114,7 @@ public class CloseableHttpRequestFactory implements ClientHttpRequestFactory, Au
 				return factory;
 			}
 		}
-		if (ApacheHC5Library.isPresent()) {
+		if (JavaNetHttpLibrary.isPresent()) {
 			return HttpComponents.create(clientProperties);
 		}
 		return JavaNetHttp.create(clientProperties);
@@ -139,7 +136,7 @@ public class CloseableHttpRequestFactory implements ClientHttpRequestFactory, Au
 		}
 		return switch (clientLibrary.toLowerCase()) {
 			case ApacheHC5Library.CLIENT_NAME -> HttpComponents.create(clientProperties);
-			case JavaNetHttpProperties.ROOT -> JavaNetHttp.create(clientProperties);
+			case JavaNetHttpLibrary.CLIENT_NAME -> JavaNetHttp.create(clientProperties);
 			default -> throw new IllegalArgumentException("Unsupported client library: " + clientLibrary);
 		};
 	}
@@ -162,8 +159,8 @@ public class CloseableHttpRequestFactory implements ClientHttpRequestFactory, Au
 		 */
 		@SuppressWarnings("resource")
 		public static CloseableHttpRequestFactory create(final ClientProperties clientProperties) {
-			CloseableHttpClient httpClient = ApacheHC5PoolingHttpClients.createClient(clientProperties,
-					ApacheHC5PoolingHttpClients.noCustomizer());
+			CloseableHttpClient httpClient = ApacheHC5Clients.createClient(clientProperties,
+					ApacheHC5Clients.noCustomizer());
 			HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
 			return CloseableHttpRequestFactory.of(requestFactory, httpClient);
 		}

@@ -7,7 +7,7 @@ import org.apache.hc.core5.http.HttpVersion;
 import org.apache.hc.core5.http.ParseException;
 import org.apache.hc.core5.http.ProtocolVersion;
 import org.apache.hc.core5.util.Timeout;
-import org.apiphany.http.ApacheHC5Library;
+import org.apiphany.http.JavaNetHttpLibrary;
 import org.apiphany.json.JsonBuilder;
 import org.morphix.reflection.Constructors;
 
@@ -21,7 +21,7 @@ public class ApacheHC5Properties {
 	/**
 	 * The root property prefix for Apache HTTP Client 5 configuration.
 	 */
-	public static final String ROOT = ApacheHC5Library.CLIENT_NAME;
+	public static final String ROOT = JavaNetHttpLibrary.CLIENT_NAME;
 
 	/**
 	 * Constants for property values.

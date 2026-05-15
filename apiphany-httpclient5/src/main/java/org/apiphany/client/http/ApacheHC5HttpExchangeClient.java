@@ -34,6 +34,7 @@ import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.header.Headers;
+import org.apiphany.http.ApacheHC5Clients;
 import org.apiphany.http.ApacheHC5Entities;
 import org.apiphany.http.ContentEncoding;
 import org.apiphany.http.HttpContentType;
@@ -85,8 +86,8 @@ public class ApacheHC5HttpExchangeClient extends AbstractHttpExchangeClient {
 	 */
 	public ApacheHC5HttpExchangeClient(final ClientProperties clientProperties) {
 		super(clientProperties);
-		this.httpClient = ApacheHC5PoolingHttpClients.createClient(clientProperties,
-				ApacheHC5PoolingHttpClients.noCustomizer(), this::customize, this::customize);
+		this.httpClient = ApacheHC5Clients.createClient(clientProperties,
+				ApacheHC5Clients.noCustomizer(), this::customize, this::customize);
 		this.httpVersion = Nullables.nonNullOrDefault(this.httpVersion, HttpVersion.DEFAULT);
 	}
 

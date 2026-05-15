@@ -1,4 +1,4 @@
-package org.apiphany.client.http;
+package org.apiphany.http;
 
 import java.util.function.Consumer;
 
@@ -12,6 +12,7 @@ import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuil
 import org.apache.hc.core5.http.io.SocketConfig;
 import org.apache.hc.core5.util.Timeout;
 import org.apiphany.client.ClientProperties;
+import org.apiphany.client.http.ApacheHC5Properties;
 import org.morphix.lang.Nullables;
 import org.morphix.lang.function.Consumers;
 
@@ -20,7 +21,7 @@ import org.morphix.lang.function.Consumers;
  *
  * @author Radu Sebastian LAZIN
  */
-public interface ApacheHC5PoolingHttpClients {
+public interface ApacheHC5Clients {
 
 	/**
 	 * Returns a configured HTTP client based on the given client properties. The caller is responsible for closing the

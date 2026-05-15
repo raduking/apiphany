@@ -4,6 +4,7 @@ import java.net.http.HttpClient.Version;
 
 import org.apiphany.client.ClientProperties;
 import org.apiphany.http.HttpMessages;
+import org.apiphany.http.JavaNetHttpLibrary;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.annotation.Ignored;
 
@@ -37,7 +38,7 @@ public class JavaNetHttpProperties {
 	/**
 	 * The root key for {@code java.net.http} HTTP client properties.
 	 */
-	public static final String ROOT = "java-net-http";
+	public static final String ROOT = JavaNetHttpLibrary.CLIENT_NAME;
 
 	/**
 	 * The request properties for the HTTP client.

@@ -5,6 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.time.Duration;
 
+import org.apiphany.http.JavaNetHttpClients;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
