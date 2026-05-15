@@ -1,5 +1,9 @@
 ## Release Notes
 
+`1.2.8`
+
+---
+
 `1.2.7`
 
 - Added `JavaNetHttpClients` with utility methods for the default Java net HTTP client library.
