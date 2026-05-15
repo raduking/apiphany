@@ -49,7 +49,7 @@ class JavaNetHttpPropertiesTest {
 	void shouldReturnDefaultHttpVersionForRequestIfNotSet() {
 		JavaNetHttpProperties.Request request = new JavaNetHttpProperties.Request();
 
-		assertThat(request.getHttpVersion(), equalTo(JavaNetHttpProperties.Request.DEFAULT_HTTP_VERSION));
+		assertThat(request.getHttpVersion(), equalTo(JavaNetHttpProperties.Request.Default.HTTP_VERSION));
 	}
 
 	@Test
@@ -57,7 +57,7 @@ class JavaNetHttpPropertiesTest {
 		JavaNetHttpProperties.Request request = new JavaNetHttpProperties.Request();
 		request.setVersion("INVALID_HTTP_VERSION");
 
-		assertThat(request.getHttpVersion(), equalTo(JavaNetHttpProperties.Request.DEFAULT_HTTP_VERSION));
+		assertThat(request.getHttpVersion(), equalTo(JavaNetHttpProperties.Request.Default.HTTP_VERSION));
 	}
 
 	@Test

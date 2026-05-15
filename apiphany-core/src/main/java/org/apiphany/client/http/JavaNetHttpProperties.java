@@ -28,7 +28,7 @@ import org.apiphany.lang.annotation.Ignored;
  *        version: HTTP/2
  * </pre>
  *
- * The default HTTP version is HTTP/1.1 ({@link Request#DEFAULT_HTTP_VERSION}).
+ * The default HTTP version is HTTP/1.1 ({@link Request.Default#HTTP_VERSION}).
  *
  * @author Radu Sebastian LAZIN
  */
@@ -87,14 +87,26 @@ public class JavaNetHttpProperties {
 	public static class Request {
 
 		/**
-		 * The default HTTP version for requests (HTTP/1.1).
+		 * Constants for default connection property values.
+		 *
+		 * @author Radu Sebastian LAZIN
 		 */
-		public static final Version DEFAULT_HTTP_VERSION = Version.HTTP_1_1;
+		public static class Default {
+
+			/**
+			 * The default HTTP version for requests (HTTP/1.1).
+			 */
+			public static final Version HTTP_VERSION = Version.HTTP_1_1;
+
+			private Default() {
+				// empty
+			}
+		}
 
 		/**
 		 * The HTTP version as a string (e.g., "HTTP/1.1" or "HTTP/2").
 		 */
-		private String version = HttpMessages.toProtocolString(DEFAULT_HTTP_VERSION);
+		private String version = HttpMessages.toProtocolString(Default.HTTP_VERSION);
 
 		/**
 		 * Default constructor.
@@ -133,7 +145,7 @@ public class JavaNetHttpProperties {
 			try {
 				return HttpMessages.parseJavaNetHttpVersion(version);
 			} catch (Exception e) {
-				return DEFAULT_HTTP_VERSION;
+				return Default.HTTP_VERSION;
 			}
 		}
 

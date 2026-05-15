@@ -2,7 +2,6 @@ package org.apiphany.client.http;
 
 import java.io.InputStream;
 import java.net.http.HttpClient;
-import java.net.http.HttpClient.Builder;
 import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublisher;
@@ -15,12 +14,8 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
-
-import javax.net.ssl.SSLContext;
 
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
@@ -144,38 +139,7 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	 * @return the customized HTTP client builder
 	 */
 	private HttpClient.Builder customize(final HttpClient.Builder httpClientBuilder) {
-		return customize(httpClientBuilder, getClientProperties(), getSslContext());
-	}
-
-	/**
-	 * Customizes the HTTP client builder based on the given client properties and SSL context.
-	 *
-	 * @param httpClientBuilder HTTP client builder
-	 * @param clientProperties client properties
-	 * @param sslContext SSL context to set in the HTTP client builder
-	 * @return the customized HTTP client builder
-	 */
-	public static Builder customize(final Builder httpClientBuilder, final ClientProperties clientProperties, final SSLContext sslContext) {
-		JavaNetHttpProperties httpProperties = clientProperties.getCustomProperties(JavaNetHttpProperties.class);
-
-		// HTTP version
-		HttpClient.Version version = Nullables.notNull(httpProperties)
-				.andNotNull(JavaNetHttpProperties::getRequest)
-				.thenNotNull(JavaNetHttpProperties.Request::getHttpVersion)
-				.orElse(() -> JavaNetHttpProperties.Request.DEFAULT_HTTP_VERSION);
-		httpClientBuilder.version(version);
-
-		// SSL context
-		Nullables.whenNotNull(sslContext, httpClientBuilder::sslContext);
-
-		// Timeouts
-		Duration connectTimeout = getUsableTimeout(clientProperties.getTimeout(), Timeout::getConnect);
-		Nullables.whenNotNull(connectTimeout, httpClientBuilder::connectTimeout);
-
-		// Follow redirects
-		boolean followRedirects = clientProperties.getConnection().isFollowRedirects();
-		httpClientBuilder.followRedirects(followRedirects ? HttpClient.Redirect.NORMAL : HttpClient.Redirect.NEVER);
-		return httpClientBuilder;
+		return JavaNetHttpClients.customize(httpClientBuilder, getClientProperties(), getSslContext());
 	}
 
 	/**
@@ -245,7 +209,8 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 			case OPTIONS, TRACE -> httpRequestBuilder.method(httpMethod.value(), BodyPublishers.noBody());
 			default -> throw new UnsupportedOperationException("HTTP method " + httpMethod + " is not supported!");
 		}
-		Nullables.apply(getUsableTimeout(getClientProperties().getTimeout(), Timeout::getRequest), httpRequestBuilder::timeout);
+		Duration timeout = JavaNetHttpClients.getTimeout(getClientProperties().getTimeout(), Timeout::getRequest);
+		Nullables.whenNotNull(timeout, httpRequestBuilder::timeout);
 		return httpRequestBuilder.build();
 	}
 
@@ -346,28 +311,5 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 		Maps.safe(headers)
 				.forEach((headerName, headerValues) -> Lists.safe(headerValues)
 						.forEach(headerValue -> httpRequestBuilder.header(headerName, headerValue)));
-	}
-
-	/**
-	 * Returns the usable timeout value based on the given timeout and timeout extractor. If the timeout value is equal to
-	 * {@link ClientProperties.Timeout#INFINITE}, then this method will return null to indicate that no timeout should be
-	 * applied.
-	 * <p>
-	 * This method is only useful for the Java net HTTP client because whenever a zero (infinite) timeout is set it throws
-	 * an exception instead of just treating it as infinite.
-	 *
-	 * @param timeout timeout object containing the timeout value
-	 * @param timeoutExtractor function to extract the timeout value from the timeout object
-	 * @return the usable timeout value or null if no timeout should be applied
-	 */
-	public static Duration getUsableTimeout(final Timeout timeout, final Function<Timeout, Duration> timeoutExtractor) {
-		Duration timeoutValue = timeoutExtractor.apply(timeout);
-		if (null == timeoutValue) {
-			return null;
-		}
-		if (Objects.equals(timeoutValue, ClientProperties.Timeout.INFINITE)) {
-			return null;
-		}
-		return timeoutValue;
 	}
 }

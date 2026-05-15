@@ -2,14 +2,15 @@
 
 `1.2.7`
 
-- Upgraded `oauth2-oidc-sdk` to `11.37.1`.
-- Upgraded `org.eclipse.jdt.core` to `3.45.0`.
-- Upgraded `spotless-maven-plugin` to `3.4.0`.
+- Added `JavaNetHttpClients` with utility methods for the default Java net HTTP client library.
 - Added `ApacheHC5Library` utility class for Apache HTTP Client 5 library discovery and naming.
 - Added `CloseableHttpRequestFactory` to be able to close its resources when it's closed.
 - Moved HTTP client specific code from `RestTemplateExchangeClient` to `CloseableHttpRequestFactory`.
 - Added fallback to Java net HTTP client if Apache HTTP Client 5 library is not present in the classpath in `RestTemplateExchangeClient`.
 - Added follow redirects property `ClientProperties.Connection` to configure redirect behavior.
+- Upgraded `oauth2-oidc-sdk` to `11.37.1`.
+- Upgraded `org.eclipse.jdt.core` to `3.45.0`.
+- Upgraded `spotless-maven-plugin` to `3.4.0`.
 
 ---
 
