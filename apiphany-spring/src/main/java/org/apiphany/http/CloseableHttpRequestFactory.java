@@ -12,7 +12,7 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ClientProperties.Timeout;
 import org.apiphany.client.http.ApacheHC5PoolingHttpClients;
-import org.apiphany.client.http.JavaNetHttpExchangeClient;
+import org.apiphany.client.http.JavaNetHttpClients;
 import org.apiphany.client.http.JavaNetHttpProperties;
 import org.apiphany.client.http.RestTemplateProperties;
 import org.apiphany.lang.Strings;
@@ -195,10 +195,10 @@ public class CloseableHttpRequestFactory implements ClientHttpRequestFactory, Au
 		@SuppressWarnings("resource")
 		public static CloseableHttpRequestFactory create(final ClientProperties clientProperties) { // NOSONAR
 			HttpClient httpClient = new JdkHttpClientBuilder()
-					.withCustomizer(httpClientBuilder -> JavaNetHttpExchangeClient.customize(httpClientBuilder, clientProperties, null))
+					.withCustomizer(httpClientBuilder -> JavaNetHttpClients.customize(httpClientBuilder, clientProperties, null))
 					.build(null);
 			JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory(httpClient);
-			requestFactory.setReadTimeout(JavaNetHttpExchangeClient.getUsableTimeout(clientProperties.getTimeout(), Timeout::getRequest));
+			requestFactory.setReadTimeout(JavaNetHttpClients.getTimeout(clientProperties.getTimeout(), Timeout::getRequest));
 			return CloseableHttpRequestFactory.of(requestFactory, httpClient);
 		}
 
