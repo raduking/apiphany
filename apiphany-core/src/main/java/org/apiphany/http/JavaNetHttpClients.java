@@ -65,7 +65,7 @@ public interface JavaNetHttpClients {
 	 * @param timeoutExtractor function to extract the timeout value from the timeout object
 	 * @return the usable timeout value or null if no timeout should be applied
 	 */
-	static Duration getTimeout(final Timeout timeout, final Function<Timeout, Duration> timeoutExtractor) {
+	static Duration getTimeout(final ClientProperties.Timeout timeout, final Function<ClientProperties.Timeout, Duration> timeoutExtractor) {
 		return getTimeout(timeout, timeoutExtractor, Suppliers.supplyNull());
 	}
 
@@ -83,7 +83,7 @@ public interface JavaNetHttpClients {
 	 *     or infinite
 	 * @return the usable timeout value or the default value if the extracted timeout value is infinite
 	 */
-	static Duration getTimeout(final Timeout timeout, final Function<ClientProperties.Timeout, Duration> timeoutExtractor,
+	static Duration getTimeout(final ClientProperties.Timeout timeout, final Function<ClientProperties.Timeout, Duration> timeoutExtractor,
 			final Supplier<Duration> defaultValueSupplier) {
 		Duration timeoutValue = timeoutExtractor.apply(timeout);
 		if (null == timeoutValue) {
