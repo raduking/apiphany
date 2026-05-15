@@ -63,14 +63,14 @@ public class HttpEntityRequestCallback<T> implements RequestCallback {
 		MediaType requestContentType = requestEntityHeaders.getContentType();
 		Object requestBody = requestEntity.getBody();
 		if (null == requestBody) {
-			SpringHttpRequests.copyHeaders(requestEntityHeaders, requestHeaders);
+			SpringHttpSupport.copyHeaders(requestEntityHeaders, requestHeaders);
 			return;
 		}
 
 		Class<T> requestBodyClass = (Class<T>) requestBody.getClass();
 		for (HttpMessageConverter<?> messageConverter : messageConverters) {
 			if (messageConverter.canWrite(requestBodyClass, requestContentType)) {
-				SpringHttpRequests.copyHeaders(requestEntityHeaders, requestHeaders);
+				SpringHttpSupport.copyHeaders(requestEntityHeaders, requestHeaders);
 				logBody(requestBody, requestContentType, messageConverter);
 				HttpMessageConverter<Object> converter = (HttpMessageConverter<Object>) messageConverter;
 				converter.write(requestBody, requestContentType, request);
