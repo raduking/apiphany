@@ -53,7 +53,7 @@ class ApiClientWithDefaultClientIT implements ApiphanyContract {
 		return wiremock;
 	}
 
-	abstract class NestedContract implements ApiphanyContract {
+	private abstract class NestedContract implements ApiphanyContract {
 
 		@Override
 		public WireMockExtension wiremock() {
@@ -87,7 +87,7 @@ class ApiClientWithDefaultClientIT implements ApiphanyContract {
 
 		@Override
 		public ApiClient apiClient(final ClientProperties properties) {
-			return ApiphanyContract.super.apiClient(properties);
+			return ApiClientWithDefaultClientIT.this.apiClient(properties);
 		}
 	}
 
