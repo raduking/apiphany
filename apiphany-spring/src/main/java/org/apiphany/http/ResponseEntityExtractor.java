@@ -28,12 +28,12 @@ import org.springframework.web.client.UnknownContentTypeException;
  *
  * @author Radu Sebastian LAZIN
  */
-public class ResponseEntityResponseExtractor<T> implements ResponseExtractor<ResponseEntity<T>> {
+public class ResponseEntityExtractor<T> implements ResponseExtractor<ResponseEntity<T>> {
 
 	/**
 	 * Logger for this class.
 	 */
-	private static final Logger LOGGER = LoggerFactory.getLogger(ResponseEntityResponseExtractor.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ResponseEntityExtractor.class);
 
 	/**
 	 * The class of the response body to read.
@@ -51,7 +51,7 @@ public class ResponseEntityResponseExtractor<T> implements ResponseExtractor<Res
 	 * @param responseClass the class of the response body to read
 	 * @param messageConverters the list of HTTP message converters to use for reading the response body
 	 */
-	public ResponseEntityResponseExtractor(final Class<T> responseClass, final List<HttpMessageConverter<?>> messageConverters) {
+	public ResponseEntityExtractor(final Class<T> responseClass, final List<HttpMessageConverter<?>> messageConverters) {
 		this.responseClass = Objects.requireNonNull(responseClass, "Response class must not be null");
 		this.messageConverters = messageConverters;
 	}

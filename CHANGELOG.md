@@ -2,6 +2,9 @@
 
 `1.2.8`
 
+- Added `SpringRestExchangeClient` which adds `RestClient` support.
+- Renamed `ResponseEntityResponseExtractor` to `ResponseEntityExtractor`.
+
 ---
 
 `1.2.7`
