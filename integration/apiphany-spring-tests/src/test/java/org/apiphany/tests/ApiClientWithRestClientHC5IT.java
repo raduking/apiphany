@@ -14,12 +14,12 @@ import org.apiphany.security.AuthenticationType;
 public class ApiClientWithRestClientHC5IT extends ApiClientWithDefaultClientIT {
 
 	@Override
-	protected Class<? extends ExchangeClient> exchangeClientClass() {
+	public Class<? extends ExchangeClient> exchangeClientClass() {
 		return SpringRestExchangeClient.class;
 	}
 
 	@Override
-	protected ExchangeClient getClient(final AuthenticationType authType) {
+	public ExchangeClient getClient(final AuthenticationType authType) {
 		return new SpringRestExchangeClient() {
 			@Override
 			public AuthenticationType getAuthenticationType() {
