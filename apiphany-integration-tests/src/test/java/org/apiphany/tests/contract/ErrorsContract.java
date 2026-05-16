@@ -16,8 +16,10 @@ import org.apiphany.ApiClient;
 import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.http.HttpException;
+import org.apiphany.test.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.morphix.lang.function.ThrowingRunnable;
 import org.morphix.lang.thread.Threads;
 
 /**
@@ -145,14 +147,9 @@ public interface ErrorsContract extends ApiphanyContract {
 			assertEquals(500, e.getStatusCode());
 		}
 
-		boolean asserted = Threads.waitUntil(() -> {
-			try {
-				wiremock().verify(getRequestedFor(urlEqualTo("/slow")));
-				return true;
-			} catch (AssertionError e) {
-				return false;
-			}
-		}, Duration.ofSeconds(5));
-		assertTrue(asserted, "Expected the request to be received by the server within 5 seconds");
+		ThrowingRunnable assertion = () -> wiremock().verify(getRequestedFor(urlEqualTo("/slow")));
+
+		boolean requestReachedServer = Threads.waitUntil(Assertions.asserted(assertion), Duration.ofSeconds(5));
+		assertTrue(requestReachedServer, "Expected the request to be received by the server within 5 seconds");
 	}
 }
