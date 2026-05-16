@@ -73,7 +73,9 @@ public interface HeadersContract extends ApiphanyContract {
 
 	@DisplayName("Headers: The client should send a Content-Length header when a body is present even if Content-Type is not set explicitly")
 	@Test
-	default void shouldSendContentLengthWhenBodyPresent() throws Exception {
+	default void shouldSendContentLengthWhenBodySizeIsKnown() throws Exception {
+		// according RFC-9112 §6 - we always send Content-Length when the body size is known, even if Content-Type is not set
+		// explicitly, and we should not add a Transfer-Encoding: chunked header in this case.
 		wiremock().stubFor(post("/length")
 				.willReturn(aResponse()
 						.withStatus(200)));
@@ -252,5 +254,47 @@ public interface HeadersContract extends ApiphanyContract {
 		wiremock().verify(getRequestedFor(urlEqualTo("/multi"))
 				.withHeader("X-Test", containing("A"))
 				.withHeader("X-Test", containing("B")));
+	}
+
+	@DisplayName("Headers: The client should not override User-Agent when explicitly set")
+	@Test
+	default void shouldRespectUserAgentWhenSet() throws Exception {
+		wiremock().stubFor(get("/ua")
+				.willReturn(aResponse().withStatus(200)));
+
+		ApiClient api = apiClient();
+
+		try (api) {
+			api.client()
+					.http()
+					.get()
+					.path("ua")
+					.header("User-Agent", "apiphany-test-agent")
+					.retrieve();
+		}
+
+		wiremock().verify(getRequestedFor(urlEqualTo("/ua"))
+				.withHeader("User-Agent", equalTo("apiphany-test-agent")));
+	}
+
+	@DisplayName("Headers: The client should not compress request bodies unless explicitly configured")
+	@Test
+	default void shouldNotCompressRequestBodyImplicitly() throws Exception {
+		wiremock().stubFor(post("/compress")
+				.willReturn(aResponse().withStatus(200)));
+
+		ApiClient api = apiClient();
+
+		try (api) {
+			api.client()
+					.http()
+					.post()
+					.path("compress")
+					.body("hello")
+					.retrieve();
+		}
+
+		wiremock().verify(postRequestedFor(urlEqualTo("/compress"))
+				.withoutHeader("Content-Encoding"));
 	}
 }
