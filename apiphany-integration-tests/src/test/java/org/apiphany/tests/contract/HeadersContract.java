@@ -1,6 +1,7 @@
 package org.apiphany.tests.contract;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
@@ -8,12 +9,41 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.apiphany.ApiClient;
+import org.apiphany.ApiResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-public interface HeadersContract extends ApiClientITContract {
+/**
+ * Contract tests for headers. These tests verify that the client correctly sends and handles HTTP headers, including
+ * custom headers, Content-Type, Accept, and others.
+ *
+ * @author Radu Sebastian LAZIN
+ */
+public interface HeadersContract extends ApiphanyContract {
+
+	@DisplayName("Headers: The client should send custom headers when set explicitly")
+	@Test
+	default void shouldSendCustomHeaders() throws Exception {
+		wiremock().stubFor(get("/headers")
+				.willReturn(aResponse()
+						.withStatus(200)));
+
+		ApiClient api = apiClient();
+		try (api) {
+			api.client()
+					.http()
+					.get()
+					.path("headers")
+					.header("X-Test", "42")
+					.retrieve();
+		}
+
+		wiremock().verify(getRequestedFor(urlEqualTo("/headers"))
+				.withHeader("X-Test", equalTo("42")));
+	}
 
 	@DisplayName("Headers: The client should not send a Content-Type header for requests without a body when not set explicitly")
 	@Test
@@ -39,6 +69,30 @@ public interface HeadersContract extends ApiClientITContract {
 
 		wiremock().verify(postRequestedFor(urlEqualTo("/no-body"))
 				.withoutHeader("Content-Type"));
+	}
+
+	@DisplayName("Headers: The client should send a Content-Length header when a body is present even if Content-Type is not set explicitly")
+	@Test
+	default void shouldSendContentLengthWhenBodyPresent() throws Exception {
+		wiremock().stubFor(post("/length")
+				.willReturn(aResponse()
+						.withStatus(200)));
+
+		ApiClient api = apiClient();
+		try (api) {
+			ApiResponse<?> response = api.client()
+					.http()
+					.post()
+					.path("length")
+					.body("hello")
+					.retrieve();
+
+			assertNull(response.orNull());
+			assertEquals(200, response.getStatus().getCode());
+		}
+
+		wiremock().verify(postRequestedFor(urlEqualTo("/length"))
+				.withHeader("Content-Length", equalTo("5")));
 	}
 
 	@DisplayName("Headers: The client should not send an Accept header by default when not set explicitly")
@@ -94,6 +148,31 @@ public interface HeadersContract extends ApiClientITContract {
 				.withoutHeader("Accept-Encoding"));
 	}
 
+	@DisplayName("Headers: The client should not add a Transfer-Encoding header automatically when sending a body without an explicit Content-Type")
+	@Test
+	default void shouldNotAddTransferEncodingAutomatically() throws Exception {
+		wiremock().stubFor(post("/chunk")
+				.willReturn(aResponse()
+						.withStatus(200)
+						.withBody("chunked body")));
+
+		ApiClient api = apiClient();
+		try (api) {
+			String result = api.client()
+					.http()
+					.post()
+					.path("chunk")
+					.body("hello")
+					.retrieve(String.class)
+					.orNull();
+
+			assertEquals("chunked body", result);
+		}
+
+		wiremock().verify(postRequestedFor(urlEqualTo("/chunk"))
+				.withoutHeader("Transfer-Encoding"));
+	}
+
 	@DisplayName("Headers: The client should convert text/plain responses to String by default even without an Accept header")
 	@Test
 	default void shouldConvertTextPlainToStringByDefault() throws Exception {
@@ -146,5 +225,32 @@ public interface HeadersContract extends ApiClientITContract {
 
 		wiremock().verify(getRequestedFor(urlEqualTo("/case"))
 				.withHeader("X-CuStOm-HeAdEr", equalTo("42")));
+	}
+
+	@DisplayName("Headers: The client should allow sending multiple values for the same header")
+	@Test
+	default void shouldSendMultipleHeaderValues() throws Exception {
+		wiremock().stubFor(get("/multi")
+				.willReturn(aResponse()
+						.withStatus(200)
+						.withBody("multiple headers")));
+
+		ApiClient api = apiClient();
+		try (api) {
+			String result = api.client()
+					.http()
+					.get()
+					.path("multi")
+					.header("X-Test", "A")
+					.header("X-Test", "B")
+					.retrieve(String.class)
+					.orRethrow();
+
+			assertEquals("multiple headers", result);
+		}
+
+		wiremock().verify(getRequestedFor(urlEqualTo("/multi"))
+				.withHeader("X-Test", containing("A"))
+				.withHeader("X-Test", containing("B")));
 	}
 }
