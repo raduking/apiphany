@@ -9,10 +9,12 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import org.apiphany.ApiClient;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 public interface RedirectsContract extends ApiClientITContract {
 
+	@DisplayName("Redirects: By default, the client should not follow redirects")
 	@Test
 	default void shouldNotFollowRedirectsByDefault() throws Exception {
 		wiremock().stubFor(get("/redirect")
@@ -43,6 +45,7 @@ public interface RedirectsContract extends ApiClientITContract {
 		wiremock().verify(0, getRequestedFor(urlEqualTo("/target")));
 	}
 
+	@DisplayName("Redirects: The client should follow redirects when enabled")
 	@Test
 	default void shouldFollowRedirectsWhenEnabled() throws Exception {
 		assumeTrue(enableRedirects(), "This client does not support redirects");
