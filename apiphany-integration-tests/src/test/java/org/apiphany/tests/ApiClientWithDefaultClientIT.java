@@ -22,7 +22,6 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -52,6 +51,7 @@ import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.security.AuthenticationType;
 import org.apiphany.test.io.OneShotInputStream;
+import org.apiphany.tests.contract.RedirectsContract;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.morphix.lang.retry.Retry;
@@ -82,7 +82,7 @@ import com.jayway.jsonpath.JsonPath;
  *
  * @author Radu Sebastian LAZIN
  */
-class ApiClientWithDefaultClientIT {
+class ApiClientWithDefaultClientIT implements RedirectsContract {
 
 	@RegisterExtension
 	private static final WireMockExtension wiremock =
@@ -90,40 +90,14 @@ class ApiClientWithDefaultClientIT {
 					.options(options().dynamicPort())
 					.build();
 
-	protected String baseUrl() {
-		return wiremock.getRuntimeInfo().getHttpBaseUrl();
-	}
-
-	protected Class<? extends ExchangeClient> exchangeClientClass() {
-		return JavaNetHttpExchangeClient.class;
-	}
-
-	protected ExchangeClient getClient(final AuthenticationType authType) {
-		return new JavaNetHttpExchangeClient() {
-			@Override
-			public AuthenticationType getAuthenticationType() {
-				return authType;
-			}
-		};
-	}
-
-	protected boolean supportsRedirects() {
-		return false;
-	}
-
-	protected ClientProperties clientProperties() {
-		return new ClientProperties();
-	}
-
-	protected ApiClient apiClient() {
-		return ApiClient.of(baseUrl(), ApiClient
-				.with(exchangeClientClass())
-				.properties(clientProperties()));
+	@Override
+	public WireMockExtension wiremock() {
+		return wiremock;
 	}
 
 	@Test
 	void shouldReturnBody() throws Exception {
-		wiremock.stubFor(get("/hello")
+		wiremock().stubFor(get("/hello")
 				.willReturn(aResponse()
 						.withStatus(200)
 						.withBody("world")));
@@ -140,73 +114,12 @@ class ApiClientWithDefaultClientIT {
 			assertEquals("world", result);
 		}
 
-		wiremock.verify(1, getRequestedFor(urlEqualTo("/hello")));
-	}
-
-	@Test
-	void shouldNotFollowRedirectsByDefault() throws Exception {
-		wiremock.stubFor(get("/redirect")
-				.willReturn(aResponse()
-						.withStatus(302)
-						.withHeader("Location", "/target")));
-
-		wiremock.stubFor(get("/target")
-				.willReturn(aResponse()
-						.withStatus(200)
-						.withBody("OK")));
-
-		ApiClient api = apiClient();
-		try (api) {
-			var result = api.client()
-					.http()
-					.get()
-					.path("redirect")
-					.retrieve(String.class)
-					.orNull();
-			assertNull(result);
-		}
-
-		// should have called redirect exactly once
-		wiremock.verify(1, getRequestedFor(urlEqualTo("/redirect")));
-
-		// MUST NOT have followed redirect
-		wiremock.verify(0, getRequestedFor(urlEqualTo("/target")));
-	}
-
-	@Test
-	void shouldFollowRedirectsWhenEnabled() throws Exception {
-		assumeTrue(supportsRedirects(), "This client does not support redirects");
-
-		wiremock.stubFor(get("/redirect")
-				.willReturn(aResponse()
-						.withStatus(302)
-						.withHeader("Location", "/target")));
-
-		wiremock.stubFor(get("/target")
-				.willReturn(aResponse()
-						.withStatus(200)
-						.withBody("OK")));
-
-		ApiClient api = apiClient();
-		try (api) {
-			var result = api
-					.client()
-					.http()
-					.get()
-					.path("redirect")
-					.retrieve(String.class)
-					.orNull();
-
-			assertEquals("OK", result);
-		}
-
-		wiremock.verify(getRequestedFor(urlEqualTo("/redirect")));
-		wiremock.verify(getRequestedFor(urlEqualTo("/target")));
+		wiremock().verify(1, getRequestedFor(urlEqualTo("/hello")));
 	}
 
 	@Test
 	void shouldSendHeaders() throws Exception {
-		wiremock.stubFor(get("/headers")
+		wiremock().stubFor(get("/headers")
 				.willReturn(aResponse()
 						.withStatus(200)));
 
@@ -220,13 +133,13 @@ class ApiClientWithDefaultClientIT {
 					.retrieve();
 		}
 
-		wiremock.verify(getRequestedFor(urlEqualTo("/headers"))
+		wiremock().verify(getRequestedFor(urlEqualTo("/headers"))
 				.withHeader("X-Test", equalTo("42")));
 	}
 
 	@Test
 	void shouldSendQueryParams() throws Exception {
-		wiremock.stubFor(get(urlPathEqualTo("/query"))
+		wiremock().stubFor(get(urlPathEqualTo("/query"))
 				.willReturn(aResponse()
 						.withStatus(200)
 						.withBody("Foo OK")));
@@ -244,7 +157,7 @@ class ApiClientWithDefaultClientIT {
 			assertEquals("Foo OK", result);
 		}
 
-		wiremock.verify(getRequestedFor(urlPathEqualTo("/query"))
+		wiremock().verify(getRequestedFor(urlPathEqualTo("/query"))
 				.withQueryParam("foo", equalTo("bar")));
 	}
 
@@ -254,7 +167,7 @@ class ApiClientWithDefaultClientIT {
 
 	@Test
 	void shouldDeserializeJson() throws Exception {
-		wiremock.stubFor(get("/json")
+		wiremock().stubFor(get("/json")
 				.willReturn(aResponse()
 						.withStatus(200)
 						.withHeader("Content-Type", "application/json")
@@ -274,7 +187,7 @@ class ApiClientWithDefaultClientIT {
 			assertEquals("john", result.name());
 		}
 
-		wiremock.verify(getRequestedFor(urlEqualTo("/json")));
+		wiremock().verify(getRequestedFor(urlEqualTo("/json")));
 	}
 
 	record MyDtoWithToString(String name) {
@@ -286,7 +199,7 @@ class ApiClientWithDefaultClientIT {
 
 	@Test
 	void shouldNotSerializeJsonWhenHeaderIsNotSet() throws Exception {
-		wiremock.stubFor(post("/json")
+		wiremock().stubFor(post("/json")
 				.willReturn(aResponse()
 						.withStatus(200)));
 
@@ -300,13 +213,13 @@ class ApiClientWithDefaultClientIT {
 					.retrieve();
 		}
 
-		wiremock.verify(postRequestedFor(urlEqualTo("/json"))
+		wiremock().verify(postRequestedFor(urlEqualTo("/json"))
 				.withRequestBody(equalTo("My name is john")));
 	}
 
 	@Test
 	void shouldSerializeJsonWithJsonBuilderWhenContentTypeIsSet() throws Exception {
-		wiremock.stubFor(post("/json")
+		wiremock().stubFor(post("/json")
 				.willReturn(aResponse()
 						.withStatus(200)));
 
@@ -322,14 +235,14 @@ class ApiClientWithDefaultClientIT {
 					.retrieve();
 		}
 
-		wiremock.verify(postRequestedFor(urlEqualTo("/json"))
+		wiremock().verify(postRequestedFor(urlEqualTo("/json"))
 				.withHeader("Content-Type", equalTo("application/json"))
 				.withRequestBody(equalTo(JsonBuilder.toJson(dto))));
 	}
 
 	@Test
 	void shouldSendPostBody() throws Exception {
-		wiremock.stubFor(post("/body")
+		wiremock().stubFor(post("/body")
 				.willReturn(aResponse().withStatus(200)));
 
 		ApiClient api = apiClient();
@@ -343,7 +256,7 @@ class ApiClientWithDefaultClientIT {
 					.orNull();
 		}
 
-		wiremock.verify(postRequestedFor(urlEqualTo("/body"))
+		wiremock().verify(postRequestedFor(urlEqualTo("/body"))
 				.withRequestBody(equalTo("hello")));
 	}
 
@@ -351,7 +264,7 @@ class ApiClientWithDefaultClientIT {
 	void shouldDecodeGzipAutomatically() throws Exception {
 		byte[] gzipped = GZip.compress("hello");
 
-		wiremock.stubFor(get("/gzip")
+		wiremock().stubFor(get("/gzip")
 				.willReturn(aResponse()
 						.withStatus(200)
 						.withHeader("Content-Encoding", "gzip")
@@ -370,7 +283,7 @@ class ApiClientWithDefaultClientIT {
 			assertEquals("hello", result);
 		}
 
-		wiremock.verify(getRequestedFor(urlEqualTo("/gzip"))
+		wiremock().verify(getRequestedFor(urlEqualTo("/gzip"))
 				.withHeader("Accept-Encoding", containing("gzip")));
 	}
 
@@ -379,7 +292,7 @@ class ApiClientWithDefaultClientIT {
 		byte[] gzipped = GZip.compress("hello".getBytes(StandardCharsets.UTF_8));
 		byte[] deflateThenGzip = Deflate.compress(gzipped);
 
-		wiremock.stubFor(get("/gzip-deflate")
+		wiremock().stubFor(get("/gzip-deflate")
 				.willReturn(aResponse()
 						.withStatus(200)
 						.withHeader("Content-Encoding", "gzip, deflate")
@@ -398,14 +311,14 @@ class ApiClientWithDefaultClientIT {
 			assertEquals("hello", result);
 		}
 
-		wiremock.verify(getRequestedFor(urlEqualTo("/gzip-deflate"))
+		wiremock().verify(getRequestedFor(urlEqualTo("/gzip-deflate"))
 				.withHeader("Accept-Encoding", containing("gzip"))
 				.withHeader("Accept-Encoding", containing("deflate")));
 	}
 
 	@Test
 	void shouldNotFailWhenBodyIsNotActuallyGzipped() throws Exception {
-		wiremock.stubFor(get("/fake-gzip")
+		wiremock().stubFor(get("/fake-gzip")
 				.willReturn(aResponse()
 						.withStatus(200)
 						.withHeader("Content-Encoding", "gzip")
@@ -424,7 +337,7 @@ class ApiClientWithDefaultClientIT {
 			assertEquals("hello", result);
 		}
 
-		wiremock.verify(getRequestedFor(urlEqualTo("/fake-gzip")));
+		wiremock().verify(getRequestedFor(urlEqualTo("/fake-gzip")));
 	}
 
 	@Test
@@ -432,7 +345,7 @@ class ApiClientWithDefaultClientIT {
 		byte[] gzipped = GZip.compress("hello".getBytes(StandardCharsets.UTF_8));
 		byte[] body = Deflate.compress(gzipped);
 
-		wiremock.stubFor(get("/encoding-spaces")
+		wiremock().stubFor(get("/encoding-spaces")
 				.willReturn(aResponse()
 						.withStatus(200)
 						.withHeader("Content-Encoding", "gzip ,  deflate")
@@ -456,7 +369,7 @@ class ApiClientWithDefaultClientIT {
 	void shouldIgnoreUnknownEncoding() throws Exception {
 		byte[] body = GZip.compress("hello".getBytes(StandardCharsets.UTF_8));
 
-		wiremock.stubFor(get("/unknown-encoding")
+		wiremock().stubFor(get("/unknown-encoding")
 				.willReturn(aResponse()
 						.withStatus(200)
 						.withHeader("Content-Encoding", "gzip, weird")
@@ -481,7 +394,7 @@ class ApiClientWithDefaultClientIT {
 		byte[] onceGzipped = GZip.compress("hello");
 		byte[] doubleGzipped = GZip.compress(onceGzipped);
 
-		wiremock.stubFor(get("/double-gzip")
+		wiremock().stubFor(get("/double-gzip")
 				.willReturn(aResponse()
 						.withStatus(200)
 						.withHeader("Content-Encoding", "gzip")
@@ -506,13 +419,13 @@ class ApiClientWithDefaultClientIT {
 			assertEquals("hello", new String(decompressedTwice, Strings.DEFAULT_CHARSET));
 		}
 
-		wiremock.verify(getRequestedFor(urlEqualTo("/double-gzip"))
+		wiremock().verify(getRequestedFor(urlEqualTo("/double-gzip"))
 				.withHeader("Accept-Encoding", containing("gzip")));
 	}
 
 	@Test
 	void shouldHandleEmptyGzipResponse() throws Exception {
-		wiremock.stubFor(get("/empty-gzip")
+		wiremock().stubFor(get("/empty-gzip")
 				.willReturn(aResponse()
 						.withStatus(200)
 						.withHeader("Content-Encoding", "gzip")
@@ -534,7 +447,7 @@ class ApiClientWithDefaultClientIT {
 
 	@Test
 	void shouldHandleClientError() throws Exception {
-		wiremock.stubFor(get("/404")
+		wiremock().stubFor(get("/404")
 				.willReturn(aResponse()
 						.withStatus(404)));
 
@@ -550,12 +463,12 @@ class ApiClientWithDefaultClientIT {
 			assertNull(result);
 		}
 
-		wiremock.verify(getRequestedFor(urlEqualTo("/404")));
+		wiremock().verify(getRequestedFor(urlEqualTo("/404")));
 	}
 
 	@Test
 	void shouldHandleClientErrorWithBody() throws Exception {
-		wiremock.stubFor(get("/404")
+		wiremock().stubFor(get("/404")
 				.willReturn(aResponse()
 						.withStatus(404)
 						.withBody("This is a not found body")));
@@ -573,12 +486,12 @@ class ApiClientWithDefaultClientIT {
 			assertEquals("This is a not found body", result.getBody());
 		}
 
-		wiremock.verify(getRequestedFor(urlEqualTo("/404")));
+		wiremock().verify(getRequestedFor(urlEqualTo("/404")));
 	}
 
 	@Test
 	void shouldHandleServerError() throws Exception {
-		wiremock.stubFor(get("/500")
+		wiremock().stubFor(get("/500")
 				.willReturn(aResponse()
 						.withStatus(500)));
 
@@ -594,12 +507,12 @@ class ApiClientWithDefaultClientIT {
 			assertNull(result);
 		}
 
-		wiremock.verify(getRequestedFor(urlEqualTo("/500")));
+		wiremock().verify(getRequestedFor(urlEqualTo("/500")));
 	}
 
 	@Test
 	void shouldHandleServerErrorWithBody() throws Exception {
-		wiremock.stubFor(get("/500")
+		wiremock().stubFor(get("/500")
 				.willReturn(aResponse()
 						.withStatus(500)
 						.withBody("This is a server error body")));
@@ -617,12 +530,12 @@ class ApiClientWithDefaultClientIT {
 			assertEquals("This is a server error body", result.getBody());
 		}
 
-		wiremock.verify(getRequestedFor(urlEqualTo("/500")));
+		wiremock().verify(getRequestedFor(urlEqualTo("/500")));
 	}
 
 	@Test
 	void shouldTimeout() throws Exception {
-		wiremock.stubFor(get("/slow")
+		wiremock().stubFor(get("/slow")
 				.willReturn(aResponse()
 						.withFixedDelay(3000)
 						.withStatus(200)));
@@ -645,14 +558,14 @@ class ApiClientWithDefaultClientIT {
 			assertEquals(500, e.getStatusCode());
 		}
 
-		wiremock.verify(getRequestedFor(urlEqualTo("/slow")));
+		wiremock().verify(getRequestedFor(urlEqualTo("/slow")));
 	}
 
 	@Test
 	void shouldNotSendContentTypeWithoutBody() throws Exception {
 		// Some clients will add a "Content-Type: text/plain" header by default even for empty bodies, but Java's HttpClient
 		// does not, so we want to ensure that the ApiClient doesn't add it either.
-		wiremock.stubFor(post("/no-body")
+		wiremock().stubFor(post("/no-body")
 				.willReturn(aResponse()
 						.withStatus(200)
 						.withBody("post no body")));
@@ -669,7 +582,7 @@ class ApiClientWithDefaultClientIT {
 			assertEquals("post no body", result);
 		}
 
-		wiremock.verify(postRequestedFor(urlEqualTo("/no-body"))
+		wiremock().verify(postRequestedFor(urlEqualTo("/no-body"))
 				.withoutHeader("Content-Type"));
 	}
 
@@ -677,7 +590,7 @@ class ApiClientWithDefaultClientIT {
 	void shouldNotSendAcceptHeaderByDefault() throws Exception {
 		// Many clients will send an "Accept: */*" header by default, but Java's HttpClient does not, so we want to ensure that
 		// the ApiClient doesn't add it either.
-		wiremock.stubFor(get("/accept")
+		wiremock().stubFor(get("/accept")
 				.willReturn(aResponse()
 						.withStatus(200)
 						.withBody("no accept header")));
@@ -694,7 +607,7 @@ class ApiClientWithDefaultClientIT {
 			assertEquals("no accept header", result);
 		}
 
-		wiremock.verify(getRequestedFor(urlEqualTo("/accept"))
+		wiremock().verify(getRequestedFor(urlEqualTo("/accept"))
 				.withoutHeader("Accept"));
 	}
 
@@ -702,7 +615,7 @@ class ApiClientWithDefaultClientIT {
 	void shouldNotSendAcceptEncodingByDefault() throws Exception {
 		// Many clients will send an "Accept-Encoding: gzip, deflate" header by default, but Java's HttpClient does not, so we
 		// want to ensure that the ApiClient doesn't add it either.
-		wiremock.stubFor(get("/encoding")
+		wiremock().stubFor(get("/encoding")
 				.willReturn(aResponse()
 						.withStatus(200)
 						.withBody("no accept-encoding header")));
@@ -719,13 +632,13 @@ class ApiClientWithDefaultClientIT {
 			assertEquals("no accept-encoding header", result);
 		}
 
-		wiremock.verify(getRequestedFor(urlEqualTo("/encoding"))
+		wiremock().verify(getRequestedFor(urlEqualTo("/encoding"))
 				.withoutHeader("Accept-Encoding"));
 	}
 
 	@Test
 	void shouldConvertTextPlainToStringByDefault() throws Exception {
-		wiremock.stubFor(get("/string")
+		wiremock().stubFor(get("/string")
 				.willReturn(aResponse()
 						.withStatus(200)
 						.withHeader("Content-Type", "text/plain")
@@ -743,7 +656,7 @@ class ApiClientWithDefaultClientIT {
 			assertEquals("the string body", result);
 		}
 
-		wiremock.verify(getRequestedFor(urlEqualTo("/string"))
+		wiremock().verify(getRequestedFor(urlEqualTo("/string"))
 				.withoutHeader("Accept")
 				.withoutHeader("Accept-Encoding")
 				.withoutHeader("Content-Type"));
@@ -753,7 +666,7 @@ class ApiClientWithDefaultClientIT {
 	void shouldPreserveCustomHeader() throws Exception {
 		// OkHttp loves normalizing header names to lower case, so we want to ensure that the ApiClient preserves the case of
 		// custom headers even if the underlying client doesn't.
-		wiremock.stubFor(get("/case")
+		wiremock().stubFor(get("/case")
 				.willReturn(aResponse()
 						.withStatus(200)
 						.withBody("case sensitive header")));
@@ -771,7 +684,7 @@ class ApiClientWithDefaultClientIT {
 			assertEquals("case sensitive header", result);
 		}
 
-		wiremock.verify(getRequestedFor(urlEqualTo("/case"))
+		wiremock().verify(getRequestedFor(urlEqualTo("/case"))
 				.withHeader("X-CuStOm-HeAdEr", equalTo("42")));
 	}
 
@@ -779,7 +692,7 @@ class ApiClientWithDefaultClientIT {
 	void shouldNotRetryByDefault() throws Exception {
 		// Apache's HttpClient will automatically retry failed requests by default, but Java's HttpClient does not, so we want
 		// to ensure that the ApiClient doesn't add retries either.
-		wiremock.stubFor(get("/flaky")
+		wiremock().stubFor(get("/flaky")
 				.willReturn(aResponse()
 						.withStatus(500)
 						.withBody("flaky error response")));
@@ -797,12 +710,12 @@ class ApiClientWithDefaultClientIT {
 			assertEquals("flaky error response", response.getBody());
 		}
 
-		wiremock.verify(1, getRequestedFor(urlEqualTo("/flaky")));
+		wiremock().verify(1, getRequestedFor(urlEqualTo("/flaky")));
 	}
 
 	@Test
 	void shouldNotTransformPostToGetOn307() throws Exception {
-		wiremock.stubFor(post("/redirect307")
+		wiremock().stubFor(post("/redirect307")
 				.willReturn(aResponse()
 						.withStatus(307)
 						.withHeader("Location", "/target")));
@@ -821,13 +734,13 @@ class ApiClientWithDefaultClientIT {
 			assertEquals(List.of("/target"), response.getHeaders().get("Location"));
 		}
 
-		wiremock.verify(postRequestedFor(urlEqualTo("/redirect307")));
-		wiremock.verify(0, getRequestedFor(urlEqualTo("/target")));
+		wiremock().verify(postRequestedFor(urlEqualTo("/redirect307")));
+		wiremock().verify(0, getRequestedFor(urlEqualTo("/target")));
 	}
 
 	@Test
 	void shouldNotAddTransferEncodingAutomatically() throws Exception {
-		wiremock.stubFor(post("/chunk")
+		wiremock().stubFor(post("/chunk")
 				.willReturn(aResponse()
 						.withStatus(200)
 						.withBody("chunked body")));
@@ -845,7 +758,7 @@ class ApiClientWithDefaultClientIT {
 			assertEquals("chunked body", result);
 		}
 
-		wiremock.verify(postRequestedFor(urlEqualTo("/chunk"))
+		wiremock().verify(postRequestedFor(urlEqualTo("/chunk"))
 				.withoutHeader("Transfer-Encoding"));
 	}
 
@@ -853,7 +766,7 @@ class ApiClientWithDefaultClientIT {
 	void shouldHandleEmptyBody200() throws Exception {
 		// some clients behave differently for Content-Length: 0 vs no body. We want to ensure that the ApiClient handles both
 		// cases correctly.
-		wiremock.stubFor(get("/empty")
+		wiremock().stubFor(get("/empty")
 				.willReturn(aResponse()
 						.withStatus(200)
 						.withHeader("Content-Length", "0")));
@@ -870,13 +783,13 @@ class ApiClientWithDefaultClientIT {
 			assertNull(result);
 		}
 
-		wiremock.verify(getRequestedFor(urlEqualTo("/empty")));
+		wiremock().verify(getRequestedFor(urlEqualTo("/empty")));
 	}
 
 	@Test
 	void shouldHandle204NoContent() throws Exception {
 		// 204 must not try to deserialize.
-		wiremock.stubFor(get("/no-content")
+		wiremock().stubFor(get("/no-content")
 				.willReturn(aResponse()
 						.withStatus(204)));
 
@@ -892,12 +805,12 @@ class ApiClientWithDefaultClientIT {
 			assertEquals(204, response.getStatus().getCode());
 		}
 
-		wiremock.verify(getRequestedFor(urlEqualTo("/no-content")));
+		wiremock().verify(getRequestedFor(urlEqualTo("/no-content")));
 	}
 
 	@Test
 	void shouldSendContentLengthWhenBodyPresent() throws Exception {
-		wiremock.stubFor(post("/length")
+		wiremock().stubFor(post("/length")
 				.willReturn(aResponse()
 						.withStatus(200)));
 
@@ -914,13 +827,13 @@ class ApiClientWithDefaultClientIT {
 			assertEquals(200, response.getStatus().getCode());
 		}
 
-		wiremock.verify(postRequestedFor(urlEqualTo("/length"))
+		wiremock().verify(postRequestedFor(urlEqualTo("/length"))
 				.withHeader("Content-Length", equalTo("5")));
 	}
 
 	@Test
 	void shouldReuseConnectionForMultipleRequests() throws Exception {
-		wiremock.stubFor(get("/reuse")
+		wiremock().stubFor(get("/reuse")
 				.willReturn(aResponse()
 						.withStatus(200)));
 
@@ -930,12 +843,12 @@ class ApiClientWithDefaultClientIT {
 			api.client().http().get().path("reuse").retrieve();
 		}
 
-		wiremock.verify(2, getRequestedFor(urlEqualTo("/reuse")));
+		wiremock().verify(2, getRequestedFor(urlEqualTo("/reuse")));
 	}
 
 	@Test
 	void shouldRespectCharsetFromContentType() throws Exception {
-		wiremock.stubFor(get("/charset")
+		wiremock().stubFor(get("/charset")
 				.willReturn(aResponse()
 						.withStatus(200)
 						.withHeader("Content-Type", "text/plain; charset=ISO-8859-1")
@@ -953,12 +866,12 @@ class ApiClientWithDefaultClientIT {
 			assertEquals("é", result);
 		}
 
-		wiremock.verify(1, getRequestedFor(urlEqualTo("/charset")));
+		wiremock().verify(1, getRequestedFor(urlEqualTo("/charset")));
 	}
 
 	@Test
 	void shouldSupportHeadMethod() throws Exception {
-		wiremock.stubFor(head(UrlPattern.ANY)
+		wiremock().stubFor(head(UrlPattern.ANY)
 				.willReturn(aResponse()
 						.withStatus(200)
 						.withHeader("X-Test", "42")));
@@ -977,12 +890,12 @@ class ApiClientWithDefaultClientIT {
 			assertEquals(List.of("42"), response.getHeaders().get("X-Test"));
 		}
 
-		wiremock.verify(headRequestedFor(urlEqualTo("/head")));
+		wiremock().verify(headRequestedFor(urlEqualTo("/head")));
 	}
 
 	@Test
 	void shouldSendMultipleHeaderValues() throws Exception {
-		wiremock.stubFor(get("/multi")
+		wiremock().stubFor(get("/multi")
 				.willReturn(aResponse()
 						.withStatus(200)
 						.withBody("multiple headers")));
@@ -1001,14 +914,14 @@ class ApiClientWithDefaultClientIT {
 			assertEquals("multiple headers", result);
 		}
 
-		wiremock.verify(getRequestedFor(urlEqualTo("/multi"))
+		wiremock().verify(getRequestedFor(urlEqualTo("/multi"))
 				.withHeader("X-Test", containing("A"))
 				.withHeader("X-Test", containing("B")));
 	}
 
 	@Test
 	void shouldFailOnInvalidJson() throws Exception {
-		wiremock.stubFor(get("/bad-json")
+		wiremock().stubFor(get("/bad-json")
 				.willReturn(aResponse()
 						.withStatus(200)
 						.withHeader("Content-Type", "application/json")
@@ -1024,12 +937,12 @@ class ApiClientWithDefaultClientIT {
 					.orRethrow());
 		}
 
-		wiremock.verify(1, getRequestedFor(urlEqualTo("/bad-json")));
+		wiremock().verify(1, getRequestedFor(urlEqualTo("/bad-json")));
 	}
 
 	@Test
 	void shouldRetryAndEventuallySucceed() throws Exception {
-		wiremock.stubFor(get("/retry-success")
+		wiremock().stubFor(get("/retry-success")
 				.inScenario("retry")
 				.whenScenarioStateIs(STARTED)
 				.willReturn(aResponse()
@@ -1037,7 +950,7 @@ class ApiClientWithDefaultClientIT {
 						.withBody("first error response"))
 				.willSetStateTo("second"));
 
-		wiremock.stubFor(get("/retry-success")
+		wiremock().stubFor(get("/retry-success")
 				.inScenario("retry")
 				.whenScenarioStateIs("second")
 				.willReturn(aResponse()
@@ -1058,20 +971,20 @@ class ApiClientWithDefaultClientIT {
 		}
 
 		// 2 attempts total
-		wiremock.verify(2, getRequestedFor(urlEqualTo("/retry-success")));
+		wiremock().verify(2, getRequestedFor(urlEqualTo("/retry-success")));
 	}
 
 	@Test
 	@SuppressWarnings("resource")
 	void shouldFailRetryBeforeSendWhenBodyIsNonRepeatable() throws Exception {
-		wiremock.stubFor(post("/retry-stream")
+		wiremock().stubFor(post("/retry-stream")
 				.inScenario("retry-stream")
 				.whenScenarioStateIs(STARTED)
 				.willReturn(aResponse()
 						.withStatus(500))
 				.willSetStateTo("second"));
 
-		wiremock.stubFor(post("/retry-stream")
+		wiremock().stubFor(post("/retry-stream")
 				.inScenario("retry-stream")
 				.whenScenarioStateIs("second")
 				.willReturn(aResponse()
@@ -1091,20 +1004,20 @@ class ApiClientWithDefaultClientIT {
 
 		// this will break most clients since the InputStream can only be read once, but we want to ensure that the ApiClient
 		// properly retries even in this case by re-creating the stream for the retry attempt
-		wiremock.verify(1, postRequestedFor(urlEqualTo("/retry-stream"))
+		wiremock().verify(1, postRequestedFor(urlEqualTo("/retry-stream"))
 				.withRequestBody(equalTo("hello")));
 	}
 
 	@Test
 	void shouldNotFailRetryBeforeSendWhenBodyIsInputStreamSupplierRepeatable() throws Exception {
-		wiremock.stubFor(post("/retry-stream-1")
+		wiremock().stubFor(post("/retry-stream-1")
 				.inScenario("retry-stream-1")
 				.whenScenarioStateIs(STARTED)
 				.willReturn(aResponse()
 						.withStatus(500))
 				.willSetStateTo("second"));
 
-		wiremock.stubFor(post("/retry-stream-1")
+		wiremock().stubFor(post("/retry-stream-1")
 				.inScenario("retry-stream-1")
 				.whenScenarioStateIs("second")
 				.willReturn(aResponse()
@@ -1127,20 +1040,20 @@ class ApiClientWithDefaultClientIT {
 
 		// this will break most clients since the InputStream can only be read once, but we want to ensure that the ApiClient
 		// properly retries even in this case by re-creating the stream for the retry attempt
-		wiremock.verify(2, postRequestedFor(urlEqualTo("/retry-stream-1"))
+		wiremock().verify(2, postRequestedFor(urlEqualTo("/retry-stream-1"))
 				.withRequestBody(equalTo("hello")));
 	}
 
 	@Test
 	void shouldNotFailRetryBeforeSendWhenBodyIsRepeatableByRecreatingTheInputStream() throws Exception {
-		wiremock.stubFor(post("/retry-stream-2")
+		wiremock().stubFor(post("/retry-stream-2")
 				.inScenario("retry-stream-2")
 				.whenScenarioStateIs(STARTED)
 				.willReturn(aResponse()
 						.withStatus(500))
 				.willSetStateTo("second"));
 
-		wiremock.stubFor(post("/retry-stream-2")
+		wiremock().stubFor(post("/retry-stream-2")
 				.inScenario("retry-stream-2")
 				.whenScenarioStateIs("second")
 				.willReturn(aResponse()
@@ -1163,7 +1076,7 @@ class ApiClientWithDefaultClientIT {
 
 		// this will break most clients since the InputStream can only be read once, but we want to ensure that the ApiClient
 		// properly retries even in this case by re-creating the stream for the retry attempt
-		wiremock.verify(2, postRequestedFor(urlEqualTo("/retry-stream-2"))
+		wiremock().verify(2, postRequestedFor(urlEqualTo("/retry-stream-2"))
 				.withRequestBody(equalTo("hello")));
 	}
 
@@ -1172,7 +1085,7 @@ class ApiClientWithDefaultClientIT {
 		final String expectedBody = "hello world";
 
 		// first request fails
-		wiremock.stubFor(post("/retry-stream-3")
+		wiremock().stubFor(post("/retry-stream-3")
 				.inScenario("retry-stream-3")
 				.whenScenarioStateIs(STARTED)
 				.willReturn(aResponse()
@@ -1180,7 +1093,7 @@ class ApiClientWithDefaultClientIT {
 				.willSetStateTo("second"));
 
 		// retry succeeds
-		wiremock.stubFor(post("/retry-stream-3")
+		wiremock().stubFor(post("/retry-stream-3")
 				.inScenario("retry-stream-3")
 				.whenScenarioStateIs("second")
 				.willReturn(aResponse()
@@ -1208,15 +1121,15 @@ class ApiClientWithDefaultClientIT {
 		}
 
 		// first attempt
-		wiremock.verify(1, postRequestedFor(urlEqualTo("/retry-stream-3"))
+		wiremock().verify(1, postRequestedFor(urlEqualTo("/retry-stream-3"))
 				.withRequestBody(equalTo(expectedBody)));
 
 		// retry attempt MUST be broken (stream already consumed)
-		wiremock.verify(1, postRequestedFor(urlEqualTo("/retry-stream-3"))
+		wiremock().verify(1, postRequestedFor(urlEqualTo("/retry-stream-3"))
 				.withRequestBody(WireMock.notMatching(expectedBody)));
 
 		List<ServeEvent> events =
-				wiremock.getAllServeEvents().stream()
+				wiremock().getAllServeEvents().stream()
 						.filter(e -> e.getRequest().getUrl().equals("/retry-stream-3"))
 						.toList();
 
@@ -1229,9 +1142,9 @@ class ApiClientWithDefaultClientIT {
 	@Test
 	void shouldUseDifferentClientForDifferentAuthType() throws Exception {
 		// stub two different auth types → e.g. TOKEN and SESSION
-		wiremock.stubFor(get("/token")
+		wiremock().stubFor(get("/token")
 				.willReturn(okJson("{\"auth\":\"token\"}")));
-		wiremock.stubFor(get("/session")
+		wiremock().stubFor(get("/session")
 				.willReturn(okJson("{\"auth\":\"session\"}")));
 
 		ExchangeClient tokenClient = getClient(AuthenticationType.TOKEN);
@@ -1272,13 +1185,13 @@ class ApiClientWithDefaultClientIT {
 			assertEquals(1, sessionCountingClient.getRequestCount());
 		}
 
-		wiremock.verify(1, getRequestedFor(urlEqualTo("/token")));
-		wiremock.verify(1, getRequestedFor(urlEqualTo("/session")));
+		wiremock().verify(1, getRequestedFor(urlEqualTo("/token")));
+		wiremock().verify(1, getRequestedFor(urlEqualTo("/session")));
 	}
 
 	@Test
 	void shouldHandleConcurrentRequests() throws Exception {
-		wiremock.stubFor(get(urlMatching("/concurrent/.*"))
+		wiremock().stubFor(get(urlMatching("/concurrent/.*"))
 				.willReturn(ok()));
 
 		int threadCount = 50;
@@ -1299,6 +1212,6 @@ class ApiClientWithDefaultClientIT {
 			CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).join();
 		}
 
-		wiremock.verify(50, getRequestedFor(urlMatching("/concurrent/.*")));
+		wiremock().verify(50, getRequestedFor(urlMatching("/concurrent/.*")));
 	}
 }
