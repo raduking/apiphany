@@ -18,7 +18,7 @@ import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
  *
  * @author Radu Sebastian LAZIN
  */
-public interface ApiClientITContract {
+public interface ApiphanyContract {
 
 	WireMockExtension wiremock();
 

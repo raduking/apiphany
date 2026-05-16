@@ -17,7 +17,13 @@ import org.apiphany.json.JsonBuilder;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-public interface JsonContract extends ApiClientITContract {
+/**
+ * Contract tests for JSON serialization and deserialization. These tests verify that the client correctly handles JSON
+ * request and response bodies when the Content-Type header is set to application/json.
+ *
+ * @author Radu Sebastian LAZIN
+ */
+public interface JsonContract extends ApiphanyContract {
 
 	record MyDto(String name) {
 		// no additional code needed
