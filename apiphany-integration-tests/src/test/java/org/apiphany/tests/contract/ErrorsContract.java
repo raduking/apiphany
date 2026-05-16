@@ -126,12 +126,11 @@ public interface ErrorsContract extends ApiphanyContract {
 						.withFixedDelay(3000)
 						.withStatus(200)));
 
-		ClientProperties properties = clientProperties();
+		ClientProperties properties = new ClientProperties();
 		properties.getTimeout().setConnect(Duration.ofMillis(100));
 		properties.getTimeout().setRequest(Duration.ofMillis(100));
 
-		ApiClient api = ApiClient.of(baseUrl(),
-				ApiClient.with(exchangeClientClass()).properties(properties));
+		ApiClient api = apiClient(properties);
 		try (api) {
 			HttpException e = assertThrows(HttpException.class, () -> api.client() // NOSONAR should not complain
 					.http()
