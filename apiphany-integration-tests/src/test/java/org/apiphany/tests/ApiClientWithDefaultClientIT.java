@@ -43,14 +43,14 @@ import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.http.ContentEncoding;
 import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
-import org.apiphany.io.ContentType;
 import org.apiphany.io.InputStreamSupplier;
 import org.apiphany.io.deflate.Deflate;
 import org.apiphany.io.gzip.GZip;
-import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.security.AuthenticationType;
 import org.apiphany.test.io.OneShotInputStream;
+import org.apiphany.tests.contract.HeadersContract;
+import org.apiphany.tests.contract.JsonContract;
 import org.apiphany.tests.contract.RedirectsContract;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -82,7 +82,7 @@ import com.jayway.jsonpath.JsonPath;
  *
  * @author Radu Sebastian LAZIN
  */
-class ApiClientWithDefaultClientIT implements RedirectsContract {
+class ApiClientWithDefaultClientIT implements HeadersContract, RedirectsContract, JsonContract {
 
 	@RegisterExtension
 	private static final WireMockExtension wiremock =
@@ -159,85 +159,6 @@ class ApiClientWithDefaultClientIT implements RedirectsContract {
 
 		wiremock().verify(getRequestedFor(urlPathEqualTo("/query"))
 				.withQueryParam("foo", equalTo("bar")));
-	}
-
-	record MyDto(String name) {
-		// no additional code needed
-	}
-
-	@Test
-	void shouldDeserializeJson() throws Exception {
-		wiremock().stubFor(get("/json")
-				.willReturn(aResponse()
-						.withStatus(200)
-						.withHeader("Content-Type", "application/json")
-						.withBody("""
-								    {"name":"john"}
-								""")));
-
-		ApiClient api = apiClient();
-		try (api) {
-			var result = api.client()
-					.http()
-					.get()
-					.path("json")
-					.retrieve(MyDto.class)
-					.orNull();
-
-			assertEquals("john", result.name());
-		}
-
-		wiremock().verify(getRequestedFor(urlEqualTo("/json")));
-	}
-
-	record MyDtoWithToString(String name) {
-		@Override
-		public String toString() {
-			return "My name is " + name;
-		}
-	}
-
-	@Test
-	void shouldNotSerializeJsonWhenHeaderIsNotSet() throws Exception {
-		wiremock().stubFor(post("/json")
-				.willReturn(aResponse()
-						.withStatus(200)));
-
-		ApiClient api = apiClient();
-		try (api) {
-			api.client()
-					.http()
-					.post()
-					.path("json")
-					.body(new MyDtoWithToString("john"))
-					.retrieve();
-		}
-
-		wiremock().verify(postRequestedFor(urlEqualTo("/json"))
-				.withRequestBody(equalTo("My name is john")));
-	}
-
-	@Test
-	void shouldSerializeJsonWithJsonBuilderWhenContentTypeIsSet() throws Exception {
-		wiremock().stubFor(post("/json")
-				.willReturn(aResponse()
-						.withStatus(200)));
-
-		MyDtoWithToString dto = new MyDtoWithToString("john");
-		ApiClient api = apiClient();
-		try (api) {
-			api.client()
-					.http()
-					.post()
-					.path("json")
-					.header(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_JSON)
-					.body(dto)
-					.retrieve();
-		}
-
-		wiremock().verify(postRequestedFor(urlEqualTo("/json"))
-				.withHeader("Content-Type", equalTo("application/json"))
-				.withRequestBody(equalTo(JsonBuilder.toJson(dto))));
 	}
 
 	@Test
@@ -561,132 +482,6 @@ class ApiClientWithDefaultClientIT implements RedirectsContract {
 		wiremock().verify(getRequestedFor(urlEqualTo("/slow")));
 	}
 
-	@Test
-	void shouldNotSendContentTypeWithoutBody() throws Exception {
-		// Some clients will add a "Content-Type: text/plain" header by default even for empty bodies, but Java's HttpClient
-		// does not, so we want to ensure that the ApiClient doesn't add it either.
-		wiremock().stubFor(post("/no-body")
-				.willReturn(aResponse()
-						.withStatus(200)
-						.withBody("post no body")));
-
-		ApiClient api = apiClient();
-		try (api) {
-			String result = api.client()
-					.http()
-					.post()
-					.path("no-body")
-					.retrieve(String.class)
-					.orNull();
-
-			assertEquals("post no body", result);
-		}
-
-		wiremock().verify(postRequestedFor(urlEqualTo("/no-body"))
-				.withoutHeader("Content-Type"));
-	}
-
-	@Test
-	void shouldNotSendAcceptHeaderByDefault() throws Exception {
-		// Many clients will send an "Accept: */*" header by default, but Java's HttpClient does not, so we want to ensure that
-		// the ApiClient doesn't add it either.
-		wiremock().stubFor(get("/accept")
-				.willReturn(aResponse()
-						.withStatus(200)
-						.withBody("no accept header")));
-
-		ApiClient api = apiClient();
-		try (api) {
-			String result = api.client()
-					.http()
-					.get()
-					.path("accept")
-					.retrieve(String.class)
-					.orNull();
-
-			assertEquals("no accept header", result);
-		}
-
-		wiremock().verify(getRequestedFor(urlEqualTo("/accept"))
-				.withoutHeader("Accept"));
-	}
-
-	@Test
-	void shouldNotSendAcceptEncodingByDefault() throws Exception {
-		// Many clients will send an "Accept-Encoding: gzip, deflate" header by default, but Java's HttpClient does not, so we
-		// want to ensure that the ApiClient doesn't add it either.
-		wiremock().stubFor(get("/encoding")
-				.willReturn(aResponse()
-						.withStatus(200)
-						.withBody("no accept-encoding header")));
-
-		ApiClient api = apiClient();
-		try (api) {
-			String result = api.client()
-					.http()
-					.get()
-					.path("encoding")
-					.retrieve(String.class)
-					.orNull();
-
-			assertEquals("no accept-encoding header", result);
-		}
-
-		wiremock().verify(getRequestedFor(urlEqualTo("/encoding"))
-				.withoutHeader("Accept-Encoding"));
-	}
-
-	@Test
-	void shouldConvertTextPlainToStringByDefault() throws Exception {
-		wiremock().stubFor(get("/string")
-				.willReturn(aResponse()
-						.withStatus(200)
-						.withHeader("Content-Type", "text/plain")
-						.withBody("the string body")));
-
-		ApiClient api = apiClient();
-		try (api) {
-			var result = api.client()
-					.http()
-					.get()
-					.path("string")
-					.retrieve()
-					.orNull();
-
-			assertEquals("the string body", result);
-		}
-
-		wiremock().verify(getRequestedFor(urlEqualTo("/string"))
-				.withoutHeader("Accept")
-				.withoutHeader("Accept-Encoding")
-				.withoutHeader("Content-Type"));
-	}
-
-	@Test
-	void shouldPreserveCustomHeader() throws Exception {
-		// OkHttp loves normalizing header names to lower case, so we want to ensure that the ApiClient preserves the case of
-		// custom headers even if the underlying client doesn't.
-		wiremock().stubFor(get("/case")
-				.willReturn(aResponse()
-						.withStatus(200)
-						.withBody("case sensitive header")));
-
-		ApiClient api = apiClient();
-		try (api) {
-			String result = api.client()
-					.http()
-					.get()
-					.path("case")
-					.header("X-CuStOm-HeAdEr", "42")
-					.retrieve(String.class)
-					.orNull();
-
-			assertEquals("case sensitive header", result);
-		}
-
-		wiremock().verify(getRequestedFor(urlEqualTo("/case"))
-				.withHeader("X-CuStOm-HeAdEr", equalTo("42")));
-	}
 
 	@Test
 	void shouldNotRetryByDefault() throws Exception {
@@ -917,27 +712,6 @@ class ApiClientWithDefaultClientIT implements RedirectsContract {
 		wiremock().verify(getRequestedFor(urlEqualTo("/multi"))
 				.withHeader("X-Test", containing("A"))
 				.withHeader("X-Test", containing("B")));
-	}
-
-	@Test
-	void shouldFailOnInvalidJson() throws Exception {
-		wiremock().stubFor(get("/bad-json")
-				.willReturn(aResponse()
-						.withStatus(200)
-						.withHeader("Content-Type", "application/json")
-						.withBody("{ invalid json")));
-
-		ApiClient api = apiClient();
-		try (api) {
-			assertThrows(Exception.class, () -> api.client()
-					.http()
-					.get()
-					.path("bad-json")
-					.retrieve(MyDto.class)
-					.orRethrow());
-		}
-
-		wiremock().verify(1, getRequestedFor(urlEqualTo("/bad-json")));
 	}
 
 	@Test
