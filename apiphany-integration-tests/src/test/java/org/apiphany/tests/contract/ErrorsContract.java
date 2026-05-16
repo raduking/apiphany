@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Duration;
 
@@ -17,6 +18,7 @@ import org.apiphany.client.ClientProperties;
 import org.apiphany.http.HttpException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.morphix.lang.thread.Threads;
 
 /**
  * Contract tests for error handling. These tests verify that the client correctly handles server errors (5xx) and
@@ -143,6 +145,14 @@ public interface ErrorsContract extends ApiphanyContract {
 			assertEquals(500, e.getStatusCode());
 		}
 
-		wiremock().verify(getRequestedFor(urlEqualTo("/slow")));
+		boolean asserted = Threads.waitUntil(() -> {
+			try {
+				wiremock().verify(getRequestedFor(urlEqualTo("/slow")));
+				return true;
+			} catch (AssertionError e) {
+				return false;
+			}
+		}, Duration.ofSeconds(5));
+		assertTrue(asserted, "Expected the request to be received by the server within 5 seconds");
 	}
 }
