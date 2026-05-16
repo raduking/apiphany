@@ -9,6 +9,7 @@ import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
+import org.apiphany.http.CloseableHttpRequestFactory;
 import org.apiphany.http.ContentEncoding;
 import org.apiphany.http.HttpContentType;
 import org.apiphany.http.HttpException;
@@ -24,6 +25,10 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.ByteArrayHttpMessageConverter;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.ResourceHttpMessageConverter;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.client.HttpStatusCodeException;
 
 /**
@@ -34,12 +39,28 @@ import org.springframework.web.client.HttpStatusCodeException;
 public abstract class AbstractSpringExchangeClient extends AbstractHttpExchangeClient {
 
 	/**
+	 * The HTTP request factory used by the underlying HTTP support. This field is kept as a reference to ensure that any
+	 * resources associated with the request factory can be properly closed when the client is closed.
+	 */
+	private final CloseableHttpRequestFactory requestFactory;
+
+	/**
+	 * The list of HTTP message converters to use for writing the request body and reading the response body.
+	 */
+	private final List<HttpMessageConverter<?>> messageConverters;
+
+	/**
 	 * Constructor with client properties.
 	 *
 	 * @param clientProperties client properties
 	 */
 	protected AbstractSpringExchangeClient(final ClientProperties clientProperties) {
 		super(clientProperties);
+		this.requestFactory = CloseableHttpRequestFactory.detect(clientProperties);
+		this.messageConverters = List.of(
+				new ByteArrayHttpMessageConverter(),
+				new StringHttpMessageConverter(),
+				new ResourceHttpMessageConverter());
 	}
 
 	/**
@@ -67,6 +88,32 @@ public abstract class AbstractSpringExchangeClient extends AbstractHttpExchangeC
 			ResponseEntity<U> responseEntity = sendRequest(apiRequest, httpEntity);
 			return buildResponse(apiRequest, responseEntity);
 		}, super::customizeHttpExceptionBuilder);
+	}
+
+	/**
+	 * @see AutoCloseable#close()
+	 */
+	@Override
+	public void close() throws Exception {
+		requestFactory.close();
+	}
+
+	/**
+	 * Returns the HTTP request factory used by the underlying HTTP support.
+	 *
+	 * @return the HTTP request factory
+	 */
+	protected CloseableHttpRequestFactory getRequestFactory() {
+		return requestFactory;
+	}
+
+	/**
+	 * Returns the list of HTTP message converters to use for writing the request body and reading the response body.
+	 *
+	 * @return the list of HTTP message converters
+	 */
+	public List<HttpMessageConverter<?>> getMessageConverters() {
+		return messageConverters;
 	}
 
 	/**
