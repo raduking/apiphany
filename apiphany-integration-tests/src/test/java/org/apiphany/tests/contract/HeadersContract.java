@@ -263,7 +263,6 @@ public interface HeadersContract extends ApiphanyContract {
 				.willReturn(aResponse().withStatus(200)));
 
 		ApiClient api = apiClient();
-
 		try (api) {
 			api.client()
 					.http()
@@ -284,7 +283,6 @@ public interface HeadersContract extends ApiphanyContract {
 				.willReturn(aResponse().withStatus(200)));
 
 		ApiClient api = apiClient();
-
 		try (api) {
 			api.client()
 					.http()
@@ -296,5 +294,79 @@ public interface HeadersContract extends ApiphanyContract {
 
 		wiremock().verify(postRequestedFor(urlEqualTo("/compress"))
 				.withoutHeader("Content-Encoding"));
+	}
+
+	@DisplayName("Headers: Empty string body is still sent deterministically and put Content-Length: 0 header")
+	@Test
+	default void shouldSendEmptyStringBody() throws Exception {
+		wiremock().stubFor(post("/empty-body")
+				.willReturn(aResponse().withStatus(200)));
+
+		ApiClient api = apiClient();
+		try (api) {
+			api.client()
+					.http()
+					.post()
+					.path("empty-body")
+					.body("")
+					.retrieve();
+		}
+
+		wiremock().verify(postRequestedFor(urlEqualTo("/empty-body"))
+				.withHeader("Content-Length", equalTo("0")));
+	}
+
+	@DisplayName("Headers: No Content-Length is sent when body is absent and put Content-Length: 0 header")
+	@Test
+	default void shouldSendContentLengthWithoutBodyOnPost() throws Exception {
+		wiremock().stubFor(post("/no-body")
+				.willReturn(aResponse().withStatus(200)));
+
+		ApiClient api = apiClient();
+		try (api) {
+			api.client()
+					.http()
+					.post()
+					.path("no-body")
+					.retrieve();
+		}
+
+		wiremock().verify(postRequestedFor(urlEqualTo("/no-body"))
+				.withHeader("Content-Length", equalTo("0")));
+	}
+
+	@DisplayName("Headers: Request builders must not leak headers across requests")
+	@Test
+	default void shouldNotLeakHeadersBetweenRequests() throws Exception {
+		wiremock().stubFor(get("/a")
+				.willReturn(aResponse().withStatus(200).withBody("A")));
+		wiremock().stubFor(get("/b")
+				.willReturn(aResponse().withStatus(200).withBody("B")));
+
+		ApiClient api = apiClient();
+		try (api) {
+			String result1 = api.client()
+					.http()
+					.get()
+					.path("a")
+					.header("X-Test", "1")
+					.retrieve(String.class)
+					.orNull();
+
+			String result2 = api.client().http()
+					.get()
+					.path("b")
+					.retrieve(String.class)
+					.orNull();
+
+			assertEquals("A", result1);
+			assertEquals("B", result2);
+		}
+
+		wiremock().verify(getRequestedFor(urlEqualTo("/a"))
+				.withHeader("X-Test", equalTo("1")));
+
+		wiremock().verify(getRequestedFor(urlEqualTo("/b"))
+				.withoutHeader("X-Test"));
 	}
 }
