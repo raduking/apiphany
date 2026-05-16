@@ -84,6 +84,11 @@ class ApiClientWithDefaultClientIT implements ApiphanyContract {
 		public ApiClient apiClient() {
 			return ApiClientWithDefaultClientIT.this.apiClient();
 		}
+
+		@Override
+		public ApiClient apiClient(final ClientProperties properties) {
+			return ApiphanyContract.super.apiClient(properties);
+		}
 	}
 
 	@Nested

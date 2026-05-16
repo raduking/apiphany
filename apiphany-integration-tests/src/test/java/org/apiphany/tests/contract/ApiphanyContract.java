@@ -52,4 +52,10 @@ public interface ApiphanyContract {
 				.with(exchangeClientClass())
 				.properties(clientProperties()));
 	}
+
+	default ApiClient apiClient(final ClientProperties properties) {
+		return ApiClient.of(baseUrl(), ApiClient
+				.with(exchangeClientClass())
+				.properties(properties));
+	}
 }
