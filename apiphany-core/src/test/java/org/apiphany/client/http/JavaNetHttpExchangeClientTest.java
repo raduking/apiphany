@@ -1165,14 +1165,14 @@ class JavaNetHttpExchangeClientTest {
 		}
 
 		@Test
-		void shouldExtractInternalServerErrorStatusFromThrowableWithoutStatus() throws Exception {
+		void shouldExtractNullStatusFromThrowableWithoutStatus() throws Exception {
 			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
 			exchangeClient.close();
 			RuntimeException exceptionToThrow = new RuntimeException(EXPECTED_CONNECTION_ERROR);
 
 			HttpStatus status = exchangeClient.extractHttpStatus(exceptionToThrow);
 
-			assertThat(status, equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
+			assertThat(status, equalTo(null));
 		}
 
 		@Test

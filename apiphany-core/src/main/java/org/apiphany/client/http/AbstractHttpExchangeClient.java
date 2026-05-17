@@ -279,8 +279,8 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 
 	/**
 	 * Extracts the HTTP status from the given throwable. If the throwable is an instance of {@link HttpException}, it
-	 * returns the status from the exception, otherwise, it returns {@link HttpStatus#INTERNAL_SERVER_ERROR}. Subclasses can
-	 * override this method to provide custom logic for extracting the HTTP status from different types of exceptions.
+	 * returns the status from the exception, otherwise, it returns {@code null}. Subclasses can override this method to
+	 * provide custom logic for extracting the HTTP status from different types of exceptions.
 	 *
 	 * @param throwable the throwable to extract the status from
 	 * @return the extracted HTTP status
@@ -288,7 +288,7 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	protected HttpStatus extractHttpStatus(final Throwable throwable) {
 		return switch (throwable) {
 			case HttpException httpException -> httpException.getStatus();
-			default -> HttpStatus.INTERNAL_SERVER_ERROR;
+			default -> null;
 		};
 	}
 
