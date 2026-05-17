@@ -2,13 +2,8 @@ package org.apiphany.http;
 
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import org.apiphany.io.OneShotInputStreamSupplier;
-import org.apiphany.spring.collections.ExtendedMaps;
-import org.morphix.lang.Nullables;
 import org.morphix.reflection.Constructors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +13,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.ClientHttpResponse;
-import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * Utility methods for HTTP requests/responses in a Spring context.
@@ -52,19 +46,6 @@ public class SpringHttpSupport {
 		if (!source.isEmpty()) {
 			source.forEach((key, values) -> target.put(key, new ArrayList<>(values)));
 		}
-	}
-
-	/**
-	 * Returns the {@link UriComponentsBuilder} with the give url and request parameters.
-	 *
-	 * @param url URL
-	 * @param requestParams request parameters
-	 * @return a new {@link UriComponentsBuilder}
-	 */
-	public static UriComponentsBuilder getUriComponentsBuilder(final String url, final Map<String, List<String>> requestParams) {
-		Map<String, List<String>> queryParams = Nullables.apply(requestParams, HashMap::new, HashMap::new);
-		return UriComponentsBuilder.fromUriString(url)
-				.queryParams(ExtendedMaps.multiValueMap(queryParams));
 	}
 
 	/**

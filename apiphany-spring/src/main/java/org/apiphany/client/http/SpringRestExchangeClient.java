@@ -5,7 +5,6 @@ import org.apiphany.client.ClientProperties;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.ResponseEntityExtractor;
 import org.apiphany.http.SpringHttpSupport;
-import org.apiphany.lang.Strings;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClient;
@@ -74,12 +73,9 @@ public class SpringRestExchangeClient extends AbstractSpringExchangeClient {
 	 */
 	@SuppressWarnings("resource")
 	private RestClient.Builder customize(final RestClient.Builder restClientBuilder, final ClientProperties clientProperties) {
-		if (Strings.isNotEmpty(clientProperties.getBaseUrl())) {
-			restClientBuilder.baseUrl(clientProperties.getBaseUrl());
-		}
-		restClientBuilder.requestFactory(getRequestFactory());
-		restClientBuilder.messageConverters(getMessageConverters());
-		return restClientBuilder;
+		return restClientBuilder
+				.requestFactory(getRequestFactory())
+				.messageConverters(getMessageConverters());
 	}
 
 	/**
