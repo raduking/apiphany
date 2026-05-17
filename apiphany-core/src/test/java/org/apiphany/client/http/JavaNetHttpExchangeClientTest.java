@@ -739,8 +739,8 @@ class JavaNetHttpExchangeClientTest {
 			HttpException exception = assertThrows(HttpException.class, // NOSONAR this is exactly what we want to test
 					() -> exchangeClient.sendRequest(request, exchangeClient.buildRequest(request)));
 
-			assertThat(exception.getStatus(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
-			assertThat(exception.getMessage(), equalTo(HttpException.message(HttpStatus.INTERNAL_SERVER_ERROR, EXPECTED_CONNECTION_ERROR)));
+			assertThat(exception.getStatus(), equalTo(null));
+			assertThat(exception.getMessage(), equalTo(HttpException.message(null, EXPECTED_CONNECTION_ERROR)));
 		}
 
 		@Test

@@ -145,7 +145,7 @@ public interface ErrorsContract extends ApiphanyContract {
 					.orRethrow());
 
 			assertNotNull(e.getCause());
-			assertEquals(null, e.getStatus());
+			assertNull(e.getStatus());
 			assertEquals(Status.UNKNOWN, e.getStatusCode());
 		}
 
