@@ -10,7 +10,6 @@ import org.apiphany.ApiClient;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.http.HttpException;
-import org.apiphany.http.HttpStatus;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.net.Sockets;
@@ -73,7 +72,7 @@ class SSLClientIT {
 
 		assertNotNull(exception);
 		assertThat(exception.getClass(), equalTo(HttpException.class));
-		assertThat(exception.getMessage(), equalTo(HttpException.message(HttpStatus.INTERNAL_SERVER_ERROR, "Remote host terminated the handshake")));
+		assertThat(exception.getMessage(), equalTo(HttpException.message(null, "Remote host terminated the handshake")));
 		Throwable cause = exception.getCause();
 		assertThat(cause.getClass(), equalTo(SSLHandshakeException.class));
 	}

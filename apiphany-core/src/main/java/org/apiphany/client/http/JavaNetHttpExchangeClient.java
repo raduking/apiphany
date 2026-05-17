@@ -23,7 +23,6 @@ import org.apiphany.RequestMethod;
 import org.apiphany.client.ClientCustomization;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ClientProperties.Timeout;
-import org.apiphany.client.ExchangeClient;
 import org.apiphany.http.ContentEncoding;
 import org.apiphany.http.HttpContentType;
 import org.apiphany.http.HttpException;
@@ -145,13 +144,10 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	}
 
 	/**
-	 * @see ExchangeClient#exchange(ApiRequest)
+	 * @see AbstractHttpExchangeClient#doExchange(ApiRequest)
 	 */
 	@Override
-	public <T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest) {
-		apiRequest.addHeaders(getCommonHeaders());
-		apiRequest.addHeaders(getTracingHeaders());
-
+	protected <T, U> ApiResponse<U> doExchange(final ApiRequest<T> apiRequest) {
 		HttpRequest httpRequest = buildRequest(apiRequest);
 		HttpResponse<?> httpResponse = sendRequest(apiRequest, httpRequest);
 		return buildResponse(apiRequest, httpResponse);
@@ -172,8 +168,7 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	}
 
 	/**
-	 * Builds the {@link HttpRequest} based on the given {@link ApiRequest} and handles any exception that may occur during
-	 * the building process by throwing an {@link HttpException} with a {@link HttpStatus#BAD_REQUEST} status code.
+	 * Builds the {@link HttpRequest} based on the given {@link ApiRequest}.
 	 * <p>
 	 * Note: {@link HttpMethod#CONNECT} is explicitly not supported by the Java net HTTP client so we won't support it
 	 * either for this exchange client.
@@ -184,18 +179,6 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	 * @return HTTP request object
 	 */
 	protected <T> HttpRequest buildRequest(final ApiRequest<T> apiRequest) {
-		return HttpException.ifThrows(() -> buildHttpRequest(apiRequest), HttpStatus.BAD_REQUEST);
-	}
-
-	/**
-	 * Builds the {@link HttpRequest} based on the given {@link ApiRequest}.
-	 *
-	 * @param <T> request body type
-	 *
-	 * @param apiRequest API request
-	 * @return HTTP request object
-	 */
-	protected <T> HttpRequest buildHttpRequest(final ApiRequest<T> apiRequest) {
 		HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder()
 				.uri(apiRequest.getUri());
 		addHeaders(httpRequestBuilder, apiRequest.getHeaders());

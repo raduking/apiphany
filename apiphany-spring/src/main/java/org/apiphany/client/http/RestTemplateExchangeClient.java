@@ -1,22 +1,14 @@
 package org.apiphany.client.http;
 
-import java.net.URI;
-import java.util.List;
-
 import org.apiphany.ApiRequest;
 import org.apiphany.client.ClientProperties;
-import org.apiphany.http.CloseableHttpRequestFactory;
 import org.apiphany.http.HttpEntityRequestCallback;
 import org.apiphany.http.HttpMethod;
-import org.apiphany.http.ResponseEntityResponseExtractor;
+import org.apiphany.http.ResponseEntityExtractor;
 import org.apiphany.http.SpringHttpSupport;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.ByteArrayHttpMessageConverter;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.ResourceHttpMessageConverter;
-import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.client.RequestCallback;
 import org.springframework.web.client.ResponseExtractor;
 import org.springframework.web.client.RestTemplate;
@@ -34,12 +26,6 @@ public class RestTemplateExchangeClient extends AbstractSpringExchangeClient {
 	private final RestTemplate restTemplate;
 
 	/**
-	 * The HTTP request factory used by the underlying REST template. This field is kept as a reference to ensure that any
-	 * resources associated with the request factory can be properly closed when the client is closed.
-	 */
-	private final CloseableHttpRequestFactory requestFactory;
-
-	/**
 	 * Constructor with client properties and REST template builder used to build the underlying {@link RestTemplate}.
 	 *
 	 * @param clientProperties client properties
@@ -47,7 +33,6 @@ public class RestTemplateExchangeClient extends AbstractSpringExchangeClient {
 	 */
 	public RestTemplateExchangeClient(final ClientProperties clientProperties, final RestTemplateBuilder restTemplateBuilder) {
 		super(clientProperties);
-		this.requestFactory = CloseableHttpRequestFactory.detect(getClientProperties());
 		this.restTemplate = customize(restTemplateBuilder).build();
 	}
 
@@ -76,25 +61,9 @@ public class RestTemplateExchangeClient extends AbstractSpringExchangeClient {
 	 * @return the customized REST template builder
 	 */
 	private RestTemplateBuilder customize(final RestTemplateBuilder restTemplateBuilder) {
-		RestTemplateBuilder customizedBuilder = restTemplateBuilder;
-
-		customizedBuilder = customizedBuilder.requestFactory(() -> requestFactory);
-
-		List<HttpMessageConverter<?>> messageConverters = List.of(
-				new ByteArrayHttpMessageConverter(),
-				new StringHttpMessageConverter(),
-				new ResourceHttpMessageConverter());
-
-		customizedBuilder = customizedBuilder.messageConverters(messageConverters);
-		return customizedBuilder;
-	}
-
-	/**
-	 * @see #close()
-	 */
-	@Override
-	public void close() throws Exception {
-		requestFactory.close();
+		return restTemplateBuilder
+				.requestFactory(() -> getRequestFactory())
+				.messageConverters(getMessageConverters());
 	}
 
 	/**
@@ -110,14 +79,13 @@ public class RestTemplateExchangeClient extends AbstractSpringExchangeClient {
 	 */
 	@Override
 	protected <T, U> ResponseEntity<U> sendRequest(final ApiRequest<T> apiRequest, final HttpEntity<T> httpEntity) {
-		URI uri = SpringHttpSupport.getUriComponentsBuilder(apiRequest.getUrl(), apiRequest.getParams()).build().toUri();
 		HttpMethod httpMethod = apiRequest.getMethod();
 		var springHttpMethod = SpringHttpSupport.getHttpMethod(httpMethod.value());
 		Class<U> responseType = getResponseType(apiRequest);
 
 		RequestCallback requestCallback = httpEntityCallback(httpEntity);
 		ResponseExtractor<ResponseEntity<U>> responseExtractor = responseEntityExtractor(responseType);
-		return restTemplate.execute(uri, springHttpMethod, requestCallback, responseExtractor);
+		return restTemplate.execute(apiRequest.getUri(), springHttpMethod, requestCallback, responseExtractor);
 	}
 
 	/**
@@ -141,6 +109,6 @@ public class RestTemplateExchangeClient extends AbstractSpringExchangeClient {
 	 * @return the response extractor
 	 */
 	protected <T> ResponseExtractor<ResponseEntity<T>> responseEntityExtractor(final Class<T> responseType) {
-		return new ResponseEntityResponseExtractor<>(responseType, restTemplate.getMessageConverters());
+		return new ResponseEntityExtractor<>(responseType, restTemplate.getMessageConverters());
 	}
 }

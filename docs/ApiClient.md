@@ -2,8 +2,8 @@
 
 Benefits of building a rest client with this API:
 
-- Authentication: OAuth2, SSL, Bearer Token
 - Fluent API (similar to Spring RestClient)
+- Authentication: OAuth2, SSL, Bearer Token
 - Metrics support: per client, per request
 - Retry support
 - Easily extensible (feel free to contribute)

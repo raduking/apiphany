@@ -14,6 +14,7 @@ import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ContentConverter;
+import org.apiphany.client.ExchangeClient;
 import org.apiphany.header.HeaderValues;
 import org.apiphany.header.MapHeaderValues;
 import org.apiphany.http.HttpContentType;
@@ -113,6 +114,42 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 				.addFirst(new MapHeaderValues())
 				.addFirst(new HttpHeaderValues());
 	}
+
+	/**
+	 * Exchanges the given API request and returns the API response. This method adds common headers and tracing headers to
+	 * the request before performing the exchange. It also handles any exceptions that may occur during the exchange and
+	 * wraps them in an {@link HttpException} if necessary.
+	 *
+	 * @param <T> the type of the original request body
+	 * @param <U> the target type for the response body
+	 *
+	 * @param apiRequest the API request to be exchanged
+	 * @return the API response resulting from the exchange
+	 * @throws HttpException if an error occurs during the exchange
+	 * @see #doExchange(ApiRequest) for the actual exchange logic that subclasses need to implement
+	 * @see ExchangeClient#exchange(ApiRequest)
+	 */
+	@Override
+	public <T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest) {
+		apiRequest.addHeaders(getCommonHeaders());
+		apiRequest.addHeaders(getTracingHeaders());
+
+		return HttpException.ifThrows(() -> doExchange(apiRequest), this::customizeHttpExceptionBuilder);
+	}
+
+	/**
+	 * Performs the actual exchange logic for the given API request. Subclasses need to implement this method to define how
+	 * the exchange is performed using their specific underlying HTTP client. This method is called by the
+	 * {@link #exchange(ApiRequest)} method after adding common headers and tracing headers to the request, and it is
+	 * wrapped in a try-catch block to handle any exceptions that may occur during the exchange.
+	 *
+	 * @param <T> the type of the original request body
+	 * @param <U> the target type for the response body
+	 *
+	 * @param apiRequest the API request to be exchanged
+	 * @return the API response resulting from the exchange
+	 */
+	protected abstract <T, U> ApiResponse<U> doExchange(ApiRequest<T> apiRequest);
 
 	/**
 	 * Converts the response body to the desired type based on the request configuration and available content converters.
@@ -279,8 +316,8 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 
 	/**
 	 * Extracts the HTTP status from the given throwable. If the throwable is an instance of {@link HttpException}, it
-	 * returns the status from the exception, otherwise, it returns {@link HttpStatus#INTERNAL_SERVER_ERROR}. Subclasses can
-	 * override this method to provide custom logic for extracting the HTTP status from different types of exceptions.
+	 * returns the status from the exception, otherwise, it returns {@code null}. Subclasses can override this method to
+	 * provide custom logic for extracting the HTTP status from different types of exceptions.
 	 *
 	 * @param throwable the throwable to extract the status from
 	 * @return the extracted HTTP status
@@ -288,7 +325,7 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	protected HttpStatus extractHttpStatus(final Throwable throwable) {
 		return switch (throwable) {
 			case HttpException httpException -> httpException.getStatus();
-			default -> HttpStatus.INTERNAL_SERVER_ERROR;
+			default -> null;
 		};
 	}
 

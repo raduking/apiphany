@@ -8,7 +8,7 @@ import java.util.function.Supplier;
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
-import org.apiphany.client.ExchangeClient;
+import org.apiphany.http.CloseableHttpRequestFactory;
 import org.apiphany.http.ContentEncoding;
 import org.apiphany.http.HttpContentType;
 import org.apiphany.http.HttpException;
@@ -24,6 +24,10 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.ByteArrayHttpMessageConverter;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.ResourceHttpMessageConverter;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.client.HttpStatusCodeException;
 
 /**
@@ -34,16 +38,37 @@ import org.springframework.web.client.HttpStatusCodeException;
 public abstract class AbstractSpringExchangeClient extends AbstractHttpExchangeClient {
 
 	/**
+	 * The HTTP request factory used by the underlying HTTP support. This field is kept as a reference to ensure that any
+	 * resources associated with the request factory can be properly closed when the client is closed.
+	 */
+	private final CloseableHttpRequestFactory requestFactory;
+
+	/**
+	 * The list of HTTP message converters to use for writing the request body and reading the response body.
+	 */
+	private final List<HttpMessageConverter<?>> messageConverters;
+
+	/**
 	 * Constructor with client properties.
 	 *
 	 * @param clientProperties client properties
 	 */
 	protected AbstractSpringExchangeClient(final ClientProperties clientProperties) {
 		super(clientProperties);
+		this.requestFactory = CloseableHttpRequestFactory.detect(clientProperties);
+		this.messageConverters = List.of(
+				new ByteArrayHttpMessageConverter(),
+				new StringHttpMessageConverter(),
+				new ResourceHttpMessageConverter());
 	}
 
 	/**
-	 * Sends the HTTP request and returns the response entity.
+	 * Sends the HTTP request and returns the response entity. This method is abstract and must be implemented by subclasses
+	 * to define how the HTTP request is sent using the underlying HTTP support, such as using a specific HTTP client
+	 * library or framework.
+	 * <p>
+	 * This allows for flexibility in how the HTTP interactions are handled while still providing a common structure for
+	 * building the request and response objects in the abstract class.
 	 *
 	 * @param <T> request entity type
 	 * @param <U> response entity type
@@ -55,18 +80,39 @@ public abstract class AbstractSpringExchangeClient extends AbstractHttpExchangeC
 	protected abstract <T, U> ResponseEntity<U> sendRequest(final ApiRequest<T> apiRequest, final HttpEntity<T> httpEntity);
 
 	/**
-	 * @see ExchangeClient#exchange(ApiRequest)
+	 * @see AbstractHttpExchangeClient#doExchange(ApiRequest)
 	 */
 	@Override
-	public <T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest) {
-		apiRequest.addHeaders(getTracingHeaders());
-		apiRequest.addHeaders(getCommonHeaders());
+	protected <T, U> ApiResponse<U> doExchange(final ApiRequest<T> apiRequest) {
+		HttpEntity<T> httpEntity = buildRequest(apiRequest);
+		ResponseEntity<U> responseEntity = sendRequest(apiRequest, httpEntity);
+		return buildResponse(apiRequest, responseEntity);
+	}
 
-		return HttpException.ifThrows(() -> {
-			HttpEntity<T> httpEntity = buildRequest(apiRequest);
-			ResponseEntity<U> responseEntity = sendRequest(apiRequest, httpEntity);
-			return buildResponse(apiRequest, responseEntity);
-		}, super::customizeHttpExceptionBuilder);
+	/**
+	 * @see AutoCloseable#close()
+	 */
+	@Override
+	public void close() throws Exception {
+		requestFactory.close();
+	}
+
+	/**
+	 * Returns the HTTP request factory used by the underlying HTTP support.
+	 *
+	 * @return the HTTP request factory
+	 */
+	protected CloseableHttpRequestFactory getRequestFactory() {
+		return requestFactory;
+	}
+
+	/**
+	 * Returns the list of HTTP message converters to use for writing the request body and reading the response body.
+	 *
+	 * @return the list of HTTP message converters
+	 */
+	public List<HttpMessageConverter<?>> getMessageConverters() {
+		return messageConverters;
 	}
 
 	/**
