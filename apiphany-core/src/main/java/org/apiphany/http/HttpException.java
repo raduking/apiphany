@@ -9,7 +9,9 @@ import org.morphix.lang.function.ThrowingSupplier;
 
 /**
  * Represents a basic HTTP exception, typically used to indicate an error during an HTTP request or response. This
- * exception includes an {@link HttpStatus} to provide detailed information about the HTTP error.
+ * exception includes an {@link HttpStatus} to provide detailed information about the HTTP error. However for Apiphany
+ * this exception is not limited to HTTP errors, it can be used to wrap any exception that occurs during the processing
+ * of an HTTP request or response, providing a consistent way to handle errors in the context of HTTP interactions.
  * <p>
  * When building HTTP exceptions prefer using the {@link Builder} for better readability and maintainability.
  * <p>
@@ -129,7 +131,7 @@ public class HttpException extends RuntimeException implements Status.Aware, Bod
 	 * @return the HTTP status code.
 	 */
 	public int getStatusCode() {
-		return getStatus().value();
+		return null != status ? status.getCode() : Status.UNKNOWN;
 	}
 
 	/**
@@ -203,7 +205,7 @@ public class HttpException extends RuntimeException implements Status.Aware, Bod
 	 * @return the value supplied
 	 */
 	public static <T> T ifThrows(final ThrowingSupplier<T> throwingSupplier) {
-		return ifThrows(throwingSupplier, HttpStatus.INTERNAL_SERVER_ERROR);
+		return ifThrows(throwingSupplier, (HttpStatus) null);
 	}
 
 	/**

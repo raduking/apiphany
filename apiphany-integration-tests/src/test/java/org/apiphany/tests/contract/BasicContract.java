@@ -18,6 +18,7 @@ import java.util.List;
 
 import org.apiphany.ApiClient;
 import org.apiphany.ApiResponse;
+import org.apiphany.Status;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -170,5 +171,190 @@ public interface BasicContract extends ApiphanyContract {
 		}
 
 		wiremock().verify(headRequestedFor(urlEqualTo("/head")));
+	}
+
+	@DisplayName("Basic: The client should join base URL and request path correctly")
+	@Test
+	default void shouldJoinBaseUrlAndPathCorrectly() throws Exception {
+		wiremock().stubFor(get("/join")
+				.willReturn(aResponse()
+						.withStatus(200)
+						.withBody("joined")));
+
+		ApiClient api = apiClient();
+		try (api) {
+			String result = api.client()
+					.http()
+					.get()
+					.path("/join")
+					.retrieve(String.class)
+					.orNull();
+
+			assertEquals("joined", result);
+		}
+
+		wiremock().verify(getRequestedFor(urlEqualTo("/join")));
+	}
+
+	@DisplayName("Basic: The client should URL-encode query parameter values when encoding is explicitly enabled")
+	@Test
+	default void shouldEncodeQueryParams() throws Exception {
+		wiremock().stubFor(get(urlPathEqualTo("/encoding"))
+				.willReturn(aResponse()
+						.withStatus(200)
+						.withBody("ok")));
+
+		ApiClient api = apiClient();
+		try (api) {
+			String result = api.client()
+					.http()
+					.get()
+					.path("encoding")
+					.urlEncoded()
+					.param("q", "hello world")
+					.retrieve(String.class)
+					.orNull();
+
+			assertEquals("ok", result);
+		}
+
+		wiremock().verify(getRequestedFor(urlPathEqualTo("/encoding"))
+				.withQueryParam("q", equalTo("hello world")));
+	}
+
+	@DisplayName("Basic: The client should not URL-encode query parameters implicitly")
+	@Test
+	default void shouldNotEncodeQueryParamsImplicitly() throws Exception {
+		wiremock().stubFor(get(urlPathEqualTo("/raw"))
+				.willReturn(aResponse()
+						.withStatus(200)
+						.withBody("ok")));
+
+		ApiClient api = apiClient();
+		try (api) {
+			ApiResponse<String> response = api.client()
+					.http()
+					.get()
+					.path("raw")
+					.param("q", "hello world")
+					.retrieve(String.class);
+
+			assertEquals(Status.UNKNOWN, response.getStatusCode());
+			assertNull(response.getStatus());
+			assertNull(response.orNull());
+		}
+
+		wiremock().verify(0, getRequestedFor(urlEqualTo("/raw?q=hello%20world")));
+		wiremock().verify(0, getRequestedFor(urlEqualTo("/raw?q=hello")));
+	}
+
+	@DisplayName("Basic: The client should support repeated query parameters")
+	@Test
+	default void shouldSupportRepeatedQueryParams() throws Exception {
+		wiremock().stubFor(get(urlPathEqualTo("/repeat"))
+				.willReturn(aResponse()
+						.withStatus(200)));
+
+		ApiClient api = apiClient();
+		try (api) {
+			api.client()
+					.http()
+					.get()
+					.path("repeat")
+					.param("tag", "a")
+					.param("tag", "b")
+					.retrieve();
+		}
+
+		wiremock().verify(getRequestedFor(urlPathEqualTo("/repeat"))
+				.withQueryParam("tag", equalTo("a"))
+				.withQueryParam("tag", equalTo("b")));
+	}
+
+	@DisplayName("Basic: String request bodies should be encoded as UTF-8 by default")
+	@Test
+	default void shouldEncodeRequestBodyAsUtf8() throws Exception {
+		wiremock().stubFor(post("/utf8")
+				.willReturn(aResponse()
+						.withStatus(200)));
+
+		ApiClient api = apiClient();
+		try (api) {
+			api.client()
+					.http()
+					.post()
+					.path("utf8")
+					.body("é")
+					.retrieve();
+		}
+
+		wiremock().verify(postRequestedFor(urlEqualTo("/utf8"))
+				.withRequestBody(equalTo("é")));
+	}
+
+	@DisplayName("Basic: Response headers should be accessible case-insensitively")
+	@Test
+	default void shouldAccessHeadersCaseInsensitively() throws Exception {
+		wiremock().stubFor(get("/headers")
+				.willReturn(aResponse()
+						.withStatus(200)
+						.withHeader("content-type", "text/plain")
+						.withBody("ok")));
+
+		ApiClient api = apiClient();
+		try (api) {
+			ApiResponse<String> response = api.client()
+					.http()
+					.get()
+					.path("headers")
+					.retrieve(String.class);
+
+			assertEquals(List.of("text/plain"),
+					response.getHeaders().get("Content-Type"));
+		}
+	}
+
+	@DisplayName("Basic: HEAD responses should not attempt body deserialization")
+	@Test
+	default void shouldIgnoreHeadResponseBody() throws Exception {
+		wiremock().stubFor(head(urlEqualTo("/head-body"))
+				.willReturn(aResponse()
+						.withStatus(200)
+						.withBody("illegal-body")));
+
+		ApiClient api = apiClient();
+		try (api) {
+			ApiResponse<?> response = api.client()
+					.http()
+					.head()
+					.path("head-body")
+					.retrieve();
+
+			assertNull(response.orNull());
+			assertEquals(200, response.getStatus().getCode());
+		}
+	}
+
+	@DisplayName("Basic: The client should send binary request bodies unchanged")
+	@Test
+	default void shouldSendBinaryBody() throws Exception {
+		wiremock().stubFor(post("/binary")
+				.willReturn(aResponse()
+						.withStatus(200)));
+
+		byte[] body = new byte[] { 0x00, 0x01, 0x02 };
+
+		ApiClient api = apiClient();
+		try (api) {
+			api.client()
+					.http()
+					.post()
+					.path("binary")
+					.body(body)
+					.retrieve();
+		}
+
+		wiremock().verify(postRequestedFor(urlEqualTo("/binary"))
+				.withRequestBody(equalTo(new String(body))));
 	}
 }

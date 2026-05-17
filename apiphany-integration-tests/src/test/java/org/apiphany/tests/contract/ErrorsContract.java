@@ -14,6 +14,7 @@ import java.time.Duration;
 
 import org.apiphany.ApiClient;
 import org.apiphany.ApiResponse;
+import org.apiphany.Status;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.http.HttpException;
 import org.apiphany.test.Assertions;
@@ -144,7 +145,8 @@ public interface ErrorsContract extends ApiphanyContract {
 					.orRethrow());
 
 			assertNotNull(e.getCause());
-			assertEquals(500, e.getStatusCode());
+			assertEquals(null, e.getStatus());
+			assertEquals(Status.UNKNOWN, e.getStatusCode());
 		}
 
 		ThrowingRunnable assertion = () -> wiremock().verify(getRequestedFor(urlEqualTo("/slow")));

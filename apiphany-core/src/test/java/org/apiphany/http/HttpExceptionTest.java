@@ -5,6 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import org.apiphany.Status;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -104,7 +105,8 @@ class HttpExceptionTest {
 			throw cause;
 		}));
 
-		assertThat(exception.getMessage(), equalTo(HttpException.message(HttpStatus.INTERNAL_SERVER_ERROR, CAUSE_ERROR_MESSAGE)));
+		assertThat(exception.getMessage(), equalTo(HttpException.message(null, CAUSE_ERROR_MESSAGE)));
+		assertThat(exception.getStatusCode(), equalTo(Status.UNKNOWN));
 	}
 
 	@Test
@@ -116,6 +118,7 @@ class HttpExceptionTest {
 		}));
 
 		assertThat(exception, equalTo(cause));
+		assertThat(exception.getStatusCode(), equalTo(HttpStatus.BAD_REQUEST.getCode()));
 	}
 
 	@Test
@@ -185,6 +188,7 @@ class HttpExceptionTest {
 			assertThat(exception.getMessage(), equalTo(HttpException.message(HttpStatus.UNAUTHORIZED, ERROR_MESSAGE)));
 			assertThat(exception.getCause().getMessage(), equalTo(CAUSE_ERROR_MESSAGE));
 			assertThat(exception.getResponseBody(), equalTo(RESPONSE_BODY));
+			assertThat(exception.getBody(), equalTo(RESPONSE_BODY));
 		}
 
 		@Test
@@ -200,6 +204,7 @@ class HttpExceptionTest {
 			assertThat(exception.getMessage(), equalTo(HttpException.message(HttpStatus.UNAUTHORIZED, RESPONSE_BODY)));
 			assertThat(exception.getCause(), nullValue());
 			assertThat(exception.getResponseBody(), equalTo(RESPONSE_BODY));
+			assertThat(exception.getBody(), equalTo(RESPONSE_BODY));
 		}
 	}
 }

@@ -1,7 +1,5 @@
 package org.apiphany.client.http;
 
-import java.net.URI;
-
 import org.apiphany.ApiRequest;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.http.HttpEntityRequestCallback;
@@ -81,14 +79,13 @@ public class RestTemplateExchangeClient extends AbstractSpringExchangeClient {
 	 */
 	@Override
 	protected <T, U> ResponseEntity<U> sendRequest(final ApiRequest<T> apiRequest, final HttpEntity<T> httpEntity) {
-		URI uri = SpringHttpSupport.getUriComponentsBuilder(apiRequest.getUrl(), apiRequest.getParams()).build().toUri();
 		HttpMethod httpMethod = apiRequest.getMethod();
 		var springHttpMethod = SpringHttpSupport.getHttpMethod(httpMethod.value());
 		Class<U> responseType = getResponseType(apiRequest);
 
 		RequestCallback requestCallback = httpEntityCallback(httpEntity);
 		ResponseExtractor<ResponseEntity<U>> responseExtractor = responseEntityExtractor(responseType);
-		return restTemplate.execute(uri, springHttpMethod, requestCallback, responseExtractor);
+		return restTemplate.execute(apiRequest.getUri(), springHttpMethod, requestCallback, responseExtractor);
 	}
 
 	/**

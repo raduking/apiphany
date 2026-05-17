@@ -69,7 +69,7 @@ public class BasicHttpResponseParser {
 		this.chunked = "chunked".equalsIgnoreCase(headers.get("transfer-encoding"));
 		this.contentLength = headers.containsKey("content-length") ? Integer.parseInt(headers.get("content-length")) : null;
 
-		this.buffer = (parts.length > 1) ? parts[1] : "";
+		this.buffer = parts.length > 1 ? parts[1] : "";
 
 		if (chunked) {
 			processChunks();

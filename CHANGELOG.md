@@ -4,6 +4,7 @@
 
 - Added `SpringRestExchangeClient` which adds `RestClient` support.
 - Renamed `ResponseEntityResponseExtractor` to `ResponseEntityExtractor`.
+- Changed `HttpException` default status to `null` instead of `INTERNAL_SERVER_ERROR` because it was misleading.
 
 ---
 
