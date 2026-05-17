@@ -32,7 +32,6 @@ import org.apache.hc.core5.http.io.entity.HttpEntities;
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
-import org.apiphany.client.ExchangeClient;
 import org.apiphany.header.Headers;
 import org.apiphany.http.ApacheHC5Clients;
 import org.apiphany.http.ApacheHC5Entities;
@@ -125,13 +124,10 @@ public class ApacheHC5HttpExchangeClient extends AbstractHttpExchangeClient {
 	}
 
 	/**
-	 * @see ExchangeClient#exchange(ApiRequest)
+	 * @see AbstractHttpExchangeClient#doExchange(ApiRequest)
 	 */
 	@Override
-	public <T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest) {
-		apiRequest.addHeaders(getTracingHeaders());
-		apiRequest.addHeaders(getCommonHeaders());
-
+	protected <T, U> ApiResponse<U> doExchange(final ApiRequest<T> apiRequest) {
 		HttpUriRequest httpUriRequest = buildRequest(apiRequest);
 		return sendRequest(apiRequest, httpUriRequest);
 	}

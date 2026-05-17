@@ -6,6 +6,7 @@
 - Renamed `ResponseEntityResponseExtractor` to `ResponseEntityExtractor`.
 - Changed `HttpException` default status to `null` instead of `INTERNAL_SERVER_ERROR` because it was misleading.
 - Changed `JavaNetHttpExchangeClient.buildRequest` to no longer return `BAD_REQUEST` HTTP status because a HTTP status should only come from a server.
+- Added `AbstractHttpExchangeClient.exchange(ApiRequest)` implementation with common behavior and now derived classes can implement `doExchange(ApiRequest)`.
 
 ---
 
