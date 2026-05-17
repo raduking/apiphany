@@ -152,7 +152,7 @@ public interface HeadersContract extends ApiphanyContract {
 
 	@DisplayName("Headers: The client should not add a Transfer-Encoding header automatically when sending a body without an explicit Content-Type")
 	@Test
-	default void shouldNotAddTransferEncodingAutomatically() throws Exception {
+	default void shouldPreferContentLengthOverChunkedEncodingWhenBodySizeKnown() throws Exception {
 		wiremock().stubFor(post("/chunk")
 				.willReturn(aResponse()
 						.withStatus(200)
@@ -202,11 +202,10 @@ public interface HeadersContract extends ApiphanyContract {
 				.withoutHeader("Content-Type"));
 	}
 
-	@DisplayName("Headers: The client should preserve the case of custom headers even if the underlying client normalizes them")
+	@DisplayName("Headers: Header names should be treated case-insensitively")
 	@Test
 	default void shouldPreserveCustomHeader() throws Exception {
-		// OkHttp loves normalizing header names to lower case, so we want to ensure that the ApiClient preserves the case of
-		// custom headers even if the underlying client doesn't.
+		// HTTP header names are case-insensitive and some clients/transports normalize them to lower-case.
 		wiremock().stubFor(get("/case")
 				.willReturn(aResponse()
 						.withStatus(200)
@@ -226,7 +225,7 @@ public interface HeadersContract extends ApiphanyContract {
 		}
 
 		wiremock().verify(getRequestedFor(urlEqualTo("/case"))
-				.withHeader("X-CuStOm-HeAdEr", equalTo("42")));
+				.withHeader("x-custom-header", equalTo("42")));
 	}
 
 	@DisplayName("Headers: The client should allow sending multiple values for the same header")
@@ -318,7 +317,7 @@ public interface HeadersContract extends ApiphanyContract {
 
 	@DisplayName("Headers: No Content-Length is sent when body is absent and put Content-Length: 0 header")
 	@Test
-	default void shouldSendContentLengthWithoutBodyOnPost() throws Exception {
+	default void shouldSendContentLengthZeroForEmptyPost() throws Exception {
 		wiremock().stubFor(post("/no-body")
 				.willReturn(aResponse().withStatus(200)));
 
