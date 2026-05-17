@@ -152,9 +152,11 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 		apiRequest.addHeaders(getCommonHeaders());
 		apiRequest.addHeaders(getTracingHeaders());
 
-		HttpRequest httpRequest = buildRequest(apiRequest);
-		HttpResponse<?> httpResponse = sendRequest(apiRequest, httpRequest);
-		return buildResponse(apiRequest, httpResponse);
+		return HttpException.ifThrows(() -> {
+			HttpRequest httpRequest = buildRequest(apiRequest);
+			HttpResponse<?> httpResponse = sendRequest(apiRequest, httpRequest);
+			return buildResponse(apiRequest, httpResponse);
+		});
 	}
 
 	/**
@@ -172,9 +174,7 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	}
 
 	/**
-	 * Builds the {@link HttpRequest} based on the given {@link ApiRequest} and handles any exception that may occur during
-	 * the building process by throwing an {@link HttpException} with an unknown status code because the request never
-	 * actually left the client nor reached the server.
+	 * Builds the {@link HttpRequest} based on the given {@link ApiRequest}.
 	 * <p>
 	 * Note: {@link HttpMethod#CONNECT} is explicitly not supported by the Java net HTTP client so we won't support it
 	 * either for this exchange client.
@@ -185,18 +185,6 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	 * @return HTTP request object
 	 */
 	protected <T> HttpRequest buildRequest(final ApiRequest<T> apiRequest) {
-		return HttpException.ifThrows(() -> buildHttpRequest(apiRequest));
-	}
-
-	/**
-	 * Builds the {@link HttpRequest} based on the given {@link ApiRequest}.
-	 *
-	 * @param <T> request body type
-	 *
-	 * @param apiRequest API request
-	 * @return HTTP request object
-	 */
-	protected <T> HttpRequest buildHttpRequest(final ApiRequest<T> apiRequest) {
 		HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder()
 				.uri(apiRequest.getUri());
 		addHeaders(httpRequestBuilder, apiRequest.getHeaders());
