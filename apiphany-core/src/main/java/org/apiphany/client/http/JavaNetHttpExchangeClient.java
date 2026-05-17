@@ -23,7 +23,6 @@ import org.apiphany.RequestMethod;
 import org.apiphany.client.ClientCustomization;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ClientProperties.Timeout;
-import org.apiphany.client.ExchangeClient;
 import org.apiphany.http.ContentEncoding;
 import org.apiphany.http.HttpContentType;
 import org.apiphany.http.HttpException;
@@ -145,18 +144,13 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	}
 
 	/**
-	 * @see ExchangeClient#exchange(ApiRequest)
+	 * @see AbstractHttpExchangeClient#doExchange(ApiRequest)
 	 */
 	@Override
-	public <T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest) {
-		apiRequest.addHeaders(getCommonHeaders());
-		apiRequest.addHeaders(getTracingHeaders());
-
-		return HttpException.ifThrows(() -> {
-			HttpRequest httpRequest = buildRequest(apiRequest);
-			HttpResponse<?> httpResponse = sendRequest(apiRequest, httpRequest);
-			return buildResponse(apiRequest, httpResponse);
-		});
+	protected <T, U> ApiResponse<U> doExchange(final ApiRequest<T> apiRequest) {
+		HttpRequest httpRequest = buildRequest(apiRequest);
+		HttpResponse<?> httpResponse = sendRequest(apiRequest, httpRequest);
+		return buildResponse(apiRequest, httpResponse);
 	}
 
 	/**

@@ -8,7 +8,6 @@ import java.util.function.Supplier;
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
-import org.apiphany.client.ExchangeClient;
 import org.apiphany.http.CloseableHttpRequestFactory;
 import org.apiphany.http.ContentEncoding;
 import org.apiphany.http.HttpContentType;
@@ -64,7 +63,12 @@ public abstract class AbstractSpringExchangeClient extends AbstractHttpExchangeC
 	}
 
 	/**
-	 * Sends the HTTP request and returns the response entity.
+	 * Sends the HTTP request and returns the response entity. This method is abstract and must be implemented by subclasses
+	 * to define how the HTTP request is sent using the underlying HTTP support, such as using a specific HTTP client
+	 * library or framework.
+	 * <p>
+	 * This allows for flexibility in how the HTTP interactions are handled while still providing a common structure for
+	 * building the request and response objects in the abstract class.
 	 *
 	 * @param <T> request entity type
 	 * @param <U> response entity type
@@ -76,18 +80,13 @@ public abstract class AbstractSpringExchangeClient extends AbstractHttpExchangeC
 	protected abstract <T, U> ResponseEntity<U> sendRequest(final ApiRequest<T> apiRequest, final HttpEntity<T> httpEntity);
 
 	/**
-	 * @see ExchangeClient#exchange(ApiRequest)
+	 * @see AbstractHttpExchangeClient#doExchange(ApiRequest)
 	 */
 	@Override
-	public <T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest) {
-		apiRequest.addHeaders(getTracingHeaders());
-		apiRequest.addHeaders(getCommonHeaders());
-
-		return HttpException.ifThrows(() -> {
-			HttpEntity<T> httpEntity = buildRequest(apiRequest);
-			ResponseEntity<U> responseEntity = sendRequest(apiRequest, httpEntity);
-			return buildResponse(apiRequest, responseEntity);
-		}, super::customizeHttpExceptionBuilder);
+	protected <T, U> ApiResponse<U> doExchange(final ApiRequest<T> apiRequest) {
+		HttpEntity<T> httpEntity = buildRequest(apiRequest);
+		ResponseEntity<U> responseEntity = sendRequest(apiRequest, httpEntity);
+		return buildResponse(apiRequest, responseEntity);
 	}
 
 	/**
