@@ -1,7 +1,5 @@
 package org.apiphany.client.http;
 
-import java.net.URI;
-
 import org.apiphany.ApiRequest;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.http.HttpMethod;
@@ -89,12 +87,11 @@ public class SpringRestExchangeClient extends AbstractSpringExchangeClient {
 	 */
 	@Override
 	protected <T, U> ResponseEntity<U> sendRequest(final ApiRequest<T> apiRequest, final HttpEntity<T> httpEntity) {
-		URI uri = SpringHttpSupport.getUriComponentsBuilder(apiRequest.getUrl(), apiRequest.getParams()).build().toUri();
 		HttpMethod httpMethod = apiRequest.getMethod();
 		var springHttpMethod = SpringHttpSupport.getHttpMethod(httpMethod.value());
 
 		RequestBodySpec requestSpec = restClient.method(springHttpMethod)
-				.uri(uri)
+				.uri(apiRequest.getUri())
 				.headers(headers -> headers.addAll(httpEntity.getHeaders()));
 		RequestHeadersSpec<?> headerSpec;
 		if (null != httpEntity.getBody()) {

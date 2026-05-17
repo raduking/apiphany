@@ -38,6 +38,7 @@ import org.apiphany.ApiClientFluentAdapter;
 import org.apiphany.ApiMethod;
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
+import org.apiphany.Status;
 import org.apiphany.client.ClientCustomization;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.header.Header;
@@ -305,9 +306,9 @@ class JavaNetHttpExchangeClientTest {
 
 			HttpException e = assertThrows(HttpException.class, () -> exchangeClient.buildRequest(request));
 
-			assertThat(e.getStatus(), equalTo(HttpStatus.BAD_REQUEST));
+			assertThat(e.getStatus(), equalTo(null));
 			assertThat(e.getMessage(),
-					equalTo(HttpException.message(HttpStatus.BAD_REQUEST, "HTTP method " + HttpMethod.CONNECT + " is not supported!")));
+					equalTo(HttpException.message(null, "HTTP method " + HttpMethod.CONNECT + " is not supported!")));
 		}
 
 		@Test
@@ -356,9 +357,9 @@ class JavaNetHttpExchangeClientTest {
 
 			HttpException exception = assertThrows(HttpException.class, () -> exchangeClient.buildRequest(request));
 
-			assertThat(exception.getStatus(), equalTo(HttpStatus.BAD_REQUEST));
+			assertThat(exception.getStatus(), equalTo(null));
 			assertThat(exception.getMessage(), equalTo(
-					HttpException.message(HttpStatus.BAD_REQUEST, "HTTP method " + ApiMethod.UNDEFINED + " is not supported!")));
+					HttpException.message(null, "HTTP method " + ApiMethod.UNDEFINED + " is not supported!")));
 		}
 	}
 
@@ -1112,9 +1113,9 @@ class JavaNetHttpExchangeClientTest {
 
 			HttpException exception = assertThrows(HttpException.class, () -> exchangeClient.buildRequest(request));
 
-			assertThat(exception.getStatus(), equalTo(HttpStatus.BAD_REQUEST));
+			assertThat(exception.getStatus(), equalTo(null));
 			assertThat(exception.getMessage(),
-					equalTo(HttpException.message(HttpStatus.BAD_REQUEST, "HTTP method " + ApiMethod.UNDEFINED + " is not supported!")));
+					equalTo(HttpException.message(null, "HTTP method " + ApiMethod.UNDEFINED + " is not supported!")));
 		}
 
 		@Test
@@ -1128,9 +1129,10 @@ class JavaNetHttpExchangeClientTest {
 
 			HttpException exception = assertThrows(HttpException.class, () -> exchangeClient.buildRequest(request));
 
-			assertThat(exception.getStatus(), equalTo(HttpStatus.BAD_REQUEST));
+			assertThat(exception.getStatus(), equalTo(null));
+			assertThat(exception.getStatusCode(), equalTo(Status.UNKNOWN));
 			assertThat(exception.getMessage(),
-					equalTo(HttpException.message(HttpStatus.BAD_REQUEST, "HTTP method null is not supported!")));
+					equalTo(HttpException.message(null, "HTTP method null is not supported!")));
 		}
 
 		@Test
@@ -1143,9 +1145,10 @@ class JavaNetHttpExchangeClientTest {
 
 			HttpException exception = assertThrows(HttpException.class, () -> exchangeClient.buildRequest(request));
 
-			assertThat(exception.getStatus(), equalTo(HttpStatus.BAD_REQUEST));
+			assertThat(exception.getStatus(), equalTo(null));
+			assertThat(exception.getStatusCode(), equalTo(Status.UNKNOWN));
 			assertThat(exception.getMessage(),
-					equalTo(HttpException.message(HttpStatus.BAD_REQUEST, "uri must be non-null")));
+					equalTo(HttpException.message(null, "uri must be non-null")));
 		}
 
 		@Test
@@ -1159,9 +1162,9 @@ class JavaNetHttpExchangeClientTest {
 
 			HttpException exception = assertThrows(HttpException.class, () -> exchangeClient.buildRequest(request));
 
-			assertThat(exception.getStatus(), equalTo(HttpStatus.BAD_REQUEST));
+			assertThat(exception.getStatus(), equalTo(null));
 			assertThat(exception.getMessage(),
-					startsWith(HttpException.message(HttpStatus.BAD_REQUEST, "Malformed")));
+					startsWith(HttpException.message(null, "Malformed")));
 		}
 
 		@Test

@@ -173,7 +173,8 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 
 	/**
 	 * Builds the {@link HttpRequest} based on the given {@link ApiRequest} and handles any exception that may occur during
-	 * the building process by throwing an {@link HttpException} with a {@link HttpStatus#BAD_REQUEST} status code.
+	 * the building process by throwing an {@link HttpException} with an unknown status code because the request never
+	 * actually left the client nor reached the server.
 	 * <p>
 	 * Note: {@link HttpMethod#CONNECT} is explicitly not supported by the Java net HTTP client so we won't support it
 	 * either for this exchange client.
@@ -184,7 +185,7 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	 * @return HTTP request object
 	 */
 	protected <T> HttpRequest buildRequest(final ApiRequest<T> apiRequest) {
-		return HttpException.ifThrows(() -> buildHttpRequest(apiRequest), HttpStatus.BAD_REQUEST);
+		return HttpException.ifThrows(() -> buildHttpRequest(apiRequest));
 	}
 
 	/**
