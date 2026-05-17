@@ -296,22 +296,6 @@ class JavaNetHttpExchangeClientTest {
 		}
 
 		@Test
-		void shouldThrowExceptionOnBuildConnectRequest() throws Exception {
-			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
-			exchangeClient.close();
-
-			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-					.url(URL)
-					.method(HttpMethod.CONNECT);
-
-			HttpException e = assertThrows(HttpException.class, () -> exchangeClient.buildRequest(request));
-
-			assertThat(e.getStatus(), equalTo(null));
-			assertThat(e.getMessage(),
-					equalTo(HttpException.message(null, "HTTP method " + HttpMethod.CONNECT + " is not supported!")));
-		}
-
-		@Test
 		void shouldBuildOptionsRequest() throws Exception {
 			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
 			exchangeClient.close();
@@ -343,23 +327,6 @@ class JavaNetHttpExchangeClientTest {
 			assertThat(httpRequest.uri().toString(), equalTo(URL));
 			assertThat(httpRequest.bodyPublisher().isPresent(), equalTo(true));
 			assertThat(httpRequest.bodyPublisher().get().contentLength(), equalTo(0L));
-		}
-
-		@Test
-		void shouldThrowExceptionBuildingCustomMethodRequest() throws Exception {
-			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
-			exchangeClient.close();
-
-			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-					.url(URL)
-					.method(ApiMethod.UNDEFINED)
-					.body(STRING);
-
-			HttpException exception = assertThrows(HttpException.class, () -> exchangeClient.buildRequest(request));
-
-			assertThat(exception.getStatus(), equalTo(null));
-			assertThat(exception.getMessage(), equalTo(
-					HttpException.message(null, "HTTP method " + ApiMethod.UNDEFINED + " is not supported!")));
 		}
 	}
 
@@ -1103,6 +1070,39 @@ class JavaNetHttpExchangeClientTest {
 	class ExceptionTests {
 
 		@Test
+		void shouldThrowExceptionOnBuildConnectRequest() throws Exception {
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.CONNECT);
+
+			HttpException e = assertThrows(HttpException.class, () -> exchangeClient.exchange(request));
+
+			assertThat(e.getStatus(), equalTo(null));
+			assertThat(e.getMessage(),
+					equalTo(HttpException.message(null, "HTTP method " + HttpMethod.CONNECT + " is not supported!")));
+		}
+
+		@Test
+		void shouldThrowExceptionBuildingCustomMethodRequest() throws Exception {
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(ApiMethod.UNDEFINED)
+					.body(STRING);
+
+			HttpException exception = assertThrows(HttpException.class, () -> exchangeClient.exchange(request));
+
+			assertThat(exception.getStatus(), equalTo(null));
+			assertThat(exception.getMessage(), equalTo(
+					HttpException.message(null, "HTTP method " + ApiMethod.UNDEFINED + " is not supported!")));
+		}
+
+		@Test
 		void shouldThrowExceptionWhenBuildingRequestWithUnsupportedHttpMethod() throws Exception {
 			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
 			exchangeClient.close();
@@ -1111,7 +1111,7 @@ class JavaNetHttpExchangeClientTest {
 					.url(URL)
 					.method(ApiMethod.UNDEFINED);
 
-			HttpException exception = assertThrows(HttpException.class, () -> exchangeClient.buildRequest(request));
+			HttpException exception = assertThrows(HttpException.class, () -> exchangeClient.exchange(request));
 
 			assertThat(exception.getStatus(), equalTo(null));
 			assertThat(exception.getMessage(),
@@ -1127,7 +1127,7 @@ class JavaNetHttpExchangeClientTest {
 					.url(URL)
 					.method((HttpMethod) null);
 
-			HttpException exception = assertThrows(HttpException.class, () -> exchangeClient.buildRequest(request));
+			HttpException exception = assertThrows(HttpException.class, () -> exchangeClient.exchange(request));
 
 			assertThat(exception.getStatus(), equalTo(null));
 			assertThat(exception.getStatusCode(), equalTo(Status.UNKNOWN));
@@ -1143,7 +1143,7 @@ class JavaNetHttpExchangeClientTest {
 			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
 					.method(HttpMethod.GET);
 
-			HttpException exception = assertThrows(HttpException.class, () -> exchangeClient.buildRequest(request));
+			HttpException exception = assertThrows(HttpException.class, () -> exchangeClient.exchange(request));
 
 			assertThat(exception.getStatus(), equalTo(null));
 			assertThat(exception.getStatusCode(), equalTo(Status.UNKNOWN));
@@ -1160,7 +1160,7 @@ class JavaNetHttpExchangeClientTest {
 					.url("http://[invalid-url]")
 					.method(HttpMethod.GET);
 
-			HttpException exception = assertThrows(HttpException.class, () -> exchangeClient.buildRequest(request));
+			HttpException exception = assertThrows(HttpException.class, () -> exchangeClient.exchange(request));
 
 			assertThat(exception.getStatus(), equalTo(null));
 			assertThat(exception.getMessage(),
