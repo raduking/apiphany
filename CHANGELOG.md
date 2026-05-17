@@ -5,6 +5,7 @@
 - Added `SpringRestExchangeClient` which adds `RestClient` support.
 - Renamed `ResponseEntityResponseExtractor` to `ResponseEntityExtractor`.
 - Changed `HttpException` default status to `null` instead of `INTERNAL_SERVER_ERROR` because it was misleading.
+- Changed `JavaNetHttpExchangeClient.buildRequest` to no longer return `BAD_REQUEST` HTTP status because a HTTP status should only come from a server.
 
 ---
 
