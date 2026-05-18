@@ -1,4 +1,4 @@
-package org.apiphany.tests;
+package org.apiphany.tests.security;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 
