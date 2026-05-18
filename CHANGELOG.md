@@ -1,5 +1,9 @@
 ## Release Notes
 
+`1.2.9`
+
+---
+
 `1.2.8`
 
 - Added `SpringRestExchangeClient` which adds `RestClient` support.
