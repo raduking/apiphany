@@ -3,6 +3,7 @@ package org.apiphany.json.jackson2;
 import java.io.Serial;
 
 import org.apache.hc.core5.util.Timeout;
+import org.apiphany.http.ApacheHC5Library;
 import org.apiphany.json.jackson2.serializers.TimeoutDeserializer;
 
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -54,12 +55,17 @@ public class ApiphanyHC5Jackson2Module extends SimpleModule {
 	 * @return a configured instance of {@link ApiphanyHC5Jackson2Module}
 	 */
 	public static SimpleModule instance() {
-		return InstanceHolder.INSTANCE;
+		if (ApacheHC5Library.isPresent()) {
+			return InstanceHolder.INSTANCE;
+		}
+		return MissingLibraryInstanceHolder.INSTANCE;
 	}
 
 	/**
 	 * Holder class for lazy initialization of the module instance. This ensures that the module is only created when
 	 * needed, and that it is thread-safe without requiring synchronization.
+	 *
+	 * @author Radu Sebastian LAZIN
 	 */
 	private static class InstanceHolder {
 
@@ -68,5 +74,20 @@ public class ApiphanyHC5Jackson2Module extends SimpleModule {
 		 */
 		private static final SimpleModule INSTANCE = new ApiphanyHC5Jackson2Module()
 				.addDeserializer(Timeout.class, new TimeoutDeserializer());
+	}
+
+	/**
+	 * Holder class for the case when Apache HTTP Client 5 is not present in the class path. This allows the module to be
+	 * used without requiring Apache HTTP Client 5, while still providing a valid module instance that can be registered
+	 * with ObjectMapper.
+	 *
+	 * @author Radu Sebastian LAZIN
+	 */
+	private static class MissingLibraryInstanceHolder {
+
+		/**
+		 * The singleton instance of the ApiphanyModule
+		 */
+		private static final SimpleModule INSTANCE = new ApiphanyHC5Jackson2Module();
 	}
 }
