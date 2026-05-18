@@ -1,5 +1,6 @@
 package org.apiphany.tests.contract;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
@@ -71,5 +72,50 @@ public interface AuthenticationContract extends ApiphanyContract {
 
 		wiremock().verify(1, getRequestedFor(urlEqualTo("/token")));
 		wiremock().verify(1, getRequestedFor(urlEqualTo("/session")));
+	}
+
+	@DisplayName("Authentication: The client should not leak Authorization headers across authentication types")
+	@Test
+	default void shouldNotLeakAuthorizationHeadersAcrossAuthenticationTypes() throws Exception {
+		wiremock().stubFor(get("/token-auth")
+				.willReturn(okJson("{\"auth\":\"token\"}")));
+
+		wiremock().stubFor(get("/session-auth")
+				.willReturn(okJson("{\"auth\":\"session\"}")));
+
+		ExchangeClient tokenClient = getClient(AuthenticationType.TOKEN);
+		ExchangeClient sessionClient = getClient(AuthenticationType.SESSION);
+
+		ApiClient api = ApiClient.of(baseUrl(),
+				ApiClient.with(tokenClient)
+						.properties(clientProperties()),
+				ApiClient.with(sessionClient)
+						.properties(clientProperties()));
+
+		try (tokenClient; sessionClient; api) {
+			String tokenResult = api.client(AuthenticationType.TOKEN)
+					.http()
+					.get()
+					.path("token-auth")
+					.header("Authorization", "Bearer token-123")
+					.retrieve(String.class)
+					.orNull();
+
+			String sessionResult = api.client(AuthenticationType.SESSION)
+					.http()
+					.get()
+					.path("session-auth")
+					.retrieve(String.class)
+					.orNull();
+
+			assertEquals("token", JsonPath.parse(tokenResult).read("$.auth"));
+			assertEquals("session", JsonPath.parse(sessionResult).read("$.auth"));
+		}
+
+		wiremock().verify(getRequestedFor(urlEqualTo("/token-auth"))
+				.withHeader("Authorization", equalTo("Bearer token-123")));
+
+		wiremock().verify(getRequestedFor(urlEqualTo("/session-auth"))
+				.withoutHeader("Authorization"));
 	}
 }

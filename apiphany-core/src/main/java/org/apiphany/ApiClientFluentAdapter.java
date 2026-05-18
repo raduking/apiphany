@@ -102,13 +102,48 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 			this.params = RequestParameters.encode(params, getCharset());
 		}
 		ApiResponse<T> response = JavaObjects.cast(apiClient.exchange(this));
+		response = validateResponse(response);
+		apiClient.closeIfEphemeral();
+		return response;
+	}
+
+	/**
+	 * Validates the API response. This method checks if the response is null or if the response body is not of the expected
+	 * type and in both cases it builds an error response using the {@link ApiClient#buildErrorResponse} method.
+	 *
+	 * @param <T> response type
+	 *
+	 * @param response the API response to validate
+	 * @return the given response if it is valid or an error response if the given response is invalid
+	 */
+	protected <T> ApiResponse<T> validateResponse(final ApiResponse<T> response) {
 		if (null == response) {
 			var exception = new IllegalStateException("Received null response from exchange client. Exchange client: "
 					+ exchangeClient.getClass().getName() + " must return a non-null response even in case of errors.");
-			response = apiClient.buildErrorResponse(exception, JavaObjects.cast(this), exchangeClient);
+			return buildErrorResponse(exception);
 		}
-		apiClient.closeIfEphemeral();
+		T body = response.getBody();
+		if (null == body) {
+			return response;
+		}
+		if (hasClassType() && !getClassResponseType().isInstance(body)) {
+			var exception = new IllegalStateException("Received response body of type: " + body.getClass()
+					+ " but expected type was: " + getClassResponseType());
+			return buildErrorResponse(exception);
+		}
 		return response;
+	}
+
+	/**
+	 * Builds an error response from the given exception using the underlying API client.
+	 *
+	 * @param <T> response type
+	 *
+	 * @param exception the exception to build the error response from
+	 * @return an API response object representing the error
+	 */
+	protected <T> ApiResponse<T> buildErrorResponse(final Exception exception) {
+		return apiClient.buildErrorResponse(exception, JavaObjects.cast(this), exchangeClient);
 	}
 
 	/**

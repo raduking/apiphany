@@ -181,9 +181,6 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 		if (null != classResponseType && classResponseType.isInstance(body)) {
 			return JavaObjects.cast(body);
 		}
-		if (body instanceof byte[] bytes && bytes.length == 0) {
-			return null;
-		}
 		if (Objects.equals(classResponseType, String.class)) {
 			return JavaObjects.cast(StringHttpContentConverter.instance().from(body, mimeType, String.class));
 		}
