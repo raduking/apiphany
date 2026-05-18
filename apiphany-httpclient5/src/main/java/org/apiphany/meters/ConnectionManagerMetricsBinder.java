@@ -32,19 +32,34 @@ import io.micrometer.core.instrument.binder.httpcomponents.hc5.PoolingHttpClient
 public class ConnectionManagerMetricsBinder implements MeterBinder {
 
 	/**
-	 * The base metric prefix for all HTTP client metrics.
+	 * Constants for metric name prefixes.
+	 *
+	 * @author Radu Sebastian LAZIN
 	 */
-	public static final String METRIC_HTTP_CLIENT_PREFIX = "httpcomponents.httpclient";
+	public static class MetricPrefix {
 
-	/**
-	 * The metric prefix for total pool statistics.
-	 */
-	public static final String METRIC_POOL_TOTAL_PREFIX = "pool.total";
+		/**
+		 * The base metric prefix for all HTTP client metrics.
+		 */
+		public static final String HTTP_CLIENT = "httpcomponents.httpclient";
 
-	/**
-	 * The metric prefix for route-specific pool statistics.
-	 */
-	public static final String METRIC_POOL_ROUTE_PREFIX = "pool.route";
+		/**
+		 * The metric prefix for total pool statistics.
+		 */
+		public static final String POOL_TOTAL = "pool.total";
+
+		/**
+		 * The metric prefix for route-specific pool statistics.
+		 */
+		public static final String POOL_ROUTE = "pool.route";
+
+		/**
+		 * Private constructor to prevent instantiation.
+		 */
+		private MetricPrefix() {
+			// empty
+		}
+	}
 
 	/**
 	 * The connection pool control instance being monitored.
@@ -102,21 +117,24 @@ public class ConnectionManagerMetricsBinder implements MeterBinder {
 	 */
 	private void registerTotalMetrics(final MeterRegistry registry) {
 		// httpcomponents.httpclient.${clientName}.pool.total.max
-		Gauge.builder(metricName(METRIC_HTTP_CLIENT_PREFIX, clientName, METRIC_POOL_TOTAL_PREFIX, "max"), connPoolControl,
+		Gauge.builder(metricName(MetricPrefix.HTTP_CLIENT, clientName, MetricPrefix.POOL_TOTAL, "max"),
+				connPoolControl,
 				cpc -> cpc.getTotalStats().getMax())
 				.description("The configured maximum number of allowed persistent connections for all routes.")
 				.tags(tags)
 				.register(registry);
 
 		// httpcomponents.httpclient.${clientName}.pool.total.connections.available
-		Gauge.builder(metricName(METRIC_HTTP_CLIENT_PREFIX, clientName, METRIC_POOL_TOTAL_PREFIX, "connections", "available"), connPoolControl,
+		Gauge.builder(metricName(MetricPrefix.HTTP_CLIENT, clientName, MetricPrefix.POOL_TOTAL, "connections", "available"),
+				connPoolControl,
 				cpc -> cpc.getTotalStats().getAvailable())
 				.description("The number of idle persistent connections for all routes.")
 				.tags(tags)
 				.register(registry);
 
 		// httpcomponents.httpclient.${clientName}.pool.total.connections.leased
-		Gauge.builder(metricName(METRIC_HTTP_CLIENT_PREFIX, clientName, METRIC_POOL_TOTAL_PREFIX, "connections", "leased"), connPoolControl,
+		Gauge.builder(metricName(MetricPrefix.HTTP_CLIENT, clientName, MetricPrefix.POOL_TOTAL, "connections", "leased"),
+				connPoolControl,
 				cpc -> cpc.getTotalStats().getLeased())
 				.description(
 						"The number of persistent connections tracked by the connection manager currently being used to execute requests for all routes.")
@@ -124,14 +142,16 @@ public class ConnectionManagerMetricsBinder implements MeterBinder {
 				.register(registry);
 
 		// httpcomponents.httpclient.${clientName}.pool.total.pending
-		Gauge.builder(metricName(METRIC_HTTP_CLIENT_PREFIX, clientName, METRIC_POOL_TOTAL_PREFIX, "pending"), connPoolControl,
+		Gauge.builder(metricName(MetricPrefix.HTTP_CLIENT, clientName, MetricPrefix.POOL_TOTAL, "pending"),
+				connPoolControl,
 				cpc -> cpc.getTotalStats().getPending())
 				.description("The number of connection requests being blocked awaiting a free connection for all routes.")
 				.tags(tags)
 				.register(registry);
 
 		// httpcomponents.httpclient.${clientName}.pool.route.max.default
-		Gauge.builder(metricName(METRIC_HTTP_CLIENT_PREFIX, clientName, METRIC_POOL_ROUTE_PREFIX, "max", "default"), connPoolControl,
+		Gauge.builder(metricName(MetricPrefix.HTTP_CLIENT, clientName, MetricPrefix.POOL_ROUTE, "max", "default"),
+				connPoolControl,
 				ConnPoolControl::getDefaultMaxPerRoute)
 				.description("The configured default maximum number of allowed persistent connections per route.")
 				.tags(tags)
@@ -142,7 +162,7 @@ public class ConnectionManagerMetricsBinder implements MeterBinder {
 	 * Builds a metric name from the given path components.
 	 *
 	 * @param paths the components of the metric name
-	 * @return the constructed metric name //
+	 * @return the constructed metric name
 	 */
 	private static String metricName(final String... paths) {
 		return PropertyNameBuilder.builder()
