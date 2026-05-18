@@ -38,7 +38,12 @@ Simple fluent style Java API to make API calls.
 Currently, it wraps over the `java.net.http` library but you can easily extend it to use other HTTP clients/libraries 
 by implementing the `HttpExchangeClient` interface or by extending the `AbstractHttpExchangeClient`.
 
-Support is being developed for other HTTP clients like Apache HttpClient, OkHttp, Spring RestTemplate, etc.
+#### Client Support
+
+- Support for Apache HttpClient5 is already available in the `apiphany-httpclient5` module and can be used by adding the dependency and changing one line in your client constructor.
+- Support for RestTemplate and RestClient is already available in the `apiphany-spring` module and can be used by adding the dependency and changing one line in your client constructor.
+
+Support is being developed for other HTTP clients like Netty, OkHttp, Jersey, etc. If you want to contribute with an implementation for a new HTTP client, please check the [contribution guidelines](CONTRIBUTING.md) and feel free to open a PR.
 
 ### License
 
