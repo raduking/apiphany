@@ -167,6 +167,15 @@ public class ApiRequest<T> extends ApiMessage<T> {
 	}
 
 	/**
+	 * Checks if the request has any response type defined (either class or generic).
+	 *
+	 * @return true if a response type is defined, false otherwise
+	 */
+	public boolean hasResponseType() {
+		return hasClassType() || hasGenericType();
+	}
+
+	/**
 	 * Returns the class response type for the request.
 	 * <p>
 	 * This can be ignored in serialization processes since it is already available in {@code responseType}.
