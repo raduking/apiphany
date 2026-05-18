@@ -93,6 +93,7 @@ class ApiClientRequestTest {
 		assertThat(request.getBody(), nullValue());
 		assertThat(request.getResponseType(), equalTo(TestDto.class));
 		assertThat(request.getClassResponseType(), equalTo(TestDto.class));
+		assertTrue(request.hasResponseType());
 		assertFalse(request.hasGenericType());
 		assertFalse(request.isStream());
 		assertFalse(request.isUrlEncoded());
@@ -154,6 +155,7 @@ class ApiClientRequestTest {
 		assertThat(request.getParams(), equalTo(params));
 		assertThat(request.getResponseType(), equalTo(TestDto.class));
 		assertThat(request.getClassResponseType(), equalTo(TestDto.class));
+		assertTrue(request.hasResponseType());
 		assertFalse(request.hasGenericType());
 		assertFalse(request.isStream());
 		assertFalse(request.isUrlEncoded());
@@ -218,6 +220,7 @@ class ApiClientRequestTest {
 		assertThat(request.getResponseType(), equalTo(TestDto.class));
 		assertThat(request.getClassResponseType(), equalTo(TestDto.class));
 		assertTrue(request.isUrlEncoded());
+		assertTrue(request.hasResponseType());
 		assertFalse(request.hasGenericType());
 		assertFalse(request.isStream());
 	}

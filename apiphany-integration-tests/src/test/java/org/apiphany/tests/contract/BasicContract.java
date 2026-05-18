@@ -73,6 +73,33 @@ public interface BasicContract extends ApiphanyContract {
 					.retrieve(String.class)
 					.orNull();
 
+			assertEquals("", result);
+		}
+
+		wiremock().verify(getRequestedFor(urlEqualTo("/empty")));
+	}
+
+	@DisplayName("Basic: The client should handle empty response body correctly when Content-Length: 0 is set and no response type is provided")
+	@Test
+	default void shouldHandleEmptyBody200WithNoResponseType() throws Exception {
+		// some clients behave differently for Content-Length: 0 vs no body. We want to ensure that the ApiClient handles both
+		// cases correctly.
+		wiremock().stubFor(get("/empty")
+				.willReturn(aResponse()
+						.withStatus(200)
+						.withHeader("Content-Length", "0")));
+
+		ApiClient api = apiClient();
+		try (api) {
+			ApiResponse<?> response = api.client()
+					.http()
+					.get()
+					.path("empty")
+					.retrieve();
+			Object result = response.orNull();
+
+			assertNull(response.getBody());
+			assertEquals(200, response.getStatus().getCode());
 			assertNull(result);
 		}
 
@@ -94,8 +121,9 @@ public interface BasicContract extends ApiphanyContract {
 					.get()
 					.path("no-content")
 					.retrieve();
+			Object result = response.orNull();
 
-			assertNull(response.orNull());
+			assertNull(result);
 			assertEquals(204, response.getStatus().getCode());
 		}
 

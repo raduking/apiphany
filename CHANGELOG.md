@@ -9,6 +9,7 @@
 - Renamed `ResponseEntityResponseExtractor` to `ResponseEntityExtractor`.
 - Added `Assertions.asserted` to verify an assertion.
 - Added `ApiRequest.hasClassType` to check if the request has a non generic class type specified.
+- Added `ApiRequest.hasResponseType` to check if the request has a response type set (class or generic).
 
 ---
 

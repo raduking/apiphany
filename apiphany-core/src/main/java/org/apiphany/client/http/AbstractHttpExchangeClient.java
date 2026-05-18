@@ -168,12 +168,17 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	 *
 	 * @param apiRequest the API request containing response type information
 	 * @param mimeType the response content type
-	 * @param headers the response headers used for content type negotiation
+	 * @param headers the response headers
+	 * @param status the HTTP status of the response
 	 * @param body the raw response body to be converted
 	 * @return the converted body of type {@code U}
 	 * @throws UnsupportedOperationException if no compatible content converter is found
 	 */
-	protected <T, U, H> U convertBody(final ApiRequest<T> apiRequest, final ApiMimeType mimeType, final H headers, final Object body) {
+	protected <T, U, H> U convertBody(final ApiRequest<T> apiRequest, final ApiMimeType mimeType, final H headers, final HttpStatus status,
+			final Object body) {
+		if (isNoContent(status)) {
+			return null;
+		}
 		if (null == body) {
 			return null;
 		}
@@ -190,8 +195,23 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 				return ContentConverter.convertBody(typeConverter, apiRequest, mimeType, body);
 			}
 		}
+		if (body instanceof byte[] bytes && bytes.length == 0) {
+			return null;
+		}
 		throw new UnsupportedOperationException("No content converter found to convert response to: " + apiRequest.getResponseTypeName()
 				+ ", for the response content type: " + mimeType);
+	}
+
+	/**
+	 * Checks if the given HTTP status indicates that there is no content in the response. This includes both 204 No Content
+	 * and 304 Not Modified statuses, as they both imply that there is no body to be processed.
+	 *
+	 * @param status the HTTP status to check
+	 * @return true if the status indicates no content, false otherwise
+	 */
+	protected static boolean isNoContent(final HttpStatus status) {
+		return status == HttpStatus.NO_CONTENT
+				|| status == HttpStatus.NOT_MODIFIED;
 	}
 
 	/**
@@ -290,7 +310,7 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 			responseBuilder.exception(exception);
 			body = JavaObjects.cast(errorResponseBody);
 		} else {
-			body = convertBody(apiRequest, contentType, headers, rawBody);
+			body = convertBody(apiRequest, contentType, headers, httpStatus, rawBody);
 		}
 		return responseBuilder
 				.body(body)
