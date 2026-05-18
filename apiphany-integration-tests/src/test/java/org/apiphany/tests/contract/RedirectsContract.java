@@ -1,6 +1,7 @@
 package org.apiphany.tests.contract;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
@@ -88,7 +89,7 @@ public interface RedirectsContract extends ApiphanyContract {
 		wiremock().verify(getRequestedFor(urlEqualTo("/target")));
 	}
 
-	@DisplayName("Redirects: The client should not transform POST to GET on 307 redirect")
+	@DisplayName("Redirects: The client should expose 307 responses without following redirects by default")
 	@Test
 	default void shouldNotTransformPostToGetOn307() throws Exception {
 		wiremock().stubFor(post("/redirect307")
@@ -112,5 +113,96 @@ public interface RedirectsContract extends ApiphanyContract {
 
 		wiremock().verify(postRequestedFor(urlEqualTo("/redirect307")));
 		wiremock().verify(0, getRequestedFor(urlEqualTo("/target")));
+	}
+
+	@DisplayName("Redirects: The client should preserve method and body on 307 redirects")
+	@Test
+	default void shouldPreserveMethodAndBodyOn307Redirect() throws Exception {
+		assumeTrue(enableRedirects(), "This client does not support redirects");
+
+		wiremock().stubFor(post("/redirect307")
+				.willReturn(aResponse()
+						.withStatus(307)
+						.withHeader("Location", "/target")));
+
+		wiremock().stubFor(post("/target")
+				.willReturn(aResponse()
+						.withStatus(200)
+						.withBody("OK")));
+
+		ApiClient api = apiClient();
+		try (api) {
+			String result = api.client()
+					.http()
+					.post()
+					.path("redirect307")
+					.body("test")
+					.retrieve(String.class)
+					.orNull();
+
+			assertEquals("OK", result);
+		}
+
+		wiremock().verify(postRequestedFor(urlEqualTo("/redirect307"))
+				.withRequestBody(equalTo("test")));
+
+		wiremock().verify(postRequestedFor(urlEqualTo("/target"))
+				.withRequestBody(equalTo("test")));
+
+		wiremock().verify(0, getRequestedFor(urlEqualTo("/target")));
+	}
+
+	@DisplayName("Redirects: The client should transform POST to GET on 303 redirects")
+	@Test
+	default void shouldTransformPostToGetOn303() throws Exception {
+		assumeTrue(enableRedirects(), "This client does not support redirects");
+
+		wiremock().stubFor(post("/redirect303")
+				.willReturn(aResponse()
+						.withStatus(303)
+						.withHeader("Location", "/target")));
+
+		wiremock().stubFor(get("/target")
+				.willReturn(aResponse()
+						.withStatus(200)
+						.withBody("OK")));
+
+		ApiClient api = apiClient();
+		try (api) {
+			String result = api.client()
+					.http()
+					.post()
+					.path("redirect303")
+					.body("test")
+					.retrieve(String.class)
+					.orNull();
+
+			assertEquals("OK", result);
+		}
+
+		wiremock().verify(postRequestedFor(urlEqualTo("/redirect303")));
+		wiremock().verify(getRequestedFor(urlEqualTo("/target")));
+	}
+
+	@DisplayName("Redirects: The client should fail when redirects exceed the maximum limit")
+	@Test
+	default void shouldFailOnRedirectLoop() throws Exception {
+		assumeTrue(enableRedirects(), "This client does not support redirects");
+
+		wiremock().stubFor(get("/loop")
+				.willReturn(aResponse()
+						.withStatus(302)
+						.withHeader("Location", "/loop")));
+
+		ApiClient api = apiClient();
+		try (api) {
+			ApiResponse<String> response = api.client()
+					.http()
+					.get()
+					.path("loop")
+					.retrieve(String.class);
+
+			assertEquals(500, response.getStatus().getCode());
+		}
 	}
 }
