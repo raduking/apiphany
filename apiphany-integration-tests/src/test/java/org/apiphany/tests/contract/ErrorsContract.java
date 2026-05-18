@@ -131,7 +131,7 @@ public interface ErrorsContract extends ApiphanyContract {
 						.withFixedDelay(3000)
 						.withStatus(200)));
 
-		ClientProperties properties = new ClientProperties();
+		ClientProperties properties = clientProperties();
 		properties.getTimeout().setConnect(Duration.ofMillis(100));
 		properties.getTimeout().setRequest(Duration.ofMillis(100));
 

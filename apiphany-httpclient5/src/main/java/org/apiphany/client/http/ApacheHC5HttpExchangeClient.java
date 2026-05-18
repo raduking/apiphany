@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import javax.net.ssl.SSLContext;
+
 import org.apache.hc.client5.http.classic.methods.HttpDelete;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpHead;
@@ -21,6 +23,7 @@ import org.apache.hc.client5.http.classic.methods.HttpUriRequest;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.Header;
@@ -86,8 +89,19 @@ public class ApacheHC5HttpExchangeClient extends AbstractHttpExchangeClient {
 	public ApacheHC5HttpExchangeClient(final ClientProperties clientProperties) {
 		super(clientProperties);
 		this.httpClient = ApacheHC5Clients.createClient(clientProperties,
-				ApacheHC5Clients.noCustomizer(), this::customize, this::customize);
+				this::customize, this::customize, this::customize);
 		this.httpVersion = Nullables.nonNullOrDefault(this.httpVersion, HttpVersion.DEFAULT);
+	}
+
+	/**
+	 * Customizes the connection manager builder.
+	 *
+	 * @param connectionManagerBuilder pooling HTTP client connection manager builder
+	 */
+	private void customize(final PoolingHttpClientConnectionManagerBuilder connectionManagerBuilder) {
+		SSLContext sslContext = getSslContext();
+		Nullables.whenNotNull(sslContext)
+				.then(ssl -> ApacheHC5Clients.configureTls(connectionManagerBuilder, ssl));
 	}
 
 	/**

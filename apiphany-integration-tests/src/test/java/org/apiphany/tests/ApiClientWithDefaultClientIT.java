@@ -45,7 +45,8 @@ class ApiClientWithDefaultClientIT implements ApiphanyContract {
 	@RegisterExtension
 	private static final WireMockExtension wiremock =
 			WireMockExtension.newInstance()
-					.options(options().dynamicPort())
+					.options(options()
+							.dynamicPort())
 					.build();
 
 	@Override

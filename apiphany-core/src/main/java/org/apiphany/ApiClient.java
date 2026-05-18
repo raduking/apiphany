@@ -65,7 +65,11 @@ public class ApiClient implements AutoCloseable {
 	public static final String EMPTY_BASE_URL = "";
 
 	/**
-	 * The URL as string as the base path.
+	 * The URL as string as the base path. This is an optional field and is only used when it is not defined in the exchange
+	 * clients {@link ClientProperties#getBaseUrl()}, in which case the API client will use the base URL defined here.
+	 * <p>
+	 * If the base URL is not defined here, then the API client will expect the full URL to be provided in each request,
+	 * otherwise the API client will append the path of each request to this base URL when making requests.
 	 */
 	private final String baseUrl;
 

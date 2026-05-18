@@ -2,6 +2,10 @@
 
 `1.2.9`
 
+- Added TLS support to `ApacheHC5HttpExchangeClient`.
+- Added TLS support to `RestTemplateExchangeClient`.
+- Added TLS support to `SpringRestExchangeClient`.
+
 ---
 
 `1.2.8`
