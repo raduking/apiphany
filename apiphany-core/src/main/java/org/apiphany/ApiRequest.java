@@ -149,6 +149,15 @@ public class ApiRequest<T> extends ApiMessage<T> {
 	}
 
 	/**
+	 * Checks if the request has a class response type defined.
+	 *
+	 * @return true if a class response type is defined, false otherwise
+	 */
+	public boolean hasClassType() {
+		return null != classResponseType;
+	}
+
+	/**
 	 * Checks if the request has a generic response type defined.
 	 *
 	 * @return true if a generic response type is defined, false otherwise

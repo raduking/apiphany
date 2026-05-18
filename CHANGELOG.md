@@ -8,6 +8,7 @@
 - Added `AbstractHttpExchangeClient.exchange(ApiRequest)` implementation with common behavior and now derived classes can implement `doExchange(ApiRequest)`.
 - Renamed `ResponseEntityResponseExtractor` to `ResponseEntityExtractor`.
 - Added `Assertions.asserted` to verify an assertion.
+- Added `ApiRequest.hasClassType` to check if the request has a non generic class type specified.
 
 ---
 

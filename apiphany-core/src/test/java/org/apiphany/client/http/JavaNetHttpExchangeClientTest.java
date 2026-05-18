@@ -396,7 +396,7 @@ class JavaNetHttpExchangeClientTest {
 			ApiResponse<?> apiResponse = exchangeClient.buildResponse(request, httpResponse);
 
 			assertThat(apiResponse.getRequest(), equalTo(request));
-			assertNull(apiResponse.getBody());
+			assertThat(apiResponse.getBody(), equalTo(""));
 			assertThat(apiResponse.getHeaders().size(), equalTo(0));
 		}
 
