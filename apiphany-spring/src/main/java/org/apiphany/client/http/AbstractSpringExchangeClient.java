@@ -55,7 +55,7 @@ public abstract class AbstractSpringExchangeClient extends AbstractHttpExchangeC
 	 */
 	protected AbstractSpringExchangeClient(final ClientProperties clientProperties) {
 		super(clientProperties);
-		this.requestFactory = CloseableHttpRequestFactory.detect(clientProperties);
+		this.requestFactory = CloseableHttpRequestFactory.detect(clientProperties, getSslContext());
 		this.messageConverters = List.of(
 				new ByteArrayHttpMessageConverter(),
 				new StringHttpMessageConverter(),

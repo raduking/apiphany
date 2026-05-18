@@ -2,6 +2,8 @@ package org.apiphany.http;
 
 import java.util.function.Consumer;
 
+import javax.net.ssl.SSLContext;
+
 import org.apache.hc.client5.http.config.ConnectionConfig;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
@@ -9,6 +11,9 @@ import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.client5.http.ssl.ClientTlsStrategyBuilder;
+import org.apache.hc.client5.http.ssl.HttpsSupport;
+import org.apache.hc.client5.http.ssl.TlsSocketStrategy;
 import org.apache.hc.core5.http.io.SocketConfig;
 import org.apache.hc.core5.util.Timeout;
 import org.apiphany.client.ClientProperties;
@@ -178,6 +183,22 @@ public interface ApacheHC5Clients {
 				.setResponseTimeout(apacheHC5Properties.getRequest().getRequestTimeout())
 				.setRedirectsEnabled(apacheHC5Properties.getConnection().isFollowRedirects())
 				.build();
+	}
+
+	/**
+	 * Configures the given pooling HTTP client connection manager builder with the given SSL context. This method is used
+	 * to set up TLS support for the HTTP client by configuring the TLS socket strategy with the provided SSL context and
+	 * default hostname verifier.
+	 *
+	 * @param connectionManagerBuilder the pooling HTTP client connection manager builder to configure
+	 * @param sslContext the SSL context to use for TLS connections
+	 */
+	static void configureTls(final PoolingHttpClientConnectionManagerBuilder connectionManagerBuilder, final SSLContext sslContext) {
+		TlsSocketStrategy tlsSocketStrategy = ClientTlsStrategyBuilder.create()
+				.setHostnameVerifier(HttpsSupport.getDefaultHostnameVerifier())
+				.setSslContext(sslContext)
+				.buildClassic();
+		connectionManagerBuilder.setTlsSocketStrategy(tlsSocketStrategy);
 	}
 
 	/**
