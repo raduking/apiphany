@@ -62,7 +62,7 @@ public class RestTemplateExchangeClient extends AbstractSpringExchangeClient {
 	 */
 	private RestTemplateBuilder customize(final RestTemplateBuilder restTemplateBuilder) {
 		return restTemplateBuilder
-				.requestFactory(() -> getRequestFactory())
+				.requestFactory(this::getRequestFactory)
 				.messageConverters(getMessageConverters());
 	}
 

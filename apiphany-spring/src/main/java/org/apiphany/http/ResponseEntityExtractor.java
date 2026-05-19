@@ -79,7 +79,7 @@ public class ResponseEntityExtractor<T> implements ResponseExtractor<ResponseEnt
 		MediaType contentType = SpringHttpSupport.getContentType(response);
 		try {
 			for (HttpMessageConverter<?> messageConverter : messageConverters) {
-				if (null != responseClass && messageConverter.canRead(responseClass, contentType)) {
+				if (messageConverter.canRead(responseClass, contentType)) {
 					if (LOGGER.isDebugEnabled()) {
 						LOGGER.debug("Reading to [{}] as {}", Strings.envelope("\"", responseClass.getName()), contentType);
 					}
