@@ -97,6 +97,8 @@ openssl rsa \
 
 # Keycloak certificate
 
+The `rsa_private.pem` was generated with `apiphany-integration-tests` [KeyPairs](../../../../apiphany-integration-tests/src/main/java/org/apiphany/security/KeyPairs.java) class.
+
 ```bash
 openssl req \
   -new \
