@@ -158,7 +158,7 @@ public abstract class AbstractSpringExchangeClient extends AbstractHttpExchangeC
 			case InputStream inputStream -> SpringHttpSupport.createHttpEntity(inputStream, headers);
 			case InputStreamSupplier inputStreamSupplier -> SpringHttpSupport.createHttpEntity(inputStreamSupplier.get(), headers);
 			case Supplier<?> supplier -> createHttpEntity(apiRequest, JavaObjects.cast(supplier.get()), headers);
-			case Object obj when isContentJson(apiRequest) -> SpringHttpSupport.createHttpEntity(JsonBuilder.toJson(body), headers);
+			case Object obj when isContentJson(apiRequest) -> SpringHttpSupport.createHttpEntity(JsonBuilder.toJson(obj), headers);
 			default -> SpringHttpSupport.createHttpEntity(Strings.safeToString(body), headers);
 		};
 		return JavaObjects.cast(httpEntity);
