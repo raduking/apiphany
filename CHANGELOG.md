@@ -1,5 +1,9 @@
 ## Release Notes
 
+`1.2.10`
+
+---
+
 `1.2.9`
 
 - Added TLS support to `ApacheHC5HttpExchangeClient`.

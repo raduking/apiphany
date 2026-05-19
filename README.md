@@ -51,7 +51,7 @@ Support is being developed for other HTTP clients like Netty, OkHttp, Jersey, et
 
 ### Releases
 
-Current release `1.2.9`
+Current release `1.2.10`
 
 ### Getting Started
 
@@ -61,7 +61,7 @@ Maven: add this dependency to your `pom.xml`
 <dependency>
     <groupId>io.github.raduking</groupId>
     <artifactId>apiphany</artifactId>
-    <version>1.2.9</version>
+    <version>1.2.10</version>
 </dependency>
 ```
 
