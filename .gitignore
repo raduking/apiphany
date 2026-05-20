@@ -10,3 +10,7 @@
 
 # Deployment artifacts
 /target/
+
+# For C and C++ projects
+/integration/*/build/
+/integration/*/.vscode
