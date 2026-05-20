@@ -8,15 +8,24 @@ PREFIX="$HOME/local/openssl-nonhardened"
 REPO="https://github.com/openssl/openssl.git"
 BRANCH="openssl-3.5.1"
 
-# Clean any previous build
-rm -rf openssl-build
-mkdir openssl-build
+echo "--------------------------------------------"
+echo "Building OpenSSL (non-hardened) from source..."
+echo "--------------------------------------------"
+# Create build directory if it doesn't exist
+mkdir -p openssl-build
 cd openssl-build
 
-echo "--------------------------------------------"
-echo "Cloning OpenSSL $BRANCH..."
-echo "--------------------------------------------"
-git clone --depth=1 --branch "$BRANCH" "$REPO" source
+# Clone only if source directory doesn't exist
+if [ ! -d "source" ]; then
+    echo "--------------------------------------------"
+    echo "Cloning OpenSSL $BRANCH..."
+    echo "--------------------------------------------"
+    git clone --depth=1 --branch "$BRANCH" "$REPO" source
+else
+    echo "--------------------------------------------"
+    echo "Source directory already exists, using existing clone..."
+    echo "--------------------------------------------"
+fi
 cd source
 
 echo "--------------------------------------------"
@@ -27,10 +36,10 @@ echo "--------------------------------------------"
 	--prefix="${PREFIX}" \
 	enable-ec_nistp_64_gcc_128
 
-echo "--------------------------------------------"
-echo "Building OpenSSL..."
-echo "--------------------------------------------"
 CORES=$(sysctl -n hw.ncpu)
+echo "--------------------------------------------"
+echo "Building OpenSSL ($CORES cores)..."
+echo "--------------------------------------------"
 make -j"$CORES"
 
 echo "--------------------------------------------"
