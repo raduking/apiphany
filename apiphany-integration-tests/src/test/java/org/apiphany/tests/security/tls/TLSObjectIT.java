@@ -23,7 +23,6 @@ import org.apiphany.security.tls.CipherSuite;
 import org.apiphany.security.tls.TLSLoggingProvider;
 import org.apiphany.security.tls.TLSObject;
 import org.apiphany.security.tls.client.MinimalTLSClient;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -76,9 +75,10 @@ class TLSObjectIT {
 		assertThat(response, equalTo(NameHandler.NAME));
 	}
 
-	@Disabled("This test is here to debug errors, the same is tested in shouldPerformTLS12HandshakeAndGetName")
 	@Test
 	void shouldPerformTLS12HandshakeWithECDHERSAAES256GCMSHA384() throws Exception {
+		assumeTrue("true".equals(System.getProperty("apiphany.test.tls.ecdhe_rsa_with_aes_256_gcm_sha384")));
+
 		int port = Sockets.findAvailableTcpPort();
 		SSLProperties sslProperties = JsonBuilder.fromJson(SSL_PROPERTIES_JSON, SSLProperties.class);
 		sslProperties.setProtocol(SSLProtocol.TLS_1_2);
@@ -120,7 +120,7 @@ class TLSObjectIT {
 	@Test
 	void shouldPerformTLS12HandshakeWithECDHERSAAES256GCMSHA384WithOpenSSL() {
 		// assumes OpenSSL is running on port 4433 you can run it with the command described in the keystore-generation.md file.
-		// TODO: move this to an integration test module
+		// TODO: move this to an openssl integration test module
 		int port = 4433;
 		assumeTrue(Sockets.canConnectTo(LOCALHOST, port), LOCALHOST + ":" + port + " is unreachable, skipping test.");
 
@@ -138,7 +138,7 @@ class TLSObjectIT {
 	@Test
 	void shouldPerformTLS12HandshakeWithAES128CBCSHAWithOpenSSL() throws Exception {
 		// assumes OpenSSL is running on port 4433 you can run it with the command described in the keystore-generation.md file.
-		// TODO: move this to an integration test module
+		// TODO: move this to an openssl integration test module
 		int port = 4433;
 		assumeTrue(Sockets.canConnectTo(LOCALHOST, port), LOCALHOST + ":" + port + " is unreachable, skipping test.");
 
