@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.ExchangeClientBuilder;
 import org.apiphany.security.oauth2.client.OAuth2HttpExchangeClientBuilder;
+import org.apiphany.security.ssl.client.SSLHttpExchangeClientBuilder;
 import org.morphix.lang.function.Consumers;
 import org.morphix.lang.resource.ScopedResource;
 
@@ -101,5 +102,34 @@ public class SecuredExchangeClientBuilder extends ExchangeClientBuilder {
 	 */
 	public OAuth2HttpExchangeClientBuilder oAuth2() {
 		return oAuth2(Consumers.noConsumer());
+	}
+
+	/**
+	 * Adds SSL/TLS functionality. Configures one-way TLS (server certificate validation).
+	 *
+	 * @param sslBuilderCustomizer SSL builder customizer
+	 * @return new SSL exchange client builder
+	 */
+	public SSLHttpExchangeClientBuilder ssl(final Consumer<SSLHttpExchangeClientBuilder> sslBuilderCustomizer) {
+		return securityDefined().decoratedWithBuilder(SSLHttpExchangeClientBuilder.class, sslBuilderCustomizer);
+	}
+
+	/**
+	 * Adds SSL/TLS functionality. Configures one-way TLS (server certificate validation).
+	 *
+	 * @return new SSL exchange client builder
+	 */
+	public SSLHttpExchangeClientBuilder ssl() {
+		return ssl(Consumers.noConsumer());
+	}
+
+	/**
+	 * Adds mutual TLS functionality. Requires a key store (client certificate) to be configured.
+	 *
+	 * @param mtlsBuilderCustomizer mTLS builder customizer
+	 * @return new SSL exchange client builder
+	 */
+	public SSLHttpExchangeClientBuilder mtls(final Consumer<SSLHttpExchangeClientBuilder> mtlsBuilderCustomizer) {
+		return ssl(mtlsBuilderCustomizer.andThen(SSLHttpExchangeClientBuilder::requireKeystore));
 	}
 }

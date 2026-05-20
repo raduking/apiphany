@@ -13,6 +13,7 @@ import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.TracingHeader;
 import org.apiphany.lang.Strings;
+import org.apiphany.security.ssl.SSLContextAware;
 import org.slf4j.MDC;
 
 /**
@@ -20,7 +21,7 @@ import org.slf4j.MDC;
  *
  * @author Radu Sebastian LAZIN
  */
-public interface HttpExchangeClient extends ExchangeClient {
+public interface HttpExchangeClient extends ExchangeClient, SSLContextAware {
 
 	/**
 	 * Returns the GET request method.

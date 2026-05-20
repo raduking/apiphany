@@ -2,6 +2,16 @@
 
 `1.2.10`
 
+- Added `SSLContextAware` marker interface for `SSLContext` availability.
+- Updated `HttpExchangeClient` to also extend `SSLContextAware`.
+- Added `SSLProperties.isEmpty` to check if a SSL properties object has no store properties set.
+- Added `SSLProperties.isNotEmpty` to check if a SSL properties has any store properties set.
+- Added `SSLHttpExchangeClient` decorator exchange client for SSL.
+- Added `SSLHttpExchangeClientBuilder` to build SSL decorator exchange clients.
+- Added `SecuredExchangeClientBuilder.ssl` to add SSL configuration when building exchange clients.
+- Added `SecuredExchangeClientBuilder.mtls` to add mutual TLS configuration when building exchange clients.
+- Added `StoreInfo.of` factory methods to build key/trust store information objects.
+
 ---
 
 `1.2.9`

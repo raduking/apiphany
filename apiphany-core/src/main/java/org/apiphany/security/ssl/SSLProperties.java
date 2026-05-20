@@ -2,6 +2,7 @@ package org.apiphany.security.ssl;
 
 import org.apiphany.client.ClientProperties;
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.lang.Strings;
 
 /**
  * Configuration properties for SSL/TLS connections. This class encapsulates SSL protocol settings and certificate store
@@ -66,6 +67,36 @@ public class SSLProperties {
 	@Override
 	public String toString() {
 		return JsonBuilder.toJson(this);
+	}
+
+	/**
+	 * Utility method to check if the given {@link SSLProperties} instance is effectively empty (i.e., has no key store or
+	 * trust store location configured).
+	 *
+	 * @param sslProperties the SSL properties to check
+	 * @return {@code true} if the SSL properties are null or have no key store and trust store location configured,
+	 * {@code false} otherwise
+	 */
+	public static boolean isEmpty(final SSLProperties sslProperties) {
+		if (null == sslProperties) {
+			return true;
+		}
+		if (Strings.isNotBlank(sslProperties.getKeystore().getLocation())) {
+			return false;
+		}
+		return Strings.isNotBlank(sslProperties.getTruststore().getLocation());
+	}
+
+	/**
+	 * Utility method to check if the given {@link SSLProperties} instance is effectively not empty (i.e., has either a key
+	 * store or trust store location configured).
+	 *
+	 * @param sslProperties the SSL properties to check
+	 * @return {@code true} if the SSL properties are not null and have either a key store or trust store location
+	 * configured, {@code false} otherwise
+	 */
+	public static boolean isNotEmpty(final SSLProperties sslProperties) {
+		return !isEmpty(sslProperties);
 	}
 
 	/**

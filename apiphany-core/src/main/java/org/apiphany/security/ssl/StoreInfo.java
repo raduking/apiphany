@@ -53,6 +53,34 @@ public class StoreInfo {
 	}
 
 	/**
+	 * Creates a new {@link StoreInfo} with the given location and password. The store type defaults to
+	 * {@link KeyStoreType#PKCS12}.
+	 *
+	 * @param location the file system path or classpath resource to the certificate store
+	 * @param password the password to access the certificate store
+	 * @return a new {@link StoreInfo}
+	 */
+	public static StoreInfo of(final String location, final char[] password) {
+		return of(location, password, KeyStoreType.PKCS12.value());
+	}
+
+	/**
+	 * Creates a new {@link StoreInfo} with the given location, password and type.
+	 *
+	 * @param location the file system path or classpath resource to the certificate store
+	 * @param password the password to access the certificate store
+	 * @param type the type of the certificate store (e.g., "JKS", "PKCS12")
+	 * @return a new {@link StoreInfo}
+	 */
+	public static StoreInfo of(final String location, final char[] password, final String type) {
+		StoreInfo storeInfo = new StoreInfo();
+		storeInfo.setLocation(location);
+		storeInfo.setPassword(password);
+		storeInfo.setType(type);
+		return storeInfo;
+	}
+
+	/**
 	 * Returns a JSON string representation of this object.
 	 *
 	 * @return a JSON string representation of this object

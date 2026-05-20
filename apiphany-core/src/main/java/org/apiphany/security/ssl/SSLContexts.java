@@ -23,8 +23,6 @@ import org.morphix.reflection.Constructors;
 
 /**
  * Utility methods for working with Java SSL like key stores, trust stores, SSL context, etc.
- * <p>
- * TODO: add a builder
  *
  * @author Radu Sebastian LAZIN
  */
@@ -217,5 +215,14 @@ public final class SSLContexts {
 	 */
 	private SSLContexts() {
 		throw Constructors.unsupportedOperationException();
+	}
+
+	/**
+	 * Returns a new {@link SSLContextBuilder} for fluently building {@link SSLContext} instances.
+	 *
+	 * @return a new {@link SSLContextBuilder}
+	 */
+	public static SSLContextBuilder builder() {
+		return SSLContextBuilder.create();
 	}
 }
