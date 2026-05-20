@@ -14,7 +14,8 @@ import org.morphix.lang.function.ToStringFunction;
 public enum KeyStoreType {
 
 	/**
-	 * PKCS12 key store type recommended for most use cases.
+	 * PKCS12 key store type recommended for most use cases and used as the default type whenever a key store type is not
+	 * explicitly specified.
 	 */
 	PKCS12("PKCS12"),
 

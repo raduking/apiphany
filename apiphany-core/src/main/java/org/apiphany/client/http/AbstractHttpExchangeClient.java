@@ -247,6 +247,7 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	 *
 	 * @return the SSL context
 	 */
+	@Override
 	public SSLContext getSslContext() {
 		return sslContext;
 	}
