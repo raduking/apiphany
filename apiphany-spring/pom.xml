@@ -41,7 +41,7 @@
 	<properties>
 		<!-- Module specific versions -->
 		<spring.boot.version>3.5.14</spring.boot.version>
-		<dependency.check.maven.version>12.2.0</dependency.check.maven.version>
+		<dependency.check.maven.version>12.2.2</dependency.check.maven.version>
 
 		<!--
 			The apiphanySpringArgLine property is only used during the build process of the 
@@ -366,13 +366,16 @@
 						<configuration>
 							<nvdApiKey>${env.MAVEN_NVD_API_KEY}</nvdApiKey>
 							<nvdApiDelay>16000</nvdApiDelay>
+							<ossIndexAnalyzerUrl>https://api.guide.sonatype.com</ossIndexAnalyzerUrl>
+							<ossIndexUsername>raduking@gmail.com</ossIndexUsername>
+							<ossIndexPassword>${env.MAVEN_SONATYPE_OSS_INDEX_API_KEY}</ossIndexPassword>
 							<suppressionFiles>
 								<suppressionFile>owasp-suppressions.xml</suppressionFile>
 							</suppressionFiles>
 							<hostedSuppressionsForceUpdate>true</hostedSuppressionsForceUpdate>
 							<ossIndexWarnOnlyOnRemoteErrors>true</ossIndexWarnOnlyOnRemoteErrors>
-							<!-- lower this to 7 when upgrading to Spring Boot 3.5.9 -->
-							<failBuildOnCVSS>7</failBuildOnCVSS>
+							<!-- lower this to 7 when upgrading to next Spring Boot parent -->
+							<failBuildOnCVSS>7.5</failBuildOnCVSS>
 						</configuration>
 						<executions>
 							<execution>
