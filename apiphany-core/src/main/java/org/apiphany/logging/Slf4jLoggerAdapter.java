@@ -3,6 +3,7 @@ package org.apiphany.logging;
 import java.util.Objects;
 
 import org.morphix.lang.function.LoggerAdapter;
+import org.morphix.lang.function.LoggingFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,13 +57,14 @@ public final class Slf4jLoggerAdapter implements LoggerAdapter {
 	 */
 	@Override
 	public void log(final LoggingLevel level, final String message, final Object... args) {
-		switch (level) {
-			case TRACE -> logger.trace(message, args);
-			case DEBUG -> logger.debug(message, args);
-			case INFO -> logger.info(message, args);
-			case WARN -> logger.warn(message, args);
-			case ERROR -> logger.error(message, args);
-		}
+		LoggingFunction loggingFunction = switch (level) {
+			case TRACE -> logger::trace;
+			case DEBUG -> logger::debug;
+			case INFO -> logger::info;
+			case WARN -> logger::warn;
+			case ERROR -> logger::error;
+		};
+		loggingFunction.log(message, args);
 	}
 
 	/**
