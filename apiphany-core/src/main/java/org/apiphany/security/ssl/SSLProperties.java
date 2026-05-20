@@ -84,7 +84,7 @@ public class SSLProperties {
 		if (Strings.isNotBlank(sslProperties.getKeystore().getLocation())) {
 			return false;
 		}
-		return Strings.isNotBlank(sslProperties.getTruststore().getLocation());
+		return Strings.isBlank(sslProperties.getTruststore().getLocation());
 	}
 
 	/**
