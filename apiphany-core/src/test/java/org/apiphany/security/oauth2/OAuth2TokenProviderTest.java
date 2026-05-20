@@ -592,8 +592,8 @@ class OAuth2TokenProviderTest {
 			return token;
 		}).when(tokenClient).getAuthenticationToken();
 
-		Duration expirationErrorMargin = tokenValidity.minusMillis(10);
-		Duration minRefreshInterval = Duration.ofMillis(20);
+		Duration expirationErrorMargin = tokenValidity.minusMillis(1);
+		Duration minRefreshInterval = Duration.ofMillis(1);
 
 		OAuth2TokenProviderProperties properties = new OAuth2TokenProviderProperties();
 		properties.setExpirationErrorMargin(expirationErrorMargin);
@@ -734,8 +734,8 @@ class OAuth2TokenProviderTest {
 			return token;
 		}).when(tokenClient).getAuthenticationToken();
 
-		Duration expirationErrorMargin = tokenValidity.minusMillis(10);
-		Duration minRefreshInterval = Duration.ofMillis(20);
+		Duration expirationErrorMargin = tokenValidity.minusMillis(1);
+		Duration minRefreshInterval = Duration.ofMillis(1);
 
 		OAuth2TokenProviderProperties properties = new OAuth2TokenProviderProperties();
 		properties.setExpirationErrorMargin(expirationErrorMargin);
@@ -790,8 +790,8 @@ class OAuth2TokenProviderTest {
 			return token;
 		}).when(tokenClient).getAuthenticationToken();
 
-		Duration expirationErrorMargin = tokenValidity.minusMillis(10);
-		Duration minRefreshInterval = Duration.ofMillis(20);
+		Duration expirationErrorMargin = tokenValidity.minusMillis(1);
+		Duration minRefreshInterval = Duration.ofMillis(1);
 
 		OAuth2TokenProviderProperties properties = new OAuth2TokenProviderProperties();
 		properties.setExpirationErrorMargin(expirationErrorMargin);
