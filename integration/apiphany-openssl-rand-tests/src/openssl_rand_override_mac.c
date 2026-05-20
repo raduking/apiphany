@@ -53,10 +53,19 @@ static int fill_deterministic_bytes(const char *function_name, unsigned char *bu
 		fprintf(stderr, "[rk-override] %s: suspicious num=%d, num must be in [0..%d] range, aborting\n", function_name, num, MAX_RANDOM_BYTES);
 		return FAILURE;
 	}
+	fprintf(stderr, "[rk-override] Before fill - buf[0..%d]: ", num - 1);
+	for (int i = 0; i < num && i < 16; ++i)
+	{
+		fprintf(stderr, "%02x ", buf[i]);
+	}
+	fprintf(stderr, "\n");
+	fprintf(stderr, "[rk-override] After fill - buf[0..%d]: ", num - 1);
 	for (int i = 0; i < num; ++i)
 	{
 		buf[i] = (unsigned char)i;
+		fprintf(stderr, "%02x ", buf[i]);
 	}
+	fprintf(stderr, "\n");
 	return SUCCESS;
 }
 
@@ -71,18 +80,7 @@ int rk_rand_bytes(unsigned char *buf, int num)
 int rk_rand_bytes_ex(OSSL_LIB_CTX *ctx, unsigned char *buf, int num, unsigned int strength)
 {
 	fprintf(stderr, "[rk-override] RAND_bytes_ex called for %d bytes, strength=%d\n", num, strength);
-	if (num >= 4)
-	{
-		fprintf(stderr, "[rk-override] Before fill - buf[0..3]: %02x %02x %02x %02x\n",
-				buf[0], buf[1], buf[2], buf[3]);
-	}
-	int result = fill_deterministic_bytes("RAND_bytes_ex", buf, num);
-	if (num >= 4)
-	{
-		fprintf(stderr, "[rk-override] After fill - buf[0..3]: %02x %02x %02x %02x\n",
-				buf[0], buf[1], buf[2], buf[3]);
-	}
-	return result;
+	return fill_deterministic_bytes("RAND_bytes_ex", buf, num);
 }
 
 // Replacement for RAND_priv_bytes
@@ -98,6 +96,6 @@ __attribute__((used)) static struct
 	const void *replacement;
 	const void *original;
 } interposers[] __attribute__((section("__DATA,__interpose"))) = {
-	{(const void *)rk_rand_bytes, (const void *)RAND_bytes},
-	{(const void *)rk_rand_bytes_ex, (const void *)RAND_bytes_ex},
-	{(const void *)rk_rand_priv_bytes, (const void *)RAND_priv_bytes}};
+	{rk_rand_bytes, RAND_bytes},
+	{rk_rand_bytes_ex, RAND_bytes_ex},
+	{rk_rand_priv_bytes, RAND_priv_bytes}};
