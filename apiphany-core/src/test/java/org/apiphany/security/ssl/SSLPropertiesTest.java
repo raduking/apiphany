@@ -5,6 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -34,4 +35,83 @@ class SSLPropertiesTest {
 		assertThat(result1.toString(), equalTo(result2.toString()));
 	}
 
+	@Nested
+	class IsEmptyTests {
+
+		@Test
+		void shouldReturnFalseIfPropertiesAreNull() {
+			assertThat(SSLProperties.isEmpty(null), equalTo(true));
+		}
+
+		@Test
+		void shouldReturnTrueIfPropertiesAreEmpty() {
+			SSLProperties properties = new SSLProperties();
+
+			assertThat(SSLProperties.isEmpty(properties), equalTo(true));
+		}
+
+		@Test
+		void shouldReturnTrueEvenIfProtocolIsSet() {
+			SSLProperties properties = new SSLProperties();
+			properties.setProtocol(SSLProtocol.TLS_1_2);
+
+			assertThat(SSLProperties.isEmpty(properties), equalTo(true));
+		}
+
+		@Test
+		void shouldReturnFalseIfKeystoreLocationIsSet() {
+			SSLProperties properties = new SSLProperties();
+			properties.getKeystore().setLocation("keystore.jks");
+
+			assertThat(SSLProperties.isEmpty(properties), equalTo(false));
+		}
+
+		@Test
+		void shouldReturnFalseIfTruststoreLocationIsSet() {
+			SSLProperties properties = new SSLProperties();
+			properties.getTruststore().setLocation("truststore.jks");
+
+			assertThat(SSLProperties.isEmpty(properties), equalTo(false));
+		}
+	}
+
+	@Nested
+	class IsNotEmptyTests {
+
+		@Test
+		void shouldReturnFalseIfPropertiesAreNull() {
+			assertThat(SSLProperties.isNotEmpty(null), equalTo(false));
+		}
+
+		@Test
+		void shouldReturnFalseIfPropertiesAreEmpty() {
+			SSLProperties properties = new SSLProperties();
+
+			assertThat(SSLProperties.isNotEmpty(properties), equalTo(false));
+		}
+
+		@Test
+		void shouldReturnFalseEvenIfProtocolIsSet() {
+			SSLProperties properties = new SSLProperties();
+			properties.setProtocol(SSLProtocol.TLS_1_2);
+
+			assertThat(SSLProperties.isNotEmpty(properties), equalTo(false));
+		}
+
+		@Test
+		void shouldReturnTrueIfKeystoreLocationIsSet() {
+			SSLProperties properties = new SSLProperties();
+			properties.getKeystore().setLocation("keystore.jks");
+
+			assertThat(SSLProperties.isNotEmpty(properties), equalTo(true));
+		}
+
+		@Test
+		void shouldReturnTrueIfTruststoreLocationIsSet() {
+			SSLProperties properties = new SSLProperties();
+			properties.getTruststore().setLocation("truststore.jks");
+
+			assertThat(SSLProperties.isNotEmpty(properties), equalTo(true));
+		}
+	}
 }
