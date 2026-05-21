@@ -49,7 +49,7 @@ class SSLHttpExchangeClientBuilderTest {
 		SSLHttpExchangeClientBuilder builder = SSLHttpExchangeClientBuilder.create();
 		builder.client(DummySSLExchangeClient.class);
 		builder.properties(properties);
-		builder.keystore(SSLValues.KEYSTORE_PATH, SSLValues.KEYSTORE_PASSWORD);
+		builder.keystore(P12_KEYSTORE_PATH, P12_KEYSTORE_PASSWORD);
 		builder.truststore(SSLValues.TRUSTSTORE_PATH, SSLValues.TRUSTSTORE_PASSWORD);
 		builder.protocol(SSLProtocol.TLS_1_3);
 
@@ -73,8 +73,8 @@ class SSLHttpExchangeClientBuilderTest {
 		SSLHttpExchangeClientBuilder builder = SSLHttpExchangeClientBuilder.create();
 		builder.client(DummySSLExchangeClient.class);
 		builder.properties(properties);
-		builder.keystore(SSLValues.KEYSTORE_PATH, SSLValues.KEYSTORE_PASSWORD, KeyStoreType.JKS.value());
-		builder.truststore(SSLValues.TRUSTSTORE_PATH, SSLValues.TRUSTSTORE_PASSWORD, KeyStoreType.JKS.value());
+		builder.keystore(SSLValues.KEYSTORE_PATH, SSLValues.KEYSTORE_PASSWORD, KeyStoreType.JKS);
+		builder.truststore(SSLValues.TRUSTSTORE_PATH, SSLValues.TRUSTSTORE_PASSWORD, KeyStoreType.JKS);
 		builder.protocol(SSLProtocol.TLS_1_3);
 
 		try (ScopedResource<ExchangeClient> resource = builder.build()) {

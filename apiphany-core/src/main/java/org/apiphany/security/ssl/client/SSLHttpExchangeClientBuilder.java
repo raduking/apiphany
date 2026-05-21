@@ -62,7 +62,7 @@ public class SSLHttpExchangeClientBuilder extends ExchangeClientBuilder {
 	 * @return this
 	 */
 	public SSLHttpExchangeClientBuilder keystore(final String location, final String password) {
-		return keystore(location, password, KeyStoreType.PKCS12.value());
+		return keystore(location, password, KeyStoreType.PKCS12);
 	}
 
 	/**
@@ -73,9 +73,9 @@ public class SSLHttpExchangeClientBuilder extends ExchangeClientBuilder {
 	 * @param type the key store type (e.g., "JKS", "PKCS12")
 	 * @return this
 	 */
-	public SSLHttpExchangeClientBuilder keystore(final String location, final String password, final String type) {
+	public SSLHttpExchangeClientBuilder keystore(final String location, final String password, final KeyStoreType type) {
 		char[] passwordChars = Nullables.whenNotNull(password, String::toCharArray);
-		sslProperties.setKeystore(StoreInfo.of(location, passwordChars, type));
+		sslProperties.setKeystore(StoreInfo.of(location, passwordChars, type.value()));
 		return sslConfigured();
 	}
 
@@ -87,7 +87,7 @@ public class SSLHttpExchangeClientBuilder extends ExchangeClientBuilder {
 	 * @return this
 	 */
 	public SSLHttpExchangeClientBuilder truststore(final String location, final String password) {
-		return truststore(location, password, KeyStoreType.PKCS12.value());
+		return truststore(location, password, KeyStoreType.PKCS12);
 	}
 
 	/**
@@ -98,9 +98,9 @@ public class SSLHttpExchangeClientBuilder extends ExchangeClientBuilder {
 	 * @param type the trust store type (e.g., "JKS", "PKCS12")
 	 * @return this
 	 */
-	public SSLHttpExchangeClientBuilder truststore(final String location, final String password, final String type) {
+	public SSLHttpExchangeClientBuilder truststore(final String location, final String password, final KeyStoreType type) {
 		char[] passwordChars = Nullables.whenNotNull(password, String::toCharArray);
-		sslProperties.setTruststore(StoreInfo.of(location, passwordChars, type));
+		sslProperties.setTruststore(StoreInfo.of(location, passwordChars, type.value()));
 		return sslConfigured();
 	}
 
