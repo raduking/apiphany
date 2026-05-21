@@ -3,6 +3,7 @@ package org.apiphany.security.ssl;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
+import org.morphix.lang.Nullables;
 
 /**
  * Configuration properties for SSL/TLS connections. This class encapsulates SSL protocol settings and certificate store
@@ -82,10 +83,12 @@ public class SSLProperties {
 		if (null == sslProperties) {
 			return true;
 		}
-		if (Strings.isNotBlank(sslProperties.getKeystore().getLocation())) {
+		String keystoreLocation = Nullables.apply(sslProperties.getKeystore(), StoreInfo::getLocation);
+		if (Strings.isNotBlank(keystoreLocation)) {
 			return false;
 		}
-		return Strings.isBlank(sslProperties.getTruststore().getLocation());
+		String truststoreLocation = Nullables.apply(sslProperties.getTruststore(), StoreInfo::getLocation);
+		return Strings.isBlank(truststoreLocation);
 	}
 
 	/**
