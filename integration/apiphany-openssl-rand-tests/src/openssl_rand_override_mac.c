@@ -53,6 +53,11 @@ static int fill_deterministic_bytes(const char *function_name, unsigned char *bu
 		fprintf(stderr, "[rk-override] %s: suspicious num=%d, num must be in [0..%d] range, aborting\n", function_name, num, MAX_RANDOM_BYTES);
 		return FAILURE;
 	}
+	if (num == 0)
+	{
+		fprintf(stderr, "[rk-override] %s: num=0, nothing to fill\n", function_name);
+		return SUCCESS;
+	}
 	fprintf(stderr, "[rk-override] Before fill - buf[0..%d]: ", num - 1);
 	for (int i = 0; i < num && i < 16; ++i)
 	{
