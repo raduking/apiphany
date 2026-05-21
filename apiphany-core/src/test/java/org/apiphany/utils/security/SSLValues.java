@@ -13,6 +13,7 @@ import org.apiphany.security.ssl.SSLContexts;
 import org.apiphany.security.ssl.SSLProperties;
 import org.apiphany.security.ssl.SSLProtocol;
 import org.apiphany.security.ssl.StoreInfo;
+import org.morphix.lang.Nullables;
 
 /**
  * Utility class for SSL/TLS related tests. Because SSL context initialization is relatively slow and can be a
@@ -72,11 +73,12 @@ public class SSLValues {
 				this.sslContext = SSLValues.defaultSSLContext();
 				return;
 			}
-			if (SSLValues.KEYSTORE_PATH.equals(sslProperties.getKeystore().getLocation())
-					&& SSLValues.TRUSTSTORE_PATH.equals(sslProperties.getTruststore().getLocation())
-					&& SSLProtocol.TLS_1_3.equals(sslProperties.getProtocol())) {
-				// return a pre-built SSL context for the specific SSL properties used in the tests to avoid overhead of building an SSL
-				// context from the provided properties
+			String keystoreLocation = Nullables.apply(sslProperties.getKeystore(), StoreInfo::getLocation);
+			String truststoreLocation = Nullables.apply(sslProperties.getTruststore(), StoreInfo::getLocation);
+			if (KEYSTORE_PATH.equals(keystoreLocation) && TRUSTSTORE_PATH.equals(truststoreLocation)
+					&& SSLProtocol.TLS_1_3 == sslProperties.getProtocol()) {
+				// return a pre-built SSL context for the specific SSL properties used in the tests to avoid overhead
+				// of building an SSL context from the provided properties
 				this.sslContext = SSLValues.fullSSLContext();
 				return;
 			}
