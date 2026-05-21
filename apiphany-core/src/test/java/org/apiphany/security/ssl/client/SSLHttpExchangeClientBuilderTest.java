@@ -2,25 +2,22 @@ package org.apiphany.security.ssl.client;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
-import javax.net.ssl.SSLContext;
-
-import org.apiphany.ApiRequest;
-import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.ExchangeClientBuilder;
 import org.apiphany.security.AuthenticationType;
 import org.apiphany.security.ssl.KeyStoreType;
-import org.apiphany.security.ssl.SSLContextAware;
-import org.apiphany.security.ssl.SSLContexts;
 import org.apiphany.security.ssl.SSLProperties;
 import org.apiphany.security.ssl.SSLProtocol;
 import org.apiphany.security.ssl.StoreInfo;
+import org.apiphany.utils.security.SSLValues;
+import org.apiphany.utils.security.SSLValues.DummySSLExchangeClient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -34,57 +31,8 @@ import org.morphix.lang.resource.ScopedResource;
 @ExtendWith(MockitoExtension.class)
 class SSLHttpExchangeClientBuilderTest {
 
-	private static final String KEYSTORE_PATH = "security/ssl/keystore.jks";
-	private static final String KEYSTORE_PASSWORD = "keystorepassword123";
-	private static final String TRUSTSTORE_PATH = "security/ssl/truststore.jks";
-	private static final String TRUSTSTORE_PASSWORD = "truststorepassword123";
-
 	private static final String P12_KEYSTORE_PATH = "security/ssl/keystore.p12";
 	private static final String P12_KEYSTORE_PASSWORD = "p12password123";
-
-	public static class DummyExchangeClient implements ExchangeClient, SSLContextAware {
-
-		private ClientProperties clientProperties;
-		private SSLContext sslContext;
-
-		public DummyExchangeClient() {
-			// empty
-		}
-
-		public DummyExchangeClient(final ClientProperties clientProperties) {
-			this.clientProperties = clientProperties;
-			SSLProperties sslProperties = clientProperties.getCustomProperties(SSLProperties.class);
-			if (sslProperties != null) {
-				this.sslContext = SSLContexts.create(sslProperties);
-			}
-		}
-
-		@Override
-		public <T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest) {
-			return null;
-		}
-
-		@Override
-		public void close() {
-			// empty
-		}
-
-		@Override
-		@SuppressWarnings("unchecked")
-		public ClientProperties getClientProperties() {
-			return clientProperties;
-		}
-
-		@Override
-		public AuthenticationType getAuthenticationType() {
-			return AuthenticationType.NONE;
-		}
-
-		@Override
-		public SSLContext getSslContext() {
-			return sslContext;
-		}
-	}
 
 	@Test
 	void shouldCreateBuilder() {
@@ -99,15 +47,15 @@ class SSLHttpExchangeClientBuilderTest {
 		ClientProperties properties = new ClientProperties();
 
 		SSLHttpExchangeClientBuilder builder = SSLHttpExchangeClientBuilder.create();
-		builder.client(DummyExchangeClient.class);
+		builder.client(DummySSLExchangeClient.class);
 		builder.properties(properties);
-		builder.keystore(KEYSTORE_PATH, KEYSTORE_PASSWORD);
-		builder.truststore(TRUSTSTORE_PATH, TRUSTSTORE_PASSWORD);
+		builder.keystore(SSLValues.KEYSTORE_PATH, SSLValues.KEYSTORE_PASSWORD);
+		builder.truststore(SSLValues.TRUSTSTORE_PATH, SSLValues.TRUSTSTORE_PASSWORD);
 		builder.protocol(SSLProtocol.TLS_1_3);
 
 		try (ScopedResource<ExchangeClient> resource = builder.build()) {
 			SSLHttpExchangeClient sslClient = (SSLHttpExchangeClient) resource.unwrap();
-			DummyExchangeClient delegate = (DummyExchangeClient) sslClient.getDelegate().unwrap();
+			DummySSLExchangeClient delegate = (DummySSLExchangeClient) sslClient.getDelegate().unwrap();
 
 			assertNotNull(sslClient);
 			assertThat(sslClient.getAuthenticationType(), equalTo(AuthenticationType.SSL));
@@ -123,15 +71,15 @@ class SSLHttpExchangeClientBuilderTest {
 		ClientProperties properties = new ClientProperties();
 
 		SSLHttpExchangeClientBuilder builder = SSLHttpExchangeClientBuilder.create();
-		builder.client(DummyExchangeClient.class);
+		builder.client(DummySSLExchangeClient.class);
 		builder.properties(properties);
-		builder.keystore(KEYSTORE_PATH, KEYSTORE_PASSWORD, KeyStoreType.JKS.value());
-		builder.truststore(TRUSTSTORE_PATH, TRUSTSTORE_PASSWORD, KeyStoreType.JKS.value());
+		builder.keystore(SSLValues.KEYSTORE_PATH, SSLValues.KEYSTORE_PASSWORD, KeyStoreType.JKS.value());
+		builder.truststore(SSLValues.TRUSTSTORE_PATH, SSLValues.TRUSTSTORE_PASSWORD, KeyStoreType.JKS.value());
 		builder.protocol(SSLProtocol.TLS_1_3);
 
 		try (ScopedResource<ExchangeClient> resource = builder.build()) {
 			SSLHttpExchangeClient sslClient = (SSLHttpExchangeClient) resource.unwrap();
-			DummyExchangeClient delegate = (DummyExchangeClient) sslClient.getDelegate().unwrap();
+			DummySSLExchangeClient delegate = (DummySSLExchangeClient) sslClient.getDelegate().unwrap();
 
 			assertNotNull(sslClient);
 			assertThat(sslClient.getAuthenticationType(), equalTo(AuthenticationType.SSL));
@@ -147,13 +95,13 @@ class SSLHttpExchangeClientBuilderTest {
 		ClientProperties properties = new ClientProperties();
 
 		SSLHttpExchangeClientBuilder builder = SSLHttpExchangeClientBuilder.create();
-		builder.client(DummyExchangeClient.class);
+		builder.client(DummySSLExchangeClient.class);
 		builder.properties(properties);
-		builder.truststore(TRUSTSTORE_PATH, TRUSTSTORE_PASSWORD);
+		builder.truststore(SSLValues.TRUSTSTORE_PATH, SSLValues.TRUSTSTORE_PASSWORD);
 
 		try (ScopedResource<ExchangeClient> resource = builder.build()) {
 			SSLHttpExchangeClient sslClient = (SSLHttpExchangeClient) resource.unwrap();
-			DummyExchangeClient delegate = (DummyExchangeClient) sslClient.getDelegate().unwrap();
+			DummySSLExchangeClient delegate = (DummySSLExchangeClient) sslClient.getDelegate().unwrap();
 
 			assertNotNull(sslClient);
 			assertThat(sslClient.getAuthenticationType(), equalTo(AuthenticationType.SSL));
@@ -172,14 +120,14 @@ class SSLHttpExchangeClientBuilderTest {
 
 		SSLHttpExchangeClientBuilder builder = SSLHttpExchangeClientBuilder.create();
 		builder.client(exchangeClient);
-		builder.keystore(KEYSTORE_PATH, KEYSTORE_PASSWORD);
-		builder.truststore(TRUSTSTORE_PATH, TRUSTSTORE_PASSWORD);
+		builder.keystore(SSLValues.KEYSTORE_PATH, SSLValues.KEYSTORE_PASSWORD);
+		builder.truststore(SSLValues.TRUSTSTORE_PATH, SSLValues.TRUSTSTORE_PASSWORD);
 		builder.protocol(SSLProtocol.TLS_1_3);
 
 		IllegalStateException exception = assertThrows(IllegalStateException.class, builder::build);
 
 		assertThat(exception.getMessage(),
-				equalTo("Cannot build SSL exchange client: the underlying client was built without SSL properties configured,"
+				equalTo("Cannot build SSL exchange client: the underlying client was built without the builder SSL properties configured,"
 						+ " but this builder has SSL properties set. Please ensure the underlying client is built with SSL properties"
 						+ " or remove SSL configuration from this builder."));
 	}
@@ -189,18 +137,18 @@ class SSLHttpExchangeClientBuilderTest {
 	void shouldBuildSslClientWithClientPropertiesSSLConfiguration() throws Exception {
 		ClientProperties properties = new ClientProperties();
 		SSLProperties sslProperties = new SSLProperties();
-		sslProperties.setKeystore(StoreInfo.of(KEYSTORE_PATH, KEYSTORE_PASSWORD.toCharArray()));
-		sslProperties.setTruststore(StoreInfo.of(TRUSTSTORE_PATH, TRUSTSTORE_PASSWORD.toCharArray()));
+		sslProperties.setKeystore(StoreInfo.of(SSLValues.KEYSTORE_PATH, SSLValues.KEYSTORE_PASSWORD.toCharArray()));
+		sslProperties.setTruststore(StoreInfo.of(SSLValues.TRUSTSTORE_PATH, SSLValues.TRUSTSTORE_PASSWORD.toCharArray()));
 		sslProperties.setProtocol(SSLProtocol.TLS_1_2);
 		properties.setCustomProperties(sslProperties);
 
 		SSLHttpExchangeClientBuilder builder = SSLHttpExchangeClientBuilder.create();
-		builder.client(DummyExchangeClient.class);
+		builder.client(DummySSLExchangeClient.class);
 		builder.properties(properties);
 
 		try (ScopedResource<ExchangeClient> resource = builder.build()) {
 			SSLHttpExchangeClient sslClient = (SSLHttpExchangeClient) resource.unwrap();
-			DummyExchangeClient delegate = (DummyExchangeClient) sslClient.getDelegate().unwrap();
+			DummySSLExchangeClient delegate = (DummySSLExchangeClient) sslClient.getDelegate().unwrap();
 
 			assertNotNull(sslClient);
 			assertThat(sslClient.getAuthenticationType(), equalTo(AuthenticationType.SSL));
@@ -216,14 +164,14 @@ class SSLHttpExchangeClientBuilderTest {
 		ClientProperties properties = new ClientProperties();
 
 		SSLHttpExchangeClientBuilder builder = SSLHttpExchangeClientBuilder.create();
-		builder.client(DummyExchangeClient.class);
+		builder.client(DummySSLExchangeClient.class);
 		builder.properties(properties);
 
 		ScopedResource<ExchangeClient> resource = builder.build();
 
 		try (resource) {
 			SSLHttpExchangeClient sslClient = (SSLHttpExchangeClient) resource.unwrap();
-			DummyExchangeClient delegate = (DummyExchangeClient) sslClient.getDelegate().unwrap();
+			DummySSLExchangeClient delegate = (DummySSLExchangeClient) sslClient.getDelegate().unwrap();
 
 			assertNotNull(sslClient);
 			assertThat(sslClient.getAuthenticationType(), equalTo(AuthenticationType.SSL));
@@ -244,16 +192,24 @@ class SSLHttpExchangeClientBuilderTest {
 	}
 
 	@Test
+	void shouldNotRequireKeystoreThrowsWhenKeystoreConfigured() {
+		SSLHttpExchangeClientBuilder builder = SSLHttpExchangeClientBuilder.create()
+				.keystore(SSLValues.KEYSTORE_PATH, SSLValues.KEYSTORE_PASSWORD);
+
+		assertDoesNotThrow(() -> SSLHttpExchangeClientBuilder.requireKeystore(builder));
+	}
+
+	@Test
 	void shouldBuildSslClientThroughExchangeClientBuilderChain() throws Exception {
 		ClientProperties properties = new ClientProperties();
 
 		ScopedResource<ExchangeClient> resource = ExchangeClientBuilder.create()
-				.client(DummyExchangeClient.class)
+				.client(DummySSLExchangeClient.class)
 				.properties(properties)
 				.securedWith()
 				.ssl(ssl -> ssl
-						.keystore(KEYSTORE_PATH, KEYSTORE_PASSWORD)
-						.truststore(TRUSTSTORE_PATH, TRUSTSTORE_PASSWORD))
+						.keystore(SSLValues.KEYSTORE_PATH, SSLValues.KEYSTORE_PASSWORD)
+						.truststore(SSLValues.TRUSTSTORE_PATH, SSLValues.TRUSTSTORE_PASSWORD))
 				.build();
 
 		try (resource) {
@@ -270,11 +226,11 @@ class SSLHttpExchangeClientBuilderTest {
 	@Test
 	void shouldBuildSslClientThroughExchangeClientBuilderChainWithoutClientPropertiesSet() throws Exception {
 		ScopedResource<ExchangeClient> resource = ExchangeClientBuilder.create()
-				.client(DummyExchangeClient.class)
+				.client(DummySSLExchangeClient.class)
 				.securedWith()
 				.ssl(ssl -> ssl
-						.keystore(KEYSTORE_PATH, KEYSTORE_PASSWORD)
-						.truststore(TRUSTSTORE_PATH, TRUSTSTORE_PASSWORD))
+						.keystore(SSLValues.KEYSTORE_PATH, SSLValues.KEYSTORE_PASSWORD)
+						.truststore(SSLValues.TRUSTSTORE_PATH, SSLValues.TRUSTSTORE_PASSWORD))
 				.build();
 
 		try (resource) {
@@ -294,17 +250,17 @@ class SSLHttpExchangeClientBuilderTest {
 		ClientProperties properties = new ClientProperties();
 
 		ScopedResource<ExchangeClient> resource = ExchangeClientBuilder.create()
-				.client(DummyExchangeClient.class)
+				.client(DummySSLExchangeClient.class)
 				.properties(properties)
 				.securedWith()
 				.ssl(ssl -> ssl
-						.keystore(KEYSTORE_PATH, KEYSTORE_PASSWORD)
-						.truststore(TRUSTSTORE_PATH, TRUSTSTORE_PASSWORD))
+						.keystore(SSLValues.KEYSTORE_PATH, SSLValues.KEYSTORE_PASSWORD)
+						.truststore(SSLValues.TRUSTSTORE_PATH, SSLValues.TRUSTSTORE_PASSWORD))
 				.build();
 
 		try (resource) {
 			SSLHttpExchangeClient sslClient = (SSLHttpExchangeClient) resource.unwrap();
-			DummyExchangeClient delegate = (DummyExchangeClient) sslClient.getDelegate().unwrap();
+			DummySSLExchangeClient delegate = (DummySSLExchangeClient) sslClient.getDelegate().unwrap();
 
 			assertThat(sslClient.getAuthenticationType(), equalTo(AuthenticationType.SSL));
 			assertThat(delegate.getAuthenticationType(), equalTo(AuthenticationType.NONE));
@@ -317,14 +273,14 @@ class SSLHttpExchangeClientBuilderTest {
 		ClientProperties properties = new ClientProperties();
 
 		SSLHttpExchangeClientBuilder builder = SSLHttpExchangeClientBuilder.create();
-		builder.client(DummyExchangeClient.class);
+		builder.client(DummySSLExchangeClient.class);
 		builder.properties(properties);
 		builder.keystore(P12_KEYSTORE_PATH, P12_KEYSTORE_PASSWORD);
-		builder.truststore(TRUSTSTORE_PATH, TRUSTSTORE_PASSWORD);
+		builder.truststore(SSLValues.TRUSTSTORE_PATH, SSLValues.TRUSTSTORE_PASSWORD);
 
 		try (ScopedResource<ExchangeClient> resource = builder.build()) {
 			SSLHttpExchangeClient sslClient = (SSLHttpExchangeClient) resource.unwrap();
-			DummyExchangeClient delegate = (DummyExchangeClient) sslClient.getDelegate().unwrap();
+			DummySSLExchangeClient delegate = (DummySSLExchangeClient) sslClient.getDelegate().unwrap();
 
 			assertNotNull(sslClient);
 			assertThat(sslClient.getAuthenticationType(), equalTo(AuthenticationType.SSL));

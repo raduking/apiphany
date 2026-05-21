@@ -4,19 +4,24 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Mockito.doReturn;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import javax.net.ssl.SSLContext;
-
+import org.apiphany.ApiRequest;
+import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.security.AuthenticationType;
 import org.apiphany.security.ssl.KeyStoreType;
+import org.apiphany.security.ssl.SSLContextAware;
 import org.apiphany.security.ssl.SSLProperties;
+import org.apiphany.security.ssl.SSLProtocol;
+import org.apiphany.utils.security.SSLValues;
+import org.apiphany.utils.security.SSLValues.DummySSLExchangeClient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.morphix.lang.Messages;
+import org.morphix.lang.resource.ScopedResource;
 
 /**
  * Test class for {@link SSLHttpExchangeClient}.
@@ -26,83 +31,152 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class SSLHttpExchangeClientTest {
 
-	private static final String KEYSTORE_PATH = "security/ssl/keystore.jks";
-	private static final String KEYSTORE_PASSWORD = "keystorepassword123";
-	private static final String TRUSTSTORE_PATH = "security/ssl/truststore.jks";
-	private static final String TRUSTSTORE_PASSWORD = "truststorepassword123";
+	public static class DummyExchangeClient implements ExchangeClient {
 
-	@Mock
-	private ExchangeClient exchangeClient;
+		public DummyExchangeClient() {
+			// empty
+		}
+
+		@SuppressWarnings("unused")
+		public DummyExchangeClient(final ClientProperties clientProperties) {
+			// empty
+		}
+
+		@Override
+		public <T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest) {
+			return null;
+		}
+
+		@Override
+		public void close() {
+			// empty
+		}
+	}
 
 	@Test
 	void shouldReturnSslAuthenticationType() throws Exception {
 		SSLProperties sslProperties = new SSLProperties();
-		sslProperties.getKeystore().setLocation(KEYSTORE_PATH);
-		sslProperties.getKeystore().setPassword(KEYSTORE_PASSWORD.toCharArray());
-		sslProperties.getKeystore().setType(KeyStoreType.JKS.value());
+		sslProperties.getKeystore().setLocation(SSLValues.KEYSTORE_PATH);
+		sslProperties.getKeystore().setPassword(SSLValues.KEYSTORE_PASSWORD.toCharArray());
+		sslProperties.getKeystore().setType(KeyStoreType.JKS);
 
-		try (SSLHttpExchangeClient client = new SSLHttpExchangeClient(exchangeClient)) {
-			assertThat(client.getAuthenticationType(), equalTo(AuthenticationType.SSL));
+		ClientProperties clientProperties = new ClientProperties();
+		clientProperties.setCustomProperties(sslProperties);
+
+		try (ExchangeClient exchangeClient = new DummySSLExchangeClient(clientProperties)) {
+			try (SSLHttpExchangeClient client = new SSLHttpExchangeClient(exchangeClient)) {
+				assertThat(client.getAuthenticationType(), equalTo(AuthenticationType.SSL));
+			}
 		}
 	}
 
 	@Test
-	@SuppressWarnings("resource")
-	void shouldReturnSslPropertiesFromClientProperties() throws Exception {
+	void shouldReturnSslPropertiesAndSSLContextFromClientProperties() throws Exception {
 		ClientProperties clientProperties = new ClientProperties();
 		SSLProperties sslProperties = new SSLProperties();
+		sslProperties.setProtocol(SSLProtocol.TLS_1_2);
 		clientProperties.setCustomProperties(sslProperties);
-		doReturn(clientProperties).when(exchangeClient).getClientProperties();
 
-		try (SSLHttpExchangeClient client = new SSLHttpExchangeClient(exchangeClient)) {
-			SSLProperties result = client.getSslProperties();
+		try (ExchangeClient exchangeClient = new DummySSLExchangeClient(clientProperties)) {
+			try (SSLHttpExchangeClient client = new SSLHttpExchangeClient(exchangeClient)) {
+				SSLProperties result = client.getSslProperties();
 
-			assertThat(result, notNullValue());
+				assertThat(result, notNullValue());
+				assertThat(client.getSslContext(), notNullValue());
+				assertThat(result.getProtocol(), equalTo(SSLProtocol.TLS_1_2));
+			}
 		}
 	}
 
 	@Test
-	@SuppressWarnings("resource")
 	void shouldReturnSslPropertiesFromClientPropertiesWithKeystore() throws Exception {
 		ClientProperties clientProperties = new ClientProperties();
 		SSLProperties sslProperties = new SSLProperties();
-		sslProperties.getKeystore().setLocation(KEYSTORE_PATH);
-		sslProperties.getKeystore().setPassword(KEYSTORE_PASSWORD.toCharArray());
-		sslProperties.getKeystore().setType("JKS");
-		sslProperties.getTruststore().setLocation(TRUSTSTORE_PATH);
-		sslProperties.getTruststore().setPassword(TRUSTSTORE_PASSWORD.toCharArray());
-		sslProperties.getTruststore().setType("JKS");
+		sslProperties.getKeystore().setLocation(SSLValues.KEYSTORE_PATH);
+		sslProperties.getKeystore().setPassword(SSLValues.KEYSTORE_PASSWORD.toCharArray());
+		sslProperties.getKeystore().setType(KeyStoreType.JKS);
+		sslProperties.getTruststore().setLocation(SSLValues.TRUSTSTORE_PATH);
+		sslProperties.getTruststore().setPassword(SSLValues.TRUSTSTORE_PASSWORD.toCharArray());
+		sslProperties.getTruststore().setType(KeyStoreType.JKS);
 		clientProperties.setCustomProperties(sslProperties);
 
-		doReturn(clientProperties).when(exchangeClient).getClientProperties();
+		try (ExchangeClient exchangeClient = new DummySSLExchangeClient(clientProperties)) {
+			try (SSLHttpExchangeClient client = new SSLHttpExchangeClient(exchangeClient)) {
+				SSLProperties result = client.getSslProperties();
 
-		try (SSLHttpExchangeClient client = new SSLHttpExchangeClient(exchangeClient)) {
-			SSLProperties result = client.getSslProperties();
+				assertThat(result.getKeystore().getLocation(), equalTo(SSLValues.KEYSTORE_PATH));
+				assertThat(result.getTruststore().getLocation(), equalTo(SSLValues.TRUSTSTORE_PATH));
+			}
+		}
+	}
 
-			assertThat(result.getKeystore().getLocation(), equalTo(KEYSTORE_PATH));
-			assertThat(result.getTruststore().getLocation(), equalTo(TRUSTSTORE_PATH));
+	@Test
+	void shouldDelegateClientProperties() throws Exception {
+		SSLProperties sslProperties = new SSLProperties();
+		sslProperties.getKeystore().setLocation(SSLValues.KEYSTORE_PATH);
+		sslProperties.getKeystore().setPassword(SSLValues.KEYSTORE_PASSWORD.toCharArray());
+		sslProperties.getKeystore().setType(KeyStoreType.JKS);
+
+		ClientProperties clientProperties = new ClientProperties();
+		clientProperties.setCustomProperties(sslProperties);
+
+		try (ExchangeClient exchangeClient = new DummySSLExchangeClient(clientProperties)) {
+			try (SSLHttpExchangeClient client = new SSLHttpExchangeClient(exchangeClient)) {
+				ClientProperties result = client.getClientProperties();
+
+				assertThat(result, sameInstance(clientProperties));
+			}
+		}
+	}
+
+	@Test
+	void shouldThrowExceptionIfUnderlyingClientHasNoSSLConfigured() {
+		ClientProperties clientProperties = new ClientProperties();
+
+		try (DummySSLExchangeClient exchangeClient = new DummySSLExchangeClient(clientProperties)) {
+			IllegalStateException e = assertThrows(IllegalStateException.class, () -> new SSLHttpExchangeClient(exchangeClient));
+
+			assertThat(e.getMessage(),
+					equalTo(Messages.message("Underlying exchange client: {}, must have a non-null SSL context", DummySSLExchangeClient.class)));
+			assertThat(exchangeClient.isClosed(), equalTo(false));
 		}
 	}
 
 	@Test
 	@SuppressWarnings("resource")
-	void shouldDelegateClientProperties() throws Exception {
+	void shouldCloseManagedUnderlyingClientIfConstructorThrows() {
 		ClientProperties clientProperties = new ClientProperties();
-		doReturn(clientProperties).when(exchangeClient).getClientProperties();
 
-		try (SSLHttpExchangeClient client = new SSLHttpExchangeClient(exchangeClient)) {
-			ClientProperties result = client.getClientProperties();
+		DummySSLExchangeClient exchangeClient = new DummySSLExchangeClient(clientProperties);
+		ScopedResource<ExchangeClient> exchangeClientResource = ScopedResource.managed(exchangeClient);
 
-			assertThat(result, sameInstance(clientProperties));
-		}
+		assertThrows(IllegalStateException.class, () -> new SSLHttpExchangeClient(exchangeClientResource));
+
+		assertThat(exchangeClient.isClosed(), equalTo(true));
 	}
 
 	@Test
-	void shouldReturnNullSslContextWhenDelegateNotSslContextAware() throws Exception {
-		try (SSLHttpExchangeClient client = new SSLHttpExchangeClient(exchangeClient)) {
-			SSLContext result = client.getSslContext();
+	@SuppressWarnings("resource")
+	void shouldNotCloseManagedUnderlyingClientIfConstructorThrowsAndCloseThrows() {
+		ClientProperties clientProperties = new ClientProperties();
 
-			assertThat(result, equalTo(null));
+		DummySSLExchangeClient exchangeClient = new DummySSLExchangeClient(clientProperties);
+		exchangeClient.throwOnClose();
+		ScopedResource<ExchangeClient> exchangeClientResource = ScopedResource.managed(exchangeClient);
+
+		assertThrows(IllegalStateException.class, () -> new SSLHttpExchangeClient(exchangeClientResource));
+
+		assertThat(exchangeClient.isClosed(), equalTo(false));
+	}
+
+	@Test
+	void shouldThrowExceptionIfUnderlyingClientIsNotSslContextAware() throws Exception {
+		try (ExchangeClient exchangeClient = new DummyExchangeClient()) {
+			IllegalStateException e = assertThrows(IllegalStateException.class, () -> new SSLHttpExchangeClient(exchangeClient));
+
+			assertThat(e.getMessage(),
+					equalTo(Messages.message("Underlying exchange client: {}, must be SSL-configured and must implement: {}",
+							DummyExchangeClient.class, SSLContextAware.class)));
 		}
 	}
 }

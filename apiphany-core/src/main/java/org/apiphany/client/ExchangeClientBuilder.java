@@ -186,7 +186,7 @@ public class ExchangeClientBuilder {
 		String exchangeClientClassName = ExchangeClient.class.getName();
 		if (scopedResource.isManaged()) {
 			requireThat(null != resourceConstructor,
-					"Decorating exchange client class {} must have a constructor with one parameter of type {}<{}>",
+					"Decorating exchange client class: {}, must have a constructor with one parameter of type: {}<{}>",
 					decoratorClientClass.getName(), ScopedResource.class.getName(), exchangeClientClassName);
 			return Constructors.IgnoreAccess.newInstance(resourceConstructor, scopedResource);
 		}
@@ -195,7 +195,7 @@ public class ExchangeClientBuilder {
 		if (null == resourceConstructor) {
 			clientConstructor = Constructors.Safe.getDeclared(decoratorClientClass, ExchangeClient.class);
 			requireThat(null != clientConstructor,
-					"Decorating exchange client class {} must have a constructor with one parameter of type {} or {}<{}>",
+					"Decorating exchange client class: {}, must have a constructor with one parameter of type: {}, or type: {}<{}>",
 					decoratorClientClass.getName(), exchangeClientClassName, ScopedResource.class.getName(), exchangeClientClassName);
 		}
 		return null != resourceConstructor
@@ -216,7 +216,7 @@ public class ExchangeClientBuilder {
 		}
 		Constructor<? extends ExchangeClient> constructor = Constructors.Safe.getDefault(clientClass);
 		requireThat(null != constructor,
-				"When client properties are not set exchange client class {} must have a default constructor", clientClass.getName());
+				"When client properties are not set exchange client class: {}, must have a default constructor", clientClass.getName());
 		return Constructors.IgnoreAccess.newInstance(constructor);
 	}
 
@@ -248,7 +248,7 @@ public class ExchangeClientBuilder {
 		}
 		Constructor<? extends ExchangeClient> constructor = Constructors.Safe.findOneMatching(clientClass, parameterTypes);
 		requireThat(null != constructor,
-				"Client {} must have a constructor matching the client arguments provided in the builder: {}",
+				"Client class: {}, must have a constructor matching the client arguments provided in the builder: {}",
 				clientClass.getName(), List.of(parameterTypes));
 		return Constructors.IgnoreAccess.newInstance(constructor, arguments);
 	}
@@ -264,7 +264,7 @@ public class ExchangeClientBuilder {
 	protected static ExchangeClient build(final Class<? extends ExchangeClient> clientClass, final ClientProperties clientProperties) {
 		Constructor<? extends ExchangeClient> constructor = Constructors.Safe.getDeclared(clientClass, ClientProperties.class);
 		requireThat(null != constructor,
-				"When client properties are set exchange client class {} must not have a constructor with one parameter of type {}",
+				"When client or SSL properties are set exchange client class: {}, must have a constructor with one parameter of type: {}",
 				clientClass.getName(), ClientProperties.class.getName());
 		return Constructors.IgnoreAccess.newInstance(constructor, clientProperties);
 	}
@@ -320,6 +320,9 @@ public class ExchangeClientBuilder {
 	 */
 	public ExchangeClientBuilder properties(final ClientProperties clientProperties) {
 		this.clientProperties = clientProperties;
+		if (null != delegate) {
+			delegate.properties(clientProperties);
+		}
 		return this;
 	}
 
@@ -471,5 +474,20 @@ public class ExchangeClientBuilder {
 	 */
 	protected static void requireThat(final boolean condition, final String messageTemplate, final Object... messageArgs) {
 		Require.that(condition, IllegalStateException::new, messageTemplate, messageArgs);
+	}
+
+	/**
+	 * Returns true if the builder uses an already built exchange client instance, false otherwise.
+	 *
+	 * @return true if the builder uses an already built exchange client instance, false otherwise
+	 */
+	protected boolean isBuiltClient() {
+		if (null != exchangeClientResource) {
+			return true;
+		}
+		if (null != delegate) {
+			return delegate.isBuiltClient();
+		}
+		return false;
 	}
 }

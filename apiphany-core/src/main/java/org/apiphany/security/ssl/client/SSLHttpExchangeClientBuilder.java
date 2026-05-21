@@ -3,7 +3,6 @@ package org.apiphany.security.ssl.client;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.ExchangeClientBuilder;
-import org.apiphany.lang.Require;
 import org.apiphany.lang.Strings;
 import org.apiphany.security.ssl.KeyStoreType;
 import org.apiphany.security.ssl.SSLProperties;
@@ -31,7 +30,7 @@ public class SSLHttpExchangeClientBuilder extends ExchangeClientBuilder {
 	 * Flag to track if any SSL properties were set on this builder. This is used to determine if SSL configuration should
 	 * be validated on the underlying client.
 	 */
-	private boolean sslConfigured = false;
+	private boolean sslLocalConfigured = false;
 
 	/**
 	 * Hide constructor.
@@ -118,7 +117,7 @@ public class SSLHttpExchangeClientBuilder extends ExchangeClientBuilder {
 	 * @return this
 	 */
 	public SSLHttpExchangeClientBuilder sslConfigured() {
-		this.sslConfigured = true;
+		this.sslLocalConfigured = true;
 		return this;
 	}
 
@@ -137,20 +136,21 @@ public class SSLHttpExchangeClientBuilder extends ExchangeClientBuilder {
 	@Override
 	public ScopedResource<ExchangeClient> build() {
 		if (null == clientProperties) {
+			// use default client properties if none were provided to ensure the SSL properties are properly injected
 			properties(ClientProperties.defaults());
-			delegate.properties(clientProperties);
 		}
 		SSLProperties sslPropertiesClient = clientProperties.getCustomProperties(SSLProperties.class);
-		if (sslConfigured) {
-			Require.that(SSLProperties.isEmpty(sslPropertiesClient), IllegalStateException::new,
+		if (sslLocalConfigured) {
+			requireThat(SSLProperties.isEmpty(sslPropertiesClient),
 					"Conflicting SSL configuration: SSL properties were configured both on the builder and in the client properties."
 							+ " Please ensure SSL properties are only set in one place to avoid ambiguity.");
-			return buildConfigured();
+			return buildLocalConfigured();
 		}
 		if (null == sslPropertiesClient) {
 			clientProperties.setCustomProperties(sslProperties);
 		}
-		return build(super.build());
+		ScopedResource<ExchangeClient> clientResource = super.build();
+		return buildDecorator(clientResource);
 	}
 
 	/**
@@ -162,14 +162,14 @@ public class SSLHttpExchangeClientBuilder extends ExchangeClientBuilder {
 	 *     SSL support
 	 */
 	@SuppressWarnings("resource")
-	protected ScopedResource<ExchangeClient> buildConfigured() {
+	protected ScopedResource<ExchangeClient> buildLocalConfigured() {
 		clientProperties.setCustomProperties(sslProperties);
 		ScopedResource<ExchangeClient> clientResource = super.build();
-		Require.that(clientResource.isManaged(), IllegalStateException::new,
-				"Cannot build SSL exchange client: the underlying client was built without SSL properties configured,"
+		requireThat(!isBuiltClient(),
+				"Cannot build SSL exchange client: the underlying client was built without the builder SSL properties configured,"
 						+ " but this builder has SSL properties set. Please ensure the underlying client is built with SSL properties"
 						+ " or remove SSL configuration from this builder.");
-		return build(clientResource);
+		return buildDecorator(clientResource);
 	}
 
 	/**
@@ -180,7 +180,7 @@ public class SSLHttpExchangeClientBuilder extends ExchangeClientBuilder {
 	 * @return a new exchange client resource with life cycle management information
 	 */
 	@SuppressWarnings("resource")
-	protected ScopedResource<ExchangeClient> build(final ScopedResource<ExchangeClient> clientResource) {
+	protected ScopedResource<ExchangeClient> buildDecorator(final ScopedResource<ExchangeClient> clientResource) {
 		SSLHttpExchangeClient sslClient = new SSLHttpExchangeClient(clientResource);
 		return ScopedResource.managed(sslClient);
 	}
@@ -194,9 +194,7 @@ public class SSLHttpExchangeClientBuilder extends ExchangeClientBuilder {
 	 */
 	public static void requireKeystore(final SSLHttpExchangeClientBuilder builder) {
 		StoreInfo keystore = builder.sslProperties.getKeystore();
-		if (Strings.isEmpty(keystore.getLocation())) {
-			throw new IllegalStateException("Keystore must be configured for mutual TLS (mTLS)."
-					+ " Use keystore(path, password) to configure a client certificate.");
-		}
+		requireThat(Strings.isNotEmpty(keystore.getLocation()),
+				"Keystore must be configured for mutual TLS (mTLS). Use keystore(path, password) to configure a client certificate.");
 	}
 }

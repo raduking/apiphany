@@ -155,6 +155,16 @@ public class StoreInfo {
 	}
 
 	/**
+	 * Sets the type of the certificate store using a {@link KeyStoreType} enum value.
+	 *
+	 * @param type the {@link KeyStoreType} enum value representing the certificate store type
+	 */
+	@Ignored
+	public void setType(final KeyStoreType type) {
+		setType(type.value());
+	}
+
+	/**
 	 * Returns the algorithm.
 	 *
 	 * @return the algorithm
