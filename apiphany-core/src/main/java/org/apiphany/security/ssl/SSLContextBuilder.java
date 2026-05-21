@@ -1,5 +1,7 @@
 package org.apiphany.security.ssl;
 
+import java.util.Objects;
+
 import javax.net.ssl.SSLContext;
 
 /**
@@ -28,6 +30,17 @@ public class SSLContextBuilder {
 	 */
 	public static SSLContextBuilder create() {
 		return new SSLContextBuilder();
+	}
+
+	/**
+	 * Sets the SSL properties to use for building the SSL context.
+	 *
+	 * @param sslProperties the SSL properties to configure
+	 * @return this
+	 */
+	public SSLContextBuilder properties(final SSLProperties sslProperties) {
+		this.sslProperties = Objects.requireNonNull(sslProperties, "SSL properties cannot be null");
+		return this;
 	}
 
 	/**

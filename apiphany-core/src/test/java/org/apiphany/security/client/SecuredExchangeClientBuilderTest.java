@@ -7,11 +7,17 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
+import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.ExchangeClientBuilder;
 import org.apiphany.security.AuthenticationType;
+import org.apiphany.security.ssl.SSLContextAware;
 import org.apiphany.security.ssl.client.SSLHttpExchangeClient;
+import org.apiphany.utils.security.SSLValues;
+import org.apiphany.utils.security.SSLValues.BadSSLExchangeClient;
+import org.apiphany.utils.security.SSLValues.DummySSLExchangeClient;
 import org.junit.jupiter.api.Test;
+import org.morphix.lang.Messages;
 import org.morphix.lang.resource.ScopedResource;
 
 /**
@@ -21,12 +27,16 @@ import org.morphix.lang.resource.ScopedResource;
  */
 class SecuredExchangeClientBuilderTest {
 
-	private static final String KEYSTORE_PATH = "security/ssl/keystore.jks";
-	private static final String KEYSTORE_PASSWORD = "keystorepassword123";
-	private static final String TRUSTSTORE_PATH = "security/ssl/truststore.jks";
-	private static final String TRUSTSTORE_PASSWORD = "truststorepassword123";
-
 	public static class DummyExchangeClient implements ExchangeClient {
+
+		public DummyExchangeClient() {
+			// empty
+		}
+
+		@SuppressWarnings("unused")
+		public DummyExchangeClient(final ClientProperties clientProperties) {
+			// empty
+		}
 
 		@Override
 		public <T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest) {
@@ -84,11 +94,12 @@ class SecuredExchangeClientBuilderTest {
 		assertThat(e.getMessage(), equalTo("Cannot set exchange client when securing an existing client"));
 	}
 
-	@SuppressWarnings("resource")
 	@Test
+	@SuppressWarnings("resource")
 	void shouldBuildExchangeClientWithSslSecurity() throws Exception {
 		ExchangeClientBuilder builder = ExchangeClientBuilder.create()
-				.client(DummyExchangeClient.class)
+				.client(DummySSLExchangeClient.class)
+				.properties(new ClientProperties())
 				.securedWith()
 				.ssl();
 
@@ -99,12 +110,39 @@ class SecuredExchangeClientBuilderTest {
 	}
 
 	@Test
-	void shouldBuildExchangeClientWithSslCustomizer() throws Exception {
+	void shouldNotBuildExchangeClientWithSslSecurityIfTheUnderlyingExchangeClientDoesNotSupportIt() {
 		ExchangeClientBuilder builder = ExchangeClientBuilder.create()
 				.client(DummyExchangeClient.class)
 				.securedWith()
+				.ssl();
+
+		IllegalStateException e = assertThrows(IllegalStateException.class, builder::build);
+
+		assertThat(e.getMessage(), equalTo(
+				Messages.message("Underlying exchange client: {}, must be SSL-configured and must implement: {}",
+						DummyExchangeClient.class, SSLContextAware.class)));
+	}
+
+	@Test
+	void shouldNotBuildExchangeClientWithSslSecurityIfTheUnderlyingExchangeClientDoesNotConfigureIt() {
+		ExchangeClientBuilder builder = ExchangeClientBuilder.create()
+				.client(BadSSLExchangeClient.class)
+				.securedWith()
+				.ssl();
+
+		IllegalStateException e = assertThrows(IllegalStateException.class, builder::build);
+
+		assertThat(e.getMessage(),
+				equalTo(Messages.message("Underlying exchange client: {}, must have a non-null SSL context", BadSSLExchangeClient.class)));
+	}
+
+	@Test
+	void shouldBuildExchangeClientWithSslCustomizer() throws Exception {
+		ExchangeClientBuilder builder = ExchangeClientBuilder.create()
+				.client(DummySSLExchangeClient.class)
+				.securedWith()
 				.ssl(ssl -> ssl
-						.truststore(TRUSTSTORE_PATH, TRUSTSTORE_PASSWORD));
+						.truststore(SSLValues.TRUSTSTORE_PATH, SSLValues.TRUSTSTORE_PASSWORD));
 
 		try (ScopedResource<ExchangeClient> exchangeClient = builder.build()) {
 			@SuppressWarnings("resource")
@@ -117,11 +155,11 @@ class SecuredExchangeClientBuilderTest {
 	@Test
 	void shouldBuildExchangeClientWithMtlsCustomizer() throws Exception {
 		ExchangeClientBuilder builder = ExchangeClientBuilder.create()
-				.client(DummyExchangeClient.class)
+				.client(DummySSLExchangeClient.class)
 				.securedWith()
 				.mtls(mtls -> mtls
-						.keystore(KEYSTORE_PATH, KEYSTORE_PASSWORD)
-						.truststore(TRUSTSTORE_PATH, TRUSTSTORE_PASSWORD));
+						.keystore(SSLValues.KEYSTORE_PATH, SSLValues.KEYSTORE_PASSWORD)
+						.truststore(SSLValues.TRUSTSTORE_PATH, SSLValues.TRUSTSTORE_PASSWORD));
 
 		try (ScopedResource<ExchangeClient> exchangeClient = builder.build()) {
 			@SuppressWarnings("resource")
@@ -132,10 +170,26 @@ class SecuredExchangeClientBuilderTest {
 	}
 
 	@Test
+	void shouldNotBuildExchangeClientWithMtlsCustomizerWhenTheUnderlyingClientDoesNotSupportIt() throws Exception {
+		ExchangeClientBuilder builder = ExchangeClientBuilder.create()
+				.client(DummyExchangeClient.class)
+				.securedWith()
+				.mtls(mtls -> mtls
+						.keystore(SSLValues.KEYSTORE_PATH, SSLValues.KEYSTORE_PASSWORD)
+						.truststore(SSLValues.TRUSTSTORE_PATH, SSLValues.TRUSTSTORE_PASSWORD));
+
+		IllegalStateException e = assertThrows(IllegalStateException.class, builder::build);
+
+		assertThat(e.getMessage(), equalTo(
+				Messages.message("Underlying exchange client: {}, must be SSL-configured and must implement: {}",
+						DummyExchangeClient.class, SSLContextAware.class)));
+	}
+
+	@Test
 	void shouldThrowExceptionWhenMtlsWithoutKeystore() {
 		SecuredExchangeClientBuilder builder = SecuredExchangeClientBuilder.create();
 		IllegalStateException e = assertThrows(IllegalStateException.class,
-				() -> builder.mtls(mtls -> mtls.truststore(TRUSTSTORE_PATH, TRUSTSTORE_PASSWORD)));
+				() -> builder.mtls(mtls -> mtls.truststore(SSLValues.TRUSTSTORE_PATH, SSLValues.TRUSTSTORE_PASSWORD)));
 
 		assertThat(e.getMessage(), equalTo("Keystore must be configured for mutual TLS (mTLS). "
 				+ "Use keystore(path, password) to configure a client certificate."));

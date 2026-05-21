@@ -483,7 +483,7 @@ class ExchangeClientBuilderTest {
 			IllegalStateException exception = assertThrows(IllegalStateException.class, builder::build);
 
 			assertThat(exception.getMessage(), equalTo(Messages.message(
-					"Client {} must have a constructor matching the client arguments provided in the builder: {}",
+					"Client class: {}, must have a constructor matching the client arguments provided in the builder: {}",
 					MultipleArgumentConstructorExchangeClient.class.getName(), List.of(ClientProperties.class, String.class, Integer.class))));
 		}
 
@@ -655,8 +655,8 @@ class ExchangeClientBuilderTest {
 
 			IllegalStateException exception = assertThrows(IllegalStateException.class, builder::build);
 
-			assertThat(exception.getMessage(), equalTo("Decorating exchange client class "
-					+ InvalidDecoratingExchangeClient.class.getName() + " must have a constructor with one parameter of type "
+			assertThat(exception.getMessage(), equalTo("Decorating exchange client class: "
+					+ InvalidDecoratingExchangeClient.class.getName() + ", must have a constructor with one parameter of type: "
 					+ ScopedResource.class.getName() + "<" + ExchangeClient.class.getName() + ">"));
 		}
 
@@ -670,8 +670,8 @@ class ExchangeClientBuilderTest {
 
 			AtomicInteger errorHandlerCallCount = new AtomicInteger(0);
 			Consumer<Exception> errorHandler = e -> {
-				assertThat(e.getMessage(), equalTo("Decorating exchange client class "
-						+ InvalidDecoratingExchangeClient.class.getName() + " must have a constructor with one parameter of type "
+				assertThat(e.getMessage(), equalTo("Decorating exchange client class: "
+						+ InvalidDecoratingExchangeClient.class.getName() + ", must have a constructor with one parameter of type: "
 						+ ScopedResource.class.getName() + "<" + ExchangeClient.class.getName() + ">"));
 				errorHandlerCallCount.incrementAndGet();
 			};
@@ -694,7 +694,8 @@ class ExchangeClientBuilderTest {
 			IllegalStateException exception = assertThrows(IllegalStateException.class, builder::build);
 
 			assertThat(exception.getMessage(),
-					equalTo(Messages.message("Decorating exchange client class {} must have a constructor with one parameter of type {} or {}<{}>",
+					equalTo(Messages.message(
+							"Decorating exchange client class: {}, must have a constructor with one parameter of type: {}, or type: {}<{}>",
 							InvalidDecoratingExchangeClient.class.getName(), ExchangeClient.class.getName(), ScopedResource.class.getName(),
 							ExchangeClient.class.getName())));
 		}
@@ -775,7 +776,7 @@ class ExchangeClientBuilderTest {
 
 			assertThat(exception.getMessage(),
 					equalTo(Messages.message(
-							"When client properties are not set exchange client class {} must have a default constructor",
+							"When client properties are not set exchange client class: {}, must have a default constructor",
 							InvalidDecoratingExchangeClient.class.getName())));
 		}
 
@@ -790,7 +791,7 @@ class ExchangeClientBuilderTest {
 
 			assertThat(exception.getMessage(),
 					equalTo(Messages.message(
-							"When client properties are set exchange client class {} must not have a constructor with one parameter of type {}",
+							"When client or SSL properties are set exchange client class: {}, must have a constructor with one parameter of type: {}",
 							DummyExchangeClient.class.getName(), ClientProperties.class.getName())));
 		}
 	}
