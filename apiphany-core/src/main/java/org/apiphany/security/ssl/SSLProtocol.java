@@ -91,6 +91,11 @@ public enum SSLProtocol {
 	SSL_2_0("SSLv2Hello", (byte) 0x02, (byte) 0x00);
 
 	/**
+	 * The default SSL protocol version to use for secure connections. Set to {@link #TLS_1_3} for maximum security.
+	 */
+	public static final SSLProtocol DEFAULT = TLS_1_3;
+
+	/**
 	 * The master secret length in bytes for TLS 1.2 (value: 48).
 	 */
 	public static final int TLS_1_2_MASTER_SECRET_LENGTH = 48;

@@ -40,9 +40,10 @@ public class SSLProperties {
 	public static final String ROOT = "ssl";
 
 	/**
-	 * The SSL/TLS protocol version to use for secure connections. Defaults to {@link SSLProtocol#TLS_1_3}.
+	 * The SSL/TLS protocol version to use for secure connections. Defaults to {@link SSLProtocol#DEFAULT} which is
+	 * {@link SSLProtocol#TLS_1_3}.
 	 */
-	private SSLProtocol protocol = SSLProtocol.TLS_1_3;
+	private SSLProtocol protocol = SSLProtocol.DEFAULT;
 
 	/**
 	 * Configuration for the key store containing client certificates and private keys.

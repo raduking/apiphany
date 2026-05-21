@@ -11,6 +11,7 @@
 - Added `SecuredExchangeClientBuilder.ssl` to add SSL configuration when building exchange clients.
 - Added `SecuredExchangeClientBuilder.mtls` to add mutual TLS configuration when building exchange clients.
 - Added `StoreInfo.of` factory methods to build key/trust store information objects.
+- Added `SSLProtocol.DEFAULT` which defaults to `SSLProtocol.TLS_1_3` (TLSv1.3).
 
 ---
 

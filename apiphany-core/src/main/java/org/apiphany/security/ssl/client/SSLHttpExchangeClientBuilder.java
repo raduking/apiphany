@@ -112,7 +112,7 @@ public class SSLHttpExchangeClientBuilder extends ExchangeClientBuilder {
 	 */
 	public SSLHttpExchangeClientBuilder protocol(final SSLProtocol protocol) {
 		sslProperties.setProtocol(protocol);
-		return this;
+		return SSLProtocol.DEFAULT != protocol ? sslConfigured() : this;
 	}
 
 	/**
