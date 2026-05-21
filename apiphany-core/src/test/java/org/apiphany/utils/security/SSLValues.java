@@ -122,9 +122,9 @@ public class SSLValues {
 	}
 
 	/**
-	 * Dummy exchange client that is not SSL context aware for testing SSL client behavior when the underlying client does
-	 * not support SSL contexts. This client intentionally does not implement SSL context awareness to test the behavior of
-	 * SSL clients when the underlying client is not properly SSL-configured.
+	 * Dummy exchange client that is SSL context aware for testing SSL client behavior when the underlying client does not
+	 * have SSL contexts. This client intentionally does not have SSL context support to test behavior when SSL context is
+	 * expected but not available.
 	 *
 	 * @author Radu Sebastian LAZIN
 	 */

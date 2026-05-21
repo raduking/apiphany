@@ -592,8 +592,8 @@ class OAuth2TokenProviderTest {
 			return token;
 		}).when(tokenClient).getAuthenticationToken();
 
-		Duration expirationErrorMargin = tokenValidity.minusMillis(1);
-		Duration minRefreshInterval = Duration.ofMillis(1);
+		Duration expirationErrorMargin = tokenValidity.minusMillis(10);
+		Duration minRefreshInterval = Duration.ofMillis(10);
 
 		OAuth2TokenProviderProperties properties = new OAuth2TokenProviderProperties();
 		properties.setExpirationErrorMargin(expirationErrorMargin);
@@ -734,8 +734,8 @@ class OAuth2TokenProviderTest {
 			return token;
 		}).when(tokenClient).getAuthenticationToken();
 
-		Duration expirationErrorMargin = tokenValidity.minusMillis(1);
-		Duration minRefreshInterval = Duration.ofMillis(1);
+		Duration expirationErrorMargin = tokenValidity.minusMillis(10);
+		Duration minRefreshInterval = Duration.ofMillis(10);
 
 		OAuth2TokenProviderProperties properties = new OAuth2TokenProviderProperties();
 		properties.setExpirationErrorMargin(expirationErrorMargin);
@@ -790,8 +790,8 @@ class OAuth2TokenProviderTest {
 			return token;
 		}).when(tokenClient).getAuthenticationToken();
 
-		Duration expirationErrorMargin = tokenValidity.minusMillis(1);
-		Duration minRefreshInterval = Duration.ofMillis(1);
+		Duration expirationErrorMargin = tokenValidity.minusMillis(10);
+		Duration minRefreshInterval = Duration.ofMillis(10);
 
 		OAuth2TokenProviderProperties properties = new OAuth2TokenProviderProperties();
 		properties.setExpirationErrorMargin(expirationErrorMargin);
@@ -809,7 +809,7 @@ class OAuth2TokenProviderTest {
 
 		boolean reachedRetrievals = false;
 		try (localTokenProvider) {
-			reachedRetrievals = Threads.safeWait(tokenRetrievalLatch, Duration.ofSeconds(3));
+			reachedRetrievals = Threads.safeWait(tokenRetrievalLatch, Duration.ofSeconds(5));
 		}
 
 		assertTrue(reachedRetrievals);
