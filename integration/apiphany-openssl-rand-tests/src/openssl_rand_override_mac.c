@@ -34,6 +34,7 @@ env DYLD_INSERT_LIBRARIES=./openssl_rand_override_mac.dylib \
 
 #include <stdio.h>
 #include <string.h>
+#include <limits.h>
 #include <openssl/rand.h>
 
 #define SUCCESS 1
