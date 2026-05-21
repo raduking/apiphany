@@ -85,6 +85,16 @@ int rk_rand_bytes(unsigned char *buf, int num)
 int rk_rand_bytes_ex(OSSL_LIB_CTX *ctx, unsigned char *buf, size_t num, unsigned int strength)
 {
 	fprintf(stderr, "[rk-override] RAND_bytes_ex called for %zu bytes, strength=%d\n", num, strength);
+	if (num > MAX_RANDOM_BYTES)
+	{
+		fprintf(stderr, "[rk-override] RAND_bytes_ex: num=%zu exceeds MAX_RANDOM_BYTES=%d, aborting\n", num, MAX_RANDOM_BYTES);
+		return FAILURE;
+	}
+	if (num > INT_MAX)
+	{
+		fprintf(stderr, "[rk-override] RAND_bytes_ex: num=%zu exceeds INT_MAX, would overflow, aborting\n", num);
+		return FAILURE;
+	}
 	return fill_deterministic_bytes("RAND_bytes_ex", buf, (int)num);
 }
 
