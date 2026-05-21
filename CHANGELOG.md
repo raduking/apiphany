@@ -11,7 +11,6 @@
 - Added `SecuredExchangeClientBuilder.ssl` to add SSL configuration when building exchange clients.
 - Added `SecuredExchangeClientBuilder.mtls` to add mutual TLS configuration when building exchange clients.
 - Added `StoreInfo.of` factory methods to build key/trust store information objects.
-- Added `StoreInfo.setType(KeyStoreType)` to set the store type via the `KeyStoreType` enum.
 
 ---
 

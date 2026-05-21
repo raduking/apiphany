@@ -367,7 +367,7 @@
 							<nvdApiKey>${env.MAVEN_NVD_API_KEY}</nvdApiKey>
 							<nvdApiDelay>16000</nvdApiDelay>
 							<ossIndexAnalyzerUrl>https://api.guide.sonatype.com</ossIndexAnalyzerUrl>
-							<ossIndexUsername>raduking@gmail.com</ossIndexUsername>
+							<ossIndexUsername>${env.MAVEN_SONATYPE_OSS_INDEX_EMAIL}</ossIndexUsername>
 							<ossIndexPassword>${env.MAVEN_SONATYPE_OSS_INDEX_API_KEY}</ossIndexPassword>
 							<suppressionFiles>
 								<suppressionFile>owasp-suppressions.xml</suppressionFile>

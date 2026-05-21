@@ -43,9 +43,10 @@ public class SSLHttpExchangeClient extends DecoratingExchangeClient implements H
 		super(delegate);
 		try {
 			validateDelegate(delegate);
-		} finally {
+		} catch (RuntimeException e) {
 			// If validation fails, we need to close the delegate if it's managed to avoid resource leaks
 			closeIfManaged(delegate);
+			throw e;
 		}
 	}
 
@@ -85,7 +86,7 @@ public class SSLHttpExchangeClient extends DecoratingExchangeClient implements H
 	 */
 	@SuppressWarnings("resource")
 	protected void closeIfManaged(final ScopedResource<ExchangeClient> delegate) {
-		delegate.closeIfManaged(e -> LOGGER.error("Error closing unmanaged exchange client: {}", delegate.unwrap().getClass(), e));
+		delegate.closeIfManaged(e -> LOGGER.error("Error closing managed underlying exchange client: {}", delegate.unwrap().getClass(), e));
 	}
 
 	/**
