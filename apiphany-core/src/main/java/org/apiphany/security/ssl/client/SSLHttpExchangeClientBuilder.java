@@ -4,6 +4,7 @@ import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.ExchangeClientBuilder;
 import org.apiphany.lang.Strings;
+import org.apiphany.logging.Slf4jLoggerAdapter;
 import org.apiphany.security.ssl.KeyStoreType;
 import org.apiphany.security.ssl.SSLProperties;
 import org.apiphany.security.ssl.SSLProtocol;
@@ -20,6 +21,11 @@ import org.morphix.lang.resource.ScopedResource;
  * @author Radu Sebastian LAZIN
  */
 public class SSLHttpExchangeClientBuilder extends ExchangeClientBuilder {
+
+	/**
+	 * Class logger.
+	 */
+	private static final Slf4jLoggerAdapter LOGGER = Slf4jLoggerAdapter.of(SSLHttpExchangeClient.class);
 
 	/**
 	 * The SSL properties to configure.
@@ -165,11 +171,17 @@ public class SSLHttpExchangeClientBuilder extends ExchangeClientBuilder {
 	protected ScopedResource<ExchangeClient> buildLocalConfigured() {
 		clientProperties.setCustomProperties(sslProperties);
 		ScopedResource<ExchangeClient> clientResource = super.build();
-		requireThat(!isBuiltClient(),
-				"Cannot build SSL exchange client: the underlying client was built without the builder SSL properties configured,"
-						+ " but this builder has SSL properties set. Please ensure the underlying client is built with SSL properties"
-						+ " or remove SSL configuration from this builder.");
-		return buildDecorator(clientResource);
+		try {
+			requireThat(!isBuiltClient(),
+					"Cannot build SSL exchange client: the underlying client was built without the builder SSL properties configured,"
+							+ " but this builder has SSL properties set. Please ensure the underlying client is built with SSL properties"
+							+ " or remove SSL configuration from this builder.");
+			return buildDecorator(clientResource);
+		} catch (RuntimeException ex) {
+			clientResource.closeIfManaged(e -> LOGGER.error("Error closing managed underlying exchange client: {}",
+					clientResource.unwrap().getClass(), e));
+			throw ex;
+		}
 	}
 
 	/**

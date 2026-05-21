@@ -58,7 +58,7 @@ class SSLHttpExchangeClientTest {
 		SSLProperties sslProperties = new SSLProperties();
 		sslProperties.getKeystore().setLocation(SSLValues.KEYSTORE_PATH);
 		sslProperties.getKeystore().setPassword(SSLValues.KEYSTORE_PASSWORD.toCharArray());
-		sslProperties.getKeystore().setType(KeyStoreType.JKS);
+		sslProperties.getKeystore().setType(KeyStoreType.JKS.value());
 
 		ClientProperties clientProperties = new ClientProperties();
 		clientProperties.setCustomProperties(sslProperties);
@@ -94,10 +94,10 @@ class SSLHttpExchangeClientTest {
 		SSLProperties sslProperties = new SSLProperties();
 		sslProperties.getKeystore().setLocation(SSLValues.KEYSTORE_PATH);
 		sslProperties.getKeystore().setPassword(SSLValues.KEYSTORE_PASSWORD.toCharArray());
-		sslProperties.getKeystore().setType(KeyStoreType.JKS);
+		sslProperties.getKeystore().setType(KeyStoreType.JKS.value());
 		sslProperties.getTruststore().setLocation(SSLValues.TRUSTSTORE_PATH);
 		sslProperties.getTruststore().setPassword(SSLValues.TRUSTSTORE_PASSWORD.toCharArray());
-		sslProperties.getTruststore().setType(KeyStoreType.JKS);
+		sslProperties.getTruststore().setType(KeyStoreType.JKS.value());
 		clientProperties.setCustomProperties(sslProperties);
 
 		try (ExchangeClient exchangeClient = new DummySSLExchangeClient(clientProperties)) {
@@ -115,18 +115,39 @@ class SSLHttpExchangeClientTest {
 		SSLProperties sslProperties = new SSLProperties();
 		sslProperties.getKeystore().setLocation(SSLValues.KEYSTORE_PATH);
 		sslProperties.getKeystore().setPassword(SSLValues.KEYSTORE_PASSWORD.toCharArray());
-		sslProperties.getKeystore().setType(KeyStoreType.JKS);
+		sslProperties.getKeystore().setType(KeyStoreType.JKS.value());
 
 		ClientProperties clientProperties = new ClientProperties();
 		clientProperties.setCustomProperties(sslProperties);
 
-		try (ExchangeClient exchangeClient = new DummySSLExchangeClient(clientProperties)) {
+		try (DummySSLExchangeClient exchangeClient = new DummySSLExchangeClient(clientProperties)) {
 			try (SSLHttpExchangeClient client = new SSLHttpExchangeClient(exchangeClient)) {
 				ClientProperties result = client.getClientProperties();
 
 				assertThat(result, sameInstance(clientProperties));
 			}
 		}
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldNotCloseUnderlyingClientBeforeSSLExchangeClientCloses() throws Exception {
+		SSLProperties sslProperties = new SSLProperties();
+		sslProperties.getKeystore().setLocation(SSLValues.KEYSTORE_PATH);
+		sslProperties.getKeystore().setPassword(SSLValues.KEYSTORE_PASSWORD.toCharArray());
+		sslProperties.getKeystore().setType(KeyStoreType.JKS.value());
+
+		ClientProperties clientProperties = new ClientProperties();
+		clientProperties.setCustomProperties(sslProperties);
+
+		DummySSLExchangeClient exchangeClient = new DummySSLExchangeClient(clientProperties);
+		try (SSLHttpExchangeClient client = new SSLHttpExchangeClient(ScopedResource.managed(exchangeClient))) {
+			ClientProperties result = client.getClientProperties();
+
+			assertThat(result, sameInstance(clientProperties));
+			assertThat(exchangeClient.isClosed(), equalTo(false));
+		}
+		assertThat(exchangeClient.isClosed(), equalTo(true));
 	}
 
 	@Test

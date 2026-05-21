@@ -77,10 +77,10 @@ int rk_rand_bytes(unsigned char *buf, int num)
 }
 
 // Replacement for RAND_bytes_ex (OpenSSL 3.x)
-int rk_rand_bytes_ex(OSSL_LIB_CTX *ctx, unsigned char *buf, int num, unsigned int strength)
+int rk_rand_bytes_ex(OSSL_LIB_CTX *ctx, unsigned char *buf, size_t num, unsigned int strength)
 {
-	fprintf(stderr, "[rk-override] RAND_bytes_ex called for %d bytes, strength=%d\n", num, strength);
-	return fill_deterministic_bytes("RAND_bytes_ex", buf, num);
+	fprintf(stderr, "[rk-override] RAND_bytes_ex called for %zu bytes, strength=%d\n", num, strength);
+	return fill_deterministic_bytes("RAND_bytes_ex", buf, (int)num);
 }
 
 // Replacement for RAND_priv_bytes

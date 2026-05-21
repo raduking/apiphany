@@ -39,7 +39,7 @@ class SSLPropertiesTest {
 	class IsEmptyTests {
 
 		@Test
-		void shouldReturnFalseIfPropertiesAreNull() {
+		void shouldReturnTrueIfPropertiesAreNull() {
 			assertThat(SSLProperties.isEmpty(null), equalTo(true));
 		}
 
