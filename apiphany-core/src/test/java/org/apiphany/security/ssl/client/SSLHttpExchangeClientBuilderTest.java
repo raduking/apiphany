@@ -3,10 +3,14 @@ package org.apiphany.security.ssl.client;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
@@ -130,6 +134,70 @@ class SSLHttpExchangeClientBuilderTest {
 				equalTo("Cannot build SSL exchange client: the underlying client was built without the builder SSL properties configured,"
 						+ " but this builder has SSL properties set. Please ensure the underlying client is built with SSL properties"
 						+ " or remove SSL configuration from this builder."));
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldNotBuildSslClientWithNewProtocolWhenClientIsAlreadyBuilt() throws Exception {
+		ClientProperties properties = new ClientProperties();
+		ExchangeClient exchangeClient = mock(ExchangeClient.class);
+		doReturn(properties).when(exchangeClient).getClientProperties();
+
+		SSLHttpExchangeClientBuilder builder = SSLHttpExchangeClientBuilder.create();
+		builder.client(exchangeClient);
+		builder.protocol(SSLProtocol.TLS_1_2);
+
+		IllegalStateException exception = assertThrows(IllegalStateException.class, builder::build);
+
+		assertThat(exception.getMessage(),
+				equalTo("Cannot build SSL exchange client: the underlying client was built without the builder SSL properties configured,"
+						+ " but this builder has SSL properties set. Please ensure the underlying client is built with SSL properties"
+						+ " or remove SSL configuration from this builder."));
+
+		verify(exchangeClient, never()).close();
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldNotBuildSslClientWithKeystoreAndTruststoreWhenClientIsAlreadyBuiltAndCloseManagedClient() {
+		DummySSLExchangeClient exchangeClient = new DummySSLExchangeClient(new ClientProperties());
+
+		SSLHttpExchangeClientBuilder builder = SSLHttpExchangeClientBuilder.create();
+		builder.client(ScopedResource.managed(exchangeClient));
+		builder.keystore(SSLValues.KEYSTORE_PATH, SSLValues.KEYSTORE_PASSWORD);
+		builder.truststore(SSLValues.TRUSTSTORE_PATH, SSLValues.TRUSTSTORE_PASSWORD);
+		builder.protocol(SSLProtocol.TLS_1_3);
+
+		IllegalStateException exception = assertThrows(IllegalStateException.class, builder::build);
+
+		assertThat(exception.getMessage(),
+				equalTo("Cannot build SSL exchange client: the underlying client was built without the builder SSL properties configured,"
+						+ " but this builder has SSL properties set. Please ensure the underlying client is built with SSL properties"
+						+ " or remove SSL configuration from this builder."));
+
+		assertTrue(exchangeClient.isClosed());
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldNotBuildSslClientWithKeystoreAndTruststoreWhenClientIsAlreadyBuiltCloseManagedClientAndKeepException() {
+		DummySSLExchangeClient exchangeClient = new DummySSLExchangeClient(new ClientProperties());
+		exchangeClient.throwOnClose();
+
+		SSLHttpExchangeClientBuilder builder = SSLHttpExchangeClientBuilder.create();
+		builder.client(ScopedResource.managed(exchangeClient));
+		builder.keystore(SSLValues.KEYSTORE_PATH, SSLValues.KEYSTORE_PASSWORD);
+		builder.truststore(SSLValues.TRUSTSTORE_PATH, SSLValues.TRUSTSTORE_PASSWORD);
+		builder.protocol(SSLProtocol.TLS_1_3);
+
+		IllegalStateException exception = assertThrows(IllegalStateException.class, builder::build);
+
+		assertThat(exception.getMessage(),
+				equalTo("Cannot build SSL exchange client: the underlying client was built without the builder SSL properties configured,"
+						+ " but this builder has SSL properties set. Please ensure the underlying client is built with SSL properties"
+						+ " or remove SSL configuration from this builder."));
+
+		assertFalse(exchangeClient.isClosed());
 	}
 
 	@Test
