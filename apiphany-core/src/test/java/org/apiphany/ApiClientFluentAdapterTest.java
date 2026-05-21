@@ -10,6 +10,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -35,6 +36,7 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.morphix.lang.retry.Retry;
@@ -207,6 +209,29 @@ class ApiClientFluentAdapterTest {
 		request.retrieve();
 
 		verify(apiClient).exchange(request);
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldThrowExceptionIfResponseTypeIsDifferentThanClassOrGenericClassOnRetrieve() {
+		ExchangeClient exchangeClient = mock(ExchangeClient.class);
+		doReturn(AuthenticationType.NONE).when(exchangeClient).getAuthenticationType();
+		doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.NONE);
+		ApiResponse<?> apiResponse = ApiResponse.<String>builder().body(BODY).build();
+		doReturn(apiResponse).when(apiClient).exchange(any());
+
+		ApiResponse<?> response = ApiResponse.builder().build();
+		ArgumentCaptor<Exception> exceptionCaptor = ArgumentCaptor.forClass(Exception.class);
+		doReturn(response).when(apiClient).buildErrorResponse(exceptionCaptor.capture(), any(), any());
+
+		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+				.authenticationType(AuthenticationType.NONE);
+
+		request.retrieve(Integer.class);
+
+		Exception exception = exceptionCaptor.getValue();
+		assertThat(exception.getMessage(), equalTo("Received response body of type: " + String.class
+				+ " but expected type was: " + Integer.class));
 	}
 
 	@Test
