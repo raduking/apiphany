@@ -444,6 +444,52 @@ class JavaNetHttpExchangeClientTest {
 			assertThat(apiResponse.getHeaders().size(), equalTo(0));
 		}
 
+		private record MyDto(String name) {
+			// empty record for testing purposes
+		}
+
+		@Test
+		void shouldBuildResponseFromApiRequestAndHttpResponseWithNullBodyWhenBodyIsEmptyBytesAndExpectedHasNoConversion() throws Exception {
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.GET)
+					.responseType(MyDto.class);
+
+			HttpResponse<?> httpResponse = mock(HttpResponse.class);
+			doReturn(HttpStatus.OK.value()).when(httpResponse).statusCode();
+			doReturn(new byte[0]).when(httpResponse).body();
+
+			ApiResponse<?> apiResponse = exchangeClient.buildResponse(request, httpResponse);
+
+			assertThat(apiResponse.getRequest(), equalTo(request));
+			assertNull(apiResponse.getBody());
+			assertThat(apiResponse.getHeaders().size(), equalTo(0));
+		}
+
+		@Test
+		void shouldThrowExceptionOnBuildResponseFromApiRequestAndHttpResponseWhenNoConversionExists() throws Exception {
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.GET)
+					.responseType(MyDto.class);
+
+			HttpResponse<?> httpResponse = mock(HttpResponse.class);
+			doReturn(HttpStatus.OK.value()).when(httpResponse).statusCode();
+			doReturn(BYTES).when(httpResponse).body();
+
+			UnsupportedOperationException e =
+					assertThrows(UnsupportedOperationException.class, () -> exchangeClient.buildResponse(request, httpResponse));
+
+			assertThat(e.getMessage(), equalTo("No content converter found to convert response to: " + MyDto.class.getName()
+					+ ", for the response content type: null"));
+		}
+
 		@Test
 		void shouldThrowExceptionOnBuildResponseFromApiRequestAndHttpResponseWhenResponseTypeIsNotProvided() throws Exception {
 			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
@@ -580,6 +626,46 @@ class JavaNetHttpExchangeClientTest {
 
 			assertThat(apiResponse.getRequest(), equalTo(request));
 			assertThat(apiResponse.getBody(), equalTo(expectedDto));
+		}
+
+		@Test
+		void shouldBuildResponseFromApiRequestAndHttpResponseWhenResponseHasStatusNoContent() throws Exception {
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.GET)
+					.responseType(String.class);
+
+			HttpResponse<?> httpResponse = mock(HttpResponse.class);
+			doReturn(HttpStatus.NO_CONTENT.value()).when(httpResponse).statusCode();
+
+			ApiResponse<?> apiResponse = exchangeClient.buildResponse(request, httpResponse);
+
+			assertThat(apiResponse.getRequest(), equalTo(request));
+			assertNull(apiResponse.getBody());
+			assertThat(apiResponse.getHeaders().size(), equalTo(0));
+		}
+
+		@Test
+		void shouldBuildResponseFromApiRequestAndHttpResponseWhenResponseHasStatusNotModified() throws Exception {
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.GET)
+					.responseType(String.class);
+
+			HttpResponse<?> httpResponse = mock(HttpResponse.class);
+			doReturn(HttpStatus.NOT_MODIFIED.value()).when(httpResponse).statusCode();
+
+			ApiResponse<?> apiResponse = exchangeClient.buildResponse(request, httpResponse);
+
+			assertThat(apiResponse.getRequest(), equalTo(request));
+			assertNull(apiResponse.getBody());
+			assertThat(apiResponse.getHeaders().size(), equalTo(0));
 		}
 
 		@Test
