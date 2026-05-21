@@ -59,7 +59,7 @@ static int fill_deterministic_bytes(const char *function_name, unsigned char *bu
 		return SUCCESS;
 	}
 	fprintf(stderr, "[rk-override] Before fill - buf[0..%d]: ", num - 1);
-	for (int i = 0; i < num && i < 16; ++i)
+	for (int i = 0; i < num; ++i)
 	{
 		fprintf(stderr, "%02x ", buf[i]);
 	}
@@ -84,7 +84,7 @@ int rk_rand_bytes(unsigned char *buf, int num)
 // Replacement for RAND_bytes_ex (OpenSSL 3.x)
 int rk_rand_bytes_ex(OSSL_LIB_CTX *ctx, unsigned char *buf, size_t num, unsigned int strength)
 {
-	fprintf(stderr, "[rk-override] RAND_bytes_ex called for %zu bytes, strength=%d\n", num, strength);
+	fprintf(stderr, "[rk-override] RAND_bytes_ex called for %zu bytes, strength=%u\n", num, strength);
 	if (num > MAX_RANDOM_BYTES)
 	{
 		fprintf(stderr, "[rk-override] RAND_bytes_ex: num=%zu exceeds MAX_RANDOM_BYTES=%d, aborting\n", num, MAX_RANDOM_BYTES);
