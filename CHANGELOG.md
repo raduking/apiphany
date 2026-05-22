@@ -1,5 +1,9 @@
 ## Release Notes
 
+`1.2.11`
+
+---
+
 `1.2.10`
 
 - Added `SSLContextAware` marker interface for `SSLContext` availability.
