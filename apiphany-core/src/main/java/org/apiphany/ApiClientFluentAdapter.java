@@ -15,7 +15,9 @@ import org.apiphany.client.http.HttpClientFluentAdapter;
 import org.apiphany.header.Header;
 import org.apiphany.header.HeaderFunction;
 import org.apiphany.header.Headers;
+import org.apiphany.http.HttpHeader;
 import org.apiphany.http.URIEncoder;
+import org.apiphany.io.ContentType;
 import org.apiphany.io.OneShotInputStreamSupplier;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.annotation.Ignored;
@@ -364,6 +366,31 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 */
 	public <U> ApiClientFluentAdapter payload(final Supplier<U> payload) {
 		return body(payload);
+	}
+
+	/**
+	 * Sets the request body as URL-encoded form parameters. Automatically sets the {@code Content-Type} header to
+	 * {@code application/x-www-form-urlencoded}.
+	 *
+	 * @param params the form parameters
+	 * @return this
+	 */
+	public ApiClientFluentAdapter form(final Map<String, List<String>> params) {
+		var encodedParams = RequestParameters.encode(params, getCharset());
+		var body = RequestParameters.asString(encodedParams);
+		return body(body)
+				.header(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_FORM_URLENCODED);
+	}
+
+	/**
+	 * Sets the request body as URL-encoded form parameters. Automatically sets the {@code Content-Type} header to
+	 * {@code application/x-www-form-urlencoded}.
+	 *
+	 * @param paramFunctions the parameter functions
+	 * @return this
+	 */
+	public ApiClientFluentAdapter form(final ParameterFunction... paramFunctions) {
+		return form(RequestParameters.of(paramFunctions));
 	}
 
 	/**

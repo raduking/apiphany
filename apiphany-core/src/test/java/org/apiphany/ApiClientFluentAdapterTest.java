@@ -20,13 +20,17 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.header.Header;
+import org.apiphany.header.Headers;
+import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
+import org.apiphany.io.ContentType;
 import org.apiphany.lang.Strings;
 import org.apiphany.meters.BasicMeters;
 import org.apiphany.meters.MeterCounter;
@@ -56,14 +60,20 @@ import io.micrometer.core.instrument.Timer;
 class ApiClientFluentAdapterTest {
 
 	private static final String URL = "http://localhost";
+
 	private static final Map<String, List<String>> PARAMS = RequestParameters.of(parameter("name", "value"));
-	private static final Map<String, List<String>> HEADERS = Map.of("headerName", List.of("headerValue"));
+
 	private static final String BODY = "SomeBody";
+
+	private static final Map<String, List<String>> HEADERS = Map.of("headerName", List.of("headerValue"));
 	private static final String HEADER_NAME = "header-name";
 	private static final String HEADER_VALUE = "header-value";
+
 	private static final String SOME_METERS_PREFIX = "some.meters";
 	private static final BasicMeters METERS = BasicMeters.of(SOME_METERS_PREFIX);
+
 	private static final Retry RETRY = Retry.of(WaitCounter.of(2, Duration.ofMillis(1)));
+
 	private static final String API = "api";
 	private static final String USERS = "users";
 
@@ -185,487 +195,580 @@ class ApiClientFluentAdapterTest {
 		}
 	}
 
-	@Test
-	@SuppressWarnings("resource")
-	void shouldSetTheExchangeClientIfMissingWhenSettingAuthenticationType() {
-		ExchangeClient exchangeClient = mock(ExchangeClient.class);
-		doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
+	@Nested
+	class RequestParametersTests {
 
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.authenticationType(AuthenticationType.SESSION);
+		@Test
+		@SuppressWarnings("resource")
+		void shouldEncodeParamsOnRetrieveWhenEncodingIsEnabled() {
+			ExchangeClient exchangeClient = mock(ExchangeClient.class);
+			doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
 
-		assertThat(request.getExchangeClient(ExchangeClient.class), notNullValue());
+			var params = RequestParameters.of(parameter("sum", "1+2+3"));
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.authenticationType(AuthenticationType.SESSION)
+					.url(URL)
+					.params(params)
+					.urlEncoded();
+
+			request.retrieve();
+
+			var expected = RequestParameters.of(parameter("sum", "1%2B2%2B3"));
+
+			assertThat(request.getParams(), equalTo(expected));
+		}
+
+		@Test
+		@SuppressWarnings("resource")
+		void shouldPopulateEmptyParamsOnRetrieveWhenParamsAreNullAndSetMultipleTimes() {
+			ExchangeClient exchangeClient = mock(ExchangeClient.class);
+			doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.authenticationType(AuthenticationType.SESSION)
+					.url(URL)
+					.params((Map<String, List<String>>) null)
+					.params((Map<String, List<String>>) null);
+
+			request.retrieve();
+
+			assertThat(request.getParams(), equalTo(Collections.emptyMap()));
+		}
+
+		static class ParamObject {
+			@SuppressWarnings("unused")
+			private final String sum = "1+2+3";
+		}
+
+		@Test
+		@SuppressWarnings("resource")
+		void shouldEncodeParamsOnRetrieveWhenEncodingIsEnabledForObjectParameter() {
+			ExchangeClient exchangeClient = mock(ExchangeClient.class);
+			doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.authenticationType(AuthenticationType.SESSION)
+					.url(URL)
+					.params(new ParamObject())
+					.urlEncoded();
+
+			request.retrieve();
+
+			var expected = RequestParameters.of(parameter("sum", "1%2B2%2B3"));
+
+			assertThat(request.getParams(), equalTo(expected));
+		}
+
+		static class ParamObjectUnconverted {
+			@SuppressWarnings("unused")
+			private final String someFieldName = "1+2+3";
+		}
+
+		@Test
+		@SuppressWarnings("resource")
+		void shouldEncodeParamsOnRetrieveWhenEncodingIsEnabledForObjectParameterThatNeedsConversion() {
+			ExchangeClient exchangeClient = mock(ExchangeClient.class);
+			doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.authenticationType(AuthenticationType.SESSION)
+					.url(URL)
+					.params(new ParamObjectUnconverted(), Strings::fromCamelToSnakeCase)
+					.urlEncoded();
+
+			request.retrieve();
+
+			var expected = RequestParameters.of(parameter("some_field_name", "1%2B2%2B3"));
+
+			assertThat(request.getParams(), equalTo(expected));
+		}
+
+		@Test
+		@SuppressWarnings("resource")
+		void shouldEncodeParamsOnRetrieveWhenEncodingIsEnabledWithDirectParameterFunction() {
+			ExchangeClient exchangeClient = mock(ExchangeClient.class);
+			doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.authenticationType(AuthenticationType.SESSION)
+					.url(URL)
+					.params(parameter("sum", "1+2+3"))
+					.urlEncoded();
+
+			request.retrieve();
+
+			var expected = RequestParameters.of(parameter("sum", "1%2B2%2B3"));
+
+			assertThat(request.getParams(), equalTo(expected));
+		}
+
+		@Test
+		@SuppressWarnings("resource")
+		void shouldEncodeParamsOnRetrieveWhenEncodingIsEnabledForParameterNameAndValueAsObjects() {
+			ExchangeClient exchangeClient = mock(ExchangeClient.class);
+			doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
+			Object parameterName = "sum";
+			Object parameterValue = "1+2+3";
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.authenticationType(AuthenticationType.SESSION)
+					.url(URL)
+					.param(parameterName, parameterValue)
+					.urlEncoded();
+
+			request.retrieve();
+
+			var expected = RequestParameters.of(parameter("sum", "1%2B2%2B3"));
+
+			assertThat(request.getParams(), equalTo(expected));
+		}
+
+		@Test
+		@SuppressWarnings("resource")
+		void shouldEncodeParamsOnRetrieveWhenEncodingIsEnabledWithDirectParameterFunctions() {
+			ExchangeClient exchangeClient = mock(ExchangeClient.class);
+			doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.authenticationType(AuthenticationType.SESSION)
+					.url(URL)
+					.params(
+							parameter("sum", "1+2+3"),
+							parameter("other", "a b c"),
+							parameter("p 1", "v@lue"))
+					.urlEncoded();
+
+			request.retrieve();
+
+			var expected = RequestParameters.of(
+					parameter("sum", "1%2B2%2B3"),
+					parameter("other", "a+b+c"),
+					parameter("p%201", "v%40lue"));
+
+			assertThat(request.getParams(), equalTo(expected));
+		}
+
+		@Test
+		@SuppressWarnings("resource")
+		void shouldEncodeMultiValueParamsWithCSVOnRetrieve() {
+			ExchangeClient exchangeClient = mock(ExchangeClient.class);
+			doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.API_KEY);
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.authenticationType(AuthenticationType.API_KEY)
+					.url(URL)
+					.param("sum", List.of(1, 2, 3), MultiValueStrategy.CSV)
+					.urlEncoded();
+
+			request.retrieve();
+
+			// The commas should be encoded: 1,2,3 -> 1%2C2%2C3
+			var expected = RequestParameters.of(parameter("sum", "1%2C2%2C3"));
+
+			assertThat(request.getParams(), equalTo(expected));
+		}
+
+		@Test
+		@SuppressWarnings("resource")
+		void shouldEncodeMultiValueParamsWithMultiByDefaultOnRetrieve() {
+			ExchangeClient exchangeClient = mock(ExchangeClient.class);
+			doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.API_KEY);
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.authenticationType(AuthenticationType.API_KEY)
+					.url(URL)
+					.param("sum", List.of("1 1", "2 2", "3 3"))
+					.urlEncoded();
+
+			request.retrieve();
+
+			assertThat(request.getParams().get("sum"), equalTo(List.of("1+1", "2+2", "3+3")));
+		}
 	}
 
-	@Test
-	@SuppressWarnings("resource")
-	void shouldCallApiClientExchangeOnRetrieve() {
-		ExchangeClient exchangeClient = mock(ExchangeClient.class);
-		doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
+	@Nested
+	class RetrieveTests {
 
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.authenticationType(AuthenticationType.SESSION);
+		@Test
+		@SuppressWarnings("resource")
+		void shouldCallApiClientExchangeOnRetrieve() {
+			ExchangeClient exchangeClient = mock(ExchangeClient.class);
+			doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
 
-		request.retrieve();
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.authenticationType(AuthenticationType.SESSION);
 
-		verify(apiClient).exchange(request);
+			request.retrieve();
+
+			verify(apiClient).exchange(request);
+		}
+
+		@Test
+		@SuppressWarnings("resource")
+		void shouldThrowExceptionIfResponseTypeIsDifferentThanClassOrGenericClassOnRetrieve() {
+			ExchangeClient exchangeClient = mock(ExchangeClient.class);
+			doReturn(AuthenticationType.NONE).when(exchangeClient).getAuthenticationType();
+			doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.NONE);
+			ApiResponse<?> apiResponse = ApiResponse.<String>builder().body(BODY).build();
+			doReturn(apiResponse).when(apiClient).exchange(any());
+
+			ApiResponse<?> response = ApiResponse.builder().build();
+			ArgumentCaptor<Exception> exceptionCaptor = ArgumentCaptor.forClass(Exception.class);
+			doReturn(response).when(apiClient).buildErrorResponse(exceptionCaptor.capture(), any(), any());
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.authenticationType(AuthenticationType.NONE);
+
+			request.retrieve(Integer.class);
+
+			Exception exception = exceptionCaptor.getValue();
+			assertThat(exception.getMessage(), equalTo("Received response body of type: " + String.class
+					+ " but expected type was: " + Integer.class));
+		}
+
+		@Test
+		@SuppressWarnings("resource")
+		void shouldSetTheResponseTypeOnRetrieveWithClass() {
+			ExchangeClient exchangeClient = mock(ExchangeClient.class);
+			doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.authenticationType(AuthenticationType.SESSION);
+
+			request.retrieve(String.class);
+
+			assertThat(request.getClassResponseType(), equalTo(String.class));
+			assertFalse(request.hasGenericType());
+		}
+
+		@Test
+		@SuppressWarnings("resource")
+		void shouldSetTheResponseTypeOnRetrieveWithGenericClass() {
+			ExchangeClient exchangeClient = mock(ExchangeClient.class);
+			doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.authenticationType(AuthenticationType.SESSION);
+
+			var genericClass = new GenericClass<List<Integer>>() {
+				// empty
+			};
+			request.retrieve(genericClass);
+
+			assertTrue(request.hasGenericType());
+			assertThat(request.getGenericResponseType(), equalTo(genericClass));
+			assertThat(request.getResponseType(), Matchers.instanceOf(ParameterizedType.class));
+		}
 	}
 
-	@Test
-	@SuppressWarnings("resource")
-	void shouldThrowExceptionIfResponseTypeIsDifferentThanClassOrGenericClassOnRetrieve() {
-		ExchangeClient exchangeClient = mock(ExchangeClient.class);
-		doReturn(AuthenticationType.NONE).when(exchangeClient).getAuthenticationType();
-		doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.NONE);
-		ApiResponse<?> apiResponse = ApiResponse.<String>builder().body(BODY).build();
-		doReturn(apiResponse).when(apiClient).exchange(any());
+	@Nested
+	class UriUrlTests {
 
-		ApiResponse<?> response = ApiResponse.builder().build();
-		ArgumentCaptor<Exception> exceptionCaptor = ArgumentCaptor.forClass(Exception.class);
-		doReturn(response).when(apiClient).buildErrorResponse(exceptionCaptor.capture(), any(), any());
+		@Test
+		void shouldThrowExceptionWhenSettingURLAsNull() {
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient);
 
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.authenticationType(AuthenticationType.NONE);
+			IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> request.url(null));
 
-		request.retrieve(Integer.class);
+			assertThat(e.getMessage(), equalTo("url cannot be null or empty"));
+		}
 
-		Exception exception = exceptionCaptor.getValue();
-		assertThat(exception.getMessage(), equalTo("Received response body of type: " + String.class
-				+ " but expected type was: " + Integer.class));
+		@Test
+		void shouldPopulateUrlOnWhenSettingUri() {
+			URI uri = URI.create(URL);
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.uri(uri);
+
+			assertThat(request.getUrl(), equalTo(URL));
+		}
+
+		@Test
+		void shouldPopulateUrlOnWhenSettingUriWithPathSegments() {
+			URI uri = URI.create(URL);
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.uri(uri, API, USERS);
+
+			assertThat(request.getUrl(), equalTo(URL + "/" + API + "/" + USERS));
+		}
+
+		@Test
+		void shouldPopulateUrlOnWhenSettingUriWithPathSegmentsEvenIfEncodingIsTrueButNoEncodingNecessary() {
+			URI uri = URI.create(URL);
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.urlEncoded()
+					.uri(uri, API, USERS);
+
+			assertThat(request.getUrl(), equalTo(URL + "/" + API + "/" + USERS));
+		}
+
+		@Test
+		void shouldPopulateUrlOnWhenSettingUriWithPathSegmentsEvenIfEncodingIsTrue() {
+			URI uri = URI.create(URL);
+			String segmentWithSpace = "hello world";
+			String segmentWithSpecial = "name@example.com";
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.urlEncoded()
+					.uri(uri, API, segmentWithSpace, segmentWithSpecial);
+
+			String expected = URL + "/" + API + "/hello%20world/name%40example.com";
+
+			assertThat(request.getUrl(), equalTo(expected));
+		}
+
+		@SuppressWarnings("resource")
+		@Test
+		void shouldPopulateUrlOnWhenSettingPathSegmentsEvenIfEncodingIsTrue() {
+			doReturn(URL).when(apiClient).getBaseUrl();
+			String segmentWithSpace = "hello world";
+			String segmentWithSpecial = "name@example.com";
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.pathEncoded(API, segmentWithSpace, segmentWithSpecial);
+
+			String expected = URL + "/" + API + "/hello%20world/name%40example.com";
+
+			assertThat(request.getUrl(), equalTo(expected));
+		}
+
+		@Test
+		void shouldPopulateUrlOnWhenSettingUriWithPathSegmentsContainingSlashes() {
+			URI uri = URI.create(URL);
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.uri(uri, API + "/", USERS, "/" + API);
+
+			assertThat(request.getUrl(), equalTo(URL + "/" + API + "/" + USERS + "/" + API));
+		}
+
+		@Test
+		void shouldPopulateUrlOnWhenSettingUrlWithPathSegmentsAndUrlContainingMultipleSlashes() {
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL + "//", API + "//", USERS, "//" + API, "//" + USERS + "//");
+
+			assertThat(request.getUrl(), equalTo(URL + "/" + API + "/" + USERS + "/" + API + "/" + USERS));
+		}
+
+		@Test
+		void shouldPopulateUrlOnWhenSettingUriWithPathSegmentsEvenIfPathSegmentsAreEmpty() {
+			URI uri = URI.create(URL);
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.uri(uri, API, "", "//", "/", USERS);
+
+			assertThat(request.getUrl(), equalTo(URL + "/" + API + "/" + USERS));
+		}
+
+		@Test
+		void shouldThrowExceptionIfUrlIsEmptyWhenUsingPathSegments() {
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient);
+			IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> request.url("", API));
+
+			assertThat(e.getMessage(), equalTo("url cannot be null or empty"));
+		}
 	}
 
-	@Test
-	void shouldThrowExceptionWhenSettingURLAsNull() {
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient);
+	@Nested
+	class HeadersTests {
 
-		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> request.url(null));
+		@Test
+		void shouldPopulateHeadersOnHeadersWithHeaderObjects() {
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.headers(Header.of(HEADER_NAME, HEADER_VALUE));
 
-		assertThat(e.getMessage(), equalTo("url cannot be null or empty"));
+			assertThat(request.getHeaders(), equalTo(Map.of(HEADER_NAME, List.of(HEADER_VALUE))));
+		}
+
+		@Test
+		void shouldPopulateHeadersOnHeadersWithHeaderFunctionObjects() {
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.headers(header(HEADER_NAME, HEADER_VALUE));
+
+			assertThat(request.getHeaders(), equalTo(Map.of(HEADER_NAME, List.of(HEADER_VALUE))));
+		}
+
+		@Test
+		void shouldPopulateHeaderOnHeaderWhenIfConditionIsTrue() {
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.headerWhen(true, HEADER_NAME, HEADER_VALUE);
+
+			assertThat(request.getHeaders(), equalTo(Map.of(HEADER_NAME, List.of(HEADER_VALUE))));
+		}
+
+		@Test
+		void shouldNotPopulateHeaderOnHeaderWhenIfConditionIsFalse() {
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.headerWhen(false, HEADER_NAME, HEADER_VALUE);
+
+			assertThat(request.getHeaders(), equalTo(Collections.emptyMap()));
+		}
+
+		@Test
+		void shouldPopulateHeadersOnHeadersWhenIfConditionIsTrue() {
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.headersWhen(true, () -> Map.of(HEADER_NAME, List.of(HEADER_VALUE)));
+
+			assertThat(request.getHeaders(), equalTo(Map.of(HEADER_NAME, List.of(HEADER_VALUE))));
+		}
+
+		@Test
+		void shouldNotPopulateHeadersOnHeadersWhenIfConditionIsFalse() {
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.headersWhen(false, () -> Map.of(HEADER_NAME, List.of(HEADER_VALUE)));
+
+			assertThat(request.getHeaders(), equalTo(Collections.emptyMap()));
+		}
 	}
 
-	@Test
-	@SuppressWarnings("resource")
-	void shouldEncodeParamsOnRetrieveWhenEncodingIsEnabled() {
-		ExchangeClient exchangeClient = mock(ExchangeClient.class);
-		doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
+	@Nested
+	class StreamTests {
 
-		var params = RequestParameters.of(parameter("sum", "1+2+3"));
+		@Test
+		@SuppressWarnings("resource")
+		void shouldSetTheStreamToTrueTypeOnDownload() {
+			ExchangeClient exchangeClient = mock(ExchangeClient.class);
+			doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
 
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.authenticationType(AuthenticationType.SESSION)
-				.url(URL)
-				.params(params)
-				.urlEncoded();
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.authenticationType(AuthenticationType.SESSION);
 
-		request.retrieve();
+			assertFalse(request.isStream());
 
-		var expected = RequestParameters.of(parameter("sum", "1%2B2%2B3"));
+			request.download();
 
-		assertThat(request.getParams(), equalTo(expected));
+			assertTrue(request.isStream());
+		}
 	}
 
-	@Test
-	@SuppressWarnings("resource")
-	void shouldPopulateEmptyParamsOnRetrieveWhenParamsAreNullAndSetMultipleTimes() {
-		ExchangeClient exchangeClient = mock(ExchangeClient.class);
-		doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
+	@Nested
+	class BodyTests {
 
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.authenticationType(AuthenticationType.SESSION)
-				.url(URL)
-				.params((Map<String, List<String>>) null)
-				.params((Map<String, List<String>>) null);
+		@Test
+		void shouldPopulateBodyOnWhenSettingThePayload() {
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.payload(BODY);
 
-		request.retrieve();
-
-		assertThat(request.getParams(), equalTo(Collections.emptyMap()));
+			assertThat(request.getBody(), equalTo(BODY));
+		}
 	}
 
-	static class ParamObject {
-		@SuppressWarnings("unused")
-		private final String sum = "1+2+3";
+	@Nested
+	class RetryTests {
+
+		@Test
+		void shouldPopulateDefaultRetryOnWhenSettingDefaultRetry() {
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.defaultRetry();
+
+			assertThat(request.getRetry(), equalTo(Retry.defaultRetry()));
+		}
 	}
 
-	@Test
-	@SuppressWarnings("resource")
-	void shouldEncodeParamsOnRetrieveWhenEncodingIsEnabledForObjectParameter() {
-		ExchangeClient exchangeClient = mock(ExchangeClient.class);
-		doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
+	@Nested
+	class ExchangeClientTests {
 
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.authenticationType(AuthenticationType.SESSION)
-				.url(URL)
-				.params(new ParamObject())
-				.urlEncoded();
+		@Test
+		@SuppressWarnings("resource")
+		void shouldSetTheExchangeClientIfMissingWhenSettingAuthenticationType() {
+			ExchangeClient exchangeClient = mock(ExchangeClient.class);
+			doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
 
-		request.retrieve();
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.authenticationType(AuthenticationType.SESSION);
 
-		var expected = RequestParameters.of(parameter("sum", "1%2B2%2B3"));
-
-		assertThat(request.getParams(), equalTo(expected));
+			assertThat(request.getExchangeClient(ExchangeClient.class), notNullValue());
+		}
 	}
 
-	static class ParamObjectUnconverted {
-		@SuppressWarnings("unused")
-		private final String someFieldName = "1+2+3";
-	}
+	@Nested
+	class MetersTests {
 
-	@Test
-	@SuppressWarnings("resource")
-	void shouldEncodeParamsOnRetrieveWhenEncodingIsEnabledForObjectParameterThatNeedsConversion() {
-		ExchangeClient exchangeClient = mock(ExchangeClient.class);
-		doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
+		@Test
+		void shouldAddMetersWithTags() {
+			List<String> tagsList = List.of("some.tag.name", "some.tag.value");
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.meters(SOME_METERS_PREFIX, tagsList);
 
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.authenticationType(AuthenticationType.SESSION)
-				.url(URL)
-				.params(new ParamObjectUnconverted(), Strings::fromCamelToSnakeCase)
-				.urlEncoded();
+			BasicMeters meters = request.getMeters();
 
-		request.retrieve();
+			assertThat(meters.requests().getName(), equalTo(SOME_METERS_PREFIX + "." + BasicMeters.Name.REQUEST));
+			assertThat(meters.latency().getName(), equalTo(SOME_METERS_PREFIX + "." + BasicMeters.Name.LATENCY));
+			assertThat(meters.errors().getName(), equalTo(SOME_METERS_PREFIX + "." + BasicMeters.Name.ERROR));
+			assertThat(meters.retries().getName(), equalTo(SOME_METERS_PREFIX + "." + BasicMeters.Name.RETRY));
 
-		var expected = RequestParameters.of(parameter("some_field_name", "1%2B2%2B3"));
+			List<Tag> tags = meters.latency().unwrap(Timer.class).getId().getTags();
 
-		assertThat(request.getParams(), equalTo(expected));
-	}
-
-	@Test
-	@SuppressWarnings("resource")
-	void shouldEncodeParamsOnRetrieveWhenEncodingIsEnabledWithDirectParameterFunction() {
-		ExchangeClient exchangeClient = mock(ExchangeClient.class);
-		doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
-
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.authenticationType(AuthenticationType.SESSION)
-				.url(URL)
-				.params(parameter("sum", "1+2+3"))
-				.urlEncoded();
-
-		request.retrieve();
-
-		var expected = RequestParameters.of(parameter("sum", "1%2B2%2B3"));
-
-		assertThat(request.getParams(), equalTo(expected));
-	}
-
-	@Test
-	@SuppressWarnings("resource")
-	void shouldEncodeParamsOnRetrieveWhenEncodingIsEnabledForParameterNameAndValueAsObjects() {
-		ExchangeClient exchangeClient = mock(ExchangeClient.class);
-		doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
-		Object parameterName = "sum";
-		Object parameterValue = "1+2+3";
-
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.authenticationType(AuthenticationType.SESSION)
-				.url(URL)
-				.param(parameterName, parameterValue)
-				.urlEncoded();
-
-		request.retrieve();
-
-		var expected = RequestParameters.of(parameter("sum", "1%2B2%2B3"));
-
-		assertThat(request.getParams(), equalTo(expected));
-	}
-
-	@Test
-	@SuppressWarnings("resource")
-	void shouldEncodeParamsOnRetrieveWhenEncodingIsEnabledWithDirectParameterFunctions() {
-		ExchangeClient exchangeClient = mock(ExchangeClient.class);
-		doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
-
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.authenticationType(AuthenticationType.SESSION)
-				.url(URL)
-				.params(
-						parameter("sum", "1+2+3"),
-						parameter("other", "a b c"),
-						parameter("p 1", "v@lue"))
-				.urlEncoded();
-
-		request.retrieve();
-
-		var expected = RequestParameters.of(
-				parameter("sum", "1%2B2%2B3"),
-				parameter("other", "a+b+c"),
-				parameter("p%201", "v%40lue"));
-
-		assertThat(request.getParams(), equalTo(expected));
-	}
-
-	@Test
-	@SuppressWarnings("resource")
-	void shouldEncodeMultiValueParamsWithCSVOnRetrieve() {
-		ExchangeClient exchangeClient = mock(ExchangeClient.class);
-		doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.API_KEY);
-
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.authenticationType(AuthenticationType.API_KEY)
-				.url(URL)
-				.param("sum", List.of(1, 2, 3), MultiValueStrategy.CSV)
-				.urlEncoded();
-
-		request.retrieve();
-
-		// The commas should be encoded: 1,2,3 -> 1%2C2%2C3
-		var expected = RequestParameters.of(parameter("sum", "1%2C2%2C3"));
-
-		assertThat(request.getParams(), equalTo(expected));
-	}
-
-	@Test
-	@SuppressWarnings("resource")
-	void shouldEncodeMultiValueParamsWithMultiByDefaultOnRetrieve() {
-		ExchangeClient exchangeClient = mock(ExchangeClient.class);
-		doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.API_KEY);
-
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.authenticationType(AuthenticationType.API_KEY)
-				.url(URL)
-				.param("sum", List.of("1 1", "2 2", "3 3"))
-				.urlEncoded();
-
-		request.retrieve();
-
-		assertThat(request.getParams().get("sum"), equalTo(List.of("1+1", "2+2", "3+3")));
-	}
-
-	@Test
-	@SuppressWarnings("resource")
-	void shouldSetTheResponseTypeOnRetrieveWithClass() {
-		ExchangeClient exchangeClient = mock(ExchangeClient.class);
-		doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
-
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.authenticationType(AuthenticationType.SESSION);
-
-		request.retrieve(String.class);
-
-		assertThat(request.getClassResponseType(), equalTo(String.class));
-		assertFalse(request.hasGenericType());
-	}
-
-	@Test
-	@SuppressWarnings("resource")
-	void shouldSetTheResponseTypeOnRetrieveWithGenericClass() {
-		ExchangeClient exchangeClient = mock(ExchangeClient.class);
-		doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
-
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.authenticationType(AuthenticationType.SESSION);
-
-		var genericClass = new GenericClass<List<Integer>>() {
-			// empty
-		};
-		request.retrieve(genericClass);
-
-		assertTrue(request.hasGenericType());
-		assertThat(request.getGenericResponseType(), equalTo(genericClass));
-		assertThat(request.getResponseType(), Matchers.instanceOf(ParameterizedType.class));
-	}
-
-	@Test
-	@SuppressWarnings("resource")
-	void shouldSetTheStreamToTrueTypeOnDownload() {
-		ExchangeClient exchangeClient = mock(ExchangeClient.class);
-		doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
-
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.authenticationType(AuthenticationType.SESSION);
-
-		assertFalse(request.isStream());
-
-		request.download();
-
-		assertTrue(request.isStream());
-	}
-
-	@Test
-	void shouldPopulateBodyOnWhenSettingThePayload() {
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.payload(BODY);
-
-		assertThat(request.getBody(), equalTo(BODY));
-	}
-
-	@Test
-	void shouldPopulateDefaultRetryOnWhenSettingDefaultRetry() {
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.defaultRetry();
-
-		assertThat(request.getRetry(), equalTo(Retry.defaultRetry()));
-	}
-
-	@Test
-	void shouldPopulateUrlOnWhenSettingUri() {
-		URI uri = URI.create(URL);
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.uri(uri);
-
-		assertThat(request.getUrl(), equalTo(URL));
-	}
-
-	@Test
-	void shouldPopulateUrlOnWhenSettingUriWithPathSegments() {
-		URI uri = URI.create(URL);
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.uri(uri, API, USERS);
-
-		assertThat(request.getUrl(), equalTo(URL + "/" + API + "/" + USERS));
-	}
-
-	@Test
-	void shouldPopulateUrlOnWhenSettingUriWithPathSegmentsEvenIfEncodingIsTrueButNoEncodingNecessary() {
-		URI uri = URI.create(URL);
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.urlEncoded()
-				.uri(uri, API, USERS);
-
-		assertThat(request.getUrl(), equalTo(URL + "/" + API + "/" + USERS));
-	}
-
-	@Test
-	void shouldPopulateUrlOnWhenSettingUriWithPathSegmentsEvenIfEncodingIsTrue() {
-		URI uri = URI.create(URL);
-		String segmentWithSpace = "hello world";
-		String segmentWithSpecial = "name@example.com";
-
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.urlEncoded()
-				.uri(uri, API, segmentWithSpace, segmentWithSpecial);
-
-		String expected = URL + "/" + API + "/hello%20world/name%40example.com";
-
-		assertThat(request.getUrl(), equalTo(expected));
-	}
-
-	@SuppressWarnings("resource")
-	@Test
-	void shouldPopulateUrlOnWhenSettingPathSegmentsEvenIfEncodingIsTrue() {
-		doReturn(URL).when(apiClient).getBaseUrl();
-		String segmentWithSpace = "hello world";
-		String segmentWithSpecial = "name@example.com";
-
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.pathEncoded(API, segmentWithSpace, segmentWithSpecial);
-
-		String expected = URL + "/" + API + "/hello%20world/name%40example.com";
-
-		assertThat(request.getUrl(), equalTo(expected));
-	}
-
-	@Test
-	void shouldPopulateUrlOnWhenSettingUriWithPathSegmentsContainingSlashes() {
-		URI uri = URI.create(URL);
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.uri(uri, API + "/", USERS, "/" + API);
-
-		assertThat(request.getUrl(), equalTo(URL + "/" + API + "/" + USERS + "/" + API));
-	}
-
-	@Test
-	void shouldPopulateUrlOnWhenSettingUrlWithPathSegmentsAndUrlContainingMultipleSlashes() {
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.url(URL + "//", API + "//", USERS, "//" + API, "//" + USERS + "//");
-
-		assertThat(request.getUrl(), equalTo(URL + "/" + API + "/" + USERS + "/" + API + "/" + USERS));
-	}
-
-	@Test
-	void shouldPopulateUrlOnWhenSettingUriWithPathSegmentsEvenIfPathSegmentsAreEmpty() {
-		URI uri = URI.create(URL);
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.uri(uri, API, "", "//", "/", USERS);
-
-		assertThat(request.getUrl(), equalTo(URL + "/" + API + "/" + USERS));
-	}
-
-	@Test
-	void shouldThrowExceptionIfUrlIsEmptyWhenUsingPathSegments() {
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient);
-		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> request.url("", API));
-
-		assertThat(e.getMessage(), equalTo("url cannot be null or empty"));
-	}
-
-	@Test
-	void shouldAddMetersWithTags() {
-		List<String> tagsList = List.of("some.tag.name", "some.tag.value");
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.meters(SOME_METERS_PREFIX, tagsList);
-
-		BasicMeters meters = request.getMeters();
-
-		assertThat(meters.requests().getName(), equalTo(SOME_METERS_PREFIX + "." + BasicMeters.Name.REQUEST));
-		assertThat(meters.latency().getName(), equalTo(SOME_METERS_PREFIX + "." + BasicMeters.Name.LATENCY));
-		assertThat(meters.errors().getName(), equalTo(SOME_METERS_PREFIX + "." + BasicMeters.Name.ERROR));
-		assertThat(meters.retries().getName(), equalTo(SOME_METERS_PREFIX + "." + BasicMeters.Name.RETRY));
-
-		List<Tag> tags = meters.latency().unwrap(Timer.class).getId().getTags();
-
-		Tag tag = tags.getFirst();
-
-		assertThat(tags, hasSize(1));
-		assertThat(tag.getKey(), equalTo(tagsList.get(0)));
-		assertThat(tag.getValue(), equalTo(tagsList.get(1)));
-
-		List<Supplier<MeterCounter>> counters = List.of(meters::requests, meters::errors, meters::retries);
-		for (Supplier<MeterCounter> counterSupplier : counters) {
-			tags = counterSupplier.get().unwrap(Counter.class).getId().getTags();
-			tag = tags.getFirst();
+			Tag tag = tags.getFirst();
 
 			assertThat(tags, hasSize(1));
 			assertThat(tag.getKey(), equalTo(tagsList.get(0)));
 			assertThat(tag.getValue(), equalTo(tagsList.get(1)));
+
+			List<Supplier<MeterCounter>> counters = List.of(meters::requests, meters::errors, meters::retries);
+			for (Supplier<MeterCounter> counterSupplier : counters) {
+				tags = counterSupplier.get().unwrap(Counter.class).getId().getTags();
+				tag = tags.getFirst();
+
+				assertThat(tags, hasSize(1));
+				assertThat(tag.getKey(), equalTo(tagsList.get(0)));
+				assertThat(tag.getValue(), equalTo(tagsList.get(1)));
+			}
 		}
 	}
 
-	@Test
-	void shouldPopulateHeadersOnHeadersWithHeaderObjects() {
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.headers(Header.of(HEADER_NAME, HEADER_VALUE));
+	@Nested
+	class FormTests {
 
-		assertThat(request.getHeaders(), equalTo(Map.of(HEADER_NAME, List.of(HEADER_VALUE))));
-	}
+		@Test
+		void shouldSetFormBodyAndContentTypeHeader() {
+			Map<String, List<String>> params = Map.of("key1", List.of("value1"), "key2", List.of("value2"));
 
-	@Test
-	void shouldPopulateHeadersOnHeadersWithHeaderFunctionObjects() {
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.headers(header(HEADER_NAME, HEADER_VALUE));
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.form(params);
 
-		assertThat(request.getHeaders(), equalTo(Map.of(HEADER_NAME, List.of(HEADER_VALUE))));
-	}
+			String expectedBody = RequestParameters.asString(RequestParameters.encode(params));
+			assertThat(request.getBody(), equalTo(expectedBody));
+			assertThat(Headers.get(HttpHeader.CONTENT_TYPE, request.getHeaders()).getFirst(),
+					equalTo(ContentType.Value.APPLICATION_FORM_URLENCODED));
+		}
 
-	@Test
-	void shouldPopulateHeaderOnHeaderWhenIfConditionIsTrue() {
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.headerWhen(true, HEADER_NAME, HEADER_VALUE);
+		@Test
+		void shouldSetFormBodyWithParameterFunctions() {
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.form(
+							parameter("name", "value"),
+							parameter("key", "val"));
 
-		assertThat(request.getHeaders(), equalTo(Map.of(HEADER_NAME, List.of(HEADER_VALUE))));
-	}
+			Map<String, List<String>> params = RequestParameters.of(
+					parameter("name", "value"),
+					parameter("key", "val"));
+			String expectedBody = RequestParameters.asString(RequestParameters.encode(params));
+			assertThat(request.getBody(), equalTo(expectedBody));
+			assertThat(Headers.get(HttpHeader.CONTENT_TYPE, request.getHeaders()).getFirst(),
+					equalTo(ContentType.Value.APPLICATION_FORM_URLENCODED));
+		}
 
-	@Test
-	void shouldNotPopulateHeaderOnHeaderWhenIfConditionIsFalse() {
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.headerWhen(false, HEADER_NAME, HEADER_VALUE);
+		@Test
+		void shouldSetFormBodyWithUrlEncoding() {
+			Map<String, List<String>> params = new LinkedHashMap<>();
+			params.put("name", List.of("hello world"));
+			params.put("email", List.of("a@b.com"));
 
-		assertThat(request.getHeaders(), equalTo(Collections.emptyMap()));
-	}
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.form(params);
 
-	@Test
-	void shouldPopulateHeadersOnHeadersWhenIfConditionIsTrue() {
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.headersWhen(true, () -> Map.of(HEADER_NAME, List.of(HEADER_VALUE)));
+			String expectedBody = RequestParameters.asString(RequestParameters.encode(params));
+			assertThat(request.getBody(), equalTo(expectedBody));
+			assertThat(request.getBody(), equalTo("name=hello+world&email=a%40b.com"));
+		}
 
-		assertThat(request.getHeaders(), equalTo(Map.of(HEADER_NAME, List.of(HEADER_VALUE))));
-	}
+		@Test
+		void shouldSetFormBodyWithEmptyParams() {
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.form(Map.of());
 
-	@Test
-	void shouldNotPopulateHeadersOnHeadersWhenIfConditionIsFalse() {
-		ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
-				.headersWhen(false, () -> Map.of(HEADER_NAME, List.of(HEADER_VALUE)));
-
-		assertThat(request.getHeaders(), equalTo(Collections.emptyMap()));
+			assertThat(request.getBody(), equalTo(""));
+			assertThat(Headers.get(HttpHeader.CONTENT_TYPE, request.getHeaders()).getFirst(),
+					equalTo(ContentType.Value.APPLICATION_FORM_URLENCODED));
+		}
 	}
 }
