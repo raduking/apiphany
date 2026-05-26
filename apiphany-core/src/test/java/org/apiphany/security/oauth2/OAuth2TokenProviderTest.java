@@ -52,6 +52,7 @@ import org.morphix.lang.function.ExecutionWrappers;
 import org.morphix.lang.function.LoggerAdapter.LoggingLevel;
 import org.morphix.lang.resource.ScopedResource;
 import org.morphix.lang.thread.Threads;
+import org.morphix.reflection.Methods;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -572,8 +573,9 @@ class OAuth2TokenProviderTest {
 	@Test
 	@Timeout(5)
 	void shouldInitializeSchedulerAndRetrieveMultipleTokensWithDefaultScheduler() throws Exception {
-		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
-		doReturn(clientRegistration).when(oAuth2Properties).getClientRegistration(CLIENT_REGISTRATION_NAME);
+		String registrationName = getTaskName();
+		doReturn(Map.of(registrationName, clientRegistration)).when(oAuth2Properties).getRegistration();
+		doReturn(clientRegistration).when(oAuth2Properties).getClientRegistration(registrationName);
 		doReturn(true).when(clientRegistration).hasClientId();
 		doReturn(true).when(clientRegistration).hasClientSecret();
 		doReturn(Map.of(PROVIDER_NAME, providerDetails)).when(oAuth2Properties).getProvider();
@@ -593,15 +595,16 @@ class OAuth2TokenProviderTest {
 		}).when(tokenClient).getAuthenticationToken();
 
 		Duration expirationErrorMargin = tokenValidity.minusMillis(10);
-		Duration minRefreshInterval = Duration.ofMillis(10);
+		Duration minRefreshInterval = Duration.ofMillis(5);
 
 		OAuth2TokenProviderProperties properties = new OAuth2TokenProviderProperties();
 		properties.setExpirationErrorMargin(expirationErrorMargin);
 		properties.setMinRefreshInterval(minRefreshInterval);
+		properties.setMaxTaskCloseAttempts(1);
 
 		OAuth2TokenProvider localTokenProvider = OAuth2TokenProvider.builder()
 				.properties(properties)
-				.registration(oAuth2Properties, CLIENT_REGISTRATION_NAME)
+				.registration(oAuth2Properties, registrationName)
 				.tokenClientSupplier((cr, pd) -> tokenClient)
 				.build();
 
@@ -770,8 +773,9 @@ class OAuth2TokenProviderTest {
 	@Test
 	@Timeout(5)
 	void shouldInitializeSchedulerAndRetrieveMultipleTokensWithDefaultSchedulerAndNamedExecutionWrapper() throws Exception {
-		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
-		doReturn(clientRegistration).when(oAuth2Properties).getClientRegistration(CLIENT_REGISTRATION_NAME);
+		String registrationName = getTaskName();
+		doReturn(Map.of(registrationName, clientRegistration)).when(oAuth2Properties).getRegistration();
+		doReturn(clientRegistration).when(oAuth2Properties).getClientRegistration(registrationName);
 		doReturn(true).when(clientRegistration).hasClientId();
 		doReturn(true).when(clientRegistration).hasClientSecret();
 		doReturn(Map.of(PROVIDER_NAME, providerDetails)).when(oAuth2Properties).getProvider();
@@ -798,11 +802,11 @@ class OAuth2TokenProviderTest {
 		properties.setMinRefreshInterval(minRefreshInterval);
 
 		List<String> namesAdded = new ArrayList<>();
-		ExecutionWrapper<Void> log = ExecutionWrappers.log(Slf4jLoggerAdapter.of(LOGGER), LoggingLevel.WARN, CLIENT_REGISTRATION_NAME + "-wrapper");
+		ExecutionWrapper<Void> log = ExecutionWrappers.log(Slf4jLoggerAdapter.of(LOGGER), LoggingLevel.WARN, registrationName + "-wrapper");
 
 		OAuth2TokenProvider localTokenProvider = OAuth2TokenProvider.builder()
 				.properties(properties)
-				.registration(oAuth2Properties, CLIENT_REGISTRATION_NAME)
+				.registration(oAuth2Properties, registrationName)
 				.tokenClientSupplier((cr, pd) -> tokenClient)
 				.updateTokenWrapper(name -> getExecutionWrapper(name, namesAdded).andThen(log))
 				.build();
@@ -816,7 +820,7 @@ class OAuth2TokenProviderTest {
 		assertThat(tokenRetrievalCount.get(), equalTo(retrievals));
 		assertThat(namesAdded.size(), equalTo(retrievals));
 		for (String name : namesAdded) {
-			assertThat(name, equalTo(CLIENT_REGISTRATION_NAME));
+			assertThat(name, equalTo(registrationName));
 		}
 
 		verify(tokenClient, times(retrievals)).getAuthenticationToken();
@@ -845,5 +849,10 @@ class OAuth2TokenProviderTest {
 			LOGGER.info("Execution wrapper '{}' invoked", name);
 			return s;
 		};
+	}
+
+	private static String getTaskName() {
+		String name = Methods.getCallerMethodName((clsName, methodName) -> methodName).orElse("unknown");
+		return "o2-" + name.replaceAll("[^A-Z]", "").toLowerCase();
 	}
 }
