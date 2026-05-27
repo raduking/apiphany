@@ -3,6 +3,7 @@ package org.apiphany.http;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.UnaryOperator;
 
 import org.apiphany.ApiMimeType;
 import org.apiphany.io.ContentType;
@@ -177,23 +178,7 @@ public class HttpContentType implements ApiMimeType {
 	 */
 	@Override
 	public String value() {
-		StringBuilder sb = new StringBuilder();
-		sb.append(getContentType().toString());
-		Charset activeCharset = charset;
-		if (null != activeCharset) {
-			sb.append("; ")
-					.append(Param.CHARSET)
-					.append("=")
-					.append(activeCharset);
-		}
-		String activeBoundary = getBoundary();
-		if (null != activeBoundary) {
-			sb.append("; ")
-					.append(Param.BOUNDARY)
-					.append("=")
-					.append(activeBoundary);
-		}
-		return sb.toString();
+		return normalizedValue(UnaryOperator.identity());
 	}
 
 	/**
@@ -210,21 +195,31 @@ public class HttpContentType implements ApiMimeType {
 	 * @return the canonical normalized value
 	 */
 	public String normalizedValue() {
+		return normalizedValue(String::toLowerCase);
+	}
+
+	/**
+	 * Returns the canonical RFC 7231-style string representation of this HTTP content type using the provided normalizer
+	 * function to normalize type/subtype and parameter values. This allows for custom normalization strategies, such as
+	 * preserving case or applying different transformations to the type/subtype and parameter values.
+	 *
+	 * @param normalizer the function to apply to type/subtype and parameter values for normalization.
+	 * @return the canonical normalized value
+	 */
+	public String normalizedValue(final UnaryOperator<String> normalizer) {
 		StringBuilder sb = new StringBuilder();
-		sb.append(getContentType().value().toLowerCase());
-		Charset activeCharset = charset;
-		if (null != activeCharset) {
+		sb.append(normalizer.apply(getContentType().value()));
+		if (null != charset) {
 			sb.append("; ")
-					.append(Param.CHARSET.toLowerCase())
+					.append(Param.CHARSET)
 					.append("=")
-					.append(activeCharset.name().toLowerCase());
+					.append(normalizer.apply(charset.name()));
 		}
-		String activeBoundary = getBoundary();
-		if (null != activeBoundary) {
+		if (null != boundary) {
 			sb.append("; ")
-					.append(Param.BOUNDARY.toLowerCase())
+					.append(Param.BOUNDARY)
 					.append("=")
-					.append(activeBoundary);
+					.append(boundary);
 		}
 		return sb.toString();
 	}
