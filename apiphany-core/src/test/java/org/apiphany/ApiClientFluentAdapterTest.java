@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import org.apiphany.client.ExchangeClient;
+import org.apiphany.client.http.HttpExchangeClient;
 import org.apiphany.header.Header;
 import org.apiphany.header.Headers;
 import org.apiphany.http.HttpHeader;
@@ -37,6 +38,7 @@ import org.apiphany.meters.MeterCounter;
 import org.apiphany.openapi.MultiValueStrategy;
 import org.apiphany.security.AuthenticationType;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -718,11 +720,22 @@ class ApiClientFluentAdapterTest {
 	@Nested
 	class FormTests {
 
+		@Mock
+		private HttpExchangeClient httpExchangeClient;
+
+		@BeforeEach
+		@SuppressWarnings("resource")
+		void setUp() {
+			doReturn(httpExchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
+			doReturn(AuthenticationType.SESSION).when(httpExchangeClient).getAuthenticationType();
+		}
+
 		@Test
 		void shouldSetFormBodyAndContentTypeHeader() {
 			Map<String, List<String>> params = Map.of("key1", List.of("value1"), "key2", List.of("value2"));
 
 			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.authenticationType(AuthenticationType.SESSION)
 					.form(params);
 
 			String expectedBody = RequestParameters.asString(RequestParameters.encode(params));
@@ -734,6 +747,7 @@ class ApiClientFluentAdapterTest {
 		@Test
 		void shouldSetFormBodyWithParameterFunctions() {
 			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.authenticationType(AuthenticationType.SESSION)
 					.form(
 							parameter("name", "value"),
 							parameter("key", "val"));
@@ -754,6 +768,7 @@ class ApiClientFluentAdapterTest {
 			params.put("email", List.of("a@b.com"));
 
 			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.authenticationType(AuthenticationType.SESSION)
 					.form(params);
 
 			String expectedBody = RequestParameters.asString(RequestParameters.encode(params));
@@ -764,6 +779,7 @@ class ApiClientFluentAdapterTest {
 		@Test
 		void shouldSetFormBodyWithEmptyParams() {
 			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.authenticationType(AuthenticationType.SESSION)
 					.form(Map.of());
 
 			assertThat(request.getBody(), equalTo(""));

@@ -28,7 +28,7 @@ public interface HttpExchangeClient extends ExchangeClient, SSLContextAware {
 	 *
 	 * @return the GET request method
 	 */
-	default RequestMethod get() {
+	default HttpMethod get() {
 		return HttpMethod.GET;
 	}
 
@@ -37,7 +37,7 @@ public interface HttpExchangeClient extends ExchangeClient, SSLContextAware {
 	 *
 	 * @return the PUT request method
 	 */
-	default RequestMethod put() {
+	default HttpMethod put() {
 		return HttpMethod.PUT;
 	}
 
@@ -46,7 +46,7 @@ public interface HttpExchangeClient extends ExchangeClient, SSLContextAware {
 	 *
 	 * @return the POST request method
 	 */
-	default RequestMethod post() {
+	default HttpMethod post() {
 		return HttpMethod.POST;
 	}
 
@@ -55,7 +55,7 @@ public interface HttpExchangeClient extends ExchangeClient, SSLContextAware {
 	 *
 	 * @return the DELETE request method
 	 */
-	default RequestMethod delete() {
+	default HttpMethod delete() {
 		return HttpMethod.DELETE;
 	}
 
@@ -64,7 +64,7 @@ public interface HttpExchangeClient extends ExchangeClient, SSLContextAware {
 	 *
 	 * @return the PATCH request method
 	 */
-	default RequestMethod patch() {
+	default HttpMethod patch() {
 		return HttpMethod.PATCH;
 	}
 
@@ -73,7 +73,7 @@ public interface HttpExchangeClient extends ExchangeClient, SSLContextAware {
 	 *
 	 * @return the HEAD request method
 	 */
-	default RequestMethod head() {
+	default HttpMethod head() {
 		return HttpMethod.HEAD;
 	}
 
@@ -82,7 +82,7 @@ public interface HttpExchangeClient extends ExchangeClient, SSLContextAware {
 	 *
 	 * @return the OPTIONS request method
 	 */
-	default RequestMethod options() {
+	default HttpMethod options() {
 		return HttpMethod.OPTIONS;
 	}
 
@@ -100,7 +100,7 @@ public interface HttpExchangeClient extends ExchangeClient, SSLContextAware {
 	 *
 	 * @return the CONNECT request method
 	 */
-	default RequestMethod connect() {
+	default HttpMethod connect() {
 		return HttpMethod.CONNECT;
 	}
 
