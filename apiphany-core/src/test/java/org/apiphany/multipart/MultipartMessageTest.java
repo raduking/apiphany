@@ -1,28 +1,26 @@
-package org.apiphany.http;
+package org.apiphany.multipart;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 
-import java.util.Map;
-
-import org.apiphany.lang.Bytes;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 /**
- * Test class for {@link Multipart}.
+ * Test class for {@link MultipartMessage}.
  *
  * @author Radu Sebastian LAZIN
  */
-class MultipartTest {
+class MultipartMessageTest {
 
 	@Nested
 	class BuilderTest {
 
 		@Test
 		void shouldBuildMultipartBody() {
-			Multipart.Body multipart = Multipart.Body.builder()
+			MultipartMessage multipart = MultipartMessage.builder()
+					.randomBoundary()
 					.field("field1", "value1")
 					.field("field2", "value2")
 					.build();
@@ -36,22 +34,11 @@ class MultipartTest {
 
 		@Test
 		void shouldBuildEmptyMultipartBody() {
-			Multipart.Body multipart = Multipart.Body.builder()
+			MultipartMessage multipart = MultipartMessage.builder()
+					.randomBoundary()
 					.build();
 
 			assertThat(multipart.getParts(), hasSize(0));
-		}
-	}
-
-	@Nested
-	class PartTest {
-
-		@Test
-		void shouldCreatePartWithNoHeadersAndEmptyBody() {
-			Multipart.Part part = new Multipart.Part(Map.of(), Bytes.EMPTY);
-
-			assertThat(part.getName(), equalTo(null));
-			assertThat(part.getValue(), equalTo(""));
 		}
 	}
 }

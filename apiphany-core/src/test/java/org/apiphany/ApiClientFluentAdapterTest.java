@@ -31,11 +31,11 @@ import org.apiphany.header.Header;
 import org.apiphany.header.Headers;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
-import org.apiphany.http.Multipart;
 import org.apiphany.io.ContentType;
 import org.apiphany.lang.Strings;
 import org.apiphany.meters.BasicMeters;
 import org.apiphany.meters.MeterCounter;
+import org.apiphany.multipart.MultipartMessage;
 import org.apiphany.openapi.MultiValueStrategy;
 import org.apiphany.security.AuthenticationType;
 import org.hamcrest.Matchers;
@@ -804,7 +804,7 @@ class ApiClientFluentAdapterTest {
 
 		@Test
 		void shouldSetMultipartBodyAndContentTypeHeader() {
-			Multipart.Body body = Multipart.Body.builder()
+			MultipartMessage body = MultipartMessage.builder()
 					.boundary("test-boundary")
 					.field("name", "value")
 					.field("key", "val")
@@ -823,7 +823,7 @@ class ApiClientFluentAdapterTest {
 		@Test
 		void shouldSetMultipartBodyWithFile() {
 			byte[] fileData = "file content".getBytes(StandardCharsets.UTF_8);
-			Multipart.Body body = Multipart.Body.builder()
+			MultipartMessage body = MultipartMessage.builder()
 					.boundary("test-boundary")
 					.file("file", "test.txt", "text/plain", fileData)
 					.build();
@@ -840,7 +840,8 @@ class ApiClientFluentAdapterTest {
 
 		@Test
 		void shouldMatchBoundaryInContentType() {
-			Multipart.Body body = Multipart.Body.builder()
+			MultipartMessage body = MultipartMessage.builder()
+					.randomBoundary()
 					.field("name", "value")
 					.build();
 
@@ -855,7 +856,7 @@ class ApiClientFluentAdapterTest {
 
 		@Test
 		void shouldSetMultipartBodyWithEmptyParts() {
-			Multipart.Body body = Multipart.Body.builder()
+			MultipartMessage body = MultipartMessage.builder()
 					.boundary("test-boundary")
 					.build();
 

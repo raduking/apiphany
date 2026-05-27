@@ -9,8 +9,8 @@ import org.apiphany.RequestParameters;
 import org.apiphany.http.HttpContentType;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
-import org.apiphany.io.ChunkedBinary;
 import org.apiphany.io.ContentType;
+import org.apiphany.multipart.MultipartMessage;
 
 /**
  * Fluent adapter for HTTP calls.
@@ -172,11 +172,11 @@ public class HttpClientFluentAdapter {
 	 * @param body the multipart body
 	 * @return this
 	 */
-	public ApiClientFluentAdapter multipart(final ChunkedBinary body) {
+	public ApiClientFluentAdapter multipart(final MultipartMessage body) {
 		return apiClientFluentAdapter.body(body.toByteArray())
 				.header(HttpHeader.CONTENT_TYPE, HttpContentType.builder()
 						.contentType(ContentType.MULTIPART_FORM_DATA)
-						.boundary(body.getBoundary())
+						.boundary(body.getBoundary().value())
 						.build());
 	}
 }

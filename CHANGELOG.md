@@ -6,18 +6,19 @@
 - Added configurable scheduler termination timeout property to `OAuth2TokenProviderProperties`.
 - Added `IOConsumer` functional interface for I/O operations with `IOException`.
 - Added `BinaryRepresentable` interface with `toByteArray()` for binary representation.
-- Added `ChunkedBinary` interface extending `BinaryRepresentable` with `getBoundary()`.
 - Added `IOStreams.toByteArray(IOConsumer)` to write to an output stream and return bytes.
 - Added `Bytes.from(IOConsumer, Consumer, Supplier)` and `Bytes.from(IOConsumer, Consumer)` to write bytes from a consumer.
 - Added `HttpHeaderValues.FORM_DATA` constant.
 - Added `HttpMessages.CRLF` constant.
 - Added `HttpContentType` boundary parameter support, `Param.BOUNDARY`, and `Builder`.
-- Added `Multipart.Part` representing an HTTP multi-part body part.
-- Added `Multipart.Body` class implementing `ChunkedBinary` for HTTP multi-part bodies.
+- Added `MultipartBoundary` value object for multipart message boundary with `random()` factory.
+- Added `MultipartPart<T>` generic multipart part extending `ApiMessage<T>` implementing `BinaryRepresentable`.
+- Added `MultipartMessage` implementing `BinaryRepresentable` for HTTP multipart messages with `Builder`.
+- Added `MultipartEncoder` utility class for encoding multipart messages to output streams.
 - Added `ApiClientFluentAdapter.form` delegating to `HttpClientFluentAdapter`.
-- Added `ApiClientFluentAdapter.multipart(ChunkedBinary)` delegating to `HttpClientFluentAdapter`.
+- Added `ApiClientFluentAdapter.multipart(MultipartMessage)` delegating to `HttpClientFluentAdapter`.
 - Added `HttpClientFluentAdapter.form` for `application/x-www-form-urlencoded` body support.
-- Added `HttpClientFluentAdapter.multipart(ChunkedBinary)` for multi-part form-data body support.
+- Added `HttpClientFluentAdapter.multipart(MultipartMessage)` for multi-part form-data body support.
 - Added `ParsingMode` enumeration with `STRICT` and `LENIENT` to be used by parsers.
 
 ---
