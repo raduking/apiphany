@@ -16,9 +16,9 @@ import java.util.Map;
 
 import org.apiphany.ApiClient;
 import org.apiphany.RequestParameters;
-import org.apiphany.http.Multipart;
 import org.apiphany.io.ContentType;
 import org.apiphany.lang.Bytes;
+import org.apiphany.multipart.MultipartMessage;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -132,7 +132,7 @@ public interface BodyContract extends ApiphanyContract {
 
 		String boundary = "----testBoundaryFields";
 
-		Multipart.Body body = Multipart.Body.builder()
+		MultipartMessage body = MultipartMessage.builder()
 				.boundary(boundary)
 				.field("name", "John")
 				.field("age", "30")
@@ -162,7 +162,7 @@ public interface BodyContract extends ApiphanyContract {
 
 		String boundary = "----customBoundary123";
 
-		Multipart.Body body = Multipart.Body.builder()
+		MultipartMessage body = MultipartMessage.builder()
 				.boundary(boundary)
 				.field("test", "value")
 				.build();
@@ -192,7 +192,7 @@ public interface BodyContract extends ApiphanyContract {
 
 		String boundary = "----unicodeBoundary";
 
-		Multipart.Body body = Multipart.Body.builder()
+		MultipartMessage body = MultipartMessage.builder()
 				.boundary(boundary)
 				.field("name", "Ștefan")
 				.field("city", "Cluj-Napoca")

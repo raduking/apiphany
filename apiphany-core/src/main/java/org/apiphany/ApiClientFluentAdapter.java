@@ -15,13 +15,12 @@ import org.apiphany.client.http.HttpClientFluentAdapter;
 import org.apiphany.header.Header;
 import org.apiphany.header.HeaderFunction;
 import org.apiphany.header.Headers;
-import org.apiphany.http.Multipart;
 import org.apiphany.http.URIEncoder;
-import org.apiphany.io.ChunkedBinary;
 import org.apiphany.io.OneShotInputStreamSupplier;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.annotation.Ignored;
 import org.apiphany.meters.BasicMeters;
+import org.apiphany.multipart.MultipartMessage;
 import org.apiphany.openapi.MultiValueStrategy;
 import org.apiphany.security.AuthenticationType;
 import org.morphix.convert.function.SimpleConverter;
@@ -392,12 +391,12 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 
 	/**
 	 * Sets the request body as a multipart form-data body, delegates to {@link HttpClientFluentAdapter} and automatically
-	 * sets the {@code Content-Type} header to the value returned by {@link Multipart.Body#getContentTypeValue()}.
+	 * sets the {@code Content-Type} header to the value returned by {@link MultipartMessage#getContentTypeValue()}.
 	 *
 	 * @param body the multipart body
 	 * @return this
 	 */
-	public ApiClientFluentAdapter multipart(final ChunkedBinary body) {
+	public ApiClientFluentAdapter multipart(final MultipartMessage body) {
 		return http().multipart(body);
 	}
 
