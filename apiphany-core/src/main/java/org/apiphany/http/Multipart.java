@@ -2,6 +2,7 @@ package org.apiphany.http;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -55,7 +56,7 @@ public interface Multipart {
 		public static Part ofField(final String name, final String value) {
 			Map<String, List<String>> headers = new LinkedHashMap<>();
 			Headers.addTo(headers, HttpHeader.CONTENT_DISPOSITION, HttpHeaderValues.FORM_DATA + "; name=\"" + name + "\"");
-			byte[] bodyBytes = null != value ? value.getBytes(StandardCharsets.US_ASCII) : Bytes.EMPTY;
+			byte[] bodyBytes = null != value ? value.getBytes(StandardCharsets.UTF_8) : Bytes.EMPTY;
 			return new Part(headers, bodyBytes);
 		}
 
@@ -236,7 +237,19 @@ public interface Multipart {
 		 */
 		@Override
 		public byte[] toByteArray() {
-			return Bytes.from(this::writeTo, e -> new IllegalStateException("Unexpected I/O error while encoding multipart body", e));
+			return Bytes.capture(this::writeTo, e -> new IllegalStateException("Unexpected I/O error while encoding multipart body", e));
+		}
+
+		/**
+		 * Returns a string representation of this multipart body using the specified character set. The multipart body is
+		 * encoded to bytes and then decoded to a string using the given character set. This is useful for debugging purposes,
+		 * but should not be used for actual processing of multipart bodies, as the encoding may not be correct for all parts.
+		 *
+		 * @param charset the character set to use for decoding the multipart body
+		 * @return a string representation of this multipart body
+		 */
+		public String toString(final Charset charset) {
+			return Strings.toString(toByteArray(), charset);
 		}
 
 		/**

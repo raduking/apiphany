@@ -33,201 +33,143 @@ class BytesTest {
 		assertThat(unsupportedOperationException.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
 	}
 
-	@Test
-	void shouldConcatenateByteArrays() {
-		int n1 = 10;
-		byte[] a1 = generateByteArray(n1);
-		int n2 = 7;
-		byte[] a2 = generateByteArray(n2);
+	@Nested
+	class ConcatenateTests {
 
-		byte[] c = Bytes.concatenate(a1, a2);
+		@Test
+		void shouldConcatenateByteArrays() {
+			int n1 = 10;
+			byte[] a1 = generateByteArray(n1);
+			int n2 = 7;
+			byte[] a2 = generateByteArray(n2);
 
-		for (int i = 0; i < n1; ++i) {
-			assertEquals(c[i], (byte) (i + 1));
+			byte[] c = Bytes.concatenate(a1, a2);
+
+			for (int i = 0; i < n1; ++i) {
+				assertEquals(c[i], (byte) (i + 1));
+			}
+			for (int i = 0; i < n2; ++i) {
+				assertEquals(c[i + n1], (byte) (i + 1));
+			}
 		}
-		for (int i = 0; i < n2; ++i) {
-			assertEquals(c[i + n1], (byte) (i + 1));
-		}
-	}
 
-	@Test
-	void shouldNotConcatenateNullArray() {
-		int n1 = 10;
-		byte[] a1 = generateByteArray(n1);
+		@Test
+		void shouldNotConcatenateNullArray() {
+			int n1 = 10;
+			byte[] a1 = generateByteArray(n1);
 
-		byte[] c = Bytes.concatenate(a1, null);
+			byte[] c = Bytes.concatenate(a1, null);
 
-		for (int i = 0; i < n1; ++i) {
-			assertEquals(c[i], (byte) (i + 1));
-		}
-		assertThat(c.length, equalTo(n1));
-	}
-
-	@Test
-	void shouldThrowExceptionIfFromHexHasAnUnEvenArgument() {
-		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> Bytes.fromHex("AA B"));
-
-		assertThat(e.getMessage(), equalTo("Hex string must have an even number of characters (after whitespace removal)"));
-	}
-
-	@Test
-	void shouldThrowExceptionOnPadRightIfBlockSizeIsLessThanZero() {
-		IllegalArgumentException e =
-				assertThrows(IllegalArgumentException.class, () -> Bytes.padRightToBlockSize(Bytes.EMPTY, -66, BYTE_ZERO, false));
-
-		assertThat(e.getMessage(), equalTo("Block size must be greater than zero"));
-	}
-
-	@Test
-	void shouldThrowExceptionOnPadRightIfBlockSizeIsEqualToZero() {
-		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> Bytes.padRightToBlockSize(Bytes.EMPTY, 0, BYTE_ZERO, false));
-
-		assertThat(e.getMessage(), equalTo("Block size must be greater than zero"));
-	}
-
-	@Test
-	void shouldNotPadOnPadRightIfBlockIsAlignedAndExtendIsFalse() {
-		int n = 10;
-		byte[] a = generateByteArray(n);
-
-		byte[] result = Bytes.padRightToBlockSize(a, n, BYTE_ZERO);
-
-		assertThat(a, equalTo(result));
-	}
-
-	@Test
-	void shouldPadOnPadRightToBlockSizeMultipleWithGivenByte() {
-		int n = 10;
-		int blockSize = 4;
-		byte[] a = generateByteArray(n);
-
-		byte[] result = Bytes.padRightToBlockSize(a, blockSize, BYTE_ONE);
-
-		assertThat(result.length, equalTo(n + blockSize - (n % blockSize)));
-		for (int i = n; i < result.length; ++i) {
-			assertThat(result[i], equalTo(BYTE_ONE));
+			for (int i = 0; i < n1; ++i) {
+				assertEquals(c[i], (byte) (i + 1));
+			}
+			assertThat(c.length, equalTo(n1));
 		}
 	}
 
-	@Test
-	void shouldPadOnPadRightToBlockSizeMultipleWithZero() {
-		int n = 10;
-		int blockSize = 4;
-		byte[] a = generateByteArray(n);
+	@Nested
+	class IsEmptyTests {
 
-		byte[] result = Bytes.padRightToBlockSize(a, blockSize, BYTE_ZERO);
+		@Test
+		void shouldReturnTrueOnIsEmptyForNullArray() {
+			assertThat(Bytes.isEmpty(null), equalTo(true));
+		}
 
-		assertThat(result.length, equalTo(n + blockSize - (n % blockSize)));
-		for (int i = n; i < result.length; ++i) {
-			assertThat(result[i], equalTo(BYTE_ZERO));
+		@Test
+		void shouldReturnTrueOnIsEmptyForEmptyArray() {
+			assertThat(Bytes.isEmpty(Bytes.EMPTY), equalTo(true));
+		}
+
+		@Test
+		void shouldReturnTrueOnIsEmptyForNewEmptyArray() {
+			assertThat(Bytes.isEmpty(new byte[] { }), equalTo(true));
+		}
+
+		@Test
+		void shouldReturnFalseOnIsEmptyForNonEmptyArray() {
+			byte[] a = generateByteArray(5);
+
+			assertThat(Bytes.isEmpty(a), equalTo(false));
 		}
 	}
 
-	@Test
-	void shouldPadOnPadRightIfBlockIsAlignedAndExtendIsTrue() {
-		int n = 10;
-		byte[] a = generateByteArray(n);
+	@Nested
+	class IsNotEmptyTests {
 
-		byte[] result = Bytes.padRightToBlockSize(a, n, BYTE_ZERO, true);
+		@Test
+		void shouldReturnFalseOnIsNotEmptyForNullArray() {
+			assertThat(Bytes.isNotEmpty(null), equalTo(false));
+		}
 
-		assertThat(result.length, equalTo(n * 2));
-		for (int i = n; i < result.length; ++i) {
-			assertThat(result[i], equalTo(BYTE_ZERO));
+		@Test
+		void shouldReturnFalseOnIsNotEmptyForEmptyArray() {
+			assertThat(Bytes.isNotEmpty(Bytes.EMPTY), equalTo(false));
+		}
+
+		@Test
+		void shouldReturnFalseOnIsNotEmptyForNewEmptyArray() {
+			assertThat(Bytes.isNotEmpty(new byte[] { }), equalTo(false));
+		}
+
+		@Test
+		void shouldReturnTrueOnIsNotEmptyForNonEmptyArray() {
+			byte[] a = generateByteArray(5);
+
+			assertThat(Bytes.isNotEmpty(a), equalTo(true));
 		}
 	}
 
-	@Test
-	void shouldReturnTrueOnIsEmptyForNullArray() {
-		assertThat(Bytes.isEmpty(null), equalTo(true));
+	@Nested
+	class FromHexTests {
+
+		@Test
+		void shouldThrowExceptionIfFromHexHasAnUnEvenArgument() {
+			IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> Bytes.fromHex("AA B"));
+
+			assertThat(e.getMessage(), equalTo("Hex string must have an even number of characters (after whitespace removal)"));
+		}
+
+		@Test
+		void shouldReturnEmptyArrayWhenFromHexIsCalledWithEmptyString() {
+			byte[] result = Bytes.fromHex("");
+
+			assertThat(result, equalTo(Bytes.EMPTY));
+		}
+
+		@Test
+		void shouldReturnEmptyArrayWhenFromHexIsCalledWithWhitespaceString() {
+			byte[] result = Bytes.fromHex("    \n\t  ");
+
+			assertThat(result, equalTo(Bytes.EMPTY));
+		}
+
+		@Test
+		void shouldThrowExceptionWhenFromHexIsCalledWithNullString() {
+			NullPointerException e = assertThrows(NullPointerException.class, () -> Bytes.fromHex(null));
+
+			assertThat(e.getMessage(), equalTo("Hex string cannot be null"));
+		}
 	}
 
-	@Test
-	void shouldReturnTrueOnIsEmptyForEmptyArray() {
-		assertThat(Bytes.isEmpty(Bytes.EMPTY), equalTo(true));
-	}
+	@Nested
+	class ReverseTests {
 
-	@Test
-	void shouldReturnTrueOnIsEmptyForNewEmptyArray() {
-		assertThat(Bytes.isEmpty(new byte[] { }), equalTo(true));
-	}
+		@Test
+		void shouldThrowExceptionWhenReverseIsCalledWithNullArray() {
+			NullPointerException e = assertThrows(NullPointerException.class, () -> Bytes.reverse(null));
 
-	@Test
-	void shouldReturnFalseOnIsEmptyForNonEmptyArray() {
-		byte[] a = generateByteArray(5);
+			assertThat(e.getMessage(), equalTo("Byte array cannot be null"));
+		}
 
-		assertThat(Bytes.isEmpty(a), equalTo(false));
-	}
+		@Test
+		void shouldReverseByteArray() {
+			byte[] input = new byte[] { 1, 2, 3, 4, 5 };
+			byte[] expected = new byte[] { 5, 4, 3, 2, 1 };
 
-	@Test
-	void shouldReturnFalseOnIsNotEmptyForNullArray() {
-		assertThat(Bytes.isNotEmpty(null), equalTo(false));
-	}
+			byte[] result = Bytes.reverse(input);
 
-	@Test
-	void shouldReturnFalseOnIsNotEmptyForEmptyArray() {
-		assertThat(Bytes.isNotEmpty(Bytes.EMPTY), equalTo(false));
-	}
-
-	@Test
-	void shouldReturnFalseOnIsNotEmptyForNewEmptyArray() {
-		assertThat(Bytes.isNotEmpty(new byte[] { }), equalTo(false));
-	}
-
-	@Test
-	void shouldReturnTrueOnIsNotEmptyForNonEmptyArray() {
-		byte[] a = generateByteArray(5);
-
-		assertThat(Bytes.isNotEmpty(a), equalTo(true));
-	}
-
-	@Test
-	void shouldReturnEmptyArrayWhenFromHexIsCalledWithEmptyString() {
-		byte[] result = Bytes.fromHex("");
-
-		assertThat(result, equalTo(Bytes.EMPTY));
-	}
-
-	@Test
-	void shouldReturnEmptyArrayWhenFromHexIsCalledWithWhitespaceString() {
-		byte[] result = Bytes.fromHex("    \n\t  ");
-
-		assertThat(result, equalTo(Bytes.EMPTY));
-	}
-
-	@Test
-	void shouldThrowExceptionWhenFromHexIsCalledWithNullString() {
-		NullPointerException e = assertThrows(NullPointerException.class, () -> Bytes.fromHex(null));
-
-		assertThat(e.getMessage(), equalTo("Hex string cannot be null"));
-	}
-
-	@Test
-	void shouldThrowExceptionWhenReverseIsCalledWithNullArray() {
-		NullPointerException e = assertThrows(NullPointerException.class, () -> Bytes.reverse(null));
-
-		assertThat(e.getMessage(), equalTo("Byte array cannot be null"));
-	}
-
-	@Test
-	void shouldReverseByteArray() {
-		byte[] input = new byte[] { 1, 2, 3, 4, 5 };
-		byte[] expected = new byte[] { 5, 4, 3, 2, 1 };
-
-		byte[] result = Bytes.reverse(input);
-
-		assertThat(result, equalTo(expected));
-	}
-
-	@Test
-	void shouldPadPKCS7() {
-		byte[] input = new byte[] { 1, 2, 3, 4, 5 };
-		byte padByte = 10;
-		int blockSize = 16;
-		byte[] expected =
-				new byte[] { 1, 2, 3, 4, 5, padByte, padByte, padByte, padByte, padByte, padByte, padByte, padByte, padByte, padByte, padByte };
-		byte[] result = Bytes.padPKCS7(input, blockSize);
-
-		assertThat(result, equalTo(expected));
+			assertThat(result, equalTo(expected));
+		}
 	}
 
 	/**
@@ -304,6 +246,194 @@ class BytesTest {
 			byte[] result = Bytes.fromFile("/" + WRONG_FILE_NAME, null);
 
 			assertThat(result, equalTo(Bytes.EMPTY));
+		}
+	}
+
+	@Nested
+	class CaptureTests {
+
+		@Test
+		void shouldCaptureBytesFromWriter() {
+			byte[] expected = generateByteArray(5);
+
+			byte[] result = Bytes.capture(writer -> writer.write(expected));
+
+			assertThat(result, equalTo(expected));
+		}
+
+		@Test
+		void shouldCaptureEmptyBytesFromWriter() {
+			byte[] result = Bytes.capture(writer -> writer.write(Bytes.EMPTY));
+
+			assertThat(result, equalTo(Bytes.EMPTY));
+		}
+
+		@Test
+		void shouldCaptureBytesFromWriterThatWritesMultipleTimes() {
+			byte[] part1 = generateByteArray(3);
+			byte[] part2 = new byte[] { 4, 5 };
+
+			byte[] result = Bytes.capture(writer -> {
+				writer.write(part1);
+				writer.write(part2);
+			});
+
+			assertThat(result, equalTo(Bytes.concatenate(part1, part2)));
+		}
+
+		@Test
+		void shouldCaptureBytesFromWriterThatWritesSingleBytes() {
+			byte[] expected = generateByteArray(5);
+
+			byte[] result = Bytes.capture(writer -> {
+				writer.write((byte) 1);
+				writer.write((byte) 2);
+				writer.write((byte) 3);
+				writer.write((byte) 4);
+				writer.write((byte) 5);
+			});
+
+			assertThat(result, equalTo(expected));
+		}
+
+		@Test
+		void shouldCaptureEmptyBytesFromWriterThatWritesNothing() {
+			byte[] result = Bytes.capture(writer -> {
+				// do nothing
+			});
+
+			assertThat(result, equalTo(Bytes.EMPTY));
+		}
+
+		@Test
+		void shouldReturnEmptyBytesAndCallOnErrorConsumerWhenWriterThrowsException() {
+			Runnable runnable = mock(Runnable.class);
+			Consumer<Exception> onError = e -> {
+				runnable.run();
+				assertThat(e, instanceOf(RuntimeException.class));
+				assertThat(e.getMessage(), equalTo("Writer error"));
+			};
+
+			byte[] result = Bytes.capture(writer -> {
+				throw new RuntimeException("Writer error");
+			}, onError);
+
+			assertThat(result, equalTo(Bytes.EMPTY));
+			verify(runnable).run();
+		}
+
+		@Test
+		void shouldReturnEmptyBytesWhenWriterThrowsExceptionAndOnErrorIsNull() {
+			byte[] result = Bytes.capture(writer -> {
+				throw new RuntimeException("Writer error");
+			}, null);
+
+			assertThat(result, equalTo(Bytes.EMPTY));
+		}
+
+		@Test
+		void shouldReturnFallbackBytesAndCallOnErrorConsumerWhenWriterThrowsException() {
+			byte[] fallback = generateByteArray(3);
+			Runnable runnable = mock(Runnable.class);
+			Consumer<Exception> onError = e -> {
+				runnable.run();
+				assertThat(e, instanceOf(RuntimeException.class));
+				assertThat(e.getMessage(), equalTo("Writer error"));
+			};
+
+			byte[] result = Bytes.capture(writer -> {
+				throw new RuntimeException("Writer error");
+			}, onError, () -> fallback);
+
+			assertThat(result, equalTo(fallback));
+			verify(runnable).run();
+		}
+	}
+
+	@Nested
+	class PadPKCS7Tests {
+
+		@Test
+		void shouldPadPKCS7() {
+			byte[] input = new byte[] { 1, 2, 3, 4, 5 };
+			byte padByte = 10;
+			int blockSize = 16;
+			byte[] expected =
+					new byte[] { 1, 2, 3, 4, 5, padByte, padByte, padByte, padByte, padByte, padByte, padByte, padByte, padByte, padByte, padByte };
+			byte[] result = Bytes.padPKCS7(input, blockSize);
+
+			assertThat(result, equalTo(expected));
+		}
+	}
+
+	@Nested
+	class PadRightToBlockSizeTests {
+
+		@Test
+		void shouldThrowExceptionOnPadRightIfBlockSizeIsLessThanZero() {
+			IllegalArgumentException e =
+					assertThrows(IllegalArgumentException.class, () -> Bytes.padRightToBlockSize(Bytes.EMPTY, -66, BYTE_ZERO, false));
+
+			assertThat(e.getMessage(), equalTo("Block size must be greater than zero"));
+		}
+
+		@Test
+		void shouldThrowExceptionOnPadRightIfBlockSizeIsEqualToZero() {
+			IllegalArgumentException e =
+					assertThrows(IllegalArgumentException.class, () -> Bytes.padRightToBlockSize(Bytes.EMPTY, 0, BYTE_ZERO, false));
+
+			assertThat(e.getMessage(), equalTo("Block size must be greater than zero"));
+		}
+
+		@Test
+		void shouldNotPadOnPadRightIfBlockIsAlignedAndExtendIsFalse() {
+			int n = 10;
+			byte[] a = generateByteArray(n);
+
+			byte[] result = Bytes.padRightToBlockSize(a, n, BYTE_ZERO);
+
+			assertThat(a, equalTo(result));
+		}
+
+		@Test
+		void shouldPadOnPadRightToBlockSizeMultipleWithGivenByte() {
+			int n = 10;
+			int blockSize = 4;
+			byte[] a = generateByteArray(n);
+
+			byte[] result = Bytes.padRightToBlockSize(a, blockSize, BYTE_ONE);
+
+			assertThat(result.length, equalTo(n + blockSize - (n % blockSize)));
+			for (int i = n; i < result.length; ++i) {
+				assertThat(result[i], equalTo(BYTE_ONE));
+			}
+		}
+
+		@Test
+		void shouldPadOnPadRightToBlockSizeMultipleWithZero() {
+			int n = 10;
+			int blockSize = 4;
+			byte[] a = generateByteArray(n);
+
+			byte[] result = Bytes.padRightToBlockSize(a, blockSize, BYTE_ZERO);
+
+			assertThat(result.length, equalTo(n + blockSize - (n % blockSize)));
+			for (int i = n; i < result.length; ++i) {
+				assertThat(result[i], equalTo(BYTE_ZERO));
+			}
+		}
+
+		@Test
+		void shouldPadOnPadRightIfBlockIsAlignedAndExtendIsTrue() {
+			int n = 10;
+			byte[] a = generateByteArray(n);
+
+			byte[] result = Bytes.padRightToBlockSize(a, n, BYTE_ZERO, true);
+
+			assertThat(result.length, equalTo(n * 2));
+			for (int i = n; i < result.length; ++i) {
+				assertThat(result[i], equalTo(BYTE_ZERO));
+			}
 		}
 	}
 

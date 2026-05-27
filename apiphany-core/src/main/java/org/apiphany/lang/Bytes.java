@@ -234,7 +234,7 @@ public final class Bytes {
 	 * @return a byte array containing the written bytes, or an empty array if an error occurred
 	 * @throws NullPointerException if the writer or fallback is null
 	 */
-	public static byte[] from(final IOConsumer<OutputStream> writer, final Consumer<Exception> onError, final Supplier<byte[]> fallback) {
+	public static byte[] capture(final IOConsumer<OutputStream> writer, final Consumer<Exception> onError, final Supplier<byte[]> fallback) {
 		Objects.requireNonNull(writer, "writer cannot be null");
 		Objects.requireNonNull(fallback, "fallback cannot be null");
 		try {
@@ -257,8 +257,20 @@ public final class Bytes {
 	 * @return a byte array containing the written bytes, or an empty array if an error occurred
 	 * @throws NullPointerException if the writer is null
 	 */
-	public static byte[] from(final IOConsumer<OutputStream> writer, final Consumer<Exception> onError) {
-		return from(writer, onError, () -> EMPTY);
+	public static byte[] capture(final IOConsumer<OutputStream> writer, final Consumer<Exception> onError) {
+		return capture(writer, onError, () -> EMPTY);
+	}
+
+	/**
+	 * Writes bytes to an output stream provided by the given writer and returns the written bytes as a byte array. Like all
+	 * methods in this class it returns {@link #EMPTY} if an error occurs during writing.
+	 *
+	 * @param writer a consumer that writes bytes to the provided output stream
+	 * @return a byte array containing the written bytes, or an empty array if an error occurred
+	 * @throws NullPointerException if the writer is null
+	 */
+	public static byte[] capture(final IOConsumer<OutputStream> writer) {
+		return capture(writer, Consumers.consumeNothing());
 	}
 
 	/**

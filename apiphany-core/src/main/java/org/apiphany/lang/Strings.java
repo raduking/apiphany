@@ -1,5 +1,6 @@
 package org.apiphany.lang;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -193,7 +194,9 @@ public interface Strings {
 	static String toStringOrThrow(final InputStream inputStream, final Charset encoding, final int maxSize, final int bufferSize) throws IOException {
 		Require.that(maxSize > 0, "Maximum size must be strictly positive");
 		Require.that(bufferSize > 0, "Buffer size must be strictly positive");
-
+		if (null == inputStream) {
+			return null;
+		}
 		final StringBuilder out = new StringBuilder(Math.min(maxSize, IOStreams.DEFAULT_BUFFER_SIZE));
 		try (Reader in = new InputStreamReader(inputStream, encoding)) {
 			final char[] buffer = new char[bufferSize];
@@ -273,6 +276,49 @@ public interface Strings {
 	 */
 	static String toString(final InputStream inputStream, final Charset encoding) {
 		return toString(inputStream, encoding, IOStreams.DEFAULT_BUFFER_SIZE, Consumers.consumeNothing());
+	}
+
+	/**
+	 * Transforms a byte array to a string. If the byte array cannot be converted to string with the given parameters, the
+	 * result will be null. This method is not intended for large byte arrays and is also limited to read up to
+	 * {@link IOStreams#MAX_BUFFER_SIZE} characters from the byte array.
+	 *
+	 * @param bytes byte array to convert
+	 * @param encoding character encoding
+	 * @param onError on error handler
+	 * @return the byte array as string
+	 */
+	static String toString(final byte[] bytes, final Charset encoding, final Consumer<Exception> onError) {
+		if (null == bytes) {
+			return null;
+		}
+		return toString(new ByteArrayInputStream(bytes), encoding, IOStreams.DEFAULT_BUFFER_SIZE, onError);
+	}
+
+	/**
+	 * Transforms a byte array to a string. If the byte array cannot be converted to string with the given parameters, the
+	 * result will be null. This method is not intended for large byte arrays and is also limited to read up to
+	 * {@link IOStreams#MAX_BUFFER_SIZE} characters from the byte array.
+	 *
+	 * @param bytes byte array to convert
+	 * @param encoding character encoding
+	 * @return the byte array as string
+	 */
+	static String toString(final byte[] bytes, final Charset encoding) {
+		return toString(bytes, encoding, Consumers.consumeNothing());
+	}
+
+	/**
+	 * Transforms a byte array to a string. If the byte array cannot be converted to string with the given parameters, the
+	 * result will be null. This method is not intended for large byte arrays and is also limited to read up to
+	 * {@link IOStreams#MAX_BUFFER_SIZE} characters from the byte array. It assumes that the encoding is
+	 * {@link #DEFAULT_CHARSET}. Use this method only if the byte array to be read respects this condition.
+	 *
+	 * @param bytes byte array to convert
+	 * @return the byte array as string
+	 */
+	static String toString(final byte[] bytes) {
+		return toString(bytes, DEFAULT_CHARSET, Consumers.consumeNothing());
 	}
 
 	/**

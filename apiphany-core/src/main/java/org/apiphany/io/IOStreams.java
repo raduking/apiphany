@@ -128,11 +128,6 @@ public interface IOStreams {
 		try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
 			writer.accept(byteArrayOutputStream);
 			return byteArrayOutputStream.toByteArray();
-		} catch (Exception e) {
-			if (e instanceof IOException ioException) {
-				throw ioException;
-			}
-			throw new IOException("Error writing to byte array output stream", e);
 		}
 	}
 }

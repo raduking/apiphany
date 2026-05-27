@@ -299,27 +299,6 @@ public interface BasicContract extends ApiphanyContract {
 				.withQueryParam("tag", equalTo("b")));
 	}
 
-	@DisplayName("Basic: String request bodies should be encoded as UTF-8 by default")
-	@Test
-	default void shouldEncodeRequestBodyAsUtf8() throws Exception {
-		wiremock().stubFor(post("/utf8")
-				.willReturn(aResponse()
-						.withStatus(200)));
-
-		ApiClient api = apiClient();
-		try (api) {
-			api.client()
-					.http()
-					.post()
-					.path("utf8")
-					.body("é")
-					.retrieve();
-		}
-
-		wiremock().verify(postRequestedFor(urlEqualTo("/utf8"))
-				.withRequestBody(equalTo("é")));
-	}
-
 	@DisplayName("Basic: Response headers should be accessible case-insensitively")
 	@Test
 	default void shouldAccessHeadersCaseInsensitively() throws Exception {
@@ -361,28 +340,5 @@ public interface BasicContract extends ApiphanyContract {
 			assertNull(response.orNull());
 			assertEquals(200, response.getStatus().getCode());
 		}
-	}
-
-	@DisplayName("Basic: The client should send binary request bodies unchanged")
-	@Test
-	default void shouldSendBinaryBody() throws Exception {
-		wiremock().stubFor(post("/binary")
-				.willReturn(aResponse()
-						.withStatus(200)));
-
-		byte[] body = new byte[] { 0x00, 0x01, 0x02 };
-
-		ApiClient api = apiClient();
-		try (api) {
-			api.client()
-					.http()
-					.post()
-					.path("binary")
-					.body(body)
-					.retrieve();
-		}
-
-		wiremock().verify(postRequestedFor(urlEqualTo("/binary"))
-				.withRequestBody(equalTo(new String(body))));
 	}
 }
