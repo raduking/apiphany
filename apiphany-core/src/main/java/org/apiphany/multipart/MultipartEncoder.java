@@ -6,7 +6,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
-import org.apiphany.lang.Bytes;
 import org.morphix.lang.collections.Maps;
 
 /**
@@ -55,10 +54,7 @@ public class MultipartEncoder {
 			out.write(CRLF);
 			writeHeaders(out, part.getHeaders());
 			out.write(CRLF);
-			Object body = part.getBody();
-			if (body instanceof byte[] bytes && Bytes.isNotEmpty(bytes)) {
-				out.write(bytes);
-			}
+			out.write(part.toByteArray());
 			out.write(CRLF);
 		}
 		// closing boundary
