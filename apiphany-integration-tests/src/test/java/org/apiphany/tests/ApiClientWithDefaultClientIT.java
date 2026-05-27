@@ -10,6 +10,7 @@ import org.apiphany.security.AuthenticationType;
 import org.apiphany.tests.contract.ApiphanyContract;
 import org.apiphany.tests.contract.AuthenticationContract;
 import org.apiphany.tests.contract.BasicContract;
+import org.apiphany.tests.contract.BodyContract;
 import org.apiphany.tests.contract.CompressionContract;
 import org.apiphany.tests.contract.ConcurrencyContract;
 import org.apiphany.tests.contract.ConnectionContract;
@@ -95,6 +96,11 @@ class ApiClientWithDefaultClientIT implements ApiphanyContract {
 	@Nested
 	class Basic extends NestedContract implements BasicContract {
 		// empty - inherits all tests from BasicContract
+	}
+
+	@Nested
+	class Body extends NestedContract implements BodyContract {
+		// empty - inherits all tests from BodyContract
 	}
 
 	@Nested

@@ -113,6 +113,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 				.minDelay(properties.getMinRefreshInterval())
 				.scheduler(scheduler)
 				.taskCancelRetry(Retry.of(WaitCounter.of(properties.getMaxTaskCloseAttempts(), properties.getCloseTaskRetryInterval())))
+				.terminationTimeout(properties.getSchedulerTerminationTimeout())
 				.executionWrapper(builder.updateTokenWrapperFunction.apply(getName()))
 				.logger(LOGGER)
 				.build();

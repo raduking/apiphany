@@ -20,7 +20,8 @@ class OAuth2TokenProviderPropertiesTest {
 	private static final Duration EXPIRATION_ERROR_MARGIN = AuthenticationToken.EXPIRATION_ERROR_MARGIN;
 	private static final Duration MIN_REFRESH_INTERVAL = Duration.ofMillis(500);
 	private static final int MAX_TASK_CLOSE_ATTEMPTS = 10;
-	private static final Duration CLOSE_TASK_RETRY_INTERVAL = Duration.ofMillis(200);
+	private static final Duration CLOSE_TASK_RETRY_INTERVAL = Duration.ofMillis(100);
+	private static final Duration SCHEDULER_TERMINATION_TIMEOUT = Duration.ofSeconds(0);
 
 	@Test
 	void shouldNotInstantiateDefaultClass() {
@@ -37,6 +38,7 @@ class OAuth2TokenProviderPropertiesTest {
 		assertThat(properties.getMinRefreshInterval(), equalTo(OAuth2TokenProviderProperties.Default.MIN_REFRESH_INTERVAL));
 		assertThat(properties.getMaxTaskCloseAttempts(), equalTo(OAuth2TokenProviderProperties.Default.MAX_TASK_CLOSE_ATTEMPTS));
 		assertThat(properties.getCloseTaskRetryInterval(), equalTo(OAuth2TokenProviderProperties.Default.CLOSE_TASK_RETRY_INTERVAL));
+		assertThat(properties.getSchedulerTerminationTimeout(), equalTo(OAuth2TokenProviderProperties.Default.SCHEDULER_TERMINATION_TIMEOUT));
 	}
 
 	@Test
@@ -47,11 +49,13 @@ class OAuth2TokenProviderPropertiesTest {
 		properties.setMinRefreshInterval(Duration.ofSeconds(300));
 		properties.setMaxTaskCloseAttempts(5);
 		properties.setCloseTaskRetryInterval(Duration.ofSeconds(10));
+		properties.setSchedulerTerminationTimeout(Duration.ofSeconds(20));
 
 		assertThat(properties.getExpirationErrorMargin(), equalTo(Duration.ofSeconds(120)));
 		assertThat(properties.getMinRefreshInterval(), equalTo(Duration.ofSeconds(300)));
 		assertThat(properties.getMaxTaskCloseAttempts(), equalTo(5));
 		assertThat(properties.getCloseTaskRetryInterval(), equalTo(Duration.ofSeconds(10)));
+		assertThat(properties.getSchedulerTerminationTimeout(), equalTo(Duration.ofSeconds(20)));
 	}
 
 	@Test
@@ -60,5 +64,6 @@ class OAuth2TokenProviderPropertiesTest {
 		assertThat(OAuth2TokenProviderProperties.Default.MIN_REFRESH_INTERVAL, equalTo(MIN_REFRESH_INTERVAL));
 		assertThat(OAuth2TokenProviderProperties.Default.MAX_TASK_CLOSE_ATTEMPTS, equalTo(MAX_TASK_CLOSE_ATTEMPTS));
 		assertThat(OAuth2TokenProviderProperties.Default.CLOSE_TASK_RETRY_INTERVAL, equalTo(CLOSE_TASK_RETRY_INTERVAL));
+		assertThat(OAuth2TokenProviderProperties.Default.SCHEDULER_TERMINATION_TIMEOUT, equalTo(SCHEDULER_TERMINATION_TIMEOUT));
 	}
 }
