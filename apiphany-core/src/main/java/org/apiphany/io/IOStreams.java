@@ -116,4 +116,23 @@ public interface IOStreams {
 			return byteArrayOutputStream.toByteArray();
 		}
 	}
+
+	/**
+	 * Writes bytes to an output stream using the provided writer and returns the written bytes as a byte array.
+	 *
+	 * @param writer a consumer that writes to an output stream
+	 * @return a byte array containing the bytes written by the writer
+	 * @throws IOException if any error occurs
+	 */
+	static byte[] toByteArray(final IOConsumer<OutputStream> writer) throws IOException {
+		try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+			writer.accept(byteArrayOutputStream);
+			return byteArrayOutputStream.toByteArray();
+		} catch (Exception e) {
+			if (e instanceof IOException ioException) {
+				throw ioException;
+			}
+			throw new IOException("Error writing to byte array output stream", e);
+		}
+	}
 }

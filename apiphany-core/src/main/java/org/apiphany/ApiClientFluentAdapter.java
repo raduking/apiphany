@@ -15,9 +15,9 @@ import org.apiphany.client.http.HttpClientFluentAdapter;
 import org.apiphany.header.Header;
 import org.apiphany.header.HeaderFunction;
 import org.apiphany.header.Headers;
-import org.apiphany.http.HttpHeader;
+import org.apiphany.http.Multipart;
 import org.apiphany.http.URIEncoder;
-import org.apiphany.io.ContentType;
+import org.apiphany.io.ChunkedBinary;
 import org.apiphany.io.OneShotInputStreamSupplier;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.annotation.Ignored;
@@ -376,10 +376,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @return this
 	 */
 	public ApiClientFluentAdapter form(final Map<String, List<String>> params) {
-		var encodedParams = RequestParameters.encode(params, getCharset());
-		var body = RequestParameters.asString(encodedParams);
-		return body(body)
-				.header(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_FORM_URLENCODED);
+		return http().form(params);
 	}
 
 	/**
@@ -391,6 +388,17 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 */
 	public ApiClientFluentAdapter form(final ParameterFunction... paramFunctions) {
 		return form(RequestParameters.of(paramFunctions));
+	}
+
+	/**
+	 * Sets the request body as a multipart form-data body, delegates to {@link HttpClientFluentAdapter} and automatically
+	 * sets the {@code Content-Type} header to the value returned by {@link Multipart.Body#getContentTypeValue()}.
+	 *
+	 * @param body the multipart body
+	 * @return this
+	 */
+	public ApiClientFluentAdapter multipart(final ChunkedBinary body) {
+		return http().multipart(body);
 	}
 
 	/**

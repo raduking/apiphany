@@ -2,6 +2,22 @@
 
 `1.2.11`
 
+- Added `IOConsumer` functional interface for I/O operations with `IOException`.
+- Added `BinaryRepresentable` interface with `toByteArray()` for binary representation.
+- Added `ChunkedBinary` interface extending `BinaryRepresentable` with `getBoundary()`.
+- Added `IOStreams.toByteArray(IOConsumer)` to write to an output stream and return bytes.
+- Added `Bytes.from(IOConsumer, Consumer, Supplier)` and `Bytes.from(IOConsumer, Consumer)` to write bytes from a consumer.
+- Added `HttpHeaderValues.FORM_DATA` constant.
+- Added `HttpMessages.CRLF` constant.
+- Added `HttpContentType` boundary parameter support — parse, serialize, `Param.BOUNDARY`, and `Builder`.
+- Added `Multipart.Part` class extending `ApiMessage<byte[]>` with `ofField()` / `ofFile()` factory methods.
+- Added `Multipart.Body` class implementing `ChunkedBinary` for HTTP multipart bodies.
+- Added `Multipart.Body.Builder` builder class for `Multipart.Body`.
+- Added `ApiClientFluentAdapter.form` delegating to `HttpClientFluentAdapter`.
+- Added `ApiClientFluentAdapter.multipart(ChunkedBinary)` delegating to `HttpClientFluentAdapter`.
+- Added `HttpClientFluentAdapter.form` for `application/x-www-form-urlencoded` body support.
+- Added `HttpClientFluentAdapter.multipart(ChunkedBinary)` for multipart form-data body support.
+
 ---
 
 `1.2.10`

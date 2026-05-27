@@ -1,10 +1,13 @@
 package org.apiphany.lang;
 
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
+import org.apiphany.io.IOConsumer;
 import org.apiphany.io.IOStreams;
 import org.apiphany.io.ResourceLocation;
 import org.morphix.lang.function.Consumers;
@@ -184,7 +187,9 @@ public final class Bytes {
 	/**
 	 * Reads all bytes from a file located at the given path. If the path is absolute, it reads from the file system;
 	 * otherwise, it attempts to read the file as a classpath resource. This method is not intended for large streams and is
-	 * also limited to read up to {@link IOStreams#MAX_BUFFER_SIZE} bytes from the file.
+	 * also limited to read up to {@link IOStreams#MAX_BUFFER_SIZE} bytes from the file. Like all methods in this class it
+	 * returns an empty array if an error occurs during reading, and the provided onError consumer is called with the
+	 * exception.
 	 *
 	 * @param path the file path (absolute or classpath resource)
 	 * @param onError a consumer to handle exceptions that may occur during file reading
@@ -216,6 +221,44 @@ public final class Bytes {
 	 */
 	public static byte[] fromFile(final String path) {
 		return fromFile(path, Consumers.consumeNothing());
+	}
+
+	/**
+	 * Writes bytes to an output stream provided by the given writer and returns the written bytes as a byte array. If an
+	 * error occurs during writing, the provided onError consumer is called with the exception, and the fallback supplier is
+	 * used to provide a byte array to return (which can be empty or contain default values).
+	 *
+	 * @param writer a consumer that writes bytes to the provided output stream
+	 * @param onError a consumer to handle exceptions that may occur during writing
+	 * @param fallback a supplier that provides a byte array to return if an error occurs during writing
+	 * @return a byte array containing the written bytes, or an empty array if an error occurred
+	 * @throws NullPointerException if the writer or fallback is null
+	 */
+	public static byte[] from(final IOConsumer<OutputStream> writer, final Consumer<Exception> onError, final Supplier<byte[]> fallback) {
+		Objects.requireNonNull(writer, "writer cannot be null");
+		Objects.requireNonNull(fallback, "fallback cannot be null");
+		try {
+			return IOStreams.toByteArray(writer);
+		} catch (Exception e) {
+			if (null != onError) {
+				onError.accept(e);
+			}
+			return fallback.get();
+		}
+	}
+
+	/**
+	 * Writes bytes to an output stream provided by the given writer and returns the written bytes as a byte array. Like all
+	 * methods in this class it returns {@link #EMPTY} if an error occurs during writing, and the provided onError consumer
+	 * is called with the exception.
+	 *
+	 * @param writer a consumer that writes bytes to the provided output stream
+	 * @param onError a consumer to handle exceptions that may occur during writing
+	 * @return a byte array containing the written bytes, or an empty array if an error occurred
+	 * @throws NullPointerException if the writer is null
+	 */
+	public static byte[] from(final IOConsumer<OutputStream> writer, final Consumer<Exception> onError) {
+		return from(writer, onError, () -> EMPTY);
 	}
 
 	/**

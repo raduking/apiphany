@@ -21,6 +21,11 @@ import org.apiphany.lang.Strings;
 public class HttpHeaderValues extends HeaderValues {
 
 	/**
+	 * Content-Disposition form-data value.
+	 */
+	public static final String FORM_DATA = "form-data";
+
+	/**
 	 * Default constructor.
 	 */
 	public HttpHeaderValues() {

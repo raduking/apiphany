@@ -166,7 +166,7 @@ class HttpContentTypeTest {
 	void shouldBuildHashCodeFromAllParams() {
 		HttpContentType ct = HttpContentType.parse(APPLICATION_JSON_CHARSET_ISO_8859_1);
 
-		int expected = Objects.hash(ct.getContentType(), ct.getCharset());
+		int expected = Objects.hash(ct.getContentType(), ct.getCharset(), ct.getBoundary());
 		int hash = ct.hashCode();
 
 		assertThat(hash, equalTo(expected));
@@ -176,7 +176,7 @@ class HttpContentTypeTest {
 	void shouldBuildHashCodeWithNullCharset() {
 		HttpContentType ct = HttpContentType.of(ContentType.APPLICATION_JSON, null);
 
-		int expected = Objects.hash(ct.getContentType(), ct.getCharset());
+		int expected = Objects.hash(ct.getContentType(), ct.getCharset(), ct.getBoundary());
 		int hash = ct.hashCode();
 
 		assertThat(hash, equalTo(expected));

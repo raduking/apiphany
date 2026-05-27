@@ -12,12 +12,12 @@ import org.morphix.lang.collections.Lists;
 import org.morphix.reflection.Constructors;
 
 /**
- * Represents an HTTP content type when the character set differs from the one already defined. This is useful for
- * parsing HTTP headers sent from an HTTP server which might decide not to follow the character sets defined in the
- * {@link ContentType} enumeration.
+ * Represents an HTTP content type when the character set differs from the one already defined or when additional
+ * parameters (such as boundary) are needed. This is useful for parsing HTTP headers sent from an HTTP server which
+ * might decide not to follow the character sets defined in the {@link ContentType} enumeration.
  * <p>
- * TODO: add support for other parameters besides charset<br>
- * TODO: add boundary for multipart types, version for application/* types, format for text/* types, etc.
+ * TODO: add support for other parameters besides charset and boundary, version for application/* types, format for
+ * text/* types, etc.
  *
  * @author Radu Sebastian LAZIN
  */
@@ -34,6 +34,11 @@ public class HttpContentType implements ApiMimeType {
 		 * Character set parameter name.
 		 */
 		public static final String CHARSET = "charset";
+
+		/**
+		 * Boundary parameter name.
+		 */
+		public static final String BOUNDARY = "boundary";
 
 		/**
 		 * Hide constructor.
@@ -54,14 +59,43 @@ public class HttpContentType implements ApiMimeType {
 	private final Charset charset;
 
 	/**
+	 * The boundary parameter for multipart types.
+	 */
+	private final String boundary;
+
+	/**
+	 * Constructs an HTTP content type object.
+	 *
+	 * @param contentType the content type
+	 * @param charset the character set
+	 * @param boundary the boundary parameter (for multipart types)
+	 */
+	public HttpContentType(final ContentType contentType, final Charset charset, final String boundary) {
+		this.contentType = Objects.requireNonNull(contentType);
+		this.charset = null != charset ? charset : contentType.charset();
+		this.boundary = boundary;
+	}
+
+	/**
 	 * Constructs an HTTP content type object.
 	 *
 	 * @param contentType the content type
 	 * @param charset the character set
 	 */
 	public HttpContentType(final ContentType contentType, final Charset charset) {
-		this.contentType = Objects.requireNonNull(contentType);
-		this.charset = null != charset ? charset : contentType.charset();
+		this(contentType, charset, null);
+	}
+
+	/**
+	 * Returns an HTTP content type object based on the given content type, character set and boundary.
+	 *
+	 * @param contentType the content type
+	 * @param charset the character set
+	 * @param boundary the boundary parameter
+	 * @return an HTTP content type object
+	 */
+	public static HttpContentType of(final ContentType contentType, final Charset charset, final String boundary) {
+		return new HttpContentType(contentType, charset, boundary);
 	}
 
 	/**
@@ -82,7 +116,16 @@ public class HttpContentType implements ApiMimeType {
 	 * @return an HTTP content type object
 	 */
 	public static HttpContentType of(final ContentType contentType) {
-		return of(contentType, null);
+		return of(contentType, null, null);
+	}
+
+	/**
+	 * Returns a new builder for constructing HTTP content type objects.
+	 *
+	 * @return a new builder
+	 */
+	public static Builder builder() {
+		return new Builder();
 	}
 
 	/**
@@ -104,6 +147,15 @@ public class HttpContentType implements ApiMimeType {
 	}
 
 	/**
+	 * Returns the boundary parameter (for multipart types).
+	 *
+	 * @return the boundary parameter, or null if not set
+	 */
+	public String getBoundary() {
+		return boundary;
+	}
+
+	/**
 	 * @see ApiMimeType#charset()
 	 */
 	@Override
@@ -118,13 +170,7 @@ public class HttpContentType implements ApiMimeType {
 	public String value() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(getContentType().toString());
-		Charset activeCharset = getCharset();
-		if (null != activeCharset) {
-			sb.append("; ")
-					.append(Param.CHARSET)
-					.append("=")
-					.append(activeCharset);
-		}
+		appendParameters(sb);
 		return sb.toString();
 	}
 
@@ -133,6 +179,7 @@ public class HttpContentType implements ApiMimeType {
 	 * <ul>
 	 * <li>type/subtype are lower-cased</li>
 	 * <li>charset parameter is included only if not null</li>
+	 * <li>boundary parameter is included only if not null</li>
 	 * <li>parameter names are lower-cased</li>
 	 * <li>charset value is lower-cased</li>
 	 * <li>no superfluous whitespace</li>
@@ -150,7 +197,36 @@ public class HttpContentType implements ApiMimeType {
 					.append("=")
 					.append(activeCharset.name().toLowerCase());
 		}
+		String activeBoundary = getBoundary();
+		if (null != activeBoundary) {
+			sb.append("; ")
+					.append(Param.BOUNDARY.toLowerCase())
+					.append("=")
+					.append(activeBoundary);
+		}
 		return sb.toString();
+	}
+
+	/**
+	 * Appends the content type parameters (charset, boundary, etc.) to the given string builder.
+	 *
+	 * @param sb the string builder
+	 */
+	private void appendParameters(final StringBuilder sb) {
+		Charset activeCharset = getCharset();
+		if (null != activeCharset) {
+			sb.append("; ")
+					.append(Param.CHARSET)
+					.append("=")
+					.append(activeCharset);
+		}
+		String activeBoundary = getBoundary();
+		if (null != activeBoundary) {
+			sb.append("; ")
+					.append(Param.BOUNDARY)
+					.append("=")
+					.append(activeBoundary);
+		}
 	}
 
 	/**
@@ -215,15 +291,18 @@ public class HttpContentType implements ApiMimeType {
 			return HttpContentType.of(type);
 		}
 		Charset charset = null;
-		int index = 1;
-		while (null == charset && index < parts.length) {
+		String boundary = null;
+		for (int index = 1; index < parts.length; index++) {
 			String[] param = parts[index].trim().split("=", 2);
-			if (param.length == 2 && Param.CHARSET.equalsIgnoreCase(param[0])) {
-				charset = ApiMimeType.parseCharset(param[1].trim());
+			if (param.length == 2) {
+				if (null == charset && Param.CHARSET.equalsIgnoreCase(param[0])) {
+					charset = ApiMimeType.parseCharset(param[1].trim());
+				} else if (null == boundary && Param.BOUNDARY.equalsIgnoreCase(param[0])) {
+					boundary = param[1].trim();
+				}
 			}
-			index++;
 		}
-		return HttpContentType.of(type, charset);
+		return HttpContentType.of(type, charset, boundary);
 	}
 
 	/**
@@ -241,6 +320,78 @@ public class HttpContentType implements ApiMimeType {
 	}
 
 	/**
+	 * Fluent builder for {@link HttpContentType}.
+	 *
+	 * @author Radu Sebastian LAZIN
+	 */
+	public static class Builder {
+
+		/**
+		 * The content type.
+		 */
+		private ContentType contentType;
+
+		/**
+		 * The character set.
+		 */
+		private Charset charset;
+
+		/**
+		 * The boundary parameter.
+		 */
+		private String boundary;
+
+		/**
+		 * Private constructor, use {@link HttpContentType#builder()}.
+		 */
+		private Builder() {
+			// use factory method
+		}
+
+		/**
+		 * Sets the content type.
+		 *
+		 * @param contentType the content type
+		 * @return this
+		 */
+		public Builder contentType(final ContentType contentType) {
+			this.contentType = contentType;
+			return this;
+		}
+
+		/**
+		 * Sets the character set.
+		 *
+		 * @param charset the character set
+		 * @return this
+		 */
+		public Builder charset(final Charset charset) {
+			this.charset = charset;
+			return this;
+		}
+
+		/**
+		 * Sets the boundary parameter.
+		 *
+		 * @param boundary the boundary parameter
+		 * @return this
+		 */
+		public Builder boundary(final String boundary) {
+			this.boundary = boundary;
+			return this;
+		}
+
+		/**
+		 * Builds the HTTP content type.
+		 *
+		 * @return a new HTTP content type
+		 */
+		public HttpContentType build() {
+			return new HttpContentType(contentType, charset, boundary);
+		}
+	}
+
+	/**
 	 * @see Object#equals(Object)
 	 */
 	@Override
@@ -250,7 +401,8 @@ public class HttpContentType implements ApiMimeType {
 		}
 		if (obj instanceof HttpContentType that) {
 			return Objects.equals(this.contentType, that.contentType)
-					&& Objects.equals(this.charset, that.charset);
+					&& Objects.equals(this.charset, that.charset)
+					&& Objects.equals(this.boundary, that.boundary);
 		}
 		return false;
 	}
@@ -260,6 +412,6 @@ public class HttpContentType implements ApiMimeType {
 	 */
 	@Override
 	public int hashCode() {
-		return Objects.hash(contentType, charset);
+		return Objects.hash(contentType, charset, boundary);
 	}
 }

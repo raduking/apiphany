@@ -14,6 +14,11 @@ import org.morphix.reflection.Constructors;
 public class HttpMessages {
 
 	/**
+	 * Carriage Return Line Feed, used in HTTP protocol to separate lines.
+	 */
+	public static final String CRLF = "\r\n";
+
+	/**
 	 * Parses the HTTP version string.
 	 *
 	 * @param versionString HTTP version string
