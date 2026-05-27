@@ -361,6 +361,46 @@ class OAuth2TokenProviderTest {
 	}
 
 	@Test
+	@SuppressWarnings("resource")
+	void shouldInitializeSchedulerAndAwaitWithConfiguredTerminationTimeoutOnClose() throws Exception {
+		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
+		doReturn(clientRegistration).when(oAuth2Properties).getClientRegistration(CLIENT_REGISTRATION_NAME);
+		doReturn(true).when(clientRegistration).hasClientId();
+		doReturn(true).when(clientRegistration).hasClientSecret();
+		doReturn(Map.of(PROVIDER_NAME, providerDetails)).when(oAuth2Properties).getProvider();
+		doReturn(providerDetails).when(oAuth2Properties).getProviderDetails(clientRegistration);
+
+		AuthenticationToken authenticationToken = mock(AuthenticationToken.class);
+		Instant expiration = mock(Instant.class);
+		doReturn(expiration).when(authenticationToken).getExpiration();
+		doReturn(EXPIRES_IN).when(authenticationToken).getExpiresIn();
+		doReturn(authenticationToken).when(tokenClient).getAuthenticationToken();
+
+		ScheduledExecutorService scheduledExecutorService = mock(ScheduledExecutorService.class);
+		ScheduledFuture<?> scheduledFuture = mock(ScheduledFuture.class);
+		doReturn(false).when(scheduledFuture).cancel(false);
+		doReturn(scheduledFuture).when(scheduledExecutorService).schedule(any(Runnable.class), anyLong(), any());
+
+		Duration schedulerTerminationTimeout = OAuth2TokenProviderProperties.Default.SCHEDULER_TERMINATION_TIMEOUT.plusMillis(66);
+
+		OAuth2TokenProviderProperties properties = new OAuth2TokenProviderProperties();
+		properties.setSchedulerTerminationTimeout(schedulerTerminationTimeout);
+		properties.setMaxTaskCloseAttempts(0);
+		properties.setCloseTaskRetryInterval(Duration.ofMillis(10));
+
+		tokenProvider = OAuth2TokenProvider.builder()
+				.properties(properties)
+				.registration(oAuth2Properties, CLIENT_REGISTRATION_NAME)
+				.tokenRefreshScheduler(ScopedResource.managed(scheduledExecutorService))
+				.tokenClientSupplier((cr, pd) -> tokenClient)
+				.build();
+		tokenProvider.close();
+
+		verify(scheduledExecutorService).shutdownNow();
+		verify(scheduledExecutorService).awaitTermination(schedulerTerminationTimeout.toMillis(), TimeUnit.MILLISECONDS);
+	}
+
+	@Test
 	void shouldThrowExceptionWhenGettingTokenIfTokenRetrievalThrowsException() {
 		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
 		doReturn(clientRegistration).when(oAuth2Properties).getClientRegistration(CLIENT_REGISTRATION_NAME);
@@ -800,6 +840,7 @@ class OAuth2TokenProviderTest {
 		OAuth2TokenProviderProperties properties = new OAuth2TokenProviderProperties();
 		properties.setExpirationErrorMargin(expirationErrorMargin);
 		properties.setMinRefreshInterval(minRefreshInterval);
+		properties.setMaxTaskCloseAttempts(1);
 
 		List<String> namesAdded = new ArrayList<>();
 		ExecutionWrapper<Void> log = ExecutionWrappers.log(Slf4jLoggerAdapter.of(LOGGER), LoggingLevel.WARN, registrationName + "-wrapper");

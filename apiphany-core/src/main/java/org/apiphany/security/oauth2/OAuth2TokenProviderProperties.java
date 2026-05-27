@@ -25,19 +25,28 @@ public class OAuth2TokenProviderProperties {
 		public static final Duration EXPIRATION_ERROR_MARGIN = AuthenticationToken.EXPIRATION_ERROR_MARGIN;
 
 		/**
-		 * The minimum refresh interval when the token could not be retrieved.
+		 * The minimum refresh interval when the token could not be retrieved due to an error - 500 milliseconds.
 		 */
 		public static final Duration MIN_REFRESH_INTERVAL = Duration.ofMillis(500);
 
 		/**
-		 * The maximum number of attempts the {@link OAuth2TokenProvider#close()} method tries to close the scheduled task.
+		 * The maximum number of attempts {@link OAuth2TokenProvider#close()} tries to close the scheduled task - 10 attempts.
 		 */
 		public static final int MAX_TASK_CLOSE_ATTEMPTS = 10;
 
 		/**
-		 * The interval between close attempts when closing the scheduled task.
+		 * The interval between close attempts when closing the scheduled task - 100 milliseconds.
 		 */
-		public static final Duration CLOSE_TASK_RETRY_INTERVAL = Duration.ofMillis(200);
+		public static final Duration CLOSE_TASK_RETRY_INTERVAL = Duration.ofMillis(100);
+
+		/**
+		 * The timeout for the scheduler termination when closing the provider - 0 seconds. The scheduler will be shutdown
+		 * immediately and the provider will not wait for the termination of the scheduler, which means that the provider will
+		 * be closed even if there are still tasks running in the scheduler. This is because the provider is expected to be
+		 * closed when the application is shutting down, and waiting for the termination of the scheduler could delay the
+		 * shutdown process. If a different behavior is desired, this property can be set to a different value.
+		 */
+		public static final Duration SCHEDULER_TERMINATION_TIMEOUT = Duration.ZERO;
 
 		/**
 		 * Hide constructor.
@@ -70,6 +79,11 @@ public class OAuth2TokenProviderProperties {
 	 * The interval between close attempts when closing the scheduled task.
 	 */
 	private Duration closeTaskRetryInterval = Default.CLOSE_TASK_RETRY_INTERVAL;
+
+	/**
+	 * The timeout for the scheduler termination when closing the provider.
+	 */
+	private Duration schedulerTerminationTimeout = Default.SCHEDULER_TERMINATION_TIMEOUT;
 
 	/**
 	 * Default constructor.
@@ -157,5 +171,23 @@ public class OAuth2TokenProviderProperties {
 	 */
 	public void setCloseTaskRetryInterval(final Duration closeRetryInterval) {
 		this.closeTaskRetryInterval = closeRetryInterval;
+	}
+
+	/**
+	 * Returns the scheduler termination timeout.
+	 *
+	 * @return the scheduler termination timeout
+	 */
+	public Duration getSchedulerTerminationTimeout() {
+		return schedulerTerminationTimeout;
+	}
+
+	/**
+	 * Sets the scheduler termination timeout.
+	 *
+	 * @param schedulerTerminationTimeout the scheduler termination timeout to set
+	 */
+	public void setSchedulerTerminationTimeout(final Duration schedulerTerminationTimeout) {
+		this.schedulerTerminationTimeout = schedulerTerminationTimeout;
 	}
 }

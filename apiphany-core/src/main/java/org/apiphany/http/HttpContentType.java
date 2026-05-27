@@ -72,7 +72,7 @@ public class HttpContentType implements ApiMimeType {
 	 */
 	public HttpContentType(final ContentType contentType, final Charset charset, final String boundary) {
 		this.contentType = Objects.requireNonNull(contentType);
-		this.charset = null != charset ? charset : contentType.charset();
+		this.charset = charset;
 		this.boundary = boundary;
 	}
 
@@ -143,7 +143,7 @@ public class HttpContentType implements ApiMimeType {
 	 * @return the character set
 	 */
 	public Charset getCharset() {
-		return charset;
+		return null != charset ? charset : contentType.charset();
 	}
 
 	/**
@@ -164,13 +164,35 @@ public class HttpContentType implements ApiMimeType {
 	}
 
 	/**
+	 * Alias for {@link #getBoundary()}.
+	 *
+	 * @return the boundary parameter, or null if not set
+	 */
+	public String boundary() {
+		return getBoundary();
+	}
+
+	/**
 	 * @see ApiMimeType#value()
 	 */
 	@Override
 	public String value() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(getContentType().toString());
-		appendParameters(sb);
+		Charset activeCharset = charset;
+		if (null != activeCharset) {
+			sb.append("; ")
+					.append(Param.CHARSET)
+					.append("=")
+					.append(activeCharset);
+		}
+		String activeBoundary = getBoundary();
+		if (null != activeBoundary) {
+			sb.append("; ")
+					.append(Param.BOUNDARY)
+					.append("=")
+					.append(activeBoundary);
+		}
 		return sb.toString();
 	}
 
@@ -190,7 +212,7 @@ public class HttpContentType implements ApiMimeType {
 	public String normalizedValue() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(getContentType().value().toLowerCase());
-		Charset activeCharset = getCharset();
+		Charset activeCharset = charset;
 		if (null != activeCharset) {
 			sb.append("; ")
 					.append(Param.CHARSET.toLowerCase())
@@ -205,28 +227,6 @@ public class HttpContentType implements ApiMimeType {
 					.append(activeBoundary);
 		}
 		return sb.toString();
-	}
-
-	/**
-	 * Appends the content type parameters (charset, boundary, etc.) to the given string builder.
-	 *
-	 * @param sb the string builder
-	 */
-	private void appendParameters(final StringBuilder sb) {
-		Charset activeCharset = getCharset();
-		if (null != activeCharset) {
-			sb.append("; ")
-					.append(Param.CHARSET)
-					.append("=")
-					.append(activeCharset);
-		}
-		String activeBoundary = getBoundary();
-		if (null != activeBoundary) {
-			sb.append("; ")
-					.append(Param.BOUNDARY)
-					.append("=")
-					.append(activeBoundary);
-		}
 	}
 
 	/**
@@ -270,8 +270,10 @@ public class HttpContentType implements ApiMimeType {
 	 * This method must be called only for single header values (as opposed to multiple header values). If multiple header
 	 * values are present, use {@link #parse(List)} instead. To parse multiple header values the list must be constructed
 	 * first by splitting the header value on commas.
-	 * <p>
-	 * TODO: implement proper handling of multiple header values in a single string
+	 * <ul>
+	 * <li>TODO: add proper handling of multiple header values in a single string</li>
+	 * <li>TODO: add strict parsing mode which throws exceptions on invalid header values instead of returning null</li>
+	 * </ul>
 	 *
 	 * @param headerValue the header value
 	 * @return an HTTP content type from the given header value
@@ -306,7 +308,9 @@ public class HttpContentType implements ApiMimeType {
 	}
 
 	/**
-	 * Returns a new HTTP content type given the content type and the encoding.
+	 * Returns a new HTTP content type given the content type and the encoding. If the content type is null or blank, it
+	 * defaults to {@code application/octet-stream}. If the encoding is null or blank, the character set is not set and will
+	 * be determined by the content type if possible.
 	 *
 	 * @param type the content type
 	 * @param encoding the character set
