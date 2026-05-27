@@ -7,9 +7,9 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import org.apiphany.io.IOConsumer;
 import org.apiphany.io.IOStreams;
 import org.apiphany.io.ResourceLocation;
+import org.apiphany.io.function.IOConsumer;
 import org.morphix.lang.function.Consumers;
 import org.morphix.reflection.Constructors;
 

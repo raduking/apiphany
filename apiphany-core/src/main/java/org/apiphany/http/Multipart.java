@@ -18,6 +18,7 @@ import org.apiphany.lang.Strings;
 import org.morphix.lang.Ids;
 import org.morphix.lang.Ids.UUIDStyle;
 import org.morphix.lang.Nullables;
+import org.morphix.lang.collections.Lists;
 import org.morphix.lang.collections.Maps;
 
 /**
@@ -42,7 +43,7 @@ public interface Multipart {
 		 * @param headers the headers for this part
 		 * @param body the body of this part as a byte array
 		 */
-		public Part(final Map<String, List<String>> headers, final byte[] body) {
+		protected Part(final Map<String, List<String>> headers, final byte[] body) {
 			super(body, headers);
 		}
 
@@ -79,6 +80,38 @@ public interface Multipart {
 			String actualContentType = Nullables.nonNullOrDefault(contentType, ContentType.Value.APPLICATION_OCTET_STREAM);
 			Headers.addTo(headers, HttpHeader.CONTENT_TYPE, actualContentType);
 			return new Part(headers, null != data ? data : Bytes.EMPTY);
+		}
+
+		/**
+		 * Retrieves the name of this multipart part from the Content-Disposition header. The method looks for a header value
+		 * that starts with "name=" and extracts the name from it. If no such header is found, or if the header value is
+		 * malformed, this method returns {@code null}.
+		 *
+		 * @return the name of this multipart part, or {@code null} if not found
+		 */
+		protected String getName() {
+			List<String> dispositions = getHeaderValues(HttpHeader.CONTENT_DISPOSITION);
+			for (String disposition : Lists.safe(dispositions)) {
+				String[] parts = disposition.split(";");
+				for (String part : parts) {
+					String trimmed = part.trim();
+					if (trimmed.startsWith("name=")) {
+						return trimmed.substring(5).replaceAll("(^\")|(\"$)", "");
+					}
+				}
+			}
+			return null;
+		}
+
+		/**
+		 * Retrieves the value of this multipart part as a string. The method assumes that the body of the part is encoded in
+		 * UTF-8 and decodes it accordingly. If the body is {@code null}, this method returns {@code null}.
+		 *
+		 * @return the value of this multipart part as a string, or {@code null} if the body is {@code null}
+		 */
+		protected String getValue() {
+			byte[] body = getBody();
+			return new String(body, StandardCharsets.UTF_8);
 		}
 	}
 

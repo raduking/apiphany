@@ -162,4 +162,16 @@ public class ApiMessage<T> implements BodyAware<T> {
 	public <N, V> void addHeader(final N headerName, final V headerValue) {
 		Headers.addTo(getHeaders(), headerName, headerValue);
 	}
+
+	/**
+	 * Returns the values of the header with the given name, or an empty list if the header is not present.
+	 *
+	 * @param <N> header name type
+	 *
+	 * @param headerName the name of the header to retrieve
+	 * @return a list of values for the specified header, or an empty list if the header is not present
+	 */
+	public <N> List<String> getHeaderValues(final N headerName) {
+		return Headers.get(headerName, getHeaders());
+	}
 }
