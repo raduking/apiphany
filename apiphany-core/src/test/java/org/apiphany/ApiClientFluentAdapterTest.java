@@ -31,6 +31,7 @@ import org.apiphany.header.Header;
 import org.apiphany.header.Headers;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
+import org.apiphany.http.Multipart;
 import org.apiphany.io.ContentType;
 import org.apiphany.lang.Strings;
 import org.apiphany.meters.BasicMeters;
@@ -785,6 +786,87 @@ class ApiClientFluentAdapterTest {
 			assertThat(request.getBody(), equalTo(""));
 			assertThat(Headers.get(HttpHeader.CONTENT_TYPE, request.getHeaders()).getFirst(),
 					equalTo(ContentType.Value.APPLICATION_FORM_URLENCODED));
+		}
+	}
+
+	@Nested
+	class MultipartTests {
+
+		@Mock
+		private HttpExchangeClient httpExchangeClient;
+
+		@BeforeEach
+		@SuppressWarnings("resource")
+		void setUp() {
+			doReturn(httpExchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
+			doReturn(AuthenticationType.SESSION).when(httpExchangeClient).getAuthenticationType();
+		}
+
+		@Test
+		void shouldSetMultipartBodyAndContentTypeHeader() {
+			Multipart.Body body = Multipart.Body.builder()
+					.boundary("test-boundary")
+					.field("name", "value")
+					.field("key", "val")
+					.build();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.authenticationType(AuthenticationType.SESSION)
+					.multipart(body);
+
+			assertThat(new String((byte[]) request.getBody(), StandardCharsets.UTF_8),
+					equalTo(body.toString(StandardCharsets.UTF_8)));
+			assertThat(Headers.get(HttpHeader.CONTENT_TYPE, request.getHeaders()).getFirst(),
+					equalTo(body.getContentTypeValue()));
+		}
+
+		@Test
+		void shouldSetMultipartBodyWithFile() {
+			byte[] fileData = "file content".getBytes(StandardCharsets.UTF_8);
+			Multipart.Body body = Multipart.Body.builder()
+					.boundary("test-boundary")
+					.file("file", "test.txt", "text/plain", fileData)
+					.build();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.authenticationType(AuthenticationType.SESSION)
+					.multipart(body);
+
+			assertThat(new String((byte[]) request.getBody(), StandardCharsets.UTF_8),
+					equalTo(body.toString(StandardCharsets.UTF_8)));
+			assertThat(Headers.get(HttpHeader.CONTENT_TYPE, request.getHeaders()).getFirst(),
+					equalTo(body.getContentTypeValue()));
+		}
+
+		@Test
+		void shouldMatchBoundaryInContentType() {
+			Multipart.Body body = Multipart.Body.builder()
+					.field("name", "value")
+					.build();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.authenticationType(AuthenticationType.SESSION)
+					.multipart(body);
+
+			String contentType = Headers.get(HttpHeader.CONTENT_TYPE, request.getHeaders()).getFirst();
+			assertThat(contentType, Matchers.containsString("boundary=" + body.getBoundary()));
+			assertThat(contentType, Matchers.startsWith("multipart/form-data"));
+		}
+
+		@Test
+		void shouldSetMultipartBodyWithEmptyParts() {
+			Multipart.Body body = Multipart.Body.builder()
+					.boundary("test-boundary")
+					.build();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.authenticationType(AuthenticationType.SESSION)
+					.multipart(body);
+
+			assertThat(new String((byte[]) request.getBody(), StandardCharsets.UTF_8),
+					equalTo(body.toString(StandardCharsets.UTF_8)));
+			assertThat(Headers.get(HttpHeader.CONTENT_TYPE, request.getHeaders()).getFirst(),
+					equalTo(body.getContentTypeValue()));
 		}
 	}
 }

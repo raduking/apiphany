@@ -34,7 +34,10 @@ import org.morphix.reflection.Constructors;
 class SSLContextsTest {
 
 	private static final String KEYSTORE_PATH = "security/ssl/keystore.jks";
+	private static final String KEYSTORE_PASSWORD = "keystorepassword123";
 	private static final String KEYSTORE_TYPE = "JKS";
+	private static final String TRUSTSTORE_PATH = "security/ssl/truststore.jks";
+	private static final String TRUSTSTORE_PASSWORD = "truststorepassword123";
 
 	private static final String SSL_PROPERTIES_JSON = Strings.fromFile("security/ssl/ssl-properties.json");
 
@@ -56,6 +59,17 @@ class SSLContextsTest {
 		keystore.setExternal(true);
 
 		SSLContext sslContext = SSLContexts.create(sslProperties);
+
+		assertNotNull(sslContext);
+	}
+
+	@Test
+	void shouldBuildSslContextWithKeystoreAndTruststore() {
+		SSLContext sslContext = SSLContexts.builder()
+				.keystore(KEYSTORE_PATH, KEYSTORE_PASSWORD.toCharArray())
+				.truststore(TRUSTSTORE_PATH, TRUSTSTORE_PASSWORD.toCharArray())
+				.protocol(SSLProtocol.TLS_1_3)
+				.build();
 
 		assertNotNull(sslContext);
 	}

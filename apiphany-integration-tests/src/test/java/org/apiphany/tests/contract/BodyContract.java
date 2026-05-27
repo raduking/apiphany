@@ -1,10 +1,12 @@
 package org.apiphany.tests.contract;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.binaryEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 
 import java.nio.charset.StandardCharsets;
@@ -16,6 +18,7 @@ import org.apiphany.ApiClient;
 import org.apiphany.RequestParameters;
 import org.apiphany.http.Multipart;
 import org.apiphany.io.ContentType;
+import org.apiphany.lang.Bytes;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -26,14 +29,60 @@ import org.junit.jupiter.api.Test;
  */
 public interface BodyContract extends ApiphanyContract {
 
-	@DisplayName("Body: The client should send form URL-encoded body with correct Content-Type")
+	@DisplayName("Basic: String request bodies should be encoded as UTF-8 by default")
+	@Test
+	default void shouldEncodeRequestBodyAsUtf8() throws Exception {
+		wiremock().stubFor(post("/utf8")
+				.willReturn(aResponse()
+						.withStatus(200)));
+
+		ApiClient api = apiClient();
+		try (api) {
+			api.client()
+					.http()
+					.post()
+					.path("utf8")
+					.body("é")
+					.retrieve();
+		}
+
+		wiremock().verify(postRequestedFor(urlEqualTo("/utf8"))
+				.withRequestBody(equalTo("é")));
+	}
+
+	@DisplayName("Basic: The client should send binary request bodies unchanged")
+	@Test
+	default void shouldSendBinaryBody() throws Exception {
+		wiremock().stubFor(post("/binary")
+				.willReturn(aResponse()
+						.withStatus(200)));
+
+		byte[] body = new byte[] { 0x00, 0x01, 0x02 };
+
+		ApiClient api = apiClient();
+		try (api) {
+			api.client()
+					.http()
+					.post()
+					.path("binary")
+					.body(body)
+					.retrieve();
+		}
+
+		wiremock().verify(postRequestedFor(urlEqualTo("/binary"))
+				.withRequestBody(equalTo(new String(body))));
+	}
+
+	@DisplayName("Body: sends application/x-www-form-urlencoded body")
 	@Test
 	default void shouldSendFormUrlEncodedBody() throws Exception {
 		wiremock().stubFor(post("/form")
 				.willReturn(aResponse()
 						.withStatus(200)));
 
-		Map<String, List<String>> params = Map.of("key1", List.of("value1"), "key2", List.of("value2"));
+		Map<String, List<String>> params = new LinkedHashMap<>();
+		params.put("name", List.of("hello world"));
+		params.put("email", List.of("a@b.com"));
 
 		ApiClient api = apiClient();
 		try (api) {
@@ -52,40 +101,14 @@ public interface BodyContract extends ApiphanyContract {
 				.withRequestBody(equalTo(expectedBody)));
 	}
 
-	@DisplayName("Body: The client should URL-encode special characters in form body")
-	@Test
-	default void shouldSendFormUrlEncodedBodyWithSpecialCharacters() throws Exception {
-		wiremock().stubFor(post("/form-encode")
-				.willReturn(aResponse()
-						.withStatus(200)));
-
-		Map<String, List<String>> params = new LinkedHashMap<>();
-		params.put("name", List.of("hello world"));
-		params.put("email", List.of("a@b.com"));
-
-		ApiClient api = apiClient();
-		try (api) {
-			api.client()
-					.http()
-					.post()
-					.path("form-encode")
-					.form(params)
-					.retrieve();
-		}
-
-		String expectedBody = RequestParameters.asString(RequestParameters.encode(params));
-
-		wiremock().verify(postRequestedFor(urlPathEqualTo("/form-encode"))
-				.withHeader("Content-Type", equalTo(ContentType.Value.APPLICATION_FORM_URLENCODED))
-				.withRequestBody(equalTo(expectedBody)));
-	}
-
-	@DisplayName("Body: The client should send empty form body for empty params")
+	@DisplayName("Body: sends empty form body for empty params")
 	@Test
 	default void shouldSendFormUrlEncodedBodyWithEmptyParams() throws Exception {
 		wiremock().stubFor(post("/form-empty")
 				.willReturn(aResponse()
 						.withStatus(200)));
+
+		Map<String, List<String>> params = Map.of();
 
 		ApiClient api = apiClient();
 		try (api) {
@@ -93,22 +116,22 @@ public interface BodyContract extends ApiphanyContract {
 					.http()
 					.post()
 					.path("form-empty")
-					.form(Map.of())
+					.form(params)
 					.retrieve();
 		}
 
 		wiremock().verify(postRequestedFor(urlPathEqualTo("/form-empty"))
-				.withHeader("Content-Type", equalTo(ContentType.Value.APPLICATION_FORM_URLENCODED)));
+				.withHeader("Content-Type", equalTo(ContentType.Value.APPLICATION_FORM_URLENCODED))
+				.withRequestBody(binaryEqualTo(Bytes.EMPTY)));
 	}
 
-	@DisplayName("Body: The client should send multipart form-data with text fields")
+	@DisplayName("Body: sends multipart request with correct Content-Type and boundary")
 	@Test
-	default void shouldSendMultipartFormDataWithFields() throws Exception {
-		wiremock().stubFor(post("/multipart")
-				.willReturn(aResponse()
-						.withStatus(200)));
+	default void shouldSendMultipartFormData() throws Exception {
+		wiremock().stubFor(post("/multipart").willReturn(aResponse().withStatus(200)));
 
 		String boundary = "----testBoundaryFields";
+
 		Multipart.Body body = Multipart.Body.builder()
 				.boundary(boundary)
 				.field("name", "John")
@@ -125,51 +148,20 @@ public interface BodyContract extends ApiphanyContract {
 					.retrieve();
 		}
 
-		String expectedBody = new String(body.toByteArray(), StandardCharsets.US_ASCII);
 		wiremock().verify(postRequestedFor(urlPathEqualTo("/multipart"))
-				.withHeader("Content-Type", equalTo("multipart/form-data; boundary=" + boundary))
-				.withRequestBody(equalTo(expectedBody)));
+				.withHeader("Content-Type",
+						equalTo("multipart/form-data; boundary=" + boundary))
+				.withRequestBody(equalTo(body.toString(StandardCharsets.UTF_8))));
 	}
 
-	@DisplayName("Body: The client should send multipart form-data with file upload")
-	@Test
-	default void shouldSendMultipartFormDataWithFile() throws Exception {
-		wiremock().stubFor(post("/multipart-file")
-				.willReturn(aResponse()
-						.withStatus(200)));
-
-		String boundary = "----testBoundaryFile";
-		byte[] fileData = "file content".getBytes(StandardCharsets.UTF_8);
-		Multipart.Body body = Multipart.Body.builder()
-				.boundary(boundary)
-				.field("description", "profile picture")
-				.file("avatar", "photo.jpg", "image/jpeg", fileData)
-				.build();
-
-		ApiClient api = apiClient();
-		try (api) {
-			api.client()
-					.http()
-					.post()
-					.path("multipart-file")
-					.multipart(body)
-					.retrieve();
-		}
-
-		String expectedBody = new String(body.toByteArray(), StandardCharsets.US_ASCII);
-		wiremock().verify(postRequestedFor(urlPathEqualTo("/multipart-file"))
-				.withHeader("Content-Type", equalTo("multipart/form-data; boundary=" + boundary))
-				.withRequestBody(equalTo(expectedBody)));
-	}
-
-	@DisplayName("Body: The multipart Content-Type boundary should match the boundary in the body")
+	@DisplayName("Body: multipart boundary in header matches body delimiter")
 	@Test
 	default void shouldMatchMultipartBoundaryInContentType() throws Exception {
 		wiremock().stubFor(post("/multipart-boundary")
-				.willReturn(aResponse()
-						.withStatus(200)));
+				.willReturn(aResponse().withStatus(200)));
 
 		String boundary = "----customBoundary123";
+
 		Multipart.Body body = Multipart.Body.builder()
 				.boundary(boundary)
 				.field("test", "value")
@@ -186,7 +178,38 @@ public interface BodyContract extends ApiphanyContract {
 		}
 
 		wiremock().verify(postRequestedFor(urlPathEqualTo("/multipart-boundary"))
-				.withHeader("Content-Type", equalTo(body.getContentTypeValue()))
+				.withHeader("Content-Type",
+						equalTo(body.getContentTypeValue()))
 				.withRequestBody(containing("--" + boundary)));
+	}
+
+	@DisplayName("Body: sends multipart form-data with Unicode content without modification")
+	@Test
+	default void shouldSendMultipartFormDataWithUnicode() throws Exception {
+		wiremock().stubFor(post("/multipart-unicode")
+				.willReturn(aResponse()
+						.withStatus(200)));
+
+		String boundary = "----unicodeBoundary";
+
+		Multipart.Body body = Multipart.Body.builder()
+				.boundary(boundary)
+				.field("name", "Ștefan")
+				.field("city", "Cluj-Napoca")
+				.build();
+
+		ApiClient api = apiClient();
+		try (api) {
+			api.client()
+					.http()
+					.post()
+					.path("multipart-unicode")
+					.multipart(body)
+					.retrieve();
+		}
+
+		wiremock().verify(postRequestedFor(urlPathEqualTo("/multipart-unicode"))
+				.withHeader("Content-Type", equalTo(body.getContentTypeValue()))
+				.withRequestBody(binaryEqualTo(body.toByteArray())));
 	}
 }

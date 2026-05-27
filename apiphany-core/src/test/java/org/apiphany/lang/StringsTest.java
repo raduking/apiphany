@@ -305,6 +305,61 @@ class StringsTest {
 			assertThat(result, nullValue());
 		}
 
+		@Test
+		void shouldTransformBytesToStringWithDefaultCharset() {
+			byte[] bytes = TEXT_FILE_CONTENT.getBytes(StandardCharsets.UTF_8);
+
+			String result = Strings.toString(bytes);
+
+			assertThat(result, equalTo(TEXT_FILE_CONTENT));
+		}
+
+		@Test
+		void shouldTransformBytesToStringWithSpecifiedCharset() {
+			byte[] bytes = TEXT_FILE_CONTENT.getBytes(StandardCharsets.UTF_8);
+
+			String result = Strings.toString(bytes, StandardCharsets.UTF_8);
+
+			assertThat(result, equalTo(TEXT_FILE_CONTENT));
+		}
+
+		@Test
+		void shouldReturnNullOnToStringWithBytesIfBytesIsNull() {
+			String result = Strings.toString((byte[]) null);
+
+			assertThat(result, nullValue());
+		}
+
+		@Test
+		void shouldReturnNullOnToStringWithBytesAndCharsetIfBytesIsNull() {
+			String result = Strings.toString((byte[]) null, StandardCharsets.UTF_8);
+
+			assertThat(result, nullValue());
+		}
+
+		@Test
+		void shouldReturnNullOnToStringWithBytesAndCharsetIfCharsetIsNull() {
+			byte[] bytes = TEXT_FILE_CONTENT.getBytes(StandardCharsets.UTF_8);
+
+			String result = Strings.toString(bytes, null);
+
+			assertThat(result, nullValue());
+		}
+
+		@Test
+		void shouldReturnNullOnToStringWithBytesAndCharsetIfBytesAndCharsetAreNull() {
+			String result = Strings.toString((byte[]) null, null);
+
+			assertThat(result, nullValue());
+		}
+
+		@Test
+		void shouldReturnNullOnToStringWithInputStreamIfInputStreamIsNull() {
+			String result = Strings.toString((InputStream) null, StandardCharsets.UTF_8, 10, null);
+
+			assertThat(result, nullValue());
+		}
+
 		private static Consumer<Exception> onErrorHandler(final Runnable runnable,
 				final Class<? extends Exception> expectedException, final String expectedMessage) {
 			return e -> {
