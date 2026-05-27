@@ -4,17 +4,21 @@ import static org.apiphany.test.Assertions.assertDefaultConstructorThrows;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.zip.GZIPOutputStream;
 
 import org.apiphany.io.deflate.Deflate;
+import org.apiphany.io.function.IOFunction;
 import org.apiphany.io.gzip.GZip;
+import org.apiphany.lang.Bytes;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -36,6 +40,12 @@ class ContentEncodingTest {
 	private static final String HELLO_DECODING_PIPELINE = "Hello decoding pipeline!";
 	private static final String HELLO_LAYERED_COMPRESSION = "Hello layered compression!";
 
+	@Test
+	void shouldThrowExceptionOnCallingValueConstructor() {
+		UnsupportedOperationException e = assertDefaultConstructorThrows(ContentEncoding.Value.class);
+		assertThat(e.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
+	}
+
 	@ParameterizedTest
 	@EnumSource(ContentEncoding.class)
 	void shouldBuildWithFromStringWithValidValueEvenIfUppercase(final ContentEncoding contentEncoding) {
@@ -44,196 +54,253 @@ class ContentEncodingTest {
 		assertThat(result, equalTo(contentEncoding));
 	}
 
-	@ParameterizedTest
-	@EnumSource(ContentEncoding.class)
-	void shouldMatchValidValueEvenIfUppercase(final ContentEncoding contentEncoding) {
-		String stringValue = contentEncoding.value().toUpperCase();
-		boolean result = contentEncoding.matches(stringValue);
-		assertTrue(result);
+	@Nested
+	class MatchesTests {
+
+		@ParameterizedTest
+		@EnumSource(ContentEncoding.class)
+		void shouldMatchValidValueEvenIfUppercase(final ContentEncoding contentEncoding) {
+			String stringValue = contentEncoding.value().toUpperCase();
+			boolean result = contentEncoding.matches(stringValue);
+			assertTrue(result);
+		}
+
+		@ParameterizedTest
+		@EnumSource(ContentEncoding.class)
+		void shouldMatchValidValueEvenIfMixedCase(final ContentEncoding contentEncoding) {
+			String stringValue = switch (contentEncoding) {
+				case GZIP -> "gZiP";
+				case DEFLATE -> "dEfLaTe";
+				case BR -> "bR";
+				default -> contentEncoding.value();
+			};
+			boolean result = contentEncoding.matches(stringValue);
+			assertTrue(result);
+		}
 	}
 
-	@ParameterizedTest
-	@EnumSource(ContentEncoding.class)
-	void shouldMatchValidValueEvenIfMixedCase(final ContentEncoding contentEncoding) {
-		String stringValue = switch (contentEncoding) {
-			case GZIP -> "gZiP";
-			case DEFLATE -> "dEfLaTe";
-			case BR -> "bR";
-			default -> contentEncoding.value();
-		};
-		boolean result = contentEncoding.matches(stringValue);
-		assertTrue(result);
+	@Nested
+	class ParseFirstTests {
+
+		@ParameterizedTest
+		@MethodSource("provideValuesForParsingFirstFromList")
+		void shouldParseValueFromAList(final List<String> values, final ContentEncoding expectedEncoding) {
+			ContentEncoding result = ContentEncoding.parseFirst(values);
+
+			assertThat(result, equalTo(expectedEncoding));
+		}
+
+		@Test
+		void shouldReturnNullWhenParsingFromListWithNull() {
+			ContentEncoding result = ContentEncoding.parseFirst(null);
+
+			assertThat(result, equalTo(null));
+		}
+
+		@Test
+		void shouldReturnNullWhenParsingFromListWithEmptyList() {
+			ContentEncoding result = ContentEncoding.parseFirst(List.of());
+
+			assertThat(result, equalTo(null));
+		}
+
+		@Test
+		void shouldReturnNullWhenParsingFromListWithUnknownValues() {
+			ContentEncoding result = ContentEncoding.parseFirst(List.of("unknown1", "unknown2"));
+
+			assertThat(result, equalTo(null));
+		}
+
+		@Test
+		void shouldReturnNullWhenParsingFromListWithUnknownAndKnownValues() {
+			ContentEncoding result = ContentEncoding.parseFirst(List.of("unknown", "gzip"));
+
+			assertThat(result, equalTo(ContentEncoding.GZIP));
+		}
+
+		@Test
+		void shouldReturnFirstWhenParsingFromListWithKnownValues() {
+			ContentEncoding result = ContentEncoding.parseFirst(List.of("gzip", "deflate"));
+
+			assertThat(result, equalTo(ContentEncoding.GZIP));
+		}
+
+		@Test
+		void shouldReturnFirstKnownValueWhenParsingFromListWithKnownAndUnknownValues() {
+			ContentEncoding result = ContentEncoding.parseFirst(List.of("unknown", "deflate", "gzip"));
+
+			assertThat(result, equalTo(ContentEncoding.DEFLATE));
+		}
+
+		@Test
+		void shouldReturnFirstKnownValueWhenParsingFromListWithKnownAndUnknownValuesInDifferentOrder() {
+			ContentEncoding result = ContentEncoding.parseFirst(List.of("br", "unknown", "gzip"));
+
+			assertThat(result, equalTo(ContentEncoding.BR));
+		}
+
+		private static Object[][] provideValuesForParsingFirstFromList() {
+			return new Object[][] {
+					{ List.of("gzip"), ContentEncoding.GZIP },
+					{ List.of("deflate"), ContentEncoding.DEFLATE },
+					{ List.of("br"), ContentEncoding.BR },
+					{ List.of("gzip", "deflate"), ContentEncoding.GZIP },
+					{ List.of("deflate", "br"), ContentEncoding.DEFLATE },
+					{ List.of("br", "gzip"), ContentEncoding.BR },
+					{ List.of("unknown", "gzip"), ContentEncoding.GZIP },
+					{ List.of("unknown1", "unknown2"), null },
+					{ List.of(), null },
+					{ null, null },
+					{ List.of("unknown", "deflate", "gzip"), ContentEncoding.DEFLATE },
+					{ List.of("br, unknown, gzip"), ContentEncoding.BR },
+					{ List.of("unknown, gzip"), ContentEncoding.GZIP }
+			};
+		}
 	}
 
-	@ParameterizedTest
-	@MethodSource("provideValuesForParsingFirstFromList")
-	void shouldParseValueFromAList(final List<String> values, final ContentEncoding expectedEncoding) {
-		ContentEncoding result = ContentEncoding.parseFirst(values);
+	@Nested
+	class ParseAllTests {
 
-		assertThat(result, equalTo(expectedEncoding));
+		@Test
+		void shouldReturnEmptyListWhenParsingFromListWithNull() {
+			List<ContentEncoding> result = ContentEncoding.parseAll(null);
+
+			assertThat(result, equalTo(List.of()));
+		}
+
+		@Test
+		void shouldReturnEmptyListWhenParsingFromListWithEmptyList() {
+			List<ContentEncoding> result = ContentEncoding.parseAll(List.of());
+
+			assertThat(result, equalTo(List.of()));
+		}
+
+		@Test
+		void shouldReturnEmptyListWhenParsingFromListWithUnknownValues() {
+			List<ContentEncoding> result = ContentEncoding.parseAll(List.of("unknown1", "", "unknown2"));
+
+			assertThat(result, equalTo(List.of()));
+		}
+
+		@Test
+		void shouldReturnListWithKnownValuesWhenParsingFromListWithKnownAndUnknownValues() {
+			List<ContentEncoding> result = ContentEncoding.parseAll(List.of("unknown", "gzip", "deflate"));
+
+			assertThat(result, equalTo(List.of(ContentEncoding.GZIP, ContentEncoding.DEFLATE)));
+		}
+
+		@Test
+		void shouldReturnListWithKnownValuesWhenParsingFromListWithKnownAndUnknownValuesCommaSeparated() {
+			List<ContentEncoding> result = ContentEncoding.parseAll(List.of("unknown, br", "gzip, unknown, zstd", "deflate, gzip"));
+
+			assertThat(result, equalTo(List.of(
+					ContentEncoding.BR,
+					ContentEncoding.GZIP,
+					ContentEncoding.ZSTD,
+					ContentEncoding.DEFLATE,
+					ContentEncoding.GZIP)));
+		}
 	}
 
-	@Test
-	void shouldReturnNullWhenParsingFromListWithNull() {
-		ContentEncoding result = ContentEncoding.parseFirst(null);
+	@Nested
+	class DecodeBodyTests {
 
-		assertThat(result, equalTo(null));
+		@Test
+		void shouldReturnOriginalBodyWhenEncodingsAreEmpty() {
+			byte[] body = HELLO_WORLD.getBytes(StandardCharsets.UTF_8);
+
+			byte[] decoded = ContentEncoding.decodeBody(body, List.of());
+
+			assertThat(decoded, equalTo(body));
+		}
+
+		@Test
+		void shouldReturnOriginalBodyWhenEncodingsIsNull() {
+			byte[] body = HELLO_WORLD.getBytes(StandardCharsets.UTF_8);
+
+			byte[] decoded = ContentEncoding.decodeBody(body, null);
+
+			assertThat(decoded, equalTo(body));
+		}
+
+		@Test
+		@SuppressWarnings("resource")
+		void shouldDecodeBodyWithMultipleEncodingsInReverseOrder() throws Exception {
+			String original = HELLO_MULTI_LAYER;
+			byte[] deflated = Deflate.compress(original.getBytes(StandardCharsets.UTF_8));
+			byte[] gzipThenDeflate = GZip.compress(deflated);
+			InputStream stream = new ByteArrayInputStream(gzipThenDeflate);
+
+			InputStream decoded = ContentEncoding.decodeBody(stream, List.of(ContentEncoding.DEFLATE, ContentEncoding.GZIP));
+			byte[] result = decoded.readAllBytes();
+
+			assertThat(new String(result, StandardCharsets.UTF_8), equalTo(original));
+		}
+
+		@Test
+		void shouldDecodeBodyWithMultipleEncodingsInReverseOrderFromStream() throws Exception {
+			String original = HELLO_MULTI_LAYER;
+			byte[] deflated = Deflate.compress(original.getBytes(StandardCharsets.UTF_8));
+			byte[] gzipThenDeflate = GZip.compress(deflated);
+
+			byte[] decoded = ContentEncoding.decodeBody(gzipThenDeflate, List.of(ContentEncoding.DEFLATE, ContentEncoding.GZIP));
+
+			assertThat(new String(decoded, StandardCharsets.UTF_8), equalTo(original));
+		}
+
+		@Test
+		void shouldReturnTheSameBodyForUnsupportedTypes() {
+			String decoded = ContentEncoding.decodeBody(HELLO_WORLD, List.of(ContentEncoding.BR));
+
+			assertThat(decoded, equalTo(HELLO_WORLD));
+		}
 	}
 
-	@Test
-	void shouldReturnNullWhenParsingFromListWithEmptyList() {
-		ContentEncoding result = ContentEncoding.parseFirst(List.of());
+	@Nested
+	class DecodeTests {
 
-		assertThat(result, equalTo(null));
-	}
+		@Test
+		void shouldThrowExceptionWhenDecodingUnsupportedType() {
+			UnsupportedOperationException e = assertThrows(UnsupportedOperationException.class, () -> {
+				ContentEncoding.UNSUPPORTED.decode(Bytes.EMPTY);
+			});
+			assertThat(e.getMessage(), equalTo("Decoding not supported for content encoding: " + ContentEncoding.UNSUPPORTED));
+		}
 
-	@Test
-	void shouldReturnNullWhenParsingFromListWithUnknownValues() {
-		ContentEncoding result = ContentEncoding.parseFirst(List.of("unknown1", "unknown2"));
+		@ParameterizedTest
+		@EnumSource(ContentEncoding.class)
+		@SuppressWarnings("resource")
+		void shouldUseTheDecodingFunctionToDecode(final ContentEncoding contentEncoding) throws Exception {
+			InputStream stream = new ByteArrayInputStream(HELLO_WORLD.getBytes(StandardCharsets.UTF_8));
 
-		assertThat(result, equalTo(null));
-	}
+			InputStream decoded = ContentEncoding.decode(stream, contentEncoding, IOFunction.identity());
+			byte[] result = decoded.readAllBytes();
 
-	@Test
-	void shouldReturnNullWhenParsingFromListWithUnknownAndKnownValues() {
-		ContentEncoding result = ContentEncoding.parseFirst(List.of("unknown", "gzip"));
+			assertThat(new String(result, StandardCharsets.UTF_8), equalTo(HELLO_WORLD));
+		}
 
-		assertThat(result, equalTo(ContentEncoding.GZIP));
-	}
+		@ParameterizedTest
+		@EnumSource(ContentEncoding.class)
+		void shouldUseTheDecodingFunctionToDecodeByteArray(final ContentEncoding contentEncoding) {
+			byte[] data = HELLO_WORLD.getBytes(StandardCharsets.UTF_8);
 
-	@Test
-	void shouldReturnFirstWhenParsingFromListWithKnownValues() {
-		ContentEncoding result = ContentEncoding.parseFirst(List.of("gzip", "deflate"));
+			byte[] decoded = ContentEncoding.decode(data, contentEncoding, IOFunction.identity());
 
-		assertThat(result, equalTo(ContentEncoding.GZIP));
-	}
+			assertThat(decoded, equalTo(data));
+		}
 
-	@Test
-	void shouldReturnFirstKnownValueWhenParsingFromListWithKnownAndUnknownValues() {
-		ContentEncoding result = ContentEncoding.parseFirst(List.of("unknown", "deflate", "gzip"));
+		@ParameterizedTest
+		@EnumSource(ContentEncoding.class)
+		void shouldThrowExceptionWhenDecodingFunctionThrows(final ContentEncoding contentEncoding) {
+			IOFunction<byte[], byte[]> throwingFunction = input -> {
+				throw new IOException("Decoding failed");
+			};
 
-		assertThat(result, equalTo(ContentEncoding.DEFLATE));
-	}
-
-	@Test
-	void shouldReturnFirstKnownValueWhenParsingFromListWithKnownAndUnknownValuesInDifferentOrder() {
-		ContentEncoding result = ContentEncoding.parseFirst(List.of("br", "unknown", "gzip"));
-
-		assertThat(result, equalTo(ContentEncoding.BR));
-	}
-
-	@Test
-	void shouldReturnEmptyListWhenParsingFromListWithNull() {
-		List<ContentEncoding> result = ContentEncoding.parseAll(null);
-
-		assertThat(result, equalTo(List.of()));
-	}
-
-	@Test
-	void shouldReturnEmptyListWhenParsingFromListWithEmptyList() {
-		List<ContentEncoding> result = ContentEncoding.parseAll(List.of());
-
-		assertThat(result, equalTo(List.of()));
-	}
-
-	@Test
-	void shouldReturnEmptyListWhenParsingFromListWithUnknownValues() {
-		List<ContentEncoding> result = ContentEncoding.parseAll(List.of("unknown1", "", "unknown2"));
-
-		assertThat(result, equalTo(List.of()));
-	}
-
-	@Test
-	void shouldReturnListWithKnownValuesWhenParsingFromListWithKnownAndUnknownValues() {
-		List<ContentEncoding> result = ContentEncoding.parseAll(List.of("unknown", "gzip", "deflate"));
-
-		assertThat(result, equalTo(List.of(ContentEncoding.GZIP, ContentEncoding.DEFLATE)));
-	}
-
-	@Test
-	void shouldReturnListWithKnownValuesWhenParsingFromListWithKnownAndUnknownValuesCommaSeparated() {
-		List<ContentEncoding> result = ContentEncoding.parseAll(List.of("unknown, br", "gzip, unknown, zstd", "deflate, gzip"));
-
-		assertThat(result, equalTo(List.of(
-				ContentEncoding.BR,
-				ContentEncoding.GZIP,
-				ContentEncoding.ZSTD,
-				ContentEncoding.DEFLATE,
-				ContentEncoding.GZIP)));
-	}
-
-	private static Object[][] provideValuesForParsingFirstFromList() {
-		return new Object[][] {
-				{ List.of("gzip"), ContentEncoding.GZIP },
-				{ List.of("deflate"), ContentEncoding.DEFLATE },
-				{ List.of("br"), ContentEncoding.BR },
-				{ List.of("gzip", "deflate"), ContentEncoding.GZIP },
-				{ List.of("deflate", "br"), ContentEncoding.DEFLATE },
-				{ List.of("br", "gzip"), ContentEncoding.BR },
-				{ List.of("unknown", "gzip"), ContentEncoding.GZIP },
-				{ List.of("unknown1", "unknown2"), null },
-				{ List.of(), null },
-				{ null, null },
-				{ List.of("unknown", "deflate", "gzip"), ContentEncoding.DEFLATE },
-				{ List.of("br, unknown, gzip"), ContentEncoding.BR },
-				{ List.of("unknown, gzip"), ContentEncoding.GZIP }
-		};
-	}
-
-	@Test
-	void shouldThrowExceptionOnCallingValueConstructor() {
-		UnsupportedOperationException e = assertDefaultConstructorThrows(ContentEncoding.Value.class);
-		assertThat(e.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
-	}
-
-	@Test
-	void shouldReturnOriginalBodyWhenEncodingsAreEmpty() {
-		byte[] body = HELLO_WORLD.getBytes(StandardCharsets.UTF_8);
-
-		byte[] decoded = ContentEncoding.decodeBody(body, List.of());
-
-		assertThat(decoded, equalTo(body));
-	}
-
-	@Test
-	void shouldReturnOriginalBodyWhenEncodingsIsNull() {
-		byte[] body = HELLO_WORLD.getBytes(StandardCharsets.UTF_8);
-
-		byte[] decoded = ContentEncoding.decodeBody(body, null);
-
-		assertThat(decoded, equalTo(body));
-	}
-
-	@Test
-	@SuppressWarnings("resource")
-	void shouldDecodeBodyWithMultipleEncodingsInReverseOrder() throws Exception {
-		String original = HELLO_MULTI_LAYER;
-		byte[] deflated = Deflate.compress(original.getBytes(StandardCharsets.UTF_8));
-		byte[] gzipThenDeflate = GZip.compress(deflated);
-		InputStream stream = new ByteArrayInputStream(gzipThenDeflate);
-
-		InputStream decoded = ContentEncoding.decodeBody(stream, List.of(ContentEncoding.DEFLATE, ContentEncoding.GZIP));
-		byte[] result = decoded.readAllBytes();
-
-		assertThat(new String(result, StandardCharsets.UTF_8), equalTo(original));
-	}
-
-	@Test
-	void shouldDecodeBodyWithMultipleEncodingsInReverseOrderFromStream() throws Exception {
-		String original = HELLO_MULTI_LAYER;
-		byte[] deflated = Deflate.compress(original.getBytes(StandardCharsets.UTF_8));
-		byte[] gzipThenDeflate = GZip.compress(deflated);
-
-		byte[] decoded = ContentEncoding.decodeBody(gzipThenDeflate, List.of(ContentEncoding.DEFLATE, ContentEncoding.GZIP));
-
-		assertThat(new String(decoded, StandardCharsets.UTF_8), equalTo(original));
-	}
-
-	@Test
-	void shouldReturnTheSameBodyForUnsupportedTypes() {
-		String decoded = ContentEncoding.decodeBody(HELLO_WORLD, List.of(ContentEncoding.BR));
-
-		assertThat(decoded, equalTo(HELLO_WORLD));
+			IllegalStateException e = assertThrows(IllegalStateException.class, () -> {
+				ContentEncoding.decode(Bytes.EMPTY, contentEncoding, throwingFunction);
+			});
+			assertThat(e.getMessage(), equalTo("Failed to decode content with encoding: " + contentEncoding));
+		}
 	}
 
 	@Nested

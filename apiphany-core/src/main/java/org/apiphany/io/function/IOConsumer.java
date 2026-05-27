@@ -1,4 +1,4 @@
-package org.apiphany.io;
+package org.apiphany.io.function;
 
 import java.io.IOException;
 

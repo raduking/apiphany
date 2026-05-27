@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.apiphany.io.function.IOConsumer;
+
 /**
  * Helper class for input/output operations.
  *

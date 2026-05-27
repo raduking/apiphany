@@ -10,11 +10,11 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.apiphany.io.deflate.Deflate;
+import org.apiphany.io.function.IOFunction;
 import org.apiphany.io.gzip.GZip;
 import org.morphix.lang.Enums;
 import org.morphix.lang.Nullables;
 import org.morphix.lang.collections.Lists;
-import org.morphix.lang.function.ThrowingFunction;
 import org.morphix.lang.function.ToStringFunction;
 import org.morphix.reflection.Constructors;
 
@@ -52,7 +52,7 @@ public enum ContentEncoding {
 		 */
 		@Override
 		public <T> T decode(final T body) {
-			return ContentEncoding.decode(body, this, ThrowingFunction.unchecked(GZip::decompress));
+			return ContentEncoding.decode(body, this, GZip::decompress);
 		}
 	},
 
@@ -76,7 +76,7 @@ public enum ContentEncoding {
 		 */
 		@Override
 		public <T> T decode(final T body) {
-			return ContentEncoding.decode(body, this, ThrowingFunction.unchecked(Deflate::decompress));
+			return ContentEncoding.decode(body, this, Deflate::decompress);
 		}
 	},
 
@@ -125,7 +125,14 @@ public enum ContentEncoding {
 	 *
 	 * @see <a href="https://sourceware.org/bzip2/">bzip2 Documentation</a>
 	 */
-	BZIP2(Value.BZIP2);
+	BZIP2(Value.BZIP2),
+
+	/**
+	 * A special constant representing an unsupported content encoding. This can be used as a default value when parsing
+	 * content encoding strings that do not match any of the defined enum values, allowing for graceful handling of
+	 * unsupported encodings without throwing exceptions.
+	 */
+	UNSUPPORTED(Value.UNSUPPORTED);
 
 	/**
 	 * A name space class containing string constants for the content encoding values. This allows for easy reference to the
@@ -181,6 +188,11 @@ public enum ContentEncoding {
 		public static final String BZIP2 = "bzip2";
 
 		/**
+		 * The string value for the unsupported content encoding.
+		 */
+		public static final String UNSUPPORTED = "unsupported";
+
+		/**
 		 * Hide constructor.
 		 */
 		private Value() {
@@ -219,16 +231,22 @@ public enum ContentEncoding {
 	 *     implemented for this encoding
 	 */
 	public <T> T decode(final T body) {
-		throw new UnsupportedOperationException("Content encoding " + this + " is not supported!");
+		throw new UnsupportedOperationException("Decoding not supported for content encoding: " + this);
 	}
 
 	/**
-	 * Decodes the given body using the specified content encoding and decoder function. This is a utility method that can
-	 * be used to decode a body with any content encoding by providing the appropriate decoder function. If the decoding
-	 * fails, an {@link IllegalStateException} is thrown with details about the failure.
+	 * Decodes the given body using the specified decoder function. This is a utility method that can be used to decode a
+	 * body by providing the appropriate decoder function. If the decoding fails, an {@link IllegalStateException} is thrown
+	 * with details about the failure.
+	 * <p>
+	 * The content encoding is included in the error message to provide context about the decoding failure, which can be
+	 * helpful for debugging and troubleshooting issues related to content encoding. The decoder function is expected to
+	 * perform the actual decoding logic based on the specific content encoding being handled or it can ignore the content
+	 * encoding if it is not relevant to the decoding logic. This allows for flexibility in how the decoding is implemented
+	 * while still providing a consistent error handling mechanism for any decoding failures that may occur.
 	 * <p>
 	 * Note: the decoder cannot be a UnaryOperator since the body type may change during decoding (e.g. from byte[] to
-	 * InputStream), so a Function is used instead to allow for flexibility in the decoding logic.
+	 * InputStream), so a {@link Function} is used instead to allow for flexibility in the decoding logic.
 	 *
 	 * @param <T> body type
 	 * @param <U> decoded body type
@@ -239,12 +257,54 @@ public enum ContentEncoding {
 	 * @return a decoded body that decodes the original body according to the content encoding
 	 * @throws IllegalStateException if any error occurs during decoding
 	 */
-	public static <T, U> U decode(final T body, final ContentEncoding contentEncoding, final Function<T, U> decoder) {
+	public static <T, U> U decode(final T body, final ContentEncoding contentEncoding, final IOFunction<T, U> decoder) {
 		try {
 			return decoder.apply(body);
 		} catch (Exception e) {
-			throw new IllegalStateException("Failed to decode response body with encoding: " + contentEncoding, e);
+			throw new IllegalStateException("Failed to decode content with encoding: " + contentEncoding, e);
 		}
+	}
+
+	/**
+	 * Decodes the body based on the given content encoding list. The body is decoded in the reverse order of the content
+	 * encodings, meaning that the last encoding in the list is decoded first. If the body is null or the content encoding
+	 * list is empty, the original body is returned without any decoding.
+	 * <p>
+	 * Currently, only bodies of type {@link InputStream} and {@code byte[]} are decoded. If the body is of any other type,
+	 * it is returned as is without any decoding since the decoding logic is only implemented for these two types. This
+	 * allows for flexibility in handling different body types while still providing decoding functionality for the most
+	 * common types used in HTTP communication.
+	 *
+	 * @param <T> body type
+	 *
+	 * @param body the body
+	 * @param encodings content encoding list in the order they were applied to the body
+	 * @return decoded body
+	 */
+	public static <T> T decodeBody(final T body, final List<ContentEncoding> encodings) {
+		if (null == body || Lists.isEmpty(encodings)) {
+			return body;
+		}
+		return isSupportedBodyType(body) ? decodeSupportedBody(body, encodings) : body;
+	}
+
+	/**
+	 * Decodes the body based on the given content encoding list. The body is decoded in the reverse order of the content
+	 * encodings, meaning that the last encoding in the list is decoded first. This method is used internally by
+	 * {@link #decodeBody(Object, List)} to perform the actual decoding logic for supported body types.
+	 *
+	 * @param <T> body type
+	 *
+	 * @param body the body to decode
+	 * @param encodings content encoding list in the order they were applied to the body
+	 * @return decoded body
+	 */
+	private static <T> T decodeSupportedBody(final T body, final List<ContentEncoding> encodings) {
+		T result = body;
+		for (ContentEncoding encoding : encodings.reversed()) {
+			result = encoding.decode(result);
+		}
+		return result;
 	}
 
 	/**
@@ -345,29 +405,6 @@ public enum ContentEncoding {
 	}
 
 	/**
-	 * Decodes the body based on the given content encoding list. The body is decoded in the reverse order of the content
-	 * encodings, meaning that the last encoding in the list is decoded first. If the body is null or the content encoding
-	 * list is empty, the original body is returned without any decoding.
-	 * <p>
-	 * Currently, only bodies of type {@link InputStream} and {@code byte[]} are decoded. If the body is of any other type,
-	 * it is returned as is without any decoding since the decoding logic is only implemented for these two types. This
-	 * allows for flexibility in handling different body types while still providing decoding functionality for the most
-	 * common types used in HTTP communication.
-	 *
-	 * @param <T> body type
-	 *
-	 * @param body the body
-	 * @param encodings content encoding list in the order they were applied to the body
-	 * @return decoded body
-	 */
-	public static <T> T decodeBody(final T body, final List<ContentEncoding> encodings) {
-		if (null == body || Lists.isEmpty(encodings)) {
-			return body;
-		}
-		return isSupportedBodyType(body) ? decodeSupportedBody(body, encodings) : body;
-	}
-
-	/**
 	 * Checks if the given body is of a supported type for decoding. Currently, only {@link InputStream} and {@code byte[]}
 	 * types are supported for decoding since the decoding logic is implemented for these two types. If the body is of any
 	 * other type, it is considered unsupported for decoding and will be returned as is without any decoding.
@@ -383,24 +420,5 @@ public enum ContentEncoding {
 			case byte[] bytes -> true;
 			default -> false;
 		};
-	}
-
-	/**
-	 * Decodes the body based on the given content encoding list. The body is decoded in the reverse order of the content
-	 * encodings, meaning that the last encoding in the list is decoded first. This method is used internally by
-	 * {@link #decodeBody(Object, List)} to perform the actual decoding logic for supported body types.
-	 *
-	 * @param <T> body type
-	 *
-	 * @param body the body to decode
-	 * @param encodings content encoding list in the order they were applied to the body
-	 * @return decoded body
-	 */
-	private static <T> T decodeSupportedBody(final T body, final List<ContentEncoding> encodings) {
-		T result = body;
-		for (ContentEncoding encoding : encodings.reversed()) {
-			result = encoding.decode(result);
-		}
-		return result;
 	}
 }
