@@ -7,6 +7,7 @@ import java.util.Map;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.apiphany.lang.Hex;
 import org.morphix.lang.Enums;
 
 /**
@@ -172,7 +173,7 @@ public enum MessageDigestAlgorithm {
 	 * @return the digested input
 	 */
 	public byte[] digest(final String input) {
-		return digest(input.getBytes(StandardCharsets.US_ASCII));
+		return digest(input.getBytes(StandardCharsets.UTF_8));
 	}
 
 	/**
@@ -254,5 +255,33 @@ public enum MessageDigestAlgorithm {
 	 */
 	public static MessageDigestAlgorithm fromValue(final String value) {
 		return Enums.fromString(value, NAME_MAP, values());
+	}
+
+	/**
+	 * Generates a string hash.
+	 *
+	 * @param value input string
+	 * @param digestBytes number of bytes in the resulting hash string
+	 * @return first length bytes as hexadecimal
+	 */
+	public String hash(final byte[] value, final int digestBytes) {
+		byte[] digest = digest(value);
+		int len = Math.min(digestBytes, digest.length);
+		StringBuilder builder = new StringBuilder(len * 2);
+		for (int i = 0; i < len; ++i) {
+			builder.append(Hex.string(digest[i], ""));
+		}
+		return builder.toString();
+	}
+
+	/**
+	 * Generates a string hash.
+	 *
+	 * @param value input string
+	 * @param digestBytes number of bytes in the resulting hash string
+	 * @return first length bytes as hexadecimal
+	 */
+	public String hash(final String value, final int digestBytes) {
+		return hash(value.getBytes(StandardCharsets.UTF_8), digestBytes);
 	}
 }

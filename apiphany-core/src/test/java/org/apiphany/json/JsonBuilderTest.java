@@ -6,8 +6,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.io.ByteArrayInputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +19,7 @@ import java.util.function.Consumer;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.annotation.Creator;
 import org.apiphany.lang.annotation.FieldName;
+import org.apiphany.security.MessageDigestAlgorithm;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -274,7 +277,7 @@ class JsonBuilderTest {
 	void shouldReturnTheDebugStringForObjectsWithId() {
 		B b = new B(TEST_LONG);
 
-		String result = JsonBuilder.toDebugString(b);
+		String result = JsonBuilder.toDebugJsonString(b);
 
 		String expected =
 				"{ \"type\":\"" + B.class.getCanonicalName() + "\", \"id\":\"" + TEST_LONG + "\", \"identity\":\"" + JsonBuilder.identityHashCode(b)
@@ -287,7 +290,7 @@ class JsonBuilderTest {
 	void shouldReturnTheDebugString() {
 		Object o = new Object();
 
-		String result = JsonBuilder.toDebugString(o);
+		String result = JsonBuilder.toDebugJsonString(o);
 
 		String expected = "{ \"type\":\"" + Object.class.getCanonicalName() + "\", \"identity\":\"" + JsonBuilder.identityHashCode(o) + "\" }";
 
@@ -298,7 +301,7 @@ class JsonBuilderTest {
 	void shouldReturnTheDebugStringForNullObjects() {
 		String o = null;
 
-		String result = JsonBuilder.toDebugString(o);
+		String result = JsonBuilder.toDebugJsonString(o);
 
 		String expected = "{ \"type\":null, \"identity\":" + JsonBuilder.identityHashCode(o) + " }";
 
@@ -414,6 +417,101 @@ class JsonBuilderTest {
 
 		assertThat(response.getError(), equalTo(ERROR));
 		assertThat(response.getErrorDescription(), equalTo(ERROR_DESCRIPTION));
+	}
+
+	@Nested
+	class DescribeJsonInputTests {
+
+		@Test
+		void shouldDescribeNullInput() {
+			JsonBuilder runtime = newJsonBuilderWithDebugString(false);
+
+			String result = JsonBuilder.with(runtime, () -> JsonBuilder.describeJsonInput((Object) null));
+
+			assertThat(result, equalTo("null"));
+		}
+
+		@Test
+		void shouldDescribeStringInputWithoutPreviewWhenDebugDisabled() {
+			JsonBuilder runtime = newJsonBuilderWithDebugString(false);
+			String input = "abc";
+
+			String result = JsonBuilder.with(runtime, () -> JsonBuilder.describeJsonInput(input));
+
+			String hash = MessageDigestAlgorithm.SHA256.hash(input, 8);
+			assertThat(result, equalTo("String(length=3, hash=" + hash + ")"));
+		}
+
+		@Test
+		void shouldDescribeStringInputWithPreviewWhenDebugEnabled() {
+			JsonBuilder runtime = newJsonBuilderWithDebugString(true);
+			String input = "abc";
+
+			String result = JsonBuilder.with(runtime, () -> JsonBuilder.describeJsonInput(input));
+
+			String hash = MessageDigestAlgorithm.SHA256.hash(input, 8);
+			assertThat(result, equalTo("String(length=3, hash=" + hash + "), preview=abc"));
+		}
+
+		@Test
+		void shouldDescribeByteArrayInputWithoutPreviewWhenDebugDisabled() {
+			JsonBuilder runtime = newJsonBuilderWithDebugString(false);
+			byte[] input = "abc".getBytes(StandardCharsets.UTF_8);
+
+			String result = JsonBuilder.with(runtime, () -> JsonBuilder.describeJsonInput(input));
+
+			String hash = MessageDigestAlgorithm.SHA256.hash(input, 8);
+			assertThat(result, equalTo("byte[](length=3, hash=" + hash + ")"));
+		}
+
+		@Test
+		void shouldDescribeByteArrayInputWithPreviewWhenDebugEnabled() {
+			JsonBuilder runtime = newJsonBuilderWithDebugString(true);
+			byte[] input = "abc".getBytes(StandardCharsets.UTF_8);
+
+			String result = JsonBuilder.with(runtime, () -> JsonBuilder.describeJsonInput(input));
+
+			String hash = MessageDigestAlgorithm.SHA256.hash(input, 8);
+			assertThat(result, equalTo("byte[](length=3, hash=" + hash + "), preview=abc"));
+		}
+
+		@Test
+		void shouldDescribeInputStreamInput() {
+			JsonBuilder runtime = newJsonBuilderWithDebugString(false);
+			ByteArrayInputStream input = new ByteArrayInputStream(new byte[0]);
+
+			String result = JsonBuilder.with(runtime, () -> JsonBuilder.describeJsonInput(input));
+
+			assertThat(result, equalTo("InputStream(type=" + ByteArrayInputStream.class.getName() + ")"));
+		}
+
+		@Test
+		void shouldDescribeObjectInput() {
+			JsonBuilder runtime = newJsonBuilderWithDebugString(false);
+			Object input = new Object();
+
+			String result = JsonBuilder.with(runtime, () -> JsonBuilder.describeJsonInput(input));
+
+			assertThat(result, equalTo("Object(type=" + Object.class.getName() + ")"));
+		}
+
+		private static JsonBuilder newJsonBuilderWithDebugString(final boolean debugString) {
+			String previous = System.getProperty(JsonBuilder.Property.DEBUG_STRING);
+			try {
+				if (debugString) {
+					System.setProperty(JsonBuilder.Property.DEBUG_STRING, "true");
+				} else {
+					System.clearProperty(JsonBuilder.Property.DEBUG_STRING);
+				}
+				return new JsonBuilder();
+			} finally {
+				if (null == previous) {
+					System.clearProperty(JsonBuilder.Property.DEBUG_STRING);
+				} else {
+					System.setProperty(JsonBuilder.Property.DEBUG_STRING, previous);
+				}
+			}
+		}
 	}
 
 	@Nested

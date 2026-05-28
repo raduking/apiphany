@@ -16,4 +16,9 @@ public enum ParsingMode {
 	 * Lenient parsing mode, where the parser will ignore any parsing error and try to parse as much as possible.
 	 */
 	LENIENT;
+
+	/**
+	 * The default parsing mode (STRICT).
+	 */
+	public static final ParsingMode DEFAULT = STRICT;
 }
