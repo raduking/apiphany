@@ -114,8 +114,20 @@ public class GZip {
 	 * @throws IOException on error
 	 */
 	public static byte[] decompressToBytes(final byte[] body) throws IOException {
+		return decompressToBytes(body, IOStreams.MAX_BUFFER_SIZE);
+	}
+
+	/**
+	 * De-compress a GZIP-ed byte array to a byte array with a maximum output size.
+	 *
+	 * @param body GZIP byte array to decompress
+	 * @param maxBytes maximum number of bytes allowed in the decompressed output
+	 * @return de-compressed byte array
+	 * @throws IOException on error
+	 */
+	public static byte[] decompressToBytes(final byte[] body, final int maxBytes) throws IOException {
 		try (InputStream inputStream = inputStream(new ByteArrayInputStream(body))) {
-			return IOStreams.toByteArray(inputStream);
+			return IOStreams.toByteArray(inputStream, maxBytes);
 		}
 	}
 
@@ -129,8 +141,23 @@ public class GZip {
 	 * @throws IOException on error
 	 */
 	public static <T> T decompress(final T input) throws IOException {
+		return decompress(input, IOStreams.MAX_BUFFER_SIZE);
+	}
+
+	/**
+	 * De-compress a GZIP-ed input (byte array or input stream) to the same output type as the input while applying a
+	 * maximum output size for byte-array decoding.
+	 *
+	 * @param <T> input type
+	 *
+	 * @param input input to de-compress
+	 * @param maxBytes maximum number of bytes allowed in the decompressed output when input is byte[]
+	 * @return de-compressed value in the same type as the input
+	 * @throws IOException on error
+	 */
+	public static <T> T decompress(final T input, final int maxBytes) throws IOException {
 		Object result = switch (input) {
-			case byte[] bytes -> decompressToBytes(bytes);
+			case byte[] bytes -> decompressToBytes(bytes, maxBytes);
 			case InputStream is -> inputStream(is);
 			default -> throw new IllegalArgumentException("Cannot decompress object of type: " + input.getClass()
 					+ ", input must be byte[] or " + InputStream.class);

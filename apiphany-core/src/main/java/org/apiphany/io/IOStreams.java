@@ -109,10 +109,29 @@ public interface IOStreams {
 	 * @throws IOException if any error occurs
 	 */
 	static byte[] toByteArray(final InputStream is) throws IOException {
+		return toByteArray(is, MAX_BUFFER_SIZE);
+	}
+
+	/**
+	 * Reads all bytes from the given input stream and returns them as a byte array. Fails if the number of bytes read
+	 * exceeds the configured maximum.
+	 *
+	 * @param is the input stream
+	 * @param maxBytes maximum number of bytes allowed to be read
+	 * @return a byte array containing all bytes read from the input stream
+	 * @throws IOException if any error occurs
+	 * @throws IllegalStateException if the stream content exceeds maxBytes
+	 */
+	static byte[] toByteArray(final InputStream is, final int maxBytes) throws IOException {
 		byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
 		int n;
+		int totalBytes = 0;
 		try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
 			while ((n = is.read(buffer)) != -1) {
+				totalBytes += n;
+				if (totalBytes > maxBytes) {
+					throw new IllegalStateException("Input stream exceeds max allowed bytes: " + maxBytes);
+				}
 				byteArrayOutputStream.write(buffer, 0, n);
 			}
 			return byteArrayOutputStream.toByteArray();
