@@ -109,6 +109,6 @@ public class RestTemplateExchangeClient extends AbstractSpringExchangeClient {
 	 * @return the response extractor
 	 */
 	protected <T> ResponseExtractor<ResponseEntity<T>> responseEntityExtractor(final Class<T> responseType) {
-		return new ResponseEntityExtractor<>(responseType, restTemplate.getMessageConverters());
+		return new ResponseEntityExtractor<>(responseType, restTemplate.getMessageConverters(), getMaxResponseBodySize());
 	}
 }

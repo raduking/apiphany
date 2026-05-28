@@ -30,6 +30,7 @@ import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
 import org.apiphany.http.JavaNetHttpClients;
+import org.apiphany.io.IOStreams;
 import org.apiphany.io.InputStreamSupplier;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
@@ -217,14 +218,23 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 		HttpStatus httpStatus = HttpStatus.fromCode(httpResponse.statusCode());
 		Map<String, List<String>> headers = Nullables.apply(httpResponse.headers(), HttpHeaders::map);
 
+		int maxBodySize = getMaxResponseBodySize();
+		ensureContentLengthWithinLimit(headers, maxBodySize);
+
+		R responseBody = httpResponse.body();
+		if (!apiRequest.isStream() && responseBody instanceof InputStream inputStream) {
+			Object checkedBody = HttpException.ifThrows(() -> IOStreams.toByteArray(inputStream, maxBodySize), HttpStatus.PAYLOAD_TOO_LARGE);
+			responseBody = JavaObjects.cast(checkedBody);
+		}
+
 		List<String> encodings = getHeaderValues(HttpHeader.CONTENT_ENCODING, headers);
 		List<ContentEncoding> contentEncodings = ContentEncoding.parseAll(encodings);
-		R responseBody = ContentEncoding.decodeBody(httpResponse.body(), contentEncodings);
+		R decodedBody = ContentEncoding.decodeBody(responseBody, contentEncodings, getMaxDecodedResponseBodySize());
 
 		List<String> contentTypes = getHeaderValues(HttpHeader.CONTENT_TYPE, headers);
 		HttpContentType contentType = HttpContentType.parse(contentTypes);
 
-		return buildResponse(apiRequest, httpStatus, headers, contentType, responseBody);
+		return buildResponse(apiRequest, httpStatus, headers, contentType, decodedBody);
 	}
 
 	/**
@@ -242,10 +252,12 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 
 	/**
 	 * Creates a {@link BodyPublisher} from the given API request and body. It checks for the body common types to create
-	 * the appropriate publisher. This method only uses the body parameter to create the publisher and not the API request
-	 * body because in some cases the body can be a supplier that needs to be resolved first to get the actual body object
-	 * and then create the publisher from it. The API request is only used in this method to get the {@link Charset} for
-	 * string bodies and to check if the body should be converted to JSON or not.
+	 * the appropriate publisher.
+	 * <p>
+	 * This method only uses the body parameter to create the publisher and not the API request body because in some cases
+	 * the body can be a supplier that needs to be resolved first to get the actual body object and then create the
+	 * publisher from it. The API request is only used in this method to get the {@link Charset} for string bodies and to
+	 * check if the body should be converted to JSON or not.
 	 *
 	 * @param <T> body type
 	 *
@@ -279,13 +291,8 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	 * @param apiRequest the API request object
 	 * @return the body handler based on the request
 	 */
-	public static <T, U> BodyHandler<U> getResponseBodyHandler(final ApiRequest<T> apiRequest) {
-		BodyHandler<?> bodyHandler;
-		if (apiRequest.isStream()) {
-			bodyHandler = BodyHandlers.ofInputStream();
-		} else {
-			bodyHandler = BodyHandlers.ofByteArray();
-		}
+	public static <T, U> BodyHandler<U> getResponseBodyHandler(final ApiRequest<T> apiRequest) { // NOSONAR
+		BodyHandler<?> bodyHandler = BodyHandlers.ofInputStream();
 		return JavaObjects.cast(bodyHandler);
 	}
 

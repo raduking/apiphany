@@ -239,15 +239,18 @@ public class ApacheHC5HttpExchangeClient extends AbstractHttpExchangeClient {
 		HttpEntity httpEntity = response.getEntity();
 		HttpStatus httpStatus = HttpStatus.fromCode(response.getCode());
 		Map<String, List<String>> headers = Nullables.whenNotNull(response.getHeaders(), ApacheHC5HttpExchangeClient::toHttpHeadersMap);
+		ensureContentLengthWithinLimit(headers, getMaxResponseBodySize());
+
+		Object responseBody = getResponseBody(apiRequest, httpEntity);
 
 		List<String> encodings = getHeaderValues(HttpHeader.CONTENT_ENCODING, headers);
 		List<ContentEncoding> contentEncodings = ContentEncoding.parseAll(encodings);
-		U responseBody = ContentEncoding.decodeBody(getResponseBody(apiRequest, httpEntity), contentEncodings);
+		U decodedBody = ContentEncoding.decodeBody(JavaObjects.cast(responseBody), contentEncodings, getMaxDecodedResponseBodySize());
 
 		List<String> contentTypes = getHeaderValues(HttpHeader.CONTENT_TYPE, headers);
 		HttpContentType contentType = HttpContentType.parse(contentTypes);
 
-		return buildResponse(apiRequest, httpStatus, headers, contentType, responseBody);
+		return buildResponse(apiRequest, httpStatus, headers, contentType, decodedBody);
 	}
 
 	/**
@@ -267,7 +270,7 @@ public class ApacheHC5HttpExchangeClient extends AbstractHttpExchangeClient {
 		if (apiRequest.isStream()) {
 			body = ApacheHC5Entities.toInputStream(httpEntity);
 		} else {
-			body = ApacheHC5Entities.toByteArray(httpEntity);
+			body = ApacheHC5Entities.toByteArray(httpEntity, getMaxResponseBodySize());
 		}
 		return JavaObjects.cast(body);
 	}

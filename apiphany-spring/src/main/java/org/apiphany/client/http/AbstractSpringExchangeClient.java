@@ -179,9 +179,13 @@ public abstract class AbstractSpringExchangeClient extends AbstractHttpExchangeC
 		HttpStatus httpStatus = HttpStatus.fromCode(responseEntity.getStatusCode().value());
 		U responseBody = responseEntity.getBody();
 
+		int maxBodySize = getMaxResponseBodySize();
+		ensureContentLengthWithinLimit(headers, maxBodySize);
+		ensureBodySizeWithinLimit(responseBody, maxBodySize);
+
 		List<String> encodings = getHeaderValues(HttpHeader.CONTENT_ENCODING, headers);
 		List<ContentEncoding> contentEncodings = ContentEncoding.parseAll(encodings);
-		U decompressedBody = ContentEncoding.decodeBody(responseBody, contentEncodings);
+		U decompressedBody = ContentEncoding.decodeBody(responseBody, contentEncodings, getMaxDecodedResponseBodySize());
 
 		List<String> contentTypeHeaders = headers.get(HttpHeader.CONTENT_TYPE.value());
 		HttpContentType contentType = HttpContentType.parse(contentTypeHeaders);
