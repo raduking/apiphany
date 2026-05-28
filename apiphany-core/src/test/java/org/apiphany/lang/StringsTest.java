@@ -541,6 +541,69 @@ class StringsTest {
 		}
 	}
 
+	@Nested
+	class PreviewTests {
+
+		@Test
+		void shouldReturnNullOnPreviewWithStringIfStringIsNull() {
+			String result = Strings.preview((String) null, 10);
+
+			assertThat(result, nullValue());
+		}
+
+		@Test
+		void shouldReturnSameStringOnPreviewWhenStringLengthIsLessThanMaxLength() {
+			String value = "abc";
+
+			String result = Strings.preview(value, 10);
+
+			assertThat(result, equalTo(value));
+		}
+
+		@Test
+		void shouldReturnSameStringOnPreviewWhenStringLengthIsEqualToMaxLength() {
+			String value = "abcdefghij";
+
+			String result = Strings.preview(value, 10);
+
+			assertThat(result, equalTo(value));
+		}
+
+		@Test
+		void shouldReturnTruncatedStringOnPreviewWhenStringLengthIsGreaterThanMaxLength() {
+			String value = "abcdefghijk";
+
+			String result = Strings.preview(value, 10);
+
+			assertThat(result, equalTo("abcdefghij...(truncated)"));
+		}
+
+		@Test
+		void shouldReturnNullOnPreviewWithBytesIfBytesIsNull() {
+			String result = Strings.preview((byte[]) null, 10);
+
+			assertThat(result, nullValue());
+		}
+
+		@Test
+		void shouldReturnSameStringOnPreviewWithBytesWhenLengthIsLessThanMaxLength() {
+			byte[] value = "abc".getBytes(StandardCharsets.UTF_8);
+
+			String result = Strings.preview(value, 10);
+
+			assertThat(result, equalTo("abc"));
+		}
+
+		@Test
+		void shouldReturnTruncatedStringOnPreviewWithBytesWhenLengthIsGreaterThanMaxLength() {
+			byte[] value = "abcdefghijk".getBytes(StandardCharsets.UTF_8);
+
+			String result = Strings.preview(value, 10);
+
+			assertThat(result, equalTo("abcdefghij...(truncated)"));
+		}
+	}
+
 	@Test
 	void shouldEnvelopeStrings() {
 		String result = Strings.envelope(TEST_INTEGER_STRING, TEST_STRING);

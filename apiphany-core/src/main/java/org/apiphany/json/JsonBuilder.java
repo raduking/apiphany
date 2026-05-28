@@ -1,5 +1,7 @@
 package org.apiphany.json;
 
+import java.io.InputStream;
+import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
@@ -10,6 +12,7 @@ import org.apiphany.json.jackson2.Jackson2Library;
 import org.apiphany.json.jackson3.Jackson3Library;
 import org.apiphany.lang.Strings;
 import org.apiphany.logging.Slf4jLoggerAdapter;
+import org.apiphany.security.MessageDigestAlgorithm;
 import org.morphix.convert.Converter;
 import org.morphix.convert.MapConversions;
 import org.morphix.convert.function.SimpleConverter;
@@ -89,7 +92,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 		/**
 		 * Error message logged when an object could not be de-serialized.
 		 */
-		public static final String COULD_NOT_DESERIALIZE_OBJECT = "Could not deserialize object: {}";
+		public static final String COULD_NOT_DESERIALIZE_OBJECT = "Could not deserialize object type: {}, input: {}";
 
 		/**
 		 * Error message logged when a JSON library module is already registered.
@@ -565,7 +568,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 * @param obj input
 	 * @return JSON String
 	 */
-	protected static <T> String toDebugString(final T obj) {
+	protected static <T> String toDebugJsonString(final T obj) {
 		if (null == obj) {
 			return "{ \"type\":null, \"identity\":null }";
 		}
@@ -581,7 +584,8 @@ public class JsonBuilder { // NOSONAR singleton implementation
 
 	/**
 	 * Returns the string with the class name and hexadecimal hash of the input object appended. If the input object is null
-	 * the result is <code>"null"</code>.
+	 * the result is {@code "null"}. We are using {@link Objects#toString(Object)} for this to avoid returning the string
+	 * {@code "null"} when the input is null.
 	 *
 	 * @param <T> object type
 	 *
@@ -605,5 +609,66 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 */
 	protected static <O> UnsupportedOperationException unsupportedJsonInputType(final O json) {
 		return new UnsupportedOperationException("Unsupported JSON input type: " + json.getClass());
+	}
+
+	/**
+	 * Logs the deserialization error, the exception and the input preview if debug is enabled.
+	 *
+	 * @param logger the logger to use for logging the error
+	 * @param e the exception that occurred during deserialization
+	 * @param targetType the target type that was being deserialized to
+	 * @param json the JSON input that caused the error
+	 */
+	protected static void logDeserializationError(final LoggerAdapter logger, final Exception e, final Type targetType, final Object json) {
+		logger.warn(ErrorMessage.COULD_NOT_DESERIALIZE_OBJECT, targetType, describeJsonInput(json), e);
+	}
+
+	/**
+	 * Builds a safe diagnostic description for a JSON input value.
+	 * <p>
+	 * By default it only logs metadata (type/length). When debug-string is enabled via
+	 * {@code -Djson-builder.to-json.debug-string=true}, it also includes a bounded preview to aid debugging.
+	 *
+	 * @param json JSON input object
+	 * @return diagnostic string with input type and size (and preview when debug mode is enabled)
+	 */
+	protected static String describeJsonInput(final Object json) {
+		return switch (json) {
+			case null -> Objects.toString(json);
+			case String string -> describeJsonInput(string);
+			case byte[] bytes -> describeJsonInput(bytes);
+			case InputStream is -> "InputStream(type=" + is.getClass().getName() + ")";
+			default -> "Object(type=" + json.getClass().getName() + ")";
+		};
+	}
+
+	/**
+	 * Builds a safe diagnostic description for a byte array JSON input value.
+	 * <p>
+	 * By default it only logs metadata (length). When debug-string is enabled via
+	 * {@code -Djson-builder.to-json.debug-string=true}, it also includes a bounded preview to aid debugging.
+	 *
+	 * @param bytes byte array JSON input
+	 * @return diagnostic string with input length (and preview when debug mode is enabled)
+	 */
+	protected static String describeJsonInput(final String string) {
+		String hash = MessageDigestAlgorithm.SHA256.hash(string, 8);
+		String preview = runtime().isDebugString() ? ", preview=" + Strings.preview(string, 512) : "";
+		return "String(length=" + string.length() + ", hash=" + hash + ")" + preview;
+	}
+
+	/**
+	 * Builds a safe diagnostic description for a byte array JSON input value.
+	 * <p>
+	 * By default it only logs metadata (length). When debug-string is enabled via
+	 * {@code -Djson-builder.to-json.debug-string=true}, it also includes a bounded preview to aid debugging.
+	 *
+	 * @param bytes byte array JSON input
+	 * @return diagnostic string with input length (and preview when debug mode is enabled)
+	 */
+	protected static String describeJsonInput(final byte[] bytes) {
+		String hash = MessageDigestAlgorithm.SHA256.hash(bytes, 8);
+		String preview = runtime().isDebugString() ? ", preview=" + Strings.preview(bytes, 512) : "";
+		return "byte[](length=" + bytes.length + ", hash=" + hash + ")" + preview;
 	}
 }

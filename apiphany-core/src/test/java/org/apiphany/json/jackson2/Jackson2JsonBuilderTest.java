@@ -413,9 +413,9 @@ class Jackson2JsonBuilderTest {
 			Jackson2JsonBuilder jacksonJsonBuilder = new Jackson2JsonBuilder();
 			Fields.IgnoreAccess.set(jacksonJsonBuilder, "debugString", true);
 
-			B b = new B(CUSTOMER_ID1, TENANT_ID1);
+			B b = new E(CUSTOMER_ID1, TENANT_ID1);
 
-			String expectedDebugString = "{ \"type\":\"" + B.class.getCanonicalName() + "\", \"identity\":\"" + B.class.getName() + "@"
+			String expectedDebugString = "{ \"type\":\"" + E.class.getCanonicalName() + "\", \"identity\":\"" + E.class.getName() + "@"
 					+ Integer.toHexString(b.hashCode()) + "\" }";
 
 			String debugString = jacksonJsonBuilder.toJsonString(b);
@@ -741,6 +741,18 @@ class Jackson2JsonBuilderTest {
 
 		public void setException(final Exception exception) {
 			this.exception = exception;
+		}
+	}
+
+	static class E extends B {
+
+		public E(final String customerId, final String tenantId) {
+			super(customerId, tenantId);
+		}
+
+		@Override
+		public String getCustomerId() {
+			throw new UnsupportedOperationException("getCustomerId is not supported");
 		}
 	}
 }

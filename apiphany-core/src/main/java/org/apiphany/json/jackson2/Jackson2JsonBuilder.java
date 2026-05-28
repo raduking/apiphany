@@ -277,9 +277,6 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 */
 	@Override
 	public <T> String toJsonString(final T obj) {
-		if (isDebugString()) {
-			return toDebugString(obj);
-		}
 		if (null == obj) {
 			return null;
 		}
@@ -287,7 +284,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 		try {
 			return eol() + objectWriter.writeValueAsString(obj);
 		} catch (JsonProcessingException e) {
-			String result = toIdentityJsonString(obj);
+			String result = isDebugString() ? toDebugJsonString(obj) : toIdentityJsonString(obj);
 			LOGGER.warn(ErrorMessage.COULD_NOT_SERIALIZE_OBJECT, result, e);
 			return result;
 		}
@@ -307,7 +304,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 		try {
 			return objectMapper.readValue(json, cls);
 		} catch (JsonProcessingException e) {
-			LOGGER.warn(ErrorMessage.COULD_NOT_DESERIALIZE_OBJECT, json, e);
+			logDeserializationError(LOGGER, e, cls, json);
 			return null;
 		}
 	}
@@ -345,7 +342,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 		try {
 			return objectMapper.readValue(json, typeReference);
 		} catch (JsonProcessingException e) {
-			LOGGER.warn(ErrorMessage.COULD_NOT_DESERIALIZE_OBJECT, json, e);
+			logDeserializationError(LOGGER, e, typeReference.getType(), json);
 			return null;
 		}
 	}
@@ -363,7 +360,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 		try {
 			return objectMapper.readValue(json, cls);
 		} catch (IOException e) {
-			LOGGER.warn(ErrorMessage.COULD_NOT_DESERIALIZE_OBJECT, json, e);
+			logDeserializationError(LOGGER, e, cls, json);
 			return null;
 		}
 	}
@@ -400,7 +397,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 		try {
 			return objectMapper.readValue(json, typeReference);
 		} catch (IOException e) {
-			LOGGER.warn(ErrorMessage.COULD_NOT_DESERIALIZE_OBJECT, json, e);
+			logDeserializationError(LOGGER, e, typeReference.getType(), json);
 			return null;
 		}
 	}
@@ -418,7 +415,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 		try {
 			return objectMapper.readValue(json, cls);
 		} catch (IOException e) {
-			LOGGER.warn(ErrorMessage.COULD_NOT_DESERIALIZE_OBJECT, json, e);
+			logDeserializationError(LOGGER, e, cls, json);
 			return null;
 		}
 	}
@@ -455,7 +452,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 		try {
 			return objectMapper.readValue(json, typeReference);
 		} catch (IOException e) {
-			LOGGER.warn(ErrorMessage.COULD_NOT_DESERIALIZE_OBJECT, json, e);
+			logDeserializationError(LOGGER, e, typeReference.getType(), json);
 			return null;
 		}
 	}
