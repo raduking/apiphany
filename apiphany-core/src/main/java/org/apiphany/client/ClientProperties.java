@@ -14,6 +14,7 @@ import org.apiphany.lang.Strings;
 import org.apiphany.lang.annotation.Ignored;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Messages;
+import org.morphix.lang.Nullables;
 import org.morphix.lang.collections.Maps;
 import org.morphix.lang.function.Consumers;
 import org.morphix.reflection.Constructors;
@@ -57,6 +58,11 @@ public class ClientProperties {
 	 * Configuration for client compression.
 	 */
 	private Compression compression = new Compression();
+
+	/**
+	 * Configuration for response-size safety limits.
+	 */
+	private Response response = new Response();
 
 	/**
 	 * A map of client-specific properties.
@@ -108,6 +114,7 @@ public class ClientProperties {
 					&& Objects.equals(this.timeout, that.timeout)
 					&& Objects.equals(this.connection, that.connection)
 					&& Objects.equals(this.compression, that.compression)
+					&& Objects.equals(this.response, that.response)
 					&& Objects.equals(this.client, that.client)
 					&& Objects.equals(this.custom, that.custom);
 		}
@@ -119,7 +126,7 @@ public class ClientProperties {
 	 */
 	@Override
 	public int hashCode() {
-		return Objects.hash(enabled, baseUrl, timeout, connection, compression, client, custom);
+		return Objects.hash(enabled, baseUrl, timeout, connection, compression, response, client, custom);
 	}
 
 	/**
@@ -220,6 +227,24 @@ public class ClientProperties {
 	 */
 	public void setCompression(final Compression compression) {
 		this.compression = compression;
+	}
+
+	/**
+	 * Returns the response-size safety configuration.
+	 *
+	 * @return the response-size safety configuration
+	 */
+	public Response getResponse() {
+		return response;
+	}
+
+	/**
+	 * Sets the response-size safety configuration.
+	 *
+	 * @param response response-size safety configuration
+	 */
+	public void setResponse(final Response response) {
+		this.response = response;
 	}
 
 	/**
@@ -752,7 +777,7 @@ public class ClientProperties {
 		/**
 		 * Constant representing a zero duration.
 		 */
-		public static final Duration ZERO = Duration.ofMillis(0);
+		public static final Duration ZERO = Duration.ZERO;
 
 		/**
 		 * Constant representing an infinite timeout.
@@ -1043,6 +1068,162 @@ public class ClientProperties {
 				this.socket = socketTimeout;
 				return this;
 			}
+		}
+	}
+
+	/**
+	 * Response-size safety properties.
+	 *
+	 * @author Radu Sebastian LAZIN
+	 */
+	public static class Response {
+
+		/**
+		 * Default response-size limits.
+		 *
+		 * @author Radu Sebastian LAZIN
+		 */
+		public static class Default {
+
+			/**
+			 * Default maximum raw response body size in bytes (50 MB).
+			 */
+			public static final int MAX_BODY_SIZE = 50 * 1024 * 1024;
+
+			/**
+			 * Default maximum decoded response body size in bytes (50 MB) same as {@link #MAX_BODY_SIZE} since the decoded size can
+			 * be larger than the raw size in case of compression.
+			 */
+			public static final int MAX_DECODED_BODY_SIZE = MAX_BODY_SIZE;
+
+			private Default() {
+				// empty
+			}
+		}
+
+		/**
+		 * Maximum allowed raw response body size in bytes.
+		 */
+		private Integer maxBodySize = Default.MAX_BODY_SIZE;
+
+		/**
+		 * Maximum allowed decoded response body size in bytes.
+		 */
+		private Integer maxDecodedBodySize = Default.MAX_DECODED_BODY_SIZE;
+
+		/**
+		 * Default constructor.
+		 */
+		protected Response() {
+			// empty
+		}
+
+		/**
+		 * Returns the effective maximum raw response body size for the given client properties.
+		 * <p>
+		 * If client properties or response properties are missing, the default value defined by {@link Default#MAX_BODY_SIZE}
+		 * is used. If the configured value is invalid (less than or equal to 0), the same default value is returned.
+		 *
+		 * @param clientProperties client properties
+		 * @return effective maximum raw response body size
+		 */
+		public static int getMaxBodySize(final ClientProperties clientProperties) {
+			int maxBodySize = Nullables.whenNotNull(clientProperties)
+					.andNotNull(ClientProperties::getResponse)
+					.thenNotNull(Response::getMaxBodySize)
+					.orElse(Default.MAX_BODY_SIZE);
+			if (maxBodySize <= 0) {
+				return Default.MAX_BODY_SIZE;
+			}
+			return maxBodySize;
+		}
+
+		/**
+		 * Returns the effective maximum decoded response body size for the given client properties.
+		 * <p>
+		 * If client properties or response properties are missing, the default value defined by
+		 * {@link Default#MAX_DECODED_BODY_SIZE} is used. If the configured value is invalid (less than or equal to 0), the same
+		 * default value is returned.
+		 *
+		 * @param clientProperties client properties
+		 * @return effective maximum decoded response body size
+		 */
+		public static int getMaxDecodedBodySize(final ClientProperties clientProperties) {
+			int maxDecodedBodySize = Nullables.whenNotNull(clientProperties)
+					.andNotNull(ClientProperties::getResponse)
+					.thenNotNull(Response::getMaxDecodedBodySize)
+					.orElse(Default.MAX_DECODED_BODY_SIZE);
+			if (maxDecodedBodySize <= 0) {
+				return Default.MAX_DECODED_BODY_SIZE;
+			}
+			return maxDecodedBodySize;
+		}
+
+		/**
+		 * @see Object#toString()
+		 */
+		@Override
+		public String toString() {
+			return JsonBuilder.toJson(this);
+		}
+
+		/**
+		 * @see Object#equals(Object)
+		 */
+		@Override
+		public boolean equals(final Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (obj instanceof Response that) {
+				return Objects.equals(this.maxBodySize, that.maxBodySize)
+						&& Objects.equals(this.maxDecodedBodySize, that.maxDecodedBodySize);
+			}
+			return false;
+		}
+
+		/**
+		 * @see Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			return Objects.hash(maxBodySize, maxDecodedBodySize);
+		}
+
+		/**
+		 * Returns the maximum allowed raw response body size in bytes.
+		 *
+		 * @return max raw response body size in bytes
+		 */
+		public Integer getMaxBodySize() {
+			return maxBodySize;
+		}
+
+		/**
+		 * Sets the maximum allowed raw response body size in bytes.
+		 *
+		 * @param maxBodySize max raw response body size in bytes
+		 */
+		public void setMaxBodySize(final Integer maxBodySize) {
+			this.maxBodySize = maxBodySize;
+		}
+
+		/**
+		 * Returns the maximum allowed decoded response body size in bytes.
+		 *
+		 * @return max decoded response body size in bytes
+		 */
+		public Integer getMaxDecodedBodySize() {
+			return maxDecodedBodySize;
+		}
+
+		/**
+		 * Sets the maximum allowed decoded response body size in bytes.
+		 *
+		 * @param maxDecodedBodySize max decoded response body size in bytes
+		 */
+		public void setMaxDecodedBodySize(final Integer maxDecodedBodySize) {
+			this.maxDecodedBodySize = maxDecodedBodySize;
 		}
 	}
 

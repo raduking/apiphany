@@ -23,11 +23,14 @@ import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpHeaderValues;
 import org.apiphany.http.HttpStatus;
 import org.apiphany.io.ContentType;
+import org.apiphany.lang.Strings;
 import org.apiphany.logging.Slf4jLoggerAdapter;
 import org.apiphany.security.ssl.SSLContexts;
 import org.apiphany.security.ssl.SSLProperties;
 import org.morphix.lang.JavaObjects;
+import org.morphix.lang.Nullables;
 import org.morphix.lang.Pair;
+import org.morphix.lang.collections.Lists;
 import org.morphix.lang.function.LoggerAdapter;
 
 /**
@@ -58,9 +61,19 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	private final HeaderValues headerValuesChain;
 
 	/**
+	 * Cached maximum allowed raw response body size in bytes.
+	 */
+	private final int maxResponseBodySize;
+
+	/**
+	 * Cached maximum allowed decoded response body size in bytes.
+	 */
+	private final int maxDecodedResponseBodySize;
+
+	/**
 	 * The SSL context for HTTPS if configured in client properties via {@link SSLProperties}.
 	 */
-	private SSLContext sslContext;
+	private final SSLContext sslContext;
 
 	/**
 	 * Initialize the client with the given client properties.
@@ -70,20 +83,14 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	protected AbstractHttpExchangeClient(final ClientProperties clientProperties) {
 		LOGGER.debug("Initializing: {}", getClass().getSimpleName());
 		this.clientProperties = Objects.requireNonNull(clientProperties, "clientProperties cannot be null");
-		initialize();
+		this.maxResponseBodySize = ClientProperties.Response.getMaxBodySize(clientProperties);
+		this.maxDecodedResponseBodySize = ClientProperties.Response.getMaxDecodedBodySize(clientProperties);
+
+		SSLProperties sslProperties = getCustomProperties(SSLProperties.class);
+		this.sslContext = Nullables.apply(sslProperties, SSLContexts::create);
+
 		addDefaultContentConverters(contentConverters);
 		this.headerValuesChain = addDefaultHeaderValues(new HeaderValues());
-	}
-
-	/**
-	 * Initializes the properties.
-	 */
-	private void initialize() {
-		SSLProperties sslProperties = getCustomProperties(SSLProperties.class);
-		if (null == sslProperties) {
-			return;
-		}
-		this.sslContext = SSLContexts.create(sslProperties);
 	}
 
 	/**
@@ -276,6 +283,81 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	 */
 	protected static <T> boolean isContentJson(final ApiRequest<T> apiRequest) {
 		return apiRequest.containsHeader(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_JSON);
+	}
+
+	/**
+	 * Returns the maximum allowed raw response body size in bytes.
+	 *
+	 * @return max response body size in bytes
+	 */
+	protected int getMaxResponseBodySize() {
+		return maxResponseBodySize;
+	}
+
+	/**
+	 * Returns the maximum allowed decoded response body size in bytes.
+	 *
+	 * @return max decoded response body size in bytes
+	 */
+	protected int getMaxDecodedResponseBodySize() {
+		return maxDecodedResponseBodySize;
+	}
+
+	/**
+	 * Creates an HttpException indicating that the response body exceeds the configured maximum size.
+	 *
+	 * @param contentLength the actual content length of the response body
+	 * @param maxBodySize the configured maximum body size in bytes
+	 * @return an HttpException with status {@link HttpStatus#PAYLOAD_TOO_LARGE} and a message describing the issue
+	 */
+	protected HttpException responseTooLargeException(final long contentLength, final int maxBodySize) {
+		return new HttpException(HttpStatus.PAYLOAD_TOO_LARGE,
+				"Response body exceeds configured max size: " + contentLength + " > " + maxBodySize);
+	}
+
+	/**
+	 * Checks declared content-length header against configured response-size limit.
+	 *
+	 * @param <T> the type of headers
+	 *
+	 * @param headers response headers
+	 * @param maxBodySize max body size in bytes
+	 */
+	protected <T> void ensureContentLengthWithinLimit(final T headers, final int maxBodySize) {
+		List<String> contentLengthValues = getHeaderValues(HttpHeader.CONTENT_LENGTH, headers);
+		if (Lists.isEmpty(contentLengthValues)) {
+			return;
+		}
+		String contentLengthValue = contentLengthValues.getFirst();
+		if (Strings.isBlank(contentLengthValue)) {
+			return;
+		}
+		long contentLength;
+		try {
+			contentLength = Long.parseLong(contentLengthValue.trim());
+		} catch (NumberFormatException e) {
+			return;
+		}
+		if (contentLength > maxBodySize) {
+			throw responseTooLargeException(contentLength, maxBodySize);
+		}
+	}
+
+	/**
+	 * Checks buffered response body size against configured response-size limit.
+	 *
+	 * @param <T> the type of body
+	 *
+	 * @param body the body to check the size of
+	 * @param maxBodySize max body size in bytes
+	 */
+	protected <T> void ensureBodySizeWithinLimit(final T body, final int maxBodySize) {
+		if (!(body instanceof byte[] bytes)) {
+			return;
+		}
+		if (bytes.length > maxBodySize) {
+			throw responseTooLargeException(bytes.length, maxBodySize);
+		}
 	}
 
 	/**

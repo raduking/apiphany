@@ -43,6 +43,7 @@ import org.apiphany.client.ClientCustomization;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.header.Header;
 import org.apiphany.header.Headers;
+import org.apiphany.http.ContentEncoding;
 import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
@@ -50,6 +51,7 @@ import org.apiphany.http.HttpStatus;
 import org.apiphany.io.ByteBufferSubscriber;
 import org.apiphany.io.ContentType;
 import org.apiphany.io.InputStreamSupplier;
+import org.apiphany.io.gzip.GZip;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.security.ssl.SSLProperties;
@@ -744,6 +746,84 @@ class JavaNetHttpExchangeClientTest {
 
 			assertThat(exception.getMessage(), equalTo("Error converting JSON response to " + genericResponseType.getType().getTypeName()));
 		}
+
+		@Test
+		void shouldThrowPayloadTooLargeWhenRawResponseExceedsConfiguredLimit() throws Exception {
+			ClientProperties properties = new ClientProperties();
+			properties.getResponse().setMaxBodySize(3);
+
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient(properties);
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.GET)
+					.responseType(String.class);
+
+			HttpResponse<?> httpResponse = mock(HttpResponse.class);
+			doReturn(HttpStatus.OK.value()).when(httpResponse).statusCode();
+			doReturn(new ByteArrayInputStream(STRING.getBytes(StandardCharsets.UTF_8))).when(httpResponse).body();
+			doReturn(HttpHeaders.of(Map.of(), (v1, v2) -> true)).when(httpResponse).headers();
+
+			HttpException exception = assertThrows(HttpException.class,
+					() -> exchangeClient.buildResponse(request, httpResponse));
+
+			assertThat(exception.getStatus(), equalTo(HttpStatus.PAYLOAD_TOO_LARGE));
+			assertThat(exception.getMessage(), startsWith("[413 Payload Too Large]"));
+		}
+
+		@Test
+		void shouldThrowPayloadTooLargeWhenContentLengthExceedsConfiguredLimitBeforeReadingBody() throws Exception {
+			ClientProperties properties = new ClientProperties();
+			properties.getResponse().setMaxBodySize(3);
+
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient(properties);
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.GET)
+					.responseType(String.class);
+
+			HttpResponse<?> httpResponse = mock(HttpResponse.class);
+			doReturn(HttpStatus.OK.value()).when(httpResponse).statusCode();
+			doReturn(HttpHeaders.of(Map.of(HttpHeader.CONTENT_LENGTH.value(), List.of("5")), (v1, v2) -> true)).when(httpResponse)
+					.headers();
+
+			HttpException exception = assertThrows(HttpException.class,
+					() -> exchangeClient.buildResponse(request, httpResponse));
+
+			assertThat(exception.getStatus(), equalTo(HttpStatus.PAYLOAD_TOO_LARGE));
+			assertThat(exception.getMessage(), startsWith("[413 Payload Too Large] Response body exceeds configured max size"));
+		}
+
+		@Test
+		void shouldThrowPayloadTooLargeWhenDecodedResponseExceedsConfiguredLimit() throws Exception {
+			ClientProperties properties = new ClientProperties();
+			properties.getResponse().setMaxBodySize(1024);
+			properties.getResponse().setMaxDecodedBodySize(3);
+
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient(properties);
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.GET)
+					.responseType(String.class);
+
+			Map<String, List<String>> headers = Map.of(
+					HttpHeader.CONTENT_ENCODING.value(), List.of(ContentEncoding.GZIP.value()));
+
+			HttpResponse<?> httpResponse = mock(HttpResponse.class);
+			doReturn(HttpStatus.OK.value()).when(httpResponse).statusCode();
+			doReturn(GZip.compress(STRING.getBytes(StandardCharsets.UTF_8))).when(httpResponse).body();
+			doReturn(HttpHeaders.of(headers, (v1, v2) -> true)).when(httpResponse).headers();
+
+			IllegalStateException exception = assertThrows(IllegalStateException.class,
+					() -> exchangeClient.buildResponse(request, httpResponse));
+
+			assertThat(exception.getMessage(), equalTo("Failed to decode content with encoding: gzip"));
+		}
 	}
 
 	@Nested
@@ -827,7 +907,7 @@ class JavaNetHttpExchangeClientTest {
 	class GetResponseBodyHandlerTests {
 
 		@Test
-		void shouldReturnByteArrayBodyHandlerWhenNoStreamIsProvided() {
+		void shouldReturnInputStreamBodyHandlerWhenNoStreamIsProvided() {
 			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
 					.stream(false)
 					.responseType(String.class);
@@ -836,7 +916,7 @@ class JavaNetHttpExchangeClientTest {
 
 			Subscriber<?> subscriber = bodyHandler.apply(null);
 
-			assertInstanceOf(HttpResponse.BodySubscribers.ofByteArray().getClass(), subscriber);
+			assertInstanceOf(HttpResponse.BodySubscribers.ofInputStream().getClass(), subscriber);
 		}
 
 		@Test

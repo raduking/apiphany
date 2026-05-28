@@ -97,7 +97,8 @@ public class SpringRestExchangeClient extends AbstractSpringExchangeClient {
 		}
 		Class<U> responseType = getResponseType(apiRequest);
 		return headerSpec.exchange((request, response) -> {
-			ResponseEntityExtractor<U> responseExtractor = new ResponseEntityExtractor<>(responseType, getMessageConverters());
+			ResponseEntityExtractor<U> responseExtractor = new ResponseEntityExtractor<>(responseType, getMessageConverters(),
+					getMaxResponseBodySize());
 			return responseExtractor.extractData(response);
 		});
 	}
