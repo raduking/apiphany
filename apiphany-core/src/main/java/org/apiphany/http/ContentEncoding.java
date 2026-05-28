@@ -9,6 +9,7 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.apiphany.io.IOStreams;
 import org.apiphany.io.deflate.Deflate;
 import org.apiphany.io.function.IOFunction;
 import org.apiphany.io.gzip.GZip;
@@ -32,7 +33,21 @@ public enum ContentEncoding {
 	 *
 	 * @see <a href="https://www.rfc-editor.org/rfc/rfc9110.html#section-8.4.1">RFC 9110 Section 8.4.1</a>
 	 */
-	IDENTITY(Value.IDENTITY),
+	IDENTITY(Value.IDENTITY) {
+
+		/**
+		 * Identity encoding performs no transformation.
+		 *
+		 * @param <T> body type
+		 * @param body body to return unchanged
+		 * @param maxDecodedBytes ignored for identity encoding
+		 * @return unchanged body
+		 */
+		@Override
+		public <T> T decode(final T body, final int maxDecodedBytes) {
+			return body;
+		}
+	},
 
 	/**
 	 * The {@code gzip} encoding format (LZ77 + CRC32). This is the most widely supported compression format for HTTP.
@@ -42,17 +57,16 @@ public enum ContentEncoding {
 	GZIP(Value.GZIP) {
 
 		/**
-		 * Decodes the given input stream or byte array using GZIP decompression.
+		 * Decodes the given input stream or byte array using GZIP decompression with a maximum output size for byte[] decoding.
 		 *
 		 * @param <T> body type
-		 *
 		 * @param body compressed body to decode, can be an InputStream or a byte array
-		 * @return de-compressed body that decodes the original body using GZIP decompression
-		 * @throws IllegalStateException if any error occurs during decompression
+		 * @param maxDecodedBytes maximum decompressed size in bytes for byte[] decoding
+		 * @return decoded body
 		 */
 		@Override
-		public <T> T decode(final T body) {
-			return ContentEncoding.decode(body, this, GZip::decompress);
+		public <T> T decode(final T body, final int maxDecodedBytes) {
+			return ContentEncoding.decode(body, this, input -> GZip.decompress(input, maxDecodedBytes));
 		}
 	},
 
@@ -66,17 +80,17 @@ public enum ContentEncoding {
 	DEFLATE(Value.DEFLATE) {
 
 		/**
-		 * Decodes the given input stream or byte array using DEFLATE decompression.
+		 * Decodes the given input stream or byte array using DEFLATE decompression with a maximum output size for byte[]
+		 * decoding.
 		 *
 		 * @param <T> body type
-		 *
 		 * @param body compressed body to decode, can be an InputStream or a byte array
-		 * @return de-compressed body that decodes the original body using DEFLATE decompression
-		 * @throws IllegalStateException if any error occurs during decompression
+		 * @param maxDecodedBytes maximum decompressed size in bytes for byte[] decoding
+		 * @return decoded body
 		 */
 		@Override
-		public <T> T decode(final T body) {
-			return ContentEncoding.decode(body, this, Deflate::decompress);
+		public <T> T decode(final T body, final int maxDecodedBytes) {
+			return ContentEncoding.decode(body, this, input -> Deflate.decompress(input, maxDecodedBytes));
 		}
 	},
 
@@ -231,6 +245,19 @@ public enum ContentEncoding {
 	 *     implemented for this encoding
 	 */
 	public <T> T decode(final T body) {
+		return decode(body, IOStreams.MAX_BUFFER_SIZE);
+	}
+
+	/**
+	 * Decodes the given body according to this encoding while enforcing a maximum decoded byte size for byte-array based
+	 * decoding.
+	 *
+	 * @param <T> body type
+	 * @param body body to decode
+	 * @param maxDecodedBytes maximum decompressed size in bytes for byte[] decoding
+	 * @return decoded body
+	 */
+	public <T> T decode(final T body, final int maxDecodedBytes) {
 		throw new UnsupportedOperationException("Decoding not supported for content encoding: " + this);
 	}
 
@@ -282,10 +309,24 @@ public enum ContentEncoding {
 	 * @return decoded body
 	 */
 	public static <T> T decodeBody(final T body, final List<ContentEncoding> encodings) {
+		return decodeBody(body, encodings, IOStreams.MAX_BUFFER_SIZE);
+	}
+
+	/**
+	 * Decodes the body based on the given content encoding list while enforcing a maximum decoded byte size for byte-array
+	 * based decoding.
+	 *
+	 * @param <T> body type
+	 * @param body the body
+	 * @param encodings content encoding list in the order they were applied to the body
+	 * @param maxDecodedBytes maximum decompressed size in bytes for byte[] decoding
+	 * @return decoded body
+	 */
+	public static <T> T decodeBody(final T body, final List<ContentEncoding> encodings, final int maxDecodedBytes) {
 		if (null == body || Lists.isEmpty(encodings)) {
 			return body;
 		}
-		return isSupportedBodyType(body) ? decodeSupportedBody(body, encodings) : body;
+		return isSupportedBodyType(body) ? decodeSupportedBody(body, encodings, maxDecodedBytes) : body;
 	}
 
 	/**
@@ -299,10 +340,10 @@ public enum ContentEncoding {
 	 * @param encodings content encoding list in the order they were applied to the body
 	 * @return decoded body
 	 */
-	private static <T> T decodeSupportedBody(final T body, final List<ContentEncoding> encodings) {
+	private static <T> T decodeSupportedBody(final T body, final List<ContentEncoding> encodings, final int maxDecodedBytes) {
 		T result = body;
 		for (ContentEncoding encoding : encodings.reversed()) {
-			result = encoding.decode(result);
+			result = encoding.decode(result, maxDecodedBytes);
 		}
 		return result;
 	}

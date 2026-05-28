@@ -48,8 +48,20 @@ public class Deflate {
 	 * @throws IOException on error
 	 */
 	public static byte[] decompressToBytes(final byte[] body) throws IOException {
+		return decompressToBytes(body, IOStreams.MAX_BUFFER_SIZE);
+	}
+
+	/**
+	 * De-compress a DEFLATE byte array to bytes with maximum output size.
+	 *
+	 * @param body compressed body
+	 * @param maxBytes maximum number of bytes allowed in decompressed output
+	 * @return decompressed bytes
+	 * @throws IOException on error
+	 */
+	public static byte[] decompressToBytes(final byte[] body, final int maxBytes) throws IOException {
 		try (InputStream is = inputStream(new ByteArrayInputStream(body))) {
-			return IOStreams.toByteArray(is);
+			return IOStreams.toByteArray(is, maxBytes);
 		}
 	}
 
@@ -63,8 +75,23 @@ public class Deflate {
 	 * @throws IOException on error
 	 */
 	public static <T> T decompress(final T input) throws IOException {
+		return decompress(input, IOStreams.MAX_BUFFER_SIZE);
+	}
+
+	/**
+	 * De-compress a DEFLATE input (byte[] or InputStream) to the same output type while applying a maximum output size for
+	 * byte-array decoding.
+	 *
+	 * @param <T> input type
+	 *
+	 * @param input input to decompress
+	 * @param maxBytes maximum number of bytes allowed in decompressed output when input is byte[]
+	 * @return decompressed result
+	 * @throws IOException on error
+	 */
+	public static <T> T decompress(final T input, final int maxBytes) throws IOException {
 		Object result = switch (input) {
-			case byte[] bytes -> decompressToBytes(bytes);
+			case byte[] bytes -> decompressToBytes(bytes, maxBytes);
 			case InputStream is -> inputStream(is);
 			default -> throw new IllegalArgumentException(
 					"Cannot decompress object of type: " + input.getClass()
