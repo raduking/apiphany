@@ -1,5 +1,9 @@
 ## Release Notes
 
+`1.2.12`
+
+---
+
 `1.2.11`
 
 - Upgraded `morphix-all` to `1.0.35`.
