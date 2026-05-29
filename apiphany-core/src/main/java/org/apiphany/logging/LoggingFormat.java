@@ -30,7 +30,7 @@ public enum LoggingFormat {
 	CUSTOM("custom");
 
 	/**
-	 * The default logging format (JSON).
+	 * The default logging format (CUSTOM).
 	 */
 	public static final LoggingFormat DEFAULT = CUSTOM;
 
