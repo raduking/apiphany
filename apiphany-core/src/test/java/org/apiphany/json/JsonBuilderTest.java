@@ -439,7 +439,7 @@ class JsonBuilderTest {
 			String result = JsonBuilder.with(runtime, () -> JsonBuilder.describeJsonInput(input));
 
 			String hash = MessageDigestAlgorithm.SHA256.hash(input, 8);
-			assertThat(result, equalTo("String(length=3, hash=" + hash + ")"));
+			assertThat(result, equalTo(String.class.getTypeName() + "(length=3, hash=" + hash + ")"));
 		}
 
 		@Test
@@ -450,7 +450,7 @@ class JsonBuilderTest {
 			String result = JsonBuilder.with(runtime, () -> JsonBuilder.describeJsonInput(input));
 
 			String hash = MessageDigestAlgorithm.SHA256.hash(input, 8);
-			assertThat(result, equalTo("String(length=3, hash=" + hash + "), preview=abc"));
+			assertThat(result, equalTo(String.class.getTypeName() + "(length=3, hash=" + hash + ", preview=abc)"));
 		}
 
 		@Test
@@ -472,7 +472,7 @@ class JsonBuilderTest {
 			String result = JsonBuilder.with(runtime, () -> JsonBuilder.describeJsonInput(input));
 
 			String hash = MessageDigestAlgorithm.SHA256.hash(input, 8);
-			assertThat(result, equalTo("byte[](length=3, hash=" + hash + "), preview=abc"));
+			assertThat(result, equalTo("byte[](length=3, hash=" + hash + ", preview=abc)"));
 		}
 
 		@Test
@@ -482,7 +482,8 @@ class JsonBuilderTest {
 
 			String result = JsonBuilder.with(runtime, () -> JsonBuilder.describeJsonInput(input));
 
-			assertThat(result, equalTo("InputStream(type=" + ByteArrayInputStream.class.getName() + ")"));
+			assertThat(result, equalTo(ByteArrayInputStream.class.getTypeName()
+					+ "(hash=" + Integer.toHexString(System.identityHashCode(input)) + ")"));
 		}
 
 		@Test
@@ -492,7 +493,19 @@ class JsonBuilderTest {
 
 			String result = JsonBuilder.with(runtime, () -> JsonBuilder.describeJsonInput(input));
 
-			assertThat(result, equalTo("Object(type=" + Object.class.getName() + ")"));
+			assertThat(result, equalTo(Object.class.getTypeName()
+					+ "(hash=" + Integer.toHexString(System.identityHashCode(input)) + ")"));
+		}
+
+		@Test
+		void shouldDescribeObjectInputWithDebugStringEnabled() {
+			JsonBuilder runtime = newJsonBuilderWithDebugString(true);
+			Object input = new Object();
+
+			String result = JsonBuilder.with(runtime, () -> JsonBuilder.describeJsonInput(input));
+
+			assertThat(result, equalTo(Object.class.getTypeName()
+					+ "(hash=" + Integer.toHexString(System.identityHashCode(input)) + ")"));
 		}
 
 		private static JsonBuilder newJsonBuilderWithDebugString(final boolean debugString) {

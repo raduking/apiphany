@@ -183,16 +183,6 @@ public class OAuth2ProviderDetails {
 
 	/**
 	 * Returns whether insecure token URI usage is explicitly allowed.
-	 *
-	 * @return true if insecure token URI usage is explicitly allowed, false otherwise
-	 */
-	@Ignored
-	public boolean isInsecureTokenUriAllowed() {
-		return isAllowInsecureTokenUri();
-	}
-
-	/**
-	 * Returns whether insecure token URI usage is explicitly allowed.
 	 * <p>
 	 * Alias kept for bean/property compatibility.
 	 *
@@ -238,7 +228,7 @@ public class OAuth2ProviderDetails {
 	 */
 	@Ignored
 	public boolean isTokenUriAllowed() {
-		return isTokenUriSecure() || isInsecureTokenUriAllowed();
+		return isTokenUriSecure() || isAllowInsecureTokenUri();
 	}
 
 	/**

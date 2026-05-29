@@ -41,4 +41,30 @@ class MultipartMessageTest {
 			assertThat(multipart.getParts(), hasSize(0));
 		}
 	}
+
+	@Nested
+	class ToByteArrayTest {
+
+		@Test
+		void shouldConvertMultipartToByteArray() {
+			MultipartMessage multipart = MultipartMessage.builder()
+					.randomBoundary()
+					.field("field1", "value1")
+					.field("field2", "value2")
+					.build();
+
+			byte[] bytes = multipart.toByteArray();
+			String value = new String(bytes);
+
+			assertThat(value, equalTo("--" + multipart.getBoundary().value() + "\r\n" +
+					"Content-Disposition: form-data; name=\"field1\"\r\n" +
+					"\r\n" +
+					"value1\r\n" +
+					"--" + multipart.getBoundary().value() + "\r\n" +
+					"Content-Disposition: form-data; name=\"field2\"\r\n" +
+					"\r\n" +
+					"value2\r\n" +
+					"--" + multipart.getBoundary().value() + "--\r\n"));
+		}
+	}
 }

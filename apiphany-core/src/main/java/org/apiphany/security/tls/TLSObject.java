@@ -24,9 +24,11 @@ import org.apiphany.logging.LoggingFormat;
 public interface TLSObject extends ByteSizeable, BinaryRepresentable {
 
 	/**
-	 * The logging format for TLS objects, configurable via system property {@code apiphany.logging.format.tls}.
+	 * The logging format for TLS objects, configurable via system property {@code apiphany.logging.format.tls}. This
+	 * property only supports {@link LoggingFormat#HEX} and {@link LoggingFormat#JSON} formats, defaulting to
+	 * {@link LoggingFormat#JSON} if an unsupported value is provided.
 	 */
-	LoggingFormat FORMAT = LoggingFormat.fromString(System.getProperty("apiphany.logging.format.tls"));
+	LoggingFormat FORMAT = LoggingFormat.fromString(System.getProperty("apiphany.logging.format.tls", LoggingFormat.JSON.name()));
 
 	/**
 	 * Serializes the TLS object according to the configured format.
@@ -50,7 +52,7 @@ public interface TLSObject extends ByteSizeable, BinaryRepresentable {
 	static String serialize(final TLSObject tlsObject, final LoggingFormat loggingFormat) {
 		return switch (loggingFormat) {
 			case HEX -> Strings.EOL + Hex.dump(tlsObject);
-			case JSON -> JsonBuilder.toJson(tlsObject);
+			default -> JsonBuilder.toJson(tlsObject);
 		};
 	}
 }

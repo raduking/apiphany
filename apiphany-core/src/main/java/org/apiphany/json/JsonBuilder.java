@@ -1,6 +1,5 @@
 package org.apiphany.json;
 
-import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.Map;
@@ -11,8 +10,9 @@ import java.util.function.Supplier;
 import org.apiphany.json.jackson2.Jackson2Library;
 import org.apiphany.json.jackson3.Jackson3Library;
 import org.apiphany.lang.Strings;
+import org.apiphany.logging.Logging;
+import org.apiphany.logging.LoggingFormat;
 import org.apiphany.logging.Slf4jLoggerAdapter;
-import org.apiphany.security.MessageDigestAlgorithm;
 import org.morphix.convert.Converter;
 import org.morphix.convert.MapConversions;
 import org.morphix.convert.function.SimpleConverter;
@@ -633,42 +633,9 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 * @return diagnostic string with input type and size (and preview when debug mode is enabled)
 	 */
 	protected static String describeJsonInput(final Object json) {
-		return switch (json) {
-			case null -> Objects.toString(json);
-			case String string -> describeJsonInput(string);
-			case byte[] bytes -> describeJsonInput(bytes);
-			case InputStream is -> "InputStream(type=" + is.getClass().getName() + ")";
-			default -> "Object(type=" + json.getClass().getName() + ")";
-		};
-	}
-
-	/**
-	 * Builds a safe diagnostic description for a byte array JSON input value.
-	 * <p>
-	 * By default it only logs metadata (length). When debug-string is enabled via
-	 * {@code -Djson-builder.to-json.debug-string=true}, it also includes a bounded preview to aid debugging.
-	 *
-	 * @param string JSON input string
-	 * @return diagnostic string with input length (and preview when debug mode is enabled)
-	 */
-	protected static String describeJsonInput(final String string) {
-		String hash = MessageDigestAlgorithm.SHA256.hash(string, 8);
-		String preview = runtime().isDebugString() ? ", preview=" + Strings.preview(string, 512) : "";
-		return "String(length=" + string.length() + ", hash=" + hash + ")" + preview;
-	}
-
-	/**
-	 * Builds a safe diagnostic description for a byte array JSON input value.
-	 * <p>
-	 * By default it only logs metadata (length). When debug-string is enabled via
-	 * {@code -Djson-builder.to-json.debug-string=true}, it also includes a bounded preview to aid debugging.
-	 *
-	 * @param bytes byte array JSON input
-	 * @return diagnostic string with input length (and preview when debug mode is enabled)
-	 */
-	protected static String describeJsonInput(final byte[] bytes) {
-		String hash = MessageDigestAlgorithm.SHA256.hash(bytes, 8);
-		String preview = runtime().isDebugString() ? ", preview=" + Strings.preview(bytes, 512) : "";
-		return "byte[](length=" + bytes.length + ", hash=" + hash + ")" + preview;
+		return Logging.describeInput(json, LoggingFormat.CUSTOM,
+				Logging.Include.LENGTH,
+				Logging.Include.HASH,
+				Logging.Include.when(runtime()::isDebugString, Logging.Include.PREVIEW));
 	}
 }
