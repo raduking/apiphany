@@ -220,6 +220,18 @@ public class OAuth2ProviderDetails {
 	}
 
 	/**
+	 * Returns whether insecure token URI usage is explicitly allowed.
+	 * <p>
+	 * Convenience non-bean helper to improve readability at call sites.
+	 *
+	 * @return true if insecure token URI usage is explicitly allowed, false otherwise
+	 */
+	@Ignored
+	public boolean isInsecureTokenUriAllowed() {
+		return isAllowInsecureTokenUri();
+	}
+
+	/**
 	 * Returns whether the token URI is allowed.
 	 * <p>
 	 * Allowed means the token URI is secure (HTTPS) or insecure usage is explicitly enabled for development/testing.
@@ -228,7 +240,7 @@ public class OAuth2ProviderDetails {
 	 */
 	@Ignored
 	public boolean isTokenUriAllowed() {
-		return isTokenUriSecure() || isAllowInsecureTokenUri();
+		return isTokenUriSecure() || isInsecureTokenUriAllowed();
 	}
 
 	/**
