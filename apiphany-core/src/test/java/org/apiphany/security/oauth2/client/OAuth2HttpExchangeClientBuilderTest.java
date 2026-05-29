@@ -321,6 +321,7 @@ class OAuth2HttpExchangeClientBuilderTest {
 	private static OAuth2ProviderDetails buildProvider(final String tokenUri) {
 		OAuth2ProviderDetails provider = new OAuth2ProviderDetails();
 		provider.setTokenUri(TOKEN_URI + "/" + tokenUri);
+		provider.setAllowInsecureTokenUri(true);
 		return provider;
 	}
 

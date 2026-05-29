@@ -80,6 +80,7 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 		super(httpExchangeClient);
 		this.clientRegistration = clientRegistration;
 		this.providerDetails = providerDetails;
+		validateTokenUriSecurity(providerDetails);
 	}
 
 	/**
@@ -355,5 +356,21 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 				"jti", UUID.randomUUID().toString(),
 				"iat", now.getEpochSecond(),
 				"exp", now.plusSeconds(defaultExpiration.toSeconds()).getEpochSecond());
+	}
+
+	/**
+	 * Validates token endpoint transport security.
+	 *
+	 * @param oAuth2ProviderDetails provider details
+	 */
+	private static void validateTokenUriSecurity(final OAuth2ProviderDetails oAuth2ProviderDetails) {
+		if (null == oAuth2ProviderDetails) {
+			throw new IllegalArgumentException("OAuth2 provider details must not be null");
+		}
+		String tokenUri = oAuth2ProviderDetails.getTokenUri();
+		if (Strings.isNotEmpty(tokenUri) && !oAuth2ProviderDetails.isTokenUriAllowed()) {
+			throw new IllegalArgumentException("OAuth2 token URI must use HTTPS unless explicitly allowed for development/testing: "
+					+ tokenUri);
+		}
 	}
 }

@@ -3,6 +3,7 @@ package org.apiphany.client.http;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
@@ -31,29 +32,30 @@ class AbstractHttpExchangeClientTest {
 
 		@Test
 		void shouldDoNothingWhenContentLengthHeaderIsMissing() {
-			exchangeClient.callEnsureContentLengthWithinLimit(Map.of(), 10);
+			assertDoesNotThrow(() -> exchangeClient.callEnsureContentLengthWithinLimit(Map.of(), 10));
 		}
 
 		@Test
 		void shouldDoNothingWhenContentLengthHeaderIsBlank() {
-			exchangeClient.callEnsureContentLengthWithinLimit(Map.of(HttpHeader.CONTENT_LENGTH.value(), List.of("   ")), 10);
+			assertDoesNotThrow(
+					() -> exchangeClient.callEnsureContentLengthWithinLimit(Map.of(HttpHeader.CONTENT_LENGTH.value(), List.of("   ")), 10));
 		}
 
 		@Test
 		void shouldDoNothingWhenContentLengthHeaderIsNotANumber() {
-			exchangeClient.callEnsureContentLengthWithinLimit(Map.of(HttpHeader.CONTENT_LENGTH.value(), List.of("abc")), 10);
+			assertDoesNotThrow(
+					() -> exchangeClient.callEnsureContentLengthWithinLimit(Map.of(HttpHeader.CONTENT_LENGTH.value(), List.of("abc")), 10));
 		}
 
 		@Test
 		void shouldDoNothingWhenContentLengthIsWithinLimit() {
-			exchangeClient.callEnsureContentLengthWithinLimit(Map.of(HttpHeader.CONTENT_LENGTH.value(), List.of("10")), 10);
+			assertDoesNotThrow(() -> exchangeClient.callEnsureContentLengthWithinLimit(Map.of(HttpHeader.CONTENT_LENGTH.value(), List.of("10")), 10));
 		}
 
 		@Test
 		void shouldThrowPayloadTooLargeWhenContentLengthExceedsLimit() {
-			HttpException exception = assertThrows(HttpException.class,
-					() -> exchangeClient.callEnsureContentLengthWithinLimit(
-							Map.of(HttpHeader.CONTENT_LENGTH.value(), List.of("11")), 10));
+			var headers = Map.of(HttpHeader.CONTENT_LENGTH.value(), List.of("11"));
+			HttpException exception = assertThrows(HttpException.class, () -> exchangeClient.callEnsureContentLengthWithinLimit(headers, 10));
 
 			assertThat(exception.getStatus(), equalTo(HttpStatus.PAYLOAD_TOO_LARGE));
 			assertThat(exception.getMessage(), startsWith("[413 Payload Too Large] Response body exceeds configured max size"));
@@ -65,18 +67,17 @@ class AbstractHttpExchangeClientTest {
 
 		@Test
 		void shouldDoNothingWhenBodyIsNotByteArray() {
-			exchangeClient.callEnsureBodySizeWithinLimit("text", 3);
+			assertDoesNotThrow(() -> exchangeClient.callEnsureBodySizeWithinLimit("text", 3));
 		}
 
 		@Test
 		void shouldDoNothingWhenByteArrayBodyIsWithinLimit() {
-			exchangeClient.callEnsureBodySizeWithinLimit(new byte[3], 3);
+			assertDoesNotThrow(() -> exchangeClient.callEnsureBodySizeWithinLimit(new byte[3], 3));
 		}
 
 		@Test
 		void shouldThrowPayloadTooLargeWhenByteArrayBodyExceedsLimit() {
-			HttpException exception = assertThrows(HttpException.class,
-					() -> exchangeClient.callEnsureBodySizeWithinLimit(new byte[4], 3));
+			HttpException exception = assertThrows(HttpException.class, () -> exchangeClient.callEnsureBodySizeWithinLimit(new byte[4], 3));
 
 			assertThat(exception.getStatus(), equalTo(HttpStatus.PAYLOAD_TOO_LARGE));
 			assertThat(exception.getMessage(), startsWith("[413 Payload Too Large] Response body exceeds configured max size"));

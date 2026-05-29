@@ -152,6 +152,12 @@ public class OAuth2ResolvedRegistration {
 					resolvedName, provider, OAuth2Properties.ROOT, OAuth2Properties.ROOT, resolvedName);
 			return null;
 		}
+		String tokenUri = providerDetails.getTokenUri();
+		if (Strings.isNotEmpty(tokenUri) && !providerDetails.isTokenUriAllowed()) {
+			LOGGER.error("[{}] Insecure OAuth2 token URI '{}' is not allowed. Use HTTPS or explicitly set allowInsecureTokenUri=true"
+					+ " for development/testing only.", resolvedName, tokenUri);
+			return null;
+		}
 		return OAuth2ResolvedRegistration.of(resolvedName, registration, providerDetails);
 	}
 
