@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.startsWith;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -745,6 +746,57 @@ class JavaNetHttpExchangeClientTest {
 					() -> exchangeClient.buildResponse(request, httpResponse));
 
 			assertThat(exception.getMessage(), equalTo("Error converting JSON response to " + genericResponseType.getType().getTypeName()));
+		}
+
+		@Test
+		void shouldBuildResponseAndReadInputStreamIntoBytesWhenRequestIsNotStream() throws Exception {
+			ClientProperties properties = new ClientProperties();
+			properties.getResponse().setMaxBodySize(1024);
+
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient(properties);
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.GET)
+					.stream(false)
+					.responseType(byte[].class);
+
+			byte[] expected = STRING.getBytes(StandardCharsets.UTF_8);
+			HttpResponse<?> httpResponse = mock(HttpResponse.class);
+			doReturn(HttpStatus.OK.value()).when(httpResponse).statusCode();
+			doReturn(new ByteArrayInputStream(expected)).when(httpResponse).body();
+			doReturn(HttpHeaders.of(Map.of(), (v1, v2) -> true)).when(httpResponse).headers();
+
+			ApiResponse<byte[]> apiResponse = exchangeClient.buildResponse(request, httpResponse);
+
+			assertArrayEquals(expected, apiResponse.getBody());
+		}
+
+		@Test
+		@SuppressWarnings("resource")
+		void shouldBuildStreamingResponseWithoutApplyingMaxBodyBufferLimit() throws Exception {
+			ClientProperties properties = new ClientProperties();
+			properties.getResponse().setMaxBodySize(3);
+
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient(properties);
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.GET)
+					.stream()
+					.responseType(InputStream.class);
+
+			byte[] expected = STRING.getBytes(StandardCharsets.UTF_8);
+			HttpResponse<?> httpResponse = mock(HttpResponse.class);
+			doReturn(HttpStatus.OK.value()).when(httpResponse).statusCode();
+			doReturn(new ByteArrayInputStream(expected)).when(httpResponse).body();
+			doReturn(HttpHeaders.of(Map.of(), (v1, v2) -> true)).when(httpResponse).headers();
+
+			ApiResponse<InputStream> apiResponse = exchangeClient.buildResponse(request, httpResponse);
+
+			assertArrayEquals(expected, apiResponse.getBody().readAllBytes());
 		}
 
 		@Test

@@ -399,4 +399,34 @@ class ContentEncodingTest {
 			assertThat(new String(result, StandardCharsets.UTF_8), equalTo(original));
 		}
 	}
+
+	@Nested
+	class IdentityTests {
+
+		@Test
+		void shouldHaveCorrectValue() {
+			assertThat(ContentEncoding.IDENTITY.value(), equalTo("identity"));
+		}
+
+		@Test
+		void shouldReturnOriginalDataWhenDecodingByteArray() {
+			byte[] data = HELLO_WORLD.getBytes(StandardCharsets.UTF_8);
+
+			byte[] decoded = ContentEncoding.IDENTITY.decode(data);
+
+			assertThat(decoded, equalTo(data));
+		}
+
+		@Test
+		@SuppressWarnings("resource")
+		void shouldReturnOriginalDataWhenDecodingInputStream() throws Exception {
+			byte[] data = HELLO_WORLD.getBytes(StandardCharsets.UTF_8);
+			InputStream stream = new ByteArrayInputStream(data);
+
+			InputStream decoded = ContentEncoding.IDENTITY.decode(stream);
+			byte[] result = decoded.readAllBytes();
+
+			assertThat(result, equalTo(data));
+		}
+	}
 }
