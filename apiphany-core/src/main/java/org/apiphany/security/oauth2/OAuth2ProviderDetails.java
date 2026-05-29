@@ -1,10 +1,13 @@
 package org.apiphany.security.oauth2;
 
 import java.io.Serializable;
+import java.net.URI;
 import java.util.Collections;
 import java.util.Map;
 
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.lang.Strings;
+import org.apiphany.lang.annotation.Ignored;
 
 /**
  * Contains configuration details for an OAuth 2.0 Provider. This includes endpoint URIs and other provider-specific
@@ -46,6 +49,12 @@ public class OAuth2ProviderDetails {
 	 * Additional provider configuration metadata. Contains any extra provider-specific configuration parameters.
 	 */
 	private Map<String, Serializable> configurationMetadata = Collections.emptyMap();
+
+	/**
+	 * Escape hatch for development/testing scenarios where the token endpoint is intentionally exposed over HTTP. This is
+	 * disabled by default and should never be enabled in production.
+	 */
+	private Boolean allowInsecureTokenUri = Boolean.FALSE;
 
 	/**
 	 * Default constructor.
@@ -170,6 +179,66 @@ public class OAuth2ProviderDetails {
 	 */
 	public void setConfigurationMetadata(final Map<String, Serializable> configurationMetadata) {
 		this.configurationMetadata = configurationMetadata;
+	}
+
+	/**
+	 * Returns whether insecure token URI usage is explicitly allowed.
+	 *
+	 * @return true if insecure token URI usage is explicitly allowed, false otherwise
+	 */
+	@Ignored
+	public boolean isInsecureTokenUriAllowed() {
+		return isAllowInsecureTokenUri();
+	}
+
+	/**
+	 * Returns whether insecure token URI usage is explicitly allowed.
+	 * <p>
+	 * Alias kept for bean/property compatibility.
+	 *
+	 * @return true if insecure token URI usage is explicitly allowed, false otherwise
+	 */
+	public boolean isAllowInsecureTokenUri() {
+		return Boolean.TRUE.equals(allowInsecureTokenUri);
+	}
+
+	/**
+	 * Sets whether insecure token URI usage is explicitly allowed.
+	 *
+	 * @param allowInsecureTokenUri true to allow insecure token URI usage, false otherwise
+	 */
+	public void setAllowInsecureTokenUri(final Boolean allowInsecureTokenUri) {
+		this.allowInsecureTokenUri = allowInsecureTokenUri;
+	}
+
+	/**
+	 * Returns true if the configured token endpoint URI uses HTTPS.
+	 *
+	 * @return true when token URI exists and has {@code https} scheme, false otherwise
+	 */
+	@Ignored
+	public boolean isTokenUriSecure() {
+		if (Strings.isEmpty(tokenUri)) {
+			return false;
+		}
+		try {
+			URI uri = URI.create(tokenUri);
+			return "https".equalsIgnoreCase(uri.getScheme());
+		} catch (RuntimeException e) {
+			return false;
+		}
+	}
+
+	/**
+	 * Returns whether the token URI is allowed.
+	 * <p>
+	 * Allowed means the token URI is secure (HTTPS) or insecure usage is explicitly enabled for development/testing.
+	 *
+	 * @return true if token URI is allowed, false otherwise
+	 */
+	@Ignored
+	public boolean isTokenUriAllowed() {
+		return isTokenUriSecure() || isInsecureTokenUriAllowed();
 	}
 
 	/**

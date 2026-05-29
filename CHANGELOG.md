@@ -2,6 +2,16 @@
 
 `1.2.12`
 
+- Added `Strings.preview(String, int)` to build bounded string previews for safer diagnostics/logging.
+- Added `Strings.preview(byte[], int)` to build bounded previews from byte arrays.
+- Added `MessageDigestAlgorithm.hash(byte[], int)` to produce truncated hexadecimal digests.
+- Added `MessageDigestAlgorithm.hash(String, int)` to produce truncated hexadecimal digests from strings.
+- Added safer JSON deserialization diagnostics in `JsonBuilder` via `describeJsonInput(...)` and centralized `logDeserializationError(...)`.
+- Updated Jackson 2 and Jackson 3 JSON builders to use safe deserialization error logging (type + bounded metadata/hash) instead of logging raw payloads.
+- Added OAuth2 token URI transport checks in `OAuth2ProviderDetails`: `isTokenUriSecure()` and `isTokenUriAllowed()`.
+- Added `OAuth2ProviderDetails.isInsecureTokenUriAllowed()` helper while keeping bean-compatible `allowInsecureTokenUri` accessor methods.
+- Updated OAuth2 validation flow to use `OAuth2ProviderDetails.isTokenUriAllowed()`.
+
 ---
 
 `1.2.11`

@@ -81,7 +81,9 @@ class OAuth2ApiClientTest {
 
 	@AfterEach
 	void tearDown() throws Exception {
-		oAuth2ApiClient.close();
+		if (null != oAuth2ApiClient) {
+			oAuth2ApiClient.close();
+		}
 	}
 
 	@Test
@@ -149,6 +151,37 @@ class OAuth2ApiClientTest {
 			String result = simpleApiClient.getName(token);
 			assertThat(result, notNullValue());
 		}
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldThrowWhenTokenUriUsesHttpByDefault() {
+		doReturn(AuthenticationType.NONE).when(exchangeClient).getAuthenticationType();
+
+		OAuth2ProviderDetails insecureProviderDetails = JsonBuilder.fromJson(
+				Strings.fromFile("security/oauth2/oauth2-provider-details.json"), OAuth2ProviderDetails.class);
+		insecureProviderDetails.setTokenUri("http://example.com/oauth2/token");
+
+		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+				() -> new OAuth2ApiClient(clientRegistration, insecureProviderDetails, exchangeClient));
+
+		assertThat(exception.getMessage(), equalTo(
+				"OAuth2 token URI must use HTTPS unless explicitly allowed for development/testing: http://example.com/oauth2/token"));
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldAllowHttpTokenUriWhenExplicitlyEnabled() {
+		doReturn(AuthenticationType.NONE).when(exchangeClient).getAuthenticationType();
+
+		OAuth2ProviderDetails insecureProviderDetails = JsonBuilder.fromJson(
+				Strings.fromFile("security/oauth2/oauth2-provider-details.json"), OAuth2ProviderDetails.class);
+		insecureProviderDetails.setTokenUri("http://example.com/oauth2/token");
+		insecureProviderDetails.setAllowInsecureTokenUri(true);
+
+		oAuth2ApiClient = new OAuth2ApiClient(clientRegistration, insecureProviderDetails, exchangeClient);
+
+		assertThat(oAuth2ApiClient, notNullValue());
 	}
 
 	@Test

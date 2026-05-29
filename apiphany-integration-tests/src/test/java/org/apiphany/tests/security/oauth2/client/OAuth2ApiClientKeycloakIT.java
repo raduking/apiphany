@@ -115,6 +115,7 @@ class OAuth2ApiClientKeycloakIT {
 		String providerDetailsJsonString = Strings.fromFile("security/oauth2/oauth2-provider-details.json");
 		providerDetails = JsonBuilder.fromJson(providerDetailsJsonString, OAuth2ProviderDetails.class);
 		providerDetails.setTokenUri(KEYCLOAK_CONTAINER.getAuthServerUrl() + KEYCLOAK_TOKEN_PATH);
+		providerDetails.setAllowInsecureTokenUri(true);
 
 		exchangeClient = new JavaNetHttpExchangeClient();
 	}

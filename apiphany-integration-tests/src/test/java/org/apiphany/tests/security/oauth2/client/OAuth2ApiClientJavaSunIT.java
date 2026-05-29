@@ -50,6 +50,7 @@ class OAuth2ApiClientJavaSunIT extends ITWithJavaSunOAuth2Server {
 		String providerDetailsJson = Strings.fromFile("security/oauth2/oauth2-provider-details.json");
 		providerDetails = JsonBuilder.fromJson(providerDetailsJson, OAuth2ProviderDetails.class);
 		providerDetails.setTokenUri(oAuth2Server().getUrl() + "/token");
+		providerDetails.setAllowInsecureTokenUri(true);
 	}
 
 	@AfterEach
