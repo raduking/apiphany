@@ -280,7 +280,7 @@ class JsonBuilderTest {
 		String result = JsonBuilder.toDebugJsonString(b);
 
 		String expected =
-				"{ \"type\":\"" + B.class.getCanonicalName() + "\", \"id\":\"" + TEST_LONG + "\", \"identity\":\"" + JsonBuilder.identityHashCode(b)
+				"{ \"type\":\"" + B.class.getCanonicalName() + "\", \"id\":\"" + TEST_LONG + "\", \"identity\":\"" + Strings.identityHashCode(b)
 						+ "\" }";
 
 		assertThat(result, equalTo(expected));
@@ -292,7 +292,7 @@ class JsonBuilderTest {
 
 		String result = JsonBuilder.toDebugJsonString(o);
 
-		String expected = "{ \"type\":\"" + Object.class.getCanonicalName() + "\", \"identity\":\"" + JsonBuilder.identityHashCode(o) + "\" }";
+		String expected = "{ \"type\":\"" + Object.class.getCanonicalName() + "\", \"identity\":\"" + Strings.identityHashCode(o) + "\" }";
 
 		assertThat(result, equalTo(expected));
 	}
@@ -303,7 +303,7 @@ class JsonBuilderTest {
 
 		String result = JsonBuilder.toDebugJsonString(o);
 
-		String expected = "{ \"type\":null, \"identity\":" + JsonBuilder.identityHashCode(o) + " }";
+		String expected = "{ \"type\":null, \"identity\":" + Strings.identityHashCode(o) + " }";
 
 		assertThat(result, equalTo(expected));
 	}
@@ -315,7 +315,7 @@ class JsonBuilderTest {
 		boolean indentOutput = jsonBuilder.isIndentOutput();
 		String indent = indentOutput ? jsonBuilder.eol() : " ";
 		String tab = indentOutput ? "\t" : "";
-		String expected = "{" + indent + tab + "\"identity\":\"" + JsonBuilder.identityHashCode(o) + "\"" + indent + "}";
+		String expected = "{" + indent + tab + "\"identity\":\"" + Strings.identityHashCode(o) + "\"" + indent + "}";
 
 		String result = jsonBuilder.toJsonString(o);
 
@@ -330,7 +330,7 @@ class JsonBuilderTest {
 		boolean indentOutput = runtime.isIndentOutput();
 		String indent = indentOutput ? runtime.eol() : " ";
 		String tab = indentOutput ? "\t" : "";
-		String expected = "{" + indent + tab + "\"identity\":\"" + JsonBuilder.identityHashCode(o) + "\"" + indent + "}";
+		String expected = "{" + indent + tab + "\"identity\":\"" + Strings.identityHashCode(o) + "\"" + indent + "}";
 
 		String result = JsonBuilder.toIdentityJson(o);
 
@@ -354,9 +354,9 @@ class JsonBuilderTest {
 
 		Object object = new Object();
 
-		String expected1 = "{ \"identity\":\"" + JsonBuilder.identityHashCode(object) + "\" }";
+		String expected1 = "{ \"identity\":\"" + Strings.identityHashCode(object) + "\" }";
 		String expected2 =
-				"{" + System.lineSeparator() + "\t\"identity\":\"" + JsonBuilder.identityHashCode(object) + "\"" + System.lineSeparator() + "}";
+				"{" + System.lineSeparator() + "\t\"identity\":\"" + Strings.identityHashCode(object) + "\"" + System.lineSeparator() + "}";
 
 		String result1 = JsonBuilder.with(jsonBuilder1, () -> JsonBuilder.toJson(object));
 		String result2 = JsonBuilder.with(jsonBuilder2, () -> JsonBuilder.toJson(object));
@@ -376,7 +376,7 @@ class JsonBuilderTest {
 		Object object = new Object();
 
 		String expected =
-				"{" + System.lineSeparator() + "\t\"identity\":\"" + JsonBuilder.identityHashCode(object) + "\"" + System.lineSeparator() + "}";
+				"{" + System.lineSeparator() + "\t\"identity\":\"" + Strings.identityHashCode(object) + "\"" + System.lineSeparator() + "}";
 
 		String result = JsonBuilder.with(jsonBuilder1, () -> {
 			// recursive call to with

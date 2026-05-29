@@ -447,6 +447,23 @@ public interface Strings {
 	}
 
 	/**
+	 * Returns the string with the class name and hexadecimal hash of the input object appended. If the input object is null
+	 * the result is {@code "null"}. We are using {@link Objects#toString(Object)} for this to avoid returning the string
+	 * {@code "null"} when the input is null.
+	 *
+	 * @param <T> object type
+	 *
+	 * @param obj object to get the identity hash code for
+	 * @return string which contains the class name and e hexadecimal hash
+	 */
+	static <T> String identityHashCode(final T obj) {
+		if (null == obj) {
+			return Objects.toString(obj);
+		}
+		return obj.getClass().getName() + "@" + Integer.toHexString(obj.hashCode());
+	}
+
+	/**
 	 * Builds a bounded preview string for logging purposes.
 	 *
 	 * @param value input string

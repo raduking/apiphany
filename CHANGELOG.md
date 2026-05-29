@@ -2,15 +2,18 @@
 
 `1.2.12`
 
+- Added `IOStreams.MAX_BUFFER_SIZE` guard usage across response buffering paths to reduce memory DoS risk.
+- Added explicit max response-size enforcement in HTTP clients via shared checks in `AbstractHttpExchangeClient`.
 - Added `Strings.preview(String, int)` to build bounded string previews for safer diagnostics/logging.
 - Added `Strings.preview(byte[], int)` to build bounded previews from byte arrays.
 - Added `MessageDigestAlgorithm.hash(byte[], int)` to produce truncated hexadecimal digests.
 - Added `MessageDigestAlgorithm.hash(String, int)` to produce truncated hexadecimal digests from strings.
+- Added `Logging` helper API for safe diagnostic input descriptions (`length`, `hash`, optional `preview`) and `LoggingFormat` support.
 - Added safer JSON deserialization diagnostics in `JsonBuilder` via `describeJsonInput(...)` and centralized `logDeserializationError(...)`.
 - Updated Jackson 2 and Jackson 3 JSON builders to use safe deserialization error logging (type + bounded metadata/hash) instead of logging raw payloads.
-- Added OAuth2 token URI transport checks in `OAuth2ProviderDetails`: `isTokenUriSecure()` and `isTokenUriAllowed()`.
-- Added `OAuth2ProviderDetails.isInsecureTokenUriAllowed()` helper while keeping bean-compatible `allowInsecureTokenUri` accessor methods.
-- Updated OAuth2 validation flow to use `OAuth2ProviderDetails.isTokenUriAllowed()`.
+- Enforced HTTPS for OAuth2 token URI by default, with explicit development/testing override via `allowInsecureTokenUri`.
+- Added OAuth2 token URI transport helpers in `OAuth2ProviderDetails`: `isTokenUriSecure()`, `isInsecureTokenUriAllowed()`, and `isTokenUriAllowed()`.
+- Updated OAuth2 validation flow (`OAuth2ResolvedRegistration`, `OAuth2ApiClient`) to reject insecure token URIs unless explicitly allowed.
 
 ---
 

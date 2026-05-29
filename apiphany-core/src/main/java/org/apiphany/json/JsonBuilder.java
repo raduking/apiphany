@@ -556,7 +556,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	protected <T> String toIdentityJsonString(final T obj) {
 		String indent = indentOutput ? eol() : " ";
 		String tab = indentOutput ? "\t" : "";
-		return "{" + indent + tab + "\"identity\":\"" + identityHashCode(obj) + "\"" + indent + "}";
+		return "{" + indent + tab + "\"identity\":\"" + Strings.identityHashCode(obj) + "\"" + indent + "}";
 	}
 
 	/**
@@ -573,30 +573,16 @@ public class JsonBuilder { // NOSONAR singleton implementation
 			return "{ \"type\":null, \"identity\":null }";
 		}
 		class FieldExtractor {
-			Long id;
+			String id;
 		}
 		FieldExtractor fieldExtractor = Converter.convert(obj).to(FieldExtractor::new);
-		return "{ \"type\":\"" + obj.getClass().getCanonicalName() + "\""
-				+ (null != fieldExtractor.id ? ", \"id\":\"" + fieldExtractor.id + "\"" : "")
-				+ ", \"identity\":\"" + identityHashCode(obj) + "\""
+		String type = obj.getClass().getCanonicalName();
+		String identity = Strings.identityHashCode(obj);
+		String id = null == fieldExtractor.id ? null : fieldExtractor.id;
+		return "{ \"type\":\"" + type + "\""
+				+ (null != id ? ", \"id\":\"" + id + "\"" : "")
+				+ ", \"identity\":\"" + identity + "\""
 				+ " }";
-	}
-
-	/**
-	 * Returns the string with the class name and hexadecimal hash of the input object appended. If the input object is null
-	 * the result is {@code "null"}. We are using {@link Objects#toString(Object)} for this to avoid returning the string
-	 * {@code "null"} when the input is null.
-	 *
-	 * @param <T> object type
-	 *
-	 * @param obj object to get the identity hash code for
-	 * @return string which contains the class name and e hexadecimal hash
-	 */
-	protected static <T> String identityHashCode(final T obj) {
-		if (null == obj) {
-			return Objects.toString(obj);
-		}
-		return obj.getClass().getName() + "@" + Integer.toHexString(obj.hashCode());
 	}
 
 	/**
@@ -621,6 +607,9 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 */
 	protected static void logDeserializationError(final LoggerAdapter logger, final Exception e, final Type targetType, final Object json) {
 		logger.warn(ErrorMessage.COULD_NOT_DESERIALIZE_OBJECT, targetType, describeJsonInput(json), e);
+		if (logger.isEnabled(LoggerAdapter.LoggingLevel.DEBUG)) {
+			logger.debug("Deserialization error input: {}", json);
+		}
 	}
 
 	/**
