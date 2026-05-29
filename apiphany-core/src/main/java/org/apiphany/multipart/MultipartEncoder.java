@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.morphix.lang.collections.Maps;
+import org.morphix.reflection.Constructors;
 
 /**
  * Utility class for encoding multipart messages according to the MIME specification. This class provides methods to
@@ -33,7 +34,7 @@ public class MultipartEncoder {
 	 * Private constructor to prevent instantiation of this utility class.
 	 */
 	private MultipartEncoder() {
-		// utility
+		throw Constructors.unsupportedOperationException();
 	}
 
 	/**
@@ -42,11 +43,12 @@ public class MultipartEncoder {
 	 * <p>
 	 * The output will be formatted according to the MIME specification for multipart messages.
 	 *
-	 * @param message the multipart message to write
 	 * @param out the output stream to write the message to
+	 * @param message the multipart message to write
+	 *
 	 * @throws IOException if an I/O error occurs while writing to the output stream
 	 */
-	public static void write(final MultipartMessage message, final OutputStream out) throws IOException {
+	public static void write(final OutputStream out, final MultipartMessage message) throws IOException {
 		byte[] boundaryBytes = message.getBoundary().value().getBytes(StandardCharsets.US_ASCII);
 		for (MultipartPart<?> part : message.getParts()) {
 			out.write(DASH);
@@ -61,6 +63,7 @@ public class MultipartEncoder {
 		out.write(DASH);
 		out.write(boundaryBytes);
 		out.write(DASH);
+		out.write(CRLF);
 	}
 
 	/**

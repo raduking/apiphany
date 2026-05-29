@@ -60,10 +60,13 @@ public class MultipartMessage implements BinaryRepresentable {
 		return parts;
 	}
 
+	/**
+	 * @see BinaryRepresentable#toByteArray()
+	 */
 	@Override
 	public byte[] toByteArray() {
 		return Bytes.capture(
-				os -> MultipartEncoder.write(this, os),
+				os -> MultipartEncoder.write(os, this),
 				e -> new IllegalStateException("Unexpected I/O error while encoding multipart body", e));
 	}
 
@@ -166,9 +169,7 @@ public class MultipartMessage implements BinaryRepresentable {
 		 * @return this builder instance for chaining
 		 */
 		public Builder part(final MultipartPart<?> part) {
-			if (null != part) {
-				parts.add(part);
-			}
+			parts.add(Objects.requireNonNull(part, "part must not be null"));
 			return this;
 		}
 

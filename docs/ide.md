@@ -14,3 +14,5 @@ When running unit tests / coverage you need to set the following JVM (VM) argume
 --add-opens java.base/sun.security.internal.spec=ALL-UNNAMED
 --add-opens jdk.httpserver/sun.net.httpserver=ALL-UNNAMED
 ```
+
+> Security note: do **not** enable `-Djson-builder.to-json.debug-string=true` in production, because it allows JSON previews in error logs.

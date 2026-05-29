@@ -22,12 +22,17 @@ public enum LoggingFormat {
 	/**
 	 * JSON format logging. Outputs data as structured JSON, useful for machine-readable logs.
 	 */
-	JSON("json");
+	JSON("json"),
+
+	/**
+	 * Custom format logging. Outputs data in a user-defined format, allowing for flexible log representations.
+	 */
+	CUSTOM("custom");
 
 	/**
 	 * The default logging format (JSON).
 	 */
-	public static final LoggingFormat DEFAULT = JSON;
+	public static final LoggingFormat DEFAULT = CUSTOM;
 
 	/**
 	 * Map of format names to enum constants for case-insensitive lookup.
@@ -68,12 +73,12 @@ public enum LoggingFormat {
 	}
 
 	/**
-	 * Converts a string to a LoggingFormat enum value.
+	 * Converts a string to a {@link LoggingFormat} enum value.
 	 * <p>
-	 * The lookup is case-insensitive. Returns the DEFAULT format if the input doesn't match any format.
+	 * The lookup is case-insensitive and it returns the {@link #DEFAULT} format if the input doesn't match any format.
 	 *
 	 * @param input the string to convert
-	 * @return the matching LoggingFormat or DEFAULT if no match found
+	 * @return the matching {@link LoggingFormat} or {@link #DEFAULT} if no match found
 	 */
 	public static LoggingFormat fromString(final String input) {
 		return Nullables.whenNotNull(input)
