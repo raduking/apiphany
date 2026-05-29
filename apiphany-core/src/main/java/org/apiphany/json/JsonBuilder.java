@@ -648,7 +648,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 * By default it only logs metadata (length). When debug-string is enabled via
 	 * {@code -Djson-builder.to-json.debug-string=true}, it also includes a bounded preview to aid debugging.
 	 *
-	 * @param bytes byte array JSON input
+	 * @param string JSON input string
 	 * @return diagnostic string with input length (and preview when debug mode is enabled)
 	 */
 	protected static String describeJsonInput(final String string) {
