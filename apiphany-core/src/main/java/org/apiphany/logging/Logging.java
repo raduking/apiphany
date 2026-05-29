@@ -161,6 +161,7 @@ public interface Logging {
 	 * Builds a safe diagnostic description for an input value.
 	 *
 	 * @param obj the input value to describe
+	 * @param format the logging format
 	 * @param includes the types of information to include in the description
 	 * @return a safe diagnostic description of the input value
 	 */
@@ -172,6 +173,8 @@ public interface Logging {
 	 * Builds a safe diagnostic description for an input value.
 	 *
 	 * @param obj the input object to describe
+	 * @param format the logging format
+	 * @param includes the list of Include instances specifying the types of information to include in the description
 	 * @return a safe diagnostic description of the input value
 	 */
 	static String describeInput(final Object obj, final LoggingFormat format, final List<Include> includes) {
@@ -194,6 +197,7 @@ public interface Logging {
 		 * Builds a safe diagnostic description for an input value.
 		 *
 		 * @param obj the input object to describe
+		 * @param includes the list of Include instances specifying the types of information to include in the description
 		 * @return a safe diagnostic description of the input value
 		 */
 		static String describeInput(final Object obj, final List<Include> includes) {

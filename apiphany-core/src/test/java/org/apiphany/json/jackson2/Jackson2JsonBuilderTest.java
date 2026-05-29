@@ -440,12 +440,12 @@ class Jackson2JsonBuilderTest {
 			C c = new C();
 			c.setName(SOME_NAME);
 
-			boolean indentOutput = jsonBuilder.isIndentOutput();
-			String indent = indentOutput ? jsonBuilder.eol() : " ";
+			boolean indentOutput = jacksonJsonBuilder.isIndentOutput();
+			String indent = indentOutput ? jacksonJsonBuilder.eol() : " ";
 			String tab = indentOutput ? "\t" : "";
 
-			String expectedString = "{" + indent + tab + "\"identity\":\"" + C.class.getName() + "@"
-					+ Integer.toHexString(c.hashCode()) + "\"" + indent + "}";
+			String expectedString = "{" + indent + tab + "\"identity\":\"" + C.class.getName()
+					+ "@" + Integer.toHexString(c.hashCode()) + "\"" + indent + "}";
 
 			String result = jacksonJsonBuilder.toJsonString(c);
 
