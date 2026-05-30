@@ -28,6 +28,13 @@ public class OAuth2Properties {
 	private Map<String, OAuth2ProviderDetails> provider;
 
 	/**
+	 * If true, any explicitly allowed insecure (HTTP) token URI will be rejected.
+	 * <p>
+	 * This is useful as a production hardening guardrail.
+	 */
+	private boolean forbidInsecureTokenUri;
+
+	/**
 	 * Default constructor.
 	 */
 	public OAuth2Properties() {
@@ -139,5 +146,23 @@ public class OAuth2Properties {
 	 */
 	public OAuth2ProviderDetails getProviderDetails(final OAuth2ClientRegistration clientRegistration) {
 		return getProviderDetails(clientRegistration.getProvider());
+	}
+
+	/**
+	 * Returns whether insecure (HTTP) token URIs are globally forbidden.
+	 *
+	 * @return true if insecure token URIs are forbidden, false otherwise
+	 */
+	public boolean isForbidInsecureTokenUri() {
+		return forbidInsecureTokenUri;
+	}
+
+	/**
+	 * Sets whether insecure (HTTP) token URIs are globally forbidden.
+	 *
+	 * @param forbidInsecureTokenUri true to forbid insecure token URIs, false otherwise
+	 */
+	public void setForbidInsecureTokenUri(final boolean forbidInsecureTokenUri) {
+		this.forbidInsecureTokenUri = forbidInsecureTokenUri;
 	}
 }
