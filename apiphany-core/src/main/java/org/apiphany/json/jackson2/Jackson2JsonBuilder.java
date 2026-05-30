@@ -13,8 +13,6 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.apiphany.json.JsonBuilder;
-import org.apiphany.logging.Slf4jLoggerAdapter;
-import org.morphix.lang.function.LoggerAdapter;
 import org.morphix.reflection.GenericClass;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -49,11 +47,6 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
  * @author Radu Sebastian LAZIN
  */
 public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton implementation
-
-	/**
-	 * Logger instance.
-	 */
-	private static final LoggerAdapter LOGGER = Slf4jLoggerAdapter.of(Jackson2JsonBuilder.class);
 
 	/**
 	 * Singleton instance holder.
@@ -486,11 +479,11 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 */
 	public static Supplier<SimpleModule> registerModule(final String moduleName, final Supplier<SimpleModule> moduleSupplier) {
 		if (Jackson2JsonBuilder.singletonMaterialized) {
-			LOGGER.warn(ErrorMessage.MODULE_REGISTERED_AFTER_INITIALIZATION, moduleName);
+			instance().observability().lateModuleRegistration(moduleName);
 		}
 		Supplier<SimpleModule> existing = MODULES.putIfAbsent(moduleName, moduleSupplier);
 		if (null != existing) {
-			LOGGER.warn(ErrorMessage.MODULE_ALREADY_REGISTERED, moduleName);
+			instance().observability().moduleAlreadyRegistered(moduleName);
 		}
 		return existing;
 	}
