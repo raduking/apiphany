@@ -341,6 +341,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @param cls class of the object
 	 * @return an object from the JSON string
 	 */
+	@Override
 	public <T> T fromJsonBytes(final byte[] json, final Class<T> cls) {
 		return deserialize(json, cls, () -> jsonMapper.readValue(json, cls));
 	}
@@ -354,6 +355,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @param genericClass generic class wrapper for the type of the generic object
 	 * @return an object from the JSON string
 	 */
+	@Override
 	public <T> T fromJsonBytes(final byte[] json, final GenericClass<T> genericClass) {
 		TypeReference<T> typeReference = new TypeReference<>() {
 			@Override
@@ -386,6 +388,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @param cls class of the object
 	 * @return an object from the JSON string
 	 */
+	@Override
 	public <T> T fromJsonInputStream(final InputStream json, final Class<T> cls) {
 		return deserialize(json, cls, () -> jsonMapper.readValue(json, cls));
 	}
@@ -399,6 +402,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @param genericClass generic class wrapper for the type of the generic object
 	 * @return an object from the JSON string
 	 */
+	@Override
 	public <T> T fromJsonInputStream(final InputStream json, final GenericClass<T> genericClass) {
 		TypeReference<T> typeReference = new TypeReference<>() {
 			@Override

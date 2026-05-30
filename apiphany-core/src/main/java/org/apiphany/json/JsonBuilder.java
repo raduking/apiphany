@@ -1,5 +1,6 @@
 package org.apiphany.json;
 
+import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.Map;
@@ -17,6 +18,7 @@ import org.morphix.convert.MapConversions;
 import org.morphix.convert.function.SimpleConverter;
 import org.morphix.lang.Case;
 import org.morphix.lang.JavaObjects;
+import org.morphix.lang.Messages;
 import org.morphix.reflection.Constructors;
 import org.morphix.reflection.GenericClass;
 import org.morphix.runtime.Libraries;
@@ -153,9 +155,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	protected static JsonBuilder initializeInstance(final OptionalLibrary<? extends JsonBuilder>... libraryDescriptors) {
 		return Libraries.instance(() -> {
 			JsonBuilder jsonBuilder = new JsonBuilder();
-			jsonBuilder.observability().warn(
-					"{}, JsonBuilder.toJson will only build JSONs like { \"identity\":\"<class-name>@<identity-hashcode>\" }!",
-					JsonObservability.ErrorMessage.JSON_LIBRARY_NOT_FOUND);
+			jsonBuilder.observability().jsonLibraryNotFound();
 			return jsonBuilder;
 		}, libraryDescriptors);
 	}
@@ -250,6 +250,8 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	public static <O, T> T fromJson(final O json, final Class<T> cls) {
 		return switch (json) {
 			case String string -> runtime().fromJsonString(string, cls);
+			case byte[] bytes -> runtime().fromJsonBytes(bytes, cls);
+			case InputStream inputStream -> runtime().fromJsonInputStream(inputStream, cls);
 			default -> throw unsupportedJsonInputType(json);
 		};
 	}
@@ -267,6 +269,8 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	public static <O, T> T fromJson(final O json, final GenericClass<T> genericClass) {
 		return switch (json) {
 			case String string -> runtime().fromJsonString(string, genericClass);
+			case byte[] bytes -> runtime().fromJsonBytes(bytes, genericClass);
+			case InputStream inputStream -> runtime().fromJsonInputStream(inputStream, genericClass);
 			default -> throw unsupportedJsonInputType(json);
 		};
 	}
@@ -347,6 +351,58 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	}
 
 	/**
+	 * Returns an object from the given byte array. If the byte array cannot be de-serialized, returns null.
+	 *
+	 * @param <T> type of the object
+	 *
+	 * @param json JSON byte array
+	 * @param cls class of the object
+	 * @return an object from the JSON string
+	 */
+	public <T> T fromJsonBytes(final byte[] json, final Class<T> cls) {
+		throw jsonLibraryNotFound();
+	}
+
+	/**
+	 * Returns an object from the JSON byte array. If the byte array cannot be de-serialized, returns null.
+	 *
+	 * @param <T> type of the object
+	 *
+	 * @param json JSON byte array
+	 * @param genericClass generic class wrapper for the type of the generic object
+	 * @return an object from the JSON string
+	 */
+	public <T> T fromJsonBytes(final byte[] json, final GenericClass<T> genericClass) {
+		throw jsonLibraryNotFound();
+	}
+
+	/**
+	 * Returns an object from the given input stream. If the byte array cannot be de-serialized, returns null.
+	 *
+	 * @param <T> type of the object
+	 *
+	 * @param json JSON input stream
+	 * @param cls class of the object
+	 * @return an object from the JSON string
+	 */
+	public <T> T fromJsonInputStream(final InputStream json, final Class<T> cls) {
+		throw jsonLibraryNotFound();
+	}
+
+	/**
+	 * Returns an object from the given input stream. If the byte array cannot be de-serialized, returns null.
+	 *
+	 * @param <T> type of the object
+	 *
+	 * @param json JSON input stream
+	 * @param genericClass generic class wrapper for the type of the generic object
+	 * @return an object from the JSON string
+	 */
+	public <T> T fromJsonInputStream(final InputStream json, final GenericClass<T> genericClass) {
+		throw jsonLibraryNotFound();
+	}
+
+	/**
 	 * Serializes the object to a JSON string using the identity conversion, which means that if the object is a String it
 	 * will be returned as is, if the object is a primitive wrapper it will be converted to its string representation, if
 	 * the object is a collection it will be converted to a JSON array string, if the object is a map it will be converted
@@ -366,9 +422,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 		try {
 			return serializer.apply(obj);
 		} catch (Exception e) {
-			String result = isDebugString() ? toDebugJsonString(obj) : toIdentityJsonString(obj);
-			observability().warn(JsonObservability.ErrorMessage.COULD_NOT_SERIALIZE_OBJECT, result, e);
-			return result;
+			return observability().serializationFailed(obj, e);
 		}
 	}
 
@@ -507,15 +561,6 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	}
 
 	/**
-	 * Returns the exception thrown from unimplemented methods.
-	 *
-	 * @return the exception thrown from unimplemented methods
-	 */
-	protected static UnsupportedOperationException jsonLibraryNotFound() {
-		return new UnsupportedOperationException(JsonObservability.ErrorMessage.JSON_LIBRARY_NOT_FOUND);
-	}
-
-	/**
 	 * Returns true if a system property is set to {@code "true"}, false otherwise.
 	 *
 	 * @param propertyName name of the system property
@@ -576,40 +621,24 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	}
 
 	/**
-	 * Returns the {@link Object#toString()} in a JSON format. If the input object has a field name called {@code id} then
-	 * it adds it to the JSON.
+	 * Returns the exception thrown from unimplemented methods.
 	 *
-	 * @param <T> type of the object
-	 *
-	 * @param obj input
-	 * @return JSON String
+	 * @return the exception thrown from unimplemented methods
 	 */
-	protected static <T> String toDebugJsonString(final T obj) {
-		if (null == obj) {
-			return "{ \"type\":null, \"identity\":null }";
-		}
-		class FieldExtractor {
-			String id;
-		}
-		FieldExtractor fieldExtractor = Converter.convert(obj).to(FieldExtractor::new);
-		String type = obj.getClass().getCanonicalName();
-		String identity = Strings.identityHashCode(obj);
-		String id = null == fieldExtractor.id ? null : fieldExtractor.id;
-		return "{ \"type\":\"" + type + "\""
-				+ (null != id ? ", \"id\":\"" + id + "\"" : "")
-				+ ", \"identity\":\"" + identity + "\""
-				+ " }";
+	protected static UnsupportedOperationException jsonLibraryNotFound() {
+		return new UnsupportedOperationException(JsonObservability.ErrorMessage.JSON_LIBRARY_NOT_FOUND);
 	}
 
 	/**
-	 * Returns an {@link UnsupportedOperationException} for unsupported JSON input types.
+	 * Returns the exception thrown for unsupported JSON input types.
 	 *
-	 * @param <O> JSON input type
+	 * @param <T> input type
 	 *
-	 * @param json JSON input object
+	 * @param obj input object
 	 * @return the exception to be thrown when the input type is not supported
 	 */
-	protected static <O> UnsupportedOperationException unsupportedJsonInputType(final O json) {
-		return new UnsupportedOperationException("Unsupported JSON input type: " + json.getClass());
+	protected static <T> UnsupportedOperationException unsupportedJsonInputType(final T obj) {
+		return new UnsupportedOperationException(
+				Messages.message(JsonObservability.ErrorMessage.UNSUPPORTED_JSON_INPUT_TYPE, obj.getClass()));
 	}
 }
