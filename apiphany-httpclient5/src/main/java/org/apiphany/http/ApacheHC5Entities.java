@@ -56,7 +56,11 @@ public class ApacheHC5Entities {
 		if (null == httpEntity) {
 			return Bytes.EMPTY;
 		}
-		return ThrowingSupplier.unchecked(() -> IOStreams.toByteArray(httpEntity.getContent(), maxBytes)).get();
+		try (InputStream contentStream = toInputStream(httpEntity)) {
+			return IOStreams.toByteArray(contentStream, maxBytes);
+		} catch (Exception e) {
+			throw new IllegalStateException("Failed to read HTTP entity content as byte array", e);
+		}
 	}
 
 	/**

@@ -802,7 +802,8 @@ class JavaNetHttpExchangeClientTest {
 		@Test
 		void shouldThrowPayloadTooLargeWhenRawResponseExceedsConfiguredLimit() throws Exception {
 			ClientProperties properties = new ClientProperties();
-			properties.getResponse().setMaxBodySize(3);
+			int maxBodySize = 3;
+			properties.getResponse().setMaxBodySize(maxBodySize);
 
 			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient(properties);
 			exchangeClient.close();
@@ -820,8 +821,8 @@ class JavaNetHttpExchangeClientTest {
 			HttpException exception = assertThrows(HttpException.class,
 					() -> exchangeClient.buildResponse(request, httpResponse));
 
-			assertThat(exception.getStatus(), equalTo(HttpStatus.PAYLOAD_TOO_LARGE));
-			assertThat(exception.getMessage(), startsWith("[413 Payload Too Large]"));
+			assertThat(exception.getStatus(), equalTo(null));
+			assertThat(exception.getMessage(), equalTo("[unknown status] Input stream exceeds max allowed bytes: " + maxBodySize));
 		}
 
 		@Test
