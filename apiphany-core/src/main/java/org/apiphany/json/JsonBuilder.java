@@ -7,6 +7,8 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import org.apiphany.io.function.IOFunction;
+import org.apiphany.io.function.IOSupplier;
 import org.apiphany.json.jackson2.Jackson2Library;
 import org.apiphany.json.jackson3.Jackson3Library;
 import org.apiphany.lang.Strings;
@@ -386,6 +388,52 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	}
 
 	/**
+	 * Serializes the object to a JSON string using the identity conversion, which means that if the object is a String it
+	 * will be returned as is, if the object is a primitive wrapper it will be converted to its string representation, if
+	 * the object is a collection it will be converted to a JSON array string, if the object is a map it will be converted
+	 * to a JSON object string, otherwise the object's toString method will be used. This method is used as a fallback when
+	 * the object cannot be converted to JSON using the registered converters.
+	 *
+	 * @param <T> type of the object
+	 *
+	 * @param obj object to convert
+	 * @param serializer serializer to use for serialization
+	 * @return JSON string representation of the object
+	 */
+	protected <T> String serialize(final T obj, final IOFunction<T, String> serializer) {
+		if (null == obj) {
+			return null;
+		}
+		try {
+			return serializer.apply(obj);
+		} catch (Exception e) {
+			String result = isDebugString() ? toDebugJsonString(obj) : toIdentityJsonString(obj);
+			LOGGER.warn(ErrorMessage.COULD_NOT_SERIALIZE_OBJECT, result, e);
+			return result;
+		}
+	}
+
+	/**
+	 * Converts a JSON string to an object of the specified class using the provided deserializer. If an exception occurs
+	 * during deserialization, the onError consumer is called with the exception and null is returned.
+	 *
+	 * @param <T> target type
+	 *
+	 * @param json the JSON string to convert
+	 * @param deserializer the function to deserialize the JSON string into an object of type T
+	 * @param onError consumer for handling exceptions that occur during deserialization
+	 * @return the deserialized object, or null if an error occurs during deserialization
+	 */
+	protected <T> T deserialize(final Object obj, final Type targetType, final IOSupplier<T> deserializer) {
+		try {
+			return deserializer.get();
+		} catch (Exception e) {
+			LOGGER.warn(ErrorMessage.COULD_NOT_DESERIALIZE_OBJECT, targetType, describeJsonInput(obj), e);
+			return null;
+		}
+	}
+
+	/**
 	 * Returns an object from a properties map, on error the exception is passed to the onError consumer and {@code null} is
 	 * returned. This will only work for camel case properties.
 	 *
@@ -443,7 +491,6 @@ public class JsonBuilder { // NOSONAR singleton implementation
 			return fallbackSupplier.get();
 		}
 	}
-
 	/**
 	 * Enable/disable JSON indentation.
 	 *
@@ -598,21 +645,6 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	}
 
 	/**
-	 * Logs the deserialization error, the exception and the input preview if debug is enabled.
-	 *
-	 * @param logger the logger to use for logging the error
-	 * @param e the exception that occurred during deserialization
-	 * @param targetType the target type that was being deserialized to
-	 * @param json the JSON input that caused the error
-	 */
-	protected static void logDeserializationError(final LoggerAdapter logger, final Exception e, final Type targetType, final Object json) {
-		logger.warn(ErrorMessage.COULD_NOT_DESERIALIZE_OBJECT, targetType, describeJsonInput(json), e);
-		if (logger.isEnabled(LoggerAdapter.LoggingLevel.DEBUG)) {
-			logger.debug("Deserialization error input: {}", json);
-		}
-	}
-
-	/**
 	 * Builds a safe diagnostic description for a JSON input value.
 	 * <p>
 	 * By default it only logs metadata (type/length). When debug-string is enabled via
@@ -621,10 +653,10 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 * @param json JSON input object
 	 * @return diagnostic string with input type and size (and preview when debug mode is enabled)
 	 */
-	protected static String describeJsonInput(final Object json) {
+	protected String describeJsonInput(final Object json) {
 		return Logging.describeInput(json, LoggingFormat.CUSTOM,
 				Logging.Include.LENGTH,
 				Logging.Include.HASH,
-				Logging.Include.when(runtime()::isDebugString, Logging.Include.PREVIEW));
+				Logging.Include.when(this::isDebugString, Logging.Include.PREVIEW));
 	}
 }

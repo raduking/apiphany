@@ -1,6 +1,5 @@
 package org.apiphany.json.jackson2;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.time.LocalDate;
@@ -18,9 +17,8 @@ import org.apiphany.logging.Slf4jLoggerAdapter;
 import org.morphix.lang.function.LoggerAdapter;
 import org.morphix.reflection.GenericClass;
 
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -128,7 +126,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 			this.objectMapper.registerModule(moduleSupplier.get());
 		}
 		indentOutput(isIndentOutput());
-		this.objectMapper.setDefaultPropertyInclusion(Include.NON_NULL);
+		this.objectMapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL);
 		this.objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 
 		this.defaultAnnotationIntrospector = objectMapper.getSerializationConfig().getAnnotationIntrospector();
@@ -277,17 +275,10 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 */
 	@Override
 	public <T> String toJsonString(final T obj) {
-		if (null == obj) {
-			return null;
-		}
-		ObjectWriter objectWriter = objectMapper.writerFor(obj.getClass());
-		try {
-			return eol() + objectWriter.writeValueAsString(obj);
-		} catch (JsonProcessingException e) {
-			String result = isDebugString() ? toDebugJsonString(obj) : toIdentityJsonString(obj);
-			LOGGER.warn(ErrorMessage.COULD_NOT_SERIALIZE_OBJECT, result, e);
-			return result;
-		}
+		return serialize(obj, o -> {
+			ObjectWriter objectWriter = objectMapper.writerFor(o.getClass());
+			return eol() + objectWriter.writeValueAsString(o);
+		});
 	}
 
 	/**
@@ -301,12 +292,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 */
 	@Override
 	public <T> T fromJsonString(final String json, final Class<T> cls) {
-		try {
-			return objectMapper.readValue(json, cls);
-		} catch (JsonProcessingException e) {
-			logDeserializationError(LOGGER, e, cls, json);
-			return null;
-		}
+		return deserialize(json, cls, () -> objectMapper.readValue(json, cls));
 	}
 
 	/**
@@ -339,12 +325,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @return an object from the JSON string
 	 */
 	public <T> T fromJsonString(final String json, final TypeReference<T> typeReference) {
-		try {
-			return objectMapper.readValue(json, typeReference);
-		} catch (JsonProcessingException e) {
-			logDeserializationError(LOGGER, e, typeReference.getType(), json);
-			return null;
-		}
+		return deserialize(json, typeReference.getType(), () -> objectMapper.readValue(json, typeReference));
 	}
 
 	/**
@@ -357,12 +338,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @return an object from the JSON string
 	 */
 	public <T> T fromJsonBytes(final byte[] json, final Class<T> cls) {
-		try {
-			return objectMapper.readValue(json, cls);
-		} catch (IOException e) {
-			logDeserializationError(LOGGER, e, cls, json);
-			return null;
-		}
+		return deserialize(json, cls, () -> objectMapper.readValue(json, cls));
 	}
 
 	/**
@@ -394,12 +370,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @return an object from the JSON string
 	 */
 	public <T> T fromJsonBytes(final byte[] json, final TypeReference<T> typeReference) {
-		try {
-			return objectMapper.readValue(json, typeReference);
-		} catch (IOException e) {
-			logDeserializationError(LOGGER, e, typeReference.getType(), json);
-			return null;
-		}
+		return deserialize(json, typeReference.getType(), () -> objectMapper.readValue(json, typeReference));
 	}
 
 	/**
@@ -412,12 +383,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @return an object from the JSON string
 	 */
 	public <T> T fromJsonInputStream(final InputStream json, final Class<T> cls) {
-		try {
-			return objectMapper.readValue(json, cls);
-		} catch (IOException e) {
-			logDeserializationError(LOGGER, e, cls, json);
-			return null;
-		}
+		return deserialize(json, cls, () -> objectMapper.readValue(json, cls));
 	}
 
 	/**
@@ -449,12 +415,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @return an object from the JSON string
 	 */
 	public <T> T fromJsonInputStream(final InputStream json, final TypeReference<T> typeReference) {
-		try {
-			return objectMapper.readValue(json, typeReference);
-		} catch (IOException e) {
-			logDeserializationError(LOGGER, e, typeReference.getType(), json);
-			return null;
-		}
+		return deserialize(json, typeReference.getType(), () -> objectMapper.readValue(json, typeReference));
 	}
 
 	/**
