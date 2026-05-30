@@ -153,10 +153,20 @@ public class OAuth2ResolvedRegistration {
 			return null;
 		}
 		String tokenUri = providerDetails.getTokenUri();
-		if (Strings.isNotEmpty(tokenUri) && !providerDetails.isTokenUriAllowed()) {
-			LOGGER.error("[{}] Insecure OAuth2 token URI '{}' is not allowed. Use HTTPS or explicitly set allowInsecureTokenUri=true"
-					+ " for development/testing only.", resolvedName, tokenUri);
-			return null;
+		if (Strings.isNotEmpty(tokenUri) && !providerDetails.isTokenUriSecure()) {
+			if (!providerDetails.isInsecureTokenUriAllowed()) {
+				LOGGER.error("[{}] Insecure OAuth2 token URI '{}' is not allowed. Use HTTPS or explicitly set allowInsecureTokenUri=true"
+						+ " for development/testing only.", resolvedName, tokenUri);
+				return null;
+			}
+			if (properties.isForbidInsecureTokenUri()) {
+				LOGGER.error("[{}] Insecure OAuth2 token URI '{}' is explicitly allowed but globally forbidden by {}.forbidInsecureTokenUri=true",
+						resolvedName, tokenUri, OAuth2Properties.ROOT);
+				return null;
+			}
+			LOGGER.warn("[{}] Insecure OAuth2 token URI '{}' is explicitly allowed (allowInsecureTokenUri=true)."
+					+ " This should be used only for development/testing, never in production.",
+					resolvedName, tokenUri);
 		}
 		return OAuth2ResolvedRegistration.of(resolvedName, registration, providerDetails);
 	}

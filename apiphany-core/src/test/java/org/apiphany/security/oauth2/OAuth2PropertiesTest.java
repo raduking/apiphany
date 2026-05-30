@@ -75,4 +75,11 @@ class OAuth2PropertiesTest {
 
 		assertNull(result);
 	}
+
+	@Test
+	void shouldNotForbidInsecureTokenUriByDefault() {
+		OAuth2Properties props = OAuth2Properties.of();
+
+		assertThat(props.isForbidInsecureTokenUri(), equalTo(false));
+	}
 }
