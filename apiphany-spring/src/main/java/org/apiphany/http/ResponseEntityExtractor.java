@@ -99,7 +99,7 @@ public class ResponseEntityExtractor<T> implements ResponseExtractor<ResponseEnt
 		try {
 			if (responseClass == byte[].class) {
 				logRead(contentType);
-				return JavaObjects.cast(IOStreams.toByteArray(response.getBody(), maxBodySize));
+				return JavaObjects.cast(toByteArray(response, maxBodySize));
 			}
 			for (HttpMessageConverter<?> messageConverter : messageConverters) {
 				if (messageConverter.canRead(responseClass, contentType)) {
@@ -128,6 +128,21 @@ public class ResponseEntityExtractor<T> implements ResponseExtractor<ResponseEnt
 	}
 
 	/**
+	 * Read the response body to a byte array, with a maximum size limit. This is used for reading byte-array responses and
+	 * for error handling when no suitable message converter is found.
+	 *
+	 * @param response the response to read the body from
+	 * @param maxBodySize the maximum allowed size of the response body in bytes
+	 * @return the response body as a byte array
+	 * @throws IOException if an I/O error occurs while reading the response body
+	 */
+	private static byte[] toByteArray(final ClientHttpResponse response, final int maxBodySize) throws IOException {
+		try (var inputStream = response.getBody()) {
+			return IOStreams.toByteArray(inputStream, maxBodySize);
+		}
+	}
+
+	/**
 	 * Read the response body to a byte array. This is used for error handling when no suitable message converter is found.
 	 *
 	 * @param response the response to read the body from
@@ -136,8 +151,8 @@ public class ResponseEntityExtractor<T> implements ResponseExtractor<ResponseEnt
 	 */
 	private static byte[] getResponseBody(final ClientHttpResponse response, final int maxBodySize) {
 		try {
-			return IOStreams.toByteArray(response.getBody(), maxBodySize);
-		} catch (IOException ex) {
+			return toByteArray(response, maxBodySize);
+		} catch (Exception ex) {
 			if (LOGGER.isTraceEnabled()) {
 				LOGGER.trace("Error while reading response body for error handling", ex);
 			}

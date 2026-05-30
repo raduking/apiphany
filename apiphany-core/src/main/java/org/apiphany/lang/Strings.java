@@ -468,7 +468,7 @@ public interface Strings {
 	 *
 	 * @param value input string
 	 * @param maxLength maximum length of the preview string, excluding the truncation marker
-	 * @return preview string with escaped line breaks and truncation marker when needed
+	 * @return preview string and, when truncated, appends {@code "...(truncated)"}
 	 */
 	static String preview(final String value, final int maxLength) {
 		if (null == value) {
@@ -482,10 +482,13 @@ public interface Strings {
 
 	/**
 	 * Builds a bounded preview string for logging purposes.
+	 * <p>
+	 * The byte array is converted to text via {@link #toString(byte[])} and then truncated using
+	 * {@link #preview(String, int)}.
 	 *
 	 * @param value input byte array
 	 * @param maxLength maximum length of the preview string, excluding the truncation marker
-	 * @return preview string with escaped line breaks and truncation marker when needed
+	 * @return preview string and, when truncated, appends {@code "...(truncated)"}
 	 */
 	static String preview(final byte[] value, final int maxLength) {
 		return preview(Strings.toString(value), maxLength);

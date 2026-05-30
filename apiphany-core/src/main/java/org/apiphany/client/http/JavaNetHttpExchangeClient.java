@@ -223,7 +223,7 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 
 		R responseBody = httpResponse.body();
 		if (!apiRequest.isStream() && responseBody instanceof InputStream inputStream) {
-			Object checkedBody = HttpException.ifThrows(() -> IOStreams.toByteArray(inputStream, maxBodySize), HttpStatus.PAYLOAD_TOO_LARGE);
+			Object checkedBody = toByteArray(inputStream, maxBodySize);
 			responseBody = JavaObjects.cast(checkedBody);
 		}
 
@@ -235,6 +235,21 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 		HttpContentType contentType = HttpContentType.parse(contentTypes);
 
 		return buildResponse(apiRequest, httpStatus, headers, contentType, decodedBody);
+	}
+
+	/**
+	 * Reads the given input stream into a byte array and ensures that the content length does not exceed the given limit.
+	 *
+	 * @param inputStream input stream to read
+	 * @param maxBodySize maximum allowed body size in bytes
+	 * @return byte array containing the content of the input stream
+	 */
+	public byte[] toByteArray(final InputStream inputStream, final int maxBodySize) {
+		return HttpException.ifThrows(() -> {
+			try (inputStream) {
+				return IOStreams.toByteArray(inputStream, maxBodySize);
+			}
+		});
 	}
 
 	/**
