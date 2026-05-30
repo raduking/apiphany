@@ -40,7 +40,7 @@ class IOStreamsTest {
 	class ReadChunkTests {
 
 		@Test
-		void shouldSuccedReadingChunk() throws IOException {
+		void shouldSucceedReadingChunk() throws IOException {
 			ByteArrayInputStream inputStream = new ByteArrayInputStream(BYTES);
 
 			byte[] result = IOStreams.readChunk(inputStream, SIZE);
