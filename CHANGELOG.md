@@ -1,5 +1,9 @@
 ## Release Notes
 
+`1.2.13`
+
+---
+
 `1.2.12`
 
 - Enforced HTTPS for OAuth2 token URI by default, with explicit development/testing override via `allowInsecureTokenUri`.

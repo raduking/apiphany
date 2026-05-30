@@ -447,9 +447,8 @@ public interface Strings {
 	}
 
 	/**
-	 * Returns the string with the class name and hexadecimal hash of the input object appended. If the input object is null
-	 * the result is {@code "null"}. We are using {@link Objects#toString(Object)} for this to avoid returning the string
-	 * {@code "null"} when the input is null.
+	 * Returns the class name and hexadecimal identity hash of the input object appended. If the input object is
+	 * {@code null}, the result is {@code "null"} (via {@link Objects#toString(Object)}).
 	 *
 	 * @param <T> object type
 	 *

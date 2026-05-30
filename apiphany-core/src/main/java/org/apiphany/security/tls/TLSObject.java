@@ -28,7 +28,7 @@ public interface TLSObject extends ByteSizeable, BinaryRepresentable {
 	 * property only supports {@link LoggingFormat#HEX} and {@link LoggingFormat#JSON} formats, defaulting to
 	 * {@link LoggingFormat#JSON} if an unsupported value is provided.
 	 */
-	LoggingFormat FORMAT = LoggingFormat.fromString(System.getProperty("apiphany.logging.format.tls", LoggingFormat.JSON.name()));
+	LoggingFormat FORMAT = LoggingFormat.fromString(System.getProperty("apiphany.logging.format.tls"), () -> LoggingFormat.JSON);
 
 	/**
 	 * Serializes the TLS object according to the configured format.

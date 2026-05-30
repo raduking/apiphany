@@ -125,7 +125,7 @@ public interface IOStreams {
 	static byte[] toByteArray(final InputStream is, final int maxBytes) throws IOException {
 		byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
 		int n;
-		int totalBytes = 0;
+		long totalBytes = 0;
 		try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
 			while ((n = is.read(buffer)) != -1) {
 				totalBytes += n;

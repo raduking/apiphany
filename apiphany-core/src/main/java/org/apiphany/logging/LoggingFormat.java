@@ -1,6 +1,7 @@
 package org.apiphany.logging;
 
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.morphix.lang.Enums;
 import org.morphix.lang.Nullables;
@@ -81,8 +82,22 @@ public enum LoggingFormat {
 	 * @return the matching {@link LoggingFormat} or {@link #DEFAULT} if no match found
 	 */
 	public static LoggingFormat fromString(final String input) {
+		return fromString(input, () -> DEFAULT);
+	}
+
+	/**
+	 * Converts a string to a {@link LoggingFormat} enum value with a custom default supplier.
+	 * <p>
+	 * The lookup is case-insensitive and it returns the provided default format if the input doesn't match any format.
+	 *
+	 * @param input the string to convert
+	 * @param defaultSupplier a supplier that provides the default {@link LoggingFormat} if no match is found
+	 * @return the matching {@link LoggingFormat} or the supplied default if no match found
+	 * @throws NullPointerException if defaultSupplier is null
+	 */
+	public static LoggingFormat fromString(final String input, final Supplier<LoggingFormat> defaultSupplier) {
 		return Nullables.whenNotNull(input)
-				.thenYield(i -> NAME_MAP.getOrDefault(i.toLowerCase(), DEFAULT))
-				.orElse(DEFAULT);
+				.thenYield(i -> NAME_MAP.getOrDefault(i.toLowerCase(), defaultSupplier.get()))
+				.orElse(defaultSupplier);
 	}
 }
