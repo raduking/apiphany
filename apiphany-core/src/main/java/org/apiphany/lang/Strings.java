@@ -460,7 +460,7 @@ public interface Strings {
 		if (null == obj) {
 			return Objects.toString(obj);
 		}
-		return obj.getClass().getName() + "@" + Integer.toHexString(obj.hashCode());
+		return obj.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(obj));
 	}
 
 	/**
