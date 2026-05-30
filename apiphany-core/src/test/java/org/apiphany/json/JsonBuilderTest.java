@@ -426,7 +426,7 @@ class JsonBuilderTest {
 		void shouldDescribeNullInput() {
 			JsonBuilder runtime = newJsonBuilderWithDebugString(false);
 
-			String result = JsonBuilder.with(runtime, () -> JsonBuilder.describeJsonInput((Object) null));
+			String result = runtime.describeJsonInput((Object) null);
 
 			assertThat(result, equalTo("null"));
 		}
@@ -436,7 +436,7 @@ class JsonBuilderTest {
 			JsonBuilder runtime = newJsonBuilderWithDebugString(false);
 			String input = "abc";
 
-			String result = JsonBuilder.with(runtime, () -> JsonBuilder.describeJsonInput(input));
+			String result = runtime.describeJsonInput(input);
 
 			String hash = MessageDigestAlgorithm.SHA256.hash(input, 8);
 			assertThat(result, equalTo(String.class.getTypeName() + "(length=3, hash=" + hash + ")"));
@@ -447,7 +447,7 @@ class JsonBuilderTest {
 			JsonBuilder runtime = newJsonBuilderWithDebugString(true);
 			String input = "abc";
 
-			String result = JsonBuilder.with(runtime, () -> JsonBuilder.describeJsonInput(input));
+			String result = runtime.describeJsonInput(input);
 
 			String hash = MessageDigestAlgorithm.SHA256.hash(input, 8);
 			assertThat(result, equalTo(String.class.getTypeName() + "(length=3, hash=" + hash + ", preview=abc)"));
@@ -458,7 +458,7 @@ class JsonBuilderTest {
 			JsonBuilder runtime = newJsonBuilderWithDebugString(false);
 			byte[] input = "abc".getBytes(StandardCharsets.UTF_8);
 
-			String result = JsonBuilder.with(runtime, () -> JsonBuilder.describeJsonInput(input));
+			String result = runtime.describeJsonInput(input);
 
 			String hash = MessageDigestAlgorithm.SHA256.hash(input, 8);
 			assertThat(result, equalTo("byte[](length=3, hash=" + hash + ")"));
@@ -469,7 +469,7 @@ class JsonBuilderTest {
 			JsonBuilder runtime = newJsonBuilderWithDebugString(true);
 			byte[] input = "abc".getBytes(StandardCharsets.UTF_8);
 
-			String result = JsonBuilder.with(runtime, () -> JsonBuilder.describeJsonInput(input));
+			String result = runtime.describeJsonInput(input);
 
 			String hash = MessageDigestAlgorithm.SHA256.hash(input, 8);
 			assertThat(result, equalTo("byte[](length=3, hash=" + hash + ", preview=abc)"));
@@ -480,7 +480,7 @@ class JsonBuilderTest {
 			JsonBuilder runtime = newJsonBuilderWithDebugString(false);
 			ByteArrayInputStream input = new ByteArrayInputStream(new byte[0]);
 
-			String result = JsonBuilder.with(runtime, () -> JsonBuilder.describeJsonInput(input));
+			String result = runtime.describeJsonInput(input);
 
 			assertThat(result, equalTo(ByteArrayInputStream.class.getTypeName()
 					+ "(hash=" + Integer.toHexString(System.identityHashCode(input)) + ")"));
@@ -491,7 +491,7 @@ class JsonBuilderTest {
 			JsonBuilder runtime = newJsonBuilderWithDebugString(false);
 			Object input = new Object();
 
-			String result = JsonBuilder.with(runtime, () -> JsonBuilder.describeJsonInput(input));
+			String result = runtime.describeJsonInput(input);
 
 			assertThat(result, equalTo(Object.class.getTypeName()
 					+ "(hash=" + Integer.toHexString(System.identityHashCode(input)) + ")"));
@@ -502,7 +502,7 @@ class JsonBuilderTest {
 			JsonBuilder runtime = newJsonBuilderWithDebugString(true);
 			Object input = new Object();
 
-			String result = JsonBuilder.with(runtime, () -> JsonBuilder.describeJsonInput(input));
+			String result = runtime.describeJsonInput(input);
 
 			assertThat(result, equalTo(Object.class.getTypeName()
 					+ "(hash=" + Integer.toHexString(System.identityHashCode(input)) + ")"));
