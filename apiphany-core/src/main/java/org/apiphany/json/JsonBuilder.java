@@ -12,15 +12,11 @@ import org.apiphany.io.function.IOSupplier;
 import org.apiphany.json.jackson2.Jackson2Library;
 import org.apiphany.json.jackson3.Jackson3Library;
 import org.apiphany.lang.Strings;
-import org.apiphany.logging.Logging;
-import org.apiphany.logging.LoggingFormat;
-import org.apiphany.logging.Slf4jLoggerAdapter;
 import org.morphix.convert.Converter;
 import org.morphix.convert.MapConversions;
 import org.morphix.convert.function.SimpleConverter;
 import org.morphix.lang.Case;
 import org.morphix.lang.JavaObjects;
-import org.morphix.lang.function.LoggerAdapter;
 import org.morphix.reflection.Constructors;
 import org.morphix.reflection.GenericClass;
 import org.morphix.runtime.Libraries;
@@ -45,11 +41,6 @@ import org.morphix.runtime.OptionalLibrary;
 public class JsonBuilder { // NOSONAR singleton implementation
 
 	/**
-	 * Logger instance.
-	 */
-	private static final LoggerAdapter LOGGER = Slf4jLoggerAdapter.of(JsonBuilder.class);
-
-	/**
 	 * Namespace for configurable properties.
 	 *
 	 * @author Radu Sebastian LAZIN
@@ -70,46 +61,6 @@ public class JsonBuilder { // NOSONAR singleton implementation
 		 * Hide constructor.
 		 */
 		private Property() {
-			throw Constructors.unsupportedOperationException();
-		}
-	}
-
-	/**
-	 * Namespace for error messages. These messages are used for exception or logging error messages.
-	 *
-	 * @author Radu Sebastian LAZIN
-	 */
-	protected static class ErrorMessage {
-
-		/**
-		 * Error message logged when no JSON library was found in the classpath.
-		 */
-		public static final String JSON_LIBRARY_NOT_FOUND = "No JSON library found in the classpath (like Jackson or Gson)";
-
-		/**
-		 * Error message logged when an object could not be serialized.
-		 */
-		public static final String COULD_NOT_SERIALIZE_OBJECT = "Could not serialize object: {}";
-
-		/**
-		 * Error message logged when an object could not be de-serialized.
-		 */
-		public static final String COULD_NOT_DESERIALIZE_OBJECT = "Could not deserialize object type: {}, input: {}";
-
-		/**
-		 * Error message logged when a JSON library module is already registered.
-		 */
-		public static final String MODULE_ALREADY_REGISTERED = "Module already registered: {}";
-
-		/**
-		 * Error message logged when a JSON library module is registered after initialization.
-		 */
-		public static final String MODULE_REGISTERED_AFTER_INITIALIZATION = "Module registered after initialization: {}";
-
-		/**
-		 * Hide constructor.
-		 */
-		private ErrorMessage() {
 			throw Constructors.unsupportedOperationException();
 		}
 	}
@@ -178,12 +129,18 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	private String lineSeparator;
 
 	/**
+	 * Observability object for logging/tracing.
+	 */
+	private JsonObservability observability;
+
+	/**
 	 * Constructor that initializes all fields.
 	 */
 	protected JsonBuilder() {
 		this.indentOutput = isPropertyTrue(Property.INDENT_OUTPUT);
 		computeLineSeparator(indentOutput);
 		this.debugString = isPropertyTrue(Property.DEBUG_STRING);
+		this.observability = new JsonObservability(this);
 	}
 
 	/**
@@ -195,9 +152,11 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	@SafeVarargs
 	protected static JsonBuilder initializeInstance(final OptionalLibrary<? extends JsonBuilder>... libraryDescriptors) {
 		return Libraries.instance(() -> {
-			LOGGER.warn("{}, JsonBuilder.toJson will only build JSONs like { \"identity\":\"<class-name>@<identity-hashcode>\" }!",
-					ErrorMessage.JSON_LIBRARY_NOT_FOUND);
-			return new JsonBuilder();
+			JsonBuilder jsonBuilder = new JsonBuilder();
+			jsonBuilder.observability().warn(
+					"{}, JsonBuilder.toJson will only build JSONs like { \"identity\":\"<class-name>@<identity-hashcode>\" }!",
+					JsonObservability.ErrorMessage.JSON_LIBRARY_NOT_FOUND);
+			return jsonBuilder;
 		}, libraryDescriptors);
 	}
 
@@ -408,7 +367,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 			return serializer.apply(obj);
 		} catch (Exception e) {
 			String result = isDebugString() ? toDebugJsonString(obj) : toIdentityJsonString(obj);
-			LOGGER.warn(ErrorMessage.COULD_NOT_SERIALIZE_OBJECT, result, e);
+			observability().warn(JsonObservability.ErrorMessage.COULD_NOT_SERIALIZE_OBJECT, result, e);
 			return result;
 		}
 	}
@@ -419,16 +378,16 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 *
 	 * @param <T> target type
 	 *
-	 * @param json the JSON string to convert
+	 * @param obj the JSON string to convert
+	 * @param targetType the target type to convert to
 	 * @param deserializer the function to deserialize the JSON string into an object of type T
-	 * @param onError consumer for handling exceptions that occur during deserialization
 	 * @return the deserialized object, or null if an error occurs during deserialization
 	 */
 	protected <T> T deserialize(final Object obj, final Type targetType, final IOSupplier<T> deserializer) {
 		try {
 			return deserializer.get();
 		} catch (Exception e) {
-			LOGGER.warn(ErrorMessage.COULD_NOT_DESERIALIZE_OBJECT, targetType, describeJsonInput(obj), e);
+			observability().deserializationFailed(obj, targetType, e);
 			return null;
 		}
 	}
@@ -491,6 +450,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 			return fallbackSupplier.get();
 		}
 	}
+
 	/**
 	 * Enable/disable JSON indentation.
 	 *
@@ -538,12 +498,21 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	}
 
 	/**
+	 * Returns the logger adapter for this object.
+	 *
+	 * @return the logger adapter for this object
+	 */
+	protected JsonObservability observability() {
+		return observability;
+	}
+
+	/**
 	 * Returns the exception thrown from unimplemented methods.
 	 *
 	 * @return the exception thrown from unimplemented methods
 	 */
 	protected static UnsupportedOperationException jsonLibraryNotFound() {
-		return new UnsupportedOperationException(ErrorMessage.JSON_LIBRARY_NOT_FOUND);
+		return new UnsupportedOperationException(JsonObservability.ErrorMessage.JSON_LIBRARY_NOT_FOUND);
 	}
 
 	/**
@@ -642,21 +611,5 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 */
 	protected static <O> UnsupportedOperationException unsupportedJsonInputType(final O json) {
 		return new UnsupportedOperationException("Unsupported JSON input type: " + json.getClass());
-	}
-
-	/**
-	 * Builds a safe diagnostic description for a JSON input value.
-	 * <p>
-	 * By default it only logs metadata (type/length). When debug-string is enabled via
-	 * {@code -Djson-builder.to-json.debug-string=true}, it also includes a bounded preview to aid debugging.
-	 *
-	 * @param json JSON input object
-	 * @return diagnostic string with input type and size (and preview when debug mode is enabled)
-	 */
-	protected String describeJsonInput(final Object json) {
-		return Logging.describeInput(json, LoggingFormat.CUSTOM,
-				Logging.Include.LENGTH,
-				Logging.Include.HASH,
-				Logging.Include.when(this::isDebugString, Logging.Include.PREVIEW));
 	}
 }
