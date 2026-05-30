@@ -5,10 +5,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
+import org.apiphany.lang.Strings;
 import org.apiphany.security.MessageDigestAlgorithm;
+import org.apiphany.test.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.morphix.reflection.Constructors;
 
 /**
  * Unit tests for {@link JsonObservability}.
@@ -16,6 +20,50 @@ import org.junit.jupiter.api.Test;
  * @author Radu Sebastian LAZIN
  */
 class JsonObservabilityTest {
+
+	private static final long TEST_LONG = 666L;
+
+	@Test
+	void shouldThrowExceptionWhenTryingToInstantiateErrorMessageNestedClass() {
+		UnsupportedOperationException e = Assertions.assertDefaultConstructorThrows(JsonObservability.ErrorMessage.class);
+
+		assertThat(e.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
+	}
+
+	@Test
+	void shouldReturnTheDebugStringForObjectsWithId() {
+		B b = new B(TEST_LONG);
+
+		String result = JsonObservability.toDebugJsonString(b);
+
+		String expected =
+				"{ \"type\":\"" + B.class.getCanonicalName() + "\", \"id\":\"" + TEST_LONG + "\", \"identity\":\"" + Strings.identityHashCode(b)
+						+ "\" }";
+
+		assertThat(result, equalTo(expected));
+	}
+
+	@Test
+	void shouldReturnTheDebugString() {
+		Object o = new Object();
+
+		String result = JsonObservability.toDebugJsonString(o);
+
+		String expected = "{ \"type\":\"" + Object.class.getCanonicalName() + "\", \"identity\":\"" + Strings.identityHashCode(o) + "\" }";
+
+		assertThat(result, equalTo(expected));
+	}
+
+	@Test
+	void shouldReturnTheDebugStringForNullObjects() {
+		String o = null;
+
+		String result = JsonObservability.toDebugJsonString(o);
+
+		String expected = "{ \"type\":null, \"identity\":" + Strings.identityHashCode(o) + " }";
+
+		assertThat(result, equalTo(expected));
+	}
 
 	@Nested
 	class DescribeJsonInputTests {
@@ -124,4 +172,30 @@ class JsonObservabilityTest {
 			}
 		}
 	}
+
+	static class B {
+
+		final String id;
+
+		public B(final Long id) {
+			this.id = id.toString();
+		}
+
+		@Override
+		public boolean equals(final Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (obj instanceof B that) {
+				return Objects.equals(this.id, that.id);
+			}
+			return false;
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(id);
+		}
+	}
+
 }

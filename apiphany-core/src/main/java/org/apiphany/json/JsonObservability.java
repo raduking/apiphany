@@ -2,9 +2,11 @@ package org.apiphany.json;
 
 import java.lang.reflect.Type;
 
+import org.apiphany.lang.Strings;
 import org.apiphany.logging.Logging;
 import org.apiphany.logging.LoggingFormat;
 import org.apiphany.logging.Slf4jLoggerAdapter;
+import org.morphix.convert.Converter;
 import org.morphix.lang.function.LoggerAdapter;
 import org.morphix.reflection.Constructors;
 
@@ -36,6 +38,11 @@ public class JsonObservability implements LoggerAdapter {
 		 * Error message logged when an object could not be de-serialized.
 		 */
 		public static final String COULD_NOT_DESERIALIZE_OBJECT = "Could not deserialize object type: {}, input: {}";
+
+		/**
+		 * Error message logged when a JSON input could not be parsed.
+		 */
+		public static final String UNSUPPORTED_JSON_INPUT_TYPE = "Unsupported JSON input type: {}";
 
 		/**
 		 * Error message logged when a JSON library module is already registered.
@@ -84,6 +91,32 @@ public class JsonObservability implements LoggerAdapter {
 	}
 
 	/**
+	 * Logs a warning when a JSON library is not found in the classpath.
+	 */
+	public void jsonLibraryNotFound() {
+		warn("{}, JsonBuilder.toJson will only build JSONs like { \"identity\":\"<class-name>@<identity-hashcode>\" }!",
+				ErrorMessage.JSON_LIBRARY_NOT_FOUND);
+	}
+
+	/**
+	 * Logs a warning when a JSON library module is registered after initialization.
+	 *
+	 * @param moduleName the name of the module that was registered late
+	 */
+	public void lateModuleRegistration(final String moduleName) {
+		warn(ErrorMessage.MODULE_REGISTERED_AFTER_INITIALIZATION, moduleName);
+	}
+
+	/**
+	 * Logs a warning when a JSON library module is registered multiple times.
+	 *
+	 * @param moduleName the name of the module that was registered multiple times
+	 */
+	public void moduleAlreadyRegistered(final String moduleName) {
+		warn(ErrorMessage.MODULE_ALREADY_REGISTERED, moduleName);
+	}
+
+	/**
 	 * Logs a deserialization failure with the target type and a description of the input.
 	 *
 	 * @param obj the input object that failed to deserialize
@@ -91,7 +124,46 @@ public class JsonObservability implements LoggerAdapter {
 	 * @param e the exception that was thrown during deserialization
 	 */
 	public void deserializationFailed(final Object obj, final Type targetType, final Exception e) {
-		warn(JsonObservability.ErrorMessage.COULD_NOT_DESERIALIZE_OBJECT, targetType, describeJsonInput(obj), e);
+		warn(ErrorMessage.COULD_NOT_DESERIALIZE_OBJECT, targetType, describeJsonInput(obj), e);
+	}
+
+	/**
+	 * Logs a serialization failure with the object that failed to serialize.
+	 *
+	 * @param obj the object that failed to serialize
+	 * @param e the exception that was thrown during serialization
+	 * @return the JSON string representation of the object, or a description if serialization failed
+	 */
+	public String serializationFailed(final Object obj, final Exception e) {
+		String result = jsonBuilder.isDebugString() ? toDebugJsonString(obj) : jsonBuilder.toIdentityJsonString(obj);
+		warn(ErrorMessage.COULD_NOT_SERIALIZE_OBJECT, result, e);
+		return result;
+	}
+
+	/**
+	 * Returns the {@link Object#toString()} in a JSON format. If the input object has a field name called {@code id} then
+	 * it adds it to the JSON.
+	 *
+	 * @param <T> type of the object
+	 *
+	 * @param obj input
+	 * @return JSON String
+	 */
+	protected static <T> String toDebugJsonString(final T obj) {
+		if (null == obj) {
+			return "{ \"type\":null, \"identity\":null }";
+		}
+		class FieldExtractor {
+			String id;
+		}
+		FieldExtractor fieldExtractor = Converter.convert(obj).to(FieldExtractor::new);
+		String type = obj.getClass().getCanonicalName();
+		String identity = Strings.identityHashCode(obj);
+		String id = null == fieldExtractor.id ? null : fieldExtractor.id;
+		return "{ \"type\":\"" + type + "\""
+				+ (null != id ? ", \"id\":\"" + id + "\"" : "")
+				+ ", \"identity\":\"" + identity + "\""
+				+ " }";
 	}
 
 	/**
@@ -108,23 +180,5 @@ public class JsonObservability implements LoggerAdapter {
 				Logging.Include.LENGTH,
 				Logging.Include.HASH,
 				Logging.Include.when(jsonBuilder::isDebugString, Logging.Include.PREVIEW));
-	}
-
-	/**
-	 * Logs a warning when a JSON library module is registered after initialization.
-	 *
-	 * @param moduleName the name of the module that was registered late
-	 */
-	public void lateModuleRegistration(final String moduleName) {
-		warn(JsonObservability.ErrorMessage.MODULE_REGISTERED_AFTER_INITIALIZATION, moduleName);
-	}
-
-	/**
-	 * Logs a warning when a JSON library module is registered multiple times.
-	 *
-	 * @param moduleName the name of the module that was registered multiple times
-	 */
-	public void moduleAlreadyRegistered(final String moduleName) {
-		warn(JsonObservability.ErrorMessage.MODULE_ALREADY_REGISTERED, moduleName);
 	}
 }
