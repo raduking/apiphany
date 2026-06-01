@@ -2,6 +2,10 @@
 
 `1.2.13`
 
+- Added bounded exponential delay strategy for OAuth2 token refresh failures in `OAuth2TokenProvider`.
+- Added retry delay configuration options to `OAuth2TokenProviderProperties`: `maxRefreshInterval` and `refreshFailureDelayMultiplier`.
+- Upgraded `morphix-all` to `1.0.38`.
+
 ---
 
 `1.2.12`
@@ -24,6 +28,7 @@
 - Centralized `JsonBuilder` serialization/deserialization flow for more consistent behavior across JSON backends.
 - Extracted JSON observability concerns into `JsonObservability`.
 - Updated Jackson 2 and Jackson 3 JSON builders to use safe deserialization error logging (type + bounded metadata/hash) instead of logging raw payloads.
+- Upgraded `morphix-all` to `1.0.37`.
 
 ---
 

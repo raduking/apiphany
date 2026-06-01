@@ -17,8 +17,10 @@ import org.morphix.lang.Nullables;
 import org.morphix.lang.function.ExecutionWrapper;
 import org.morphix.lang.function.LoggerAdapter;
 import org.morphix.lang.resource.ScopedResource;
+import org.morphix.lang.retry.DelayStrategy;
 import org.morphix.lang.retry.Retry;
 import org.morphix.lang.retry.WaitCounter;
+import org.morphix.lang.retry.delay.ExponentialDelayStrategy;
 import org.morphix.lang.thread.ReschedulingTask;
 
 /**
@@ -71,6 +73,16 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	private final Supplier<Instant> defaultExpirationSupplier;
 
 	/**
+	 * Generic strategy used to compute retry delays for refresh failures.
+	 */
+	private final DelayStrategy failureRetryDelay;
+
+	/**
+	 * Number of consecutive token refresh failures.
+	 */
+	private int consecutiveRefreshFailures;
+
+	/**
 	 * Creates a new authentication token provider.
 	 *
 	 * @param builder the OAuth2 token provider builder
@@ -88,6 +100,8 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 			this.tokenClient = supplier.get(registration.getClientRegistration(), registration.getProviderDetails());
 		}
 		this.selfReschedulingTask = newReschedulingTask(builder);
+		this.failureRetryDelay = Nullables.nonNullOrDefault(builder.failureRetryDelayStrategy, () -> ExponentialDelayStrategy.of(
+				properties.getMinRefreshInterval(), properties.getMaxRefreshInterval(), properties.getRefreshFailureDelayMultiplier()));
 
 		if (null != tokenClient) {
 			enable();
@@ -217,9 +231,12 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 			AuthenticationToken token = getAuthenticationTokenFromClient();
 			token.setExpiration(expiration.plusSeconds(token.getExpiresIn()));
 			setAuthenticationToken(token);
+			consecutiveRefreshFailures = 0;
 			LOGGER.debug("[{}] Successfully retrieved new token.", clientRegistrationName);
 		} catch (Exception e) {
-			LOGGER.error("[{}] Error retrieving new token.", clientRegistrationName, e);
+			++consecutiveRefreshFailures;
+			LOGGER.error("[{}] Error retrieving new token. Consecutive failures: {}",
+					clientRegistrationName, consecutiveRefreshFailures, e);
 		}
 	}
 
@@ -241,13 +258,19 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	}
 
 	/**
-	 * Returns the delay until the next token update. The delay is calculated as the time until the token expiration minus
-	 * the error margin defined in {@link OAuth2TokenProviderProperties}. If the calculated delay is negative, it returns
-	 * the minimum refresh interval defined in {@link OAuth2TokenProviderProperties}.
+	 * Returns the delay until the next token update.
+	 * <p>
+	 * If there were consecutive refresh failures, the delay is computed using the configured failure retry delay strategy.
+	 * Otherwise, the delay is calculated as the time until token expiration minus the error margin defined in
+	 * {@link OAuth2TokenProviderProperties} and clamped to at least the minimum refresh interval.
 	 *
 	 * @return the delay until the next token update
 	 */
 	private Duration getNextUpdateDelay() {
+		if (consecutiveRefreshFailures > 0) {
+			long delay = failureRetryDelay.delay(consecutiveRefreshFailures);
+			return Duration.of(delay, failureRetryDelay.chronoUnit());
+		}
 		Instant expiration = getTokenExpiration().minus(getProperties().getExpirationErrorMargin());
 		Instant scheduled = Comparables.max(expiration, Instant.now());
 		Duration delay = Duration.between(Instant.now(), scheduled);
@@ -392,6 +415,11 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 		private Function<String, ExecutionWrapper<Void>> updateTokenWrapperFunction = name -> ExecutionWrapper.identity();
 
 		/**
+		 * Delay strategy to calculate the delay before the next token refresh attempt in case of a failure.
+		 */
+		private DelayStrategy failureRetryDelayStrategy;
+
+		/**
 		 * Hidden constructor.
 		 */
 		private Builder() {
@@ -499,6 +527,18 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 		public Builder updateTokenWrapper(final Function<String, ExecutionWrapper<Void>> updateTokenWrapperFunction) {
 			Objects.requireNonNull(updateTokenWrapperFunction, "Update token execution wrapper function cannot be null");
 			this.updateTokenWrapperFunction = updateTokenWrapperFunction;
+			return this;
+		}
+
+		/**
+		 * Sets the delay strategy to calculate the delay before the next token refresh attempt in case of a failure.
+		 *
+		 * @param failureRetryDelayStrategy the failure retry delay strategy
+		 * @return the builder
+		 */
+		public Builder failureRetryDelayStrategy(final DelayStrategy failureRetryDelayStrategy) {
+			Objects.requireNonNull(failureRetryDelayStrategy, "failure retry delay cannot be null");
+			this.failureRetryDelayStrategy = failureRetryDelayStrategy;
 			return this;
 		}
 

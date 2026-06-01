@@ -30,6 +30,16 @@ public class OAuth2TokenProviderProperties {
 		public static final Duration MIN_REFRESH_INTERVAL = Duration.ofMillis(500);
 
 		/**
+		 * The maximum refresh interval when token retrieval keeps failing - 30 seconds.
+		 */
+		public static final Duration MAX_REFRESH_INTERVAL = Duration.ofSeconds(30);
+
+		/**
+		 * The exponential delay multiplier for token refresh retries - 2.0.
+		 */
+		public static final double REFRESH_FAILURE_DELAY_MULTIPLIER = 2.0d;
+
+		/**
 		 * The maximum number of attempts {@link OAuth2TokenProvider#close()} tries to close the scheduled task - 10 attempts.
 		 */
 		public static final int MAX_TASK_CLOSE_ATTEMPTS = 10;
@@ -69,6 +79,16 @@ public class OAuth2TokenProviderProperties {
 	 * The minimum refresh interval is the interval for new token retrieval when the previous attempt failed.
 	 */
 	private Duration minRefreshInterval = Default.MIN_REFRESH_INTERVAL;
+
+	/**
+	 * The maximum refresh interval when token refresh retries are exponentially backed off.
+	 */
+	private Duration maxRefreshInterval = Default.MAX_REFRESH_INTERVAL;
+
+	/**
+	 * The exponential delay multiplier for token refresh failure retries.
+	 */
+	private Double refreshFailureDelayMultiplier = Default.REFRESH_FAILURE_DELAY_MULTIPLIER;
 
 	/**
 	 * The maximum attempts to close the scheduled task when calling {@link OAuth2TokenProvider#close()}.
@@ -135,6 +155,42 @@ public class OAuth2TokenProviderProperties {
 	 */
 	public void setMinRefreshInterval(final Duration minRefreshInterval) {
 		this.minRefreshInterval = minRefreshInterval;
+	}
+
+	/**
+	 * Returns the maximum refresh interval.
+	 *
+	 * @return the maximum refresh interval
+	 */
+	public Duration getMaxRefreshInterval() {
+		return maxRefreshInterval;
+	}
+
+	/**
+	 * Sets the maximum refresh interval.
+	 *
+	 * @param maxRefreshInterval the maximum refresh interval
+	 */
+	public void setMaxRefreshInterval(final Duration maxRefreshInterval) {
+		this.maxRefreshInterval = maxRefreshInterval;
+	}
+
+	/**
+	 * Returns the refresh failure delay multiplier.
+	 *
+	 * @return the refresh failure delay multiplier
+	 */
+	public Double getRefreshFailureDelayMultiplier() {
+		return refreshFailureDelayMultiplier;
+	}
+
+	/**
+	 * Sets the refresh failure delay multiplier.
+	 *
+	 * @param refreshFailureDelayMultiplier the refresh failure delay multiplier
+	 */
+	public void setRefreshFailureDelayMultiplier(final Double refreshFailureDelayMultiplier) {
+		this.refreshFailureDelayMultiplier = refreshFailureDelayMultiplier;
 	}
 
 	/**
