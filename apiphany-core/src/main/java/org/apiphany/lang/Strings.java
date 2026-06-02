@@ -7,12 +7,15 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.function.Consumer;
 
 import org.apiphany.io.IOStreams;
 import org.apiphany.io.ResourceLocation;
 import org.morphix.lang.Case;
+import org.morphix.lang.collections.Lists;
 import org.morphix.lang.function.Consumers;
 
 /**
@@ -444,6 +447,38 @@ public interface Strings {
 			--end;
 		}
 		return input.substring(start, end);
+	}
+
+	/**
+	 * Checks if the given name is contained in the given list of names. The check is case-insensitive.
+	 *
+	 * @param name the name to check
+	 * @param names the list of names to check against
+	 * @return true if the given name is contained in the given list of names, false otherwise
+	 */
+	static boolean containsIgnoreCase(final String name, final List<String> names) {
+		return containsIgnoreCase(name, names, Locale.ROOT);
+	}
+
+	/**
+	 * Checks if the given name is contained in the given list of names. The check is case-insensitive.
+	 *
+	 * @param name the name to check
+	 * @param names the list of names to check against
+	 * @param locale the locale to use for case-insensitive check
+	 * @return true if the name is contained in the list of names, false otherwise
+	 */
+	static boolean containsIgnoreCase(final String name, final List<String> names, final Locale locale) {
+		if (null == name || Lists.isEmpty(names)) {
+			return false;
+		}
+		String lowered = name.toLowerCase(locale);
+		for (String candidate : names) {
+			if (null != candidate && lowered.equals(candidate.toLowerCase(locale))) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**

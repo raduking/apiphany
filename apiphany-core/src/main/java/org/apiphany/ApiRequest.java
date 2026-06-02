@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apiphany.lang.Strings;
+import org.apiphany.lang.annotation.FieldName;
 import org.apiphany.lang.annotation.Ignored;
 import org.apiphany.meters.BasicMeters;
 import org.apiphany.security.AuthenticationType;
@@ -130,8 +131,20 @@ public class ApiRequest<T> extends ApiMessage<T> {
 	 *
 	 * @return a map of query parameters
 	 */
+	@Ignored
 	public Map<String, List<String>> getParams() {
 		return params;
+	}
+
+	/**
+	 * Returns parameters for display purposes. By default this returns the same map as {@link #getParams()}.
+	 * Implementations can override this method to redact sensitive parameter values.
+	 *
+	 * @return parameters for display purposes
+	 */
+	@FieldName("params")
+	public Map<String, List<String>> getDisplayParams() {
+		return getParams();
 	}
 
 	/**

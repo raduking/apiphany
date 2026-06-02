@@ -17,6 +17,29 @@ import org.morphix.reflection.Constructors;
 public interface Logging {
 
 	/**
+	 * Defines the logging modes for building safe diagnostic descriptions.
+	 *
+	 * @author Radu Sebastian LAZIN
+	 */
+	public enum Mode {
+
+		/**
+		 * Do not log input content.
+		 */
+		NONE,
+
+		/**
+		 * Log safe metadata (type + length + hash) instead of full input.
+		 */
+		METADATA,
+
+		/**
+		 * Log the full input as-is.
+		 */
+		FULL;
+	}
+
+	/**
 	 * Defines the types of information that can be included in a diagnostic description of an input.
 	 *
 	 * @author Radu Sebastian LAZIN

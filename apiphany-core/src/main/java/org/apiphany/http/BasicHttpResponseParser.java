@@ -145,7 +145,7 @@ public class BasicHttpResponseParser {
 	 */
 	private void processChunks() {
 		while (true) {
-			int endIndex = buffer.indexOf("\r\n");
+			int endIndex = buffer.indexOf(HttpMessages.CRLF);
 			if (endIndex == -1) {
 				return; // not enough data for size
 			}

@@ -16,6 +16,8 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -538,6 +540,59 @@ class StringsTest {
 					Arguments.of("", ""),
 					Arguments.of("a", "a"),
 					Arguments.of("FastXMLParser", "fast_xml_parser"));
+		}
+	}
+
+	@Nested
+	class ContainsIgnoreCaseTests {
+
+		@Test
+		void shouldReturnTrueWhenListContainsNameIgnoringCase() {
+			boolean result = Strings.containsIgnoreCase("Authorization", List.of("authorization", "cookie"));
+
+			assertTrue(result);
+		}
+
+		@Test
+		void shouldReturnFalseWhenListDoesNotContainNameIgnoringCase() {
+			boolean result = Strings.containsIgnoreCase("Authorization", List.of("cookie", "set-cookie"));
+
+			assertFalse(result);
+		}
+
+		@Test
+		void shouldReturnFalseWhenNameIsNull() {
+			boolean result = Strings.containsIgnoreCase(null, List.of("authorization"));
+
+			assertFalse(result);
+		}
+
+		@Test
+		void shouldReturnFalseWhenListIsNull() {
+			boolean result = Strings.containsIgnoreCase("authorization", null);
+
+			assertFalse(result);
+		}
+
+		@Test
+		void shouldReturnFalseWhenListIsEmpty() {
+			boolean result = Strings.containsIgnoreCase("authorization", List.of());
+
+			assertFalse(result);
+		}
+
+		@Test
+		void shouldIgnoreNullCandidatesInList() {
+			boolean result = Strings.containsIgnoreCase("authorization", java.util.Arrays.asList(null, "cookie", "AUTHORIZATION"));
+
+			assertTrue(result);
+		}
+
+		@Test
+		void shouldUseProvidedLocale() {
+			boolean result = Strings.containsIgnoreCase("TITLE", List.of("title"), Locale.ENGLISH);
+
+			assertTrue(result);
 		}
 	}
 
