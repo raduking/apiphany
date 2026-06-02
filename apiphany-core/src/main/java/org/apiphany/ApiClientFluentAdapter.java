@@ -778,6 +778,16 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	}
 
 	/**
+	 * @see ApiRequest#getDisplayParams()
+	 * @see ExchangeClient#getDisplayParams(ApiRequest)
+	 */
+	@SuppressWarnings("resource")
+	@Override
+	public Map<String, List<String>> getDisplayParams() {
+		return getExchangeClient(ExchangeClient.class).getDisplayParams(this);
+	}
+
+	/**
 	 * Returns the required exchange class.
 	 *
 	 * @param <T> exchange client class type

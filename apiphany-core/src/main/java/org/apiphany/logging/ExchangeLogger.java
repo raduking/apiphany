@@ -2,8 +2,10 @@ package org.apiphany.logging;
 
 import java.time.Duration;
 
+import org.apiphany.ApiMessage;
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
+import org.apiphany.client.ExchangeClient;
 import org.apiphany.lang.Strings;
 import org.morphix.lang.Nullables;
 import org.morphix.lang.Temporals;
@@ -13,6 +15,8 @@ import org.morphix.reflection.Constructors;
 /**
  * A utility class for logging API requests and responses, including success and error cases. This class provides
  * methods to log request details, response details, and exceptions in a structured format.
+ * <p>
+ * Request/response body logging is configurable through {@link ExchangeLoggingProperties}.
  * <p>
  * TODO: log headers on multiple lines for better readability.
  * <p>
@@ -79,28 +83,30 @@ public class ExchangeLogger {
 	 *
 	 * @param <T> the type of the request/response body.
 	 *
-	 * @param loggingFunction the logging function used to output the log message.
-	 * @param clientClass the client making the request.
-	 * @param apiRequest the request object.
-	 * @param apiResponse the response object.
-	 * @param duration the duration of the request.
+	 * @param loggingFunction the logging function used to output the log message
+	 * @param apiClientClass the API class of the client making the request
+	 * @param exchangeClient the exchange client that made the request
+	 * @param apiRequest the API request object
+	 * @param apiResponse the API response object
+	 * @param duration the duration of the request
 	 */
 	public static <T> void logSuccess(
 			final LoggingFunction loggingFunction,
-			final Class<?> clientClass,
+			final Class<?> apiClientClass,
+			final ExchangeClient exchangeClient,
 			final ApiRequest<T> apiRequest,
 			final ApiResponse<T> apiResponse,
 			final Duration duration) {
 		loggingFunction.log(LOG_MESSAGE_SUCCESS,
-				clientClass,
+				apiClientClass,
 				apiRequest.getMethod(),
 				apiRequest.getUrl(),
-				apiRequest.getParams(),
+				apiRequest.getDisplayParams(),
 				apiRequest.getDisplayHeaders(),
-				apiRequest.getBody(),
+				describeBody(apiRequest, exchangeClient),
 				Nullables.apply(apiResponse, ApiResponse::getStatus),
 				Nullables.apply(apiResponse, ApiResponse::getDisplayHeaders),
-				Nullables.apply(apiResponse, ApiResponse::getBody),
+				describeBody(apiResponse, exchangeClient),
 				Temporals.toSeconds(duration.toMillis()));
 	}
 
@@ -109,30 +115,60 @@ public class ExchangeLogger {
 	 *
 	 * @param <T> the type of the request.
 	 *
-	 * @param loggingFunction the logging function used to output the log message.
-	 * @param clientClass the client making the request.
-	 * @param apiRequest the request object.
-	 * @param apiResponse the response object.
-	 * @param duration the duration of the request.
+	 * @param loggingFunction the logging function used to output the log message
+	 * @param apiClientClass the API class of the client making the request
+	 * @param exchangeClient the exchange client used for this request
+	 * @param apiRequest the API request object
+	 * @param apiResponse the API response object, if available
+	 * @param duration the duration of the request
 	 */
 	public static <T> void logError(
 			final LoggingFunction loggingFunction,
-			final Class<?> clientClass,
+			final Class<?> apiClientClass,
+			final ExchangeClient exchangeClient,
 			final ApiRequest<T> apiRequest,
 			final ApiResponse<T> apiResponse,
 			final Duration duration) {
 		Exception exception = Nullables.apply(apiResponse, ApiResponse::getException);
 		loggingFunction.log(LOG_MESSAGE_ERROR,
-				clientClass,
+				apiClientClass,
 				apiRequest.getMethod(),
 				apiRequest.getUrl(),
-				apiRequest.getParams(),
+				apiRequest.getDisplayParams(),
 				apiRequest.getDisplayHeaders(),
-				apiRequest.getBody(),
+				describeBody(apiRequest, exchangeClient),
 				Nullables.apply(apiResponse, ApiResponse::getStatus),
 				exception,
 				Temporals.toSeconds(duration.toMillis()));
 		loggingFunction.log("{}", Nullables.apply(apiResponse, ApiResponse::getErrorMessage), exception);
+	}
+
+	/**
+	 * Describes the body of a request or response based on the logging configuration of the exchange client.
+	 *
+	 * @param exchangeClient the exchange client used for this request
+	 * @param body the body to describe.
+	 * @return a string description of the body, or "<omitted>" if body logging is disabled.
+	 */
+	private static <T> String describeBody(final ApiMessage<T> apiMessage, final ExchangeClient exchangeClient) {
+		if (null == apiMessage) {
+			return null;
+		}
+		T body = apiMessage.getBody();
+		if (null == body) {
+			return null;
+		}
+		ExchangeLoggingProperties loggingProperties = exchangeClient.getCustomProperties(ExchangeLoggingProperties.class);
+		Logging.Mode bodyLoggingMode = Nullables.apply(loggingProperties, ExchangeLoggingProperties::getBodyLoggingMode);
+		if (null == bodyLoggingMode || bodyLoggingMode == Logging.Mode.FULL) {
+			return body.toString();
+		}
+		if (bodyLoggingMode == Logging.Mode.NONE) {
+			return "<omitted>";
+		}
+		return Logging.describeInput(body, LoggingFormat.DEFAULT,
+				Logging.Include.LENGTH,
+				Logging.Include.HASH);
 	}
 
 	/**

@@ -1,7 +1,6 @@
 package org.apiphany.client;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -12,6 +11,7 @@ import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
 import org.apiphany.header.HeaderValues;
 import org.apiphany.security.AuthenticationType;
+import org.apiphany.security.Sensitive;
 import org.morphix.lang.collections.Maps;
 import org.morphix.lang.function.Predicates;
 
@@ -85,6 +85,15 @@ public interface ExchangeClient extends AutoCloseable {
 	}
 
 	/**
+	 * Returns a predicate for the parameters that should be redacted. By default, nothing is redacted.
+	 *
+	 * @return a predicate for the parameters that should be redacted
+	 */
+	default Predicate<String> isSensitiveParam() {
+		return Predicates.alwaysFalse();
+	}
+
+	/**
 	 * Returns common headers for all requests. By default, it returns an empty map. These headers will be added to each
 	 * request made by this client.
 	 *
@@ -115,19 +124,29 @@ public interface ExchangeClient extends AutoCloseable {
 	 * @return a map of headers with sensitive headers redacted
 	 */
 	default <T> Map<String, List<String>> getDisplayHeaders(final ApiMessage<T> apiMessage) {
-		if (null == apiMessage || Maps.isEmpty(apiMessage.getHeaders())) {
+		if (null == apiMessage) {
 			return Collections.emptyMap();
 		}
-		Map<String, List<String>> actualHeaders = apiMessage.getHeaders();
-		Map<String, List<String>> displayHeaders = HashMap.newHashMap(actualHeaders.size());
-		for (Map.Entry<String, List<String>> entry : actualHeaders.entrySet()) {
-			String headerName = entry.getKey();
-			List<String> headerValues = isSensitiveHeader().test(headerName)
-					? Collections.singletonList(HeaderValues.REDACTED)
-					: entry.getValue();
-			displayHeaders.put(headerName, headerValues);
+		Map<String, List<String>> headers = apiMessage.getHeaders();
+		return Maps.replace(headers, isSensitiveHeader(), () -> Collections.singletonList(HeaderValues.REDACTED));
+	}
+
+	/**
+	 * Returns all parameters from the given {@link ApiMessage} that can be displayed. This method replaces sensitive
+	 * parameters with {@link HeaderValues#REDACTED}, useful when logging the parameters of a message, and later
+	 * implementations can override this method to show only the wanted parameters.
+	 *
+	 * @param <T> the message body type
+	 *
+	 * @param apiRequest the API request containing the parameters
+	 * @return a map of parameters with sensitive parameters redacted
+	 */
+	default <T> Map<String, List<String>> getDisplayParams(final ApiRequest<T> apiRequest) {
+		if (null == apiRequest) {
+			return Collections.emptyMap();
 		}
-		return displayHeaders;
+		Map<String, List<String>> params = apiRequest.getParams();
+		return Maps.replace(params, isSensitiveParam(), () -> Collections.singletonList(Sensitive.Value.REDACTED));
 	}
 
 	/**

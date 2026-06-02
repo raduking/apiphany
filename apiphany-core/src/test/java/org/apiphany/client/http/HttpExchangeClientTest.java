@@ -13,11 +13,13 @@ import java.util.function.Predicate;
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
 import org.apiphany.RequestMethod;
+import org.apiphany.client.ClientProperties;
 import org.apiphany.header.Header;
 import org.apiphany.header.HeaderValues;
 import org.apiphany.header.Headers;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
+import org.apiphany.logging.ExchangeLoggingProperties;
 import org.apiphany.security.AuthenticationType;
 import org.apiphany.security.Sensitive;
 import org.junit.jupiter.api.Test;
@@ -83,8 +85,15 @@ class HttpExchangeClientTest {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = { "Authorization", "authorization", "AuTHoRiZaTiOn" })
-	void shouldReturnAuthorizationHeaderAsSensitive(final String headerName) throws Exception {
+	@ValueSource(
+		strings = {
+				"Authorization", "authorization", "AuTHoRiZaTiOn",
+				"Proxy-Authorization", "proxy-authorization",
+				"Cookie", "cookie",
+				"Set-Cookie", "set-cookie",
+				"Set-Cookie2", "set-cookie2",
+				"X-API-Key", "api-key", "x-auth-token" })
+	void shouldReturnSensitiveHeadersAsSensitive(final String headerName) throws Exception {
 		HttpExchangeClient client = new DummyHttpExchangeClient();
 		client.close();
 
@@ -95,8 +104,12 @@ class HttpExchangeClientTest {
 
 	@ParameterizedTest
 	@EnumSource(HttpHeader.class)
-	void shouldReturnNonAuthorizationHeadersAsNonSensitive(final HttpHeader header) throws Exception {
-		if (header == HttpHeader.AUTHORIZATION) {
+	void shouldReturnNonSensitiveHeadersAsNonSensitive(final HttpHeader header) throws Exception {
+		if (header == HttpHeader.AUTHORIZATION
+				|| header == HttpHeader.PROXY_AUTHORIZATION
+				|| header == HttpHeader.COOKIE
+				|| header == HttpHeader.SET_COOKIE
+				|| header == HttpHeader.SET_COOKIE2) {
 			return;
 		}
 		HttpExchangeClient client = new DummyHttpExchangeClient();
@@ -104,7 +117,7 @@ class HttpExchangeClientTest {
 
 		Predicate<String> isSensitive = client.isSensitiveHeader();
 
-		assertFalse(isSensitive.test(header.name()));
+		assertFalse(isSensitive.test(header.value()));
 	}
 
 	@Test
@@ -160,26 +173,52 @@ class HttpExchangeClientTest {
 	}
 
 	@Test
-	void shouldReturnDisplayHeadersWithRedactedAuthorizationFromApiMessageWithHeaders() throws Exception {
+	void shouldReturnDisplayHeadersWithRedactedSensitiveValuesFromApiMessageWithHeaders() throws Exception {
 		HttpExchangeClient client = new DummyHttpExchangeClient();
 		client.close();
 
 		ApiRequest<String> request = new ApiRequest<>();
 		var headers = Headers.of(
 				Header.of("Content-Type", "application/json"),
-				Header.of("Authorization", "1234567890"));
+				Header.of("Authorization", "1234567890"),
+				Header.of("Cookie", "sessionId=abc"));
 		request.addHeaders(headers);
 
 		Map<String, List<String>> headersForDisplay = client.getDisplayHeaders(request);
 
 		assertThat(headersForDisplay, equalTo(Map.of(
 				"Content-Type", List.of("application/json"),
-				"Authorization", List.of(Sensitive.Value.REDACTED))));
+				"Authorization", List.of(Sensitive.Value.REDACTED),
+				"Cookie", List.of(Sensitive.Value.REDACTED))));
 	}
 
 	@Test
 	void shouldHaveTheSameRedactedValueAsSensitiveValueRedacted() {
 		assertThat(HeaderValues.REDACTED, equalTo(Sensitive.Value.REDACTED));
+	}
+
+	@Test
+	void shouldReturnConfiguredSensitiveHeaderAsSensitive() throws Exception {
+		ExchangeLoggingProperties properties = new ExchangeLoggingProperties();
+		properties.setSensitiveHeaders(List.of("X-Internal-Secret"));
+		ClientProperties clientProperties = new ClientProperties();
+		clientProperties.setCustomProperties(properties);
+		HttpExchangeClient client = new ConfigurableDummyHttpExchangeClient(clientProperties);
+		client.close();
+
+		assertTrue(client.isSensitiveHeader().test("x-internal-secret"));
+	}
+
+	@Test
+	void shouldReturnConfiguredSensitiveParamAsSensitive() throws Exception {
+		ExchangeLoggingProperties properties = new ExchangeLoggingProperties();
+		properties.setSensitiveParams(List.of("session_id"));
+		ClientProperties clientProperties = new ClientProperties();
+		clientProperties.setCustomProperties(properties);
+		HttpExchangeClient client = new ConfigurableDummyHttpExchangeClient(clientProperties);
+		client.close();
+
+		assertTrue(client.isSensitiveParam().test("session_id"));
 	}
 
 	static class DummyHttpExchangeClient implements HttpExchangeClient {
@@ -198,6 +237,21 @@ class HttpExchangeClientTest {
 
 		boolean getClosed() {
 			return closed;
+		}
+	}
+
+	static class ConfigurableDummyHttpExchangeClient extends DummyHttpExchangeClient {
+
+		private final ClientProperties clientProperties;
+
+		ConfigurableDummyHttpExchangeClient(final ClientProperties clientProperties) {
+			this.clientProperties = clientProperties;
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public ClientProperties getClientProperties() {
+			return clientProperties;
 		}
 	}
 

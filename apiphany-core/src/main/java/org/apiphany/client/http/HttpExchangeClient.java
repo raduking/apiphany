@@ -3,6 +3,7 @@ package org.apiphany.client.http;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import org.apiphany.RequestMethod;
@@ -13,6 +14,7 @@ import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.TracingHeader;
 import org.apiphany.lang.Strings;
+import org.apiphany.logging.ExchangeLoggingProperties;
 import org.apiphany.security.ssl.SSLContextAware;
 import org.slf4j.MDC;
 
@@ -115,13 +117,44 @@ public interface HttpExchangeClient extends ExchangeClient, SSLContextAware {
 	}
 
 	/**
-	 * Redact the {@link HttpHeader#AUTHORIZATION} header.
+	 * Redact common credential/session headers.
 	 *
 	 * @return redacted headers predicate
 	 */
 	@Override
 	default Predicate<String> isSensitiveHeader() {
-		return HttpHeader.AUTHORIZATION::matches;
+		ExchangeLoggingProperties loggingProperties = getCustomProperties(ExchangeLoggingProperties.class);
+		return header -> HttpHeader.AUTHORIZATION.matches(header)
+				|| HttpHeader.PROXY_AUTHORIZATION.matches(header)
+				|| HttpHeader.COOKIE.matches(header)
+				|| HttpHeader.SET_COOKIE.matches(header)
+				|| HttpHeader.SET_COOKIE2.matches(header)
+				|| "X-API-Key".equalsIgnoreCase(header)
+				|| "Api-Key".equalsIgnoreCase(header)
+				|| "X-Auth-Token".equalsIgnoreCase(header)
+				|| (null != loggingProperties && loggingProperties.containsSensitiveHeader(header));
+	}
+
+	/**
+	 * Redact common credential/session parameters.
+	 *
+	 * @return redacted parameters predicate
+	 */
+	@Override
+	default Predicate<String> isSensitiveParam() {
+		Set<String> sensitiveParameterNames = Set.of(
+				"token",
+				"access_token",
+				"refresh_token",
+				"api_key",
+				"apikey",
+				"code",
+				"client_secret",
+				"password");
+		ExchangeLoggingProperties loggingProperties = getCustomProperties(ExchangeLoggingProperties.class);
+		return name -> null != name
+				&& (sensitiveParameterNames.contains(name.toLowerCase())
+						|| (null != loggingProperties && loggingProperties.containsSensitiveParam(name)));
 	}
 
 	/**

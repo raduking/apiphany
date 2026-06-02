@@ -25,7 +25,7 @@ import org.morphix.lang.Nullables;
  *
  * @author Radu Sebastian LAZIN
  */
-public record RequestParameter(String name, List<String> values, Charset encoding) implements ParameterFunction {
+public record RequestParameter(String name, List<String> values, Charset encoding) implements Parameter {
 
 	/**
 	 * Separator between parameter name and value.
@@ -33,11 +33,10 @@ public record RequestParameter(String name, List<String> values, Charset encodin
 	public static final String NAME_VALUE_SEPARATOR = "=";
 
 	/**
-	 * A constant representing a null list of values for parameters. This can be used to explicitly indicate that a
-	 * parameter has no values, as opposed to an empty list which might indicate that the parameter is present but has no
-	 * values.
+	 * A constant representing a null list of values for parameters. This is used to explicitly indicate that a parameter is
+	 * not present, as opposed to an empty list which indicates that the parameter is present but has no values.
 	 */
-	private static final List<String> NULL_LIST = null;
+	private static final List<String> NOT_PRESENT = null;
 
 	/**
 	 * Constructs a {@link RequestParameter} instance ensuring the name is not null or blank.
@@ -148,7 +147,7 @@ public record RequestParameter(String name, List<String> values, Charset encodin
 	 */
 	public static List<String> toValues(final Object object) {
 		if (null == object) {
-			return NULL_LIST;
+			return NOT_PRESENT;
 		}
 		return switch (object) {
 			case Collection<?> collection -> toValues(collection);
@@ -167,7 +166,7 @@ public record RequestParameter(String name, List<String> values, Charset encodin
 	 */
 	public static List<String> toValues(final String string) {
 		if (null == string) {
-			return NULL_LIST;
+			return NOT_PRESENT;
 		}
 		List<String> list = new ArrayList<>();
 		list.add(string);
@@ -182,14 +181,14 @@ public record RequestParameter(String name, List<String> values, Charset encodin
 	 */
 	public static List<String> toValues(final Iterable<?> iterable) {
 		if (null == iterable) {
-			return NULL_LIST;
+			return NOT_PRESENT;
 		}
 		if (iterable instanceof Collection<?> collection) {
 			return toValues(collection);
 		}
 		Iterator<?> iterator = iterable.iterator();
 		if (!iterator.hasNext()) {
-			return NULL_LIST;
+			return NOT_PRESENT;
 		}
 		List<String> list = new ArrayList<>();
 		iterator.forEachRemaining(item -> list.add(String.valueOf(item)));
@@ -204,7 +203,7 @@ public record RequestParameter(String name, List<String> values, Charset encodin
 	 */
 	public static List<String> toValues(final Collection<?> collection) {
 		if (null == collection || collection.isEmpty()) {
-			return NULL_LIST;
+			return NOT_PRESENT;
 		}
 		List<String> list = new ArrayList<>(collection.size());
 		collection.forEach(item -> list.add(String.valueOf(item)));
@@ -219,7 +218,7 @@ public record RequestParameter(String name, List<String> values, Charset encodin
 	 */
 	public static List<String> toValues(final Object[] objects) {
 		if (JavaArrays.isEmpty(objects)) {
-			return NULL_LIST;
+			return NOT_PRESENT;
 		}
 		List<String> list = new ArrayList<>(objects.length);
 		return ArrayConversions.convertArray(objects, String::valueOf).to(list);
