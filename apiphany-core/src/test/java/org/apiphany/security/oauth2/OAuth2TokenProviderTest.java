@@ -51,6 +51,7 @@ import org.morphix.lang.function.ExecutionWrapper;
 import org.morphix.lang.function.ExecutionWrappers;
 import org.morphix.lang.function.LoggerAdapter.LoggingLevel;
 import org.morphix.lang.resource.ScopedResource;
+import org.morphix.lang.retry.DelayStrategy;
 import org.morphix.lang.thread.Threads;
 import org.morphix.reflection.Methods;
 import org.slf4j.Logger;
@@ -378,7 +379,7 @@ class OAuth2TokenProviderTest {
 		OAuth2TokenProviderProperties properties = new OAuth2TokenProviderProperties();
 		properties.setMinRefreshInterval(minRefreshInterval);
 		properties.setMaxRefreshInterval(maxRefreshInterval);
-		properties.setRefreshFailureDelayMultiplier(2.0d);
+		properties.setFailureRetryDelayMultiplier(2.0d);
 
 		List<Long> delays = Collections.synchronizedList(new ArrayList<>());
 		AtomicInteger scheduleCalls = new AtomicInteger(0);
@@ -404,6 +405,57 @@ class OAuth2TokenProviderTest {
 				.build();
 
 		assertThat(delays, equalTo(List.of(100L, 200L, 400L, 800L, 800L)));
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldUseCustomFailureRetryDelayStrategyWhenConfiguredInBuilder() {
+		doReturn(Map.of(CLIENT_REGISTRATION_NAME, clientRegistration)).when(oAuth2Properties).getRegistration();
+		doReturn(clientRegistration).when(oAuth2Properties).getClientRegistration(CLIENT_REGISTRATION_NAME);
+		doReturn(true).when(clientRegistration).hasClientId();
+		doReturn(true).when(clientRegistration).hasClientSecret();
+		doReturn(Map.of(PROVIDER_NAME, providerDetails)).when(oAuth2Properties).getProvider();
+		doReturn(providerDetails).when(oAuth2Properties).getProviderDetails(clientRegistration);
+
+		doThrow(new RuntimeException("boom")).when(tokenClient).getAuthenticationToken();
+
+		OAuth2TokenProviderProperties properties = new OAuth2TokenProviderProperties();
+		properties.setMinRefreshInterval(Duration.ofMillis(1));
+		properties.setMaxRefreshInterval(Duration.ofSeconds(30));
+		properties.setFailureRetryDelayMultiplier(2.0d);
+
+		DelayStrategy customDelayStrategy = attempt -> attempt * 111L;
+
+		List<Long> delays = Collections.synchronizedList(new ArrayList<>());
+		AtomicInteger scheduleCalls = new AtomicInteger(0);
+
+		ScheduledExecutorService scheduledExecutorService = mock(ScheduledExecutorService.class);
+		ScheduledFuture<?> scheduledFuture = mock(ScheduledFuture.class);
+		doReturn(true).when(scheduledFuture).cancel(false);
+		doAnswer(answer -> {
+			Runnable runnable = answer.getArgument(0);
+			long delayMillis = answer.getArgument(1);
+			delays.add(delayMillis);
+			if (scheduleCalls.incrementAndGet() <= 3) {
+				runnable.run();
+			}
+			return scheduledFuture;
+		}).when(scheduledExecutorService).schedule(any(Runnable.class), anyLong(), any());
+
+		tokenProvider = OAuth2TokenProvider.builder()
+				.properties(properties)
+				.registration(oAuth2Properties, CLIENT_REGISTRATION_NAME)
+				.tokenRefreshScheduler(ScopedResource.managed(scheduledExecutorService))
+				.tokenClientSupplier((cr, pd) -> tokenClient)
+				.failureRetryDelayStrategy(customDelayStrategy)
+				.build();
+
+		assertThat(delays, equalTo(List.of(111L, 222L, 333L, 444L)));
+	}
+
+	@Test
+	void shouldThrowWhenSettingNullFailureRetryDelayStrategy() {
+		assertThrows(NullPointerException.class, () -> OAuth2TokenProvider.builder().failureRetryDelayStrategy(null));
 	}
 
 	@Test

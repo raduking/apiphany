@@ -35,9 +35,9 @@ public class OAuth2TokenProviderProperties {
 		public static final Duration MAX_REFRESH_INTERVAL = Duration.ofSeconds(30);
 
 		/**
-		 * The exponential delay multiplier for token refresh retries - 2.0.
+		 * The exponential delay multiplier for token retrieve failures retries - 2.0.
 		 */
-		public static final double REFRESH_FAILURE_DELAY_MULTIPLIER = 2.0d;
+		public static final double FAILURE_RETRY_DELAY_MULTIPLIER = 2.0d;
 
 		/**
 		 * The maximum number of attempts {@link OAuth2TokenProvider#close()} tries to close the scheduled task - 10 attempts.
@@ -81,14 +81,14 @@ public class OAuth2TokenProviderProperties {
 	private Duration minRefreshInterval = Default.MIN_REFRESH_INTERVAL;
 
 	/**
-	 * The maximum refresh interval when token refresh retries are exponentially backed off.
+	 * The maximum refresh interval when token refresh retries are limited.
 	 */
 	private Duration maxRefreshInterval = Default.MAX_REFRESH_INTERVAL;
 
 	/**
 	 * The exponential delay multiplier for token refresh failure retries.
 	 */
-	private Double refreshFailureDelayMultiplier = Default.REFRESH_FAILURE_DELAY_MULTIPLIER;
+	private Double failureRetryDelayMultiplier = Default.FAILURE_RETRY_DELAY_MULTIPLIER;
 
 	/**
 	 * The maximum attempts to close the scheduled task when calling {@link OAuth2TokenProvider#close()}.
@@ -180,8 +180,8 @@ public class OAuth2TokenProviderProperties {
 	 *
 	 * @return the refresh failure delay multiplier
 	 */
-	public Double getRefreshFailureDelayMultiplier() {
-		return refreshFailureDelayMultiplier;
+	public Double getFailureRetryDelayMultiplier() {
+		return failureRetryDelayMultiplier;
 	}
 
 	/**
@@ -189,8 +189,8 @@ public class OAuth2TokenProviderProperties {
 	 *
 	 * @param refreshFailureDelayMultiplier the refresh failure delay multiplier
 	 */
-	public void setRefreshFailureDelayMultiplier(final Double refreshFailureDelayMultiplier) {
-		this.refreshFailureDelayMultiplier = refreshFailureDelayMultiplier;
+	public void setFailureRetryDelayMultiplier(final Double refreshFailureDelayMultiplier) {
+		this.failureRetryDelayMultiplier = refreshFailureDelayMultiplier;
 	}
 
 	/**
