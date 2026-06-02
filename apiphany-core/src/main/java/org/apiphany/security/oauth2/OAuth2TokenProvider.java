@@ -31,6 +31,10 @@ import org.morphix.lang.thread.ReschedulingTask;
  * The token refresh is done using a scheduled task that runs when the token is about to expire (based on the expiration
  * time minus an error margin defined in {@link OAuth2TokenProviderProperties}).
  * <p>
+ * The provider also handles token refresh failures by keeping track of consecutive refresh failures and using an
+ * exponential delay strategy by default which is configurable via {@link OAuth2TokenProviderProperties} or completely
+ * overridden via {@link Builder#failureRetryDelayStrategy}.
+ * <p>
  * TODO: implement refresh token functionality<br/>
  *
  * @author Radu Sebastian LAZIN
@@ -101,7 +105,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 		}
 		this.selfReschedulingTask = newReschedulingTask(builder);
 		this.failureRetryDelay = Nullables.nonNullOrDefault(builder.failureRetryDelayStrategy, () -> ExponentialDelayStrategy.of(
-				properties.getMinRefreshInterval(), properties.getMaxRefreshInterval(), properties.getRefreshFailureDelayMultiplier()));
+				properties.getMinRefreshInterval(), properties.getMaxRefreshInterval(), properties.getFailureRetryDelayMultiplier()));
 
 		if (null != tokenClient) {
 			enable();
