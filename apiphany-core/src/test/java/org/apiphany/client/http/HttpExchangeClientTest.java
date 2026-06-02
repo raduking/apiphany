@@ -200,7 +200,7 @@ class HttpExchangeClientTest {
 	@Test
 	void shouldReturnConfiguredSensitiveHeaderAsSensitive() throws Exception {
 		ExchangeLoggingProperties properties = new ExchangeLoggingProperties();
-		properties.setSensitiveHeaders(List.of("X-Internal-Secret"));
+		properties.getHeaders().setSensitive(List.of("X-Internal-Secret"));
 		ClientProperties clientProperties = new ClientProperties();
 		clientProperties.setCustomProperties(properties);
 		HttpExchangeClient client = new ConfigurableDummyHttpExchangeClient(clientProperties);
@@ -212,7 +212,7 @@ class HttpExchangeClientTest {
 	@Test
 	void shouldReturnConfiguredSensitiveParamAsSensitive() throws Exception {
 		ExchangeLoggingProperties properties = new ExchangeLoggingProperties();
-		properties.setSensitiveParams(List.of("session_id"));
+		properties.getParams().setSensitive(List.of("session_id"));
 		ClientProperties clientProperties = new ClientProperties();
 		clientProperties.setCustomProperties(properties);
 		HttpExchangeClient client = new ConfigurableDummyHttpExchangeClient(clientProperties);

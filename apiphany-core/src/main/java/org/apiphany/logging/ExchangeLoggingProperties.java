@@ -17,19 +17,19 @@ public class ExchangeLoggingProperties {
 	public static final String ROOT = "logging";
 
 	/**
-	 * Extra header names to redact (case-insensitive).
+	 * Header logging configuration.
 	 */
-	private List<String> sensitiveHeaders;
+	private Category headers = new Category();
 
 	/**
-	 * Extra parameter names to redact (case-insensitive).
+	 * Request parameter logging configuration.
 	 */
-	private List<String> sensitiveParams;
+	private Category params = new Category();
 
 	/**
-	 * Body logging mode. Defaults to full body logging for backward compatibility.
+	 * Body logging configuration.
 	 */
-	private Logging.Mode bodyLoggingMode = Logging.Mode.FULL;
+	private Category body = new Category();
 
 	/**
 	 * Default constructor.
@@ -39,76 +39,130 @@ public class ExchangeLoggingProperties {
 	}
 
 	/**
-	 * Returns extra sensitive headers.
+	 * Returns header logging configuration.
 	 *
-	 * @return extra sensitive headers
+	 * @return header logging configuration
 	 */
-	public List<String> getSensitiveHeaders() {
-		return sensitiveHeaders;
+	public Category getHeaders() {
+		return headers;
 	}
 
 	/**
-	 * Sets extra sensitive headers.
+	 * Sets header logging configuration.
 	 *
-	 * @param sensitiveHeaders extra sensitive headers
+	 * @param headers header logging configuration
 	 */
-	public void setSensitiveHeaders(final List<String> sensitiveHeaders) {
-		this.sensitiveHeaders = sensitiveHeaders;
+	public void setHeaders(final Category headers) {
+		this.headers = headers;
 	}
 
 	/**
-	 * Returns extra sensitive parameters.
+	 * Returns request parameter logging configuration.
 	 *
-	 * @return extra sensitive parameters
+	 * @return request parameter logging configuration
 	 */
-	public List<String> getSensitiveParams() {
-		return sensitiveParams;
+	public Category getParams() {
+		return params;
 	}
 
 	/**
-	 * Sets extra sensitive parameters.
+	 * Sets request parameter logging configuration.
 	 *
-	 * @param sensitiveParams extra sensitive parameters
+	 * @param params request parameter logging configuration
 	 */
-	public void setSensitiveParams(final List<String> sensitiveParams) {
-		this.sensitiveParams = sensitiveParams;
+	public void setParams(final Category params) {
+		this.params = params;
 	}
 
 	/**
-	 * Returns body logging mode.
+	 * Returns body logging configuration.
 	 *
-	 * @return body logging mode
+	 * @return body logging configuration
 	 */
-	public Logging.Mode getBodyLoggingMode() {
-		return bodyLoggingMode;
+	public Category getBody() {
+		return body;
 	}
 
 	/**
-	 * Sets body logging mode.
+	 * Sets body logging configuration.
 	 *
-	 * @param bodyLoggingMode body logging mode
+	 * @param body body logging configuration
 	 */
-	public void setBodyLoggingMode(final Logging.Mode bodyLoggingMode) {
-		this.bodyLoggingMode = bodyLoggingMode;
+	public void setBody(final Category body) {
+		this.body = body;
 	}
 
 	/**
-	 * Returns true if the provided header name exists in {@link #sensitiveHeaders}.
+	 * Returns true if the provided header name exists in {@link Category#getSensitive()} of {@link #getHeaders()}.
 	 *
 	 * @param headerName header name
 	 * @return true if configured as sensitive
 	 */
 	public boolean containsSensitiveHeader(final String headerName) {
-		return Strings.containsIgnoreCase(headerName, sensitiveHeaders);
+		return Strings.containsIgnoreCase(headerName, getHeaders().getSensitive());
 	}
 
 	/**
-	 * Returns true if the provided parameter name exists in {@link #sensitiveParams}.
+	 * Returns true if the provided parameter name exists in {@link Category#getSensitive()} of {@link #getParams()}.
 	 *
 	 * @param parameterName parameter name
 	 * @return true if configured as sensitive
 	 */
 	public boolean containsSensitiveParam(final String parameterName) {
-		return Strings.containsIgnoreCase(parameterName, sensitiveParams);
+		return Strings.containsIgnoreCase(parameterName, getParams().getSensitive());
+	}
+
+	/**
+	 * Generic logging category configuration, used for headers, parameters and body.
+	 *
+	 * @author Radu Sebastian LAZIN
+	 */
+	public static class Category {
+
+		/**
+		 * Logging mode for this category.
+		 */
+		private Logging.Mode mode = Logging.Mode.FULL;
+
+		/**
+		 * Extra values to redact (case-insensitive).
+		 */
+		private List<String> sensitive;
+
+		/**
+		 * Returns logging mode for this category.
+		 *
+		 * @return logging mode
+		 */
+		public Logging.Mode getMode() {
+			return mode;
+		}
+
+		/**
+		 * Sets logging mode for this category.
+		 *
+		 * @param mode logging mode
+		 */
+		public void setMode(final Logging.Mode mode) {
+			this.mode = mode;
+		}
+
+		/**
+		 * Returns the case-insensitive list of values considered sensitive for this category.
+		 *
+		 * @return sensitive values for this category
+		 */
+		public List<String> getSensitive() {
+			return sensitive;
+		}
+
+		/**
+		 * Sets the case-insensitive list of values considered sensitive for this category.
+		 *
+		 * @param sensitive sensitive values for this category
+		 */
+		public void setSensitive(final List<String> sensitive) {
+			this.sensitive = sensitive;
+		}
 	}
 }
