@@ -7,6 +7,7 @@ import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.lang.Strings;
+import org.morphix.lang.Messages;
 import org.morphix.lang.Nullables;
 import org.morphix.lang.Temporals;
 import org.morphix.lang.function.LoggingFunction;
@@ -97,7 +98,8 @@ public class ExchangeLogger {
 			final ApiRequest<T> apiRequest,
 			final ApiResponse<T> apiResponse,
 			final Duration duration) {
-		loggingFunction.log(LOG_MESSAGE_SUCCESS,
+		String logMessage = Messages.message(
+				LOG_MESSAGE_SUCCESS,
 				apiClientClass,
 				apiRequest.getMethod(),
 				apiRequest.getUrl(),
@@ -108,6 +110,7 @@ public class ExchangeLogger {
 				Nullables.apply(apiResponse, ApiResponse::getDisplayHeaders),
 				describeBody(apiResponse, exchangeClient),
 				Temporals.toSeconds(duration.toMillis()));
+		loggingFunction.log(logMessage);
 	}
 
 	/**
@@ -130,7 +133,8 @@ public class ExchangeLogger {
 			final ApiResponse<T> apiResponse,
 			final Duration duration) {
 		Exception exception = Nullables.apply(apiResponse, ApiResponse::getException);
-		loggingFunction.log(LOG_MESSAGE_ERROR,
+		String logMessage = Messages.message(
+				LOG_MESSAGE_ERROR,
 				apiClientClass,
 				apiRequest.getMethod(),
 				apiRequest.getUrl(),
@@ -140,6 +144,7 @@ public class ExchangeLogger {
 				Nullables.apply(apiResponse, ApiResponse::getStatus),
 				exception,
 				Temporals.toSeconds(duration.toMillis()));
+		loggingFunction.log(logMessage);
 		loggingFunction.log("{}", Nullables.apply(apiResponse, ApiResponse::getErrorMessage), exception);
 	}
 
@@ -159,7 +164,7 @@ public class ExchangeLogger {
 			return null;
 		}
 		ExchangeLoggingProperties loggingProperties = exchangeClient.getCustomProperties(ExchangeLoggingProperties.class);
-		Logging.Mode bodyLoggingMode = Nullables.apply(loggingProperties, ExchangeLoggingProperties::getBodyLoggingMode);
+		Logging.Mode bodyLoggingMode = Nullables.apply(loggingProperties, props -> props.getBody().getMode());
 		if (null == bodyLoggingMode || bodyLoggingMode == Logging.Mode.FULL) {
 			return body.toString();
 		}
