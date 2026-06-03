@@ -3,19 +3,19 @@ package org.apiphany.client.http;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Predicate;
 
 import org.apiphany.RequestMethod;
+import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.header.Header;
 import org.apiphany.header.Headers;
-import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
+import org.apiphany.http.HttpSensitive;
 import org.apiphany.http.TracingHeader;
 import org.apiphany.lang.Strings;
-import org.apiphany.logging.ExchangeLoggingProperties;
 import org.apiphany.security.ssl.SSLContextAware;
+import org.morphix.lang.Nullables;
 import org.slf4j.MDC;
 
 /**
@@ -123,15 +123,8 @@ public interface HttpExchangeClient extends ExchangeClient, SSLContextAware {
 	 */
 	@Override
 	default Predicate<String> isSensitiveHeader() {
-		ExchangeLoggingProperties loggingProperties = getCustomProperties(ExchangeLoggingProperties.class);
-		return header -> HttpHeader.AUTHORIZATION.matches(header)
-				|| HttpHeader.PROXY_AUTHORIZATION.matches(header)
-				|| HttpHeader.COOKIE.matches(header)
-				|| HttpHeader.SET_COOKIE.matches(header)
-				|| HttpHeader.SET_COOKIE2.matches(header)
-				|| "X-API-Key".equalsIgnoreCase(header)
-				|| "Api-Key".equalsIgnoreCase(header)
-				|| "X-Auth-Token".equalsIgnoreCase(header)
+		ClientProperties.Logging loggingProperties = Nullables.apply(getClientProperties(), ClientProperties::getLogging);
+		return header -> HttpSensitive.isHeader(header)
 				|| (null != loggingProperties && loggingProperties.containsSensitiveHeader(header));
 	}
 
@@ -142,19 +135,9 @@ public interface HttpExchangeClient extends ExchangeClient, SSLContextAware {
 	 */
 	@Override
 	default Predicate<String> isSensitiveParam() {
-		Set<String> sensitiveParameterNames = Set.of(
-				"token",
-				"access_token",
-				"refresh_token",
-				"api_key",
-				"apikey",
-				"code",
-				"client_secret",
-				"password");
-		ExchangeLoggingProperties loggingProperties = getCustomProperties(ExchangeLoggingProperties.class);
-		return name -> null != name
-				&& (sensitiveParameterNames.contains(name.toLowerCase())
-						|| (null != loggingProperties && loggingProperties.containsSensitiveParam(name)));
+		ClientProperties.Logging loggingProperties = Nullables.apply(getClientProperties(), ClientProperties::getLogging);
+		return param -> HttpSensitive.isParam(param)
+				|| (null != loggingProperties && loggingProperties.containsSensitiveParam(param));
 	}
 
 	/**

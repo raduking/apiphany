@@ -16,8 +16,8 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -583,14 +583,14 @@ class StringsTest {
 
 		@Test
 		void shouldIgnoreNullCandidatesInList() {
-			boolean result = Strings.containsIgnoreCase("authorization", java.util.Arrays.asList(null, "cookie", "AUTHORIZATION"));
+			boolean result = Strings.containsIgnoreCase("authorization", Arrays.asList(null, "cookie", "AUTHORIZATION"));
 
 			assertTrue(result);
 		}
 
 		@Test
-		void shouldUseProvidedLocale() {
-			boolean result = Strings.containsIgnoreCase("TITLE", List.of("title"), Locale.ENGLISH);
+		void shouldIgnoreCase() {
+			boolean result = Strings.containsIgnoreCase("TITLE", List.of("title"));
 
 			assertTrue(result);
 		}

@@ -19,7 +19,7 @@ import org.apiphany.header.HeaderValues;
 import org.apiphany.header.Headers;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
-import org.apiphany.logging.ExchangeLoggingProperties;
+import org.apiphany.http.HttpSensitive;
 import org.apiphany.security.AuthenticationType;
 import org.apiphany.security.Sensitive;
 import org.junit.jupiter.api.Test;
@@ -105,11 +105,7 @@ class HttpExchangeClientTest {
 	@ParameterizedTest
 	@EnumSource(HttpHeader.class)
 	void shouldReturnNonSensitiveHeadersAsNonSensitive(final HttpHeader header) throws Exception {
-		if (header == HttpHeader.AUTHORIZATION
-				|| header == HttpHeader.PROXY_AUTHORIZATION
-				|| header == HttpHeader.COOKIE
-				|| header == HttpHeader.SET_COOKIE
-				|| header == HttpHeader.SET_COOKIE2) {
+		if (HttpSensitive.isHeader(header.value())) {
 			return;
 		}
 		HttpExchangeClient client = new DummyHttpExchangeClient();
@@ -199,10 +195,10 @@ class HttpExchangeClientTest {
 
 	@Test
 	void shouldReturnConfiguredSensitiveHeaderAsSensitive() throws Exception {
-		ExchangeLoggingProperties properties = new ExchangeLoggingProperties();
+		ClientProperties.Logging properties = new ClientProperties.Logging();
 		properties.getHeaders().setSensitive(List.of("X-Internal-Secret"));
 		ClientProperties clientProperties = new ClientProperties();
-		clientProperties.setCustomProperties(properties);
+		clientProperties.setLogging(properties);
 		HttpExchangeClient client = new ConfigurableDummyHttpExchangeClient(clientProperties);
 		client.close();
 
@@ -211,10 +207,10 @@ class HttpExchangeClientTest {
 
 	@Test
 	void shouldReturnConfiguredSensitiveParamAsSensitive() throws Exception {
-		ExchangeLoggingProperties properties = new ExchangeLoggingProperties();
+		ClientProperties.Logging properties = new ClientProperties.Logging();
 		properties.getParams().setSensitive(List.of("session_id"));
 		ClientProperties clientProperties = new ClientProperties();
-		clientProperties.setCustomProperties(properties);
+		clientProperties.setLogging(properties);
 		HttpExchangeClient client = new ConfigurableDummyHttpExchangeClient(clientProperties);
 		client.close();
 

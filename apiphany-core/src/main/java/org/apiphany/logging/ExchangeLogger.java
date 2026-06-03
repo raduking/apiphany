@@ -5,6 +5,7 @@ import java.time.Duration;
 import org.apiphany.ApiMessage;
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
+import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.lang.Strings;
 import org.morphix.lang.Messages;
@@ -163,7 +164,8 @@ public class ExchangeLogger {
 		if (null == body) {
 			return null;
 		}
-		ExchangeLoggingProperties loggingProperties = exchangeClient.getCustomProperties(ExchangeLoggingProperties.class);
+		ClientProperties clientProperties = exchangeClient.getClientProperties();
+		ClientProperties.Logging loggingProperties = Nullables.apply(clientProperties, ClientProperties::getLogging);
 		Logging.Mode bodyLoggingMode = Nullables.apply(loggingProperties, props -> props.getBody().getMode());
 		if (null == bodyLoggingMode || bodyLoggingMode == Logging.Mode.FULL) {
 			return body.toString();
