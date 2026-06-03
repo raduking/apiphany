@@ -3,18 +3,21 @@ package org.apiphany.http;
 import java.util.Map;
 import java.util.Objects;
 
+import org.apiphany.header.HeaderName;
 import org.morphix.lang.Enums;
 import org.morphix.lang.function.ToStringFunction;
 import org.morphix.reflection.Constructors;
 
 /**
- * RFC 7231 HTTP headers.
+ * RFC 7231 and other common HTTP headers.
  *
  * @see <a href="https://tools.ietf.org/html/rfc7231">RFC 7231</a>
+ * @see DeFactoHeader
+ * @see TracingHeader
  *
  * @author Radu Sebastian LAZIN
  */
-public enum HttpHeader {
+public enum HttpHeader implements HeaderName {
 
 	/**
 	 * The HTTP {@code Accept} header field name.
@@ -464,31 +467,10 @@ public enum HttpHeader {
 	 *
 	 * @see <a href="https://tools.ietf.org/html/rfc7235#section-4.1">Section 4.1 of RFC 7235</a>
 	 */
-	WWW_AUTHENTICATE(Name.WWW_AUTHENTICATE),
+	WWW_AUTHENTICATE(Name.WWW_AUTHENTICATE);
 
 	/**
-	 * The de facto standard {@code X-Frame-Options} header field name. Used to indicate whether a browser should be allowed
-	 * to render a page in a {@code <frame>}, {@code <iframe>}, {@code <embed>}, or {@code <object>}.
-	 *
-	 * @see <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options">MDN Web Docs</a>
-	 * @see <a href="https://tools.ietf.org/html/rfc7034">RFC 7034 (This RFC describes the header but does not establish it
-	 * as a standard)</a>
-	 */
-	X_FRAME_OPTIONS(Name.X_FRAME_OPTIONS),
-
-	/**
-	 * The non-standard {@code X-XSS-Protection} header field name. Used to control the XSS filter built into older
-	 * browsers.
-	 *
-	 * @see <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-XSS-Protection">MDN Web Docs</a>
-	 * @deprecated This header is deprecated and should be disabled in favor of using Content-Security-Policy. Modern
-	 * browsers have removed support for this header.
-	 */
-	@Deprecated
-	X_XSS_PROTECTION(Name.X_XSS_PROTECTION); // NOSONAR
-
-	/**
-	 * Namespace for the standard HTTP header field names.
+	 * Namespace for the standard HTTP header name values.
 	 *
 	 * @author Radu Sebastian LAZIN
 	 */
@@ -945,27 +927,6 @@ public enum HttpHeader {
 		public static final String WWW_AUTHENTICATE = "WWW-Authenticate";
 
 		/**
-		 * The de facto standard {@code X-Frame-Options} header field name. Used to indicate whether a browser should be allowed
-		 * to render a page in a {@code <frame>}, {@code <iframe>}, {@code <embed>}, or {@code <object>}.
-		 *
-		 * @see <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options">MDN Web Docs</a>
-		 * @see <a href="https://tools.ietf.org/html/rfc7034">RFC 7034 (This RFC describes the header but does not establish it
-		 * as a standard)</a>
-		 */
-		public static final String X_FRAME_OPTIONS = "X-Frame-Options";
-
-		/**
-		 * The non-standard {@code X-XSS-Protection} header field name. Used to control the XSS filter built into older
-		 * browsers.
-		 *
-		 * @see <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-XSS-Protection">MDN Web Docs</a>
-		 * @deprecated This header is deprecated and should be disabled in favor of using Content-Security-Policy. Modern
-		 * browsers have removed support for this header.
-		 */
-		@Deprecated // NOSONAR
-		public static final String X_XSS_PROTECTION = "X-XSS-Protection"; // NOSONAR
-
-		/**
 		 * Private constructor to prevent instantiation.
 		 */
 		private Name() {
@@ -1003,21 +964,11 @@ public enum HttpHeader {
 	}
 
 	/**
-	 * Returns true if the given string matches the enum value ignoring the case, false otherwise. The HTTP headers are
-	 * case-insensitive.
-	 *
-	 * @param header header as string to match
-	 * @return true if the given string matches the enum value ignoring the case, false otherwise.
-	 */
-	public boolean matches(final String header) {
-		return value().equalsIgnoreCase(header);
-	}
-
-	/**
 	 * Returns the string value.
 	 *
 	 * @return the string value
 	 */
+	@Override
 	public String value() {
 		return value;
 	}

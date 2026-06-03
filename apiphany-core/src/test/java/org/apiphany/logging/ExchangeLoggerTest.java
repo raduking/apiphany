@@ -254,10 +254,10 @@ class ExchangeLoggerTest {
 		private final ClientProperties clientProperties;
 
 		DummyExchangeClient(final Logging.Mode bodyLoggingMode) {
-			ExchangeLoggingProperties properties = new ExchangeLoggingProperties();
+			ClientProperties.Logging properties = new ClientProperties.Logging();
 			properties.getBody().setMode(bodyLoggingMode);
 			this.clientProperties = new ClientProperties();
-			this.clientProperties.setCustomProperties(properties);
+			this.clientProperties.setLogging(properties);
 		}
 
 		@Override

@@ -1,21 +1,17 @@
 package org.apiphany.lang;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Locale;
+import java.util.Collection;
 import java.util.Objects;
 import java.util.function.Consumer;
 
 import org.apiphany.io.IOStreams;
 import org.apiphany.io.ResourceLocation;
 import org.morphix.lang.Case;
-import org.morphix.lang.collections.Lists;
+import org.morphix.lang.collections.Iterables;
 import org.morphix.lang.function.Consumers;
 
 /**
@@ -189,48 +185,13 @@ public interface Strings {
 	 * @param encoding character encoding to use when reading the input stream
 	 * @param maxSize maximum size in characters to read from the input stream
 	 * @param bufferSize buffer size in characters to use when reading the input stream
-	 * @return the input stream as string
-	 * @throws IOException if an I/O error occurs
-	 * @throws IllegalArgumentException if maxSize or bufferSize are not strictly positive
-	 * @throws NullPointerException if inputStream or encoding is null
-	 */
-	static String toStringOrThrow(final InputStream inputStream, final Charset encoding, final int maxSize, final int bufferSize) throws IOException {
-		Require.that(maxSize > 0, "Maximum size must be strictly positive");
-		Require.that(bufferSize > 0, "Buffer size must be strictly positive");
-		if (null == inputStream) {
-			return null;
-		}
-		final StringBuilder out = new StringBuilder(Math.min(maxSize, IOStreams.DEFAULT_BUFFER_SIZE));
-		try (Reader in = new InputStreamReader(inputStream, encoding)) {
-			final char[] buffer = new char[bufferSize];
-			long totalRead = 0;
-			int s;
-			while ((s = in.read(buffer, 0, buffer.length)) >= 0) {
-				out.append(buffer, 0, s);
-				totalRead += s;
-				if (totalRead > maxSize) {
-					throw new IOException("Input stream exceeds maximum size of " + maxSize + " characters");
-				}
-			}
-		}
-		return out.toString();
-	}
-
-	/**
-	 * Transforms an input stream to a string. If the input stream cannot be converted to string with the given parameters,
-	 * the result will be {@code null}.
-	 *
-	 * @param inputStream the input stream to read from
-	 * @param encoding character encoding to use when reading the input stream
-	 * @param maxSize maximum size in characters to read from the input stream
-	 * @param bufferSize buffer size in characters to use when reading the input stream
 	 * @param onError on error handler, must not be null
 	 * @return the input stream as string
 	 */
 	static String toString(final InputStream inputStream, final Charset encoding, final int maxSize, final int bufferSize,
 			final Consumer<Exception> onError) {
 		try {
-			return toStringOrThrow(inputStream, encoding, maxSize, bufferSize);
+			return IOStreams.toStringOrThrow(inputStream, encoding, maxSize, bufferSize);
 		} catch (Exception e) {
 			if (null != onError) {
 				onError.accept(e);
@@ -340,7 +301,7 @@ public interface Strings {
 		try {
 			Objects.requireNonNull(path, "File path cannot be null");
 			try (InputStream inputStream = ResourceLocation.ofPath(path).open(path)) {
-				return toStringOrThrow(inputStream, encoding, IOStreams.MAX_BUFFER_SIZE, bufferSize);
+				return IOStreams.toStringOrThrow(inputStream, encoding, IOStreams.MAX_BUFFER_SIZE, bufferSize);
 			}
 		} catch (Exception e) {
 			if (null != onError) {
@@ -450,31 +411,18 @@ public interface Strings {
 	}
 
 	/**
-	 * Checks if the given name is contained in the given list of names. The check is case-insensitive.
+	 * Checks if the given name is contained in the given collection of names. The check is case-insensitive.
 	 *
 	 * @param name the name to check
 	 * @param names the list of names to check against
-	 * @return true if the given name is contained in the given list of names, false otherwise
-	 */
-	static boolean containsIgnoreCase(final String name, final List<String> names) {
-		return containsIgnoreCase(name, names, Locale.ROOT);
-	}
-
-	/**
-	 * Checks if the given name is contained in the given list of names. The check is case-insensitive.
-	 *
-	 * @param name the name to check
-	 * @param names the list of names to check against
-	 * @param locale the locale to use for case-insensitive check
 	 * @return true if the name is contained in the list of names, false otherwise
 	 */
-	static boolean containsIgnoreCase(final String name, final List<String> names, final Locale locale) {
-		if (null == name || Lists.isEmpty(names)) {
+	static boolean containsIgnoreCase(final String name, final Collection<String> names) {
+		if (null == name || Iterables.isEmpty(names)) {
 			return false;
 		}
-		String lowered = name.toLowerCase(locale);
 		for (String candidate : names) {
-			if (null != candidate && lowered.equals(candidate.toLowerCase(locale))) {
+			if (null != candidate && name.equalsIgnoreCase(candidate)) {
 				return true;
 			}
 		}

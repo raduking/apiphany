@@ -4,6 +4,7 @@ import java.lang.reflect.Constructor;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -12,6 +13,8 @@ import java.util.function.Supplier;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.annotation.Ignored;
+import org.apiphany.logging.ExchangeLogger;
+import org.apiphany.logging.Logging.Mode;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Messages;
 import org.morphix.lang.Nullables;
@@ -65,6 +68,11 @@ public class ClientProperties {
 	private Response response = new Response();
 
 	/**
+	 * Configuration for logging client exchanges.
+	 */
+	private Logging logging = new Logging();
+
+	/**
 	 * A map of client-specific properties.
 	 */
 	private Map<String, Object> client = new HashMap<>();
@@ -115,6 +123,7 @@ public class ClientProperties {
 					&& Objects.equals(this.connection, that.connection)
 					&& Objects.equals(this.compression, that.compression)
 					&& Objects.equals(this.response, that.response)
+					&& Objects.equals(this.logging, that.logging)
 					&& Objects.equals(this.client, that.client)
 					&& Objects.equals(this.custom, that.custom);
 		}
@@ -126,7 +135,7 @@ public class ClientProperties {
 	 */
 	@Override
 	public int hashCode() {
-		return Objects.hash(enabled, baseUrl, timeout, connection, compression, response, client, custom);
+		return Objects.hash(enabled, baseUrl, timeout, connection, compression, response, logging, client, custom);
 	}
 
 	/**
@@ -245,6 +254,25 @@ public class ClientProperties {
 	 */
 	public void setResponse(final Response response) {
 		this.response = response;
+	}
+
+	/**
+	 * Returns the logging configuration for the client.
+	 *
+	 * @return the logging configuration
+	 */
+	public Logging getLogging() {
+		return logging;
+	}
+
+	/**
+	 * Sets the logging configuration for the client.
+	 *
+	 * @param logging the logging configuration to set
+	 */
+
+	public void setLogging(final Logging logging) {
+		this.logging = logging;
 	}
 
 	/**
@@ -1303,6 +1331,211 @@ public class ClientProperties {
 		 */
 		public Boolean getGzip() {
 			return gzip;
+		}
+	}
+
+	/**
+	 * Configurable logging properties used by exchange clients and {@link ExchangeLogger}.
+	 *
+	 * @author Radu Sebastian LAZIN
+	 */
+	public static class Logging {
+
+		/**
+		 * Header logging configuration.
+		 */
+		private Category headers = new Category();
+
+		/**
+		 * Request parameter logging configuration.
+		 */
+		private Category params = new Category();
+
+		/**
+		 * Body logging configuration.
+		 */
+		private Category body = new Category();
+
+		/**
+		 * Default constructor.
+		 */
+		public Logging() {
+			// empty
+		}
+
+		/**
+		 * Returns header logging configuration.
+		 *
+		 * @return header logging configuration
+		 */
+		public Category getHeaders() {
+			return headers;
+		}
+
+		/**
+		 * Sets header logging configuration.
+		 *
+		 * @param headers header logging configuration
+		 */
+		public void setHeaders(final Category headers) {
+			this.headers = headers;
+		}
+
+		/**
+		 * Returns request parameter logging configuration.
+		 *
+		 * @return request parameter logging configuration
+		 */
+		public Category getParams() {
+			return params;
+		}
+
+		/**
+		 * Sets request parameter logging configuration.
+		 *
+		 * @param params request parameter logging configuration
+		 */
+		public void setParams(final Category params) {
+			this.params = params;
+		}
+
+		/**
+		 * Returns body logging configuration.
+		 *
+		 * @return body logging configuration
+		 */
+		public Category getBody() {
+			return body;
+		}
+
+		/**
+		 * Sets body logging configuration.
+		 *
+		 * @param body body logging configuration
+		 */
+		public void setBody(final Category body) {
+			this.body = body;
+		}
+
+		/**
+		 * Returns true if the provided header name exists in {@link Category#getSensitive()} of {@link #getHeaders()}.
+		 *
+		 * @param headerName header name
+		 * @return true if configured as sensitive
+		 */
+		public boolean containsSensitiveHeader(final String headerName) {
+			return Strings.containsIgnoreCase(headerName, getHeaders().getSensitive());
+		}
+
+		/**
+		 * Returns true if the provided parameter name exists in {@link Category#getSensitive()} of {@link #getParams()}.
+		 *
+		 * @param parameterName parameter name
+		 * @return true if configured as sensitive
+		 */
+		public boolean containsSensitiveParam(final String parameterName) {
+			return Strings.containsIgnoreCase(parameterName, getParams().getSensitive());
+		}
+
+		/**
+		 * @see Object#equals(Object)
+		 */
+		@Override
+		public boolean equals(final Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (obj instanceof Logging that) {
+				return Objects.equals(this.headers, that.headers)
+						&& Objects.equals(this.params, that.params)
+						&& Objects.equals(this.body, that.body);
+			}
+			return false;
+		}
+
+		/**
+		 * @see Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			return Objects.hash(headers, params, body);
+		}
+
+		/**
+		 * Generic logging category configuration, used for headers, parameters and body.
+		 *
+		 * @author Radu Sebastian LAZIN
+		 */
+		public static class Category {
+
+			/**
+			 * Logging mode for this category.
+			 */
+			private Mode mode = Mode.FULL;
+
+			/**
+			 * Extra values to redact (case-insensitive).
+			 */
+			private List<String> sensitive;
+
+			/**
+			 * Returns logging mode for this category.
+			 *
+			 * @return logging mode
+			 */
+			public Mode getMode() {
+				return mode;
+			}
+
+			/**
+			 * Sets logging mode for this category.
+			 *
+			 * @param mode logging mode
+			 */
+			public void setMode(final Mode mode) {
+				this.mode = mode;
+			}
+
+			/**
+			 * Returns the case-insensitive list of values considered sensitive for this category.
+			 *
+			 * @return sensitive values for this category
+			 */
+			public List<String> getSensitive() {
+				return sensitive;
+			}
+
+			/**
+			 * Sets the case-insensitive list of values considered sensitive for this category.
+			 *
+			 * @param sensitive sensitive values for this category
+			 */
+			public void setSensitive(final List<String> sensitive) {
+				this.sensitive = sensitive;
+			}
+
+			/**
+			 * @see Object#equals(Object)
+			 */
+			@Override
+			public boolean equals(final Object obj) {
+				if (this == obj) {
+					return true;
+				}
+				if (obj instanceof Category that) {
+					return this.mode == that.mode
+							&& Objects.equals(this.sensitive, that.sensitive);
+				}
+				return false;
+			}
+
+			/**
+			 * @see Object#hashCode()
+			 */
+			@Override
+			public int hashCode() {
+				return Objects.hash(mode, sensitive);
+			}
 		}
 	}
 }

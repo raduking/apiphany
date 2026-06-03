@@ -4,9 +4,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.Reader;
+import java.nio.charset.Charset;
 
 import org.apiphany.io.function.IOConsumer;
+import org.apiphany.lang.Require;
 
 /**
  * Helper class for input/output operations.
@@ -150,5 +154,40 @@ public interface IOStreams {
 			writer.accept(byteArrayOutputStream);
 			return byteArrayOutputStream.toByteArray();
 		}
+	}
+
+	/**
+	 * Transforms an input stream to a string. If the input stream cannot be converted to string with the given parameters,
+	 * the result will be {@code null}.
+	 *
+	 * @param inputStream the input stream to read from
+	 * @param encoding character encoding to use when reading the input stream
+	 * @param maxSize maximum size in characters to read from the input stream
+	 * @param bufferSize buffer size in characters to use when reading the input stream
+	 * @return the input stream as string
+	 * @throws IOException if an I/O error occurs
+	 * @throws IllegalArgumentException if maxSize or bufferSize are not strictly positive
+	 * @throws NullPointerException if inputStream or encoding is null
+	 */
+	static String toStringOrThrow(final InputStream inputStream, final Charset encoding, final int maxSize, final int bufferSize) throws IOException {
+		Require.that(maxSize > 0, "Maximum size must be strictly positive");
+		Require.that(bufferSize > 0, "Buffer size must be strictly positive");
+		if (null == inputStream) {
+			return null;
+		}
+		final StringBuilder out = new StringBuilder(Math.min(maxSize, IOStreams.DEFAULT_BUFFER_SIZE));
+		try (Reader in = new InputStreamReader(inputStream, encoding)) {
+			final char[] buffer = new char[bufferSize];
+			long totalRead = 0;
+			int s;
+			while ((s = in.read(buffer, 0, buffer.length)) >= 0) {
+				out.append(buffer, 0, s);
+				totalRead += s;
+				if (totalRead > maxSize) {
+					throw new IOException("Input stream exceeds maximum size of " + maxSize + " characters");
+				}
+			}
+		}
+		return out.toString();
 	}
 }
