@@ -1479,6 +1479,13 @@ public class ClientProperties {
 			private List<String> sensitive;
 
 			/**
+			 * Default constructor.
+			 */
+			public Category() {
+				// empty
+			}
+
+			/**
 			 * Returns logging mode for this category.
 			 *
 			 * @return logging mode
