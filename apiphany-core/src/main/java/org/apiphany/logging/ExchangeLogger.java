@@ -18,7 +18,7 @@ import org.morphix.reflection.Constructors;
  * A utility class for logging API requests and responses, including success and error cases. This class provides
  * methods to log request details, response details, and exceptions in a structured format.
  * <p>
- * Request/response body logging is configurable through {@link ExchangeLoggingProperties}.
+ * Request/response body logging is configurable through {@link ClientProperties.Logging}.
  * <p>
  * TODO: log headers on multiple lines for better readability.
  * <p>
