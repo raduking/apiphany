@@ -125,7 +125,7 @@ public interface HttpExchangeClient extends ExchangeClient, SSLContextAware {
 	default Predicate<String> isSensitiveHeader() {
 		ClientProperties.Logging loggingProperties = Nullables.apply(getClientProperties(), ClientProperties::getLogging);
 		return header -> HttpSensitive.isHeader(header)
-				|| (null != loggingProperties && loggingProperties.containsSensitiveHeader(header));
+				|| (null != loggingProperties && loggingProperties.isSensitiveHeader(header));
 	}
 
 	/**
@@ -137,7 +137,7 @@ public interface HttpExchangeClient extends ExchangeClient, SSLContextAware {
 	default Predicate<String> isSensitiveParam() {
 		ClientProperties.Logging loggingProperties = Nullables.apply(getClientProperties(), ClientProperties::getLogging);
 		return param -> HttpSensitive.isParam(param)
-				|| (null != loggingProperties && loggingProperties.containsSensitiveParam(param));
+				|| (null != loggingProperties && loggingProperties.isSensitiveParam(param));
 	}
 
 	/**

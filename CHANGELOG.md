@@ -2,15 +2,18 @@
 
 `1.2.13`
 
+- Upgraded `morphix-all` to `1.0.39`.
 - Added bounded exponential delay strategy for OAuth2 token refresh failures in `OAuth2TokenProvider`.
 - Added retry delay configuration options to `OAuth2TokenProviderProperties`: `maxRefreshInterval` and `failureRetryDelayMultiplier`.
 - Added support in `OAuth2TokenProvider.Builder` to fully override failure retry delay computation via `failureRetryDelayStrategy(...)`.
-- Added `ClientProperties.Logging` for sensitive headers/params and per-category logging mode (`FULL`, `METADATA`, `NONE`).
 - Added `Strings.containsIgnoreCase(String, Collection<String>)` for case-insensitive membership checks.
-- Upgraded `morphix-all` to `1.0.39`.
 - Moved internal method `toStringOrThrow` from `Strings` to `IOStreams`.
 - Added `HeaderName` abstraction, `DeFactoHeader` and `HttpSensitive` to centralize standard/de-facto header names and default sensitive header/parameter sets.
 - Added `HttpHeader.Name` namespace constants and updated `HttpHeader` enum values to use these constants.
+- Added `ExchangeClient.getDisplayParams` to returns the parameters for displaying (possibly redacted). 
+- Added `ApiRequest.getDisplayParams` to returns the parameters for displaying (possibly redacted). 
+- Added `ClientProperties.Logging` for sensitive headers/parameters and per-category logging mode (`FULL`, `METADATA`, `NONE`).
+- Added `HttpExchangeClient.isSensitiveParam` method to check if a request parameter is sensitive.
 
 ---
 
