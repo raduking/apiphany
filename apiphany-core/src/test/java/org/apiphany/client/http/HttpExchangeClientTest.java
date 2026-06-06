@@ -205,6 +205,32 @@ class HttpExchangeClientTest {
 		assertTrue(client.isSensitiveHeader().test("x-internal-secret"));
 	}
 
+	@ParameterizedTest
+	@ValueSource(
+		strings = {
+				"token", "TOKEN", "access_token", "refresh_token", "api_key", "apikey", "code", "client_secret", "password" })
+	void shouldReturnSensitiveParamsAsSensitive(final String paramName) throws Exception {
+		HttpExchangeClient client = new DummyHttpExchangeClient();
+		client.close();
+
+		Predicate<String> isSensitive = client.isSensitiveParam();
+
+		assertTrue(isSensitive.test(paramName));
+	}
+
+	@ParameterizedTest
+	@ValueSource(
+		strings = {
+				"id", "page", "limit", "sort", "query", "lang" })
+	void shouldReturnNonSensitiveParamsAsNonSensitive(final String paramName) throws Exception {
+		HttpExchangeClient client = new DummyHttpExchangeClient();
+		client.close();
+
+		Predicate<String> isSensitive = client.isSensitiveParam();
+
+		assertFalse(isSensitive.test(paramName));
+	}
+
 	@Test
 	void shouldReturnConfiguredSensitiveParamAsSensitive() throws Exception {
 		ClientProperties.Logging properties = new ClientProperties.Logging();
@@ -215,6 +241,18 @@ class HttpExchangeClientTest {
 		client.close();
 
 		assertTrue(client.isSensitiveParam().test("session_id"));
+	}
+
+	@Test
+	void shouldReturnConfiguredNonSensitiveParamAsNonSensitive() throws Exception {
+		ClientProperties.Logging properties = new ClientProperties.Logging();
+		properties.getParams().setSensitive(List.of("session_id"));
+		ClientProperties clientProperties = new ClientProperties();
+		clientProperties.setLogging(properties);
+		HttpExchangeClient client = new ConfigurableDummyHttpExchangeClient(clientProperties);
+		client.close();
+
+		assertFalse(client.isSensitiveParam().test("public_id"));
 	}
 
 	static class DummyHttpExchangeClient implements HttpExchangeClient {

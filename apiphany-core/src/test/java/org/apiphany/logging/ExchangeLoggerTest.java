@@ -114,6 +114,23 @@ class ExchangeLoggerTest {
 
 	@Test
 	@SuppressWarnings("resource")
+	void shouldLogNullResponseBodyWhenApiResponseIsNull() {
+		RecordingLoggingFunction loggingFunction = new RecordingLoggingFunction();
+		ExchangeClient exchangeClient = new DummyExchangeClient(Logging.Mode.FULL);
+		ApiRequest<String> request = request("request-body");
+		Duration duration = Duration.ofSeconds(1);
+
+		ExchangeLogger.logSuccess(loggingFunction, getClass(), exchangeClient, request, null, duration);
+
+		LogCall call = loggingFunction.calls.getFirst();
+		assertThat(call.arguments.length, equalTo(0));
+		assertThat(call.format, containsString("STATUS: null"));
+		assertThat(call.format, containsString("HEADERS: null"));
+		assertThat(call.format, containsString("BODY: null"));
+	}
+
+	@Test
+	@SuppressWarnings("resource")
 	void shouldLogCompleteMessageFormatForErrorPath() {
 		RecordingLoggingFunction loggingFunction = new RecordingLoggingFunction();
 		ExchangeClient exchangeClient = new DummyExchangeClient(Logging.Mode.FULL);

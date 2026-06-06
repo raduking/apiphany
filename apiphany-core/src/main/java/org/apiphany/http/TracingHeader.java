@@ -66,14 +66,14 @@ public enum TracingHeader implements HeaderName {
 	 * Used by OpenTelemetry and modern tracing systems. Format: {@code traceparent} Example:
 	 * {@code 00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01}
 	 */
-	W3C_TRACEPARENT(Name.W3C_TRACEPARENT),
+	W3C_TRACEPARENT(Name.TRACEPARENT),
 
 	/**
 	 * W3C TraceContext header for additional trace state (key-value pairs).
 	 * <p>
 	 * Used for vendor-specific tracing metadata. Format: {@code tracestate} Example: {@code vendor1=value1,vendor2=value2}
 	 */
-	W3C_TRACESTATE(Name.W3C_TRACESTATE),
+	W3C_TRACESTATE(Name.TRACESTATE),
 
 	/**
 	 * AWS X-Ray trace ID header (includes trace ID, parent ID, and sampling decision).
@@ -114,12 +114,12 @@ public enum TracingHeader implements HeaderName {
 		/**
 		 * The W3C TraceContext header name for trace parent (version-traceId-spanId-flags).
 		 */
-		public static final String W3C_TRACEPARENT = "traceparent";
+		public static final String TRACEPARENT = "traceparent";
 
 		/**
 		 * The W3C TraceContext header name for additional trace state (key-value pairs).
 		 */
-		public static final String W3C_TRACESTATE = "tracestate";
+		public static final String TRACESTATE = "tracestate";
 
 		/**
 		 * The AWS X-Ray trace ID header name (includes trace ID, parent ID, and sampling decision).
