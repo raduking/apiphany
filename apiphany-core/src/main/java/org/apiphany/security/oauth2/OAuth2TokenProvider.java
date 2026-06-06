@@ -3,7 +3,6 @@ package org.apiphany.security.oauth2;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Objects;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -122,8 +121,8 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 */
 	@SuppressWarnings("resource")
 	private ReschedulingTask newReschedulingTask(final Builder builder) {
-		ScopedResource<ScheduledExecutorService> scheduler =
-				Nullables.nonNullOrDefault(builder.tokenRefreshScheduler, () -> ScopedResource.managed(defaultScheduler()));
+		ScopedResource<ScheduledExecutorService> scheduler = Nullables.nonNullOrDefault(builder.tokenRefreshScheduler,
+				() -> ScopedResource.managed(ReschedulingTask.Default.scheduler()));
 		return ReschedulingTask.builder()
 				.name(getName())
 				.task(this::updateAuthenticationToken)
@@ -272,7 +271,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 */
 	private Duration getNextUpdateDelay() {
 		if (consecutiveRefreshFailures > 0) {
-			long delay = failureRetryDelay.delay(consecutiveRefreshFailures);
+			long delay = failureRetryDelay.delay(consecutiveRefreshFailures - 1);
 			return Duration.of(delay, failureRetryDelay.chronoUnit());
 		}
 		Instant expiration = getTokenExpiration().minus(getProperties().getExpirationErrorMargin());
@@ -351,17 +350,6 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 */
 	public OAuth2TokenProviderProperties getProperties() {
 		return properties;
-	}
-
-	/**
-	 * Returns a new default scheduler executor. Creates a scheduled executor service using virtual threads.
-	 * <p>
-	 * The caller is responsible for shutting down the executor.
-	 *
-	 * @return the scheduled executor service
-	 */
-	public static ScheduledExecutorService defaultScheduler() {
-		return Executors.newScheduledThreadPool(0, Thread.ofVirtual().factory());
 	}
 
 	/**

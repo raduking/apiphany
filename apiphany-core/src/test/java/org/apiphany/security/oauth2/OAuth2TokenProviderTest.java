@@ -424,7 +424,7 @@ class OAuth2TokenProviderTest {
 		properties.setMaxRefreshInterval(Duration.ofSeconds(30));
 		properties.setFailureRetryDelayMultiplier(2.0d);
 
-		DelayStrategy customDelayStrategy = attempt -> attempt * 111L;
+		DelayStrategy customDelayStrategy = attempt -> (attempt + 1) * 111L;
 
 		List<Long> delays = Collections.synchronizedList(new ArrayList<>());
 		AtomicInteger scheduleCalls = new AtomicInteger(0);
@@ -455,7 +455,9 @@ class OAuth2TokenProviderTest {
 
 	@Test
 	void shouldThrowWhenSettingNullFailureRetryDelayStrategy() {
-		assertThrows(NullPointerException.class, () -> OAuth2TokenProvider.builder().failureRetryDelayStrategy(null));
+		OAuth2TokenProvider.Builder builder = OAuth2TokenProvider.builder();
+
+		assertThrows(NullPointerException.class, () -> builder.failureRetryDelayStrategy(null));
 	}
 
 	@Test

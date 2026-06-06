@@ -2,7 +2,7 @@
 
 `1.2.13`
 
-- Upgraded `morphix-all` to `1.0.39`.
+- Upgraded `morphix-all` to `1.0.40`.
 - Added bounded exponential delay strategy for OAuth2 token refresh failures in `OAuth2TokenProvider`.
 - Added retry delay configuration options to `OAuth2TokenProviderProperties`: `maxRefreshInterval` and `failureRetryDelayMultiplier`.
 - Added support in `OAuth2TokenProvider.Builder` to fully override failure retry delay computation via `failureRetryDelayStrategy(...)`.
