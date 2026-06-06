@@ -1423,7 +1423,7 @@ public class ClientProperties {
 		 * @param headerName header name
 		 * @return true if configured as sensitive
 		 */
-		public boolean containsSensitiveHeader(final String headerName) {
+		public boolean isSensitiveHeader(final String headerName) {
 			return Strings.containsIgnoreCase(headerName, getHeaders().getSensitive());
 		}
 
@@ -1433,7 +1433,7 @@ public class ClientProperties {
 		 * @param parameterName parameter name
 		 * @return true if configured as sensitive
 		 */
-		public boolean containsSensitiveParam(final String parameterName) {
+		public boolean isSensitiveParam(final String parameterName) {
 			return Strings.containsIgnoreCase(parameterName, getParams().getSensitive());
 		}
 
