@@ -122,7 +122,7 @@ public enum DeFactoHeader implements HeaderName {
 		/**
 		 * The non-standard but widely used HTTP {@code X-API-Key} header name.
 		 */
-		public static final String X_API_KEY = "X-API-Key";
+		public static final String X_API_KEY = "X-Api-Key";
 
 		/**
 		 * The non-standard but widely used HTTP {@code X-Auth-Token} header name.

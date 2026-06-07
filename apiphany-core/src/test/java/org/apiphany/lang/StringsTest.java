@@ -597,6 +597,26 @@ class StringsTest {
 	}
 
 	@Nested
+	class IdentityHashCodeTests {
+
+		@Test
+		void shouldReturnNullStringForNullObject() {
+			String result = Strings.identityHashCode(null);
+
+			assertThat(result, equalTo("null"));
+		}
+
+		@Test
+		void shouldReturnClassNameAndIdentityHashCodeForNonNullObject() {
+			Object value = new Object();
+
+			String result = Strings.identityHashCode(value);
+
+			assertThat(result, equalTo(value.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(value))));
+		}
+	}
+
+	@Nested
 	class PreviewTests {
 
 		@Test
