@@ -241,6 +241,8 @@ class ExchangeLoggerTest {
 			this.method = method;
 			this.url = url;
 			this.body = body;
+			this.params = displayParams;
+			this.headers.putAll(displayHeaders);
 			this.displayParams = displayParams;
 			this.displayHeaders = displayHeaders;
 		}
