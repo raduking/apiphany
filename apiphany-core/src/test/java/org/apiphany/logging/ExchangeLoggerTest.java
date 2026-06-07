@@ -223,6 +223,7 @@ class ExchangeLoggerTest {
 				+ "REQUEST BODY: " + requestBody + Strings.EOL
 				+ "[RESPONSE]" + Strings.EOL
 				+ "STATUS: " + response.getStatus() + Strings.EOL
+				+ "HEADERS: " + response.getDisplayHeaders() + Strings.EOL
 				+ "EXCEPTION: " + exception + Strings.EOL
 				+ "DURATION: " + Temporals.toSeconds(duration.toMillis()) + "s" + Strings.EOL
 				+ ExchangeLogger.LOG_SEPARATOR;

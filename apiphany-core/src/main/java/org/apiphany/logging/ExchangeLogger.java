@@ -20,8 +20,7 @@ import org.morphix.reflection.Constructors;
  * <p>
  * Request/response body logging is configurable through {@link ClientProperties.Logging}.
  * <p>
- * TODO: log headers on multiple lines for better readability.
- * <p>
+ * TODO: log headers on multiple lines for better readability.<br/>
  * TODO: implement injectable exchange logger.
  *
  * @author Radu Sebastian LAZIN
@@ -46,44 +45,47 @@ public class ExchangeLogger {
 	/**
 	 * The log message format for successful requests.
 	 */
-	private static final String LOG_MESSAGE_SUCCESS = Strings.EOL
-			+ LOG_SEPARATOR + Strings.EOL
-			+ "CLIENT: {}" + Strings.EOL
-			+ "[REQUEST]" + Strings.EOL
-			+ "METHOD: {}" + Strings.EOL
-			+ "URL: {}" + Strings.EOL
-			+ "PARAMETERS: {}" + Strings.EOL
-			+ "HEADERS: {}" + Strings.EOL
-			+ "BODY: {}" + Strings.EOL
-			+ "[RESPONSE]" + Strings.EOL
-			+ "STATUS: {}" + Strings.EOL
-			+ "HEADERS: {}" + Strings.EOL
-			+ "BODY: {}" + Strings.EOL
-			+ "DURATION: {}s" + Strings.EOL
-			+ LOG_SEPARATOR;
+	private static final String LOG_MESSAGE_SUCCESS = new StringBuilder()
+			.append(Strings.EOL).append(LOG_SEPARATOR)
+			.append(Strings.EOL).append("CLIENT: {}")
+			.append(Strings.EOL).append("[REQUEST]")
+			.append(Strings.EOL).append("METHOD: {}")
+			.append(Strings.EOL).append("URL: {}")
+			.append(Strings.EOL).append("PARAMETERS: {}")
+			.append(Strings.EOL).append("HEADERS: {}")
+			.append(Strings.EOL).append("BODY: {}")
+			.append(Strings.EOL).append("[RESPONSE]")
+			.append(Strings.EOL).append("STATUS: {}")
+			.append(Strings.EOL).append("HEADERS: {}")
+			.append(Strings.EOL).append("BODY: {}")
+			.append(Strings.EOL).append("DURATION: {}s")
+			.append(Strings.EOL).append(LOG_SEPARATOR)
+			.toString();
 
 	/**
 	 * The log message format for failed requests.
 	 */
-	private static final String LOG_MESSAGE_ERROR = Strings.EOL
-			+ LOG_SEPARATOR + Strings.EOL
-			+ "CLIENT: {}" + Strings.EOL
-			+ "[REQUEST]" + Strings.EOL
-			+ "METHOD: {}" + Strings.EOL
-			+ "URL: {}" + Strings.EOL
-			+ "PARAMETERS: {}" + Strings.EOL
-			+ "HEADERS: {}" + Strings.EOL
-			+ "REQUEST BODY: {}" + Strings.EOL
-			+ "[RESPONSE]" + Strings.EOL
-			+ "STATUS: {}" + Strings.EOL
-			+ "EXCEPTION: {}" + Strings.EOL
-			+ "DURATION: {}s" + Strings.EOL
-			+ LOG_SEPARATOR;
+	private static final String LOG_MESSAGE_ERROR = new StringBuilder()
+			.append(Strings.EOL).append(LOG_SEPARATOR)
+			.append(Strings.EOL).append("CLIENT: {}")
+			.append(Strings.EOL).append("[REQUEST]")
+			.append(Strings.EOL).append("METHOD: {}")
+			.append(Strings.EOL).append("URL: {}")
+			.append(Strings.EOL).append("PARAMETERS: {}")
+			.append(Strings.EOL).append("HEADERS: {}")
+			.append(Strings.EOL).append("REQUEST BODY: {}")
+			.append(Strings.EOL).append("[RESPONSE]")
+			.append(Strings.EOL).append("STATUS: {}")
+			.append(Strings.EOL).append("HEADERS: {}")
+			.append(Strings.EOL).append("EXCEPTION: {}")
+			.append(Strings.EOL).append("DURATION: {}s")
+			.append(Strings.EOL).append(LOG_SEPARATOR)
+			.toString();
 
 	/**
 	 * Logs all information for a successful HTTP request.
 	 *
-	 * @param <T> the type of the request/response body.
+	 * @param <T> the type of the request/response body
 	 *
 	 * @param loggingFunction the logging function used to output the log message
 	 * @param apiClientClass the API class of the client making the request
@@ -108,7 +110,7 @@ public class ExchangeLogger {
 				exchangeClient.getDisplayHeaders(apiRequest),
 				describeBody(apiRequest, exchangeClient),
 				Nullables.apply(apiResponse, ApiResponse::getStatus),
-				Nullables.apply(apiResponse, response -> exchangeClient.getDisplayHeaders(response)),
+				Nullables.apply(apiResponse, exchangeClient::getDisplayHeaders),
 				describeBody(apiResponse, exchangeClient),
 				Temporals.toSeconds(duration.toMillis()));
 		loggingFunction.log(logMessage);
@@ -117,7 +119,7 @@ public class ExchangeLogger {
 	/**
 	 * Logs all information for a failed HTTP request.
 	 *
-	 * @param <T> the type of the request.
+	 * @param <T> the type of the request
 	 *
 	 * @param loggingFunction the logging function used to output the log message
 	 * @param apiClientClass the API class of the client making the request
@@ -143,6 +145,7 @@ public class ExchangeLogger {
 				exchangeClient.getDisplayHeaders(apiRequest),
 				describeBody(apiRequest, exchangeClient),
 				Nullables.apply(apiResponse, ApiResponse::getStatus),
+				Nullables.apply(apiResponse, exchangeClient::getDisplayHeaders),
 				exception,
 				Temporals.toSeconds(duration.toMillis()));
 		loggingFunction.log(logMessage);
