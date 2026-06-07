@@ -14,6 +14,7 @@
 - Added `ApiRequest.getDisplayParams` to returns the parameters for displaying (possibly redacted). 
 - Added `ClientProperties.Logging` for sensitive headers/parameters and per-category logging mode (`FULL`, `METADATA`, `NONE`).
 - Added `HttpExchangeClient.isSensitiveParam` method to check if a request parameter is sensitive.
+- Included `ClientProperties.Logging` in `ClientProperties.equals/hashCode` and added `equals/hashCode` for `ClientProperties.Logging.Category`.
 
 ---
 
