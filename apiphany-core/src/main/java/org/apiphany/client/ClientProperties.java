@@ -13,7 +13,6 @@ import java.util.function.Supplier;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.annotation.Ignored;
-import org.apiphany.logging.ExchangeLogger;
 import org.apiphany.logging.Logging.Mode;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Messages;
@@ -1335,7 +1334,7 @@ public class ClientProperties {
 	}
 
 	/**
-	 * Configurable logging properties used by exchange clients and {@link ExchangeLogger}.
+	 * Configurable logging properties used by exchange clients.
 	 *
 	 * @author Radu Sebastian LAZIN
 	 */
