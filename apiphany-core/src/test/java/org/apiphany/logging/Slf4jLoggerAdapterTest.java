@@ -3,13 +3,18 @@ package org.apiphany.logging;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.morphix.lang.function.LoggerAdapter.LoggingLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,5 +106,40 @@ class Slf4jLoggerAdapterTest {
 		adapter.log(LoggingLevel.ERROR, TEST_MESSAGE);
 
 		verify(slf4jLogger).error(eq(TEST_MESSAGE), any(Object[].class));
+	}
+
+	@ParameterizedTest
+	@EnumSource(LoggingLevel.class)
+	void shouldReturnTrueWhenLoggingLevelIsEnabled(final LoggingLevel level) {
+		Logger slf4jLogger = mock(Logger.class);
+		enable(slf4jLogger, level, true);
+		Slf4jLoggerAdapter adapter = Slf4jLoggerAdapter.of(slf4jLogger);
+
+		boolean enabled = adapter.isEnabled(level);
+
+		assertTrue(enabled);
+	}
+
+	@ParameterizedTest
+	@EnumSource(LoggingLevel.class)
+	void shouldReturnFalseWhenLoggingLevelIsDisabled(final LoggingLevel level) {
+		Logger slf4jLogger = mock(Logger.class);
+		enable(slf4jLogger, level, false);
+		Slf4jLoggerAdapter adapter = Slf4jLoggerAdapter.of(slf4jLogger);
+
+		boolean enabled = adapter.isEnabled(level);
+
+		assertFalse(enabled);
+	}
+
+	private static void enable(final Logger logger, final LoggingLevel level, final boolean enabled) {
+		switch (level) {
+			case TRACE -> doReturn(enabled).when(logger).isTraceEnabled();
+			case DEBUG -> doReturn(enabled).when(logger).isDebugEnabled();
+			case INFO -> doReturn(enabled).when(logger).isInfoEnabled();
+			case WARN -> doReturn(enabled).when(logger).isWarnEnabled();
+			case ERROR -> doReturn(enabled).when(logger).isErrorEnabled();
+			default -> throw new IllegalStateException("Unexpected value: " + level);
+		}
 	}
 }
