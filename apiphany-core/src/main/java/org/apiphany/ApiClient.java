@@ -605,7 +605,7 @@ public class ApiClient implements AutoCloseable {
 		ApiResponse<T> apiResponse = activeRetry.until(
 				() -> exchange(apiRequest, exchangeClient, activeMeters),
 				ApiResponse::isSuccessful,
-				(response, duration) -> logExchange(apiRequest, response, duration, exchangeClient),
+				(response, duration) -> logExchange(getClass(), exchangeClient, apiRequest, response, duration),
 				e -> activeMeters.retries().increment(),
 				durationAccumulator);
 
@@ -650,18 +650,19 @@ public class ApiClient implements AutoCloseable {
 	/**
 	 * Logs the exchange.
 	 *
-	 * @param <T> body type
+	 * @param exchangeClient the exchange client doing the request
 	 * @param apiRequest API request object
 	 * @param apiResponse API response object
 	 * @param duration the duration of the exchange
-	 * @param exchangeClient the exchange client doing the request
+	 *
+	 * @param <T> body type
 	 */
-	private <T> void logExchange(final ApiRequest<T> apiRequest, final ApiResponse<T> apiResponse, final Duration duration,
-			final ExchangeClient exchangeClient) {
+	private static <T> void logExchange(final Class<?> clientClass, final ExchangeClient exchangeClient,
+			final ApiRequest<T> apiRequest, final ApiResponse<T> apiResponse, final Duration duration) {
 		if (ApiResponse.safeIsSuccessful(apiResponse)) {
-			ExchangeLogger.logSuccess(LOGGER::debug, getClass(), exchangeClient, apiRequest, apiResponse, duration);
+			ExchangeLogger.logSuccess(LOGGER::debug, clientClass, exchangeClient, apiRequest, apiResponse, duration);
 		} else {
-			ExchangeLogger.logError(LOGGER::error, getClass(), exchangeClient, apiRequest, apiResponse, duration);
+			ExchangeLogger.logError(LOGGER::error, clientClass, exchangeClient, apiRequest, apiResponse, duration);
 		}
 	}
 
