@@ -75,4 +75,18 @@ public final class Slf4jLoggerAdapter implements LoggerAdapter {
 	public Logger getLogger() {
 		return logger;
 	}
+
+	/**
+	 * @see LoggerAdapter#isEnabled(LoggingLevel)
+	 */
+	@Override
+	public boolean isEnabled(final LoggingLevel level) {
+		return switch (level) {
+			case TRACE -> logger.isTraceEnabled();
+			case DEBUG -> logger.isDebugEnabled();
+			case INFO -> logger.isInfoEnabled();
+			case WARN -> logger.isWarnEnabled();
+			case ERROR -> logger.isErrorEnabled();
+		};
+	}
 }
