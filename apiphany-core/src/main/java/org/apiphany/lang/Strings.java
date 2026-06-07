@@ -239,13 +239,32 @@ public interface Strings {
 	 * @return the input stream as string
 	 */
 	static String toString(final InputStream inputStream, final Charset encoding) {
-		return toString(inputStream, encoding, IOStreams.DEFAULT_BUFFER_SIZE, Consumers.consumeNothing());
+		return toString(inputStream, encoding, IOStreams.DEFAULT_BUFFER_SIZE);
+	}
+
+	/**
+	 * Transforms a byte array to a string. If the byte array cannot be converted to string with the given parameters, the
+	 * result will be null. This method is not intended for large byte arrays and is also limited to read up to the given
+	 * maximum size bytes from the byte array.
+	 *
+	 * @param bytes byte array to convert
+	 * @param encoding character encoding
+	 * @param maxSize maximum size in characters to read from the byte array
+	 * @param bufferSize buffer size in characters to use when reading the byte array
+	 * @param onError on error handler
+	 * @return the byte array as string
+	 */
+	static String toString(final byte[] bytes, final Charset encoding, final int maxSize, final int bufferSize, final Consumer<Exception> onError) {
+		if (null == bytes) {
+			return null;
+		}
+		return toString(new ByteArrayInputStream(bytes), encoding, maxSize, bufferSize, onError);
 	}
 
 	/**
 	 * Transforms a byte array to a string. If the byte array cannot be converted to string with the given parameters, the
 	 * result will be null. This method is not intended for large byte arrays and is also limited to read up to
-	 * {@link IOStreams#MAX_BUFFER_SIZE} characters from the byte array.
+	 * {@link IOStreams#MAX_BUFFER_SIZE} bytes from the byte array.
 	 *
 	 * @param bytes byte array to convert
 	 * @param encoding character encoding
@@ -253,16 +272,13 @@ public interface Strings {
 	 * @return the byte array as string
 	 */
 	static String toString(final byte[] bytes, final Charset encoding, final Consumer<Exception> onError) {
-		if (null == bytes) {
-			return null;
-		}
-		return toString(new ByteArrayInputStream(bytes), encoding, IOStreams.DEFAULT_BUFFER_SIZE, onError);
+		return toString(bytes, encoding, IOStreams.MAX_BUFFER_SIZE, IOStreams.DEFAULT_BUFFER_SIZE, onError);
 	}
 
 	/**
 	 * Transforms a byte array to a string. If the byte array cannot be converted to string with the given parameters, the
 	 * result will be null. This method is not intended for large byte arrays and is also limited to read up to
-	 * {@link IOStreams#MAX_BUFFER_SIZE} characters from the byte array.
+	 * {@link IOStreams#MAX_BUFFER_SIZE} bytes from the byte array.
 	 *
 	 * @param bytes byte array to convert
 	 * @param encoding character encoding
@@ -282,7 +298,21 @@ public interface Strings {
 	 * @return the byte array as string
 	 */
 	static String toString(final byte[] bytes) {
-		return toString(bytes, DEFAULT_CHARSET, Consumers.consumeNothing());
+		return toString(bytes, DEFAULT_CHARSET);
+	}
+
+	/**
+	 * Transforms a byte array to a string. If the byte array cannot be converted to string with the given parameters, the
+	 * result will be null. This method is not intended for large byte arrays and is also limited to read up to
+	 * {@link IOStreams#MAX_BUFFER_SIZE} characters from the byte array. It assumes that the encoding is
+	 * {@link #DEFAULT_CHARSET}. Use this method only if the byte array to be read respects this condition.
+	 *
+	 * @param bytes byte array to convert
+	 * @param maxSize maximum size in characters to read from the byte array
+	 * @return the byte array as string
+	 */
+	static String toString(final byte[] bytes, final int maxSize) {
+		return toString(bytes, DEFAULT_CHARSET, maxSize, IOStreams.DEFAULT_BUFFER_SIZE, Consumers.consumeNothing());
 	}
 
 	/**
@@ -465,7 +495,7 @@ public interface Strings {
 	/**
 	 * Builds a bounded preview string for logging purposes.
 	 * <p>
-	 * The byte array is converted to text via {@link #toString(byte[])} and then truncated using
+	 * The byte array is converted to text via {@link #toString(byte[], int)} and then truncated using
 	 * {@link #preview(String, int)}.
 	 *
 	 * @param value input byte array
@@ -473,6 +503,6 @@ public interface Strings {
 	 * @return preview string and, when truncated, appends {@code "...(truncated)"}
 	 */
 	static String preview(final byte[] value, final int maxLength) {
-		return preview(Strings.toString(value), maxLength);
+		return preview(Strings.toString(value, maxLength + 1), maxLength);
 	}
 }

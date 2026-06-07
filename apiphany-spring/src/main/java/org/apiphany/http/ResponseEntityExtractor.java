@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Objects;
 
 import org.apiphany.io.IOStreams;
-import org.apiphany.lang.Strings;
 import org.morphix.lang.JavaObjects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -123,7 +122,7 @@ public class ResponseEntityExtractor<T> implements ResponseExtractor<ResponseEnt
 	 */
 	public void logRead(final MediaType contentType) {
 		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("Reading to [{}] as {}", Strings.envelope("\"", responseClass.getName()), contentType);
+			LOGGER.debug("Reading to {} as {}", responseClass.getTypeName(), contentType);
 		}
 	}
 
