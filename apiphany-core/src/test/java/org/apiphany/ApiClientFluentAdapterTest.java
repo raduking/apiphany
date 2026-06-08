@@ -411,7 +411,6 @@ class ApiClientFluentAdapterTest {
 		@SuppressWarnings("resource")
 		void shouldThrowExceptionIfResponseTypeIsDifferentThanClassOrGenericClassOnRetrieve() {
 			ExchangeClient exchangeClient = mock(ExchangeClient.class);
-			doReturn(AuthenticationType.NONE).when(exchangeClient).getAuthenticationType();
 			doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.NONE);
 			ApiResponse<?> apiResponse = ApiResponse.<String>builder().body(BODY).build();
 			doReturn(apiResponse).when(apiClient).exchange(any());
@@ -443,6 +442,7 @@ class ApiClientFluentAdapterTest {
 
 			assertThat(request.getClassResponseType(), equalTo(String.class));
 			assertFalse(request.hasGenericType());
+			assertTrue(request.hasResponseType());
 		}
 
 		@Test
@@ -460,6 +460,7 @@ class ApiClientFluentAdapterTest {
 			request.retrieve(genericClass);
 
 			assertTrue(request.hasGenericType());
+			assertTrue(request.hasResponseType());
 			assertThat(request.getGenericResponseType(), equalTo(genericClass));
 			assertThat(request.getResponseType(), Matchers.instanceOf(ParameterizedType.class));
 		}
@@ -728,7 +729,6 @@ class ApiClientFluentAdapterTest {
 		@SuppressWarnings("resource")
 		void setUp() {
 			doReturn(httpExchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
-			doReturn(AuthenticationType.SESSION).when(httpExchangeClient).getAuthenticationType();
 		}
 
 		@Test
@@ -799,7 +799,6 @@ class ApiClientFluentAdapterTest {
 		@SuppressWarnings("resource")
 		void setUp() {
 			doReturn(httpExchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
-			doReturn(AuthenticationType.SESSION).when(httpExchangeClient).getAuthenticationType();
 		}
 
 		@Test

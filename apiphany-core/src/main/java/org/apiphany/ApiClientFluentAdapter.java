@@ -74,11 +74,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 */
 	@SuppressWarnings("resource")
 	public ApiClientFluentAdapter authenticationType(final AuthenticationType authenticationType) {
-		this.authenticationType = authenticationType;
-		if (null == exchangeClient || authenticationType != exchangeClient.getAuthenticationType()) {
-			return exchangeClient(apiClient.getExchangeClient(authenticationType));
-		}
-		return this;
+		return with(authenticationType, apiClient.getExchangeClient(authenticationType));
 	}
 
 	/**
@@ -88,8 +84,20 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @return this
 	 */
 	protected ApiClientFluentAdapter exchangeClient(final ExchangeClient exchangeClient) {
+		return with(exchangeClient.getAuthenticationType(), exchangeClient);
+	}
+
+	/**
+	 * Sets the authentication type and exchange client.
+	 *
+	 * @param authenticationType the authentication type to set
+	 * @param exchangeClient the exchange client to set
+	 * @return this
+	 */
+	protected ApiClientFluentAdapter with(final AuthenticationType authenticationType, final ExchangeClient exchangeClient) {
+		this.authenticationType = authenticationType;
 		this.exchangeClient = exchangeClient;
-		return authenticationType(exchangeClient.getAuthenticationType());
+		return this;
 	}
 
 	/**
@@ -757,8 +765,8 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	public <T> ApiClientFluentAdapter apiRequest(final ApiRequest<T> apiRequest) {
 		return url(apiRequest.getUrl())
 				.method(apiRequest.getMethod())
-				.params(apiRequest.getParams())
 				.headers(apiRequest.getHeaders())
+				.params(apiRequest.getParams())
 				.body(apiRequest.getBody())
 				.charset(apiRequest.getCharset())
 				.urlEncode(apiRequest.isUrlEncoded())

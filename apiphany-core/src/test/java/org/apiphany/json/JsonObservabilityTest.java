@@ -2,7 +2,6 @@ package org.apiphany.json;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -34,7 +33,17 @@ class JsonObservabilityTest {
 
 		observability.log(LoggerAdapter.LoggingLevel.INFO, "message {}", "arg");
 
-		verify(logger).log(eq(LoggerAdapter.LoggingLevel.INFO), eq("message {}"), eq("arg"));
+		verify(logger).log(LoggerAdapter.LoggingLevel.INFO, "message {}", "arg");
+	}
+
+	@Test
+	void shouldDelegateIsEnabledToProvidedLoggerAdapter() {
+		LoggerAdapter logger = mock(LoggerAdapter.class);
+		JsonObservability observability = new JsonObservability(logger, new JsonBuilder());
+
+		observability.isEnabled(LoggerAdapter.LoggingLevel.DEBUG);
+
+		verify(logger).isEnabled(LoggerAdapter.LoggingLevel.DEBUG);
 	}
 
 	@Test
