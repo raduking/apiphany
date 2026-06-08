@@ -36,4 +36,36 @@ class OAuth2ProviderDetailsTest {
 
 		assertThat(result1.toString(), equalTo(result2.toString()));
 	}
+
+	@Test
+	void shouldReturnTrueForSecureTokenUri() {
+		OAuth2ProviderDetails details = new OAuth2ProviderDetails();
+		details.setTokenUri("HTTPS://example.org/oauth2/token");
+
+		assertThat(details.isTokenUriSecure(), equalTo(true));
+	}
+
+	@Test
+	void shouldReturnFalseForInsecureTokenUri() {
+		OAuth2ProviderDetails details = new OAuth2ProviderDetails();
+		details.setTokenUri("http://example.org/oauth2/token");
+
+		assertThat(details.isTokenUriSecure(), equalTo(false));
+	}
+
+	@Test
+	void shouldReturnFalseWhenTokenUriIsEmpty() {
+		OAuth2ProviderDetails details = new OAuth2ProviderDetails();
+		details.setTokenUri("");
+
+		assertThat(details.isTokenUriSecure(), equalTo(false));
+	}
+
+	@Test
+	void shouldReturnFalseWhenTokenUriIsInvalid() {
+		OAuth2ProviderDetails details = new OAuth2ProviderDetails();
+		details.setTokenUri("http://exa mple.org");
+
+		assertThat(details.isTokenUriSecure(), equalTo(false));
+	}
 }

@@ -1,25 +1,14 @@
 package org.apiphany.security.http;
 
+import org.apiphany.security.HeaderSensitivity;
+import org.apiphany.security.ParameterSensitivity;
+
 /**
  * Interface for defining HTTP sensitivity rules.
  *
  * @author Radu Sebastian LAZIN
  */
-public interface HttpSensitivity {
+public interface HttpSensitivity extends HeaderSensitivity, ParameterSensitivity {
 
-	/**
-	 * Checks if the given header name is considered sensitive.
-	 *
-	 * @param headerName the name of the HTTP header to check
-	 * @return {@code true} if the header is sensitive, {@code false} otherwise
-	 */
-	boolean isSensitiveHeader(String headerName);
-
-	/**
-	 * Checks if the given query parameter name is considered sensitive.
-	 *
-	 * @param paramName the name of the query parameter to check
-	 * @return {@code true} if the query parameter is sensitive, {@code false} otherwise
-	 */
-	boolean isSensitiveParam(String paramName);
+	// empty interface to combine both header and parameter sensitivity rules
 }

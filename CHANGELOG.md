@@ -9,6 +9,7 @@
 - Added `Strings.containsIgnoreCase(String, Collection)` for case-insensitive membership checks.
 - Moved internal method `toStringOrThrow` from `Strings` to `IOStreams`.
 - Added `HeaderName` abstraction and `DeFactoHeader` enum with de-facto headers (commonly used headers).
+- Added security sensitivity interfaces `HeaderSensitivity` and `ParameterSensitivity`.
 - Added `HttpSensitivity` with `DefaultHttpSensitivity` to centralize default sensitive header/parameter rules.
 - Added `HttpHeader.Name` namespace constants and updated `HttpHeader` enum values to use these constants.
 - Added `ExchangeClient.getDisplayParams` to return parameters for display (possibly redacted).

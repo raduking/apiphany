@@ -61,7 +61,7 @@ class DefaultHttpSensitivityTest {
 		strings = {
 				"token", "TOKEN", "access_token", "refresh_token", "api_key", "apikey", "code", "client_secret", "password" })
 	void shouldReturnTrueForSensitiveParams(final String paramName) {
-		boolean sensitive = DefaultHttpSensitivity.instance().isSensitiveParam(paramName);
+		boolean sensitive = DefaultHttpSensitivity.instance().isSensitiveParameter(paramName);
 
 		assertThat(sensitive, is(true));
 	}
@@ -71,7 +71,7 @@ class DefaultHttpSensitivityTest {
 		strings = {
 				"id", "page", "limit", "sort", "query", "lang" })
 	void shouldReturnFalseForNonSensitiveParams(final String paramName) {
-		boolean sensitive = DefaultHttpSensitivity.instance().isSensitiveParam(paramName);
+		boolean sensitive = DefaultHttpSensitivity.instance().isSensitiveParameter(paramName);
 
 		assertThat(sensitive, is(false));
 	}
@@ -81,7 +81,7 @@ class DefaultHttpSensitivityTest {
 	void shouldReturnFalseForNullInputs(final boolean header) {
 		boolean sensitive = header
 				? DefaultHttpSensitivity.instance().isSensitiveHeader(null)
-				: DefaultHttpSensitivity.instance().isSensitiveParam(null);
+				: DefaultHttpSensitivity.instance().isSensitiveParameter(null);
 
 		assertThat(sensitive, is(false));
 	}
