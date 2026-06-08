@@ -1,6 +1,6 @@
 package org.apiphany;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -46,7 +46,7 @@ public class ApiMessage<T> implements BodyAware<T> {
 	 * Constructs an API message without a body and empty headers.
 	 */
 	protected ApiMessage() {
-		this(null, new HashMap<>());
+		this(null, new LinkedHashMap<>());
 	}
 
 	/**
