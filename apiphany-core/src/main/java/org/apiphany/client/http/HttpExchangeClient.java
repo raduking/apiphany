@@ -117,9 +117,7 @@ public interface HttpExchangeClient extends ExchangeClient, SSLContextAware {
 	}
 
 	/**
-	 * Redact common credential/session headers.
-	 *
-	 * @return redacted headers predicate
+	 * @see ExchangeClient#isSensitiveHeader()
 	 */
 	@Override
 	default Predicate<String> isSensitiveHeader() {
@@ -129,14 +127,12 @@ public interface HttpExchangeClient extends ExchangeClient, SSLContextAware {
 	}
 
 	/**
-	 * Redact common credential/session parameters.
-	 *
-	 * @return redacted parameters predicate
+	 * @see ExchangeClient#isSensitiveParam()
 	 */
 	@Override
 	default Predicate<String> isSensitiveParam() {
 		ClientProperties.Logging loggingProperties = Nullables.apply(getClientProperties(), ClientProperties::getLogging);
-		return param -> DefaultHttpSensitivity.instance().isSensitiveParam(param)
+		return param -> DefaultHttpSensitivity.instance().isSensitiveParameter(param)
 				|| (null != loggingProperties && loggingProperties.isSensitiveParam(param));
 	}
 

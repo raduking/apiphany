@@ -35,7 +35,7 @@ public class DefaultHttpSensitivity implements HttpSensitivity { // NOSONAR - si
 	/**
 	 * A predefined set of common HTTP-sensitive query parameter names that should be treated with special care.
 	 */
-	private static final Set<String> PARAMS = Set.of(
+	private static final Set<String> PARAMETERS = Set.of(
 			"token",
 			"access_token",
 			"refresh_token",
@@ -54,11 +54,11 @@ public class DefaultHttpSensitivity implements HttpSensitivity { // NOSONAR - si
 	}
 
 	/**
-	 * @see HttpSensitivity#isSensitiveParam(String)
+	 * @see HttpSensitivity#isSensitiveParameter(String)
 	 */
 	@Override
-	public boolean isSensitiveParam(final String paramName) {
-		return Strings.containsIgnoreCase(paramName, PARAMS);
+	public boolean isSensitiveParameter(final String paramName) {
+		return Strings.containsIgnoreCase(paramName, PARAMETERS);
 	}
 
 	/**
