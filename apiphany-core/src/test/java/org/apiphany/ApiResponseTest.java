@@ -7,15 +7,21 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.apiphany.client.ExchangeClient;
 import org.apiphany.http.HttpStatus;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -29,6 +35,7 @@ import org.morphix.lang.JavaObjects;
 class ApiResponseTest {
 
 	private static final String MUMU = "mumu";
+
 	private static final String BUBU = "bubu";
 	private static final String PREFIX = "big";
 
@@ -548,6 +555,39 @@ class ApiResponseTest {
 
 			IllegalStateException exception = assertThrows(IllegalStateException.class, response::inputStream);
 			assertThat(exception.getMessage(), equalTo("Cannot convert null body to InputStream"));
+		}
+	}
+
+	@Nested
+	class DisplayHeadersTests {
+
+		@Test
+		@SuppressWarnings("resource")
+		void shouldDelegateGetDisplayHeadersToExchangeClientWhenPresent() {
+			ExchangeClient exchangeClient = mock(ExchangeClient.class);
+			Map<String, List<String>> expected = Map.of("Authorization", List.of("-REDACTED-"));
+			ApiResponse<String> response = ApiResponse.<String>builder()
+					.headers(Map.of("Authorization", List.of("secret")))
+					.exchangeClient(exchangeClient)
+					.build();
+			doReturn(expected).when(exchangeClient).getDisplayHeaders(same(response));
+
+			Map<String, List<String>> actual = response.getDisplayHeaders();
+
+			assertThat(actual, equalTo(expected));
+			verify(exchangeClient).getDisplayHeaders(same(response));
+		}
+
+		@Test
+		void shouldReturnRawHeadersWhenExchangeClientIsMissing() {
+			Map<String, List<String>> headers = Map.of("Accept", List.of("application/json"));
+			ApiResponse<String> response = ApiResponse.<String>builder()
+					.headers(headers)
+					.build();
+
+			Map<String, List<String>> actual = response.getDisplayHeaders();
+
+			assertThat(actual, equalTo(headers));
 		}
 	}
 
