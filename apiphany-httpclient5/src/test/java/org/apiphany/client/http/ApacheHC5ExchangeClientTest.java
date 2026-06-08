@@ -38,5 +38,4 @@ class ApacheHC5ExchangeClientTest {
 		assertNotNull(closeables);
 		assertThat(closeables, hasSize(0));
 	}
-
 }

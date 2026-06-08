@@ -632,5 +632,4 @@ class ApiResponseTest {
 			return Objects.hash(s);
 		}
 	}
-
 }

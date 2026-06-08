@@ -18,5 +18,4 @@ class BulkCipherAlgorithmTest {
 	void shouldReturnJCANameOnToString(final BulkCipherAlgorithm algorithm) {
 		assertThat(algorithm.toString(), equalTo(algorithm.jcaName()));
 	}
-
 }

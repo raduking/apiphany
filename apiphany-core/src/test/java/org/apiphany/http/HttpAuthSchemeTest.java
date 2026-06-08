@@ -20,5 +20,4 @@ class HttpAuthSchemeTest {
 		HttpAuthScheme result = HttpAuthScheme.fromString(stringValue);
 		assertThat(result, equalTo(httpAuthScheme));
 	}
-
 }

@@ -96,5 +96,4 @@ public interface Keys {
 			throw new SecurityException("Error generating public key", e);
 		}
 	}
-
 }

@@ -27,5 +27,4 @@ public class SimpleExceptionSerializer extends JsonSerializer<Exception> {
 	public void serialize(final Exception value, final JsonGenerator gen, final SerializerProvider serializers) throws IOException {
 		gen.writeString(value.getClass().getCanonicalName());
 	}
-
 }

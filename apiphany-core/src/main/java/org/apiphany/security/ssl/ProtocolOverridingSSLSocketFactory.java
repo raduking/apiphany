@@ -160,5 +160,4 @@ public class ProtocolOverridingSSLSocketFactory extends SSLSocketFactory {
 		}
 		return socket;
 	}
-
 }

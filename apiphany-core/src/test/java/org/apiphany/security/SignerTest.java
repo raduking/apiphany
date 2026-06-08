@@ -64,5 +64,4 @@ class SignerTest {
 
 		assertThat(e.getMessage(), equalTo("Signature verification failed with " + JwsAlgorithm.PS256));
 	}
-
 }

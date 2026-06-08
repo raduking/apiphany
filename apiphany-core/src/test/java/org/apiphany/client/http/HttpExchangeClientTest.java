@@ -288,5 +288,4 @@ class HttpExchangeClientTest {
 			return clientProperties;
 		}
 	}
-
 }

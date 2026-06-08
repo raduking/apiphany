@@ -141,5 +141,4 @@ public enum HttpAuthScheme {
 	public static HttpAuthScheme fromString(final String header) {
 		return Enums.fromString(Objects.requireNonNull(header).toLowerCase(), NAME_MAP, values());
 	}
-
 }

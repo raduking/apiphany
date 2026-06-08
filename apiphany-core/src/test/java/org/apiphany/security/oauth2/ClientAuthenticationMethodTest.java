@@ -20,5 +20,4 @@ class ClientAuthenticationMethodTest {
 
 		assertThat(result, equalTo(cam));
 	}
-
 }

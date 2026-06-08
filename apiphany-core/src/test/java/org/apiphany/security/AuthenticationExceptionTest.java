@@ -37,5 +37,4 @@ class AuthenticationExceptionTest {
 		assertThat(e.getMessage(), equalTo(SOME_MESSAGE));
 		assertThat(e.getCause(), equalTo(cause));
 	}
-
 }
