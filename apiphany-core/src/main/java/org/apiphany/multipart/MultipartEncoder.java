@@ -78,10 +78,7 @@ public class MultipartEncoder {
 	 * @throws IOException if an I/O error occurs while writing to the output stream
 	 */
 	private static void writeHeaders(final OutputStream out, final Map<String, List<String>> headers) throws IOException {
-		if (Maps.isEmpty(headers)) {
-			return;
-		}
-		for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
+		for (Map.Entry<String, List<String>> entry : Maps.safe(headers).entrySet()) {
 			String name = entry.getKey();
 			for (String value : entry.getValue()) {
 				writeAscii(out, name);

@@ -66,5 +66,17 @@ class MultipartMessageTest {
 					"value2\r\n" +
 					"--" + multipart.getBoundary().value() + "--\r\n"));
 		}
+
+		@Test
+		void shouldConvertEmptyMultipartToByteArray() {
+			MultipartMessage multipart = MultipartMessage.builder()
+					.randomBoundary()
+					.build();
+
+			byte[] bytes = multipart.toByteArray();
+			String value = new String(bytes);
+
+			assertThat(value, equalTo("--" + multipart.getBoundary().value() + "--\r\n"));
+		}
 	}
 }
