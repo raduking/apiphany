@@ -14,12 +14,12 @@ import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.header.HeaderValues;
 import org.apiphany.header.Headers;
-import org.apiphany.http.HttpAuthScheme;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.lang.Strings;
 import org.apiphany.security.AuthenticationException;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationType;
+import org.apiphany.security.http.HttpAuthenticationScheme;
 import org.apiphany.security.token.TokenProperties;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -122,7 +122,7 @@ class TokenHttpExchangeClientTest {
 		AuthenticationToken authenticationToken = new AuthenticationToken();
 		authenticationToken.setAccessToken(TOKEN);
 		client.setAuthenticationToken(authenticationToken);
-		client.setAuthenticationScheme(HttpAuthScheme.BEARER);
+		client.setAuthenticationScheme(HttpAuthenticationScheme.BEARER);
 
 		ApiRequest<Object> apiRequest = new ApiRequest<>();
 
@@ -131,7 +131,7 @@ class TokenHttpExchangeClientTest {
 		Map<String, List<String>> headers = apiRequest.getHeaders();
 		String authorizationHeader = Headers.get(HttpHeader.AUTHORIZATION, headers).getFirst();
 
-		assertThat(authorizationHeader, equalTo(HeaderValues.value(HttpAuthScheme.BEARER, TOKEN)));
+		assertThat(authorizationHeader, equalTo(HeaderValues.value(HttpAuthenticationScheme.BEARER, TOKEN)));
 	}
 
 	@Test
@@ -150,14 +150,14 @@ class TokenHttpExchangeClientTest {
 		Map<String, List<String>> headers = apiRequest.getHeaders();
 		String authorizationHeader = Headers.get(HttpHeader.AUTHORIZATION, headers).getFirst();
 
-		assertThat(authorizationHeader, equalTo(HeaderValues.value(HttpAuthScheme.BEARER, TOKEN)));
+		assertThat(authorizationHeader, equalTo(HeaderValues.value(HttpAuthenticationScheme.BEARER, TOKEN)));
 	}
 
 	@Test
 	void shouldAddTheAuthorizationHeaderToTheRequestWithAuthSchemeAndTokenSpecifiedInClientProperties() {
 		TokenProperties tokenProperties = new TokenProperties();
 		tokenProperties.setValue(TOKEN);
-		tokenProperties.setAuthenticationScheme(HttpAuthScheme.BASIC.value());
+		tokenProperties.setAuthenticationScheme(HttpAuthenticationScheme.BASIC.value());
 		clientProperties.setCustomProperties(tokenProperties);
 
 		exchangeClientSetup(clientProperties);
@@ -170,7 +170,7 @@ class TokenHttpExchangeClientTest {
 		Map<String, List<String>> headers = apiRequest.getHeaders();
 		String authorizationHeader = Headers.get(HttpHeader.AUTHORIZATION, headers).getFirst();
 
-		assertThat(authorizationHeader, equalTo(HeaderValues.value(HttpAuthScheme.BASIC, TOKEN)));
+		assertThat(authorizationHeader, equalTo(HeaderValues.value(HttpAuthenticationScheme.BASIC, TOKEN)));
 	}
 
 	@Test

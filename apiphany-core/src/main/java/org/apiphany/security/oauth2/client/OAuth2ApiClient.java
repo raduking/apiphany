@@ -15,7 +15,6 @@ import org.apiphany.ApiClient;
 import org.apiphany.RequestParameters;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.ExchangeClientBuilder;
-import org.apiphany.http.HttpAuthScheme;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.io.ContentType;
 import org.apiphany.json.JsonBuilder;
@@ -26,6 +25,7 @@ import org.apiphany.security.AuthenticationTokenProvider;
 import org.apiphany.security.JwsAlgorithm;
 import org.apiphany.security.MessageDigestAlgorithm;
 import org.apiphany.security.Signer;
+import org.apiphany.security.http.HttpAuthenticationScheme;
 import org.apiphany.security.oauth2.AuthorizationGrantType;
 import org.apiphany.security.oauth2.ClientAuthenticationMethod;
 import org.apiphany.security.oauth2.OAuth2ClientRegistration;
@@ -202,7 +202,7 @@ public class OAuth2ApiClient extends ApiClient implements AuthenticationTokenPro
 				.url(providerDetails.getTokenUri())
 				.body(RequestParameters.asString(RequestParameters.encode(params)))
 				.header(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_FORM_URLENCODED)
-				.header(HttpHeader.AUTHORIZATION, clientRegistration.getAuthorizationHeaderValue(HttpAuthScheme.BASIC))
+				.header(HttpHeader.AUTHORIZATION, clientRegistration.getAuthorizationHeaderValue(HttpAuthenticationScheme.BASIC))
 				.retrieve(AuthenticationToken.class)
 				.orRethrow(AuthenticationException::new);
 	}

@@ -24,7 +24,6 @@ import org.apiphany.client.http.HttpExchangeClient;
 import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.header.Header;
 import org.apiphany.header.Headers;
-import org.apiphany.http.HttpAuthScheme;
 import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
@@ -36,6 +35,7 @@ import org.apiphany.security.AuthenticationException;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationType;
 import org.apiphany.security.JwsAlgorithm;
+import org.apiphany.security.http.HttpAuthenticationScheme;
 import org.apiphany.security.keys.RSAKeys;
 import org.apiphany.security.oauth2.ClientAuthenticationMethod;
 import org.apiphany.security.oauth2.OAuth2ClientRegistration;
@@ -227,7 +227,7 @@ class OAuth2ApiClientTest {
 				parameter(OAuth2Parameter.EXPIRES_IN, OAuth2Parameter.Default.EXPIRES_IN.toSeconds()));
 
 		String body = RequestParameters.asString(RequestParameters.encode(params));
-		String expectedAuthHeader = clientRegistration.getAuthorizationHeaderValue(HttpAuthScheme.BASIC);
+		String expectedAuthHeader = clientRegistration.getAuthorizationHeaderValue(HttpAuthenticationScheme.BASIC);
 		var headers = capturedRequest.getHeaders();
 
 		assertThat(capturedRequest.getBody(), equalTo(body));
@@ -371,7 +371,7 @@ class OAuth2ApiClientTest {
 					.get()
 					.url(HTTP_LOCALHOST)
 					.path(API, "name")
-					.header(HttpHeader.AUTHORIZATION, Header.value(HttpAuthScheme.BEARER, token.getAccessToken()))
+					.header(HttpHeader.AUTHORIZATION, Header.value(HttpAuthenticationScheme.BEARER, token.getAccessToken()))
 					.retrieve(String.class)
 					.orNull();
 		}

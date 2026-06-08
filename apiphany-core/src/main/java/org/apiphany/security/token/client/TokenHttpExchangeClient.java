@@ -6,12 +6,12 @@ import java.util.function.Supplier;
 import org.apiphany.client.DecoratingExchangeClient;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.header.HeaderValues;
-import org.apiphany.http.HttpAuthScheme;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationTokenProvider;
 import org.apiphany.security.AuthenticationType;
 import org.apiphany.security.AuthorizationHeaderProvider;
 import org.apiphany.security.client.http.AuthorizationHttpExchangeClient;
+import org.apiphany.security.http.HttpAuthenticationScheme;
 import org.apiphany.security.token.TokenProperties;
 import org.morphix.lang.Nullables;
 import org.morphix.lang.resource.ScopedResource;
@@ -33,7 +33,7 @@ public class TokenHttpExchangeClient extends DecoratingExchangeClient implements
 	/**
 	 * The authentication scheme, defaults to {@code Bearer} if missing.
 	 */
-	private HttpAuthScheme authenticationScheme;
+	private HttpAuthenticationScheme authenticationScheme;
 
 	/**
 	 * Supplies the default token expiration.
@@ -74,9 +74,9 @@ public class TokenHttpExchangeClient extends DecoratingExchangeClient implements
 		authToken.setAccessToken(tokenProperties.getValue());
 		setAuthenticationToken(authToken);
 
-		HttpAuthScheme httpAuthScheme = Nullables.notNull(tokenProperties.getAuthenticationScheme())
-				.thenYield(HttpAuthScheme::fromString)
-				.orElse(HttpAuthScheme.BEARER);
+		HttpAuthenticationScheme httpAuthScheme = Nullables.notNull(tokenProperties.getAuthenticationScheme())
+				.thenYield(HttpAuthenticationScheme::fromString)
+				.orElse(HttpAuthenticationScheme.BEARER);
 		setAuthenticationScheme(httpAuthScheme);
 	}
 
@@ -150,7 +150,7 @@ public class TokenHttpExchangeClient extends DecoratingExchangeClient implements
 	 *
 	 * @return the authentication scheme
 	 */
-	public HttpAuthScheme getAuthenticationScheme() {
+	public HttpAuthenticationScheme getAuthenticationScheme() {
 		return authenticationScheme;
 	}
 
@@ -159,7 +159,7 @@ public class TokenHttpExchangeClient extends DecoratingExchangeClient implements
 	 *
 	 * @param authenticationScheme the authentication scheme to set
 	 */
-	public void setAuthenticationScheme(final HttpAuthScheme authenticationScheme) {
+	public void setAuthenticationScheme(final HttpAuthenticationScheme authenticationScheme) {
 		this.authenticationScheme = authenticationScheme;
 	}
 }

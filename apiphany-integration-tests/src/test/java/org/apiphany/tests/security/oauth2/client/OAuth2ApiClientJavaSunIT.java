@@ -8,12 +8,12 @@ import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.ExchangeClientBuilder;
 import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.header.Header;
-import org.apiphany.http.HttpAuthScheme;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.JwtTokenValidator.TokenValidationException;
+import org.apiphany.security.http.HttpAuthenticationScheme;
 import org.apiphany.security.oauth2.ClientAuthenticationMethod;
 import org.apiphany.security.oauth2.ITWithJavaSunOAuth2Server;
 import org.apiphany.security.oauth2.OAuth2ClientRegistration;
@@ -109,7 +109,7 @@ class OAuth2ApiClientJavaSunIT extends ITWithJavaSunOAuth2Server {
 					.get()
 					.url("http://localhost:" + apiServer().getPort())
 					.path(API, "name")
-					.header(HttpHeader.AUTHORIZATION, Header.value(HttpAuthScheme.BEARER, token.getAccessToken()))
+					.header(HttpHeader.AUTHORIZATION, Header.value(HttpAuthenticationScheme.BEARER, token.getAccessToken()))
 					.retrieve(String.class)
 					.orNull();
 		}
