@@ -782,7 +782,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	@SuppressWarnings("resource")
 	@Override
 	public Map<String, List<String>> getDisplayHeaders() {
-		return getExchangeClient(ExchangeClient.class).getDisplayHeaders(this);
+		return Nullables.apply(getExchangeClient(), ec -> ec.getDisplayHeaders(this), super::getDisplayHeaders);
 	}
 
 	/**
@@ -792,23 +792,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	@SuppressWarnings("resource")
 	@Override
 	public Map<String, List<String>> getDisplayParams() {
-		return getExchangeClient(ExchangeClient.class).getDisplayParams(this);
-	}
-
-	/**
-	 * Returns the required exchange class.
-	 *
-	 * @param <T> exchange client class type
-	 *
-	 * @param exchangeClientClass exchange client class
-	 * @return the required exchange class
-	 * @throws IllegalArgumentException if the underlying exchange client cannot be cast to the given class
-	 */
-	public <T extends ExchangeClient> T getExchangeClient(final Class<T> exchangeClientClass) {
-		if (!exchangeClientClass.isAssignableFrom(exchangeClient.getClass())) {
-			throw new IllegalArgumentException("The underlying exchange client cannot be cast to: " + exchangeClientClass);
-		}
-		return JavaObjects.cast(exchangeClient);
+		return Nullables.apply(getExchangeClient(), ec -> ec.getDisplayParams(this), super::getDisplayParams);
 	}
 
 	/**
@@ -819,6 +803,32 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	@Ignored
 	public ApiClient getApiClient() {
 		return apiClient;
+	}
+
+	/**
+	 * Returns the underlying exchange client.
+	 *
+	 * @return the underlying exchange client
+	 */
+	@Ignored
+	public ExchangeClient getExchangeClient() {
+		return exchangeClient;
+	}
+
+	/**
+	 * Returns the underlying exchange client cast to the given class if possible or throws an
+	 * {@link IllegalArgumentException} if the underlying exchange client cannot be cast to the given class.
+	 *
+	 * @param <T> exchange client class type
+	 *
+	 * @param exchangeClientClass exchange client class
+	 * @return the exchange client cast to the given class
+	 * @throws IllegalArgumentException if the underlying exchange client cannot be cast to the given class
+	 * @see ExchangeClient#as(Class)
+	 */
+	@SuppressWarnings("resource")
+	public <T extends ExchangeClient> T getExchangeClient(final Class<T> exchangeClientClass) {
+		return getExchangeClient().as(exchangeClientClass);
 	}
 
 	/**

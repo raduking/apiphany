@@ -679,7 +679,7 @@ class ApiClientFluentAdapterTest {
 			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
 					.authenticationType(AuthenticationType.SESSION);
 
-			assertThat(request.getExchangeClient(ExchangeClient.class), notNullValue());
+			assertThat(request.getExchangeClient(), notNullValue());
 		}
 	}
 

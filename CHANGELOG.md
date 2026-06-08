@@ -13,6 +13,7 @@
 - Added `HttpSensitivity` with `DefaultHttpSensitivity` to centralize default sensitive header/parameter rules.
 - Added `HttpHeader.Name` namespace constants and updated `HttpHeader` enum values to use these constants.
 - Added `ExchangeClient.getDisplayParams` to return parameters for display (possibly redacted).
+- Added `ExchangeClient.as(Class<T>)` for typed access to decorated/underlying exchange client instances.
 - Added `ApiRequest.getDisplayParams` to return parameters for display (possibly redacted).
 - Added `ClientProperties.Logging` for sensitive headers/parameters and per-category logging mode (`FULL`, `METADATA`, `NONE`).
 - Added `HttpExchangeClient.isSensitiveParam` method to check if a request parameter is sensitive.
