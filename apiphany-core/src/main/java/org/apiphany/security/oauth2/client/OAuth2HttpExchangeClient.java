@@ -7,11 +7,11 @@ import java.util.List;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.DecoratingExchangeClient;
 import org.apiphany.client.ExchangeClient;
-import org.apiphany.http.HttpAuthScheme;
 import org.apiphany.logging.Slf4jLoggerAdapter;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationTokenProvider;
 import org.apiphany.security.AuthenticationType;
+import org.apiphany.security.http.HttpAuthenticationScheme;
 import org.apiphany.security.oauth2.OAuth2Properties;
 import org.apiphany.security.oauth2.OAuth2ResolvedRegistration;
 import org.apiphany.security.oauth2.OAuth2TokenProvider;
@@ -86,7 +86,7 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 			}
 			this.tokenProvider = null;
 		}
-		setAuthenticationScheme(HttpAuthScheme.BEARER);
+		setAuthenticationScheme(HttpAuthenticationScheme.BEARER);
 	}
 
 	/**

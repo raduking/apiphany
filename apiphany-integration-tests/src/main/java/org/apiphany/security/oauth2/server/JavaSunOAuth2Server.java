@@ -13,7 +13,6 @@ import java.util.Objects;
 import java.util.UUID;
 
 import org.apiphany.RequestParameters;
-import org.apiphany.http.HttpAuthScheme;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
@@ -21,6 +20,7 @@ import org.apiphany.io.ContentType;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.security.AuthenticationToken;
+import org.apiphany.security.http.HttpAuthenticationScheme;
 import org.apiphany.security.oauth2.AuthorizationGrantType;
 import org.apiphany.security.oauth2.OAuth2Parameter;
 import org.morphix.lang.collections.Lists;
@@ -223,7 +223,7 @@ public class JavaSunOAuth2Server implements AutoCloseable {
 
 			AuthenticationToken token = new AuthenticationToken();
 			token.setAccessToken(accessToken);
-			token.setTokenType(HttpAuthScheme.BEARER.value());
+			token.setTokenType(HttpAuthenticationScheme.BEARER.value());
 			token.setExpiresIn(expiresInDuration.toSeconds());
 
 			sendResponse(exchange, HttpStatus.OK, token.toString());

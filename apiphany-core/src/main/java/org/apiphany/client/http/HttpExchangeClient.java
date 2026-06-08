@@ -11,9 +11,9 @@ import org.apiphany.client.ExchangeClient;
 import org.apiphany.header.Header;
 import org.apiphany.header.Headers;
 import org.apiphany.http.HttpMethod;
-import org.apiphany.http.HttpSensitive;
 import org.apiphany.http.TracingHeader;
 import org.apiphany.lang.Strings;
+import org.apiphany.security.http.DefaultHttpSensitivity;
 import org.apiphany.security.ssl.SSLContextAware;
 import org.morphix.lang.Nullables;
 import org.slf4j.MDC;
@@ -124,7 +124,7 @@ public interface HttpExchangeClient extends ExchangeClient, SSLContextAware {
 	@Override
 	default Predicate<String> isSensitiveHeader() {
 		ClientProperties.Logging loggingProperties = Nullables.apply(getClientProperties(), ClientProperties::getLogging);
-		return header -> HttpSensitive.isHeader(header)
+		return header -> DefaultHttpSensitivity.instance().isSensitiveHeader(header)
 				|| (null != loggingProperties && loggingProperties.isSensitiveHeader(header));
 	}
 
@@ -136,7 +136,7 @@ public interface HttpExchangeClient extends ExchangeClient, SSLContextAware {
 	@Override
 	default Predicate<String> isSensitiveParam() {
 		ClientProperties.Logging loggingProperties = Nullables.apply(getClientProperties(), ClientProperties::getLogging);
-		return param -> HttpSensitive.isParam(param)
+		return param -> DefaultHttpSensitivity.instance().isSensitiveParam(param)
 				|| (null != loggingProperties && loggingProperties.isSensitiveParam(param));
 	}
 

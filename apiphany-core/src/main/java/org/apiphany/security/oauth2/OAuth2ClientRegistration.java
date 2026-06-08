@@ -5,11 +5,11 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.apiphany.header.HeaderValues;
-import org.apiphany.http.HttpAuthScheme;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.annotation.Ignored;
 import org.apiphany.security.Sensitive;
+import org.apiphany.security.http.HttpAuthenticationScheme;
 
 /**
  * Represents a client registration with an OAuth 2.0 or OpenID Connect 1.0 Provider. Contains all necessary
@@ -258,12 +258,13 @@ public class OAuth2ClientRegistration {
 	}
 
 	/**
-	 * Returns the {@code Authorization} header value with the given {@link HttpAuthScheme} and encoded credentials.
+	 * Returns the {@code Authorization} header value with the given {@link HttpAuthenticationScheme} and encoded
+	 * credentials.
 	 *
 	 * @param authorizationScheme the authorization scheme used to build the header value
 	 * @return the authorization header value for client secret basic
 	 */
-	public String getAuthorizationHeaderValue(final HttpAuthScheme authorizationScheme) {
+	public String getAuthorizationHeaderValue(final HttpAuthenticationScheme authorizationScheme) {
 		return HeaderValues.value(authorizationScheme, getEncodedCredentials());
 	}
 

@@ -6,21 +6,22 @@
 - Added bounded exponential delay strategy for OAuth2 token refresh failures in `OAuth2TokenProvider`.
 - Added retry delay configuration options to `OAuth2TokenProviderProperties`: `maxRefreshInterval` and `failureRetryDelayMultiplier`.
 - Added support in `OAuth2TokenProvider.Builder` to fully override failure retry delay computation via `failureRetryDelayStrategy(...)`.
-- Added `Strings.containsIgnoreCase(String, Collection<String>)` for case-insensitive membership checks.
+- Added `Strings.containsIgnoreCase(String, Collection)` for case-insensitive membership checks.
 - Moved internal method `toStringOrThrow` from `Strings` to `IOStreams`.
-- Added `HeaderName` abstraction, `DeFactoHeader` and `HttpSensitive` to centralize standard/de-facto header names and default sensitive header/parameter sets.
+- Added `HeaderName` abstraction and `DeFactoHeader` enum with de-facto headers (commonly used headers).
+- Added `HttpSensitivity` with `DefaultHttpSensitivity` to centralize default sensitive header/parameter rules.
 - Added `HttpHeader.Name` namespace constants and updated `HttpHeader` enum values to use these constants.
-- Added `ExchangeClient.getDisplayParams` to returns the parameters for displaying (possibly redacted). 
-- Added `ApiRequest.getDisplayParams` to returns the parameters for displaying (possibly redacted). 
+- Added `ExchangeClient.getDisplayParams` to return parameters for display (possibly redacted).
+- Added `ApiRequest.getDisplayParams` to return parameters for display (possibly redacted).
 - Added `ClientProperties.Logging` for sensitive headers/parameters and per-category logging mode (`FULL`, `METADATA`, `NONE`).
 - Added `HttpExchangeClient.isSensitiveParam` method to check if a request parameter is sensitive.
-- Included `ClientProperties.Logging` in `ClientProperties.equals/hashCode` and added `equals/hashCode` for `ClientProperties.Logging.Category`.
+- Renamed `HttpAuthScheme` to `HttpAuthenticationScheme` and moved HTTP auth/sensitivity types under `*.security.http`.
 
 ---
 
 `1.2.12`
 
-- Enforced HTTPS for OAuth2 token URI by default, with explicit development/testing override via `allowInsecureTokenUri`.
+- Added HTTPS enforcement for OAuth2 token URI by default, with explicit development/testing override via `allowInsecureTokenUri`.
 - Added OAuth2 token URI transport helpers in `OAuth2ProviderDetails`: `isTokenUriSecure()`, `isInsecureTokenUriAllowed()`, and `isTokenUriAllowed()`.
 - Updated OAuth2 validation flow (`OAuth2ResolvedRegistration`, `OAuth2ApiClient`) to reject insecure token URIs unless explicitly allowed.
 - Added `OAuth2Properties.forbidInsecureTokenUri` as an opt-in global guardrail to reject insecure token URIs even when provider-level override is enabled.
@@ -35,8 +36,8 @@
 - Added `Logging` helper API for safe diagnostic input descriptions (`length`, `hash`, optional `preview`) and `LoggingFormat` support.
 - Added safer JSON deserialization diagnostics in `JsonBuilder` via `describeJsonInput(...)` and centralized `logDeserializationError(...)`.
 - Added `byte[]` and `InputStream` JSON input parsing support in `JsonBuilder`.
-- Centralized `JsonBuilder` serialization/deserialization flow for more consistent behavior across JSON backends.
-- Extracted JSON observability concerns into `JsonObservability`.
+- Changed `JsonBuilder` serialization/deserialization flow for more consistent behavior across JSON backends.
+- Added JSON observability concerns into `JsonObservability`.
 - Updated Jackson 2 and Jackson 3 JSON builders to use safe deserialization error logging (type + bounded metadata/hash) instead of logging raw payloads.
 - Upgraded `morphix-all` to `1.0.37`.
 

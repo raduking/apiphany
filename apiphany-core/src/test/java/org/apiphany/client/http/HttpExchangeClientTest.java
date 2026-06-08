@@ -19,9 +19,9 @@ import org.apiphany.header.HeaderValues;
 import org.apiphany.header.Headers;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
-import org.apiphany.http.HttpSensitive;
 import org.apiphany.security.AuthenticationType;
 import org.apiphany.security.Sensitive;
+import org.apiphany.security.http.DefaultHttpSensitivity;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -92,7 +92,9 @@ class HttpExchangeClientTest {
 				"Cookie", "cookie",
 				"Set-Cookie", "set-cookie",
 				"Set-Cookie2", "set-cookie2",
-				"X-API-Key", "api-key", "x-auth-token" })
+				"X-API-Key", "X-Api-key",
+				"api-key",
+				"x-auth-token" })
 	void shouldReturnSensitiveHeadersAsSensitive(final String headerName) throws Exception {
 		HttpExchangeClient client = new DummyHttpExchangeClient();
 		client.close();
@@ -105,7 +107,7 @@ class HttpExchangeClientTest {
 	@ParameterizedTest
 	@EnumSource(HttpHeader.class)
 	void shouldReturnNonSensitiveHeadersAsNonSensitive(final HttpHeader header) throws Exception {
-		if (HttpSensitive.isHeader(header.value())) {
+		if (DefaultHttpSensitivity.instance().isSensitiveHeader(header.value())) {
 			return;
 		}
 		HttpExchangeClient client = new DummyHttpExchangeClient();

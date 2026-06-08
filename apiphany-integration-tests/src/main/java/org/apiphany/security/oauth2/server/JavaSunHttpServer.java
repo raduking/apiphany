@@ -9,12 +9,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apiphany.header.Headers;
-import org.apiphany.http.HttpAuthScheme;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
 import org.apiphany.lang.Strings;
 import org.apiphany.security.JwtTokenValidator;
+import org.apiphany.security.http.HttpAuthenticationScheme;
 import org.morphix.lang.collections.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -210,7 +210,7 @@ public class JavaSunHttpServer implements AutoCloseable {
 				return sendResponse(exchange, HttpStatus.UNAUTHORIZED, "Invalid " + HttpHeader.AUTHORIZATION + " header value.");
 			}
 			try {
-				HttpAuthScheme.fromString(pair[0]);
+				HttpAuthenticationScheme.fromString(pair[0]);
 			} catch (IllegalArgumentException e) {
 				return sendResponse(exchange, HttpStatus.UNAUTHORIZED, "Invalid authorization scheme.");
 			}
