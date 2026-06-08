@@ -17,8 +17,7 @@ import org.morphix.reflection.Constructors;
  * parameters (such as boundary) are needed. This is useful for parsing HTTP headers sent from an HTTP server which
  * might decide not to follow the character sets defined in the {@link ContentType} enumeration.
  * <p>
- * TODO: add support for other parameters besides charset and boundary, version for application/* types, format for
- * text/* types, etc.
+ * TODO: add support for other params: version for application/* types, format for text/* types, etc.
  *
  * @author Radu Sebastian LAZIN
  */
@@ -319,6 +318,30 @@ public class HttpContentType implements ApiMimeType {
 	}
 
 	/**
+	 * @see Object#equals(Object)
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof HttpContentType that) {
+			return Objects.equals(this.contentType, that.contentType)
+					&& Objects.equals(this.charset, that.charset)
+					&& Objects.equals(this.boundary, that.boundary);
+		}
+		return false;
+	}
+
+	/**
+	 * @see Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hash(contentType, charset, boundary);
+	}
+
+	/**
 	 * Fluent builder for {@link HttpContentType}.
 	 *
 	 * @author Radu Sebastian LAZIN
@@ -388,29 +411,5 @@ public class HttpContentType implements ApiMimeType {
 		public HttpContentType build() {
 			return new HttpContentType(contentType, charset, boundary);
 		}
-	}
-
-	/**
-	 * @see Object#equals(Object)
-	 */
-	@Override
-	public boolean equals(final Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj instanceof HttpContentType that) {
-			return Objects.equals(this.contentType, that.contentType)
-					&& Objects.equals(this.charset, that.charset)
-					&& Objects.equals(this.boundary, that.boundary);
-		}
-		return false;
-	}
-
-	/**
-	 * @see Object#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-		return Objects.hash(contentType, charset, boundary);
 	}
 }

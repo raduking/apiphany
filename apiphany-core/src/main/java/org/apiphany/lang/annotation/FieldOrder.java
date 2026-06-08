@@ -37,5 +37,4 @@ public @interface FieldOrder {
 	 * @return an array with the field order
 	 */
 	String[] value();
-
 }

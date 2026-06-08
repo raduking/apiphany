@@ -29,6 +29,5 @@ import java.lang.annotation.Target;
 @Target({ ElementType.FIELD, ElementType.METHOD })
 public @interface Ignored {
 
-	// empty
-
+	// marker annotation, no fields needed
 }

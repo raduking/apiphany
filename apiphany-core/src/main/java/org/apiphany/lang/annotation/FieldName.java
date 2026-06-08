@@ -33,5 +33,4 @@ public @interface FieldName {
 	 * @return the field name
 	 */
 	String value();
-
 }
