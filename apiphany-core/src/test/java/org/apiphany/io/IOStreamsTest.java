@@ -105,7 +105,7 @@ class IOStreamsTest {
 		void shouldReadFullyWhenInputStreamReturnsPartialReads() throws IOException {
 			byte[] input = "abcdef".getBytes(StandardCharsets.UTF_8);
 			byte[] output = new byte[input.length];
-			InputStream partialReadInputStream = new InputStream() {
+			try (InputStream partialReadInputStream = new InputStream() {
 				private int index;
 
 				@Override
@@ -121,9 +121,9 @@ class IOStreamsTest {
 				public int read() {
 					throw new UnsupportedOperationException();
 				}
-			};
-
-			IOStreams.readFully(partialReadInputStream, output, 0, input.length);
+			}) {
+				IOStreams.readFully(partialReadInputStream, output, 0, input.length);
+			}
 
 			assertArrayEquals(input, output);
 		}

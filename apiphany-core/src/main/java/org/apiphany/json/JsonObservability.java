@@ -101,6 +101,14 @@ public class JsonObservability implements LoggerAdapter {
 	}
 
 	/**
+	 * @see LoggerAdapter#isEnabled(LoggingLevel)
+	 */
+	@Override
+	public boolean isEnabled(final LoggingLevel level) {
+		return logger.isEnabled(level);
+	}
+
+	/**
 	 * Logs a warning when a JSON library is not found in the classpath.
 	 */
 	public void jsonLibraryNotFound() {

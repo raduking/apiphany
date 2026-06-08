@@ -224,4 +224,11 @@ class ApiClientRequestTest {
 		assertFalse(request.hasGenericType());
 		assertFalse(request.isStream());
 	}
+
+	@Test
+	void shouldReturnFalseForHasResponseTypeWhenResponseTypeAndGenericResponseTypeIsNull() {
+		ApiRequest<?> request = new ApiRequest<>();
+
+		assertFalse(request.hasResponseType());
+	}
 }
