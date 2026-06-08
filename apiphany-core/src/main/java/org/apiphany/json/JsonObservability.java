@@ -78,7 +78,17 @@ public class JsonObservability implements LoggerAdapter {
 	 * @param jsonBuilder the JSON builder instance to use for configuration and logging
 	 */
 	public JsonObservability(final JsonBuilder jsonBuilder) {
-		this.logger = Slf4jLoggerAdapter.of(jsonBuilder.getClass());
+		this(Slf4jLoggerAdapter.of(jsonBuilder.getClass()), jsonBuilder);
+	}
+
+	/**
+	 * Creates a new instance of {@link JsonObservability} with the given logger and JSON builder.
+	 *
+	 * @param logger the logger to use for logging JSON-related messages
+	 * @param jsonBuilder the JSON builder instance to use for configuration and logging
+	 */
+	public JsonObservability(final LoggerAdapter logger, final JsonBuilder jsonBuilder) {
+		this.logger = logger;
 		this.jsonBuilder = jsonBuilder;
 	}
 

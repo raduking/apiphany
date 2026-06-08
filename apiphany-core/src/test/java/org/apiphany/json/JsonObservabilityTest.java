@@ -2,6 +2,9 @@ package org.apiphany.json;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -12,6 +15,7 @@ import org.apiphany.security.MessageDigestAlgorithm;
 import org.apiphany.test.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.morphix.lang.function.LoggerAdapter;
 import org.morphix.reflection.Constructors;
 
 /**
@@ -22,6 +26,16 @@ import org.morphix.reflection.Constructors;
 class JsonObservabilityTest {
 
 	private static final long TEST_LONG = 666L;
+
+	@Test
+	void shouldDelegateLogToProvidedLoggerAdapter() {
+		LoggerAdapter logger = mock(LoggerAdapter.class);
+		JsonObservability observability = new JsonObservability(logger, new JsonBuilder());
+
+		observability.log(LoggerAdapter.LoggingLevel.INFO, "message {}", "arg");
+
+		verify(logger).log(eq(LoggerAdapter.LoggingLevel.INFO), eq("message {}"), eq("arg"));
+	}
 
 	@Test
 	void shouldThrowExceptionWhenTryingToInstantiateErrorMessageNestedClass() {
