@@ -259,6 +259,7 @@ class OAuth2HttpExchangeClientBuilderTest {
 		ExchangeClient tokenExchangeClient = mock(HttpExchangeClient.class);
 		doReturn(clientProperties).when(tokenExchangeClient).getClientProperties();
 		doReturn(AuthenticationType.NONE).when(tokenExchangeClient).getAuthenticationType();
+		doReturn(tokenExchangeClient).when(tokenExchangeClient).as(HttpExchangeClient.class);
 		doReturn(tokenResponse).when(tokenExchangeClient).exchange(any());
 
 		ScopedResource<ExchangeClient> oauth2Client = ExchangeClientBuilder.create()

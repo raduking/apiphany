@@ -15,6 +15,7 @@ import java.util.Map;
 
 import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
+import org.apiphany.client.http.HttpExchangeClient;
 import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.http.HttpStatus;
 import org.apiphany.json.JsonBuilder;
@@ -69,6 +70,7 @@ class OAuth2HttpExchangeClientTest {
 		JavaNetHttpExchangeClient tokenExchangeClient = mock(JavaNetHttpExchangeClient.class);
 		doReturn(AuthenticationType.NONE).when(tokenExchangeClient).getAuthenticationType();
 		doReturn(TOKEN_EXCHANGE_CLIENT).when(tokenExchangeClient).getName();
+		doReturn(tokenExchangeClient).when(tokenExchangeClient).as(HttpExchangeClient.class);
 
 		AuthenticationToken token = new AuthenticationToken();
 		token.setExpiresIn(300);

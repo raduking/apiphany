@@ -58,6 +58,7 @@ class ApiClientEphemeralTest {
 	void shouldCallExchangeClientWithProvidedParametersOnPost() throws Exception {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
 		doReturn(AuthenticationType.NONE).when(exchangeClient).getAuthenticationType();
+		doReturn(exchangeClient).when(exchangeClient).as(HttpExchangeClient.class);
 		ScopedResource<HttpExchangeClient> scopedClient = ScopedResource.managed(exchangeClient);
 		ExchangeClientBuilder builder = mock(ExchangeClientBuilder.class);
 		doReturn(scopedClient).when(builder).build();

@@ -23,6 +23,7 @@ import org.apiphany.header.Headers;
 import org.apiphany.security.AuthenticationType;
 import org.apiphany.security.Sensitive;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.morphix.reflection.Fields;
 
@@ -193,5 +194,29 @@ class ExchangeClientTest {
 		ExchangeClientBuilder builder = ExchangeClient.builder();
 
 		assertInstanceOf(ExchangeClientBuilder.class, builder);
+	}
+
+	@Nested
+	class AsTests {
+
+		@SuppressWarnings("resource")
+		@Test
+		void shouldCastToExchangeClientTypeWhenAssignable() {
+			ExchangeClient result = exchangeClient.as(ExchangeClient.class);
+
+			assertThat(result, equalTo(exchangeClient));
+		}
+
+		@Test
+		void shouldThrowWhenCastingToIncompatibleType() {
+			IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+					() -> exchangeClient.as(OtherExchangeClient.class));
+
+			assertThat(exception.getMessage(), equalTo("The underlying exchange client cannot be cast to: " + OtherExchangeClient.class));
+		}
+	}
+
+	private interface OtherExchangeClient extends ExchangeClient {
+		// marker
 	}
 }

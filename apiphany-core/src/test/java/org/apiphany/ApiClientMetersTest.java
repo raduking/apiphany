@@ -48,6 +48,7 @@ class ApiClientMetersTest {
 	@SuppressWarnings("resource")
 	void shouldSetMetricsToThisMethod() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
+		doReturn(exchangeClient).when(exchangeClient).as(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 
 		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
@@ -71,6 +72,7 @@ class ApiClientMetersTest {
 	@SuppressWarnings("resource")
 	void shouldSetMetricsToThisMethodWithTags() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
+		doReturn(exchangeClient).when(exchangeClient).as(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 
 		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
@@ -94,6 +96,7 @@ class ApiClientMetersTest {
 	@SuppressWarnings("resource")
 	void shouldSetMetricsWithoutMethod() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
+		doReturn(exchangeClient).when(exchangeClient).as(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 
 		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
@@ -117,6 +120,7 @@ class ApiClientMetersTest {
 	@SuppressWarnings("resource")
 	void shouldUseDefaultMetricsIfNoMetricsAreSetAndMetricsAreDisabled() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
+		doReturn(exchangeClient).when(exchangeClient).as(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 
 		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
@@ -140,6 +144,7 @@ class ApiClientMetersTest {
 	@SuppressWarnings("resource")
 	void shouldUseDefaultMetricsEvenIfNoMetricsAreSetButMetricsAreDisabled() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
+		doReturn(exchangeClient).when(exchangeClient).as(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 
 		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);

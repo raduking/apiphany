@@ -77,6 +77,7 @@ class ApiClientGenericTypesTest {
 	@SuppressWarnings("resource")
 	void shouldMakeGetCallWithTheCorrectUri() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
+		doReturn(exchangeClient).when(exchangeClient).as(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
 
 		List<String> expected = List.of(ID1, ID2);

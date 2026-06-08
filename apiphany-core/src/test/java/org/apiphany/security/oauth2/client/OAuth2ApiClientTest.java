@@ -91,6 +91,7 @@ class OAuth2ApiClientTest {
 	void shouldReturnAuthenticationToken() {
 		doReturn(AuthenticationType.NONE).when(exchangeClient).getAuthenticationType();
 		doReturn(MAIN_EXCHANGE_CLIENT).when(exchangeClient).getName();
+		doReturn(exchangeClient).when(exchangeClient).as(HttpExchangeClient.class);
 
 		AuthenticationToken expectedToken = new AuthenticationToken();
 		expectedToken.setExpiresIn(300);
@@ -109,6 +110,7 @@ class OAuth2ApiClientTest {
 	void shouldAuthorizeRequestWithValidToken() throws Exception {
 		doReturn(AuthenticationType.NONE).when(exchangeClient).getAuthenticationType();
 		doReturn(MAIN_EXCHANGE_CLIENT).when(exchangeClient).getName();
+		doReturn(exchangeClient).when(exchangeClient).as(HttpExchangeClient.class);
 
 		AuthenticationToken expectedToken = new AuthenticationToken();
 		expectedToken.setExpiresIn(300);
@@ -133,6 +135,7 @@ class OAuth2ApiClientTest {
 	void shouldAuthorizeRequestWithValidTokenWithClientBuilderConstructor() throws Exception {
 		doReturn(AuthenticationType.NONE).when(exchangeClient).getAuthenticationType();
 		doReturn(MAIN_EXCHANGE_CLIENT).when(exchangeClient).getName();
+		doReturn(exchangeClient).when(exchangeClient).as(HttpExchangeClient.class);
 
 		AuthenticationToken expectedToken = new AuthenticationToken();
 		expectedToken.setExpiresIn(300);
@@ -188,6 +191,7 @@ class OAuth2ApiClientTest {
 	@SuppressWarnings("resource")
 	void shouldThrowExceptionIfExchangeClientThrowsWhileRetrievingToken() {
 		HttpExchangeClient exchangeClientMock = mock(HttpExchangeClient.class);
+		doReturn(exchangeClientMock).when(exchangeClientMock).as(HttpExchangeClient.class);
 		doReturn(AuthenticationType.OAUTH2).when(exchangeClientMock).getAuthenticationType();
 		HttpException exception = new HttpException(HttpStatus.INTERNAL_SERVER_ERROR, "Expected server error");
 		doThrow(exception).when(exchangeClientMock).exchange(any());
@@ -204,6 +208,7 @@ class OAuth2ApiClientTest {
 	@SuppressWarnings({ "resource", "unchecked" })
 	void shouldReturnAuthenticationWithClientSecretBasic() {
 		doReturn(AuthenticationType.NONE).when(exchangeClient).getAuthenticationType();
+		doReturn(exchangeClient).when(exchangeClient).as(HttpExchangeClient.class);
 		doReturn(MAIN_EXCHANGE_CLIENT).when(exchangeClient).getName();
 		doReturn(HttpMethod.POST).when(exchangeClient).post();
 
@@ -243,6 +248,7 @@ class OAuth2ApiClientTest {
 	void shouldReturnAuthenticationWithClientSecretPost() {
 		doReturn(AuthenticationType.NONE).when(exchangeClient).getAuthenticationType();
 		doReturn(MAIN_EXCHANGE_CLIENT).when(exchangeClient).getName();
+		doReturn(exchangeClient).when(exchangeClient).as(HttpExchangeClient.class);
 		doReturn(HttpMethod.POST).when(exchangeClient).post();
 
 		AuthenticationToken expectedToken = new AuthenticationToken();
@@ -281,6 +287,7 @@ class OAuth2ApiClientTest {
 	void shouldReturnAuthenticationWithClientSecretJwt() {
 		doReturn(AuthenticationType.NONE).when(exchangeClient).getAuthenticationType();
 		doReturn(MAIN_EXCHANGE_CLIENT).when(exchangeClient).getName();
+		doReturn(exchangeClient).when(exchangeClient).as(HttpExchangeClient.class);
 		doReturn(HttpMethod.POST).when(exchangeClient).post();
 
 		AuthenticationToken expectedToken = new AuthenticationToken();
@@ -320,6 +327,7 @@ class OAuth2ApiClientTest {
 	@SuppressWarnings({ "resource", "unchecked" })
 	void shouldReturnAuthenticationWithClientSecretPK() {
 		doReturn(AuthenticationType.NONE).when(exchangeClient).getAuthenticationType();
+		doReturn(exchangeClient).when(exchangeClient).as(HttpExchangeClient.class);
 		doReturn(MAIN_EXCHANGE_CLIENT).when(exchangeClient).getName();
 		doReturn(HttpMethod.POST).when(exchangeClient).post();
 

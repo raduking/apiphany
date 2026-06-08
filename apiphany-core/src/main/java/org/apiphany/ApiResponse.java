@@ -391,12 +391,10 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	/**
 	 * @see ApiMessage#getDisplayHeaders()
 	 */
+	@SuppressWarnings("resource")
 	@Override
 	public Map<String, List<String>> getDisplayHeaders() {
-		if (null != exchangeClient) {
-			return exchangeClient.getDisplayHeaders(this);
-		}
-		return super.getHeaders();
+		return Nullables.apply(getExchangeClient(), ec -> ec.getDisplayHeaders(this), super::getDisplayHeaders);
 	}
 
 	/**

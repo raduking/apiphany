@@ -167,6 +167,23 @@ public interface ExchangeClient extends AutoCloseable {
 	}
 
 	/**
+	 * Returns the underlying exchange client cast to the given class if possible or throws an
+	 * {@link IllegalArgumentException} if the underlying exchange client cannot be cast to the given class.
+	 *
+	 * @param <T> exchange client class type
+	 *
+	 * @param exchangeClientClass exchange client class
+	 * @return the exchange client cast to the given class
+	 * @throws IllegalArgumentException if the underlying exchange client cannot be cast to the given class
+	 */
+	default <T extends ExchangeClient> T as(final Class<T> exchangeClientClass) {
+		if (!exchangeClientClass.isAssignableFrom(getClass())) {
+			throw new IllegalArgumentException("The underlying exchange client cannot be cast to: " + exchangeClientClass);
+		}
+		return exchangeClientClass.cast(this);
+	}
+
+	/**
 	 * Returns an exchange client builder.
 	 *
 	 * @return an exchange client builder

@@ -54,6 +54,7 @@ class ApiClientRequestTest {
 	@SuppressWarnings({ "unchecked", "resource" })
 	void shouldCallExchangeClientWithProvidedParametersOnGet() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
+		doReturn(exchangeClient).when(exchangeClient).as(HttpExchangeClient.class);
 		doReturn(AuthenticationType.NONE).when(exchangeClient).getAuthenticationType();
 
 		TestDto expected = TestDto.of(ID1, COUNT1);
@@ -103,6 +104,7 @@ class ApiClientRequestTest {
 	@SuppressWarnings({ "unchecked", "resource" })
 	void shouldCallExchangeClientWithProvidedParametersOnGetWithHeadersAndRequestParametersSet() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
+		doReturn(exchangeClient).when(exchangeClient).as(HttpExchangeClient.class);
 		doReturn(AuthenticationType.NONE).when(exchangeClient).getAuthenticationType();
 
 		TestDto expected = TestDto.of(ID1, COUNT1);
@@ -165,6 +167,7 @@ class ApiClientRequestTest {
 	@SuppressWarnings({ "unchecked", "resource" })
 	void shouldCallExchangeClientWithProvidedParametersOnPost() {
 		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
+		doReturn(exchangeClient).when(exchangeClient).as(HttpExchangeClient.class);
 		doReturn(AuthenticationType.NONE).when(exchangeClient).getAuthenticationType();
 
 		TestDto expected = TestDto.of(ID1, COUNT1);
