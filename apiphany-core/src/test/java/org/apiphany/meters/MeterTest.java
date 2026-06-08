@@ -42,7 +42,5 @@ class MeterTest {
 		public String getName() {
 			return NAME;
 		}
-
 	}
-
 }

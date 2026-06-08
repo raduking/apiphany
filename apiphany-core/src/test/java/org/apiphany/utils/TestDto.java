@@ -61,5 +61,4 @@ public class TestDto {
 	public String toString() {
 		return JsonBuilder.toJson(this);
 	}
-
 }

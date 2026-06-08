@@ -197,5 +197,4 @@ class JsonObservabilityTest {
 			return Objects.hash(id);
 		}
 	}
-
 }

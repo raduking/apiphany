@@ -29,5 +29,4 @@ public class RequestMethodSerializer extends JsonSerializer<RequestMethod> {
 	public void serialize(final RequestMethod value, final JsonGenerator gen, final SerializerProvider serializers) throws IOException {
 		gen.writeString(value.name());
 	}
-
 }

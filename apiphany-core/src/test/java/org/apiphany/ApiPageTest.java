@@ -66,7 +66,5 @@ class ApiPageTest {
 		public List<String> getContent() {
 			return content;
 		}
-
 	}
-
 }

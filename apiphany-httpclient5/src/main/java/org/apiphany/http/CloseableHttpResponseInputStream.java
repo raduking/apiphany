@@ -127,5 +127,4 @@ public class CloseableHttpResponseInputStream extends InputStream {
 		}
 		return false;
 	}
-
 }

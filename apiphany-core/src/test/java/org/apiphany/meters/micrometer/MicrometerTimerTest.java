@@ -37,5 +37,4 @@ class MicrometerTimerTest {
 
 		assertThat(e.getMessage(), equalTo("The meter class " + timer.getClass() + " is not of type " + Integer.class));
 	}
-
 }

@@ -18,5 +18,4 @@ class TokenPropertiesTest {
 	void shouldHaveSSLAsRootProperty() {
 		assertThat(TokenProperties.ROOT, equalTo(TOKEN));
 	}
-
 }

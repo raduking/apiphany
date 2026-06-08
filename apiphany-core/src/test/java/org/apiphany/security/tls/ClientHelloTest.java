@@ -120,5 +120,4 @@ class ClientHelloTest {
 
 		assertThat(result, equalTo(expected));
 	}
-
 }

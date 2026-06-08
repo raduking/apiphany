@@ -19,5 +19,4 @@ class MicrometerLibraryTest {
 		UnsupportedOperationException unsupportedOperationException = assertDefaultConstructorThrows(MicrometerLibrary.class);
 		assertThat(unsupportedOperationException.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
 	}
-
 }

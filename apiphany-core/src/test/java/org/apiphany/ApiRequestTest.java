@@ -83,5 +83,4 @@ class ApiRequestTest {
 		List<Character> chars2 = json.chars().mapToObj(c -> (char) c).toList();
 		assertThat(chars1, containsInAnyOrder(chars2.toArray(Character[]::new)));
 	}
-
 }
