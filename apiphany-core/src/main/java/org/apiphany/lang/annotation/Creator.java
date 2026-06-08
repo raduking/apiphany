@@ -52,5 +52,4 @@ import java.lang.annotation.Target;
 public @interface Creator {
 
 	// marker annotation, no fields needed
-
 }

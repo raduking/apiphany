@@ -52,6 +52,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface AsValue {
 
-	// empty
-
+	// marker annotation, no fields needed
 }
