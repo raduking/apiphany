@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import java.net.URI;
@@ -121,6 +122,33 @@ class ApiClientEphemeralTest {
 
 		ApiClient apiClient = request.getApiClient();
 		assertThat(apiClient.getLifecycle(), equalTo(ClientLifecycle.EPHEMERAL));
+	}
+
+	@Test
+	@SuppressWarnings({ "resource", "unchecked" })
+	void shouldUseProvidedExchangeClientThroughApiHttpOverload() throws Exception {
+		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
+		doReturn(AuthenticationType.NONE).when(exchangeClient).getAuthenticationType();
+		doReturn(exchangeClient).when(exchangeClient).as(HttpExchangeClient.class);
+		doReturn(HttpMethod.GET).when(exchangeClient).get();
+
+		TestDto expected = TestDto.of(ID1, COUNT1);
+		ApiResponse<TestDto> response = ApiResponse.create(expected)
+				.status(HttpStatus.OK)
+				.build();
+		doReturn(response).when(exchangeClient).exchange(any(ApiRequest.class));
+
+		TestDto result = Api
+				.http(exchangeClient)
+				.get()
+				.url(BASE_URL)
+				.path(PATH_TEST)
+				.retrieve(TestDto.class)
+				.orDefault(TestDto.EMPTY);
+
+		assertThat(result, equalTo(expected));
+		verify(exchangeClient).exchange(any(ApiRequest.class));
+		verify(exchangeClient, never()).close();
 	}
 
 	@Test
