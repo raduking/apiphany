@@ -2,6 +2,8 @@
 
 `1.2.14`
 
+- Added `Api.http(ExchangeClient)` overload for ephemeral fluent API usage with a provided exchange client.
+
 ---
 
 `1.2.13`
