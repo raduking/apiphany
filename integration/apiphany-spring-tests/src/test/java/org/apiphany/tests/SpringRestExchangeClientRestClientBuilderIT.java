@@ -60,29 +60,8 @@ class SpringRestExchangeClientRestClientBuilderIT {
 
 	@Test
 	@SuppressWarnings("resource")
-	void shouldUseConfiguredRestClientBuilderDefaultHeaderWithSimpleGetRequest() {
-		wiremock.stubFor(get(urlEqualTo("/builder"))
-				.willReturn(aResponse()
-						.withStatus(200)
-						.withHeader("Content-Type", "application/octet-stream")
-						.withBody("ok")));
-
-		SpringRestExchangeClient exchangeClient = CONTEXT.getBean(SpringRestExchangeClient.class);
-		String url = wiremock.baseUrl() + "/builder";
-		SimpleGetRequest request = new SimpleGetRequest(url);
-
-		ApiResponse<byte[]> response = exchangeClient.exchange(request);
-
-		assertThat(response.getStatus(), equalTo(HttpStatus.OK));
-		assertThat(new String(response.getBody(), StandardCharsets.UTF_8), equalTo("ok"));
-		wiremock.verify(getRequestedFor(urlEqualTo("/builder"))
-				.withHeader(BUILDER_HEADER, WireMock.equalTo(BUILDER_HEADER_VALUE)));
-	}
-
-	@Test
-	@SuppressWarnings("resource")
 	void shouldUseConfiguredRestClientBuilderDefaultHeaderWithApiClient() {
-		wiremock.stubFor(get(urlEqualTo("/builder-api"))
+		wiremock.stubFor(get(urlEqualTo("/builder-api-client"))
 				.willReturn(aResponse()
 						.withStatus(200)
 						.withHeader("Content-Type", "application/octet-stream")
@@ -90,33 +69,35 @@ class SpringRestExchangeClientRestClientBuilderIT {
 
 		TestApiClient apiClient = CONTEXT.getBean(TestApiClient.class);
 
-		String url = wiremock.baseUrl() + "/builder-api";
+		String url = wiremock.baseUrl() + "/builder-api-client";
 
-		ApiResponse<byte[]> response = apiClient.getWithApiClient(url);
+		String response = apiClient.getWithApiClient(url);
 
-		assertThat(response.getStatus(), equalTo(HttpStatus.OK));
-		assertThat(new String(response.getBody(), StandardCharsets.UTF_8), equalTo("ok"));
-		wiremock.verify(getRequestedFor(urlEqualTo("/builder-api"))
-				.withHeader(BUILDER_HEADER, WireMock.equalTo(BUILDER_HEADER_VALUE)));
+		assertThat(response, equalTo("ok"));
+		wiremock.verify(getRequestedFor(urlEqualTo("/builder-api-client"))
+				.withHeader(BUILDER_HEADER, WireMock.equalTo(BUILDER_HEADER_VALUE))
+				.withHeader(INTERCEPTOR_HEADER, WireMock.equalTo(INTERCEPTOR_HEADER_VALUE)));
 	}
 
 	@Test
 	@SuppressWarnings("resource")
-	void shouldApplyConfiguredRestClientBuilderInterceptor() {
-		wiremock.stubFor(get(urlEqualTo("/builder-interceptor"))
+	void shouldUseConfiguredRestClientBuilderDefaultHeaderWithSimpleGetRequest() {
+		wiremock.stubFor(get(urlEqualTo("/builder-exchange-client"))
 				.willReturn(aResponse()
 						.withStatus(200)
 						.withHeader("Content-Type", "application/octet-stream")
 						.withBody("ok")));
 
 		SpringRestExchangeClient exchangeClient = CONTEXT.getBean(SpringRestExchangeClient.class);
-		String url = wiremock.baseUrl() + "/builder-interceptor";
+		String url = wiremock.baseUrl() + "/builder-exchange-client";
+		SimpleGetRequest request = new SimpleGetRequest(url);
 
-		ApiResponse<byte[]> response = exchangeClient.exchange(new SimpleGetRequest(url));
+		ApiResponse<byte[]> response = exchangeClient.exchange(request);
 
 		assertThat(response.getStatus(), equalTo(HttpStatus.OK));
 		assertThat(new String(response.getBody(), StandardCharsets.UTF_8), equalTo("ok"));
-		wiremock.verify(getRequestedFor(urlEqualTo("/builder-interceptor"))
+		wiremock.verify(getRequestedFor(urlEqualTo("/builder-exchange-client"))
+				.withHeader(BUILDER_HEADER, WireMock.equalTo(BUILDER_HEADER_VALUE))
 				.withHeader(INTERCEPTOR_HEADER, WireMock.equalTo(INTERCEPTOR_HEADER_VALUE)));
 	}
 
@@ -142,7 +123,8 @@ class SpringRestExchangeClientRestClientBuilderIT {
 		assertThat(response.getStatus(), equalTo(HttpStatus.OK));
 		assertThat(new String(response.getBody(), StandardCharsets.UTF_8), equalTo("ok"));
 		wiremock.verify(getRequestedFor(urlEqualTo("/builder-api"))
-				.withHeader(BUILDER_HEADER, WireMock.equalTo(BUILDER_HEADER_VALUE)));
+				.withHeader(BUILDER_HEADER, WireMock.equalTo(BUILDER_HEADER_VALUE))
+				.withHeader(INTERCEPTOR_HEADER, WireMock.equalTo(INTERCEPTOR_HEADER_VALUE)));
 	}
 
 	public static class SimpleGetRequest extends ApiRequest<Void> {
@@ -160,12 +142,13 @@ class SpringRestExchangeClientRestClientBuilderIT {
 			super(springRestExchangeClient);
 		}
 
-		public ApiResponse<byte[]> getWithApiClient(final String url) {
+		public String getWithApiClient(final String url) {
 			return client()
 					.http()
 					.get()
 					.url(url)
-					.retrieve(byte[].class);
+					.retrieve(String.class)
+					.orNull();
 		}
 	}
 
