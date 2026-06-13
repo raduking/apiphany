@@ -1,5 +1,20 @@
 ## Release Notes
 
+`1.2.14`
+
+- Upgraded Jackson 2 to `2.21.4`.
+- Upgraded JUnit Jupiter to `6.1.0`.
+- Upgraded Logback to `1.5.34`.
+- Upgraded Nimbus JOSE JWT to `10.9.1`.
+- Upgraded OAuth2 OIDC SDK to `11.37.2`.
+- Upgraded SLF4J to `2.0.18`.
+- Upgraded Spring Security to `7.1.0`.
+- Upgraded JaCoCo Maven plugin to `0.8.15`.
+- Upgraded Pitest Maven plugin to `1.25.4`.
+- Added `Api.http(ExchangeClient)` overload for ephemeral fluent API usage with a provided exchange client.
+
+---
+
 `1.2.13`
 
 - Upgraded `morphix-all` to `1.0.40`.

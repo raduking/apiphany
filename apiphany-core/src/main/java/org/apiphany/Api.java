@@ -1,6 +1,7 @@
 package org.apiphany;
 
 import org.apiphany.client.ClientLifecycle;
+import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.ExchangeClientBuilder;
 import org.apiphany.client.http.HttpClientFluentAdapter;
 
@@ -40,5 +41,15 @@ public interface Api {
 		ApiClient apiClient = ApiClient.of(exchangeClientBuilder);
 		apiClient.setLifecycle(ClientLifecycle.EPHEMERAL);
 		return apiClient.http();
+	}
+
+	/**
+	 * Returns an {@link HttpClientFluentAdapter} for fluent syntax.
+	 *
+	 * @param exchangeClient an exchange client to be used by the API client
+	 * @return API client adapter
+	 */
+	public static HttpClientFluentAdapter http(final ExchangeClient exchangeClient) {
+		return http(ExchangeClientBuilder.create().client(exchangeClient));
 	}
 }
