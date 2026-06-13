@@ -1,5 +1,9 @@
 ## Release Notes
 
+`1.2.15`
+
+---
+
 `1.2.14`
 
 - Upgraded Jackson 2 to `2.21.4`.
