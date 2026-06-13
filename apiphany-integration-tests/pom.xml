@@ -185,7 +185,7 @@
 		<!-- Spring security OAuth2 -->
 		<dependency>
 			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-oauth2-client</artifactId>
+			<artifactId>spring-security-oauth2-core</artifactId>
 			<version>${spring.security.version}</version>
 			<scope>test</scope>
 		</dependency>

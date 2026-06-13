@@ -40,7 +40,7 @@
 
 	<properties>
 		<!-- Module specific versions -->
-		<spring.boot.version>3.5.14</spring.boot.version>
+		<spring.boot.version>3.5.15</spring.boot.version>
 		<dependency.check.maven.version>12.2.2</dependency.check.maven.version>
 
 		<!--
@@ -370,7 +370,7 @@
 							<ossIndexUsername>${env.MAVEN_SONATYPE_OSS_INDEX_EMAIL}</ossIndexUsername>
 							<ossIndexPassword>${env.MAVEN_SONATYPE_OSS_INDEX_API_KEY}</ossIndexPassword>
 							<suppressionFiles>
-								<suppressionFile>owasp-suppressions.xml</suppressionFile>
+								<suppressionFile>${project.basedir}/owasp-suppressions.xml</suppressionFile>
 							</suppressionFiles>
 							<hostedSuppressionsForceUpdate>true</hostedSuppressionsForceUpdate>
 							<ossIndexWarnOnlyOnRemoteErrors>true</ossIndexWarnOnlyOnRemoteErrors>
