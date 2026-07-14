@@ -244,4 +244,19 @@ public abstract class AbstractSpringExchangeClient extends AbstractHttpExchangeC
 			default -> super.extractResponseBody(throwable);
 		};
 	}
+
+	/**
+	 * Extracts the response headers from the given throwable. If the throwable is an instance of
+	 * {@link HttpStatusCodeException}, it returns the response headers from the exception.
+	 *
+	 * @param throwable the throwable to extract the response headers from
+	 * @return the extracted response headers, or {@code null} if not applicable
+	 */
+	@Override
+	protected Map<String, List<String>> extractResponseHeaders(final Throwable throwable) {
+		return switch (throwable) {
+			case HttpStatusCodeException httpStatusCodeException -> Maps.safe(httpStatusCodeException.getResponseHeaders());
+			default -> super.extractResponseHeaders(throwable);
+		};
+	}
 }

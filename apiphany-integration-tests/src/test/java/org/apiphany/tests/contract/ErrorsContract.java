@@ -59,6 +59,7 @@ public interface ErrorsContract extends ApiphanyContract {
 		wiremock().stubFor(get("/500")
 				.willReturn(aResponse()
 						.withStatus(500)
+						.withHeader("X-Error-Header", "server-error")
 						.withBody("This is a server error body")));
 
 		ApiClient api = apiClient();
@@ -72,6 +73,7 @@ public interface ErrorsContract extends ApiphanyContract {
 			assertNull(result.orNull());
 			assertEquals(500, result.getStatus().getCode());
 			assertEquals("This is a server error body", result.getBody());
+			assertEquals("server-error", result.getHeaders().get("X-Error-Header").getFirst());
 		}
 
 		wiremock().verify(getRequestedFor(urlEqualTo("/500")));
@@ -105,6 +107,7 @@ public interface ErrorsContract extends ApiphanyContract {
 		wiremock().stubFor(get("/404")
 				.willReturn(aResponse()
 						.withStatus(404)
+						.withHeader("X-Error-Header", "client-error")
 						.withBody("This is a not found body")));
 
 		ApiClient api = apiClient();
@@ -118,6 +121,7 @@ public interface ErrorsContract extends ApiphanyContract {
 			assertNull(result.orNull());
 			assertEquals(404, result.getStatus().getCode());
 			assertEquals("This is a not found body", result.getBody());
+			assertEquals("client-error", result.getHeaders().get("X-Error-Header").getFirst());
 		}
 
 		wiremock().verify(getRequestedFor(urlEqualTo("/404")));

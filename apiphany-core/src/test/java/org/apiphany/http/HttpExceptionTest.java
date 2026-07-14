@@ -2,8 +2,13 @@ package org.apiphany.http;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.util.List;
+import java.util.Map;
 
 import org.apiphany.Status;
 import org.junit.jupiter.api.Nested;
@@ -205,6 +210,20 @@ class HttpExceptionTest {
 			assertThat(exception.getCause(), nullValue());
 			assertThat(exception.getResponseBody(), equalTo(RESPONSE_BODY));
 			assertThat(exception.getBody(), equalTo(RESPONSE_BODY));
+		}
+
+		@Test
+		void shouldBuildExceptionWithResponseHeaders() {
+			Map<String, List<String>> headers = Map.of("X-Test", List.of("test-value"));
+
+			HttpException exception = HttpException.builder()
+					.status(HttpStatus.BAD_REQUEST)
+					.responseBody(RESPONSE_BODY)
+					.responseHeaders(headers)
+					.build();
+
+			assertThat(exception.getResponseHeaders(), hasKey("X-Test"));
+			assertThat(exception.getResponseHeaders(), hasEntry("X-Test", List.of("test-value")));
 		}
 	}
 }

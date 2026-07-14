@@ -22,6 +22,7 @@ import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.ExchangeClientBuilder;
 import org.apiphany.client.http.HttpClientFluentAdapter;
+import org.apiphany.http.HttpException;
 import org.apiphany.lang.Strings;
 import org.apiphany.logging.ExchangeLogger;
 import org.apiphany.logging.Slf4jLoggerAdapter;
@@ -680,8 +681,13 @@ public class ApiClient implements AutoCloseable {
 	 * @return API error response object
 	 */
 	protected <T> ApiResponse<T> buildErrorResponse(final Exception exception, final ApiRequest<T> apiRequest, final ExchangeClient exchangeClient) {
+		Map<String, List<String>> responseHeaders = switch (exception) {
+			case HttpException httpException -> httpException.getResponseHeaders();
+			default -> null;
+		};
 		return ApiResponse.<T>builder()
 				.request(apiRequest)
+				.headers(responseHeaders)
 				.exception(exception)
 				.errorMessagePrefix("Exchange error: ")
 				.exchangeClient(exchangeClient)

@@ -411,7 +411,8 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	protected void customizeHttpExceptionBuilder(final HttpException.Builder httpExceptionBuilder, final Throwable throwable) {
 		httpExceptionBuilder
 				.status(extractHttpStatus(throwable))
-				.responseBody(extractResponseBody(throwable));
+				.responseBody(extractResponseBody(throwable))
+				.responseHeaders(extractResponseHeaders(throwable));
 	}
 
 	/**
@@ -440,6 +441,21 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	protected String extractResponseBody(final Throwable throwable) {
 		return switch (throwable) {
 			case HttpException httpException -> httpException.getResponseBody();
+			default -> null;
+		};
+	}
+
+	/**
+	 * Extracts the response headers from the given throwable. If the throwable is an instance of {@link HttpException}, it
+	 * returns the response headers from the exception, otherwise, it returns {@code null}. Subclasses can override this
+	 * method to provide custom logic for extracting the response headers from different types of exceptions.
+	 *
+	 * @param throwable the throwable to extract the response headers from
+	 * @return the extracted response headers, or {@code null} if not applicable
+	 */
+	protected Map<String, List<String>> extractResponseHeaders(final Throwable throwable) {
+		return switch (throwable) {
+			case HttpException httpException -> httpException.getResponseHeaders();
 			default -> null;
 		};
 	}
