@@ -2,6 +2,8 @@
 
 `1.2.15`
 
+- Upgraded Spring Boot to `3.5.16` for `apiphany-string`.
+
 ---
 
 `1.2.14`
