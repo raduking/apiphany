@@ -40,7 +40,7 @@
 
 	<properties>
 		<!-- Module specific versions -->
-		<spring.boot.version>3.5.15</spring.boot.version>
+		<spring.boot.version>3.5.16</spring.boot.version>
 		<dependency.check.maven.version>12.2.2</dependency.check.maven.version>
 
 		<!--
