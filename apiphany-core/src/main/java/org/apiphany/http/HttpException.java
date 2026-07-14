@@ -1,10 +1,13 @@
 package org.apiphany.http;
 
 import java.io.Serial;
+import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 
 import org.apiphany.BodyAware;
 import org.apiphany.Status;
+import org.morphix.lang.collections.Maps;
 import org.morphix.lang.function.ThrowingSupplier;
 
 /**
@@ -40,13 +43,18 @@ public class HttpException extends RuntimeException implements Status.Aware, Bod
 	private final String responseBody;
 
 	/**
+	 * The response headers associated with this exception, if available.
+	 */
+	private final Map<String, List<String>> responseHeaders;
+
+	/**
 	 * Constructs a new {@link HttpException} with the specified HTTP status and message.
 	 *
 	 * @param status the HTTP status associated with this exception.
 	 * @param message the detail message explaining the exception.
 	 */
 	public HttpException(final HttpStatus status, final String message) {
-		this(status, message, null, null);
+		this(status, message, null, null, null);
 	}
 
 	/**
@@ -57,7 +65,7 @@ public class HttpException extends RuntimeException implements Status.Aware, Bod
 	 * @param responseBody the response body associated with this exception, if available
 	 */
 	public HttpException(final HttpStatus status, final String message, final String responseBody) {
-		this(status, message, responseBody, null);
+		this(status, message, responseBody, null, null);
 	}
 
 	/**
@@ -67,7 +75,7 @@ public class HttpException extends RuntimeException implements Status.Aware, Bod
 	 * @param message the detail message explaining the exception.
 	 */
 	public HttpException(final int statusCode, final String message) {
-		this(HttpStatus.fromCode(statusCode), message, null, null);
+		this(HttpStatus.fromCode(statusCode), message, null, null, null);
 	}
 
 	/**
@@ -78,7 +86,7 @@ public class HttpException extends RuntimeException implements Status.Aware, Bod
 	 * @param cause the cause of the exception (can be null).
 	 */
 	public HttpException(final HttpStatus status, final String message, final Throwable cause) {
-		this(status, message, null, cause);
+		this(status, message, null, null, cause);
 	}
 
 	/**
@@ -89,7 +97,7 @@ public class HttpException extends RuntimeException implements Status.Aware, Bod
 	 * @param cause the cause of the exception (can be null).
 	 */
 	public HttpException(final int statusCode, final String message, final Throwable cause) {
-		this(HttpStatus.fromCode(statusCode), message, null, cause);
+		this(HttpStatus.fromCode(statusCode), message, null, null, cause);
 	}
 
 	/**
@@ -101,9 +109,25 @@ public class HttpException extends RuntimeException implements Status.Aware, Bod
 	 * @param cause the cause of the exception (can be null).
 	 */
 	public HttpException(final HttpStatus status, final String message, final String responseBody, final Throwable cause) {
+		this(status, message, responseBody, null, cause);
+	}
+
+	/**
+	 * Constructs a new {@link HttpException} with the specified HTTP status, message, response body, response headers and
+	 * cause.
+	 *
+	 * @param status the HTTP status associated with this exception.
+	 * @param message the detail message explaining the exception.
+	 * @param responseBody the response body associated with this exception, if available
+	 * @param responseHeaders the response headers associated with this exception, if available
+	 * @param cause the cause of the exception (can be null).
+	 */
+	public HttpException(final HttpStatus status, final String message, final String responseBody,
+			final Map<String, List<String>> responseHeaders, final Throwable cause) {
 		super(message(status, exceptionMessage(message, responseBody, cause)), cause);
 		this.status = status;
 		this.responseBody = responseBody;
+		this.responseHeaders = Maps.safe(responseHeaders);
 	}
 
 	/**
@@ -151,6 +175,15 @@ public class HttpException extends RuntimeException implements Status.Aware, Bod
 	 */
 	public String getResponseBody() {
 		return responseBody;
+	}
+
+	/**
+	 * Returns the response headers associated with this exception, if available.
+	 *
+	 * @return the response headers, or an empty map if not available.
+	 */
+	public Map<String, List<String>> getResponseHeaders() {
+		return Maps.safe(responseHeaders);
 	}
 
 	/**
@@ -281,6 +314,11 @@ public class HttpException extends RuntimeException implements Status.Aware, Bod
 		private Throwable cause;
 
 		/**
+		 * The response headers associated with this exception.
+		 */
+		private Map<String, List<String>> responseHeaders;
+
+		/**
 		 * Constructs a new Builder for {@link HttpException}.
 		 */
 		private Builder() {
@@ -331,6 +369,17 @@ public class HttpException extends RuntimeException implements Status.Aware, Bod
 		}
 
 		/**
+		 * Sets the response headers for the exception being built, if available.
+		 *
+		 * @param responseHeaders the response headers to set
+		 * @return this Builder instance for method chaining
+		 */
+		public Builder responseHeaders(final Map<String, List<String>> responseHeaders) {
+			this.responseHeaders = responseHeaders;
+			return this;
+		}
+
+		/**
 		 * Sets the cause for the exception being built, if available.
 		 *
 		 * @param cause the cause to set
@@ -347,7 +396,7 @@ public class HttpException extends RuntimeException implements Status.Aware, Bod
 		 * @return a new HttpException instance
 		 */
 		public HttpException build() {
-			return new HttpException(status, message, responseBody, cause);
+			return new HttpException(status, message, responseBody, responseHeaders, cause);
 		}
 	}
 }

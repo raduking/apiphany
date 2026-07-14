@@ -48,6 +48,9 @@ regardless of any defaults imposed by the underlying HTTP client.
 
 Apiphany itself must never inject semantic request headers unless explicitly configured by the user.
 
+Tracing propagation headers are the only exception and are added only when trace context is already present (for example,
+via MDC values such as `traceId`/`spanId`).
+
 #### Allowed automatic headers
 
 These may be added when required for HTTP protocol correctness:
@@ -178,9 +181,11 @@ For responses such as:
 
 - `204 No Content`
 - `304 Not Modified`
-- `Content-Length: 0`
 
 Apiphany must not attempt deserialization.
+
+For successful non-empty-status responses with `Content-Length: 0` (for example `200`), behavior is converter-specific.
+For `String` targets this is currently treated as an empty payload (`""`).
 
 ## 3.5 Charset from `Content-Type` is respected
 
@@ -368,12 +373,15 @@ The following behaviors are explicitly outside the scope of Apiphany guarantees:
 - JVM-specific transport behavior
 - proxy-injected headers
 - operating system networking behavior
-- default headers imposed by underlying HTTP clients
+- default semantic headers imposed by underlying HTTP clients
 
 Examples include:
 
-- JVM-injected User-Agent
+- JVM/client-injected User-Agent
 - proxy-added forwarding headers
 - client-specific connection headers
+
+Apiphany itself still preserves the explicit-header contract and does not intentionally inject semantic defaults such as
+`Accept`, `Accept-Encoding`, `Content-Type`, `Authorization`, or `User-Agent`.
 
 These behaviors are implementation-specific and intentionally not standardized by Apiphany.

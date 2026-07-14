@@ -3,6 +3,9 @@
 `1.2.15`
 
 - Upgraded Spring Boot to `3.5.16` for `apiphany-string`.
+- Added `HttpException.responseHeaders` support and propagated response headers when building `ApiResponse` from exceptions.
+- Fixed Spring exchange error mapping to preserve HTTP error response headers from `HttpStatusCodeException`.
+- Clarified HTTP contract docs for tracing header auto-propagation and `Content-Length: 0` behavior on successful non-204/304 responses.
 
 ---
 
@@ -981,5 +984,3 @@ Changed `AuthenticationException` to extend `SecurityException`.
 - First release.
 
 ---
-
-
