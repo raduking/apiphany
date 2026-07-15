@@ -7,10 +7,12 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import javax.net.ssl.SSLContext;
 
+import org.apache.hc.client5.http.CircularRedirectException;
 import org.apache.hc.client5.http.classic.methods.HttpDelete;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpHead;
@@ -41,7 +43,6 @@ import org.apiphany.http.ApacheHC5Clients;
 import org.apiphany.http.ApacheHC5Entities;
 import org.apiphany.http.ContentEncoding;
 import org.apiphany.http.HttpContentType;
-import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
@@ -52,6 +53,7 @@ import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Nullables;
 import org.morphix.lang.collections.Lists;
 import org.morphix.lang.collections.Maps;
+import org.morphix.lang.function.ThrowingSupplier;
 
 /**
  * Apache HTTP Client 5 exchange client.
@@ -165,7 +167,15 @@ public class ApacheHC5HttpExchangeClient extends AbstractHttpExchangeClient {
 	@SuppressWarnings("resource")
 	protected <U, T> ApiResponse<U> sendRequest(final ApiRequest<T> apiRequest, final HttpUriRequest httpUriRequest) {
 		HttpClientResponseHandler<ApiResponse<U>> responseHandler = httpResponse -> buildResponse(apiRequest, httpResponse);
-		return HttpException.ifThrows(() -> getHttpClient().execute(httpUriRequest, responseHandler));
+		return ThrowingSupplier.unchecked(() -> getHttpClient().execute(httpUriRequest, responseHandler)).get();
+	}
+
+	/**
+	 * @see AbstractHttpExchangeClient#redirectLoopFailurePredicate()
+	 */
+	@Override
+	protected Predicate<Throwable> redirectLoopFailurePredicate() {
+		return throwable -> throwable instanceof CircularRedirectException || super.redirectLoopFailurePredicate().test(throwable);
 	}
 
 	/**

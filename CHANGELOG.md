@@ -7,7 +7,15 @@
 - Fixed Spring exchange error mapping to preserve HTTP error response headers from `HttpStatusCodeException`.
 - Fixed Apache HTTP Client 5 redirect configuration to honor generic `ClientProperties.Connection.followRedirects` when Apache-specific properties are not provided.
 - Fixed `ApacheHC5Properties.ROOT` to be `http-client5` (`ApacheHC5Library.CLIENT_NAME`).
-- Aligned redirect-follow behavior across JavaNet, Apache HC5, and Spring-backed clients when redirects are enabled globally.
+- Updated redirect-follow behavior across JavaNet, Apache HC5, and Spring-backed clients when redirects are enabled globally to be aligned.
+- Added `HttpMessages.isRedirectLoopFailure` helper to check if the given `Throwable` is a redirect loop failure.
+- Added `HttpMessages.isRedirectLoopFailure(Throwable, Predicate<Throwable>)` to allow backend-specific redirect-loop detection while reusing shared cause-chain traversal.
+- Added `AbstractHttpExchangeClient.redirectLoopFailurePredicate()` hook for backend-specific redirect-loop checks.
+- Added `HttpMessages.defaultRedirectLoopFailurePredicate()` as the shared default redirect-loop matcher.
+- Added `HttpException.redirectLoop(Throwable)` and `HttpException.Builder.redirectLoop()` for explicit redirect-loop exception normalization.
+- Added `SpringRedirectFailureDetector` to centralize Spring redirect-loop backend detection outside `AbstractSpringExchangeClient`.
+- Added `ApacheHC5Clients.isCircularRedirectException(Throwable)` for HC5 type-based detection.
+- Added `ApacheHC5Library.CIRCULAR_REDIRECT_EXCEPTION_CLASS_NAME` as shared HC5 exception metadata.
 - Updated HTTP contract docs for tracing header auto-propagation and `Content-Length: 0` behavior on successful non-`204`/`304` responses.
 
 ---

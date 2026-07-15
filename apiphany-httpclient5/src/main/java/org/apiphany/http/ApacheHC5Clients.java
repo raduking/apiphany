@@ -198,6 +198,20 @@ public interface ApacheHC5Clients {
 	}
 
 	/**
+	 * Returns true if the given throwable is the Apache HC5 circular redirect exception type.
+	 *
+	 * @param throwable throwable to inspect
+	 * @return true if throwable matches Apache HC5 circular redirect exception type
+	 */
+	static boolean isCircularRedirectException(final Throwable throwable) {
+		if (null == throwable) {
+			return false;
+		}
+		String className = throwable.getClass().getName();
+		return ApacheHC5Library.CIRCULAR_REDIRECT_EXCEPTION_CLASS_NAME.equals(className);
+	}
+
+	/**
 	 * To be used in conjunction with {@link #createClient(ClientProperties, Consumer, Consumer, Consumer)} when no
 	 * customization is necessary for one of the parameters.
 	 *

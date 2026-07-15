@@ -217,6 +217,9 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	protected <T, U, R> ApiResponse<U> buildResponse(final ApiRequest<T> apiRequest, final HttpResponse<R> httpResponse) {
 		HttpStatus httpStatus = HttpStatus.fromCode(httpResponse.statusCode());
 		Map<String, List<String>> headers = Nullables.apply(httpResponse.headers(), HttpHeaders::map);
+		if (isTerminalRedirectWithLocation(httpStatus, headers)) {
+			throw HttpException.redirectLoop();
+		}
 
 		int maxBodySize = getMaxResponseBodySize();
 		ensureContentLengthWithinLimit(headers, maxBodySize);
@@ -235,6 +238,23 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 		HttpContentType contentType = HttpContentType.parse(contentTypes);
 
 		return buildResponse(apiRequest, httpStatus, headers, contentType, decodedBody);
+	}
+
+	/**
+	 * Checks if the given HTTP status and headers indicate a terminal redirect with a location header.
+	 *
+	 * @param status HTTP status
+	 * @param headers HTTP headers
+	 * @return true if the status is a 3xx redirect and the headers contain a location header, false otherwise
+	 */
+	private boolean isTerminalRedirectWithLocation(final HttpStatus status, final Map<String, List<String>> headers) {
+		if (!getClientProperties().getConnection().isFollowRedirects()) {
+			return false;
+		}
+		if (!status.is3xxRedirection()) {
+			return false;
+		}
+		return Lists.isNotEmpty(getHeaderValues(HttpHeader.LOCATION, headers));
 	}
 
 	/**
