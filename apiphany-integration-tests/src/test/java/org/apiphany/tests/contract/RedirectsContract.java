@@ -202,7 +202,9 @@ public interface RedirectsContract extends ApiphanyContract {
 					.path("loop")
 					.retrieve(String.class);
 
-			assertEquals(500, response.getStatus().getCode());
+			assertEquals(500, response.getStatusCode());
+			assertEquals("Exchange error: [500 Internal Server Error] Redirect loop detected.", response.getErrorMessage());
+			assertNull(response.orNull());
 		}
 	}
 }

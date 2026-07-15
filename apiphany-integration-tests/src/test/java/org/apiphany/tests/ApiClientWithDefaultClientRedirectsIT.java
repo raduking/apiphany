@@ -2,7 +2,7 @@ package org.apiphany.tests;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.apiphany.ApiClient;
 import org.apiphany.ApiResponse;
@@ -134,7 +134,7 @@ class ApiClientWithDefaultClientRedirectsIT implements ApiphanyContract {
 			}
 		}
 
-		@DisplayName("Redirects: The client should fail when redirects exceed the maximum limit")
+		@DisplayName("Redirects: The client should fail with normalized error when redirects exceed the maximum limit")
 		@Test
 		@Override
 		public void shouldFailOnRedirectLoop() throws Exception {
@@ -151,7 +151,9 @@ class ApiClientWithDefaultClientRedirectsIT implements ApiphanyContract {
 						.path("loop")
 						.retrieve(String.class);
 
-				assertNotEquals(200, response.getStatusCode());
+				assertEquals(500, response.getStatusCode());
+				assertEquals("Exchange error: [500 Internal Server Error] Redirect loop detected.", response.getErrorMessage());
+				assertNull(response.orNull());
 			}
 		}
 	}

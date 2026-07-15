@@ -9,6 +9,7 @@ import org.apiphany.BodyAware;
 import org.apiphany.Status;
 import org.morphix.lang.collections.Maps;
 import org.morphix.lang.function.ThrowingSupplier;
+import org.morphix.reflection.Constructors;
 
 /**
  * Represents a basic HTTP exception, typically used to indicate an error during an HTTP request or response. This
@@ -25,6 +26,26 @@ import org.morphix.lang.function.ThrowingSupplier;
  * @author Radu Sebastian LAZIN
  */
 public class HttpException extends RuntimeException implements Status.Aware, BodyAware<String> {
+
+	/**
+	 * Contains normalized error messages for common HTTP exception scenarios.
+	 *
+	 * @author Radu Sebastian LAZIN
+	 */
+	public static class Message {
+
+		/**
+		 * Normalized error message for redirect loops.
+		 */
+		public static final String REDIRECT_LOOP = "Redirect loop detected.";
+
+		/**
+		 * Private constructor to prevent instantiation.
+		 */
+		private Message() {
+			throw Constructors.unsupportedOperationException();
+		}
+	}
 
 	/**
 	 * Serial version UID.
@@ -137,6 +158,25 @@ public class HttpException extends RuntimeException implements Status.Aware, Bod
 	 */
 	public static Builder builder() {
 		return new Builder();
+	}
+
+	/**
+	 * Creates a normalized redirect-loop exception.
+	 *
+	 * @return redirect-loop HTTP exception
+	 */
+	public static HttpException redirectLoop() {
+		return redirectLoop(null);
+	}
+
+	/**
+	 * Creates a normalized redirect-loop exception with cause.
+	 *
+	 * @param cause redirect-loop cause
+	 * @return redirect-loop HTTP exception
+	 */
+	public static HttpException redirectLoop(final Throwable cause) {
+		return builder().cause(cause).redirectLoop().build();
 	}
 
 	/**
@@ -388,6 +428,17 @@ public class HttpException extends RuntimeException implements Status.Aware, Bod
 		public Builder cause(final Throwable cause) {
 			this.cause = cause;
 			return this;
+		}
+
+		/**
+		 * Sets the HTTP status to {@link HttpStatus#INTERNAL_SERVER_ERROR} and the message to a normalized redirect-loop
+		 * message.
+		 *
+		 * @return this Builder instance for method chaining
+		 */
+		public Builder redirectLoop() {
+			return status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.message(Message.REDIRECT_LOOP);
 		}
 
 		/**

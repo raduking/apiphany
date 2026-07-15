@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import org.apiphany.Status;
 import org.junit.jupiter.api.Nested;
@@ -124,6 +125,74 @@ class HttpExceptionTest {
 
 		assertThat(exception, equalTo(cause));
 		assertThat(exception.getStatusCode(), equalTo(HttpStatus.BAD_REQUEST.getCode()));
+	}
+
+	@Test
+	void shouldDetectCircularRedirectAsRedirectLoopFailure() {
+		RuntimeException exception = new RuntimeException("Circular redirect to '/loop'");
+
+		assertThat(HttpMessages.isRedirectLoopFailure(exception), equalTo(true));
+	}
+
+	@Test
+	void shouldDetectTooManyRedirectsAsRedirectLoopFailure() {
+		RuntimeException exception = new RuntimeException("Too many redirects");
+
+		assertThat(HttpMessages.isRedirectLoopFailure(exception), equalTo(true));
+	}
+
+	@Test
+	void shouldDetectRedirectLoopFailureInCauseChain() {
+		RuntimeException rootCause = new RuntimeException("Circular redirect to '/loop'");
+		RuntimeException exception = new RuntimeException("Transport error", rootCause);
+
+		assertThat(HttpMessages.isRedirectLoopFailure(exception), equalTo(true));
+	}
+
+	@Test
+	void shouldNotDetectRedirectLoopFailureForOtherErrors() {
+		RuntimeException exception = new RuntimeException("Connection reset");
+
+		assertThat(HttpMessages.isRedirectLoopFailure(exception), equalTo(false));
+	}
+
+	@Test
+	void shouldNotLoopForeverOnCircularCauseChainWithoutRedirectMessage() {
+		RuntimeException exception = new RuntimeException("Transport error");
+		RuntimeException cause = new RuntimeException("Network error");
+		exception.initCause(cause);
+		cause.initCause(exception);
+
+		assertThat(HttpMessages.isRedirectLoopFailure(exception), equalTo(false));
+	}
+
+	@Test
+	void shouldDetectRedirectLoopOnCircularCauseChain() {
+		RuntimeException exception = new RuntimeException("Transport error");
+		RuntimeException cause = new RuntimeException("Circular redirect to '/loop'");
+		exception.initCause(cause);
+		cause.initCause(exception);
+
+		assertThat(HttpMessages.isRedirectLoopFailure(exception), equalTo(true));
+	}
+
+	@Test
+	void shouldThrowWhenRedirectLoopFailurePredicateIsNull() {
+		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+				() -> HttpMessages.isRedirectLoopFailure(new RuntimeException("x"), null));
+
+		assertThat(exception.getMessage(), equalTo("predicate cannot be null"));
+	}
+
+	@Test
+	void shouldUseCustomRedirectLoopFailurePredicate() {
+		RuntimeException exception = new RuntimeException("ignored");
+		RuntimeException cause = new RuntimeException("ignored");
+		exception.initCause(cause);
+		cause.initCause(exception);
+
+		Predicate<Throwable> predicate = t -> t == cause;
+		assertThat(HttpMessages.isRedirectLoopFailure(exception, predicate), equalTo(true));
 	}
 
 	@Test

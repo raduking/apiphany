@@ -3,6 +3,7 @@ package org.apiphany.client.http;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import org.apiphany.ApiRequest;
@@ -15,6 +16,7 @@ import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpStatus;
 import org.apiphany.http.SpringHttpSupport;
+import org.apiphany.http.SpringRedirectFailureDetector;
 import org.apiphany.io.InputStreamSupplier;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
@@ -257,6 +259,19 @@ public abstract class AbstractSpringExchangeClient extends AbstractHttpExchangeC
 		return switch (throwable) {
 			case HttpStatusCodeException httpStatusCodeException -> Maps.safe(httpStatusCodeException.getResponseHeaders());
 			default -> super.extractResponseHeaders(throwable);
+		};
+	}
+
+	/**
+	 * @see AbstractHttpExchangeClient#redirectLoopFailurePredicate()
+	 */
+	@Override
+	protected Predicate<Throwable> redirectLoopFailurePredicate() {
+		return throwable -> {
+			if (SpringRedirectFailureDetector.isRedirectFailure(throwable)) {
+				return true;
+			}
+			return super.redirectLoopFailurePredicate().test(throwable);
 		};
 	}
 }

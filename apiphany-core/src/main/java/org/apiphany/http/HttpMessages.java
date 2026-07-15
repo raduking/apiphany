@@ -1,6 +1,8 @@
 package org.apiphany.http;
 
 import java.net.http.HttpClient.Version;
+import java.util.Locale;
+import java.util.function.Predicate;
 
 import org.apiphany.lang.Require;
 import org.morphix.lang.Nullables;
@@ -58,6 +60,74 @@ public class HttpMessages {
 		long actualRangeEnd = Nullables.nonNullOrDefault(rangeEnd, () -> 0L);
 		Require.that(actualRangeStart <= actualRangeEnd, "rangeEnd must be greater or equal to rangeStart");
 		return "bytes=" + actualRangeStart + "-" + actualRangeEnd;
+	}
+
+	/**
+	 * Returns true when the throwable indicates redirect-loop/too-many-redirects failure.
+	 *
+	 * @param throwable throwable to inspect
+	 * @return true if redirect loop was detected, false otherwise
+	 */
+	public static boolean isRedirectLoopFailure(final Throwable throwable) {
+		return isRedirectLoopFailure(throwable, defaultRedirectLoopFailurePredicate());
+	}
+
+	/**
+	 * Returns the default redirect-loop failure predicate based on throwable message.
+	 *
+	 * @return default redirect-loop failure predicate
+	 */
+	public static Predicate<Throwable> defaultRedirectLoopFailurePredicate() {
+		return t -> null != t && isRedirectLoopFailureMessage(t.getMessage());
+	}
+
+	/**
+	 * Returns true when the throwable indicates redirect-loop/too-many-redirects failure.
+	 *
+	 * @param throwable throwable to inspect
+	 * @param redirectFailurePredicate predicate to determine if a throwable indicates redirect-loop/too-many-redirects
+	 *     failure
+	 * @return true if redirect loop was detected, false otherwise
+	 */
+	public static boolean isRedirectLoopFailure(final Throwable throwable, final Predicate<Throwable> redirectFailurePredicate) {
+		Require.notNull(redirectFailurePredicate, "predicate cannot be null");
+		if (null == throwable) {
+			return false;
+		}
+		// use 2 pointers to detect cycles in the cause chain
+		Throwable slow = throwable;
+		Throwable fast = throwable;
+		do {
+			if (redirectFailurePredicate.test(fast)) {
+				return true;
+			}
+			fast = fast.getCause();
+			if (null != fast) {
+				if (redirectFailurePredicate.test(fast)) {
+					return true;
+				}
+				fast = fast.getCause();
+			}
+			if (null == fast) {
+				return false;
+			}
+			slow = slow.getCause();
+		} while (slow != fast);
+		return false;
+	}
+
+	/**
+	 * Returns true when the message indicates redirect-loop/too-many-redirects failure.
+	 *
+	 * @param message message to inspect
+	 * @return true if redirect loop was detected, false otherwise
+	 */
+	private static boolean isRedirectLoopFailureMessage(final String message) {
+		if (null == message) {
+			return false;
+		}
+		String lowerCaseMessage = message.toLowerCase(Locale.ROOT);
+		return lowerCaseMessage.contains("circular redirect") || lowerCaseMessage.contains("too many redirects");
 	}
 
 	/**

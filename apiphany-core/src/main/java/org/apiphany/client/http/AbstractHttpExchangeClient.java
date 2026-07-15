@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BooleanSupplier;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import javax.net.ssl.SSLContext;
@@ -21,6 +22,7 @@ import org.apiphany.http.HttpContentType;
 import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpHeaderValues;
+import org.apiphany.http.HttpMessages;
 import org.apiphany.http.HttpStatus;
 import org.apiphany.io.ContentType;
 import org.apiphany.lang.Strings;
@@ -409,10 +411,25 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	 * @param throwable the throwable to extract information from
 	 */
 	protected void customizeHttpExceptionBuilder(final HttpException.Builder httpExceptionBuilder, final Throwable throwable) {
-		httpExceptionBuilder
-				.status(extractHttpStatus(throwable))
-				.responseBody(extractResponseBody(throwable))
-				.responseHeaders(extractResponseHeaders(throwable));
+		if (getClientProperties().getConnection().isFollowRedirects()
+				&& HttpMessages.isRedirectLoopFailure(throwable, redirectLoopFailurePredicate())) {
+			httpExceptionBuilder.redirectLoop();
+		} else {
+			httpExceptionBuilder
+					.status(extractHttpStatus(throwable))
+					.responseBody(extractResponseBody(throwable))
+					.responseHeaders(extractResponseHeaders(throwable));
+		}
+	}
+
+	/**
+	 * Returns the redirect-loop detection predicate used to inspect exception cause chains. Subclasses can override this to
+	 * provide type-based detection while preserving the base traversal logic.
+	 *
+	 * @return redirect-loop failure predicate
+	 */
+	protected Predicate<Throwable> redirectLoopFailurePredicate() {
+		return HttpMessages.defaultRedirectLoopFailurePredicate();
 	}
 
 	/**
