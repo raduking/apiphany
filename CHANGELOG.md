@@ -2,10 +2,13 @@
 
 `1.2.15`
 
-- Upgraded Spring Boot to `3.5.16` for `apiphany-string`.
+- Upgraded Spring Boot to `3.5.16` for `apiphany-spring`.
 - Added `HttpException.responseHeaders` support and propagated response headers when building `ApiResponse` from exceptions.
 - Fixed Spring exchange error mapping to preserve HTTP error response headers from `HttpStatusCodeException`.
-- Clarified HTTP contract docs for tracing header auto-propagation and `Content-Length: 0` behavior on successful non-204/304 responses.
+- Fixed Apache HTTP Client 5 redirect configuration to honor generic `ClientProperties.Connection.followRedirects` when Apache-specific properties are not provided.
+- Fixed `ApacheHC5Properties.ROOT` to be `http-client5` (`ApacheHC5Library.CLIENT_NAME`).
+- Aligned redirect-follow behavior across JavaNet, Apache HC5, and Spring-backed clients when redirects are enabled globally.
+- Updated HTTP contract docs for tracing header auto-propagation and `Content-Length: 0` behavior on successful non-`204`/`304` responses.
 
 ---
 

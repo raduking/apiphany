@@ -151,7 +151,7 @@ class ApiClientWithDefaultClientRedirectsIT implements ApiphanyContract {
 						.path("loop")
 						.retrieve(String.class);
 
-				assertNotEquals(200, response.getStatus().getCode());
+				assertNotEquals(200, response.getStatusCode());
 			}
 		}
 	}

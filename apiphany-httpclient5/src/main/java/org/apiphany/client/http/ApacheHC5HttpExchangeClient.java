@@ -20,6 +20,7 @@ import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.classic.methods.HttpPut;
 import org.apache.hc.client5.http.classic.methods.HttpTrace;
 import org.apache.hc.client5.http.classic.methods.HttpUriRequest;
+import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
@@ -120,8 +121,13 @@ public class ApacheHC5HttpExchangeClient extends AbstractHttpExchangeClient {
 	 */
 	private void customize(final HttpClientBuilder httpClientBuilder) {
 		ApacheHC5Properties properties = getCustomProperties(ApacheHC5Properties.class);
+		RequestConfig requestConfig = null == properties
+				? ApacheHC5Clients.createRequestConfig(getClientProperties())
+				: ApacheHC5Clients.createRequestConfig(properties);
+		httpClientBuilder.setDefaultRequestConfig(requestConfig);
+
 		if (null == properties) {
-			if (!ApacheHC5Properties.Connection.Default.FOLLOW_REDIRECTS) {
+			if (!getClientProperties().getConnection().isFollowRedirects()) {
 				httpClientBuilder.disableRedirectHandling();
 			}
 			return;
