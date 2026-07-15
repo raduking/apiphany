@@ -683,7 +683,7 @@ public class ApiClient implements AutoCloseable {
 	protected <T> ApiResponse<T> buildErrorResponse(final Exception exception, final ApiRequest<T> apiRequest, final ExchangeClient exchangeClient) {
 		Map<String, List<String>> responseHeaders = switch (exception) {
 			case HttpException httpException -> httpException.getResponseHeaders();
-			default -> null;
+			default -> Collections.emptyMap();
 		};
 		return ApiResponse.<T>builder()
 				.request(apiRequest)

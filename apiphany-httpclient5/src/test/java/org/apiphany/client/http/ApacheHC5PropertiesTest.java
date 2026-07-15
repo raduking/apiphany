@@ -6,6 +6,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import org.apache.hc.core5.http.ParseException;
 import org.apache.hc.core5.http.ProtocolVersion;
 import org.apache.hc.core5.util.Timeout;
+import org.apiphany.http.ApacheHC5Library;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.json.jackson2.ApiphanyHC5Jackson2Module;
 import org.apiphany.json.jackson2.Jackson2JsonBuilder;
@@ -51,6 +52,11 @@ class ApacheHC5PropertiesTest {
 		public void setHttpClient5(final ApacheHC5Properties httpClient5) {
 			this.httpClient5 = httpClient5;
 		}
+	}
+
+	@Test
+	void shouldUseApacheHC5ClientNameAsRootPropertyPrefix() {
+		assertThat(ApacheHC5Properties.ROOT, equalTo(ApacheHC5Library.CLIENT_NAME));
 	}
 
 	@Test

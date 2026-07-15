@@ -18,7 +18,6 @@ import org.apache.hc.core5.http.io.SocketConfig;
 import org.apache.hc.core5.util.Timeout;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.http.ApacheHC5Properties;
-import org.morphix.lang.Nullables;
 import org.morphix.lang.function.Consumers;
 
 /**
@@ -106,10 +105,6 @@ public interface ApacheHC5Clients {
 				.setConnectionManager(connectionManager)
 				.setDefaultRequestConfig(requestConfig)
 				.disableContentCompression();
-		ApacheHC5Properties properties = Nullables.nonNullOrDefault(apacheHC5Properties, ApacheHC5Properties::withDefaults);
-		if (!properties.getConnection().isFollowRedirects()) {
-			httpClientBuilder = httpClientBuilder.disableRedirectHandling();
-		}
 		httpClientBuilderCustomizer.accept(httpClientBuilder);
 		return httpClientBuilder;
 	}
@@ -162,11 +157,12 @@ public interface ApacheHC5Clients {
 	 */
 	static RequestConfig createRequestConfig(final ClientProperties clientProperties) {
 		ClientProperties.Timeout timeout = clientProperties.getTimeout();
+		ClientProperties.Connection connection = clientProperties.getConnection();
 		return RequestConfig.custom()
 				.setConnectionRequestTimeout(Timeout.of(timeout.getConnectionRequest()))
 				.setProtocolUpgradeEnabled(RequestConfig.DEFAULT.isProtocolUpgradeEnabled())
 				.setResponseTimeout(Timeout.of(timeout.getRequest()))
-				.setRedirectsEnabled(ApacheHC5Properties.Connection.Default.FOLLOW_REDIRECTS)
+				.setRedirectsEnabled(connection.isFollowRedirects())
 				.build();
 	}
 
