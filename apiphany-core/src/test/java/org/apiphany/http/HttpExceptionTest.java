@@ -178,8 +178,9 @@ class HttpExceptionTest {
 
 	@Test
 	void shouldThrowWhenRedirectLoopFailurePredicateIsNull() {
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-				() -> HttpMessages.isRedirectLoopFailure(new RuntimeException("x"), null));
+		RuntimeException e = new RuntimeException("x");
+		NullPointerException exception = assertThrows(NullPointerException.class,
+				() -> HttpMessages.isRedirectLoopFailure(e, null));
 
 		assertThat(exception.getMessage(), equalTo("predicate cannot be null"));
 	}

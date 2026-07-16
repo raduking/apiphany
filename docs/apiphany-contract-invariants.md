@@ -352,7 +352,7 @@ Accept: text/plain
 The following behaviors must remain consistent across supported HTTP client implementations:
 
 - timeout semantics
--  retry behavior
+- retry behavior
 - redirect handling
 - decompression behavior
 - serialization behavior

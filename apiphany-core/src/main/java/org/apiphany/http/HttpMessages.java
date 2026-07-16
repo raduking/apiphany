@@ -6,6 +6,7 @@ import java.util.function.Predicate;
 
 import org.apiphany.lang.Require;
 import org.morphix.lang.Nullables;
+import org.morphix.lang.Throwables;
 import org.morphix.reflection.Constructors;
 
 /**
@@ -90,30 +91,7 @@ public class HttpMessages {
 	 * @return true if redirect loop was detected, false otherwise
 	 */
 	public static boolean isRedirectLoopFailure(final Throwable throwable, final Predicate<Throwable> redirectFailurePredicate) {
-		Require.notNull(redirectFailurePredicate, "predicate cannot be null");
-		if (null == throwable) {
-			return false;
-		}
-		// use 2 pointers to detect cycles in the cause chain
-		Throwable slow = throwable;
-		Throwable fast = throwable;
-		do {
-			if (redirectFailurePredicate.test(fast)) {
-				return true;
-			}
-			fast = fast.getCause();
-			if (null != fast) {
-				if (redirectFailurePredicate.test(fast)) {
-					return true;
-				}
-				fast = fast.getCause();
-			}
-			if (null == fast) {
-				return false;
-			}
-			slow = slow.getCause();
-		} while (slow != fast);
-		return false;
+		return Throwables.anyMatch(throwable, redirectFailurePredicate);
 	}
 
 	/**

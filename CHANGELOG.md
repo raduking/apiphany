@@ -3,6 +3,7 @@
 `1.2.15`
 
 - Upgraded Spring Boot to `3.5.16` for `apiphany-spring`.
+- Upgraded `morphix-all` to `1.0.41`.
 - Added `HttpException.responseHeaders` support and propagated response headers when building `ApiResponse` from exceptions.
 - Fixed Spring exchange error mapping to preserve HTTP error response headers from `HttpStatusCodeException`.
 - Fixed Apache HTTP Client 5 redirect configuration to honor generic `ClientProperties.Connection.followRedirects` when Apache-specific properties are not provided.
