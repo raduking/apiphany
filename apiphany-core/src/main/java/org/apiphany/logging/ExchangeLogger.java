@@ -14,6 +14,7 @@ import org.morphix.lang.Messages;
 import org.morphix.lang.Nullables;
 import org.morphix.lang.Temporals;
 import org.morphix.lang.function.LoggingFunction;
+import org.morphix.lang.function.Predicates;
 import org.morphix.reflection.Constructors;
 
 /**
@@ -174,21 +175,28 @@ public class ExchangeLogger {
 		if (null == body) {
 			return null;
 		}
+		if (null == exchangeClient) {
+			return body.toString();
+		}
 		ClientProperties clientProperties = exchangeClient.getClientProperties();
 		ClientProperties.Logging loggingProperties = Nullables.apply(clientProperties, ClientProperties::getLogging);
-		Boolean redact = Nullables.apply(loggingProperties, props -> props.getBody().getRedact());
+
+		ClientProperties.Logging.Category bodyCategory = Nullables.apply(loggingProperties, ClientProperties.Logging::getBody);
+		Logging.Mode bodyLoggingMode = Nullables.apply(bodyCategory, ClientProperties.Logging.Category::getMode);
+		bodyLoggingMode = Nullables.nonNullOrDefault(bodyLoggingMode, Logging.Mode.FULL);
+
+		if (Logging.Mode.NONE == bodyLoggingMode) {
+			return OMITTED;
+		}
+		Boolean redact = Nullables.apply(bodyCategory, ClientProperties.Logging.Category::getRedact);
 		if (Boolean.TRUE.equals(redact)) {
-			Predicate<T> sensitiveBodyPredicate = Nullables.apply(exchangeClient, ExchangeClient::isSensitiveBody);
-			if (null != sensitiveBodyPredicate && sensitiveBodyPredicate.test(body)) {
+			Predicate<T> isSensitive = Nullables.nonNullOrDefault(exchangeClient.isSensitiveBody(), Predicates.alwaysFalse());
+			if (isSensitive.test(body)) {
 				return Sensitive.Value.REDACTED;
 			}
 		}
-		Logging.Mode bodyLoggingMode = Nullables.apply(loggingProperties, props -> props.getBody().getMode());
-		if (null == bodyLoggingMode || bodyLoggingMode == Logging.Mode.FULL) {
+		if (Logging.Mode.FULL == bodyLoggingMode) {
 			return body.toString();
-		}
-		if (bodyLoggingMode == Logging.Mode.NONE) {
-			return OMITTED;
 		}
 		return Logging.describeInput(body, LoggingFormat.DEFAULT,
 				Logging.Include.LENGTH,

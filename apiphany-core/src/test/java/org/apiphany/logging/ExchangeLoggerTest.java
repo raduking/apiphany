@@ -183,6 +183,22 @@ class ExchangeLoggerTest {
 
 	@Test
 	@SuppressWarnings("resource")
+	void shouldLogFullBodyWhenBodyCategoryIsNull() {
+		RecordingLoggingFunction loggingFunction = new RecordingLoggingFunction();
+		ExchangeClient exchangeClient = new NullBodyCategoryExchangeClient();
+		ApiRequest<String> request = request("request-body");
+		ApiResponse<String> response = response("response-body");
+
+		ExchangeLogger.logSuccess(loggingFunction, getClass(), exchangeClient, request, response, Duration.ofSeconds(1));
+
+		LogCall call = loggingFunction.calls.getFirst();
+		assertThat(call.arguments.length, equalTo(0));
+		assertThat(call.format, containsString("BODY: request-body"));
+		assertThat(call.format, containsString("BODY: response-body"));
+	}
+
+	@Test
+	@SuppressWarnings("resource")
 	void shouldLogNullResponseBodyWhenApiResponseIsNull() {
 		RecordingLoggingFunction loggingFunction = new RecordingLoggingFunction();
 		ExchangeClient exchangeClient = new DummyExchangeClient(Logging.Mode.FULL);
@@ -345,6 +361,34 @@ class ExchangeLoggerTest {
 		DummyExchangeClient(final Logging.Mode bodyLoggingMode) {
 			ClientProperties.Logging properties = new ClientProperties.Logging();
 			properties.getBody().setMode(bodyLoggingMode);
+			this.clientProperties = new ClientProperties();
+			this.clientProperties.setLogging(properties);
+		}
+
+		@Override
+		public <T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest) {
+			return null;
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public ClientProperties getClientProperties() {
+			return clientProperties;
+		}
+
+		@Override
+		public void close() {
+			// empty
+		}
+	}
+
+	private static class NullBodyCategoryExchangeClient implements ExchangeClient {
+
+		private final ClientProperties clientProperties;
+
+		NullBodyCategoryExchangeClient() {
+			ClientProperties.Logging properties = new ClientProperties.Logging();
+			properties.setBody(null);
 			this.clientProperties = new ClientProperties();
 			this.clientProperties.setLogging(properties);
 		}
