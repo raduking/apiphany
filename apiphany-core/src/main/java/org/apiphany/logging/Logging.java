@@ -21,7 +21,7 @@ public interface Logging {
 	 *
 	 * @author Radu Sebastian LAZIN
 	 */
-	public enum Mode {
+	enum Mode {
 
 		/**
 		 * Do not log input content.
@@ -44,7 +44,7 @@ public interface Logging {
 	 *
 	 * @author Radu Sebastian LAZIN
 	 */
-	public enum Include {
+	enum Include {
 
 		/**
 		 * Includes the length of the input value in the diagnostic description. For strings, this is the number of characters;
@@ -231,9 +231,7 @@ public interface Logging {
 			sb.append(obj.getClass().getTypeName());
 			sb.append("(");
 			boolean first = true;
-			int length = includes.size();
-			for (int i = 0; i < length; ++i) {
-				Include include = includes.get(i);
+			for (Include include : includes) {
 				String includeValue = include.getValue(obj);
 				if (Include.Default.UNAVAILABLE.equals(includeValue)) {
 					continue;
