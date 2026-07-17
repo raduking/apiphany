@@ -62,6 +62,14 @@ public class DefaultHttpSensitivity implements HttpSensitivity { // NOSONAR - si
 	}
 
 	/**
+	 * @see HttpSensitivity#isSensitiveBody(Object)
+	 */
+	@Override
+	public <T> boolean isSensitiveBody(final T body) {
+		return false;
+	}
+
+	/**
 	 * Returns the singleton instance of {@link DefaultHttpSensitivity}.
 	 *
 	 * @return the singleton instance of {@link DefaultHttpSensitivity}

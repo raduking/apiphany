@@ -137,6 +137,14 @@ public interface HttpExchangeClient extends ExchangeClient, SSLContextAware {
 	}
 
 	/**
+	 * @see ExchangeClient#isSensitiveBody()
+	 */
+	@Override
+	default <T> Predicate<T> isSensitiveBody() {
+		return DefaultHttpSensitivity.instance()::isSensitiveBody;
+	}
+
+	/**
 	 * Returns the tracing headers for the current request.
 	 * <p>
 	 * TODO: make this more generic to support other tracing systems than B3

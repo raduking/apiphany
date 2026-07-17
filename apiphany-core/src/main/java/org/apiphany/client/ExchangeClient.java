@@ -94,6 +94,17 @@ public interface ExchangeClient extends AutoCloseable {
 	}
 
 	/**
+	 * Returns a predicate that tests whether a body is considered sensitive. By default, nothing is treated as sensitive.
+	 *
+	 * @param <T> the body type
+	 *
+	 * @return a predicate that tests body sensitivity
+	 */
+	default <T> Predicate<T> isSensitiveBody() {
+		return Predicates.alwaysFalse();
+	}
+
+	/**
 	 * Returns common headers for all requests. By default, it returns an empty map. These headers will be added to each
 	 * request made by this client.
 	 *

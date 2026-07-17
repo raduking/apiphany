@@ -4,12 +4,14 @@ import static org.apiphany.test.Assertions.assertDefaultConstructorThrows;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
 
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
@@ -18,6 +20,7 @@ import org.apiphany.client.ExchangeClient;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
 import org.apiphany.lang.Strings;
+import org.apiphany.security.Sensitive;
 import org.junit.jupiter.api.Test;
 import org.morphix.lang.Temporals;
 import org.morphix.lang.function.LoggingFunction;
@@ -85,6 +88,72 @@ class ExchangeLoggerTest {
 		LogCall call = loggingFunction.calls.getFirst();
 		assertThat(call.arguments.length, equalTo(0));
 		assertThat(call.format, containsString("BODY: <omitted>"));
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldRedactSensitiveBodyWhenBodyLoggingModeIsFull() {
+		RecordingLoggingFunction loggingFunction = new RecordingLoggingFunction();
+		ExchangeClient exchangeClient = new SensitiveDummyExchangeClient(Logging.Mode.FULL);
+		String sensitiveBody = "{\"grant_type\":\"client_credentials\",\"client_secret\":\"s3cr3t\"}";
+		ApiRequest<String> request = request(sensitiveBody);
+		ApiResponse<String> response = response("ok");
+
+		ExchangeLogger.logSuccess(loggingFunction, getClass(), exchangeClient, request, response, Duration.ofSeconds(1));
+
+		LogCall call = loggingFunction.calls.getFirst();
+		assertThat(call.arguments.length, equalTo(0));
+		assertThat(call.format, containsString("BODY: " + Sensitive.Value.REDACTED));
+		assertThat(call.format, not(containsString("s3cr3t")));
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldNotRedactNonSensitiveBodyWhenBodyLoggingModeIsFull() {
+		RecordingLoggingFunction loggingFunction = new RecordingLoggingFunction();
+		ExchangeClient exchangeClient = new SensitiveDummyExchangeClient(Logging.Mode.FULL);
+		String safeBody = "{\"name\":\"John\",\"age\":30}";
+		ApiRequest<String> request = request(safeBody);
+		ApiResponse<String> response = response("ok");
+
+		ExchangeLogger.logSuccess(loggingFunction, getClass(), exchangeClient, request, response, Duration.ofSeconds(1));
+
+		LogCall call = loggingFunction.calls.getFirst();
+		assertThat(call.arguments.length, equalTo(0));
+		assertThat(call.format, containsString("BODY: " + safeBody));
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldNotRedactBodyWhenRedactIsDisabled() {
+		RecordingLoggingFunction loggingFunction = new RecordingLoggingFunction();
+		ExchangeClient exchangeClient = new SensitiveDummyExchangeClient(Logging.Mode.FULL, false);
+		String sensitiveBody = "{\"grant_type\":\"client_credentials\",\"client_secret\":\"s3cr3t\"}";
+		ApiRequest<String> request = request(sensitiveBody);
+		ApiResponse<String> response = response("ok");
+
+		ExchangeLogger.logSuccess(loggingFunction, getClass(), exchangeClient, request, response, Duration.ofSeconds(1));
+
+		LogCall call = loggingFunction.calls.getFirst();
+		assertThat(call.arguments.length, equalTo(0));
+		assertThat(call.format, containsString("BODY: " + sensitiveBody));
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldRedactSensitiveBodyInMetadataMode() {
+		RecordingLoggingFunction loggingFunction = new RecordingLoggingFunction();
+		ExchangeClient exchangeClient = new SensitiveDummyExchangeClient(Logging.Mode.METADATA);
+		String sensitiveBody = "{\"password\":\"s3cr3t\"}";
+		ApiRequest<String> request = request(sensitiveBody);
+		ApiResponse<String> response = response("ok");
+
+		ExchangeLogger.logSuccess(loggingFunction, getClass(), exchangeClient, request, response, Duration.ofSeconds(1));
+
+		LogCall call = loggingFunction.calls.getFirst();
+		assertThat(call.arguments.length, equalTo(0));
+		assertThat(call.format, containsString("BODY: " + Sensitive.Value.REDACTED));
+		assertThat(call.format, not(containsString("s3cr3t")));
 	}
 
 	@Test
@@ -283,6 +352,50 @@ class ExchangeLoggerTest {
 		@Override
 		public <T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest) {
 			return null;
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public ClientProperties getClientProperties() {
+			return clientProperties;
+		}
+
+		@Override
+		public void close() {
+			// empty
+		}
+	}
+
+	private static class SensitiveDummyExchangeClient implements ExchangeClient {
+
+		private final ClientProperties clientProperties;
+
+		SensitiveDummyExchangeClient(final Logging.Mode bodyLoggingMode) {
+			this(bodyLoggingMode, true);
+		}
+
+		SensitiveDummyExchangeClient(final Logging.Mode bodyLoggingMode, final boolean redact) {
+			ClientProperties.Logging properties = new ClientProperties.Logging();
+			properties.getBody().setMode(bodyLoggingMode);
+			properties.getBody().setRedact(redact);
+			this.clientProperties = new ClientProperties();
+			this.clientProperties.setLogging(properties);
+		}
+
+		@Override
+		public <T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest) {
+			return null;
+		}
+
+		@Override
+		public <T> Predicate<T> isSensitiveBody() {
+			return body -> {
+				if (null == body) {
+					return false;
+				}
+				String text = body.toString();
+				return text.contains("client_secret") || text.contains("password");
+			};
 		}
 
 		@SuppressWarnings("unchecked")
