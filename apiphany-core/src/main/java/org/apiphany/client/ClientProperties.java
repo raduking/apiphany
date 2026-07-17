@@ -1473,6 +1473,11 @@ public class ClientProperties {
 			private Mode mode = Mode.FULL;
 
 			/**
+			 * Whether to apply body sensitivity redaction in FULL mode. Defaults to {@code true}.
+			 */
+			private Boolean redact = Boolean.TRUE;
+
+			/**
 			 * Extra values to redact (case-insensitive).
 			 */
 			private List<String> sensitive;
@@ -1503,6 +1508,24 @@ public class ClientProperties {
 			}
 
 			/**
+			 * Returns whether body sensitivity redaction is enabled in FULL mode.
+			 *
+			 * @return {@code true} if body redaction is enabled, {@code false} otherwise
+			 */
+			public Boolean getRedact() {
+				return redact;
+			}
+
+			/**
+			 * Sets whether body sensitivity redaction is enabled in FULL mode.
+			 *
+			 * @param redact {@code true} to enable body redaction, {@code false} to disable
+			 */
+			public void setRedact(final Boolean redact) {
+				this.redact = redact;
+			}
+
+			/**
 			 * Returns the case-insensitive list of values considered sensitive for this category.
 			 *
 			 * @return sensitive values for this category
@@ -1530,6 +1553,7 @@ public class ClientProperties {
 				}
 				if (obj instanceof Category that) {
 					return this.mode == that.mode
+							&& Objects.equals(this.redact, that.redact)
 							&& Objects.equals(this.sensitive, that.sensitive);
 				}
 				return false;
@@ -1540,7 +1564,7 @@ public class ClientProperties {
 			 */
 			@Override
 			public int hashCode() {
-				return Objects.hash(mode, sensitive);
+				return Objects.hash(mode, redact, sensitive);
 			}
 		}
 	}

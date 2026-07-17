@@ -1,6 +1,7 @@
 package org.apiphany.logging;
 
 import java.time.Duration;
+import java.util.function.Predicate;
 
 import org.apiphany.ApiMessage;
 import org.apiphany.ApiRequest;
@@ -8,6 +9,7 @@ import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.lang.Strings;
+import org.apiphany.security.Sensitive;
 import org.morphix.lang.Messages;
 import org.morphix.lang.Nullables;
 import org.morphix.lang.Temporals;
@@ -41,6 +43,11 @@ public class ExchangeLogger {
 	 * The log separator line, created by repeating {@link #LOG_SEPARATOR_CHAR} for {@link #LOG_SEPARATOR_LENGTH} times.
 	 */
 	public static final String LOG_SEPARATOR = String.valueOf(LOG_SEPARATOR_CHAR).repeat(LOG_SEPARATOR_LENGTH);
+
+	/**
+	 * The string that will be displayed when {@link Logging.Mode#NONE} is used for request/response body logging.
+	 */
+	public static final String OMITTED = "<omitted>";
 
 	/**
 	 * The log message format for successful requests.
@@ -156,7 +163,7 @@ public class ExchangeLogger {
 	 * Describes the body of a request or response based on the logging configuration of the exchange client.
 	 *
 	 * @param exchangeClient the exchange client used for this request
-	 * @param body the body to describe.
+	 * @param apiMessage the API message containing the body to describe
 	 * @return a string description of the body, or "<omitted>" if body logging is disabled.
 	 */
 	private static <T> String describeBody(final ApiMessage<T> apiMessage, final ExchangeClient exchangeClient) {
@@ -169,12 +176,19 @@ public class ExchangeLogger {
 		}
 		ClientProperties clientProperties = exchangeClient.getClientProperties();
 		ClientProperties.Logging loggingProperties = Nullables.apply(clientProperties, ClientProperties::getLogging);
+		Boolean redact = Nullables.apply(loggingProperties, props -> props.getBody().getRedact());
+		if (Boolean.TRUE.equals(redact)) {
+			Predicate<T> sensitiveBodyPredicate = Nullables.apply(exchangeClient, ExchangeClient::isSensitiveBody);
+			if (null != sensitiveBodyPredicate && sensitiveBodyPredicate.test(body)) {
+				return Sensitive.Value.REDACTED;
+			}
+		}
 		Logging.Mode bodyLoggingMode = Nullables.apply(loggingProperties, props -> props.getBody().getMode());
 		if (null == bodyLoggingMode || bodyLoggingMode == Logging.Mode.FULL) {
 			return body.toString();
 		}
 		if (bodyLoggingMode == Logging.Mode.NONE) {
-			return "<omitted>";
+			return OMITTED;
 		}
 		return Logging.describeInput(body, LoggingFormat.DEFAULT,
 				Logging.Include.LENGTH,

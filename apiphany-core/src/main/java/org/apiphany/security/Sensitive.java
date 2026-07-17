@@ -28,7 +28,7 @@ public @interface Sensitive {
 	 *
 	 * @author Radu Sebastian LAZIN
 	 */
-	public static class Value {
+	class Value {
 
 		/**
 		 * Constant representing redacted sensitive data. This value can be used in outputs, logs, or any other context where
@@ -49,7 +49,7 @@ public @interface Sensitive {
 	 *
 	 * @author Radu Sebastian LAZIN
 	 */
-	public static class Field {
+	class Field {
 
 		/**
 		 * Constant representing the field name used when redacting sensitive data in map-like structures. This can be used as a
@@ -72,7 +72,7 @@ public @interface Sensitive {
 	 *
 	 * @author Radu Sebastian LAZIN
 	 */
-	public enum Visibility {
+	enum Visibility {
 
 		/**
 		 * Hides the sensitive data by not including it in the output.

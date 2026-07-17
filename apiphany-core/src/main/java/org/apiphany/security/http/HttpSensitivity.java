@@ -1,5 +1,6 @@
 package org.apiphany.security.http;
 
+import org.apiphany.security.BodySensitivity;
 import org.apiphany.security.HeaderSensitivity;
 import org.apiphany.security.ParameterSensitivity;
 
@@ -8,7 +9,7 @@ import org.apiphany.security.ParameterSensitivity;
  *
  * @author Radu Sebastian LAZIN
  */
-public interface HttpSensitivity extends HeaderSensitivity, ParameterSensitivity {
+public interface HttpSensitivity extends HeaderSensitivity, ParameterSensitivity, BodySensitivity {
 
-	// empty interface to combine both header and parameter sensitivity rules
+	// empty interface to combine header, parameter, and body sensitivity rules
 }
