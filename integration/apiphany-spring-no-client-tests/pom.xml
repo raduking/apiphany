@@ -12,11 +12,11 @@
 		<relativePath>../../pom.xml</relativePath>
 	</parent>
 
-	<artifactId>apiphany-spring-tests</artifactId>
+	<artifactId>apiphany-spring-no-client-tests</artifactId>
 	<packaging>jar</packaging>
 
 	<name>${project.groupId}:${project.artifactId}</name>
-	<description>Apiphany tests</description>
+	<description>Apiphany tests - Spring without explicit HTTP client (JavaNet fallback)</description>
 	<url>https://github.com/raduking/apiphany</url>
 
 	<licenses>
@@ -53,19 +53,6 @@
 			<version>${project.version}</version>
 		</dependency>
 
-		<!-- HTTP Client -->
-		<dependency>
-			<groupId>org.apache.httpcomponents.client5</groupId>
-			<artifactId>httpclient5</artifactId>
-			<version>${httpclient5.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-api</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
 		<!-- JSON -->
 		<dependency>
 			<groupId>tools.jackson.core</groupId>
@@ -97,14 +84,6 @@
 		<dependency>
 			<groupId>io.github.raduking</groupId>
 			<artifactId>apiphany-integration-tests</artifactId>
-			<version>${project.version}</version>
-			<type>test-jar</type>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>io.github.raduking</groupId>
-			<artifactId>apiphany-spring-no-client-tests</artifactId>
 			<version>${project.version}</version>
 			<type>test-jar</type>
 			<scope>test</scope>
@@ -234,6 +213,19 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
+			</plugin>
+
+			<!-- Creates a JAR file that includes the test classes and resources, useful for test-jar dependencies -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 
 			<plugin>
