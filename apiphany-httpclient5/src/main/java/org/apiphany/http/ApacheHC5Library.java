@@ -19,12 +19,6 @@ public class ApacheHC5Library {
 	public static final String CLIENT_NAME = "http-client5";
 
 	/**
-	 * The Apache HttpClient 5 circular redirect exception class name.
-	 */
-	protected static final String CIRCULAR_REDIRECT_EXCEPTION_CLASS_NAME =
-			"org.apache.hc.client5.http.CircularRedirectException";
-
-	/**
 	 * The Apache HttpClient 5 CloseableHttpClient class name.
 	 */
 	private static final String CLOSEABLE_HTTP_CLIENT_CLASS_NAME =
