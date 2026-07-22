@@ -4,7 +4,7 @@ import org.apiphany.ApiClient;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.http.RestTemplateExchangeClient;
-import org.apiphany.client.http.RestTemplateProperties;
+import org.apiphany.client.http.SpringRestClientProperties;
 import org.apiphany.http.JavaNetHttpLibrary;
 import org.apiphany.security.AuthenticationType;
 
@@ -33,7 +33,7 @@ public class ApiClientWithRestTemplateJavaNetSecurityIT extends ApiClientWithDef
 	@Override
 	public ClientProperties clientProperties() {
 		ClientProperties properties = super.clientProperties();
-		properties.setCustomProperties(RestTemplateProperties.ROOT, new RestTemplateProperties() {
+		properties.setCustomProperties(SpringRestClientProperties.ROOT, new SpringRestClientProperties() {
 			{
 				setClientLibrary(JavaNetHttpLibrary.CLIENT_NAME);
 			}

@@ -16,14 +16,13 @@
 - Added `HttpException.redirectLoop(Throwable)` and `HttpException.Builder.redirectLoop()` for explicit redirect-loop exception normalization.
 - Added `SpringRedirectFailureDetector` to centralize Spring redirect-loop backend detection outside `AbstractSpringExchangeClient`.
 - Added `ApacheHC5Clients.isCircularRedirectException(Throwable)` for HC5 type-based detection.
-- Added `ApacheHC5Library.CIRCULAR_REDIRECT_EXCEPTION_CLASS_NAME` as shared HC5 exception metadata.
 - Updated HTTP contract docs for tracing header auto-propagation and `Content-Length: 0` behavior on successful non-`204`/`304` responses.
 - Added `BodySensitivity` interface for body sensitivity rules.
-- Added `ExchangeClient.isSensitiveBody()` returning `Predicate<T>` to check if a request/response body is sensitive.
+- Added `ExchangeClient.isSensitiveBody()` to check if a request/response body is sensitive.
 - Added `HttpExchangeClient.isSensitiveBody()` default implementation using `DefaultHttpSensitivity`.
 - Added `ClientProperties.Logging.Category.redact` flag to enable/disable body sensitivity redaction (defaults to `true`).
-- Added body sensitivity redaction in `ExchangeLogger` — sensitive bodies are replaced with `-REDACTED-` in logs when redact flag is `true`.
-- Added redact guard that runs before mode logic, applying to `FULL`, `METADATA`, and `NONE` modes.
+- Added body sensitivity redaction in `ExchangeLogger`, sensitive bodies are replaced with `-REDACTED-` in logs when redact flag is `true`.
+- Renamed `RestTemplateProperties` to `SpringRestClientProperties`.
 
 ---
 

@@ -22,6 +22,7 @@ import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.collections.Maps;
+import org.morphix.lang.function.Predicates;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -267,11 +268,6 @@ public abstract class AbstractSpringExchangeClient extends AbstractHttpExchangeC
 	 */
 	@Override
 	protected Predicate<Throwable> redirectLoopFailurePredicate() {
-		return throwable -> {
-			if (SpringRedirectFailureDetector.isRedirectFailure(throwable)) {
-				return true;
-			}
-			return super.redirectLoopFailurePredicate().test(throwable);
-		};
+		return Predicates.anyOf(SpringRedirectFailureDetector::isRedirectFailure, super.redirectLoopFailurePredicate());
 	}
 }

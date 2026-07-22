@@ -4,6 +4,7 @@ import java.util.function.Consumer;
 
 import javax.net.ssl.SSLContext;
 
+import org.apache.hc.client5.http.CircularRedirectException;
 import org.apache.hc.client5.http.config.ConnectionConfig;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
@@ -82,7 +83,7 @@ public interface ApacheHC5Clients {
 				? createRequestConfig(clientProperties)
 				: createRequestConfig(apacheHC5Properties);
 
-		return createHttpClientBuilder(apacheHC5Properties, connectionManager, requestConfig, httpClientBuilderCustomizer)
+		return createHttpClientBuilder(connectionManager, requestConfig, httpClientBuilderCustomizer)
 				.build();
 	}
 
@@ -90,14 +91,12 @@ public interface ApacheHC5Clients {
 	 * Returns a configured HTTP client builder based on the given Apache HTTP Client 5 properties, connection manager and
 	 * request configuration.
 	 *
-	 * @param apacheHC5Properties Apache HTTP Client 5 properties
 	 * @param connectionManager HTTP client connection manager
 	 * @param requestConfig HTTP client request configuration
 	 * @param httpClientBuilderCustomizer HTTP client builder customizer
 	 * @return HTTP client builder
 	 */
 	static HttpClientBuilder createHttpClientBuilder(
-			final ApacheHC5Properties apacheHC5Properties,
 			final PoolingHttpClientConnectionManager connectionManager,
 			final RequestConfig requestConfig,
 			final Consumer<HttpClientBuilder> httpClientBuilderCustomizer) {
@@ -204,11 +203,7 @@ public interface ApacheHC5Clients {
 	 * @return true if throwable matches Apache HC5 circular redirect exception type
 	 */
 	static boolean isCircularRedirectException(final Throwable throwable) {
-		if (null == throwable) {
-			return false;
-		}
-		String className = throwable.getClass().getName();
-		return ApacheHC5Library.CIRCULAR_REDIRECT_EXCEPTION_CLASS_NAME.equals(className);
+		return throwable instanceof CircularRedirectException;
 	}
 
 	/**

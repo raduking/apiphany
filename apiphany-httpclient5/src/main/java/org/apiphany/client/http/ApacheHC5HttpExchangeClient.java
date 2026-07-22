@@ -12,7 +12,6 @@ import java.util.function.Supplier;
 
 import javax.net.ssl.SSLContext;
 
-import org.apache.hc.client5.http.CircularRedirectException;
 import org.apache.hc.client5.http.classic.methods.HttpDelete;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpHead;
@@ -53,6 +52,7 @@ import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Nullables;
 import org.morphix.lang.collections.Lists;
 import org.morphix.lang.collections.Maps;
+import org.morphix.lang.function.Predicates;
 import org.morphix.lang.function.ThrowingSupplier;
 
 /**
@@ -175,7 +175,7 @@ public class ApacheHC5HttpExchangeClient extends AbstractHttpExchangeClient {
 	 */
 	@Override
 	protected Predicate<Throwable> redirectLoopFailurePredicate() {
-		return throwable -> throwable instanceof CircularRedirectException || super.redirectLoopFailurePredicate().test(throwable);
+		return Predicates.anyOf(ApacheHC5Clients::isCircularRedirectException, super.redirectLoopFailurePredicate());
 	}
 
 	/**

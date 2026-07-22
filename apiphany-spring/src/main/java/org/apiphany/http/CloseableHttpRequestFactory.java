@@ -15,7 +15,7 @@ import javax.net.ssl.SSLContext;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ClientProperties.Timeout;
-import org.apiphany.client.http.RestTemplateProperties;
+import org.apiphany.client.http.SpringRestClientProperties;
 import org.apiphany.lang.Strings;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Nullables;
@@ -136,9 +136,9 @@ public class CloseableHttpRequestFactory implements ClientHttpRequestFactory, Au
 	 *     match any known libraries
 	 */
 	public static CloseableHttpRequestFactory detect(final ClientProperties clientProperties, final Map<Class<?>, Object> args) {
-		RestTemplateProperties restTemplateProperties = clientProperties.getCustomProperties(RestTemplateProperties.class);
-		if (null != restTemplateProperties) {
-			CloseableHttpRequestFactory factory = detect(clientProperties, restTemplateProperties.getClientLibrary(), args);
+		SpringRestClientProperties restProperties = clientProperties.getCustomProperties(SpringRestClientProperties.class);
+		if (null != restProperties) {
+			CloseableHttpRequestFactory factory = detect(clientProperties, restProperties.getClientLibrary(), args);
 			if (null != factory) {
 				return factory;
 			}

@@ -57,7 +57,8 @@ class AbstractHttpExchangeClientTest {
 			exchangeClient = newExchangeClient(false);
 
 			assertDoesNotThrow(
-					() -> exchangeClient.callEnsureContentLengthWithinLimit(Map.of(HttpHeader.CONTENT_LENGTH.value(), List.of(contentLengthHeader)), 10));
+					() -> exchangeClient.callEnsureContentLengthWithinLimit(Map.of(HttpHeader.CONTENT_LENGTH.value(), List.of(contentLengthHeader)),
+							10));
 		}
 
 		@Test
@@ -77,8 +78,7 @@ class AbstractHttpExchangeClientTest {
 					Arguments.of("abc"),
 					Arguments.of("0"),
 					Arguments.of("1"),
-					Arguments.of("10")
-			);
+					Arguments.of("10"));
 		}
 	}
 
@@ -190,8 +190,7 @@ class AbstractHttpExchangeClientTest {
 					Arguments.of(new RuntimeException("circular redirect"), true),
 					Arguments.of(new RuntimeException("too many redirects"), true),
 					Arguments.of(new RuntimeException("connection reset"), false),
-					Arguments.of(null, false)
-			);
+					Arguments.of(null, false));
 		}
 	}
 
