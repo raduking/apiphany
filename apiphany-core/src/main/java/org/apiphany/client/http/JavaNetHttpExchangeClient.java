@@ -241,23 +241,6 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	}
 
 	/**
-	 * Checks if the given HTTP status and headers indicate a terminal redirect with a location header.
-	 *
-	 * @param status HTTP status
-	 * @param headers HTTP headers
-	 * @return true if the status is a 3xx redirect and the headers contain a location header, false otherwise
-	 */
-	private boolean isTerminalRedirectWithLocation(final HttpStatus status, final Map<String, List<String>> headers) {
-		if (!getClientProperties().getConnection().isFollowRedirects()) {
-			return false;
-		}
-		if (!status.is3xxRedirection()) {
-			return false;
-		}
-		return Lists.isNotEmpty(getHeaderValues(HttpHeader.LOCATION, headers));
-	}
-
-	/**
 	 * Reads the given input stream into a byte array and ensures that the content length does not exceed the given limit.
 	 *
 	 * @param inputStream input stream to read

@@ -294,6 +294,25 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	}
 
 	/**
+	 * Returns true if the response is a terminal redirect with a location header, meaning that the HTTP client was
+	 * configured to follow redirects but the response is still a 3xx redirect with a location header. This indicates that
+	 * the redirect loop was detected and the response is the terminal redirect response.
+	 *
+	 * @param status HTTP status
+	 * @param headers HTTP headers
+	 * @return true if the status is a 3xx redirect and the headers contain a location header, false otherwise
+	 */
+	protected boolean isTerminalRedirectWithLocation(final HttpStatus status, final Map<String, List<String>> headers) {
+		if (!getClientProperties().getConnection().isFollowRedirects()) {
+			return false;
+		}
+		if (!status.is3xxRedirection()) {
+			return false;
+		}
+		return Lists.isNotEmpty(getHeaderValues(HttpHeader.LOCATION, headers));
+	}
+
+	/**
 	 * Returns the maximum allowed raw response body size in bytes.
 	 *
 	 * @return max response body size in bytes

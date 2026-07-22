@@ -180,6 +180,9 @@ public abstract class AbstractSpringExchangeClient extends AbstractHttpExchangeC
 	protected <T, U> ApiResponse<U> buildResponse(final ApiRequest<T> apiRequest, final ResponseEntity<U> responseEntity) {
 		Map<String, List<String>> headers = responseEntity.getHeaders();
 		HttpStatus httpStatus = HttpStatus.fromCode(responseEntity.getStatusCode().value());
+		if (isTerminalRedirectWithLocation(httpStatus, headers)) {
+			throw HttpException.redirectLoop();
+		}
 		U responseBody = responseEntity.getBody();
 
 		int maxBodySize = getMaxResponseBodySize();
