@@ -104,11 +104,17 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 		contentConverters.add(new StringHttpContentConverter());
 
 		// TODO: abstract away the converter registration and discovery
+		boolean noJsonConverterFound = true;
 		for (Pair<BooleanSupplier, Supplier<HttpContentConverter<?>>> converter : HttpContentConverter.JSON_CONVERTERS) {
 			if (converter.left().getAsBoolean()) {
 				contentConverters.add(converter.right().get());
+				noJsonConverterFound = false;
 				break;
 			}
+		}
+		if (noJsonConverterFound) {
+			LOGGER.warn("No JSON content converter found."
+					+ " Provide a JSON library to the classpath or register a custom content converter for JSON content.");
 		}
 	}
 

@@ -231,8 +231,7 @@ public class CloseableHttpRequestFactory implements ClientHttpRequestFactory, Au
 			HttpClient.Builder httpClientBuilder = HttpClient.newBuilder();
 			SSLContext sslContext = JavaObjects.cast(args.get(SSLContext.class));
 			JavaNetHttpClients.customize(httpClientBuilder, clientProperties, sslContext);
-			// build the HTTP client and create the request factory with the appropriate timeout settings based on the client
-			// properties
+			// build the HTTP client and create the request factory with the appropriate settings from the client properties
 			HttpClient httpClient = httpClientBuilder.build();
 			JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory(httpClient);
 			requestFactory.setReadTimeout(JavaNetHttpClients.getTimeout(clientProperties.getTimeout(), Timeout::getRequest));
