@@ -64,6 +64,15 @@ public class HttpMessages {
 	}
 
 	/**
+	 * Returns the default redirect-loop failure predicate based on throwable message.
+	 *
+	 * @return default redirect-loop failure predicate
+	 */
+	public static Predicate<Throwable> defaultRedirectLoopFailurePredicate() {
+		return t -> null != t && isRedirectLoopFailureMessage(t.getMessage());
+	}
+
+	/**
 	 * Returns true when the throwable indicates redirect-loop/too-many-redirects failure.
 	 *
 	 * @param throwable throwable to inspect
@@ -71,15 +80,6 @@ public class HttpMessages {
 	 */
 	public static boolean isRedirectLoopFailure(final Throwable throwable) {
 		return isRedirectLoopFailure(throwable, defaultRedirectLoopFailurePredicate());
-	}
-
-	/**
-	 * Returns the default redirect-loop failure predicate based on throwable message.
-	 *
-	 * @return default redirect-loop failure predicate
-	 */
-	public static Predicate<Throwable> defaultRedirectLoopFailurePredicate() {
-		return t -> null != t && isRedirectLoopFailureMessage(t.getMessage());
 	}
 
 	/**
