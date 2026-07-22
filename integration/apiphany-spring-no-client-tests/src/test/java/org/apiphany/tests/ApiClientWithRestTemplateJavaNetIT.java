@@ -1,15 +1,13 @@
 package org.apiphany.tests;
 
 import org.apiphany.ApiClient;
-import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.http.RestTemplateExchangeClient;
-import org.apiphany.client.http.SpringRestClientProperties;
-import org.apiphany.http.JavaNetHttpLibrary;
 import org.apiphany.security.AuthenticationType;
 
 /**
- * Test class for {@link ApiClient} using {@link RestTemplateExchangeClient}.
+ * Test class for {@link ApiClient} using {@link RestTemplateExchangeClient} with JavaNet auto-detected (no HC5 on
+ * classpath).
  *
  * @author Radu Sebastian LAZIN
  */
@@ -28,16 +26,5 @@ public class ApiClientWithRestTemplateJavaNetIT extends ApiClientWithDefaultClie
 				return authType;
 			}
 		};
-	}
-
-	@Override
-	public ClientProperties clientProperties() {
-		ClientProperties properties = super.clientProperties();
-		properties.setCustomProperties(SpringRestClientProperties.ROOT, new SpringRestClientProperties() {
-			{
-				setClientLibrary(JavaNetHttpLibrary.CLIENT_NAME);
-			}
-		});
-		return properties;
 	}
 }

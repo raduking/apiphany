@@ -54,6 +54,7 @@
 		<module>integration/apiphany-json-no-dependency-tests</module>
 		<module>integration/apiphany-httpclient5-tests</module>
 		<module>integration/apiphany-spring-tests</module>
+		<module>integration/apiphany-spring-no-client-tests</module>
 	</modules>
 
 	<properties>
