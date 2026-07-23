@@ -37,7 +37,12 @@ public class HttpException extends RuntimeException implements Status.Aware, Bod
 		/**
 		 * Normalized error message for redirect loops.
 		 */
-		public static final String REDIRECT_LOOP = "Redirect loop detected.";
+		public static final String REDIRECT_LOOP = "Redirect loop detected";
+
+		/**
+		 * Normalized error message for response body exceeding the configured maximum size.
+		 */
+		public static final String RESPONSE_TOO_LARGE = "Response body exceeds configured max size";
 
 		/**
 		 * Private constructor to prevent instantiation.
@@ -187,10 +192,7 @@ public class HttpException extends RuntimeException implements Status.Aware, Bod
 	 * @return an HttpException with status {@link HttpStatus#PAYLOAD_TOO_LARGE} and a message describing the issue
 	 */
 	public static HttpException responseTooLarge(final long contentLength, final int maxBodySize) {
-		return builder()
-				.status(HttpStatus.PAYLOAD_TOO_LARGE)
-				.message("Response body exceeds configured max size: " + contentLength + " > " + maxBodySize)
-				.build();
+		return builder().responseTooLarge(contentLength, maxBodySize).build();
 	}
 
 	/**
@@ -452,7 +454,20 @@ public class HttpException extends RuntimeException implements Status.Aware, Bod
 		 */
 		public Builder redirectLoop() {
 			return status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.message(Message.REDIRECT_LOOP);
+					.message(Message.REDIRECT_LOOP + ".");
+		}
+
+		/**
+		 * Sets the HTTP status to {@link HttpStatus#PAYLOAD_TOO_LARGE} and the message to a normalized response-too-large
+		 * message, including the actual content length and the configured maximum body size.
+		 *
+		 * @param contentLength the actual content length of the response body
+		 * @param maxBodySize the configured maximum body size in bytes
+		 * @return this Builder instance for method chaining
+		 */
+		public Builder responseTooLarge(final long contentLength, final int maxBodySize) {
+			return status(HttpStatus.PAYLOAD_TOO_LARGE)
+					.message(Message.RESPONSE_TOO_LARGE + ": " + contentLength + " > " + maxBodySize);
 		}
 
 		/**
