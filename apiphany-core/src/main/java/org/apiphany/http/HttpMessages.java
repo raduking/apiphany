@@ -86,12 +86,12 @@ public class HttpMessages {
 	 * Returns true when the throwable indicates redirect-loop/too-many-redirects failure.
 	 *
 	 * @param throwable throwable to inspect
-	 * @param redirectFailurePredicate predicate to determine if a throwable indicates redirect-loop/too-many-redirects
+	 * @param redirectLoopFailurePredicate predicate to determine if a throwable indicates redirect-loop/too-many-redirects
 	 *     failure
 	 * @return true if redirect loop was detected, false otherwise
 	 */
-	public static boolean isRedirectLoopFailure(final Throwable throwable, final Predicate<Throwable> redirectFailurePredicate) {
-		return Throwables.anyMatch(throwable, redirectFailurePredicate);
+	public static boolean isRedirectLoopFailure(final Throwable throwable, final Predicate<Throwable> redirectLoopFailurePredicate) {
+		return Throwables.anyMatch(throwable, redirectLoopFailurePredicate);
 	}
 
 	/**
@@ -105,7 +105,8 @@ public class HttpMessages {
 			return false;
 		}
 		String lowerCaseMessage = message.toLowerCase(Locale.ROOT);
-		return lowerCaseMessage.contains("circular redirect") || lowerCaseMessage.contains("too many redirects");
+		return lowerCaseMessage.contains("circular redirect")
+				|| lowerCaseMessage.contains("too many redirects");
 	}
 
 	/**

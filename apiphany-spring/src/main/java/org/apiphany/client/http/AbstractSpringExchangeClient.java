@@ -220,6 +220,14 @@ public abstract class AbstractSpringExchangeClient extends AbstractHttpExchangeC
 	}
 
 	/**
+	 * @see AbstractHttpExchangeClient#getRedirectLoopFailurePredicate()
+	 */
+	@Override
+	protected Predicate<Throwable> getRedirectLoopFailurePredicate() {
+		return Predicates.anyOf(SpringRedirectFailureDetector::isRedirectFailure, super.getRedirectLoopFailurePredicate());
+	}
+
+	/**
 	 * Extracts the HTTP status from the given throwable. If the throwable is an instance of {@link HttpException}, it
 	 * returns the status from the exception. If the throwable is an instance of {@link HttpStatusCodeException}, it returns
 	 * the status code from the exception. Otherwise, it returns {@link HttpStatus#INTERNAL_SERVER_ERROR}.
@@ -264,13 +272,5 @@ public abstract class AbstractSpringExchangeClient extends AbstractHttpExchangeC
 			case HttpStatusCodeException httpStatusCodeException -> Maps.safe(httpStatusCodeException.getResponseHeaders());
 			default -> super.extractResponseHeaders(throwable);
 		};
-	}
-
-	/**
-	 * @see AbstractHttpExchangeClient#redirectLoopFailurePredicate()
-	 */
-	@Override
-	protected Predicate<Throwable> redirectLoopFailurePredicate() {
-		return Predicates.anyOf(SpringRedirectFailureDetector::isRedirectFailure, super.redirectLoopFailurePredicate());
 	}
 }

@@ -229,7 +229,7 @@ class AbstractHttpExchangeClientTest {
 		}
 
 		Predicate<Throwable> callRedirectLoopFailurePredicate() {
-			return redirectLoopFailurePredicate();
+			return getRedirectLoopFailurePredicate();
 		}
 	}
 }

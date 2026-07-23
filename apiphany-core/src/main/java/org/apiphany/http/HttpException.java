@@ -180,6 +180,20 @@ public class HttpException extends RuntimeException implements Status.Aware, Bod
 	}
 
 	/**
+	 * Creates an HttpException indicating that the response body exceeds the configured maximum size.
+	 *
+	 * @param contentLength the actual content length of the response body
+	 * @param maxBodySize the configured maximum body size in bytes
+	 * @return an HttpException with status {@link HttpStatus#PAYLOAD_TOO_LARGE} and a message describing the issue
+	 */
+	public static HttpException responseTooLarge(final long contentLength, final int maxBodySize) {
+		return builder()
+				.status(HttpStatus.PAYLOAD_TOO_LARGE)
+				.message("Response body exceeds configured max size: " + contentLength + " > " + maxBodySize)
+				.build();
+	}
+
+	/**
 	 * Returns the HTTP status associated with this exception.
 	 *
 	 * @return the HTTP status.

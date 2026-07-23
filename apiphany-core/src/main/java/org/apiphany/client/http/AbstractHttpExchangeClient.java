@@ -313,6 +313,16 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	}
 
 	/**
+	 * Returns the redirect-loop detection predicate used to inspect exception cause chains. Subclasses can override this to
+	 * provide type-based detection while preserving the base traversal logic.
+	 *
+	 * @return redirect-loop failure predicate
+	 */
+	protected Predicate<Throwable> getRedirectLoopFailurePredicate() {
+		return HttpMessages.defaultRedirectLoopFailurePredicate();
+	}
+
+	/**
 	 * Returns the maximum allowed raw response body size in bytes.
 	 *
 	 * @return max response body size in bytes
@@ -328,18 +338,6 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	 */
 	protected int getMaxDecodedResponseBodySize() {
 		return maxDecodedResponseBodySize;
-	}
-
-	/**
-	 * Creates an HttpException indicating that the response body exceeds the configured maximum size.
-	 *
-	 * @param contentLength the actual content length of the response body
-	 * @param maxBodySize the configured maximum body size in bytes
-	 * @return an HttpException with status {@link HttpStatus#PAYLOAD_TOO_LARGE} and a message describing the issue
-	 */
-	protected HttpException responseTooLargeException(final long contentLength, final int maxBodySize) {
-		return new HttpException(HttpStatus.PAYLOAD_TOO_LARGE,
-				"Response body exceeds configured max size: " + contentLength + " > " + maxBodySize);
 	}
 
 	/**
@@ -366,7 +364,7 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 			return;
 		}
 		if (contentLength > maxBodySize) {
-			throw responseTooLargeException(contentLength, maxBodySize);
+			throw HttpException.responseTooLarge(contentLength, maxBodySize);
 		}
 	}
 
@@ -383,7 +381,7 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 			return;
 		}
 		if (bytes.length > maxBodySize) {
-			throw responseTooLargeException(bytes.length, maxBodySize);
+			throw HttpException.responseTooLarge(bytes.length, maxBodySize);
 		}
 	}
 
@@ -437,7 +435,7 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	 */
 	protected void customizeHttpExceptionBuilder(final HttpException.Builder httpExceptionBuilder, final Throwable throwable) {
 		if (getClientProperties().getConnection().isFollowRedirects()
-				&& HttpMessages.isRedirectLoopFailure(throwable, redirectLoopFailurePredicate())) {
+				&& HttpMessages.isRedirectLoopFailure(throwable, getRedirectLoopFailurePredicate())) {
 			httpExceptionBuilder.redirectLoop();
 		} else {
 			httpExceptionBuilder
@@ -445,16 +443,6 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 					.responseBody(extractResponseBody(throwable))
 					.responseHeaders(extractResponseHeaders(throwable));
 		}
-	}
-
-	/**
-	 * Returns the redirect-loop detection predicate used to inspect exception cause chains. Subclasses can override this to
-	 * provide type-based detection while preserving the base traversal logic.
-	 *
-	 * @return redirect-loop failure predicate
-	 */
-	protected Predicate<Throwable> redirectLoopFailurePredicate() {
-		return HttpMessages.defaultRedirectLoopFailurePredicate();
 	}
 
 	/**
