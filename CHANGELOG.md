@@ -1,5 +1,9 @@
 ## Release Notes
 
+`1.2.16`
+
+---
+
 `1.2.15`
 
 - Upgraded Spring Boot to `3.5.16` for `apiphany-spring`.
