@@ -4,22 +4,23 @@
 
 - Upgraded Spring Boot to `3.5.16` for `apiphany-spring`.
 - Upgraded `morphix-all` to `1.0.41`.
-- Added `HttpException.responseHeaders` support and propagated response headers when building `ApiResponse` from exceptions.
+- Added `HttpException` response headers support and propagated response headers when building `ApiResponse` from exceptions.
+- Added `HttpException.Message` namespace class with generic HTTP exception messages.
 - Fixed Spring exchange error mapping to preserve HTTP error response headers from `HttpStatusCodeException`.
-- Fixed Apache HTTP Client 5 redirect configuration to honor generic `ClientProperties.Connection.followRedirects` when Apache-specific properties are not provided.
+- Fixed Apache HTTP Client 5 redirect configuration to use `ClientProperties.Connection.followRedirects` when Apache-specific properties are not provided.
 - Fixed `ApacheHC5Properties.ROOT` to be `http-client5` (`ApacheHC5Library.CLIENT_NAME`).
+- Added `ApacheHC5Clients.isCircularRedirectException(Throwable)` for HC5 type-based detection.
 - Updated redirect-follow behavior across JavaNet, Apache HC5, and Spring-backed clients when redirects are enabled globally to be aligned.
 - Added `HttpMessages.isRedirectLoopFailure` helper to check if the given `Throwable` is a redirect loop failure.
-- Added `HttpMessages.isRedirectLoopFailure(Throwable, Predicate<Throwable>)` to allow backend-specific redirect-loop detection while reusing shared cause-chain traversal.
-- Added `AbstractHttpExchangeClient.redirectLoopFailurePredicate()` hook for backend-specific redirect-loop checks.
+- Added `HttpMessages.isRedirectLoopFailure(Throwable, Predicate)` to allow backend-specific redirect-loop detection while reusing shared cause-chain traversal.
 - Added `HttpMessages.defaultRedirectLoopFailurePredicate()` as the shared default redirect-loop matcher.
+- Added `AbstractHttpExchangeClient.redirectLoopFailurePredicate` hook for backend-specific redirect-loop checks.
 - Added `HttpException.redirectLoop(Throwable)` and `HttpException.Builder.redirectLoop()` for explicit redirect-loop exception normalization.
 - Added `SpringRedirectFailureDetector` to centralize Spring redirect-loop backend detection outside `AbstractSpringExchangeClient`.
-- Added `ApacheHC5Clients.isCircularRedirectException(Throwable)` for HC5 type-based detection.
 - Updated HTTP contract docs for tracing header auto-propagation and `Content-Length: 0` behavior on successful non-`204`/`304` responses.
 - Added `BodySensitivity` interface for body sensitivity rules.
-- Added `ExchangeClient.isSensitiveBody()` to check if a request/response body is sensitive.
-- Added `HttpExchangeClient.isSensitiveBody()` default implementation using `DefaultHttpSensitivity`.
+- Added `ExchangeClient.isSensitiveBody` to check if a request/response body is sensitive.
+- Added `HttpExchangeClient.isSensitiveBody` default implementation using `DefaultHttpSensitivity`.
 - Added `ClientProperties.Logging.Category.redact` flag to enable/disable body sensitivity redaction (defaults to `true`).
 - Added body sensitivity redaction in `ExchangeLogger`, sensitive bodies are replaced with `-REDACTED-` in logs when redact flag is `true`.
 - Renamed `RestTemplateProperties` to `SpringRestClientProperties`.

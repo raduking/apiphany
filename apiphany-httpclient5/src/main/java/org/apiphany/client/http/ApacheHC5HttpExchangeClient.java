@@ -171,11 +171,11 @@ public class ApacheHC5HttpExchangeClient extends AbstractHttpExchangeClient {
 	}
 
 	/**
-	 * @see AbstractHttpExchangeClient#redirectLoopFailurePredicate()
+	 * @see AbstractHttpExchangeClient#getRedirectLoopFailurePredicate()
 	 */
 	@Override
-	protected Predicate<Throwable> redirectLoopFailurePredicate() {
-		return Predicates.anyOf(ApacheHC5Clients::isCircularRedirectException, super.redirectLoopFailurePredicate());
+	protected Predicate<Throwable> getRedirectLoopFailurePredicate() {
+		return Predicates.anyOf(ApacheHC5Clients::isCircularRedirectException, super.getRedirectLoopFailurePredicate());
 	}
 
 	/**
