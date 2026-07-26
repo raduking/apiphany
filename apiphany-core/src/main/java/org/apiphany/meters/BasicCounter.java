@@ -1,17 +1,22 @@
 package org.apiphany.meters;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 /**
  * A basic counter implementation that does not send values to any metrics service. This is useful when metrics need to
  * be disabled or not available.
+ * <p>
+ * This counter is thread-safe. The counter value is stored as a {@code long} bit representation of a {@code double}
+ * using {@link AtomicLong} for lock-free atomic updates.
  *
  * @author Radu Sebastian LAZIN
  */
 public class BasicCounter extends BasicMeter implements MeterCounter {
 
 	/**
-	 * The counter value.
+	 * The counter value stored as bit-packed double in an AtomicLong for thread-safe atomic updates.
 	 */
-	private double value;
+	private final AtomicLong value = new AtomicLong();
 
 	/**
 	 * Hidden constructor.
@@ -35,7 +40,7 @@ public class BasicCounter extends BasicMeter implements MeterCounter {
 	 */
 	@Override
 	public void increment(final double amount) {
-		this.value += amount;
+		value.updateAndGet(current -> Double.doubleToLongBits(Double.longBitsToDouble(current) + amount));
 	}
 
 	/**
@@ -43,6 +48,6 @@ public class BasicCounter extends BasicMeter implements MeterCounter {
 	 */
 	@Override
 	public double count() {
-		return value;
+		return Double.longBitsToDouble(value.get());
 	}
 }

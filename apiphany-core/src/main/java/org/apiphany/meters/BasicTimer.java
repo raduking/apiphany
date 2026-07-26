@@ -16,9 +16,10 @@ import io.micrometer.core.instrument.Timer;
 public class BasicTimer extends BasicMeter implements MeterTimer {
 
 	/**
-	 * The recorded duration.
+	 * The recorded duration. Volatile to ensure visibility across threads — the writer thread (request processing) and
+	 * reader thread (metrics reporting) may differ.
 	 */
-	private Duration duration;
+	private volatile Duration duration;
 
 	/**
 	 * Private constructor to enforce use of factory method.
