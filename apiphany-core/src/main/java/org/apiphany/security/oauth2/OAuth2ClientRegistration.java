@@ -1,5 +1,6 @@
 package org.apiphany.security.oauth2;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.Set;
@@ -254,7 +255,7 @@ public class OAuth2ClientRegistration {
 	@Ignored
 	public String getEncodedCredentials() {
 		String credentials = String.join(":", getClientId(), getClientSecret());
-		return Base64.getEncoder().encodeToString(credentials.getBytes());
+		return Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
 	}
 
 	/**

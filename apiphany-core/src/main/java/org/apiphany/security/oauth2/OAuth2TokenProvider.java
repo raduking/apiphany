@@ -66,9 +66,11 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	private final AuthenticationTokenProvider tokenClient;
 
 	/**
-	 * The authentication token.
+	 * The authentication token. Volatile because it is written by the scheduler thread
+	 * ({@link #updateAuthenticationToken()}) and read by application threads ({@link #getAuthenticationToken()}) without
+	 * explicit synchronization.
 	 */
-	private AuthenticationToken authenticationToken;
+	private volatile AuthenticationToken authenticationToken;
 
 	/**
 	 * Supplies the default token expiration.
