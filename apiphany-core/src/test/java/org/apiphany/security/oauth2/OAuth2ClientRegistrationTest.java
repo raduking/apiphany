@@ -11,6 +11,8 @@ import static org.morphix.reflection.predicates.MemberPredicates.isNotStatic;
 import static org.morphix.reflection.predicates.MemberPredicates.nameIn;
 
 import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 
@@ -81,5 +83,18 @@ class OAuth2ClientRegistrationTest {
 
 		assertThat(registrationRead.getClientSecret(), notNullValue());
 		assertThat(registrationWrite.getClientSecret(), nullValue());
+	}
+
+	@Test
+	void shouldEncodeCredentialsWithUtf8() {
+		OAuth2ClientRegistration registration = new OAuth2ClientRegistration();
+		registration.setClientId("régis");
+		registration.setClientSecret("pa$$wörd");
+
+		String encoded = registration.getEncodedCredentials();
+
+		String expected = Base64.getEncoder()
+				.encodeToString("régis:pa$$wörd".getBytes(StandardCharsets.UTF_8));
+		assertThat(encoded, equalTo(expected));
 	}
 }
