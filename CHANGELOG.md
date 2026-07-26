@@ -2,6 +2,8 @@
 
 `1.2.16`
 
+- Changed `BasicTimer` and `BasicCounter` to be thread safe.
+
 ---
 
 `1.2.15`
