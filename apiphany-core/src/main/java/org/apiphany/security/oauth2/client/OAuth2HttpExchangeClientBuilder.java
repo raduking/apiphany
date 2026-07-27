@@ -2,7 +2,9 @@ package org.apiphany.security.oauth2.client;
 
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.ExchangeClientBuilder;
+import org.apiphany.logging.Slf4jLoggerAdapter;
 import org.morphix.lang.Nullables;
+import org.morphix.lang.function.LoggerAdapter;
 import org.morphix.lang.resource.ScopedResource;
 
 /**
@@ -11,6 +13,8 @@ import org.morphix.lang.resource.ScopedResource;
  * @author Radu Sebastian LAZIN
  */
 public class OAuth2HttpExchangeClientBuilder extends ExchangeClientBuilder {
+
+	private static final LoggerAdapter LOGGER = Slf4jLoggerAdapter.of(OAuth2HttpExchangeClientBuilder.class);
 
 	/**
 	 * Token exchange client class.
@@ -62,8 +66,16 @@ public class OAuth2HttpExchangeClientBuilder extends ExchangeClientBuilder {
 			Nullables.<ExchangeClient>whenNotNull(tokenExchangeClient, builder::client);
 			tokenClientResource = builder.properties(clientProperties).build();
 		}
-		ExchangeClient exchangeClient = new OAuth2HttpExchangeClient(clientResource, tokenClientResource, registrationName);
-		return ScopedResource.managed(exchangeClient);
+		try {
+			ExchangeClient exchangeClient = new OAuth2HttpExchangeClient(clientResource, tokenClientResource, registrationName);
+			return ScopedResource.managed(exchangeClient);
+		} catch (Exception e) {
+			tokenClientResource.closeIfManaged(ce -> LOGGER.warn("Error closing token client on build failure", ce));
+			if (tokenClientResource != clientResource) {
+				clientResource.closeIfManaged(ce -> LOGGER.warn("Error closing client on build failure", ce));
+			}
+			throw e;
+		}
 	}
 
 	/**
