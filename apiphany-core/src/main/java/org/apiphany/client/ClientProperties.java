@@ -718,7 +718,7 @@ public class ClientProperties {
 		 */
 		@Override
 		public int hashCode() {
-			return Objects.hash(maxTotal, maxPerRoute, timeToLive);
+			return Objects.hash(maxTotal, maxPerRoute, timeToLive, followRedirects);
 		}
 
 		/**

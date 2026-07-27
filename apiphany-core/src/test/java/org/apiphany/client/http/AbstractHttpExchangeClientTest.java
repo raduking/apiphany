@@ -150,7 +150,6 @@ class AbstractHttpExchangeClientTest {
 		}
 
 		@Test
-		@SuppressWarnings("resource")
 		void shouldCustomizeUsingExtractedStatusBodyAndHeadersWhenFollowRedirectsIsEnabledButFailureIsNotRedirectLoop() {
 			exchangeClient = newExchangeClient(true);
 

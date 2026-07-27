@@ -368,6 +368,48 @@ class ClientPropertiesTest {
 		}
 	}
 
+	@Nested
+	class ConnectionTest {
+
+		@Test
+		void shouldIncludeFollowRedirectsInHashCode() {
+			ClientProperties.Connection a = new ClientProperties.Connection();
+			a.setFollowRedirects(true);
+
+			ClientProperties.Connection b = new ClientProperties.Connection();
+			b.setFollowRedirects(false);
+
+			assertThat(a.hashCode(), not(equalTo(b.hashCode())));
+		}
+
+		@Test
+		void shouldTreatSameConnectionAsEqual() {
+			ClientProperties.Connection a = new ClientProperties.Connection();
+			a.setMaxTotal(100);
+			a.setMaxPerRoute(10);
+			a.setFollowRedirects(true);
+
+			ClientProperties.Connection b = new ClientProperties.Connection();
+			b.setMaxTotal(100);
+			b.setMaxPerRoute(10);
+			b.setFollowRedirects(true);
+
+			assertThat(a, equalTo(b));
+			assertThat(a.hashCode(), equalTo(b.hashCode()));
+		}
+
+		@Test
+		void shouldTreatDifferentFollowRedirectsAsNotEqual() {
+			ClientProperties.Connection a = new ClientProperties.Connection();
+			a.setFollowRedirects(true);
+
+			ClientProperties.Connection b = new ClientProperties.Connection();
+			b.setFollowRedirects(false);
+
+			assertThat(a, not(equalTo(b)));
+		}
+	}
+
 	static class CustomProperties {
 
 		private String key1;

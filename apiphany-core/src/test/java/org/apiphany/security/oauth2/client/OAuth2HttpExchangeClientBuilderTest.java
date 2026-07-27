@@ -15,6 +15,7 @@ import static org.mockito.Mockito.mock;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
@@ -77,6 +78,90 @@ class OAuth2HttpExchangeClientBuilderTest {
 		@Override
 		public void close() {
 			// empty
+		}
+	}
+
+	static class ThrowingGetPropertiesExchangeClient extends DummyExchangeClient {
+
+		static final AtomicBoolean CLOSE_CALLED = new AtomicBoolean(false);
+
+		public ThrowingGetPropertiesExchangeClient() {
+			super();
+		}
+
+		public ThrowingGetPropertiesExchangeClient(final ClientProperties properties) {
+			super(properties);
+		}
+
+		@Override
+		public ClientProperties getClientProperties() {
+			throw new RuntimeException("Simulated getClientProperties() failure");
+		}
+
+		@Override
+		public void close() {
+			CLOSE_CALLED.set(true);
+		}
+	}
+
+	static class CloseTrackingExchangeClient extends DummyExchangeClient {
+
+		static final AtomicBoolean CLOSE_CALLED = new AtomicBoolean(false);
+
+		public CloseTrackingExchangeClient() {
+			super();
+		}
+
+		public CloseTrackingExchangeClient(final ClientProperties properties) {
+			super(properties);
+		}
+
+		@Override
+		public void close() {
+			CLOSE_CALLED.set(true);
+		}
+	}
+
+	static class CloseThrowingGetPropertiesExchangeClient extends DummyExchangeClient {
+
+		static final AtomicBoolean CLOSE_ATTEMPTED = new AtomicBoolean(false);
+
+		public CloseThrowingGetPropertiesExchangeClient() {
+			super();
+		}
+
+		public CloseThrowingGetPropertiesExchangeClient(final ClientProperties properties) {
+			super(properties);
+		}
+
+		@Override
+		public ClientProperties getClientProperties() {
+			throw new RuntimeException("Simulated getClientProperties() failure");
+		}
+
+		@Override
+		public void close() {
+			CLOSE_ATTEMPTED.set(true);
+			throw new RuntimeException("Simulated close() failure");
+		}
+	}
+
+	static class CloseThrowingExchangeClient extends DummyExchangeClient {
+
+		static final AtomicBoolean CLOSE_ATTEMPTED = new AtomicBoolean(false);
+
+		public CloseThrowingExchangeClient() {
+			super();
+		}
+
+		public CloseThrowingExchangeClient(final ClientProperties properties) {
+			super(properties);
+		}
+
+		@Override
+		public void close() {
+			CLOSE_ATTEMPTED.set(true);
+			throw new RuntimeException("Simulated close() failure");
 		}
 	}
 
@@ -307,6 +392,104 @@ class OAuth2HttpExchangeClientBuilderTest {
 		} finally {
 			oauth2Client.closeIfManaged();
 		}
+	}
+
+	@Test
+	void shouldCloseResourcesWhenConstructorThrows() {
+		ThrowingGetPropertiesExchangeClient.CLOSE_CALLED.set(false);
+
+		ClientProperties clientProperties = new ClientProperties();
+		OAuth2Properties oauth2Properties = new OAuth2Properties();
+		oauth2Properties.setRegistration(Map.of(REGISTRATION, buildRegistration(CLIENT, PROVIDER)));
+		oauth2Properties.setProvider(Map.of(PROVIDER, buildProvider(TOKEN_URI)));
+		clientProperties.setCustomProperties(oauth2Properties);
+
+		ExchangeClientBuilder clientBuilder = ExchangeClientBuilder.create()
+				.client(ThrowingGetPropertiesExchangeClient.class)
+				.properties(clientProperties)
+				.securedWith()
+				.oAuth2(builder -> builder
+						.registrationName(REGISTRATION));
+
+		Exception exception = assertThrows(RuntimeException.class, clientBuilder::build);
+
+		assertThat(exception.getMessage(), equalTo("Simulated getClientProperties() failure"));
+		assertTrue(ThrowingGetPropertiesExchangeClient.CLOSE_CALLED.get());
+	}
+
+	@Test
+	void shouldCloseBothResourcesWhenConstructorThrowsWithSeparateTokenClient() {
+		ThrowingGetPropertiesExchangeClient.CLOSE_CALLED.set(false);
+		CloseTrackingExchangeClient.CLOSE_CALLED.set(false);
+
+		ClientProperties clientProperties = new ClientProperties();
+		OAuth2Properties oauth2Properties = new OAuth2Properties();
+		oauth2Properties.setRegistration(Map.of(REGISTRATION, buildRegistration(CLIENT, PROVIDER)));
+		oauth2Properties.setProvider(Map.of(PROVIDER, buildProvider(TOKEN_URI)));
+		clientProperties.setCustomProperties(oauth2Properties);
+
+		ExchangeClientBuilder clientBuilder = ExchangeClientBuilder.create()
+				.client(ThrowingGetPropertiesExchangeClient.class)
+				.properties(clientProperties)
+				.securedWith()
+				.oAuth2(builder -> builder
+						.tokenClient(CloseTrackingExchangeClient.class)
+						.registrationName(REGISTRATION));
+
+		Exception exception = assertThrows(RuntimeException.class, clientBuilder::build);
+
+		assertThat(exception.getMessage(), equalTo("Simulated getClientProperties() failure"));
+		assertTrue(ThrowingGetPropertiesExchangeClient.CLOSE_CALLED.get());
+		assertTrue(CloseTrackingExchangeClient.CLOSE_CALLED.get());
+	}
+
+	@Test
+	void shouldNotPropagateCloseExceptionWhenConstructorThrowsAndClientCloseFails() {
+		CloseThrowingGetPropertiesExchangeClient.CLOSE_ATTEMPTED.set(false);
+
+		ClientProperties clientProperties = new ClientProperties();
+		OAuth2Properties oauth2Properties = new OAuth2Properties();
+		oauth2Properties.setRegistration(Map.of(REGISTRATION, buildRegistration(CLIENT, PROVIDER)));
+		oauth2Properties.setProvider(Map.of(PROVIDER, buildProvider(TOKEN_URI)));
+		clientProperties.setCustomProperties(oauth2Properties);
+
+		ExchangeClientBuilder clientBuilder = ExchangeClientBuilder.create()
+				.client(CloseThrowingGetPropertiesExchangeClient.class)
+				.properties(clientProperties)
+				.securedWith()
+				.oAuth2(builder -> builder
+						.registrationName(REGISTRATION));
+
+		Exception exception = assertThrows(RuntimeException.class, clientBuilder::build);
+
+		assertThat(exception.getMessage(), equalTo("Simulated getClientProperties() failure"));
+		assertTrue(CloseThrowingGetPropertiesExchangeClient.CLOSE_ATTEMPTED.get());
+	}
+
+	@Test
+	void shouldNotPropagateCloseExceptionsWhenConstructorThrowsAndBothClientsCloseFail() {
+		CloseThrowingGetPropertiesExchangeClient.CLOSE_ATTEMPTED.set(false);
+		CloseThrowingExchangeClient.CLOSE_ATTEMPTED.set(false);
+
+		ClientProperties clientProperties = new ClientProperties();
+		OAuth2Properties oauth2Properties = new OAuth2Properties();
+		oauth2Properties.setRegistration(Map.of(REGISTRATION, buildRegistration(CLIENT, PROVIDER)));
+		oauth2Properties.setProvider(Map.of(PROVIDER, buildProvider(TOKEN_URI)));
+		clientProperties.setCustomProperties(oauth2Properties);
+
+		ExchangeClientBuilder clientBuilder = ExchangeClientBuilder.create()
+				.client(CloseThrowingGetPropertiesExchangeClient.class)
+				.properties(clientProperties)
+				.securedWith()
+				.oAuth2(builder -> builder
+						.tokenClient(CloseThrowingExchangeClient.class)
+						.registrationName(REGISTRATION));
+
+		Exception exception = assertThrows(RuntimeException.class, clientBuilder::build);
+
+		assertThat(exception.getMessage(), equalTo("Simulated getClientProperties() failure"));
+		assertTrue(CloseThrowingGetPropertiesExchangeClient.CLOSE_ATTEMPTED.get());
+		assertTrue(CloseThrowingExchangeClient.CLOSE_ATTEMPTED.get());
 	}
 
 	private static OAuth2ClientRegistration buildRegistration(final String client, final String provider) {
