@@ -140,4 +140,10 @@ class HttpStatusTest {
 		UnsupportedOperationException e = assertDefaultConstructorThrows(HttpMethod.Value.class);
 		assertThat(e.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
 	}
+
+	@Test
+	void shouldNotClassifyNotModifiedAsRedirection() {
+		assertTrue(HttpStatus.NOT_MODIFIED.is3xxRedirection());
+		assertTrue(HttpStatus.NOT_MODIFIED.isConditional());
+	}
 }
