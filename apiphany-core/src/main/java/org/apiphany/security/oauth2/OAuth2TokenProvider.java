@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -66,11 +67,11 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	private final AuthenticationTokenProvider tokenClient;
 
 	/**
-	 * The authentication token. Volatile because it is written by the scheduler thread
-	 * ({@link #updateAuthenticationToken()}) and read by application threads ({@link #getAuthenticationToken()}) without
-	 * explicit synchronization.
+	 * The authentication token. Wrapped in {@link AtomicReference} for thread-safe publication: written by the scheduler
+	 * thread ({@link #updateAuthenticationToken()}) and read by application threads ({@link #getAuthenticationToken()})
+	 * without explicit synchronization.
 	 */
-	private volatile AuthenticationToken authenticationToken;
+	private final AtomicReference<AuthenticationToken> authenticationToken = new AtomicReference<>();
 
 	/**
 	 * Supplies the default token expiration.
@@ -194,11 +195,11 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 * @return the expiration date
 	 */
 	protected Instant getTokenExpiration() {
-		if (null == authenticationToken) {
+		if (null == authenticationToken.get()) {
 			LOGGER.warn("[{}] No authentication token available, using default expiration.", getName());
 			return getDefaultTokenExpiration();
 		}
-		Instant expiration = authenticationToken.getExpiration();
+		Instant expiration = authenticationToken.get().getExpiration();
 		if (null == expiration) {
 			LOGGER.warn("[{}] No expiration date in authentication token, using default expiration.", getName());
 			return getDefaultTokenExpiration();
@@ -213,7 +214,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 */
 	@Override
 	public AuthenticationToken getAuthenticationToken() {
-		return AuthenticationTokenProvider.valid(authenticationToken);
+		return AuthenticationTokenProvider.valid(authenticationToken.get());
 	}
 
 	/**
@@ -222,7 +223,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 * @param authenticationToken authentication token object
 	 */
 	protected void setAuthenticationToken(final AuthenticationToken authenticationToken) {
-		this.authenticationToken = authenticationToken;
+		this.authenticationToken.set(authenticationToken);
 	}
 
 	/**
@@ -333,6 +334,9 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 * @return the client registration
 	 */
 	public OAuth2ClientRegistration getClientRegistration() {
+		if (null == registration) {
+			throw new IllegalStateException("No client registration provided");
+		}
 		return registration.getClientRegistration();
 	}
 
@@ -342,6 +346,9 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	 * @return the provider details
 	 */
 	public OAuth2ProviderDetails getProviderDetails() {
+		if (null == registration) {
+			throw new IllegalStateException("No client registration provided");
+		}
 		return registration.getProviderDetails();
 	}
 

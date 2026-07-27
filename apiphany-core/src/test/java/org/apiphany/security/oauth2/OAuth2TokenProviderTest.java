@@ -967,6 +967,26 @@ class OAuth2TokenProviderTest {
 		verify(tokenClient, times(retrievals)).getAuthenticationToken();
 	}
 
+	@Test
+	void shouldThrowWhenGettingClientRegistrationWithoutRegistration() throws Exception {
+		OAuth2TokenProvider provider = OAuth2TokenProvider.builder().build();
+		provider.close();
+
+		Exception exception = assertThrows(IllegalStateException.class, provider::getClientRegistration);
+
+		assertThat(exception.getMessage(), equalTo("No client registration provided"));
+	}
+
+	@Test
+	void shouldThrowWhenGettingProviderDetailsWithoutRegistration() throws Exception {
+		OAuth2TokenProvider provider = OAuth2TokenProvider.builder().build();
+		provider.close();
+
+		Exception exception = assertThrows(IllegalStateException.class, provider::getProviderDetails);
+
+		assertThat(exception.getMessage(), equalTo("No client registration provided"));
+	}
+
 	private static AuthenticationToken createToken() {
 		AuthenticationToken authenticationToken = createToken(Duration.ofSeconds(EXPIRES_IN));
 		authenticationToken.setExpiration(DEFAULT_EXPIRATION.plusSeconds(EXPIRES_IN));
