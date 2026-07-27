@@ -591,7 +591,7 @@ public enum HttpStatus implements Status {
 	 * @return true if this status code is in the 3xx range, false otherwise
 	 */
 	public boolean is3xxRedirection() {
-		return isType(Type.REDIRECTION);
+		return value() / 100 == 3;
 	}
 
 	/**
@@ -613,7 +613,17 @@ public enum HttpStatus implements Status {
 	}
 
 	/**
-	 * Checks if this status code represents an error (2xx).
+	 * Checks if this status code represents a conditional response (304 Not Modified).
+	 *
+	 * @return true if this status code is 304, false otherwise
+	 * @see <a href="https://tools.ietf.org/html/rfc7232#section-4.1">HTTP/1.1: Conditional Requests, section 4.1</a>
+	 */
+	public boolean isConditional() {
+		return this == NOT_MODIFIED;
+	}
+
+	/**
+	 * Checks if this status code represents a success (2xx).
 	 *
 	 * @return true if this status code represents a success, false otherwise
 	 */

@@ -306,7 +306,7 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 		if (!getClientProperties().getConnection().isFollowRedirects()) {
 			return false;
 		}
-		if (!status.is3xxRedirection()) {
+		if (!status.is3xxRedirection() || status.isConditional()) {
 			return false;
 		}
 		return Lists.isNotEmpty(getHeaderValues(HttpHeader.LOCATION, headers));

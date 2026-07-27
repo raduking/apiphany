@@ -3,6 +3,8 @@
 `1.2.16`
 
 - Changed `BasicTimer` and `BasicCounter` to be thread safe.
+- Added `HttpStatus.isConditional()` to check if a status code is a conditional response (304 Not Modified).
+- Fixed `AbstractHttpExchangeClient.isTerminalRedirectWithLocation` to exclude `304` `Not Modified` from redirect loop detection.
 
 ---
 
