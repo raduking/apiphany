@@ -292,9 +292,9 @@ public class HttpContentType implements ApiMimeType {
 			String[] param = parts[index].trim().split("=", 2);
 			if (param.length == 2) {
 				if (null == charset && Param.CHARSET.equalsIgnoreCase(param[0])) {
-					charset = ApiMimeType.parseCharset(param[1].trim());
+					charset = ApiMimeType.parseCharset(Strings.stripCharacter(param[1].trim(), '"'));
 				} else if (null == boundary && Param.BOUNDARY.equalsIgnoreCase(param[0])) {
-					boundary = param[1].trim();
+					boundary = Strings.stripCharacter(param[1].trim(), '"');
 				}
 			}
 		}
