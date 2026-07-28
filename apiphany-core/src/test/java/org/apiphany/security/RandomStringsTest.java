@@ -39,7 +39,7 @@ class RandomStringsTest {
 	void shouldThrowExceptionForNegativeLength() {
 		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> RandomStrings.secureAlphanumeric(-1));
 
-		assertEquals("length must be positive", e.getMessage());
+		assertEquals("length must not be negative", e.getMessage());
 	}
 
 	@Test

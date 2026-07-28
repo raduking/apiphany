@@ -125,6 +125,64 @@ class BasicHttpResponseParserTest {
 	}
 
 	@Test
+	void shouldHandleChunkSizeSplitAcrossAppends() {
+		String headerPart = """
+				HTTP/1.1 200 OK\r
+				Transfer-Encoding: chunked\r
+				\r
+				""";
+
+		BasicHttpResponseParser parser = new BasicHttpResponseParser(headerPart);
+		parser.appendData("5\r");
+
+		assertThat(parser.getBody(), is(""));
+		assertThat(parser.isComplete(), is(false));
+
+		parser.appendData("\nHello\r\n0\r\n\r\n");
+
+		assertThat(parser.getBody(), is("Hello"));
+		assertThat(parser.isComplete(), is(true));
+	}
+
+	@Test
+	void shouldHandleChunkPayloadSplitAcrossAppends() {
+		String headerPart = """
+				HTTP/1.1 200 OK\r
+				Transfer-Encoding: chunked\r
+				\r
+				""";
+
+		BasicHttpResponseParser parser = new BasicHttpResponseParser(headerPart);
+		parser.appendData("5\r\nHe");
+
+		assertThat(parser.getBody(), is(""));
+		assertThat(parser.isComplete(), is(false));
+
+		parser.appendData("llo\r\n0\r\n\r\n");
+
+		assertThat(parser.getBody(), is("Hello"));
+		assertThat(parser.isComplete(), is(true));
+	}
+
+	@Test
+	void shouldHandleChunkedResponseWithManyTinyAppends() {
+		String headerPart = """
+				HTTP/1.1 200 OK\r
+				Transfer-Encoding: chunked\r
+				\r
+				""";
+		String responseData = "5\r\nHello\r\n6\r\n, Worl\r\n2\r\nd!\r\n0\r\n\r\n";
+
+		BasicHttpResponseParser parser = new BasicHttpResponseParser(headerPart);
+		for (int i = 0; i < responseData.length(); ++i) {
+			parser.appendData(String.valueOf(responseData.charAt(i)));
+		}
+
+		assertThat(parser.getBody(), is("Hello, World!"));
+		assertThat(parser.isComplete(), is(true));
+	}
+
+	@Test
 	void shouldHandleMalformedContentLength() {
 		String response = """
 				HTTP/1.1 200 OK\r
