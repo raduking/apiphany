@@ -67,7 +67,7 @@ public class BasicHttpResponseParser {
 		}
 
 		this.chunked = "chunked".equalsIgnoreCase(headers.get("transfer-encoding"));
-		this.contentLength = headers.containsKey("content-length") ? Integer.parseInt(headers.get("content-length")) : null;
+		this.contentLength = parseInt(headers.get("content-length"), 10);
 
 		this.buffer = parts.length > 1 ? parts[1] : "";
 
@@ -94,7 +94,11 @@ public class BasicHttpResponseParser {
 	 * @return the HTTP status code
 	 */
 	public int getStatusCode() {
-		return Integer.parseInt(statusLine.split(" ")[1]);
+		String[] parts = statusLine.split(" ");
+		if (parts.length < 2) {
+			return 0;
+		}
+		return parseInt(parts[1], 10);
 	}
 
 	/**
@@ -141,6 +145,40 @@ public class BasicHttpResponseParser {
 	}
 
 	/**
+	 * Parses the given string as an integer with the specified radix, returning {@code null} if the value is {@code null}
+	 * or not a valid integer.
+	 *
+	 * @param value the string to parse
+	 * @param radix the radix to use
+	 * @return the parsed integer, or {@code null} if parsing fails
+	 */
+	private static Integer parseInt(final String value, final int radix) {
+		if (null == value) {
+			return null;
+		}
+		try {
+			return Integer.parseInt(value, radix);
+		} catch (NumberFormatException e) {
+			return null;
+		}
+	}
+
+	/**
+	 * Parses the given string as a hexadecimal integer, returning {@code null} if the value is {@code null}, not a valid
+	 * integer, or negative.
+	 *
+	 * @param value the string to parse
+	 * @return the parsed integer, or {@code null} if parsing fails
+	 */
+	private static Integer parseHexInt(final String value) {
+		Integer result = parseInt(value, 16);
+		if (null != result && result < 0) {
+			return null;
+		}
+		return result;
+	}
+
+	/**
 	 * Processes chunked transfer encoding data.
 	 */
 	private void processChunks() {
@@ -151,7 +189,10 @@ public class BasicHttpResponseParser {
 			}
 
 			String sizeStr = buffer.substring(0, endIndex).trim();
-			int chunkSize = Integer.parseInt(sizeStr, 16);
+			Integer chunkSize = parseHexInt(sizeStr);
+			if (null == chunkSize) {
+				return; // malformed chunk size
+			}
 
 			if (buffer.length() < endIndex + 2 + chunkSize + 2) {
 				return; // wait for more data

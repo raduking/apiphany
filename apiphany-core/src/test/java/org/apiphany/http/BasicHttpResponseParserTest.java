@@ -123,4 +123,48 @@ class BasicHttpResponseParserTest {
 		assertThat(parser.getBody(), is(""));
 		assertThat(parser.isComplete(), is(true));
 	}
+
+	@Test
+	void shouldHandleMalformedContentLength() {
+		String response = """
+				HTTP/1.1 200 OK\r
+				Content-Type: text/plain\r
+				Content-Length: abc\r
+				\r
+				Hello, World!""";
+
+		BasicHttpResponseParser parser = new BasicHttpResponseParser(response);
+
+		assertThat(parser.getStatusCode(), is(200));
+		assertThat(parser.getBody(), is("Hello, World!"));
+		assertThat(parser.isComplete(), is(false));
+	}
+
+	@Test
+	void shouldHandleMalformedChunkSize() {
+		String response = """
+				HTTP/1.1 200 OK\r
+				Transfer-Encoding: chunked\r
+				\r
+				ZZ\r
+				Hello\r
+				0\r
+				\r
+				""";
+
+		BasicHttpResponseParser parser = new BasicHttpResponseParser(response);
+
+		assertThat(parser.getStatusCode(), is(200));
+		assertThat(parser.getBody(), is(""));
+		assertThat(parser.isComplete(), is(false));
+	}
+
+	@Test
+	void shouldHandleMalformedStatusLine() {
+		String response = "HTTP/1.1\r\n\r\n";
+
+		BasicHttpResponseParser parser = new BasicHttpResponseParser(response);
+
+		assertThat(parser.getStatusCode(), is(0));
+	}
 }
