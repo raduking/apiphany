@@ -113,6 +113,34 @@ void main() {
 }
 ```
 
+### CURL-like usage
+
+If you think in `curl`, here is the equivalent Apiphany fluent call.
+
+`curl`:
+
+```bash
+curl -X POST "https://api.example.com/v1/users" \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"John"}'
+```
+
+Apiphany:
+
+```java
+import static org.apiphany.Api.http;
+
+String result = http()
+        .post()
+        .url("https://api.example.com/v1/users")
+        .header("Authorization", "Bearer <token>")
+        .header("Content-Type", "application/json")
+        .body("{\"name\":\"John\"}")
+        .retrieve(String.class)
+        .orRethrow();
+```
+
 ## Documentation
 
 See the [docs](docs) directory for project specifications, architecture notes, and user guides.
