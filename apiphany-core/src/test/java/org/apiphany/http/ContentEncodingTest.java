@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.morphix.lang.Nullables;
 import org.morphix.reflection.Constructors;
 
 /**
@@ -51,6 +52,16 @@ class ContentEncodingTest {
 	void shouldBuildWithFromStringWithValidValueEvenIfUppercase(final ContentEncoding contentEncoding) {
 		String stringValue = contentEncoding.value().toUpperCase();
 		ContentEncoding result = ContentEncoding.fromString(stringValue);
+		assertThat(result, equalTo(contentEncoding));
+	}
+
+	@ParameterizedTest
+	@EnumSource(ContentEncoding.class)
+	void shouldBuildWithFromStringTwoArgsWithValidValueEvenIfUppercase(final ContentEncoding contentEncoding) {
+		String stringValue = contentEncoding.value().toUpperCase();
+
+		ContentEncoding result = ContentEncoding.fromString(stringValue, Nullables.supplyNull());
+
 		assertThat(result, equalTo(contentEncoding));
 	}
 
