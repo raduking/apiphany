@@ -8,6 +8,7 @@
 - Fixed `BasicHttpResponseParser` to handle malformed `Content-Length` header gracefully.
 - Fixed `BasicHttpResponseParser` to handle malformed chunk size gracefully.
 - Fixed `BasicHttpResponseParser.getStatusCode` to handle malformed status line gracefully.
+- Fixed `HttpContentType.parse` to strip surrounding quotes from parameter values per RFC 2045.
 
 ---
 

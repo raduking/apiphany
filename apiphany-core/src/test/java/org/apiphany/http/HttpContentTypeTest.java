@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -51,6 +52,7 @@ class HttpContentTypeTest {
 
 			HttpContentType ct = HttpContentType.parse(existing.toString());
 
+			assertNotNull(ct);
 			assertThat(ct.getContentType(), equalTo(ContentType.APPLICATION_JSON));
 			assertThat(ct.getCharset(), equalTo(StandardCharsets.ISO_8859_1));
 		}
@@ -61,6 +63,7 @@ class HttpContentTypeTest {
 
 			HttpContentType ct = HttpContentType.parse(existing.toString());
 
+			assertNotNull(ct);
 			assertThat(ct.getContentType(), equalTo(ContentType.APPLICATION_OCTET_STREAM));
 			assertThat(ct.getCharset(), nullValue());
 		}
@@ -97,6 +100,7 @@ class HttpContentTypeTest {
 		void shouldResolveContentTypeAndCharset() {
 			HttpContentType ct = HttpContentType.parse(APPLICATION_JSON_CHARSET_ISO_8859_1);
 
+			assertNotNull(ct);
 			assertThat(ct.getContentType(), equalTo(ContentType.APPLICATION_JSON));
 			assertThat(ct.getCharset(), equalTo(StandardCharsets.ISO_8859_1));
 		}
@@ -105,6 +109,7 @@ class HttpContentTypeTest {
 		void shouldResolveContentTypeAndCharsetWithList() {
 			HttpContentType ct = HttpContentType.parse(List.of(APPLICATION_JSON_CHARSET_ISO_8859_1));
 
+			assertNotNull(ct);
 			assertThat(ct.getContentType(), equalTo(ContentType.APPLICATION_JSON));
 			assertThat(ct.getCharset(), equalTo(StandardCharsets.ISO_8859_1));
 		}
@@ -114,6 +119,7 @@ class HttpContentTypeTest {
 			String lowerCaseValue = APPLICATION_JSON_CHARSET_ISO_8859_1.toLowerCase();
 			HttpContentType ct = HttpContentType.parse(lowerCaseValue);
 
+			assertNotNull(ct);
 			assertThat(ct.getContentType(), equalTo(ContentType.APPLICATION_JSON));
 			assertThat(ct.getCharset(), equalTo(StandardCharsets.ISO_8859_1));
 		}
@@ -124,6 +130,7 @@ class HttpContentTypeTest {
 
 			HttpContentType ct = HttpContentType.parse(existing.toString());
 
+			assertNotNull(ct);
 			assertThat(ct.getContentType(), equalTo(ContentType.APPLICATION_JSON));
 			assertThat(ct.getCharset(), equalTo(StandardCharsets.ISO_8859_1));
 		}
@@ -153,6 +160,7 @@ class HttpContentTypeTest {
 		void shouldParseContentTypeWithExtraSpaces() {
 			HttpContentType ct = HttpContentType.parse("  application/json  ;   charset=ISO-8859-1   ");
 
+			assertNotNull(ct);
 			assertThat(ct.getContentType(), equalTo(ContentType.APPLICATION_JSON));
 			assertThat(ct.contentType(), equalTo(ContentType.APPLICATION_JSON));
 			assertThat(ct.getCharset(), equalTo(StandardCharsets.ISO_8859_1));
@@ -165,6 +173,7 @@ class HttpContentTypeTest {
 		void shouldParseContentTypeWithoutCharset() {
 			HttpContentType ct = HttpContentType.parse("image/bmp");
 
+			assertNotNull(ct);
 			assertThat(ct.getContentType(), equalTo(ContentType.IMAGE_BMP));
 			assertThat(ct.contentType(), equalTo(ContentType.IMAGE_BMP));
 			assertNull(ct.getCharset());
@@ -178,6 +187,7 @@ class HttpContentTypeTest {
 		void shouldParseContentTypeWithMultipleParameters(final String contentTypeValue) {
 			HttpContentType ct = HttpContentType.parse(contentTypeValue);
 
+			assertNotNull(ct);
 			assertThat(ct.getContentType(), equalTo(ContentType.TEXT_HTML));
 			assertThat(ct.contentType(), equalTo(ContentType.TEXT_HTML));
 			assertThat(ct.getCharset(), equalTo(StandardCharsets.UTF_8));
@@ -198,6 +208,7 @@ class HttpContentTypeTest {
 		void shouldParseContentTypeWithNoCharsetParameter() {
 			HttpContentType ct = HttpContentType.parse("image/png; comment=something");
 
+			assertNotNull(ct);
 			assertThat(ct.getContentType(), equalTo(ContentType.IMAGE_PNG));
 			assertThat(ct.contentType(), equalTo(ContentType.IMAGE_PNG));
 			assertNull(ct.getCharset());
@@ -210,6 +221,7 @@ class HttpContentTypeTest {
 		void shouldParseContentTypeWithNoCharsetParameterWithoutEqualSign() {
 			HttpContentType ct = HttpContentType.parse("image/png; comment");
 
+			assertNotNull(ct);
 			assertThat(ct.getContentType(), equalTo(ContentType.IMAGE_PNG));
 			assertThat(ct.contentType(), equalTo(ContentType.IMAGE_PNG));
 			assertNull(ct.getCharset());
@@ -354,18 +366,24 @@ class HttpContentTypeTest {
 		void shouldReturnNormalizedValueWithCharset() {
 			HttpContentType ct = HttpContentType.parse("IMAGE/PNG; CHARSET=UTF-8");
 
-			String value = ct.normalizedValue();
-
-			assertThat(value, equalTo("image/png; charset=utf-8"));
+			assertNotNull(ct);
+			assertThat(ct.normalizedValue(), equalTo("image/png; charset=utf-8"));
 		}
 
 		@Test
 		void shouldReturnNormalizedValueWithCharsetAndBoundary() {
 			HttpContentType ct = HttpContentType.parse("IMAGE/PNG; CHARSET=UTF-8; BOUNDARY=SOMEBOUNDARY");
 
-			String value = ct.normalizedValue();
+			assertNotNull(ct);
+			assertThat(ct.normalizedValue(), equalTo("image/png; charset=utf-8; boundary=SOMEBOUNDARY"));
+		}
 
-			assertThat(value, equalTo("image/png; charset=utf-8; boundary=SOMEBOUNDARY"));
+		@Test
+		void shouldStripQuotedBoundary() {
+			HttpContentType ct = HttpContentType.parse("multipart/form-data; boundary=\"my-boundary\"");
+
+			assertNotNull(ct);
+			assertThat(ct.getBoundary(), equalTo("my-boundary"));
 		}
 	}
 }
