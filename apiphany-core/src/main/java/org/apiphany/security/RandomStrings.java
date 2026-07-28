@@ -43,7 +43,7 @@ public final class RandomStrings {
 	 */
 	public static String secureAlphanumeric(final int length) {
 		if (length < 0) {
-			throw new IllegalArgumentException("length must be positive");
+			throw new IllegalArgumentException("length must not be negative");
 		}
 		StringBuilder result = new StringBuilder(length);
 		int base62Length = BASE62_CHARS.length();

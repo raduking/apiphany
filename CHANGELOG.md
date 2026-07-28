@@ -11,6 +11,8 @@
 - Fixed `HttpContentType.parse` to strip surrounding quotes from parameter values per RFC 2045.
 - Fixed `ContentEncoding.fromString(String, Supplier)` to handle case-insensitive input.
 - Fixed `ClientProperties.getPropertiesMap` to return empty map when intermediate path resolves to a non-Map value.
+- Fixed misleading error message in `RandomStrings.secureAlphanumeric` for negative length.
+- Fixed `BasicHttpResponseParser.appendData` to use a mutable buffer and avoid O(n²) concatenation on incremental chunked responses.
 
 ---
 

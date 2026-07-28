@@ -801,6 +801,18 @@ class ExchangeClientBuilderTest {
 
 		@Test
 		@SuppressWarnings("resource")
+		void shouldThrowExceptionWhenBuildErrorHandlerIsNull() {
+			ExchangeClientBuilder builder = ExchangeClientBuilder.create()
+					.client(DummyExchangeClient.class);
+
+			IllegalStateException exception = assertThrows(IllegalStateException.class,
+					() -> builder.build((Consumer<Exception>) null));
+
+			assertThat(exception.getMessage(), equalTo("Build error handler must not be null"));
+		}
+
+		@Test
+		@SuppressWarnings("resource")
 		void shouldReturnNullAndCallErrorHandlerWhenDelegateBuildingThrowsException() {
 			ExchangeClientBuilder builder = ExchangeClientBuilder.create()
 					.delegate(new ThrowingExchangeClientBuilder());

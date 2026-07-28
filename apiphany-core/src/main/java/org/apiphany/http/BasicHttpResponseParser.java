@@ -40,7 +40,7 @@ public class BasicHttpResponseParser {
 	/**
 	 * Buffer for incoming data.
 	 */
-	private String buffer = "";
+	private final StringBuilder buffer = new StringBuilder();
 
 	/**
 	 * Indicates if the response body has been completely received.
@@ -69,7 +69,9 @@ public class BasicHttpResponseParser {
 		this.chunked = "chunked".equalsIgnoreCase(headers.get("transfer-encoding"));
 		this.contentLength = parseInt(headers.get("content-length"), 10);
 
-		this.buffer = parts.length > 1 ? parts[1] : "";
+		if (parts.length > 1) {
+			this.buffer.append(parts[1]);
+		}
 
 		if (chunked) {
 			processChunks();
@@ -135,7 +137,7 @@ public class BasicHttpResponseParser {
 	 * @param data the data to append
 	 */
 	public void appendData(final String data) {
-		buffer += data;
+		buffer.append(data);
 		if (chunked) {
 			processChunks();
 		} else {
@@ -200,12 +202,12 @@ public class BasicHttpResponseParser {
 
 			if (chunkSize == 0) {
 				complete = true;
-				buffer = ""; // discard trailing headers if any
+				buffer.setLength(0); // discard trailing headers if any
 				return;
 			}
 
 			bodyBuilder.append(buffer, endIndex + 2, endIndex + 2 + chunkSize);
-			buffer = buffer.substring(endIndex + 2 + chunkSize + 2);
+			buffer.delete(0, endIndex + 2 + chunkSize + 2);
 		}
 	}
 

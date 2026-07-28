@@ -103,11 +103,13 @@ public class ExchangeClientBuilder {
 	/**
 	 * Builds the exchange client based on the builder members.
 	 *
-	 * @param buildErrorHandler error handler to be called if an exception occurs during the build process
-	 * @return a new exchange client resource with life cycle management information
+	 * @param buildErrorHandler non null error handler to be called if an exception occurs during the build process
+	 * @return a new exchange client resource with life cycle management information, or {@code null} if build fails and the
+	 * provided error handler does not rethrow
 	 */
 	@SuppressWarnings("resource")
 	protected ScopedResource<ExchangeClient> build(final Consumer<Exception> buildErrorHandler) {
+		requireThat(null != buildErrorHandler, "Build error handler must not be null");
 		ScopedResource<ExchangeClient> scopedResource = buildMainClient(buildErrorHandler);
 		if (null == scopedResource) {
 			return null;
