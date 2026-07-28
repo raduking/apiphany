@@ -6,6 +6,9 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
@@ -407,6 +410,23 @@ class ClientPropertiesTest {
 			b.setFollowRedirects(false);
 
 			assertThat(a, not(equalTo(b)));
+		}
+	}
+
+	@Nested
+	class GetPropertiesMapTests {
+
+		@Test
+		void shouldReturnEmptyMapForNonMapIntermediatePath() {
+			Map<String, Object> root = new HashMap<>();
+			root.put("a", "not-a-map");
+			Map<String, Object> other = new HashMap<>();
+			other.put("c", "value");
+			root.put("b", other);
+
+			Map<String, Object> result = ClientProperties.getPropertiesMap(() -> root, "a.b.c");
+
+			assertThat(result, equalTo(Collections.emptyMap()));
 		}
 	}
 
