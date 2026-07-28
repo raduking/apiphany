@@ -367,7 +367,7 @@ public enum ContentEncoding {
 	 * @return a content encoding enum, or the default value if no match is found
 	 */
 	public static ContentEncoding fromString(final String encoding, final Supplier<ContentEncoding> defaultValueSupplier) {
-		return Enums.from(encoding, NAME_MAP, defaultValueSupplier);
+		return Enums.from(encoding.toLowerCase(), NAME_MAP, defaultValueSupplier);
 	}
 
 	/**
