@@ -10,6 +10,7 @@
 - Fixed `BasicHttpResponseParser.getStatusCode` to handle malformed status line gracefully.
 - Fixed `HttpContentType.parse` to strip surrounding quotes from parameter values per RFC 2045.
 - Fixed `ContentEncoding.fromString(String, Supplier)` to handle case-insensitive input.
+- Fixed `ClientProperties.getPropertiesMap` to return empty map when intermediate path resolves to a non-Map value.
 
 ---
 

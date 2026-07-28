@@ -399,8 +399,7 @@ public class ClientProperties {
 			Object props = actualProps.get(path);
 			if (props instanceof Map<?, ?> mapProps) {
 				actualProps = JavaObjects.cast(mapProps);
-			}
-			if (null == props) {
+			} else {
 				return Collections.emptyMap();
 			}
 		}
