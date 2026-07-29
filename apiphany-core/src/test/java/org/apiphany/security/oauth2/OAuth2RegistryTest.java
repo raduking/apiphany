@@ -25,7 +25,7 @@ class OAuth2RegistryTest {
 	private static final String CLIENT_1 = "client1";
 	private static final String CLIENT_2 = "client2";
 
-	private static final String TOKEN_URI = "http://localhost:1234/token";
+	private static final String TOKEN_URI = "https://localhost:1234/token";
 
 	@Test
 	void shouldBuildValidRegistry() {
@@ -94,6 +94,54 @@ class OAuth2RegistryTest {
 		assertThat(registry.entries(), hasSize(0));
 	}
 
+	@Test
+	void shouldSkipRegistrationWhenInsecureTokenUriIsNotAllowed() {
+		OAuth2ClientRegistration registration = buildRegistration(CLIENT_1, PROVIDER_1);
+		OAuth2ProviderDetails provider = buildProvider("http://localhost:1234/token", false);
+		OAuth2Properties properties = OAuth2Properties.of(
+				Map.of(REGISTRATION_1, registration),
+				Map.of(PROVIDER_1, provider));
+
+		OAuth2Registry registry = OAuth2Registry.of(properties);
+
+		assertThat(registry.entries(), hasSize(0));
+		assertThat(registry.get(REGISTRATION_1), nullValue());
+	}
+
+	@Test
+	void shouldSkipRegistrationWhenInsecureTokenUriIsAllowedButGloballyForbidden() {
+		OAuth2ClientRegistration registration = buildRegistration(CLIENT_1, PROVIDER_1);
+		OAuth2ProviderDetails provider = buildProvider("http://localhost:1234/token", true);
+		OAuth2Properties properties = OAuth2Properties.of(
+				Map.of(REGISTRATION_1, registration),
+				Map.of(PROVIDER_1, provider));
+		properties.setForbidInsecureTokenUri(true);
+
+		OAuth2Registry registry = OAuth2Registry.of(properties);
+
+		assertThat(registry.entries(), hasSize(0));
+		assertThat(registry.get(REGISTRATION_1), nullValue());
+	}
+
+	@Test
+	void shouldKeepRegistrationWhenInsecureTokenUriIsAllowedAndNotGloballyForbidden() {
+		OAuth2ClientRegistration registration = buildRegistration(CLIENT_1, PROVIDER_1);
+		OAuth2ProviderDetails provider = buildProvider("http://localhost:1234/token", true);
+		OAuth2Properties properties = OAuth2Properties.of(
+				Map.of(REGISTRATION_1, registration),
+				Map.of(PROVIDER_1, provider));
+
+		OAuth2Registry registry = OAuth2Registry.of(properties);
+
+		assertThat(registry.entries(), hasSize(1));
+		OAuth2ResolvedRegistration resolvedRegistration = registry.get(REGISTRATION_1);
+
+		assertThat(resolvedRegistration, org.hamcrest.Matchers.notNullValue());
+		assertThat(resolvedRegistration.getClientRegistrationName(), equalTo(REGISTRATION_1));
+		assertThat(resolvedRegistration.getClientRegistration().getProvider(), equalTo(PROVIDER_1));
+		assertThat(resolvedRegistration.getProviderDetails().getTokenUri(), equalTo("http://localhost:1234/token"));
+	}
+
 	private static OAuth2ClientRegistration buildRegistration(final String client, final String provider) {
 		OAuth2ClientRegistration registration = new OAuth2ClientRegistration();
 		registration.setClientId(client + "Id");
@@ -105,6 +153,13 @@ class OAuth2RegistryTest {
 	private static OAuth2ProviderDetails buildProvider(final String tokenUri) {
 		OAuth2ProviderDetails provider = new OAuth2ProviderDetails();
 		provider.setTokenUri(TOKEN_URI + "/" + tokenUri);
+		return provider;
+	}
+
+	private static OAuth2ProviderDetails buildProvider(final String tokenUri, final boolean allowInsecureTokenUri) {
+		OAuth2ProviderDetails provider = new OAuth2ProviderDetails();
+		provider.setTokenUri(tokenUri);
+		provider.setAllowInsecureTokenUri(allowInsecureTokenUri);
 		return provider;
 	}
 }

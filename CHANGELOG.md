@@ -13,6 +13,8 @@
 - Fixed `ClientProperties.getPropertiesMap` to return empty map when intermediate path resolves to a non-Map value.
 - Fixed misleading error message in `RandomStrings.secureAlphanumeric` for negative length.
 - Fixed `BasicHttpResponseParser.appendData` to use a mutable buffer and avoid O(n²) concatenation on incremental chunked responses.
+- Changed `JsonBuilder.indentOutput` and `JsonBuilder.lineSeparator` to `volatile` for thread-safe runtime formatting visibility.
+- Fixed `OAuth2Registry.resolve` to resolve registrations through `OAuth2ResolvedRegistration.of(...)`, enforcing token URI security validation consistently.
 
 ---
 

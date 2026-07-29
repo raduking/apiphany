@@ -117,8 +117,11 @@ public class JsonBuilder { // NOSONAR singleton implementation
 
 	/**
 	 * Indent output flag.
+	 * <p>
+	 * Volatile for cross-thread visibility because the singleton runtime builder can be reconfigured at runtime via
+	 * {@link #indentOutput(boolean)} while other threads read formatting settings.
 	 */
-	private boolean indentOutput;
+	private volatile boolean indentOutput;
 
 	/**
 	 * Debug string flag.
@@ -127,8 +130,10 @@ public class JsonBuilder { // NOSONAR singleton implementation
 
 	/**
 	 * Line separator, depends on {@link #indentOutput}.
+	 * <p>
+	 * Volatile for cross-thread visibility to keep reads aligned with the latest indentation configuration changes.
 	 */
-	private String lineSeparator;
+	private volatile String lineSeparator;
 
 	/**
 	 * Observability object for logging/tracing.

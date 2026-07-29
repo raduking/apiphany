@@ -79,26 +79,51 @@ public class OAuth2ResolvedRegistration {
 
 	/**
 	 * Builds a new OAuth2 resolved registration with the given parameters.
+	 * <p>
+	 * Token URI transport security is validated at this level as well to ensure direct usage of this factory does not
+	 * bypass provider-level security checks.
 	 *
 	 * @param clientRegistrationName the client registration name
 	 * @param clientRegistration the configuration for the OAuth2 client registration
 	 * @param providerDetails the configuration details for the OAuth2 provider
-	 * @return a new OAuth2 registry entry
+	 * @return a new OAuth2 registry entry, or {@code null} if token URI validation fails
 	 */
 	public static OAuth2ResolvedRegistration of(
 			final String clientRegistrationName,
 			final OAuth2ClientRegistration clientRegistration,
 			final OAuth2ProviderDetails providerDetails) {
-		return new OAuth2ResolvedRegistration(clientRegistrationName, clientRegistration, providerDetails);
+		String resolvedName = Strings.isNotEmpty(clientRegistrationName) ? clientRegistrationName : UNKNOWN_REGISTRATION_NAME;
+		if (null == providerDetails) {
+			return new OAuth2ResolvedRegistration(resolvedName, clientRegistration, providerDetails);
+		}
+		String tokenUri = providerDetails.getTokenUri();
+		if (Strings.isEmpty(tokenUri) || providerDetails.isTokenUriSecure()) {
+			return new OAuth2ResolvedRegistration(resolvedName, clientRegistration, providerDetails);
+		}
+		// here tokenUri is non-empty and insecure (non-HTTPS)
+		if (!providerDetails.isInsecureTokenUriAllowed()) {
+			LOGGER.error("[{}] Insecure OAuth2 token URI '{}' is not allowed. Use HTTPS or explicitly set allowInsecureTokenUri=true"
+					+ " for development/testing only.", resolvedName, tokenUri);
+			return null;
+		}
+		LOGGER.warn("[{}] Insecure OAuth2 token URI '{}' is explicitly allowed (allowInsecureTokenUri=true)."
+				+ " This should be used only for development/testing, never in production.",
+				resolvedName, tokenUri);
+		return new OAuth2ResolvedRegistration(resolvedName, clientRegistration, providerDetails);
 	}
 
 	/**
-	 * Builds a new OAuth2 resolved registration from the given properties. If the entry cannot be extracted the result is
-	 * {@code null}.
+	 * Builds a resolved OAuth2 registration from the given properties and optional registration name.
+	 * <p>
+	 * If {@code clientRegistrationName} is blank, this method tries to resolve the single configured registration; when
+	 * multiple registrations are present and no name is provided, resolution fails.
+	 * <p>
+	 * The method performs validation for required client/provider fields and token URI transport security. If validation
+	 * fails, this method returns {@code null} and logs the reason.
 	 *
 	 * @param properties the OAuth2 properties
-	 * @param clientRegistrationName the client registration name
-	 * @return a new OAuth2 registry entry, or null if validation fails
+	 * @param clientRegistrationName the client registration name; may be {@code null} when exactly one registration exists
+	 * @return the resolved registration, or {@code null} if resolution or validation fails
 	 */
 	public static OAuth2ResolvedRegistration of(final OAuth2Properties properties, final String clientRegistrationName) {
 		String lookupName = Nullables.nonNullOrDefault(clientRegistrationName, UNKNOWN_REGISTRATION_NAME);
@@ -153,20 +178,13 @@ public class OAuth2ResolvedRegistration {
 			return null;
 		}
 		String tokenUri = providerDetails.getTokenUri();
-		if (Strings.isNotEmpty(tokenUri) && !providerDetails.isTokenUriSecure()) {
-			if (!providerDetails.isInsecureTokenUriAllowed()) {
-				LOGGER.error("[{}] Insecure OAuth2 token URI '{}' is not allowed. Use HTTPS or explicitly set allowInsecureTokenUri=true"
-						+ " for development/testing only.", resolvedName, tokenUri);
-				return null;
-			}
-			if (properties.isForbidInsecureTokenUri()) {
-				LOGGER.error("[{}] Insecure OAuth2 token URI '{}' is explicitly allowed but globally forbidden by {}.forbidInsecureTokenUri=true",
-						resolvedName, tokenUri, OAuth2Properties.ROOT);
-				return null;
-			}
-			LOGGER.warn("[{}] Insecure OAuth2 token URI '{}' is explicitly allowed (allowInsecureTokenUri=true)."
-					+ " This should be used only for development/testing, never in production.",
-					resolvedName, tokenUri);
+		if (Strings.isNotEmpty(tokenUri)
+				&& !providerDetails.isTokenUriSecure()
+				&& providerDetails.isInsecureTokenUriAllowed()
+				&& properties.isForbidInsecureTokenUri()) {
+			LOGGER.error("[{}] Insecure OAuth2 token URI '{}' is explicitly allowed but globally forbidden by {}.forbidInsecureTokenUri=true",
+					resolvedName, tokenUri, OAuth2Properties.ROOT);
+			return null;
 		}
 		return OAuth2ResolvedRegistration.of(resolvedName, registration, providerDetails);
 	}
