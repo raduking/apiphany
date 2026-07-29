@@ -5,9 +5,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -53,6 +55,8 @@ class ApiClientEphemeralTest {
 	private static final String PARAM_ID = "id";
 
 	private static final int HTTP_STATUS_OK = 200;
+
+	private static final String SOME_ERROR_MESSAGE = "someErrorMessage";
 
 	@Test
 	@SuppressWarnings({ "unchecked", "resource" })
@@ -159,5 +163,32 @@ class ApiClientEphemeralTest {
 			assertThat(apiClient.getLifecycle(), equalTo(ClientLifecycle.EPHEMERAL));
 			assertThat(apiClient.client(), notNullValue());
 		}
+	}
+
+	@Test
+	@SuppressWarnings({ "unchecked", "resource" })
+	void shouldCloseEphemeralClientWhenBleedExceptionsThrows() throws Exception {
+		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
+		doReturn(AuthenticationType.NONE).when(exchangeClient).getAuthenticationType();
+		doReturn(exchangeClient).when(exchangeClient).as(HttpExchangeClient.class);
+		doReturn(HttpMethod.GET).when(exchangeClient).get();
+
+		RuntimeException expectedException = new RuntimeException(SOME_ERROR_MESSAGE);
+		doThrow(expectedException).when(exchangeClient).exchange(any(ApiRequest.class));
+
+		ScopedResource<HttpExchangeClient> scopedClient = ScopedResource.managed(exchangeClient);
+		ExchangeClientBuilder builder = mock(ExchangeClientBuilder.class);
+		doReturn(scopedClient).when(builder).build();
+
+		ApiClient apiClient = ApiClient.of(builder);
+		apiClient.setLifecycle(ClientLifecycle.EPHEMERAL);
+		apiClient.setBleedExceptions(true);
+
+		ApiClientFluentAdapter request = apiClient.http().get().url(BASE_URL).path(PATH_TEST);
+
+		RuntimeException thrown = assertThrows(RuntimeException.class, () -> request.retrieve(TestDto.class));
+		assertThat(thrown.getMessage(), equalTo(SOME_ERROR_MESSAGE));
+
+		verify(exchangeClient).close();
 	}
 }

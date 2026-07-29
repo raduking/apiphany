@@ -110,10 +110,13 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 		if (isUrlEncoded()) {
 			this.params = RequestParameters.encode(params, getCharset());
 		}
-		ApiResponse<T> response = JavaObjects.cast(apiClient.exchange(this));
-		response = validateResponse(response);
-		apiClient.closeIfEphemeral();
-		return response;
+		try {
+			ApiResponse<T> response = JavaObjects.cast(apiClient.exchange(this));
+			response = validateResponse(response);
+			return response;
+		} finally {
+			apiClient.closeIfEphemeral();
+		}
 	}
 
 	/**

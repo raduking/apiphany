@@ -2,6 +2,7 @@ package org.apiphany.security.oauth2;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
@@ -226,6 +227,45 @@ class OAuth2ResolvedRegistrationTest {
 				createProvider(SECURE_TOKEN_URI, false));
 
 		assertThat(result, notNullValue());
+	}
+
+	@Test
+	void shouldReturnAllFieldsWhenResolved() {
+		OAuth2ClientRegistration registration = createRegistration(CLIENT_ID, PROVIDER);
+		OAuth2ProviderDetails provider = createProvider(SECURE_TOKEN_URI, false);
+
+		OAuth2ResolvedRegistration result = OAuth2ResolvedRegistration.of(REGISTRATION, registration, provider);
+
+		assertThat(result, notNullValue());
+		assertThat(result.getClientRegistrationName(), equalTo(REGISTRATION));
+		assertThat(result.getClientRegistration(), equalTo(registration));
+		assertThat(result.getProviderDetails(), equalTo(provider));
+	}
+
+	@Test
+	void shouldResolveWhenProviderDetailsIsNullForDirectFactory() {
+		OAuth2ResolvedRegistration result = OAuth2ResolvedRegistration.of(
+				REGISTRATION,
+				createRegistration(CLIENT_ID, PROVIDER),
+				null);
+
+		assertThat(result, notNullValue());
+		assertThat(result.getClientRegistrationName(), equalTo(REGISTRATION));
+		assertThat(result.getClientRegistration(), notNullValue());
+		assertThat(result.getProviderDetails(), nullValue());
+	}
+
+	@Test
+	void shouldUseUnknownRegistrationNameWhenNameIsNullForDirectFactory() {
+		OAuth2ResolvedRegistration result = OAuth2ResolvedRegistration.of(
+				null,
+				createRegistration(CLIENT_ID, PROVIDER),
+				createProvider(SECURE_TOKEN_URI, false));
+
+		assertThat(result, notNullValue());
+		assertThat(result.getClientRegistrationName(), equalTo(OAuth2ResolvedRegistration.UNKNOWN_REGISTRATION_NAME));
+		assertThat(result.getClientRegistration(), notNullValue());
+		assertThat(result.getProviderDetails(), notNullValue());
 	}
 
 	private static OAuth2ClientRegistration createRegistration(final String clientId, final String provider) {
