@@ -3,6 +3,12 @@
 `1.2.16`
 
 - Changed `BasicTimer` and `BasicCounter` to be thread safe.
+- Changed `JsonBuilder.indentOutput` and `JsonBuilder.lineSeparator` to `volatile` for thread-safe runtime formatting visibility.
+- Fixed `OAuth2Registry.resolve` to resolve registrations through `OAuth2ResolvedRegistration.of(...)`, enforcing token URI security validation consistently.
+- Fixed Spring stream retrieval for `InputStream` class.
+- Added `CloseableClientHttpResponseInputStream` to wrap Spring `ClientHttpResponse` input streams and close the response when the stream is closed.
+- Fixed Apache HC5 stream retrieval for `InputStream` to keep response lifecycle open for callers and prevent `StreamClosed` errors.
+- Added `ApacheHC5Entities.toInputStream(ClassicHttpResponse)` for close-aware response stream extraction.
 - Added `HttpStatus.isConditional()` to check if a status code is a conditional response (304 Not Modified).
 - Fixed `AbstractHttpExchangeClient.isTerminalRedirectWithLocation` to exclude `304` `Not Modified` from redirect loop detection.
 - Fixed `BasicHttpResponseParser` to handle malformed `Content-Length` header gracefully.
@@ -13,8 +19,6 @@
 - Fixed `ClientProperties.getPropertiesMap` to return empty map when intermediate path resolves to a non-Map value.
 - Fixed misleading error message in `RandomStrings.secureAlphanumeric` for negative length.
 - Fixed `BasicHttpResponseParser.appendData` to use a mutable buffer and avoid O(n²) concatenation on incremental chunked responses.
-- Changed `JsonBuilder.indentOutput` and `JsonBuilder.lineSeparator` to `volatile` for thread-safe runtime formatting visibility.
-- Fixed `OAuth2Registry.resolve` to resolve registrations through `OAuth2ResolvedRegistration.of(...)`, enforcing token URI security validation consistently.
 
 ---
 

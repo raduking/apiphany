@@ -1,6 +1,7 @@
 package org.apiphany.http;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Objects;
 
@@ -96,6 +97,10 @@ public class ResponseEntityExtractor<T> implements ResponseExtractor<ResponseEnt
 	public T extractRawData(final ClientHttpResponse response) throws IOException {
 		MediaType contentType = SpringHttpSupport.getContentType(response);
 		try {
+			if (responseClass == InputStream.class) {
+				logRead(contentType);
+				return JavaObjects.cast(CloseableClientHttpResponseInputStream.of(response));
+			}
 			if (responseClass == byte[].class) {
 				logRead(contentType);
 				return JavaObjects.cast(toByteArray(response, maxBodySize));
