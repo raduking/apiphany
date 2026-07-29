@@ -2,6 +2,7 @@ package org.apiphany.http;
 
 import java.io.InputStream;
 
+import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apiphany.io.IOStreams;
@@ -31,6 +32,19 @@ public class ApacheHC5Entities {
 			return InputStream.nullInputStream();
 		}
 		return ThrowingSupplier.unchecked(httpEntity::getContent).get();
+	}
+
+	/**
+	 * Return the response entity content as an input stream while keeping response lifecycle bound to stream close.
+	 *
+	 * @param response the HTTP response to read from
+	 * @return an input stream backed by the response
+	 */
+	public static InputStream toInputStream(final ClassicHttpResponse response) {
+		if (null == response || null == response.getEntity()) {
+			return InputStream.nullInputStream();
+		}
+		return CloseableHttpResponseInputStream.of(response);
 	}
 
 	/**

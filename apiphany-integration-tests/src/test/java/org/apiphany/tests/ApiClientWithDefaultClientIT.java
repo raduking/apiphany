@@ -20,6 +20,7 @@ import org.apiphany.tests.contract.HeadersContract;
 import org.apiphany.tests.contract.JsonContract;
 import org.apiphany.tests.contract.RedirectsContract;
 import org.apiphany.tests.contract.RetryContract;
+import org.apiphany.tests.contract.StreamContract;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -151,5 +152,10 @@ class ApiClientWithDefaultClientIT implements ApiphanyContract {
 	@Nested
 	class Connection extends NestedContract implements ConnectionContract {
 		// empty - inherits all tests from ConnectionContract
+	}
+
+	@Nested
+	class Stream extends NestedContract implements StreamContract {
+		// empty - inherits all tests from StreamContract
 	}
 }

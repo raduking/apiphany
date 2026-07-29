@@ -12,9 +12,11 @@ import org.apiphany.client.ClientProperties;
 import org.apiphany.http.CloseableHttpRequestFactory;
 import org.apiphany.http.ContentEncoding;
 import org.apiphany.http.HttpContentType;
+import org.apiphany.http.HttpEntityRequestCallback;
 import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpStatus;
+import org.apiphany.http.ResponseEntityExtractor;
 import org.apiphany.http.SpringHttpSupport;
 import org.apiphany.http.SpringRedirectFailureDetector;
 import org.apiphany.io.InputStreamSupplier;
@@ -27,11 +29,14 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.ClientHttpRequest;
+import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.ResourceHttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.RequestCallback;
 
 /**
  * Abstract exchange client implemented with Spring.
@@ -88,8 +93,43 @@ public abstract class AbstractSpringExchangeClient extends AbstractHttpExchangeC
 	@Override
 	protected <T, U> ApiResponse<U> doExchange(final ApiRequest<T> apiRequest) {
 		HttpEntity<T> httpEntity = buildRequest(apiRequest);
-		ResponseEntity<U> responseEntity = sendRequest(apiRequest, httpEntity);
+		ResponseEntity<U> responseEntity;
+		if (apiRequest.isStream()) {
+			responseEntity = sendStreamRequest(apiRequest, httpEntity);
+		} else {
+			responseEntity = sendRequest(apiRequest, httpEntity);
+		}
 		return buildResponse(apiRequest, responseEntity);
+	}
+
+	/**
+	 * Sends a streaming request using the underlying request factory directly so the response body stream remains owned by
+	 * the caller.
+	 *
+	 * @param <T> request entity type
+	 * @param <U> response entity type
+	 *
+	 * @param apiRequest the API request object
+	 * @param httpEntity the HTTP request entity
+	 * @return the HTTP response entity
+	 */
+	@SuppressWarnings("resource")
+	protected <T, U> ResponseEntity<U> sendStreamRequest(final ApiRequest<T> apiRequest, final HttpEntity<T> httpEntity) {
+		return HttpException.ifThrows(() -> {
+			var springHttpMethod = SpringHttpSupport.getHttpMethod(apiRequest.getMethod().value());
+			ClientHttpRequest request = getRequestFactory().createRequest(apiRequest.getUri(), springHttpMethod);
+			RequestCallback requestCallback = new HttpEntityRequestCallback<>(httpEntity, getMessageConverters());
+			requestCallback.doWithRequest(request);
+			ClientHttpResponse response = request.execute();
+			try {
+				Class<U> responseType = getResponseType(apiRequest);
+				return new ResponseEntityExtractor<>(responseType, getMessageConverters(), getMaxResponseBodySize())
+						.extractData(response);
+			} catch (Exception e) {
+				response.close();
+				throw e;
+			}
+		});
 	}
 
 	/**

@@ -151,7 +151,33 @@ public class ApacheHC5HttpExchangeClient extends AbstractHttpExchangeClient {
 	@Override
 	protected <T, U> ApiResponse<U> doExchange(final ApiRequest<T> apiRequest) {
 		HttpUriRequest httpUriRequest = buildRequest(apiRequest);
+		if (apiRequest.isStream()) {
+			return sendStreamRequest(apiRequest, httpUriRequest);
+		}
 		return sendRequest(apiRequest, httpUriRequest);
+	}
+
+	/**
+	 * Sends a streaming HTTP request and keeps the HTTP response open so the caller can consume the body stream.
+	 *
+	 * @param <T> request body type
+	 * @param <U> response body type
+	 *
+	 * @param apiRequest API request object
+	 * @param httpUriRequest HTTP URI request to send
+	 * @return API response object
+	 */
+	@SuppressWarnings("resource")
+	protected <U, T> ApiResponse<U> sendStreamRequest(final ApiRequest<T> apiRequest, final HttpUriRequest httpUriRequest) {
+		return ThrowingSupplier.<ApiResponse<U>>unchecked(() -> {
+			ClassicHttpResponse response = getHttpClient().executeOpen(null, httpUriRequest, null);
+			try {
+				return JavaObjects.cast(buildResponse(apiRequest, response));
+			} catch (Exception e) {
+				response.close();
+				throw e;
+			}
+		}).get();
 	}
 
 	/**
@@ -257,7 +283,7 @@ public class ApacheHC5HttpExchangeClient extends AbstractHttpExchangeClient {
 		Map<String, List<String>> headers = Nullables.whenNotNull(response.getHeaders(), ApacheHC5HttpExchangeClient::toHttpHeadersMap);
 		ensureContentLengthWithinLimit(headers, getMaxResponseBodySize());
 
-		Object responseBody = getResponseBody(apiRequest, httpEntity);
+		Object responseBody = getResponseBody(apiRequest, response, httpEntity);
 
 		List<String> encodings = getHeaderValues(HttpHeader.CONTENT_ENCODING, headers);
 		List<ContentEncoding> contentEncodings = ContentEncoding.parseAll(encodings);
@@ -281,10 +307,10 @@ public class ApacheHC5HttpExchangeClient extends AbstractHttpExchangeClient {
 	 * @return the response body converted to the target type
 	 */
 	@SuppressWarnings("resource")
-	protected <T, U> U getResponseBody(final ApiRequest<T> apiRequest, final HttpEntity httpEntity) {
+	protected <T, U> U getResponseBody(final ApiRequest<T> apiRequest, final ClassicHttpResponse response, final HttpEntity httpEntity) {
 		Object body;
 		if (apiRequest.isStream()) {
-			body = ApacheHC5Entities.toInputStream(httpEntity);
+			body = ApacheHC5Entities.toInputStream(response);
 		} else {
 			body = ApacheHC5Entities.toByteArray(httpEntity, getMaxResponseBodySize());
 		}
