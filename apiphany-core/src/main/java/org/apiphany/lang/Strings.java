@@ -505,4 +505,25 @@ public interface Strings {
 	static String preview(final byte[] value, final int maxLength) {
 		return preview(Strings.toString(value, maxLength + 1), maxLength);
 	}
+
+	/**
+	 * Checks if the given string ends with any of the given characters. Returns {@code false} if the string is null or
+	 * empty.
+	 *
+	 * @param str the string to check, may be null
+	 * @param chars the characters to check against
+	 * @return {@code true} if the string ends with any of the given characters
+	 */
+	static boolean endsWithAny(final String str, final char... chars) {
+		if (isEmpty(str)) {
+			return false;
+		}
+		char last = str.charAt(str.length() - 1);
+		for (char c : chars) {
+			if (last == c) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

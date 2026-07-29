@@ -229,6 +229,28 @@ class ApiClientRequestTest {
 	}
 
 	@Test
+	void shouldCreateUriWithQuestionMarkWhenUrlHasNoExistingParams() {
+		ApiRequest<String> request = new ApiRequest<>();
+		request.url = BASE_URL + "/test";
+		request.params = RequestParameters.of(ParameterFunction.parameter("a", "1"));
+
+		URI uri = request.getUri();
+
+		assertThat(uri, equalTo(URI.create("http://localhost/test?a=1")));
+	}
+
+	@Test
+	void shouldCreateUriWithAmpersandWhenUrlAlreadyHasExistingParams() {
+		ApiRequest<String> request = new ApiRequest<>();
+		request.url = "http://example.com/path?a=1&b=2";
+		request.params = RequestParameters.of(ParameterFunction.parameter("c", "3"));
+
+		URI uri = request.getUri();
+
+		assertThat(uri, equalTo(URI.create("http://example.com/path?a=1&b=2&c=3")));
+	}
+
+	@Test
 	void shouldReturnFalseForHasResponseTypeWhenResponseTypeAndGenericResponseTypeIsNull() {
 		ApiRequest<?> request = new ApiRequest<>();
 

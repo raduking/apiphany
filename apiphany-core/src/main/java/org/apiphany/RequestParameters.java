@@ -36,9 +36,24 @@ import org.morphix.reflection.ExtendedFields;
 public class RequestParameters {
 
 	/**
+	 * Request parameters separator character.
+	 */
+	public static final char SEPARATOR_CHAR = '&';
+
+	/**
 	 * Request parameters separator.
 	 */
-	public static final String SEPARATOR = "&";
+	public static final String SEPARATOR = String.valueOf(SEPARATOR_CHAR);
+
+	/**
+	 * Query prefix character.
+	 */
+	public static final char PREFIX_CHAR = '?';
+
+	/**
+	 * Query prefix.
+	 */
+	public static final String PREFIX = String.valueOf(PREFIX_CHAR);
 
 	/**
 	 * Creates a new map and populates it with the given external parameter functions.
@@ -58,8 +73,9 @@ public class RequestParameters {
 	}
 
 	/**
-	 * Transforms the request parameters map into a string usable in URLs/URIs. The string will start with the {@code '?'}
-	 * character, so no additional concatenation is needed. If the map is empty, an empty string is returned.
+	 * Transforms the request parameters map into a suffix for appending to a URL. The suffix will start with {@code '?'} if
+	 * the URL does not already contain a query string, or {@code '&'} if it does. If the map is empty, an empty string is
+	 * returned.
 	 *
 	 * @param params the request parameters map
 	 * @return a URL-friendly string representation of the parameters
@@ -67,7 +83,23 @@ public class RequestParameters {
 	public static String asUrlSuffix(final Map<String, List<String>> params) {
 		String result = asString(params);
 		if (Strings.isNotEmpty(result)) {
-			result = "?" + result;
+			result = PREFIX + result;
+		}
+		return result;
+	}
+
+	/**
+	 * Transforms the request parameters map into a suffix for appending to the given URL. Uses {@code '&'} instead of
+	 * {@code '?'} when the URL already contains a query string. If the map is empty, an empty string is returned.
+	 *
+	 * @param url the base URL (may already contain a query string)
+	 * @param params the request parameters map
+	 * @return a URL-friendly string representation of the parameters
+	 */
+	public static String asUrlSuffix(final Map<String, List<String>> params, final String url) {
+		String result = asString(params);
+		if (Strings.isNotEmpty(result) && !Strings.endsWithAny(url, PREFIX_CHAR, SEPARATOR_CHAR)) {
+			result = (url.indexOf(PREFIX_CHAR) >= 0 ? SEPARATOR : PREFIX) + result;
 		}
 		return result;
 	}

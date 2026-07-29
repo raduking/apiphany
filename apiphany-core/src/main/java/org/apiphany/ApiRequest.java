@@ -123,7 +123,7 @@ public class ApiRequest<T> extends ApiMessage<T> {
 		if (Strings.isEmpty(baseUrl)) {
 			return null;
 		}
-		return URI.create(getUrl() + RequestParameters.asUrlSuffix(getParams()));
+		return URI.create(baseUrl + RequestParameters.asUrlSuffix(getParams(), baseUrl));
 	}
 
 	/**
