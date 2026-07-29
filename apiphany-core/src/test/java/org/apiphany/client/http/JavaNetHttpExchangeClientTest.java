@@ -244,7 +244,26 @@ class JavaNetHttpExchangeClientTest {
 
 			assertThat(httpRequest.method(), equalTo("DELETE"));
 			assertThat(httpRequest.uri().toString(), equalTo(URL));
-			assertThat(httpRequest.bodyPublisher().isPresent(), equalTo(false));
+			assertThat(httpRequest.bodyPublisher().isPresent(), equalTo(true));
+			assertThat(httpRequest.bodyPublisher().get().contentLength(), equalTo(0L));
+		}
+
+		@Test
+		void shouldBuildDeleteRequestWithBody() throws Exception {
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.DELETE)
+					.body(STRING);
+
+			HttpRequest httpRequest = exchangeClient.buildRequest(request);
+
+			assertThat(httpRequest.method(), equalTo("DELETE"));
+			assertThat(httpRequest.uri().toString(), equalTo(URL));
+			assertThat(httpRequest.bodyPublisher().isPresent(), equalTo(true));
+			assertThat(httpRequest.bodyPublisher().get().contentLength(), equalTo((long) STRING.length()));
 		}
 
 		@Test
