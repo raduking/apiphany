@@ -21,6 +21,7 @@
 - Updated `BasicHttpResponseParser.appendData` to use a mutable buffer and avoid O(n²) concatenation on incremental chunked responses.
 - Added `Strings.endsWithAny(String, char...)` to check if a string ends with any of the given characters.
 - Updated URL query parameter composition to use `&` instead of `?` when the base URL already contains a query string.
+- Updated `DELETE` request to support body payload across all transports (JavaNet, Apache HC5, Spring).
 
 ---
 

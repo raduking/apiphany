@@ -192,9 +192,8 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 			case GET -> httpRequestBuilder.GET();
 			case PUT -> httpRequestBuilder.PUT(toBodyPublisher(apiRequest));
 			case POST -> httpRequestBuilder.POST(toBodyPublisher(apiRequest));
-			case DELETE -> httpRequestBuilder.DELETE();
+			case DELETE, PATCH -> httpRequestBuilder.method(httpMethod.value(), toBodyPublisher(apiRequest));
 			case HEAD -> httpRequestBuilder.HEAD();
-			case PATCH -> httpRequestBuilder.method(httpMethod.value(), toBodyPublisher(apiRequest));
 			case OPTIONS, TRACE -> httpRequestBuilder.method(httpMethod.value(), BodyPublishers.noBody());
 			default -> throw new UnsupportedOperationException("HTTP method " + httpMethod + " is not supported!");
 		}
