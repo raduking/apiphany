@@ -86,6 +86,66 @@ class RequestParametersTest {
 	}
 
 	@Test
+	void shouldAppendWithQuestionMarkWhenUrlHasNoQuery() {
+		Map<String, List<String>> params = RequestParameters.of(
+				parameter("param1", "value1"),
+				parameter("param2", "value2"));
+
+		String urlSuffix = RequestParameters.asUrlSuffix(params, "http://example.com/path");
+
+		assertThat(urlSuffix, equalTo("?param1=value1&param2=value2"));
+	}
+
+	@Test
+	void shouldAppendWithAmpersandWhenUrlAlreadyHasQuery() {
+		Map<String, List<String>> params = RequestParameters.of(
+				parameter("b", "2"));
+
+		String urlSuffix = RequestParameters.asUrlSuffix(params, "http://example.com/path?a=1");
+
+		assertThat(urlSuffix, equalTo("&b=2"));
+	}
+
+	@Test
+	void shouldAppendWithAmpersandWhenUrlHasMultipleExistingParams() {
+		Map<String, List<String>> params = RequestParameters.of(
+				parameter("c", "3"));
+
+		String urlSuffix = RequestParameters.asUrlSuffix(params, "http://example.com/path?a=1&b=2");
+
+		assertThat(urlSuffix, equalTo("&c=3"));
+	}
+
+	@Test
+	void shouldAppendWithoutPrefixWhenUrlEndsWithQuestionMark() {
+		Map<String, List<String>> params = RequestParameters.of(
+				parameter("a", "1"));
+
+		String urlSuffix = RequestParameters.asUrlSuffix(params, "http://example.com/path?");
+
+		assertThat(urlSuffix, equalTo("a=1"));
+	}
+
+	@Test
+	void shouldAppendWithoutPrefixWhenUrlEndsWithAmpersand() {
+		Map<String, List<String>> params = RequestParameters.of(
+				parameter("b", "2"));
+
+		String urlSuffix = RequestParameters.asUrlSuffix(params, "http://example.com/path?a=1&");
+
+		assertThat(urlSuffix, equalTo("b=2"));
+	}
+
+	@Test
+	void shouldReturnEmptyStringAsUrlSuffixWithUrlIfNoParameters() {
+		Map<String, List<String>> params = RequestParameters.of();
+
+		String urlSuffix = RequestParameters.asUrlSuffix(params, "http://example.com/path?a=1");
+
+		assertThat(urlSuffix, equalTo(""));
+	}
+
+	@Test
 	void shouldReturnEmptyMapIfNoParametersWereSupplied() {
 		Map<String, List<String>> params = RequestParameters.of();
 

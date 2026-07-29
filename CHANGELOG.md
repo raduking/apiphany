@@ -2,7 +2,7 @@
 
 `1.2.16`
 
-- Changed `BasicTimer` and `BasicCounter` to be thread safe.
+- Updated `BasicTimer` and `BasicCounter` to be thread safe.
 - Changed `JsonBuilder.indentOutput` and `JsonBuilder.lineSeparator` to `volatile` for thread-safe runtime formatting visibility.
 - Fixed `OAuth2Registry.resolve` to resolve registrations through `OAuth2ResolvedRegistration.of(...)`, enforcing token URI security validation consistently.
 - Fixed Spring stream retrieval for `InputStream` class.
@@ -10,15 +10,17 @@
 - Fixed Apache HC5 stream retrieval for `InputStream` to keep response lifecycle open for callers and prevent `StreamClosed` errors.
 - Added `ApacheHC5Entities.toInputStream(ClassicHttpResponse)` for close-aware response stream extraction.
 - Added `HttpStatus.isConditional()` to check if a status code is a conditional response (304 Not Modified).
-- Fixed `AbstractHttpExchangeClient.isTerminalRedirectWithLocation` to exclude `304` `Not Modified` from redirect loop detection.
-- Fixed `BasicHttpResponseParser` to handle malformed `Content-Length` header gracefully.
-- Fixed `BasicHttpResponseParser` to handle malformed chunk size gracefully.
-- Fixed `BasicHttpResponseParser.getStatusCode` to handle malformed status line gracefully.
+- Updated `AbstractHttpExchangeClient.isTerminalRedirectWithLocation` to exclude `304` `Not Modified` from redirect loop detection.
+- Updated `BasicHttpResponseParser` to handle malformed `Content-Length` header gracefully.
+- Updated `BasicHttpResponseParser` to handle malformed chunk size gracefully.
+- Updated `BasicHttpResponseParser.getStatusCode` to handle malformed status line gracefully.
 - Fixed `HttpContentType.parse` to strip surrounding quotes from parameter values per RFC 2045.
 - Fixed `ContentEncoding.fromString(String, Supplier)` to handle case-insensitive input.
 - Fixed `ClientProperties.getPropertiesMap` to return empty map when intermediate path resolves to a non-Map value.
-- Fixed misleading error message in `RandomStrings.secureAlphanumeric` for negative length.
-- Fixed `BasicHttpResponseParser.appendData` to use a mutable buffer and avoid O(n²) concatenation on incremental chunked responses.
+- Updated misleading error message in `RandomStrings.secureAlphanumeric` for negative length.
+- Updated `BasicHttpResponseParser.appendData` to use a mutable buffer and avoid O(n²) concatenation on incremental chunked responses.
+- Added `Strings.endsWithAny(String, char...)` to check if a string ends with any of the given characters.
+- Updated URL query parameter composition to use `&` instead of `?` when the base URL already contains a query string.
 
 ---
 

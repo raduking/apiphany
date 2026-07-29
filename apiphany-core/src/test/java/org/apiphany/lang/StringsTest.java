@@ -722,4 +722,33 @@ class StringsTest {
 				Arguments.of("some text with spaces", "sometextwithspaces"),
 				Arguments.of("some\ttext\nwith\rdifferent\twhitespaces", "sometextwithdifferentwhitespaces"));
 	}
+
+	@Nested
+	class EndsWithAnyTests {
+
+		@Test
+		void shouldReturnTrueWhenStringEndsWithGivenChar() {
+			assertTrue(Strings.endsWithAny("hello?", '?'));
+		}
+
+		@Test
+		void shouldReturnTrueWhenStringEndsWithAnyOfMultipleChars() {
+			assertTrue(Strings.endsWithAny("hello&", '?', '&'));
+		}
+
+		@Test
+		void shouldReturnFalseWhenStringDoesNotEndWithAnyGivenChar() {
+			assertFalse(Strings.endsWithAny("hello", '?', '&'));
+		}
+
+		@Test
+		void shouldReturnFalseWhenStringIsEmpty() {
+			assertFalse(Strings.endsWithAny("", '?', '&'));
+		}
+
+		@Test
+		void shouldReturnFalseWhenStringIsNull() {
+			assertFalse(Strings.endsWithAny(null, '?', '&'));
+		}
+	}
 }
