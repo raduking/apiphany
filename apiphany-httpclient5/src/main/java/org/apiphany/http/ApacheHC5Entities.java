@@ -40,6 +40,7 @@ public class ApacheHC5Entities {
 	 * @param response the HTTP response to read from
 	 * @return an input stream backed by the response
 	 */
+	@SuppressWarnings("resource")
 	public static InputStream toInputStream(final ClassicHttpResponse response) {
 		if (null == response || null == response.getEntity()) {
 			return InputStream.nullInputStream();
@@ -75,6 +76,22 @@ public class ApacheHC5Entities {
 		} catch (Exception e) {
 			throw new IllegalStateException("Failed to read HTTP entity content as byte array: " + e.getMessage(), e);
 		}
+	}
+
+	/**
+	 * Return the content of the HTTP entity as a byte array with an upper size limit. The caller is responsible for closing
+	 * the response after reading the content.
+	 *
+	 * @param response the HTTP response to read from
+	 * @param maxBytes maximum number of bytes allowed
+	 * @return a byte array containing the content of the HTTP entity
+	 */
+	@SuppressWarnings("resource")
+	public static byte[] toByteArray(final ClassicHttpResponse response, final int maxBytes) {
+		if (null == response) {
+			return Bytes.EMPTY;
+		}
+		return toByteArray(response.getEntity(), maxBytes);
 	}
 
 	/**

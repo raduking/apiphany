@@ -87,13 +87,26 @@ public class ResponseEntityExtractor<T> implements ResponseExtractor<ResponseEnt
 	}
 
 	/**
-	 * Extract the response body to the given type using the configured message converters. If no suitable converter is
-	 * found, an {@link UnknownContentTypeException} is thrown.
+	 * Extract the response body to the given type using the configured message converters.
+	 *
+	 * <ul>
+	 * <li>If the response class is {@link InputStream}, the response body is returned as a
+	 * {@link CloseableClientHttpResponseInputStream}.</li>
+	 * <li>If the response class is {@link InputStream} then the caller is responsible for closing the response input
+	 * stream.</li>
+	 * <li>If the response class is {@code byte[]}, the response body is read to a byte array with a maximum size
+	 * limit.</li>
+	 * <li>If the response class is any other type, the message converters will be used to read the response body.</li>
+	 * <li>If no suitable converter is found, an {@link UnknownContentTypeException} is thrown.</li>
+	 * <li>If an error occurs while reading the response body, a {@link RestClientException} is thrown with the original
+	 * exception as the cause.</li>
+	 * </ul>
 	 *
 	 * @param response the response to extract the body from
 	 * @return the extracted response body
 	 * @throws IOException if an I/O error occurs while reading the response body
 	 */
+	@SuppressWarnings("resource")
 	public T extractRawData(final ClientHttpResponse response) throws IOException {
 		MediaType contentType = SpringHttpSupport.getContentType(response);
 		try {

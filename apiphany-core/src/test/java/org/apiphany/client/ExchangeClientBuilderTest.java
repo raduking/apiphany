@@ -800,7 +800,6 @@ class ExchangeClientBuilderTest {
 	class DelegateHandlingTests {
 
 		@Test
-		@SuppressWarnings("resource")
 		void shouldThrowExceptionWhenBuildErrorHandlerIsNull() {
 			ExchangeClientBuilder builder = ExchangeClientBuilder.create()
 					.client(DummyExchangeClient.class);
