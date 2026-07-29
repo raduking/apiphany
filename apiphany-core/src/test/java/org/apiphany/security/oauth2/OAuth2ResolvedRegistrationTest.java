@@ -18,6 +18,12 @@ class OAuth2ResolvedRegistrationTest {
 
 	private static final String REGISTRATION = "my-client";
 	private static final String PROVIDER = "my-provider";
+	private static final String CLIENT_ID = "client-id";
+	private static final String CLIENT_SECRET = "client-secret";
+	private static final String UNKNOWN_PROVIDER = "unknown-provider";
+	private static final String SECURE_TOKEN_URI = "https://localhost:8080/token";
+	private static final String INSECURE_TOKEN_URI = "http://localhost:8080/token";
+	private static final String SECURE_TOKEN_URI_NO_PORT = "https://localhost/token";
 
 	@Test
 	void shouldReturnNullWhenPropertiesAreNull() {
@@ -42,7 +48,7 @@ class OAuth2ResolvedRegistrationTest {
 				Map.of(
 						"a", createRegistration("a", PROVIDER),
 						"b", createRegistration("b", PROVIDER)),
-				Map.of(PROVIDER, createProvider("https://localhost/token", false)));
+				Map.of(PROVIDER, createProvider(SECURE_TOKEN_URI_NO_PORT, false)));
 
 		OAuth2ResolvedRegistration result = OAuth2ResolvedRegistration.of(properties, null);
 
@@ -52,8 +58,8 @@ class OAuth2ResolvedRegistrationTest {
 	@Test
 	void shouldResolveSingleRegistrationWhenRegistrationNameMissing() {
 		OAuth2Properties properties = OAuth2Properties.of(
-				Map.of(REGISTRATION, createRegistration("client-id", PROVIDER)),
-				Map.of(PROVIDER, createProvider("https://localhost/token", false)));
+				Map.of(REGISTRATION, createRegistration(CLIENT_ID, PROVIDER)),
+				Map.of(PROVIDER, createProvider(SECURE_TOKEN_URI_NO_PORT, false)));
 
 		OAuth2ResolvedRegistration result = OAuth2ResolvedRegistration.of(properties, null);
 
@@ -64,8 +70,8 @@ class OAuth2ResolvedRegistrationTest {
 	@Test
 	void shouldReturnNullWhenResolvedRegistrationNameIsEmpty() {
 		OAuth2Properties properties = OAuth2Properties.of(
-				Map.of("", createRegistration("client-id", PROVIDER)),
-				Map.of(PROVIDER, createProvider("https://localhost/token", false)));
+				Map.of("", createRegistration(CLIENT_ID, PROVIDER)),
+				Map.of(PROVIDER, createProvider(SECURE_TOKEN_URI_NO_PORT, false)));
 
 		OAuth2ResolvedRegistration result = OAuth2ResolvedRegistration.of(properties, null);
 
@@ -75,7 +81,7 @@ class OAuth2ResolvedRegistrationTest {
 	@Test
 	void shouldReturnNullWhenProvidersAreMissing() {
 		OAuth2Properties properties = OAuth2Properties.of();
-		properties.setRegistration(Map.of(REGISTRATION, createRegistration("client-id", PROVIDER)));
+		properties.setRegistration(Map.of(REGISTRATION, createRegistration(CLIENT_ID, PROVIDER)));
 		properties.setProvider(Map.of());
 
 		OAuth2ResolvedRegistration result = OAuth2ResolvedRegistration.of(properties, REGISTRATION);
@@ -86,8 +92,8 @@ class OAuth2ResolvedRegistrationTest {
 	@Test
 	void shouldReturnNullWhenRegistrationDoesNotExist() {
 		OAuth2Properties properties = OAuth2Properties.of(
-				Map.of("other", createRegistration("client-id", PROVIDER)),
-				Map.of(PROVIDER, createProvider("https://localhost/token", false)));
+				Map.of("other", createRegistration(CLIENT_ID, PROVIDER)),
+				Map.of(PROVIDER, createProvider(SECURE_TOKEN_URI_NO_PORT, false)));
 
 		OAuth2ResolvedRegistration result = OAuth2ResolvedRegistration.of(properties, REGISTRATION);
 
@@ -96,12 +102,12 @@ class OAuth2ResolvedRegistrationTest {
 
 	@Test
 	void shouldReturnNullWhenClientIdIsMissing() {
-		OAuth2ClientRegistration registration = createRegistration("client-id", PROVIDER);
+		OAuth2ClientRegistration registration = createRegistration(CLIENT_ID, PROVIDER);
 		registration.setClientId(null);
 
 		OAuth2Properties properties = OAuth2Properties.of(
 				Map.of(REGISTRATION, registration),
-				Map.of(PROVIDER, createProvider("https://localhost/token", false)));
+				Map.of(PROVIDER, createProvider(SECURE_TOKEN_URI_NO_PORT, false)));
 
 		OAuth2ResolvedRegistration result = OAuth2ResolvedRegistration.of(properties, REGISTRATION);
 
@@ -110,12 +116,12 @@ class OAuth2ResolvedRegistrationTest {
 
 	@Test
 	void shouldReturnNullWhenClientSecretIsMissing() {
-		OAuth2ClientRegistration registration = createRegistration("client-id", PROVIDER);
+		OAuth2ClientRegistration registration = createRegistration(CLIENT_ID, PROVIDER);
 		registration.setClientSecret(null);
 
 		OAuth2Properties properties = OAuth2Properties.of(
 				Map.of(REGISTRATION, registration),
-				Map.of(PROVIDER, createProvider("https://localhost/token", false)));
+				Map.of(PROVIDER, createProvider(SECURE_TOKEN_URI_NO_PORT, false)));
 
 		OAuth2ResolvedRegistration result = OAuth2ResolvedRegistration.of(properties, REGISTRATION);
 
@@ -125,8 +131,8 @@ class OAuth2ResolvedRegistrationTest {
 	@Test
 	void shouldReturnNullWhenProviderDetailsAreMissing() {
 		OAuth2Properties properties = OAuth2Properties.of(
-				Map.of(REGISTRATION, createRegistration("client-id", "unknown-provider")),
-				Map.of(PROVIDER, createProvider("https://localhost/token", false)));
+				Map.of(REGISTRATION, createRegistration(CLIENT_ID, UNKNOWN_PROVIDER)),
+				Map.of(PROVIDER, createProvider(SECURE_TOKEN_URI_NO_PORT, false)));
 
 		OAuth2ResolvedRegistration result = OAuth2ResolvedRegistration.of(properties, REGISTRATION);
 
@@ -136,8 +142,8 @@ class OAuth2ResolvedRegistrationTest {
 	@Test
 	void shouldReturnNullWhenInsecureTokenUriIsNotAllowed() {
 		OAuth2Properties properties = OAuth2Properties.of(
-				Map.of(REGISTRATION, createRegistration("client-id", PROVIDER)),
-				Map.of(PROVIDER, createProvider("http://localhost:8080/token", false)));
+				Map.of(REGISTRATION, createRegistration(CLIENT_ID, PROVIDER)),
+				Map.of(PROVIDER, createProvider(INSECURE_TOKEN_URI, false)));
 
 		OAuth2ResolvedRegistration result = OAuth2ResolvedRegistration.of(properties, REGISTRATION);
 
@@ -147,8 +153,8 @@ class OAuth2ResolvedRegistrationTest {
 	@Test
 	void shouldReturnNullWhenInsecureTokenUriIsAllowedButGloballyForbidden() {
 		OAuth2Properties properties = OAuth2Properties.of(
-				Map.of(REGISTRATION, createRegistration("client-id", PROVIDER)),
-				Map.of(PROVIDER, createProvider("http://localhost:8080/token", true)));
+				Map.of(REGISTRATION, createRegistration(CLIENT_ID, PROVIDER)),
+				Map.of(PROVIDER, createProvider(INSECURE_TOKEN_URI, true)));
 		properties.setForbidInsecureTokenUri(true);
 
 		OAuth2ResolvedRegistration result = OAuth2ResolvedRegistration.of(properties, REGISTRATION);
@@ -159,8 +165,8 @@ class OAuth2ResolvedRegistrationTest {
 	@Test
 	void shouldResolveWhenInsecureTokenUriIsAllowedAndNotGloballyForbidden() {
 		OAuth2Properties properties = OAuth2Properties.of(
-				Map.of(REGISTRATION, createRegistration("client-id", PROVIDER)),
-				Map.of(PROVIDER, createProvider("http://localhost:8080/token", true)));
+				Map.of(REGISTRATION, createRegistration(CLIENT_ID, PROVIDER)),
+				Map.of(PROVIDER, createProvider(INSECURE_TOKEN_URI, true)));
 
 		OAuth2ResolvedRegistration result = OAuth2ResolvedRegistration.of(properties, REGISTRATION);
 
@@ -171,8 +177,8 @@ class OAuth2ResolvedRegistrationTest {
 	@Test
 	void shouldResolveWhenTokenUriIsSecure() {
 		OAuth2Properties properties = OAuth2Properties.of(
-				Map.of(REGISTRATION, createRegistration("client-id", PROVIDER)),
-				Map.of(PROVIDER, createProvider("https://localhost:8080/token", false)));
+				Map.of(REGISTRATION, createRegistration(CLIENT_ID, PROVIDER)),
+				Map.of(PROVIDER, createProvider(SECURE_TOKEN_URI, false)));
 
 		OAuth2ResolvedRegistration result = OAuth2ResolvedRegistration.of(properties, REGISTRATION);
 
@@ -183,7 +189,7 @@ class OAuth2ResolvedRegistrationTest {
 	void shouldResolveWhenTokenUriIsEmpty() {
 		OAuth2ProviderDetails providerDetails = createProvider("", false);
 		OAuth2Properties properties = OAuth2Properties.of(
-				Map.of(REGISTRATION, createRegistration("client-id", PROVIDER)),
+				Map.of(REGISTRATION, createRegistration(CLIENT_ID, PROVIDER)),
 				Map.of(PROVIDER, providerDetails));
 
 		OAuth2ResolvedRegistration result = OAuth2ResolvedRegistration.of(properties, REGISTRATION);
@@ -191,10 +197,41 @@ class OAuth2ResolvedRegistrationTest {
 		assertThat(result, notNullValue());
 	}
 
+	@Test
+	void shouldReturnNullWhenInsecureTokenUriIsNotAllowedForDirectFactory() {
+		OAuth2ResolvedRegistration result = OAuth2ResolvedRegistration.of(
+				REGISTRATION,
+				createRegistration(CLIENT_ID, PROVIDER),
+				createProvider(INSECURE_TOKEN_URI, false));
+
+		assertNull(result);
+	}
+
+	@Test
+	void shouldResolveWhenInsecureTokenUriIsAllowedForDirectFactory() {
+		OAuth2ResolvedRegistration result = OAuth2ResolvedRegistration.of(
+				REGISTRATION,
+				createRegistration(CLIENT_ID, PROVIDER),
+				createProvider(INSECURE_TOKEN_URI, true));
+
+		assertThat(result, notNullValue());
+		assertThat(result.getClientRegistrationName(), equalTo(REGISTRATION));
+	}
+
+	@Test
+	void shouldResolveWhenSecureTokenUriForDirectFactory() {
+		OAuth2ResolvedRegistration result = OAuth2ResolvedRegistration.of(
+				REGISTRATION,
+				createRegistration(CLIENT_ID, PROVIDER),
+				createProvider(SECURE_TOKEN_URI, false));
+
+		assertThat(result, notNullValue());
+	}
+
 	private static OAuth2ClientRegistration createRegistration(final String clientId, final String provider) {
 		OAuth2ClientRegistration registration = new OAuth2ClientRegistration();
 		registration.setClientId(clientId);
-		registration.setClientSecret("client-secret");
+		registration.setClientSecret(CLIENT_SECRET);
 		registration.setProvider(provider);
 		return registration;
 	}

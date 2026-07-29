@@ -313,21 +313,27 @@ class OAuth2TokenProviderRegistryTest {
 
 			OAuth2ClientRegistration registration1 = mock(OAuth2ClientRegistration.class);
 			doReturn(PROVIDER_NAME_1).when(registration1).getProvider();
+			doReturn(true).when(registration1).hasClientId();
+			doReturn(true).when(registration1).hasClientSecret();
 			OAuth2ProviderDetails provider1 = mock(OAuth2ProviderDetails.class);
 
 			OAuth2ClientRegistration registration2 = mock(OAuth2ClientRegistration.class);
-			doReturn(PROVIDER_NAME_2).when(registration1).getProvider();
+			doReturn(PROVIDER_NAME_2).when(registration2).getProvider();
+			doReturn(true).when(registration2).hasClientId();
+			doReturn(true).when(registration2).hasClientSecret();
 			OAuth2ProviderDetails provider2 = mock(OAuth2ProviderDetails.class);
 
 			Map<String, OAuth2ClientRegistration> registrations =
 					Map.of(CLIENT_REGISTRATION_1, registration1, CLIENT_REGISTRATION_2, registration2);
+			Map<String, OAuth2ProviderDetails> providers =
+					Map.of(PROVIDER_NAME_1, provider1, PROVIDER_NAME_2, provider2);
 
 			doReturn(registrations).when(mockProperties).getRegistration();
+			doReturn(providers).when(mockProperties).getProvider();
+			doReturn(registration1).when(mockProperties).getClientRegistration(CLIENT_REGISTRATION_1);
+			doReturn(registration2).when(mockProperties).getClientRegistration(CLIENT_REGISTRATION_2);
 			doReturn(provider1).when(mockProperties).getProviderDetails(registration1);
 			doReturn(provider2).when(mockProperties).getProviderDetails(registration2);
-
-			OAuth2TokenProvider tokenProvider = mock(OAuth2TokenProvider.class);
-			doReturn(CLIENT_REGISTRATION_NAME).when(tokenProvider).getClientRegistrationName();
 
 			AuthenticationToken token = createToken();
 			AuthenticationTokenProvider tokenClient = mock(AuthenticationTokenProvider.class);
@@ -530,21 +536,27 @@ class OAuth2TokenProviderRegistryTest {
 
 			OAuth2ClientRegistration registration1 = mock(OAuth2ClientRegistration.class);
 			doReturn(PROVIDER_NAME_1).when(registration1).getProvider();
+			doReturn(true).when(registration1).hasClientId();
+			doReturn(true).when(registration1).hasClientSecret();
 			OAuth2ProviderDetails provider1 = mock(OAuth2ProviderDetails.class);
 
 			OAuth2ClientRegistration registration2 = mock(OAuth2ClientRegistration.class);
-			doReturn(PROVIDER_NAME_2).when(registration1).getProvider();
+			doReturn(PROVIDER_NAME_2).when(registration2).getProvider();
+			doReturn(true).when(registration2).hasClientId();
+			doReturn(true).when(registration2).hasClientSecret();
 			OAuth2ProviderDetails provider2 = mock(OAuth2ProviderDetails.class);
 
 			Map<String, OAuth2ClientRegistration> registrations =
 					Map.of(CLIENT_REGISTRATION_1, registration1, CLIENT_REGISTRATION_2, registration2);
+			Map<String, OAuth2ProviderDetails> providers =
+					Map.of(PROVIDER_NAME_1, provider1, PROVIDER_NAME_2, provider2);
 
 			doReturn(registrations).when(mockProperties).getRegistration();
+			doReturn(providers).when(mockProperties).getProvider();
+			doReturn(registration1).when(mockProperties).getClientRegistration(CLIENT_REGISTRATION_1);
+			doReturn(registration2).when(mockProperties).getClientRegistration(CLIENT_REGISTRATION_2);
 			doReturn(provider1).when(mockProperties).getProviderDetails(registration1);
 			doReturn(provider2).when(mockProperties).getProviderDetails(registration2);
-
-			OAuth2TokenProvider tokenProvider = mock(OAuth2TokenProvider.class);
-			doReturn(CLIENT_REGISTRATION_NAME).when(tokenProvider).getClientRegistrationName();
 
 			AuthenticationToken token = createToken();
 			AuthenticationTokenProvider tokenClient = mock(AuthenticationTokenProvider.class);
@@ -574,21 +586,27 @@ class OAuth2TokenProviderRegistryTest {
 
 			OAuth2ClientRegistration registration1 = mock(OAuth2ClientRegistration.class);
 			doReturn(PROVIDER_NAME_1).when(registration1).getProvider();
+			doReturn(true).when(registration1).hasClientId();
+			doReturn(true).when(registration1).hasClientSecret();
 			OAuth2ProviderDetails provider1 = mock(OAuth2ProviderDetails.class);
 
 			OAuth2ClientRegistration registration2 = mock(OAuth2ClientRegistration.class);
-			doReturn(PROVIDER_NAME_2).when(registration1).getProvider();
+			doReturn(PROVIDER_NAME_2).when(registration2).getProvider();
+			doReturn(true).when(registration2).hasClientId();
+			doReturn(true).when(registration2).hasClientSecret();
 			OAuth2ProviderDetails provider2 = mock(OAuth2ProviderDetails.class);
 
 			Map<String, OAuth2ClientRegistration> registrations =
 					Map.of(CLIENT_REGISTRATION_1, registration1, CLIENT_REGISTRATION_2, registration2);
+			Map<String, OAuth2ProviderDetails> providers =
+					Map.of(PROVIDER_NAME_1, provider1, PROVIDER_NAME_2, provider2);
 
 			doReturn(registrations).when(mockProperties).getRegistration();
+			doReturn(providers).when(mockProperties).getProvider();
+			doReturn(registration1).when(mockProperties).getClientRegistration(CLIENT_REGISTRATION_1);
+			doReturn(registration2).when(mockProperties).getClientRegistration(CLIENT_REGISTRATION_2);
 			doReturn(provider1).when(mockProperties).getProviderDetails(registration1);
 			doReturn(provider2).when(mockProperties).getProviderDetails(registration2);
-
-			OAuth2TokenProvider tokenProvider = mock(OAuth2TokenProvider.class);
-			doReturn(CLIENT_REGISTRATION_NAME).when(tokenProvider).getClientRegistrationName();
 
 			AuthenticationToken token = createToken();
 			AuthenticationTokenProvider tokenClient = mock(AuthenticationTokenProvider.class);
