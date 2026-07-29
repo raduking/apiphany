@@ -591,7 +591,7 @@ public enum HttpStatus implements Status {
 	 * @return true if this status code is in the 3xx range, false otherwise
 	 */
 	public boolean is3xxRedirection() {
-		return value() / 100 == 3;
+		return isType(Type.REDIRECTION);
 	}
 
 	/**
