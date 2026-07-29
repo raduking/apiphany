@@ -6,6 +6,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.net.http.HttpClient.Version;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
@@ -78,5 +79,59 @@ class HttpMessagesTest {
 	void shouldThrowExceptionWhenCallingConstructor() {
 		UnsupportedOperationException unsupportedOperationException = assertDefaultConstructorThrows(HttpMessages.class);
 		assertThat(unsupportedOperationException.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
+	}
+
+	@Test
+	void shouldReturnFalseForNullRedirectLoopMessage() {
+		assertThat(HttpMessages.isRedirectLoopFailureMessage(null), equalTo(false));
+	}
+
+	@Test
+	void shouldReturnTrueForCircularRedirectMessage() {
+		assertThat(HttpMessages.isRedirectLoopFailureMessage("circular redirect"), equalTo(true));
+	}
+
+	@Test
+	void shouldReturnTrueForTooManyRedirectsMessage() {
+		assertThat(HttpMessages.isRedirectLoopFailureMessage("too many redirects"), equalTo(true));
+	}
+
+	@Test
+	void shouldReturnFalseForNonRedirectMessage() {
+		assertThat(HttpMessages.isRedirectLoopFailureMessage("some other error"), equalTo(false));
+	}
+
+	@Test
+	void shouldFindRedirectLoopFailureInThrowableChain() {
+		Throwable cause = new RuntimeException("circular redirect");
+		Throwable throwable = new RuntimeException("outer", cause);
+
+		assertThat(HttpMessages.isRedirectLoopFailure(throwable), equalTo(true));
+	}
+
+	@Test
+	void shouldReturnFalseWhenNoRedirectLoopInThrowableChain() {
+		Throwable throwable = new RuntimeException("something else");
+
+		assertThat(HttpMessages.isRedirectLoopFailure(throwable), equalTo(false));
+	}
+
+	@Test
+	void shouldReturnFalseForNullThrowable() {
+		assertThat(HttpMessages.isRedirectLoopFailure(null), equalTo(false));
+	}
+
+	@Test
+	void shouldReturnFalseForThrowableWithNullMessage() {
+		Throwable throwable = new RuntimeException();
+
+		assertThat(HttpMessages.isRedirectLoopFailure(throwable), equalTo(false));
+	}
+
+	@Test
+	void shouldReturnFalseWhenPredicateReceivesNullThrowable() {
+		Predicate<Throwable> predicate = HttpMessages.defaultRedirectLoopFailurePredicate();
+
+		assertThat(predicate.test(null), equalTo(false));
 	}
 }

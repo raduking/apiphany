@@ -246,6 +246,30 @@ class ExchangeLoggerTest {
 		assertThat(errorLine.arguments[1], equalTo(exception));
 	}
 
+	@Test
+	@SuppressWarnings("resource")
+	void shouldLogNullBodyWhenBodyIsNull() {
+		RecordingLoggingFunction loggingFunction = new RecordingLoggingFunction();
+		ExchangeClient exchangeClient = new DummyExchangeClient(Logging.Mode.FULL);
+		ApiRequest<String> request = request(null);
+		ApiResponse<String> response = response("response-body");
+
+		ExchangeLogger.logSuccess(loggingFunction, getClass(), exchangeClient, request, response, Duration.ofSeconds(1));
+
+		LogCall call = loggingFunction.calls.getFirst();
+		assertThat(call.format, containsString("BODY: null"));
+		assertThat(call.format, containsString("BODY: response-body"));
+	}
+
+	@Test
+	void shouldReturnBodyToStringWhenExchangeClientIsNull() {
+		ApiRequest<String> request = request("test-body");
+
+		String result = ExchangeLogger.describeBody(request, null);
+
+		assertThat(result, equalTo("test-body"));
+	}
+
 	private static ApiRequest<String> request(final String body) {
 		return request(body, new LinkedHashMap<>(), new LinkedHashMap<>());
 	}
