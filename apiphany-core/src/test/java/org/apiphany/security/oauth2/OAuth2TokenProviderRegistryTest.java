@@ -307,7 +307,6 @@ class OAuth2TokenProviderRegistryTest {
 		}
 
 		@Test
-		@SuppressWarnings("resource")
 		void shouldCreateRegistryFromProperties() throws Exception {
 			OAuth2Properties mockProperties = mock(OAuth2Properties.class);
 
@@ -530,7 +529,6 @@ class OAuth2TokenProviderRegistryTest {
 		}
 
 		@Test
-		@SuppressWarnings("resource")
 		void shouldCreateRegistryFromProperties() throws Exception {
 			OAuth2Properties mockProperties = mock(OAuth2Properties.class);
 
@@ -580,7 +578,6 @@ class OAuth2TokenProviderRegistryTest {
 		}
 
 		@Test
-		@SuppressWarnings("resource")
 		void shouldCreateRegistryFromPropertiesWithoutNameConverter() throws Exception {
 			OAuth2Properties mockProperties = mock(OAuth2Properties.class);
 

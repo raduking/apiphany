@@ -29,6 +29,7 @@ public class CloseableClientHttpResponseInputStream extends InputStream {
 	 * @param response the HTTP response
 	 * @throws IOException if reading the response body stream fails
 	 */
+	@SuppressWarnings("resource")
 	protected CloseableClientHttpResponseInputStream(final ClientHttpResponse response) throws IOException {
 		this.response = Objects.requireNonNull(response, "response cannot be null");
 		this.inputStream = Objects.requireNonNull(response.getBody(), "response body cannot be null");
@@ -114,6 +115,7 @@ public class CloseableClientHttpResponseInputStream extends InputStream {
 	 */
 	@Override
 	public void close() throws IOException {
+		// we don't need to close the input stream explicitly, closing the response will close the stream as well
 		response.close();
 	}
 }
