@@ -53,47 +53,48 @@ public class ExchangeLogger {
 	/**
 	 * The log message format for successful requests.
 	 */
-	private static final String LOG_MESSAGE_SUCCESS = new StringBuilder()
-			.append(Strings.EOL).append(LOG_SEPARATOR)
-			.append(Strings.EOL).append("CLIENT: {}")
-			.append(Strings.EOL).append("[REQUEST]")
-			.append(Strings.EOL).append("METHOD: {}")
-			.append(Strings.EOL).append("URL: {}")
-			.append(Strings.EOL).append("PARAMETERS: {}")
-			.append(Strings.EOL).append("HEADERS: {}")
-			.append(Strings.EOL).append("BODY: {}")
-			.append(Strings.EOL).append("[RESPONSE]")
-			.append(Strings.EOL).append("STATUS: {}")
-			.append(Strings.EOL).append("HEADERS: {}")
-			.append(Strings.EOL).append("BODY: {}")
-			.append(Strings.EOL).append("DURATION: {}s")
-			.append(Strings.EOL).append(LOG_SEPARATOR)
-			.toString();
+	private static final String LOG_MESSAGE_SUCCESS = Strings.EOL
+			+ LOG_SEPARATOR
+			+ Strings.EOL + "CLIENT: {}"
+			+ Strings.EOL + "[REQUEST]"
+			+ Strings.EOL + "METHOD: {}"
+			+ Strings.EOL + "URL: {}"
+			+ Strings.EOL + "PARAMETERS: {}"
+			+ Strings.EOL + "HEADERS: {}"
+			+ Strings.EOL + "BODY: {}"
+			+ Strings.EOL + "[RESPONSE]"
+			+ Strings.EOL + "STATUS: {}"
+			+ Strings.EOL + "HEADERS: {}"
+			+ Strings.EOL + "BODY: {}"
+			+ Strings.EOL + "DURATION: {}s"
+			+ Strings.EOL
+			+ LOG_SEPARATOR;
 
 	/**
 	 * The log message format for failed requests.
 	 */
-	private static final String LOG_MESSAGE_ERROR = new StringBuilder()
-			.append(Strings.EOL).append(LOG_SEPARATOR)
-			.append(Strings.EOL).append("CLIENT: {}")
-			.append(Strings.EOL).append("[REQUEST]")
-			.append(Strings.EOL).append("METHOD: {}")
-			.append(Strings.EOL).append("URL: {}")
-			.append(Strings.EOL).append("PARAMETERS: {}")
-			.append(Strings.EOL).append("HEADERS: {}")
-			.append(Strings.EOL).append("REQUEST BODY: {}")
-			.append(Strings.EOL).append("[RESPONSE]")
-			.append(Strings.EOL).append("STATUS: {}")
-			.append(Strings.EOL).append("HEADERS: {}")
-			.append(Strings.EOL).append("EXCEPTION: {}")
-			.append(Strings.EOL).append("DURATION: {}s")
-			.append(Strings.EOL).append(LOG_SEPARATOR)
-			.toString();
+	private static final String LOG_MESSAGE_ERROR = Strings.EOL
+			+ LOG_SEPARATOR
+			+ Strings.EOL + "CLIENT: {}"
+			+ Strings.EOL + "[REQUEST]"
+			+ Strings.EOL + "METHOD: {}"
+			+ Strings.EOL + "URL: {}"
+			+ Strings.EOL + "PARAMETERS: {}"
+			+ Strings.EOL + "HEADERS: {}"
+			+ Strings.EOL + "REQUEST BODY: {}"
+			+ Strings.EOL + "[RESPONSE]"
+			+ Strings.EOL + "STATUS: {}"
+			+ Strings.EOL + "HEADERS: {}"
+			+ Strings.EOL + "EXCEPTION: {}"
+			+ Strings.EOL + "DURATION: {}s"
+			+ Strings.EOL
+			+ LOG_SEPARATOR;
 
 	/**
 	 * Logs all information for a successful HTTP request.
 	 *
-	 * @param <T> the type of the request/response body
+	 * @param <T> the type of the request
+	 * @param <U> the type of the response
 	 *
 	 * @param loggingFunction the logging function used to output the log message
 	 * @param apiClientClass the API class of the client making the request
@@ -102,12 +103,12 @@ public class ExchangeLogger {
 	 * @param apiResponse the API response object
 	 * @param duration the duration of the request
 	 */
-	public static <T> void logSuccess(
+	public static <T, U> void logSuccess(
 			final LoggingFunction loggingFunction,
 			final Class<?> apiClientClass,
 			final ExchangeClient exchangeClient,
 			final ApiRequest<T> apiRequest,
-			final ApiResponse<T> apiResponse,
+			final ApiResponse<U> apiResponse,
 			final Duration duration) {
 		String logMessage = Messages.message(
 				LOG_MESSAGE_SUCCESS,
@@ -128,6 +129,7 @@ public class ExchangeLogger {
 	 * Logs all information for a failed HTTP request.
 	 *
 	 * @param <T> the type of the request
+	 * @param <U> the type of the response
 	 *
 	 * @param loggingFunction the logging function used to output the log message
 	 * @param apiClientClass the API class of the client making the request
@@ -136,12 +138,12 @@ public class ExchangeLogger {
 	 * @param apiResponse the API response object, if available
 	 * @param duration the duration of the request
 	 */
-	public static <T> void logError(
+	public static <T, U> void logError(
 			final LoggingFunction loggingFunction,
 			final Class<?> apiClientClass,
 			final ExchangeClient exchangeClient,
 			final ApiRequest<T> apiRequest,
-			final ApiResponse<T> apiResponse,
+			final ApiResponse<U> apiResponse,
 			final Duration duration) {
 		Exception exception = Nullables.apply(apiResponse, ApiResponse::getException);
 		String logMessage = Messages.message(
@@ -162,6 +164,8 @@ public class ExchangeLogger {
 
 	/**
 	 * Describes the body of a request or response based on the logging configuration of the exchange client.
+	 *
+	 * @param <T> the type of the body
 	 *
 	 * @param exchangeClient the exchange client used for this request
 	 * @param apiMessage the API message containing the body to describe
