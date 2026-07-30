@@ -165,7 +165,7 @@ public class ExchangeLogger {
 	 *
 	 * @param exchangeClient the exchange client used for this request
 	 * @param apiMessage the API message containing the body to describe
-	 * @return a string description of the body, or "<omitted>" if body logging is disabled.
+	 * @return a string description of the body, or {@link #OMITTED} if body logging is disabled.
 	 */
 	protected static <T> String describeBody(final ApiMessage<T> apiMessage, final ExchangeClient exchangeClient) {
 		if (null == apiMessage) {
