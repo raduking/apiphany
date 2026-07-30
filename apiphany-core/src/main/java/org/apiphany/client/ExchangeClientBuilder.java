@@ -107,7 +107,7 @@ public class ExchangeClientBuilder {
 	 * @return a new exchange client resource with life cycle management information, or {@code null} if build fails and the
 	 * provided error handler does not rethrow
 	 */
-	@SuppressWarnings("resource")
+	@SuppressWarnings({ "resource", "null" })
 	protected ScopedResource<ExchangeClient> build(final Consumer<Exception> buildErrorHandler) {
 		requireThat(null != buildErrorHandler, "Build error handler must not be null");
 		ScopedResource<ExchangeClient> scopedResource = buildMainClient(buildErrorHandler);
