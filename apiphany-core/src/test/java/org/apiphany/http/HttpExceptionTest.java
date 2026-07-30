@@ -1,7 +1,8 @@
 package org.apiphany.http;
 
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.nullValue;
@@ -12,8 +13,10 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 import org.apiphany.Status;
+import org.apiphany.test.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.morphix.reflection.Constructors;
 
 /**
  * Test class for {@link HttpException}.
@@ -224,6 +227,26 @@ class HttpExceptionTest {
 		assertThat(exception.getResponseBody(), equalTo(null));
 	}
 
+	@Test
+	void shouldCreateRedirectLoopException() {
+		HttpException exception = HttpException.redirectLoop();
+
+		assertThat(exception.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR.getCode()));
+		assertThat(exception.getMessage(), containsString("Redirect loop detected"));
+		assertThat(exception.getCause(), nullValue());
+	}
+
+	@Test
+	void shouldCreateRedirectLoopExceptionWithCause() {
+		RuntimeException cause = new RuntimeException(CAUSE_ERROR_MESSAGE);
+
+		HttpException exception = HttpException.redirectLoop(cause);
+
+		assertThat(exception.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR.getCode()));
+		assertThat(exception.getMessage(), containsString("Redirect loop detected"));
+		assertThat(exception.getCause(), equalTo(cause));
+	}
+
 	@Nested
 	class BuilderTest {
 
@@ -294,6 +317,23 @@ class HttpExceptionTest {
 
 			assertThat(exception.getResponseHeaders(), hasKey("X-Test"));
 			assertThat(exception.getResponseHeaders(), hasEntry("X-Test", List.of("test-value")));
+		}
+	}
+
+	@Nested
+	class MessageTest {
+
+		@Test
+		void shouldHaveCorrectMessages() {
+			assertThat(HttpException.Message.REDIRECT_LOOP, equalTo("Redirect loop detected"));
+			assertThat(HttpException.Message.RESPONSE_TOO_LARGE, equalTo("Response body exceeds configured max size"));
+		}
+
+		@Test
+		void shouldThrowExceptionOnInstantiatingValue() {
+			UnsupportedOperationException exception = Assertions.assertDefaultConstructorThrows(HttpException.Message.class);
+
+			assertThat(exception.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
 		}
 	}
 }

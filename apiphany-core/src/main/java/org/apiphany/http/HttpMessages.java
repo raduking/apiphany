@@ -100,7 +100,7 @@ public class HttpMessages {
 	 * @param message message to inspect
 	 * @return true if redirect loop was detected, false otherwise
 	 */
-	static boolean isRedirectLoopFailureMessage(final String message) {
+	private static boolean isRedirectLoopFailureMessage(final String message) {
 		if (null == message) {
 			return false;
 		}

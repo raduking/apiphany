@@ -146,4 +146,14 @@ class HttpStatusTest {
 		assertTrue(HttpStatus.NOT_MODIFIED.is3xxRedirection());
 		assertTrue(HttpStatus.NOT_MODIFIED.isConditional());
 	}
+
+	@ParameterizedTest
+	@EnumSource(HttpStatus.class)
+	void shouldClassifyOnlyNotModifiedAsConditional(final HttpStatus status) {
+		if (status == HttpStatus.NOT_MODIFIED) {
+			assertTrue(status.isConditional());
+		} else {
+			assertFalse(status.isConditional());
+		}
+	}
 }

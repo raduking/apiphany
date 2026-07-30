@@ -225,4 +225,58 @@ class BasicHttpResponseParserTest {
 
 		assertThat(parser.getStatusCode(), is(0));
 	}
+
+	@Test
+	void shouldHandleNonNumericStatusCode() {
+		String response = "HTTP/1.1 abc\r\n\r\n";
+
+		BasicHttpResponseParser parser = new BasicHttpResponseParser(response);
+
+		assertThat(parser.getStatusCode(), is(0));
+	}
+
+	@Test
+	void shouldHandleMalformedHeaderWithoutColon() {
+		String response = """
+				HTTP/1.1 200 OK\r
+				MalformedHeaderNoColon\r
+				Content-Length: 5\r
+				\r
+				Hello""";
+
+		BasicHttpResponseParser parser = new BasicHttpResponseParser(response);
+
+		assertThat(parser.getStatusCode(), is(200));
+		assertThat(parser.getHeader("Content-Length"), is("5"));
+		assertThat(parser.getBody(), is("Hello"));
+	}
+
+	@Test
+	void shouldHandleResponseWithoutBodySeparator() {
+		String response = "HTTP/1.1 204 No Content\r\n";
+
+		BasicHttpResponseParser parser = new BasicHttpResponseParser(response);
+
+		assertThat(parser.getStatusCode(), is(204));
+		assertThat(parser.getBody(), is(""));
+	}
+
+	@Test
+	void shouldHandleNegativeChunkSize() {
+		String response = """
+				HTTP/1.1 200 OK\r
+				Transfer-Encoding: chunked\r
+				\r
+				-1\r
+				Hello\r
+				0\r
+				\r
+				""";
+
+		BasicHttpResponseParser parser = new BasicHttpResponseParser(response);
+
+		assertThat(parser.getStatusCode(), is(200));
+		assertThat(parser.getBody(), is(""));
+		assertThat(parser.isComplete(), is(false));
+	}
 }
