@@ -3,6 +3,7 @@ package org.apiphany.client.http;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -688,6 +689,69 @@ class JavaNetHttpExchangeClientTest {
 			assertThat(apiResponse.getRequest(), equalTo(request));
 			assertNull(apiResponse.getBody());
 			assertThat(apiResponse.getHeaders().size(), equalTo(0));
+		}
+
+		@Test
+		void shouldPassTerminalRedirectCheckOnNonRedirectStatus() throws Exception {
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+			exchangeClient.getClientProperties().getConnection().setFollowRedirects(true);
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.GET)
+					.responseType(String.class);
+
+			HttpResponse<?> httpResponse = mock(HttpResponse.class);
+			doReturn(HttpStatus.OK.value()).when(httpResponse).statusCode();
+
+			ApiResponse<?> apiResponse = exchangeClient.buildResponse(request, httpResponse);
+
+			assertThat(apiResponse.getRequest(), equalTo(request));
+			assertNull(apiResponse.getBody());
+		}
+
+		@Test
+		void shouldPassTerminalRedirectCheckOnConditionalRedirectStatus() throws Exception {
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+			exchangeClient.getClientProperties().getConnection().setFollowRedirects(true);
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.GET)
+					.responseType(String.class);
+
+			HttpResponse<?> httpResponse = mock(HttpResponse.class);
+			doReturn(HttpStatus.NOT_MODIFIED.value()).when(httpResponse).statusCode();
+
+			ApiResponse<?> apiResponse = exchangeClient.buildResponse(request, httpResponse);
+
+			assertThat(apiResponse.getRequest(), equalTo(request));
+			assertNull(apiResponse.getBody());
+		}
+
+		@Test
+		void shouldThrowRedirectLoopOnTerminalRedirectWithLocation() throws Exception {
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient();
+			exchangeClient.getClientProperties().getConnection().setFollowRedirects(true);
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.GET)
+					.responseType(String.class);
+
+			Map<String, List<String>> headers = Map.of(
+					HttpHeader.Name.LOCATION, List.of("https://example.org/redirected"));
+
+			HttpResponse<?> httpResponse = mock(HttpResponse.class);
+			doReturn(HttpStatus.MOVED_PERMANENTLY.value()).when(httpResponse).statusCode();
+			doReturn(HttpHeaders.of(headers, (v1, v2) -> true)).when(httpResponse).headers();
+
+			HttpException exception = assertThrows(HttpException.class, () -> exchangeClient.buildResponse(request, httpResponse));
+
+			assertThat(exception.getMessage(), containsString("Redirect loop detected"));
 		}
 
 		@Test

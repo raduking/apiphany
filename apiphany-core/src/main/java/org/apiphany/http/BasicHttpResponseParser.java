@@ -100,7 +100,11 @@ public class BasicHttpResponseParser {
 		if (parts.length < 2) {
 			return 0;
 		}
-		return parseInt(parts[1], 10);
+		Integer result = parseInt(parts[1], 10);
+		if (null == result) {
+			return 0;
+		}
+		return result;
 	}
 
 	/**

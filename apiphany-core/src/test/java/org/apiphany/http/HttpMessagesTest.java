@@ -82,26 +82,6 @@ class HttpMessagesTest {
 	}
 
 	@Test
-	void shouldReturnFalseForNullRedirectLoopMessage() {
-		assertThat(HttpMessages.isRedirectLoopFailureMessage(null), equalTo(false));
-	}
-
-	@Test
-	void shouldReturnTrueForCircularRedirectMessage() {
-		assertThat(HttpMessages.isRedirectLoopFailureMessage("circular redirect"), equalTo(true));
-	}
-
-	@Test
-	void shouldReturnTrueForTooManyRedirectsMessage() {
-		assertThat(HttpMessages.isRedirectLoopFailureMessage("too many redirects"), equalTo(true));
-	}
-
-	@Test
-	void shouldReturnFalseForNonRedirectMessage() {
-		assertThat(HttpMessages.isRedirectLoopFailureMessage("some other error"), equalTo(false));
-	}
-
-	@Test
 	void shouldFindRedirectLoopFailureInThrowableChain() {
 		Throwable cause = new RuntimeException("circular redirect");
 		Throwable throwable = new RuntimeException("outer", cause);
@@ -133,5 +113,19 @@ class HttpMessagesTest {
 		Predicate<Throwable> predicate = HttpMessages.defaultRedirectLoopFailurePredicate();
 
 		assertThat(predicate.test(null), equalTo(false));
+	}
+
+	@Test
+	void shouldReturnTrueForCircularRedirectThroughPredicate() {
+		Predicate<Throwable> predicate = HttpMessages.defaultRedirectLoopFailurePredicate();
+
+		assertThat(predicate.test(new RuntimeException("circular redirect")), equalTo(true));
+	}
+
+	@Test
+	void shouldReturnTrueForTooManyRedirectsThroughPredicate() {
+		Predicate<Throwable> predicate = HttpMessages.defaultRedirectLoopFailurePredicate();
+
+		assertThat(predicate.test(new RuntimeException("too many redirects")), equalTo(true));
 	}
 }

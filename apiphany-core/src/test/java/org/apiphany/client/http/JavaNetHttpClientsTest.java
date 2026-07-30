@@ -3,8 +3,10 @@ package org.apiphany.client.http;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import java.net.http.HttpClient;
 import java.time.Duration;
 
+import org.apiphany.client.ClientProperties;
 import org.apiphany.http.JavaNetHttpClients;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -15,6 +17,35 @@ import org.junit.jupiter.api.Test;
  * @author Radu Sebastian LAZIN
  */
 class JavaNetHttpClientsTest {
+
+	@Nested
+	class CustomizeTests {
+
+		@Test
+		void shouldNotFollowRedirectsByDefault() {
+			ClientProperties clientProperties = new ClientProperties();
+			HttpClient.Builder builder = HttpClient.newBuilder();
+
+			HttpClient.Builder result = JavaNetHttpClients.customize(builder, clientProperties, null);
+
+			try (HttpClient httpClient = result.build()) {
+				assertThat(httpClient.followRedirects(), equalTo(HttpClient.Redirect.NEVER));
+			}
+		}
+
+		@Test
+		void shouldFollowRedirectsWhenConfigured() {
+			ClientProperties clientProperties = new ClientProperties();
+			clientProperties.getConnection().setFollowRedirects(true);
+			HttpClient.Builder builder = HttpClient.newBuilder();
+
+			HttpClient.Builder result = JavaNetHttpClients.customize(builder, clientProperties, null);
+
+			try (HttpClient httpClient = result.build()) {
+				assertThat(httpClient.followRedirects(), equalTo(HttpClient.Redirect.NORMAL));
+			}
+		}
+	}
 
 	@Nested
 	class GetUsableTimeoutTests {
