@@ -1,5 +1,9 @@
 ## Release Notes
 
+`1.2.17`
+
+---
+
 `1.2.16`
 
 - Updated `BasicTimer` and `BasicCounter` to be thread safe.
