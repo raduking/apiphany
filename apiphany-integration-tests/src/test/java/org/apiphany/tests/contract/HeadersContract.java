@@ -10,11 +10,16 @@ import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Set;
 
 import org.apiphany.ApiClient;
 import org.apiphany.ApiResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
+import com.github.tomakehurst.wiremock.stubbing.ServeEvent;
 
 /**
  * Contract tests for headers. These tests verify that the client correctly sends and handles HTTP headers, including
@@ -205,7 +210,7 @@ public interface HeadersContract extends ApiphanyContract {
 	@DisplayName("Headers: Header names should be treated case-insensitively")
 	@Test
 	default void shouldPreserveCustomHeader() throws Exception {
-		// HTTP header names are case-insensitive and some clients/transports normalize them to lower-case.
+		// HTTP header names are case-insensitive and some clients/transports may normalize them.
 		wiremock().stubFor(get("/case")
 				.willReturn(aResponse()
 						.withStatus(200)
@@ -223,6 +228,15 @@ public interface HeadersContract extends ApiphanyContract {
 
 			assertEquals("case sensitive header", result);
 		}
+
+		String expectedHeaderName = "X-CuStOm-HeAdEr";
+		ServeEvent serveEvent = wiremock().getAllServeEvents().stream()
+				.filter(e -> "/case".equals(e.getRequest().getUrl()))
+				.findFirst()
+				.orElseThrow();
+		Set<String> headerNames = serveEvent.getRequest().getHeaders().keys();
+		assertTrue(headerNames.contains(expectedHeaderName),
+				() -> "Expected header name to be preserved as '" + expectedHeaderName + "' but got " + headerNames);
 
 		wiremock().verify(getRequestedFor(urlEqualTo("/case"))
 				.withHeader("x-custom-header", equalTo("42")));

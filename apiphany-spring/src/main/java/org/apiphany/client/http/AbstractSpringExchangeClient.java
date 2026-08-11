@@ -27,7 +27,6 @@ import org.morphix.lang.collections.Maps;
 import org.morphix.lang.function.Predicates;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.http.client.ClientHttpResponse;
@@ -159,9 +158,9 @@ public abstract class AbstractSpringExchangeClient extends AbstractHttpExchangeC
 	}
 
 	/**
-	 * Builds the HTTP request entity from the API request object. This method also adds: {@link HttpHeaders#CONTENT_TYPE}
-	 * as {@link MediaType#APPLICATION_JSON} and {@link HttpHeaders#ACCEPT} with {@link MediaType#APPLICATION_JSON} if none
-	 * are present in the request.
+	 * Builds the HTTP request entity from the API request object.
+	 * <p>
+	 * This method copies request headers as provided by the API request without adding default semantic headers.
 	 *
 	 * @param <T> request entity type
 	 *
