@@ -63,7 +63,7 @@
 		<dependency>
 			<!-- needed for RestTemplateBuilder -->
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-autoconfigure</artifactId>
+			<artifactId>spring-boot</artifactId>
 			<version>${spring.boot.version}</version>
 		</dependency>
 
