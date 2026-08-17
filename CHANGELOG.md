@@ -2,6 +2,9 @@
 
 `1.2.17`
 
+- Upgraded `morphix-all` to `1.0.41`.
+- Upgraded `dependency-check-maven` to `13.0.0`.
+
 ---
 
 `1.2.16`

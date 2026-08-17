@@ -60,7 +60,7 @@
 	<properties>
 
 		<!-- Dependencies versions -->
-		<morphix.version>1.0.41</morphix.version>
+		<morphix.version>1.0.42</morphix.version>
 		<micrometer.version>1.15.11</micrometer.version>
 		<jackson2.version>2.21.4</jackson2.version>
 		<jackson3.version>3.1.3</jackson3.version>
