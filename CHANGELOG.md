@@ -2,8 +2,10 @@
 
 `1.2.17`
 
-- Upgraded `morphix-all` to `1.0.41`.
+- Upgraded `morphix-all` to `1.0.42`.
 - Upgraded `dependency-check-maven` to `13.0.0`.
+- Added `ApiClientFluentAdapter.responseType(GenericType)` for setting a response type using `GenericType`.
+- Added `ApiClientFluentAdapter.retrieve(GenericType)` for retrieving an API response with a `GenericType` response type.
 
 ---
 
