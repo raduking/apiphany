@@ -49,6 +49,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.morphix.lang.retry.Retry;
 import org.morphix.lang.retry.WaitCounter;
 import org.morphix.reflection.GenericClass;
+import org.morphix.reflection.GenericType;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Tag;
@@ -462,6 +463,23 @@ class ApiClientFluentAdapterTest {
 			assertTrue(request.hasGenericType());
 			assertTrue(request.hasResponseType());
 			assertThat(request.getGenericResponseType(), equalTo(genericClass));
+			assertThat(request.getResponseType(), Matchers.instanceOf(ParameterizedType.class));
+		}
+
+		@Test
+		@SuppressWarnings("resource")
+		void shouldSetTheResponseTypeOnRetrieveWithGenericType() {
+			ExchangeClient exchangeClient = mock(ExchangeClient.class);
+			doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.authenticationType(AuthenticationType.SESSION);
+
+			var genericType = GenericType.of(List.class, GenericType.Arguments.of(Integer.class));
+			request.retrieve(genericType);
+
+			assertTrue(request.hasGenericType());
+			assertTrue(request.hasResponseType());
 			assertThat(request.getResponseType(), Matchers.instanceOf(ParameterizedType.class));
 		}
 	}

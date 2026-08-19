@@ -141,6 +141,7 @@ HTTP request, including returned types, headers, etc
 - Retrieve methods (they return an [`ApiResponse`](../apiphany-core/src/main/java/org/apiphany/ApiResponse.java) object)
   - `retrieve(Class<T>)` specifies the type to be retrieved
   - `retrieve(GenericClass<T>)` specifies a parameterized type to be retrieved
+  - `retrieve(GenericType)` specifies a parameterized type to be retrieved using `GenericType`
 
 - Many others (details found in separate sections)
 
@@ -273,5 +274,37 @@ are errors during the request.
 
 If metrics are added to the request with retries, the retry attempts will be included in the metrics as well.
 - `client.awesome.get-info.retry` request retries (counter)
+
+### Generic Types
+
+When the API returns a parameterized type such as `List<String>` or `List<Map<String, Object>>`, you can declare a 
+`GenericClass` constant using [`ApiClient.typeObject()`](../apiphany-core/src/main/java/org/apiphany/ApiClient.java) 
+and pass it directly to `retrieve(...)`:
+
+```java
+public class AwesomeClient extends ApiClient {
+
+    public static final GenericClass<List<String>> LIST_TYPE = ApiClient.typeObject();
+
+    public AwesomeClient(final ClientProperties properties) {
+        super("http://awesome.somewhere.com",
+                properties(properties)
+                        .secureWith()
+                        .oauth2());
+    }
+
+    public List<String> getNames() {
+        return client()
+                .get()
+                .path("api", "v1", "names")
+                .retrieve(LIST_TYPE)
+                .orDefault(Collections::emptyList);
+    }
+}
+```
+
+The type information is captured from the generic field declaration at runtime, so nested parameterized types work 
+as well (`GenericClass<List<Map<String, Object>>>`). Using `typeObject()` with a non-parameterized type such as 
+`String` will throw an `IllegalArgumentException`.
 
 ### To be continued...

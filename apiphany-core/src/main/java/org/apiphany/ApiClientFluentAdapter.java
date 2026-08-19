@@ -29,6 +29,7 @@ import org.morphix.lang.Nullables;
 import org.morphix.lang.collections.Maps;
 import org.morphix.lang.retry.Retry;
 import org.morphix.reflection.GenericClass;
+import org.morphix.reflection.GenericType;
 
 /**
  * Adapter for fluent style syntax. This class functions similar to a builder.
@@ -179,6 +180,18 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @return an API response object
 	 */
 	public <T> ApiResponse<T> retrieve(final GenericClass<T> responseType) {
+		return responseType(responseType).retrieve();
+	}
+
+	/**
+	 * Retrieves the API response.
+	 *
+	 * @param <T> response type
+	 *
+	 * @param responseType the response type generic type
+	 * @return an API response object
+	 */
+	public <T> ApiResponse<T> retrieve(final GenericType responseType) {
 		return responseType(responseType).retrieve();
 	}
 
@@ -435,6 +448,17 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 		Nullables.requireNull(classResponseType, "Generic class response type already set");
 		this.genericResponseType = responseType;
 		return this;
+	}
+
+	/**
+	 * Sets the response type as a generic type, this is exclusive with {@link #responseType(Class)}.
+	 *
+	 * @param <T> response body type
+	 * @param responseType response type
+	 * @return this
+	 */
+	public <T> ApiClientFluentAdapter responseType(final GenericType responseType) {
+		return responseType(GenericClass.of(responseType));
 	}
 
 	/**
