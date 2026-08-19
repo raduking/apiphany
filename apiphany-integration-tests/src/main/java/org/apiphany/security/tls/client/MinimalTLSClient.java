@@ -253,8 +253,6 @@ public class MinimalTLSClient implements AutoCloseable {
 		byte[] preMasterSecret;
 		switch (serverCipherSuite.keyExchange()) {
 			case ECDHE -> {
-				byte[] serverPublicLittleEndian = Objects.requireNonNull(serverKeyExchange).getPublicKey().getData().toByteArray();
-				LOGGER.debug("Server public key (raw bytes from key exchange):\n{}", Logging.lazyToString(() -> Hex.dump(serverPublicLittleEndian)));
 				X25519Keys keys = new X25519Keys();
 				byte[] clientPublicBytes = getClientPublicBytes(serverKeyExchange, keys);
 				LOGGER.debug("Server public key ({}):\n{}", serverPublicKey.getClass(), serverPublicKey);
@@ -264,6 +262,7 @@ public class MinimalTLSClient implements AutoCloseable {
 			}
 			case RSA -> {
 				this.serverPublicKey = x509Certificate.getPublicKey();
+				LOGGER.debug("Server public key ({}):\n{}", serverPublicKey.getClass(), serverPublicKey);
 				preMasterSecret = Bytes.concatenate(new Version(sslProtocol).toByteArray(), ExchangeRandom.generate(46));
 				// Encrypt pre-master with server's RSA key
 				Cipher rsa = Cipher.getInstance("RSA/ECB/PKCS1Padding"); // NOSONAR TLS1.2 requires PKCS1 padding for RSA encryption
@@ -551,7 +550,9 @@ public class MinimalTLSClient implements AutoCloseable {
 	}
 
 	public byte[] getClientPublicBytes(final ServerKeyExchange ske, final KeyExchangeHandler keys) {
-		byte[] serverPubBytes = ske.getPublicKey().getData().toByteArray();
+		// the server public key is in little-endian format
+		byte[] serverPubBytes = Objects.requireNonNull(ske).getPublicKey().getData().toByteArray();
+		LOGGER.debug("Server public key (raw bytes from key exchange):\n{}", Logging.lazyToString(() -> Hex.dump(serverPubBytes)));
 		this.serverPublicKey = keys.publicKeyFrom(serverPubBytes, BytesOrder.LITTLE_ENDIAN);
 		if (null == clientKeyPair) {
 			this.clientKeyPair = keys.generateKeyPair();
@@ -570,7 +571,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		}
 	}
 
-	public String getConcatenatedHandshakeMessageTypes() {
+	protected String getConcatenatedHandshakeMessageTypes() {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (Handshake handshake : handshakeMessages) {
 			stringBuilder.append(handshake.getHeader().getType());
