@@ -2,8 +2,10 @@ package org.apiphany;
 
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -23,6 +25,7 @@ import java.util.function.Supplier;
 
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.http.HttpStatus;
+import org.apiphany.security.Sensitive;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.morphix.lang.JavaObjects;
@@ -565,7 +568,7 @@ class ApiResponseTest {
 		@SuppressWarnings("resource")
 		void shouldDelegateGetDisplayHeadersToExchangeClientWhenPresent() {
 			ExchangeClient exchangeClient = mock(ExchangeClient.class);
-			Map<String, List<String>> expected = Map.of("Authorization", List.of("-REDACTED-"));
+			Map<String, List<String>> expected = Map.of("Authorization", List.of(Sensitive.Value.REDACTED));
 			ApiResponse<String> response = ApiResponse.<String>builder()
 					.headers(Map.of("Authorization", List.of("secret")))
 					.exchangeClient(exchangeClient)
@@ -588,6 +591,24 @@ class ApiResponseTest {
 			Map<String, List<String>> actual = response.getDisplayHeaders();
 
 			assertThat(actual, equalTo(headers));
+		}
+
+		@Test
+		@SuppressWarnings("resource")
+		void shouldUseDisplayHeadersInJsonSerialization() {
+			ExchangeClient exchangeClient = mock(ExchangeClient.class);
+			ApiResponse<String> response = ApiResponse.<String>builder()
+					.body("ok")
+					.headers(Map.of("Authorization", List.of("secret-token")))
+					.exchangeClient(exchangeClient)
+					.build();
+			doReturn(Map.of("Authorization", List.of(Sensitive.Value.REDACTED)))
+					.when(exchangeClient).getDisplayHeaders(same(response));
+
+			String json = response.toString();
+
+			assertThat(json, containsString(Sensitive.Value.REDACTED));
+			assertThat(json, not(containsString("secret-token")));
 		}
 	}
 
