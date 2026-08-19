@@ -160,7 +160,8 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	}
 
 	/**
-	 * Retrieves the API response.
+	 * Retrieves the API response. This is exclusive with {@link #retrieve(GenericClass)} and
+	 * {@link #retrieve(GenericType)}.
 	 *
 	 * @param <T> response type
 	 *
@@ -172,7 +173,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	}
 
 	/**
-	 * Retrieves the API response.
+	 * Retrieves the API response. This is exclusive with {@link #retrieve(Class)}.
 	 *
 	 * @param <T> response type
 	 *
@@ -184,7 +185,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	}
 
 	/**
-	 * Retrieves the API response.
+	 * Retrieves the API response. This is exclusive with {@link #retrieve(Class)}.
 	 *
 	 * @param <T> response type
 	 *
@@ -425,7 +426,8 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	}
 
 	/**
-	 * Sets the response type as a class, this is exclusive with {@link #responseType(GenericClass)}.
+	 * Sets the response type as a class, this is exclusive with {@link #responseType(GenericClass)} and
+	 * {@link #responseType(GenericType)}.
 	 *
 	 * @param <T> response body type
 	 * @param responseType response type
@@ -453,11 +455,10 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	/**
 	 * Sets the response type as a generic type, this is exclusive with {@link #responseType(Class)}.
 	 *
-	 * @param <T> response body type
 	 * @param responseType response type
 	 * @return this
 	 */
-	public <T> ApiClientFluentAdapter responseType(final GenericType responseType) {
+	public ApiClientFluentAdapter responseType(final GenericType responseType) {
 		return responseType(GenericClass.of(responseType));
 	}
 
