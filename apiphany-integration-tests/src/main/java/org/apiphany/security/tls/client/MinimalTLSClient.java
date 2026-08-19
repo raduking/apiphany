@@ -5,8 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.MessageDigest;
 import java.security.PublicKey;
@@ -22,8 +22,8 @@ import javax.net.ssl.SSLException;
 
 import org.apiphany.http.BasicHttpResponseParser;
 import org.apiphany.io.BinaryRepresentable;
+import org.apiphany.io.BinarySerializers;
 import org.apiphany.io.ByteBufferInputStream;
-import org.apiphany.io.ByteSizeable;
 import org.apiphany.io.BytesOrder;
 import org.apiphany.io.BytesWrapper;
 import org.apiphany.io.UInt64;
@@ -199,7 +199,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		return tlsRecord;
 	}
 
-	public byte[] performHandshake() throws Exception {
+	public byte[] performHandshake() throws GeneralSecurityException, IOException {
 		connect();
 
 		// 1. Send Client Hello (maybe make a builder)
@@ -266,7 +266,7 @@ public class MinimalTLSClient implements AutoCloseable {
 				this.serverPublicKey = x509Certificate.getPublicKey();
 				preMasterSecret = Bytes.concatenate(new Version(sslProtocol).toByteArray(), ExchangeRandom.generate(46));
 				// Encrypt pre-master with server's RSA key
-				Cipher rsa = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+				Cipher rsa = Cipher.getInstance("RSA/ECB/PKCS1Padding"); // NOSONAR TLS1.2 requires PKCS1 padding for RSA encryption
 				rsa.init(Cipher.ENCRYPT_MODE, serverPublicKey);
 				byte[] encryptedPreMaster = rsa.doFinal(preMasterSecret);
 				tlsKeyExchange = new RSAEncryptedPreMaster(encryptedPreMaster);
@@ -296,7 +296,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		sendRecord(changeCypherSpecRecord);
 
 		// 7. Send Finished
-		byte[] handshakeBytes = getConcatenatedHandshakeMessages();
+		byte[] handshakeBytes = BinarySerializers.toByteArray(handshakeMessages);
 		LOGGER.debug("Concatenated handshake message content types:\n{}", getConcatenatedHandshakeMessageTypes());
 		LOGGER.debug("Handshake transcript ({} bytes):\n{}", handshakeBytes.length, Logging.lazyToString(() -> Hex.dump(handshakeBytes)));
 
@@ -327,7 +327,7 @@ public class MinimalTLSClient implements AutoCloseable {
 
 		// 11. Compute server verify data and validate
 		accumulateHandshake(clientFinishedHandshake);
-		byte[] finalHandshakeBytes = getConcatenatedHandshakeMessages();
+		byte[] finalHandshakeBytes = BinarySerializers.toByteArray(handshakeMessages);
 		byte[] finalHandshakeHash = messageDigest.sanitizedDigest(finalHandshakeBytes);
 		LOGGER.debug("Handshake hash:\n{}", Logging.lazyToString(() -> Hex.dump(finalHandshakeHash)));
 
@@ -343,7 +343,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		return serverFinishedRecord.toByteArray();
 	}
 
-	public byte[] closeNotify() throws Exception {
+	public byte[] closeNotify() throws GeneralSecurityException, IOException {
 		Alert closeAlert = new Alert(AlertLevel.WARNING, AlertDescription.CLOSE_NOTIFY);
 		Encrypted encrypted = encrypt(closeAlert, RecordContentType.ALERT, exchangeKeys);
 
@@ -353,7 +353,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		return closeAlertRecord.toByteArray();
 	}
 
-	public String get(final String path) throws Exception {
+	public String get(final String path) throws GeneralSecurityException, IOException {
 		String request =
 				"GET " + path + " HTTP/1.1\r\n" +
 						"Host: " + host + "\r\n" +
@@ -370,7 +370,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		return parser.getBody();
 	}
 
-	private void sendApplicationData(final String request) throws Exception {
+	private void sendApplicationData(final String request) throws GeneralSecurityException, IOException {
 		LOGGER.debug("Sending request:\n{}", request);
 		byte[] requestBytes = request.getBytes(StandardCharsets.US_ASCII);
 		Encrypted encrypted = encrypt(new BytesWrapper(requestBytes), RecordContentType.APPLICATION_DATA, exchangeKeys);
@@ -378,7 +378,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		sendRecord(requestRecord);
 	}
 
-	private String receiveApplicationData() throws Exception {
+	private String receiveApplicationData() throws GeneralSecurityException, IOException {
 		Record responseRecord = receiveRecord();
 		LOGGER.debug("Received Application Data Record:{}", responseRecord);
 		byte[] decrypted = decrypt(responseRecord, exchangeKeys);
@@ -387,7 +387,8 @@ public class MinimalTLSClient implements AutoCloseable {
 		return content;
 	}
 
-	public Encrypted encrypt(final BinaryRepresentable tlsObject, final RecordContentType type, final ExchangeKeys keys) throws Exception {
+	public Encrypted encrypt(final BinaryRepresentable tlsObject, final RecordContentType type, final ExchangeKeys keys)
+			throws GeneralSecurityException {
 		byte[] plaintext = tlsObject.toByteArray();
 		LOGGER.debug("Plaintext:\n{}", Logging.lazyToString(() -> Hex.dump(plaintext)));
 
@@ -464,7 +465,7 @@ public class MinimalTLSClient implements AutoCloseable {
 		};
 	}
 
-	public byte[] decrypt(final Record tlsRecord, final ExchangeKeys keys) throws Exception {
+	public byte[] decrypt(final Record tlsRecord, final ExchangeKeys keys) throws GeneralSecurityException {
 		BulkCipher bulkCipher = serverCipherSuite.bulkCipher();
 		CipherType cipherType = bulkCipher.type();
 
@@ -567,14 +568,6 @@ public class MinimalTLSClient implements AutoCloseable {
 		for (Handshake handshake : handshakes) {
 			accumulateHandshake(handshake);
 		}
-	}
-
-	public byte[] getConcatenatedHandshakeMessages() {
-		ByteBuffer buffer = ByteBuffer.allocate(ByteSizeable.sizeOf(handshakeMessages));
-		for (Handshake handshake : handshakeMessages) {
-			buffer.put(handshake.toByteArray());
-		}
-		return buffer.array();
 	}
 
 	public String getConcatenatedHandshakeMessageTypes() {

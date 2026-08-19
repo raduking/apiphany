@@ -6,6 +6,7 @@
 - Upgraded `dependency-check-maven` to `13.0.0`.
 - Added `ApiClientFluentAdapter.responseType(GenericType)` for setting a response type using `GenericType`.
 - Added `ApiClientFluentAdapter.retrieve(GenericType)` for retrieving an API response with a `GenericType` response type.
+- Added `BinarySerializers` utility interface with `toByteArray(List)` for concatenating binary representations of a list of objects.
 
 ---
 
