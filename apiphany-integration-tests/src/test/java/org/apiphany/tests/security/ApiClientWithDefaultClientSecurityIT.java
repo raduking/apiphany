@@ -2,20 +2,13 @@ package org.apiphany.tests.security;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-
 import org.apiphany.ApiClient;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.security.AuthenticationType;
 import org.apiphany.security.ssl.KeyStoreType;
+import org.apiphany.test.Tests;
 import org.apiphany.tests.contract.ApiphanyContract;
 import org.apiphany.tests.contract.TLSContract;
 import org.junit.jupiter.api.Nested;
@@ -41,30 +34,16 @@ class ApiClientWithDefaultClientSecurityIT implements ApiphanyContract {
 			WireMockExtension.newInstance()
 					.options(options()
 							.dynamicHttpsPort()
-							.keystorePath(getResourcePath("/security/ssl/server-keystore.jks"))
+							.keystorePath(
+									Tests.resourcePath(ApiClientWithDefaultClientSecurityIT.class, "/security/ssl/server-keystore.jks").toString())
 							.keystorePassword("serverkeystorepass123")
 							.keyManagerPassword("serverkeystorepass123")
 							.keystoreType(KeyStoreType.JKS.value())
-							.trustStorePath(getResourcePath("/security/ssl/server-truststore.jks"))
+							.trustStorePath(
+									Tests.resourcePath(ApiClientWithDefaultClientSecurityIT.class, "/security/ssl/server-truststore.jks").toString())
 							.trustStorePassword("servertruststorepass123")
 							.trustStoreType(KeyStoreType.JKS.value()))
 					.build();
-
-	private static String getResourcePath(final String resourcePath) {
-		// since WireMock needs a file path for the keystore and truststore,
-		// we need to copy the resources to a temporary file and return the path to that file
-		try (InputStream input = ApiClientWithDefaultClientSecurityIT.class.getResourceAsStream(resourcePath)) {
-			if (input == null) {
-				throw new IllegalStateException("Resource not found: " + resourcePath);
-			}
-			Path tempFile = Files.createTempFile("apiphany-", "-" + Paths.get(resourcePath).getFileName());
-			Files.copy(input, tempFile, StandardCopyOption.REPLACE_EXISTING);
-			tempFile.toFile().deleteOnExit();
-			return tempFile.toAbsolutePath().toString();
-		} catch (IOException e) {
-			throw new UncheckedIOException(e);
-		}
-	}
 
 	@Override
 	public String baseUrl() {

@@ -9,16 +9,23 @@ import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 
+import java.io.ByteArrayInputStream;
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.apiphany.ApiClient;
 import org.apiphany.RequestParameters;
 import org.apiphany.io.ContentType;
+import org.apiphany.io.IOStreams;
+import org.apiphany.io.InputStreamSupplier;
 import org.apiphany.lang.Bytes;
 import org.apiphany.multipart.MultipartMessage;
+import org.apiphany.test.Tests;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -28,6 +35,11 @@ import org.junit.jupiter.api.Test;
  * @author Radu Sebastian LAZIN
  */
 public interface BodyContract extends ApiphanyContract {
+
+	/**
+	 * Classpath location of the body test file used by the raw body round-trip tests.
+	 */
+	String BODY_TEXT_RESOURCE = "body/test-body.txt";
 
 	@DisplayName("Basic: String request bodies should be encoded as UTF-8 by default")
 	@Test
@@ -71,6 +83,150 @@ public interface BodyContract extends ApiphanyContract {
 
 		wiremock().verify(postRequestedFor(urlEqualTo("/binary"))
 				.withRequestBody(equalTo(new String(body))));
+	}
+
+	@DisplayName("Body: sends InputStream body unchanged")
+	@Test
+	default void shouldSendInputStreamBody() throws Exception {
+		wiremock().stubFor(post("/body-input-stream")
+				.willReturn(aResponse()
+						.withStatus(200)));
+
+		byte[] expected = Bytes.fromFile(BODY_TEXT_RESOURCE);
+
+		ApiClient api = apiClient();
+		try (api) {
+			api.client()
+					.http()
+					.post()
+					.path("body-input-stream")
+					.body(new ByteArrayInputStream(expected))
+					.retrieve();
+		}
+
+		wiremock().verify(postRequestedFor(urlPathEqualTo("/body-input-stream"))
+				.withRequestBody(binaryEqualTo(expected)));
+	}
+
+	@DisplayName("Body: sends InputStreamSupplier body unchanged")
+	@Test
+	default void shouldSendInputStreamSupplierBody() throws Exception {
+		wiremock().stubFor(post("/body-input-stream-supplier")
+				.willReturn(aResponse()
+						.withStatus(200)));
+
+		byte[] expected = Bytes.fromFile(BODY_TEXT_RESOURCE);
+
+		ApiClient api = apiClient();
+		try (api) {
+			api.client()
+					.http()
+					.post()
+					.path("body-input-stream-supplier")
+					.body((InputStreamSupplier) () -> new ByteArrayInputStream(expected))
+					.retrieve();
+		}
+
+		wiremock().verify(postRequestedFor(urlPathEqualTo("/body-input-stream-supplier"))
+				.withRequestBody(binaryEqualTo(expected)));
+	}
+
+	@DisplayName("Body: sends lazy Supplier body unchanged")
+	@Test
+	default void shouldSendLazySupplierBody() throws Exception {
+		wiremock().stubFor(post("/body-supplier")
+				.willReturn(aResponse()
+						.withStatus(200)));
+
+		byte[] expected = Bytes.fromFile(BODY_TEXT_RESOURCE);
+
+		ApiClient api = apiClient();
+		try (api) {
+			api.client()
+					.http()
+					.post()
+					.path("body-supplier")
+					.body((Supplier<byte[]>) () -> expected)
+					.retrieve();
+		}
+
+		wiremock().verify(postRequestedFor(urlPathEqualTo("/body-supplier"))
+				.withRequestBody(binaryEqualTo(expected)));
+	}
+
+	@DisplayName("Body: sends Path body unchanged")
+	@Test
+	default void shouldSendFilePathBody() throws Exception {
+		wiremock().stubFor(post("/body-path")
+				.willReturn(aResponse()
+						.withStatus(200)));
+
+		Path path = Tests.resourcePath(BodyContract.class, BODY_TEXT_RESOURCE);
+		byte[] expected = Bytes.fromFile(BODY_TEXT_RESOURCE);
+
+		ApiClient api = apiClient();
+		try (api) {
+			api.client()
+					.http()
+					.post()
+					.path("body-path")
+					.body(path)
+					.retrieve();
+		}
+
+		wiremock().verify(postRequestedFor(urlPathEqualTo("/body-path"))
+				.withRequestBody(binaryEqualTo(expected)));
+	}
+
+	@DisplayName("Body: sends File body unchanged")
+	@Test
+	default void shouldSendJavaIoFileBody() throws Exception {
+		wiremock().stubFor(post("/body-file")
+				.willReturn(aResponse()
+						.withStatus(200)));
+
+		Path path = Tests.resourcePath(BodyContract.class, BODY_TEXT_RESOURCE);
+		byte[] expected = Bytes.fromFile(BODY_TEXT_RESOURCE);
+
+		ApiClient api = apiClient();
+		try (api) {
+			api.client()
+					.http()
+					.post()
+					.path("body-file")
+					.body(path.toFile())
+					.retrieve();
+		}
+
+		wiremock().verify(postRequestedFor(urlPathEqualTo("/body-file"))
+				.withRequestBody(binaryEqualTo(expected)));
+	}
+
+	@DisplayName("Body: sends Serializable body unchanged")
+	@Test
+	default void shouldSendSerializableBody() throws Exception {
+		wiremock().stubFor(post("/body-serializable")
+				.willReturn(aResponse()
+						.withStatus(200)));
+
+		record Point(int x, int y) implements Serializable {
+			// empty - serialization test payload
+		}
+		Point point = new Point(41, 42);
+		byte[] expected = IOStreams.toByteArray(point);
+
+		ApiClient api = apiClient();
+		try (api) {
+			api.client()
+					.http()
+					.post()
+					.path("body-serializable")
+					.body(point)
+					.retrieve();
+		}
+
+		wiremock().verify(postRequestedFor(urlPathEqualTo("/body-serializable"))
+				.withRequestBody(binaryEqualTo(expected)));
 	}
 
 	@DisplayName("Body: sends application/x-www-form-urlencoded body")

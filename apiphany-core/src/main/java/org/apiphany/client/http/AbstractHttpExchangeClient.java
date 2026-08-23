@@ -386,6 +386,16 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	}
 
 	/**
+	 * Logs a warning when an unsupported body type is encountered and falls back to {@code toString()}.
+	 *
+	 * @param clientClass the HTTP exchange client class
+	 * @param bodyType the unsupported body type
+	 */
+	protected static void unsupportedBodyType(final Class<?> clientClass, final Class<?> bodyType) {
+		LOGGER.warn("[{}] Unsupported body type '{}', falling back to toString()", clientClass.getSimpleName(), bodyType.getName());
+	}
+
+	/**
 	 * Builds an API response based on the given parameters. If the HTTP status indicates an error, it creates an
 	 * HttpException with the error response body and includes it in the {@link ApiResponse}. Otherwise, it converts the
 	 * response body to the desired type and includes it in the {@link ApiResponse}.
@@ -440,8 +450,8 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 		} else {
 			httpExceptionBuilder
 					.status(extractHttpStatus(throwable))
-					.responseBody(extractResponseBody(throwable))
-					.responseHeaders(extractResponseHeaders(throwable));
+					.responseHeaders(extractResponseHeaders(throwable))
+					.responseBody(extractResponseBody(throwable));
 		}
 	}
 

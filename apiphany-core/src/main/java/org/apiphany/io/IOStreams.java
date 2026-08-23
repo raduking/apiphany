@@ -5,8 +5,10 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.io.Serializable;
 import java.nio.charset.Charset;
 
 import org.apiphany.io.function.IOConsumer;
@@ -154,6 +156,21 @@ public interface IOStreams {
 			writer.accept(byteArrayOutputStream);
 			return byteArrayOutputStream.toByteArray();
 		}
+	}
+
+	/**
+	 * Serializes a {@link Serializable} object to a byte array using Java object serialization.
+	 *
+	 * @param serializable the object to serialize
+	 * @return a byte array containing the serialized object
+	 * @throws IOException if any error occurs during serialization
+	 */
+	static byte[] toByteArray(final Serializable serializable) throws IOException {
+		return toByteArray(os -> {
+			try (ObjectOutputStream oos = new ObjectOutputStream(os)) {
+				oos.writeObject(serializable);
+			}
+		});
 	}
 
 	/**

@@ -1,6 +1,8 @@
 package org.apiphany.client.http;
 
+import java.io.File;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.net.http.HttpClient;
 import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
@@ -240,21 +242,6 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	}
 
 	/**
-	 * Reads the given input stream into a byte array and ensures that the content length does not exceed the given limit.
-	 *
-	 * @param inputStream input stream to read
-	 * @param maxBodySize maximum allowed body size in bytes
-	 * @return byte array containing the content of the input stream
-	 */
-	public byte[] toByteArray(final InputStream inputStream, final int maxBodySize) {
-		return HttpException.ifThrows(() -> {
-			try (inputStream) {
-				return IOStreams.toByteArray(inputStream, maxBodySize);
-			}
-		});
-	}
-
-	/**
 	 * Creates a {@link BodyPublisher} from the given API request. It checks for the body common types to create the
 	 * appropriate publisher.
 	 *
@@ -287,16 +274,36 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 			return BodyPublishers.noBody();
 		}
 		Charset charset = Nullables.nonNullOrDefault(apiRequest.getCharset(), Strings.DEFAULT_CHARSET);
-		return switch (body) {
+		return HttpException.ifThrows(() -> switch (body) {
 			case String str -> BodyPublishers.ofString(str, charset);
 			case byte[] bytes -> BodyPublishers.ofByteArray(bytes);
 			case InputStream is -> BodyPublishers.ofInputStream(() -> is);
 			case InputStreamSupplier iss -> BodyPublishers.ofInputStream(iss);
 			case Supplier<?> supplier -> toBodyPublisher(apiRequest, JavaObjects.cast(supplier.get()));
-			case Path path -> HttpException.ifThrows(() -> BodyPublishers.ofFile(path), HttpStatus.BAD_REQUEST);
+			case Path path -> BodyPublishers.ofFile(path);
+			case File file -> BodyPublishers.ofFile(file.toPath());
+			case Serializable serializable -> BodyPublishers.ofByteArray(IOStreams.toByteArray(serializable));
 			case Object obj when isContentJson(apiRequest) -> BodyPublishers.ofString(JsonBuilder.toJson(obj), charset);
-			default -> BodyPublishers.ofString(Strings.safeToString(body), charset);
-		};
+			default -> {
+				unsupportedBodyType(JavaNetHttpExchangeClient.class, body.getClass());
+				yield BodyPublishers.ofString(Strings.safeToString(body), charset);
+			}
+		}, HttpStatus.BAD_REQUEST);
+	}
+
+	/**
+	 * Reads the given input stream into a byte array and ensures that the content length does not exceed the given limit.
+	 *
+	 * @param inputStream input stream to read
+	 * @param maxBodySize maximum allowed body size in bytes
+	 * @return byte array containing the content of the input stream
+	 */
+	protected static byte[] toByteArray(final InputStream inputStream, final int maxBodySize) {
+		return HttpException.ifThrows(() -> {
+			try (inputStream) {
+				return IOStreams.toByteArray(inputStream, maxBodySize);
+			}
+		});
 	}
 
 	/**
@@ -308,7 +315,7 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	 * @param apiRequest the API request object
 	 * @return the body handler based on the request
 	 */
-	public static <T, U> BodyHandler<U> getResponseBodyHandler(final ApiRequest<T> apiRequest) { // NOSONAR
+	protected static <T, U> BodyHandler<U> getResponseBodyHandler(final ApiRequest<T> apiRequest) { // NOSONAR
 		BodyHandler<?> bodyHandler = BodyHandlers.ofInputStream();
 		return JavaObjects.cast(bodyHandler);
 	}

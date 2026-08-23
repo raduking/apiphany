@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URI;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +43,7 @@ import org.apiphany.http.ApacheHC5Clients;
 import org.apiphany.http.ApacheHC5Entities;
 import org.apiphany.http.ContentEncoding;
 import org.apiphany.http.HttpContentType;
+import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
@@ -253,17 +255,21 @@ public class ApacheHC5HttpExchangeClient extends AbstractHttpExchangeClient {
 	 * @return HTTP entity object
 	 */
 	private static <T> HttpEntity createHttpEntity(final ApiRequest<T> apiRequest, final T body, final ContentType contentType) {
-		return switch (body) {
+		return HttpException.ifThrows(() -> switch (body) {
 			case String str -> HttpEntities.create(str, contentType);
 			case byte[] bytes -> HttpEntities.create(bytes, contentType);
 			case InputStream is -> ApacheHC5Entities.create(is, contentType);
 			case InputStreamSupplier iss -> ApacheHC5Entities.create(iss.get(), contentType);
 			case Supplier<?> supplier -> createHttpEntity(apiRequest, JavaObjects.cast(supplier.get()), contentType);
 			case File file -> HttpEntities.create(file, contentType);
+			case Path path -> HttpEntities.create(path.toFile(), contentType);
 			case Serializable serializable -> HttpEntities.create(serializable, contentType);
 			case Object obj when isContentJson(apiRequest) -> HttpEntities.create(JsonBuilder.toJson(obj), contentType);
-			default -> HttpEntities.create(Strings.safeToString(body), contentType);
-		};
+			default -> {
+				unsupportedBodyType(ApacheHC5HttpExchangeClient.class, body.getClass());
+				yield HttpEntities.create(Strings.safeToString(body), contentType);
+			}
+		}, HttpStatus.BAD_REQUEST);
 	}
 
 	/**
