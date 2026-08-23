@@ -388,11 +388,15 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	/**
 	 * Logs a warning when an unsupported body type is encountered and falls back to {@code toString()}.
 	 *
-	 * @param clientClass the HTTP exchange client class
-	 * @param bodyType the unsupported body type
+	 * @param <T> the type of the body
+	 *
+	 * @param body the unsupported body
+	 * @return the string representation of the body using {@code toString()}
 	 */
-	protected static void unsupportedBodyType(final Class<?> clientClass, final Class<?> bodyType) {
-		LOGGER.warn("[{}] Unsupported body type '{}', falling back to toString()", clientClass.getSimpleName(), bodyType.getName());
+	protected <T> String fallbackToString(final T body) {
+		String bodyTypeName = Nullables.apply(body, b -> b.getClass().getName());
+		LOGGER.warn("[{}] Unsupported body type '{}', falling back to toString()", getClass().getSimpleName(), bodyTypeName);
+		return Strings.safeToString(body);
 	}
 
 	/**

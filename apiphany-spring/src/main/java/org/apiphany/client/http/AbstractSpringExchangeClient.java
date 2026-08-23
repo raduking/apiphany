@@ -209,10 +209,7 @@ public abstract class AbstractSpringExchangeClient extends AbstractHttpExchangeC
 			case Path path -> SpringHttpSupport.createHttpEntity(path.toFile(), headers);
 			case Serializable s -> SpringHttpSupport.createHttpEntity(IOStreams.toByteArray(s), headers);
 			case Object obj when isContentJson(apiRequest) -> SpringHttpSupport.createHttpEntity(JsonBuilder.toJson(obj), headers);
-			default -> {
-				unsupportedBodyType(getClass(), body.getClass());
-				yield SpringHttpSupport.createHttpEntity(Strings.safeToString(body), headers);
-			}
+			default -> SpringHttpSupport.createHttpEntity(fallbackToString(body), headers);
 		}, HttpStatus.BAD_REQUEST);
 		return JavaObjects.cast(httpEntity);
 	}
