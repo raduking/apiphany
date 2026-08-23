@@ -3,7 +3,9 @@ package org.apiphany.io;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -265,6 +267,30 @@ class IOStreamsTest {
 					}));
 
 			assertThat(exception.getMessage(), equalTo("boom"));
+		}
+	}
+
+	@Nested
+	class ToByteArraySerializableTests {
+
+		@Test
+		void shouldSerializeSerializableObjectToByteArray() throws IOException {
+			String serializable = "test-serializable";
+
+			byte[] result = IOStreams.toByteArray(serializable);
+
+			assertNotNull(result);
+			assertTrue(result.length > 0);
+		}
+
+		@Test
+		void shouldSerializeEmptyStringToByteArray() throws IOException {
+			String serializable = "";
+
+			byte[] result = IOStreams.toByteArray(serializable);
+
+			assertNotNull(result);
+			assertTrue(result.length > 0);
 		}
 	}
 }

@@ -20,7 +20,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Version;
 import java.net.http.HttpHeaders;
@@ -1339,6 +1341,74 @@ class JavaNetHttpExchangeClientTest {
 			assertThat(exception.getStatus(), equalTo(HttpStatus.BAD_REQUEST));
 			assertThat(exception.getMessage(), equalTo(
 					HttpException.message(HttpStatus.BAD_REQUEST, TEXT_FILE_TXT + " not found")));
+		}
+
+		@Test
+		void shouldConvertJavaIoFileToFileBodyPublisher() {
+			String fileContent = Strings.fromFile(TEXT_FILE_TXT);
+			File file = new File("src/test/resources/" + TEXT_FILE_TXT);
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.body(file);
+
+			BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+
+			ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
+			bodyPublisher.subscribe(subscriber);
+			subscriber.awaitCompletion();
+
+			assertThat(bodyPublisher.contentLength(), equalTo((long) fileContent.getBytes(StandardCharsets.UTF_8).length));
+			assertTrue(subscriber.isCompleted());
+			assertNull(subscriber.getError());
+			assertThat(fileContent.getBytes(StandardCharsets.UTF_8), equalTo(subscriber.getReceivedBytes()));
+		}
+
+		@Test
+		void shouldThrowExceptionIfFileNotFoundWhenTryingToBuildJavaIoFileBodyPublisher() {
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.body(new File(TEXT_FILE_TXT));
+
+			HttpException exception = assertThrows(HttpException.class, () -> JavaNetHttpExchangeClient.toBodyPublisher(request));
+
+			assertThat(exception.getStatus(), equalTo(HttpStatus.BAD_REQUEST));
+		}
+
+		@Test
+		void shouldConvertSerializableToByteArrayBodyPublisher() {
+			TestSerializable serializable = new TestSerializable("serializable-content");
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.body(serializable);
+
+			BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+
+			ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
+			bodyPublisher.subscribe(subscriber);
+			subscriber.awaitCompletion();
+
+			assertTrue(subscriber.isCompleted());
+			assertNull(subscriber.getError());
+			byte[] bytes = subscriber.getReceivedBytes();
+			assertNotNull(bytes);
+			assertTrue(bytes.length > 0);
+		}
+	}
+
+	/**
+	 * Simple serializable class for testing.
+	 */
+	static class TestSerializable implements Serializable {
+
+		private static final long serialVersionUID = 1L;
+
+		private final String value;
+
+		TestSerializable(final String value) {
+			this.value = value;
+		}
+
+		String getValue() {
+			return value;
 		}
 	}
 

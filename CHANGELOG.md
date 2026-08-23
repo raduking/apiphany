@@ -7,6 +7,10 @@
 - Added `ApiClientFluentAdapter.responseType(GenericType)` for setting a response type using `GenericType`.
 - Added `ApiClientFluentAdapter.retrieve(GenericType)` for retrieving an API response with a `GenericType` response type.
 - Added `BinarySerializers` utility interface with `toByteArray(List)` for concatenating binary representations of a list of objects.
+- Added `File` and `Serializable` body type support to `JavaNetHttpExchangeClient`.
+- Added `Path` body type support to `ApacheHC5HttpExchangeClient`.
+- Added `File`, `Path`, and `Serializable` body type support to Spring exchange clients.
+- Added `IOStreams.toByteArray(Serializable)` utility method for Java object serialization.
 
 ---
 

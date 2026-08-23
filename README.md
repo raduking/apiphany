@@ -117,8 +117,6 @@ void main() {
 
 If you think in `curl`, here is the equivalent Apiphany fluent call.
 
-`curl`:
-
 ```bash
 curl -X POST "https://api.example.com/v1/users" \
   -H "Authorization: Bearer <token>" \

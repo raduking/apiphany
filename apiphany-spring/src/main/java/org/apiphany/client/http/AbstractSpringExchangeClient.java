@@ -1,6 +1,9 @@
 package org.apiphany.client.http;
 
+import java.io.File;
 import java.io.InputStream;
+import java.io.Serializable;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
@@ -19,6 +22,7 @@ import org.apiphany.http.HttpStatus;
 import org.apiphany.http.ResponseEntityExtractor;
 import org.apiphany.http.SpringHttpSupport;
 import org.apiphany.http.SpringRedirectFailureDetector;
+import org.apiphany.io.IOStreams;
 import org.apiphany.io.InputStreamSupplier;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
@@ -181,10 +185,11 @@ public abstract class AbstractSpringExchangeClient extends AbstractHttpExchangeC
 	}
 
 	/**
-	 * Creates an HTTP entity from the given headers and body. This method handles different types of request bodies, such
-	 * as strings, byte arrays, input streams, and suppliers of input streams. If the body is a supplier, it will be
-	 * evaluated to get the actual body value. For other types of bodies, it will be converted to a string using
-	 * {@link Strings#safeToString}.
+	 * Creates an HTTP entity from the given API request, body and headers. This method handles different types of request
+	 * bodies, such as strings, byte arrays, input streams, and suppliers of input streams.
+	 * <p>
+	 * If the body is a supplier, it will be evaluated to get the actual body value. For other types of bodies, it will be
+	 * converted to a string using {@link Strings#safeToString}.
 	 *
 	 * @param <T> request entity type
 	 *
@@ -194,15 +199,21 @@ public abstract class AbstractSpringExchangeClient extends AbstractHttpExchangeC
 	 * @return the created HTTP entity
 	 */
 	protected <T> HttpEntity<T> createHttpEntity(final ApiRequest<T> apiRequest, final T body, final HttpHeaders headers) {
-		HttpEntity<?> httpEntity = switch (body) {
+		HttpEntity<?> httpEntity = HttpException.ifThrows(() -> switch (body) {
 			case String str -> SpringHttpSupport.createHttpEntity(str, headers);
 			case byte[] bytes -> SpringHttpSupport.createHttpEntity(bytes, headers);
 			case InputStream inputStream -> SpringHttpSupport.createHttpEntity(inputStream, headers);
 			case InputStreamSupplier inputStreamSupplier -> SpringHttpSupport.createHttpEntity(inputStreamSupplier.get(), headers);
 			case Supplier<?> supplier -> createHttpEntity(apiRequest, JavaObjects.cast(supplier.get()), headers);
+			case File file -> SpringHttpSupport.createHttpEntity(file, headers);
+			case Path path -> SpringHttpSupport.createHttpEntity(path.toFile(), headers);
+			case Serializable s -> SpringHttpSupport.createHttpEntity(IOStreams.toByteArray(s), headers);
 			case Object obj when isContentJson(apiRequest) -> SpringHttpSupport.createHttpEntity(JsonBuilder.toJson(obj), headers);
-			default -> SpringHttpSupport.createHttpEntity(Strings.safeToString(body), headers);
-		};
+			default -> {
+				unsupportedBodyType(getClass(), body.getClass());
+				yield SpringHttpSupport.createHttpEntity(Strings.safeToString(body), headers);
+			}
+		}, HttpStatus.BAD_REQUEST);
 		return JavaObjects.cast(httpEntity);
 	}
 

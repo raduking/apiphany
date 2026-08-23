@@ -1,5 +1,6 @@
 package org.apiphany.http;
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 
@@ -7,6 +8,7 @@ import org.apiphany.io.OneShotInputStreamSupplier;
 import org.morphix.reflection.Constructors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -73,6 +75,17 @@ public class SpringHttpSupport {
 		InputStream oneShotInputStream = new OneShotInputStreamSupplier(inputStream).get();
 		InputStreamResource resource = new InputStreamResource(oneShotInputStream);
 		return createHttpEntity(resource, headers);
+	}
+
+	/**
+	 * Creates a new {@link HttpEntity} with the given file and headers.
+	 *
+	 * @param file the content file in the HTTP entity
+	 * @param headers the HTTP headers to include in the HTTP entity
+	 * @return a new {@link HttpEntity} with the given content and headers
+	 */
+	public static HttpEntity<FileSystemResource> createHttpEntity(final File file, final HttpHeaders headers) {
+		return createHttpEntity(new FileSystemResource(file), headers);
 	}
 
 	/**
