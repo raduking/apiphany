@@ -249,7 +249,7 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	 * @param apiRequest the API request object
 	 * @return a body publisher needed in building the HTTP request
 	 */
-	public static <T> BodyPublisher toBodyPublisher(final ApiRequest<T> apiRequest) {
+	public <T> BodyPublisher toBodyPublisher(final ApiRequest<T> apiRequest) {
 		T body = apiRequest.getBody();
 		return toBodyPublisher(apiRequest, body);
 	}
@@ -269,7 +269,7 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	 * @param body the body to create the publisher from
 	 * @return a body publisher needed in building the HTTP request
 	 */
-	private static <T> BodyPublisher toBodyPublisher(final ApiRequest<T> apiRequest, final T body) {
+	private <T> BodyPublisher toBodyPublisher(final ApiRequest<T> apiRequest, final T body) {
 		if (null == body) {
 			return BodyPublishers.noBody();
 		}
@@ -284,10 +284,7 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 			case File file -> BodyPublishers.ofFile(file.toPath());
 			case Serializable serializable -> BodyPublishers.ofByteArray(IOStreams.toByteArray(serializable));
 			case Object obj when isContentJson(apiRequest) -> BodyPublishers.ofString(JsonBuilder.toJson(obj), charset);
-			default -> {
-				unsupportedBodyType(JavaNetHttpExchangeClient.class, body.getClass());
-				yield BodyPublishers.ofString(Strings.safeToString(body), charset);
-			}
+			default -> BodyPublishers.ofString(fallbackToString(body), charset);
 		}, HttpStatus.BAD_REQUEST);
 	}
 

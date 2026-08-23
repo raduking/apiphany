@@ -49,7 +49,6 @@ import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
 import org.apiphany.io.InputStreamSupplier;
 import org.apiphany.json.JsonBuilder;
-import org.apiphany.lang.Strings;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Nullables;
 import org.morphix.lang.collections.Lists;
@@ -254,7 +253,7 @@ public class ApacheHC5HttpExchangeClient extends AbstractHttpExchangeClient {
 	 * @param contentType content type of the request body
 	 * @return HTTP entity object
 	 */
-	private static <T> HttpEntity createHttpEntity(final ApiRequest<T> apiRequest, final T body, final ContentType contentType) {
+	private <T> HttpEntity createHttpEntity(final ApiRequest<T> apiRequest, final T body, final ContentType contentType) {
 		return HttpException.ifThrows(() -> switch (body) {
 			case String str -> HttpEntities.create(str, contentType);
 			case byte[] bytes -> HttpEntities.create(bytes, contentType);
@@ -265,10 +264,7 @@ public class ApacheHC5HttpExchangeClient extends AbstractHttpExchangeClient {
 			case Path path -> HttpEntities.create(path.toFile(), contentType);
 			case Serializable serializable -> HttpEntities.create(serializable, contentType);
 			case Object obj when isContentJson(apiRequest) -> HttpEntities.create(JsonBuilder.toJson(obj), contentType);
-			default -> {
-				unsupportedBodyType(ApacheHC5HttpExchangeClient.class, body.getClass());
-				yield HttpEntities.create(Strings.safeToString(body), contentType);
-			}
+			default -> HttpEntities.create(fallbackToString(body), contentType);
 		}, HttpStatus.BAD_REQUEST);
 	}
 

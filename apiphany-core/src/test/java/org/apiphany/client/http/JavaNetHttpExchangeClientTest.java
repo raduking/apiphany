@@ -60,6 +60,8 @@ import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.security.ssl.SSLProperties;
 import org.apiphany.utils.TestDto;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -1074,13 +1076,25 @@ class JavaNetHttpExchangeClientTest {
 	@Nested
 	class ToBodyPublisherTests {
 
+		private JavaNetHttpExchangeClient exchangeClient;
+
+		@BeforeEach
+		void setup() {
+			exchangeClient = new JavaNetHttpExchangeClient();
+		}
+
+		@AfterEach
+		void teardown() throws Exception {
+			exchangeClient.close();
+		}
+
 		@Test
 		void shouldConvertNullContentTypeToStringBodyPublisherWhenStringIsProvidedAsBody() {
 			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
 					.header(HttpHeader.CONTENT_TYPE, (String) null)
 					.body(STRING);
 
-			BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+			BodyPublisher bodyPublisher = exchangeClient.toBodyPublisher(request);
 
 			assertThat(bodyPublisher.contentLength(), equalTo((long) STRING.length()));
 
@@ -1098,7 +1112,7 @@ class JavaNetHttpExchangeClientTest {
 			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
 					.body(null);
 
-			BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+			BodyPublisher bodyPublisher = exchangeClient.toBodyPublisher(request);
 
 			assertThat(bodyPublisher.contentLength(), equalTo(0L));
 		}
@@ -1107,7 +1121,7 @@ class JavaNetHttpExchangeClientTest {
 		void shouldConvertEmptyBodyToNoBodyPublisher() {
 			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient);
 
-			BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+			BodyPublisher bodyPublisher = exchangeClient.toBodyPublisher(request);
 
 			assertThat(bodyPublisher.contentLength(), equalTo(0L));
 		}
@@ -1117,7 +1131,7 @@ class JavaNetHttpExchangeClientTest {
 			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
 					.body((Supplier<?>) null);
 
-			BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+			BodyPublisher bodyPublisher = exchangeClient.toBodyPublisher(request);
 
 			assertThat(bodyPublisher.contentLength(), equalTo(0L));
 		}
@@ -1127,7 +1141,7 @@ class JavaNetHttpExchangeClientTest {
 			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
 					.body(BYTES);
 
-			BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+			BodyPublisher bodyPublisher = exchangeClient.toBodyPublisher(request);
 
 			assertThat(bodyPublisher.contentLength(), equalTo((long) BYTES.length));
 
@@ -1145,7 +1159,7 @@ class JavaNetHttpExchangeClientTest {
 			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
 					.body(() -> BYTES);
 
-			BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+			BodyPublisher bodyPublisher = exchangeClient.toBodyPublisher(request);
 
 			assertThat(bodyPublisher.contentLength(), equalTo((long) BYTES.length));
 
@@ -1163,7 +1177,7 @@ class JavaNetHttpExchangeClientTest {
 			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
 					.payload(() -> BYTES);
 
-			BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+			BodyPublisher bodyPublisher = exchangeClient.toBodyPublisher(request);
 
 			assertThat(bodyPublisher.contentLength(), equalTo((long) BYTES.length));
 
@@ -1183,7 +1197,7 @@ class JavaNetHttpExchangeClientTest {
 			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
 					.body(bis);
 
-			BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+			BodyPublisher bodyPublisher = exchangeClient.toBodyPublisher(request);
 
 			ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
 			bodyPublisher.subscribe(subscriber);
@@ -1202,7 +1216,7 @@ class JavaNetHttpExchangeClientTest {
 					.body(bis);
 			Fields.set(request, "body", bis);
 
-			BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+			BodyPublisher bodyPublisher = exchangeClient.toBodyPublisher(request);
 
 			ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
 			bodyPublisher.subscribe(subscriber);
@@ -1221,7 +1235,7 @@ class JavaNetHttpExchangeClientTest {
 			ApiRequest<?> request = ApiClientFluentAdapter.of(apiClient)
 					.body(supplier);
 
-			BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+			BodyPublisher bodyPublisher = exchangeClient.toBodyPublisher(request);
 
 			ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
 			bodyPublisher.subscribe(subscriber);
@@ -1240,7 +1254,7 @@ class JavaNetHttpExchangeClientTest {
 			ApiRequest<?> request = ApiClientFluentAdapter.of(apiClient)
 					.body(supplier);
 
-			BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+			BodyPublisher bodyPublisher = exchangeClient.toBodyPublisher(request);
 
 			ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
 			bodyPublisher.subscribe(subscriber);
@@ -1256,7 +1270,7 @@ class JavaNetHttpExchangeClientTest {
 			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
 					.body(STRING);
 
-			BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+			BodyPublisher bodyPublisher = exchangeClient.toBodyPublisher(request);
 
 			ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
 			bodyPublisher.subscribe(subscriber);
@@ -1276,7 +1290,7 @@ class JavaNetHttpExchangeClientTest {
 					.header(HttpHeader.CONTENT_TYPE, "application/json")
 					.body(expectedDto);
 
-			BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+			BodyPublisher bodyPublisher = exchangeClient.toBodyPublisher(request);
 
 			String expectedJson = JsonBuilder.toJson(expectedDto);
 
@@ -1298,7 +1312,7 @@ class JavaNetHttpExchangeClientTest {
 					.header(HttpHeader.CONTENT_TYPE, "text/plain")
 					.body(expectedDto);
 
-			BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+			BodyPublisher bodyPublisher = exchangeClient.toBodyPublisher(request);
 
 			String expectedString = expectedDto.toString();
 
@@ -1319,7 +1333,7 @@ class JavaNetHttpExchangeClientTest {
 			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
 					.body(Path.of("src/test/resources/" + TEXT_FILE_TXT));
 
-			BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+			BodyPublisher bodyPublisher = exchangeClient.toBodyPublisher(request);
 
 			ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
 			bodyPublisher.subscribe(subscriber);
@@ -1336,7 +1350,7 @@ class JavaNetHttpExchangeClientTest {
 			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
 					.body(Path.of(TEXT_FILE_TXT));
 
-			HttpException exception = assertThrows(HttpException.class, () -> JavaNetHttpExchangeClient.toBodyPublisher(request));
+			HttpException exception = assertThrows(HttpException.class, () -> exchangeClient.toBodyPublisher(request));
 
 			assertThat(exception.getStatus(), equalTo(HttpStatus.BAD_REQUEST));
 			assertThat(exception.getMessage(), equalTo(
@@ -1351,7 +1365,7 @@ class JavaNetHttpExchangeClientTest {
 			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
 					.body(file);
 
-			BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+			BodyPublisher bodyPublisher = exchangeClient.toBodyPublisher(request);
 
 			ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
 			bodyPublisher.subscribe(subscriber);
@@ -1368,7 +1382,7 @@ class JavaNetHttpExchangeClientTest {
 			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
 					.body(new File(TEXT_FILE_TXT));
 
-			HttpException exception = assertThrows(HttpException.class, () -> JavaNetHttpExchangeClient.toBodyPublisher(request));
+			HttpException exception = assertThrows(HttpException.class, () -> exchangeClient.toBodyPublisher(request));
 
 			assertThat(exception.getStatus(), equalTo(HttpStatus.BAD_REQUEST));
 		}
@@ -1380,7 +1394,7 @@ class JavaNetHttpExchangeClientTest {
 			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
 					.body(serializable);
 
-			BodyPublisher bodyPublisher = JavaNetHttpExchangeClient.toBodyPublisher(request);
+			BodyPublisher bodyPublisher = exchangeClient.toBodyPublisher(request);
 
 			ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
 			bodyPublisher.subscribe(subscriber);
