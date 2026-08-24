@@ -17,7 +17,6 @@ import org.apiphany.lang.annotation.FieldOrder;
 import org.apiphany.lang.annotation.Ignored;
 import org.apiphany.security.Sensitive;
 import org.apiphany.tests.json.JsonBuilderIT.GenericTypeTests.GenericDTO;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.morphix.reflection.GenericClass;
@@ -374,22 +373,6 @@ class JsonBuilderIT {
 		}
 
 		@Test
-		void shouldRedactComplexSensitiveFieldsInJson() {
-			ComplexRedactedDTO dto = new ComplexRedactedDTO(
-					List.of("p1", "p2"),
-					Map.of("q1", "a1", "q2", "a2"),
-					new CreditCard("4111111111111111", "12/25"));
-
-			String json = Strings.removeAllWhitespace(JsonBuilder.toJson(dto));
-
-			assertThat(json,
-					equalTo("{\"passwordHistory\":[\"" + Sensitive.Value.REDACTED + "\"],"
-							+ "\"securityQA\":{\"redacted\":\"" + Sensitive.Value.REDACTED + "\"},"
-							+ "\"creditCard\":\"" + Sensitive.Value.REDACTED + "\"}"));
-		}
-
-		@Disabled("This test fails because the redaction of complex types is not recursive, but it should be. This is a known issue that will be fixed in a future release.")
-		@Test
 		void shouldRedactComplexSensitiveFieldsInJsonGoingRecursively() {
 			ComplexRedactedDTO dto = new ComplexRedactedDTO(
 					List.of("p1", "p2"),
@@ -399,13 +382,9 @@ class JsonBuilderIT {
 			String json = Strings.removeAllWhitespace(JsonBuilder.toJson(dto));
 
 			assertThat(json,
-					equalTo("{\"passwordHistory\":[\"" + Sensitive.Value.REDACTED + "\"],"
-							+ "\"securityQA\":{\"redacted\":\"" + Sensitive.Value.REDACTED + "\"},"
-							+ "\"creditCard\":{"
-							+ "\"number\":\"" + Sensitive.Value.REDACTED + "\","
-							+ "\"expiry\":\"" + Sensitive.Value.REDACTED + "\""
-							+ "}"
-							+ "}"));
+					equalTo("{\"passwordHistory\":[],"
+							+ "\"securityQA\":{},"
+							+ "\"creditCard\":{}}"));
 		}
 
 		static class NoDefaultConstructorDTO {

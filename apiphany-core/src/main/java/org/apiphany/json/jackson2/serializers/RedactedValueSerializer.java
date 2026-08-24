@@ -2,6 +2,7 @@ package org.apiphany.json.jackson2.serializers;
 
 import java.io.IOException;
 
+import org.apiphany.json.JsonObjects;
 import org.apiphany.security.Sensitive;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -54,13 +55,16 @@ public class RedactedValueSerializer extends JsonSerializer<Object> implements C
 		}
 		if (type.isCollectionLikeType() || type.isArrayType()) {
 			gen.writeStartArray();
-			gen.writeString(Sensitive.Value.REDACTED);
 			gen.writeEndArray();
 			return;
 		}
 		if (type.isMapLikeType()) {
 			gen.writeStartObject();
-			gen.writeStringField(Sensitive.Field.SERIALIZED_NAME, Sensitive.Value.REDACTED);
+			gen.writeEndObject();
+			return;
+		}
+		if (JsonObjects.isStructured(value)) {
+			gen.writeStartObject();
 			gen.writeEndObject();
 			return;
 		}
