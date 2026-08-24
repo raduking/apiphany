@@ -11,6 +11,8 @@
 - Added `Path` body type support to `ApacheHC5HttpExchangeClient`.
 - Added `File`, `Path`, and `Serializable` body type support to Spring exchange clients.
 - Added `IOStreams.toByteArray(Serializable)` utility method for Java object serialization.
+- Changed redaction for complex JSON types: collections, maps, and nested objects now serialize as empty containers.
+- Added `JsonObjects` utility class with `isStructured(Object)` to determine if a value should be serialized as a structured JSON object or a scalar.
 
 ---
 
