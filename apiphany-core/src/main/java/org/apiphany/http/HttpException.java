@@ -245,21 +245,6 @@ public class HttpException extends RuntimeException implements Status.Aware, Bod
 	/**
 	 * Returns the value supplied by the supplier if no exception is thrown, otherwise it wraps the throwable thrown by the
 	 * supplier into a {@link HttpException}. If the exception is already an instance of {@link HttpException}, it is
-	 * re-thrown without wrapping. The exception will have the status set to the provided {@code httpStatus}.
-	 *
-	 * @param <T> return type
-	 *
-	 * @param throwingSupplier supplier
-	 * @param httpStatus HTTP status for the HTTP exception
-	 * @return the value supplied
-	 */
-	public static <T> T ifThrows(final ThrowingSupplier<T> throwingSupplier, final HttpStatus httpStatus) {
-		return ifThrows(throwingSupplier, (builder, throwable) -> builder.status(httpStatus));
-	}
-
-	/**
-	 * Returns the value supplied by the supplier if no exception is thrown, otherwise it wraps the throwable thrown by the
-	 * supplier into a {@link HttpException}. If the exception is already an instance of {@link HttpException}, it is
 	 * re-thrown without wrapping. The exception will have the status set to the value returned by the provided
 	 * {@code httpStatusFunction} based on the throwable.
 	 *
@@ -281,6 +266,21 @@ public class HttpException extends RuntimeException implements Status.Aware, Bod
 			httpExceptionCustomizer.accept(builder, t);
 			throw builder.build();
 		}
+	}
+
+	/**
+	 * Returns the value supplied by the supplier if no exception is thrown, otherwise it wraps the throwable thrown by the
+	 * supplier into a {@link HttpException}. If the exception is already an instance of {@link HttpException}, it is
+	 * re-thrown without wrapping. The exception will have the status set to the provided {@code httpStatus}.
+	 *
+	 * @param <T> return type
+	 *
+	 * @param throwingSupplier supplier
+	 * @param httpStatus HTTP status for the HTTP exception
+	 * @return the value supplied
+	 */
+	public static <T> T ifThrows(final ThrowingSupplier<T> throwingSupplier, final HttpStatus httpStatus) {
+		return ifThrows(throwingSupplier, (builder, throwable) -> builder.status(httpStatus));
 	}
 
 	/**
@@ -447,17 +447,6 @@ public class HttpException extends RuntimeException implements Status.Aware, Bod
 		}
 
 		/**
-		 * Sets the HTTP status to {@link HttpStatus#INTERNAL_SERVER_ERROR} and the message to a normalized redirect-loop
-		 * message.
-		 *
-		 * @return this Builder instance for method chaining
-		 */
-		public Builder redirectLoop() {
-			return status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.message(Message.REDIRECT_LOOP + ".");
-		}
-
-		/**
 		 * Sets the HTTP status to {@link HttpStatus#PAYLOAD_TOO_LARGE} and the message to a normalized response-too-large
 		 * message, including the actual content length and the configured maximum body size.
 		 *
@@ -468,6 +457,17 @@ public class HttpException extends RuntimeException implements Status.Aware, Bod
 		public Builder responseTooLarge(final long contentLength, final int maxBodySize) {
 			return status(HttpStatus.PAYLOAD_TOO_LARGE)
 					.message(Message.RESPONSE_TOO_LARGE + ": " + contentLength + " > " + maxBodySize);
+		}
+
+		/**
+		 * Sets the HTTP status to {@link HttpStatus#INTERNAL_SERVER_ERROR} and the message to a normalized redirect-loop
+		 * message.
+		 *
+		 * @return this Builder instance for method chaining
+		 */
+		public Builder redirectLoop() {
+			return status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.message(Message.REDIRECT_LOOP + ".");
 		}
 
 		/**

@@ -2,8 +2,6 @@
 
 `1.2.17`
 
-- Upgraded `morphix-all` to `1.0.42`.
-- Upgraded `dependency-check-maven` to `13.0.0`.
 - Added `ApiClientFluentAdapter.responseType(GenericType)` for setting a response type using `GenericType`.
 - Added `ApiClientFluentAdapter.retrieve(GenericType)` for retrieving an API response with a `GenericType` response type.
 - Added `BinarySerializers` utility interface with `toByteArray(List)` for concatenating binary representations of a list of objects.
@@ -13,6 +11,17 @@
 - Added `IOStreams.toByteArray(Serializable)` utility method for Java object serialization.
 - Changed redaction for complex JSON types: collections, maps, and nested objects now serialize as empty containers.
 - Added `JsonObjects` utility class with `isStructured(Object)` to determine if a value should be serialized as a structured JSON object or a scalar.
+- Upgraded `morphix-all` to `1.0.42`.
+- Upgraded `nimbus-jose-jwt` to `10.9.1`.
+- Upgraded `oauth2-oidc-sdk` to `11.38.2`.
+- Upgraded `testcontainers-keycloak` to `4.3.1`.
+- Upgraded `central-publishing-maven-plugin` to `0.11.0`.
+- Upgraded `maven-surefire-plugin` to `3.5.6`.
+- Upgraded `maven-failsafe-plugin` to `3.5.6`.
+- Upgraded `maven-jar-plugin` to `3.5.1`.
+- Upgraded `spotless-maven-plugin` to `3.10.0`.
+- Upgraded `maven-enforcer-plugin` to `3.6.3`.
+- Upgraded `dependency-check-maven` to `13.0.0`.
 
 ---
 
