@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -21,6 +22,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.http.HttpClient;
@@ -913,6 +915,30 @@ class JavaNetHttpExchangeClientTest {
 		}
 
 		@Test
+		void shouldWrapIoExceptionWhenInputStreamReadFails() throws Exception {
+			ClientProperties properties = new ClientProperties();
+			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient(properties);
+			exchangeClient.close();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.url(URL)
+					.method(HttpMethod.GET)
+					.responseType(String.class);
+
+			InputStream failingStream = mock(InputStream.class);
+			doThrow(new IOException("connection reset")).when(failingStream).read(any(), anyInt(), anyInt());
+
+			HttpResponse<?> httpResponse = mock(HttpResponse.class);
+			doReturn(HttpStatus.OK.value()).when(httpResponse).statusCode();
+			doReturn(failingStream).when(httpResponse).body();
+
+			HttpException exception = assertThrows(HttpException.class,
+					() -> exchangeClient.buildResponse(request, httpResponse));
+
+			assertThat(exception.getStatus(), equalTo(null));
+		}
+
+		@Test
 		void shouldThrowPayloadTooLargeWhenContentLengthExceedsConfiguredLimitBeforeReadingBody() throws Exception {
 			ClientProperties properties = new ClientProperties();
 			properties.getResponse().setMaxBodySize(3);
@@ -1352,9 +1378,9 @@ class JavaNetHttpExchangeClientTest {
 
 			HttpException exception = assertThrows(HttpException.class, () -> exchangeClient.toBodyPublisher(request));
 
-			assertThat(exception.getStatus(), equalTo(HttpStatus.BAD_REQUEST));
+			assertThat(exception.getStatus(), equalTo(null));
 			assertThat(exception.getMessage(), equalTo(
-					HttpException.message(HttpStatus.BAD_REQUEST, TEXT_FILE_TXT + " not found")));
+					"[unknown status] " + TEXT_FILE_TXT + " not found"));
 		}
 
 		@Test
@@ -1384,7 +1410,7 @@ class JavaNetHttpExchangeClientTest {
 
 			HttpException exception = assertThrows(HttpException.class, () -> exchangeClient.toBodyPublisher(request));
 
-			assertThat(exception.getStatus(), equalTo(HttpStatus.BAD_REQUEST));
+			assertThat(exception.getStatus(), equalTo(null));
 		}
 
 		@Test

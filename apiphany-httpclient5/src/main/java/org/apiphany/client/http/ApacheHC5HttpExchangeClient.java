@@ -265,7 +265,7 @@ public class ApacheHC5HttpExchangeClient extends AbstractHttpExchangeClient {
 			case Serializable serializable -> HttpEntities.create(serializable, contentType);
 			case Object obj when isContentJson(apiRequest) -> HttpEntities.create(JsonBuilder.toJson(obj), contentType);
 			default -> HttpEntities.create(fallbackToString(body), contentType);
-		}, HttpStatus.BAD_REQUEST);
+		});
 	}
 
 	/**
