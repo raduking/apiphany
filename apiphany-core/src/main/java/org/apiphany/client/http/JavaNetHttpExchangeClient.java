@@ -285,7 +285,7 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 			case Serializable serializable -> BodyPublishers.ofByteArray(IOStreams.toByteArray(serializable));
 			case Object obj when isContentJson(apiRequest) -> BodyPublishers.ofString(JsonBuilder.toJson(obj), charset);
 			default -> BodyPublishers.ofString(fallbackToString(body), charset);
-		}, HttpStatus.BAD_REQUEST);
+		});
 	}
 
 	/**

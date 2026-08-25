@@ -210,7 +210,7 @@ public abstract class AbstractSpringExchangeClient extends AbstractHttpExchangeC
 			case Serializable s -> SpringHttpSupport.createHttpEntity(IOStreams.toByteArray(s), headers);
 			case Object obj when isContentJson(apiRequest) -> SpringHttpSupport.createHttpEntity(JsonBuilder.toJson(obj), headers);
 			default -> SpringHttpSupport.createHttpEntity(fallbackToString(body), headers);
-		}, HttpStatus.BAD_REQUEST);
+		});
 		return JavaObjects.cast(httpEntity);
 	}
 
