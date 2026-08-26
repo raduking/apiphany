@@ -13,7 +13,8 @@
 - Added `JsonObjects` utility class with `isStructured(Object)` to determine if a value should be serialized as a structured JSON object or a scalar.
 - Renamed `HttpMessages.isRedirectLoopFailure(Throwable, Predicate)` to `HttpMessages.isFailure(Throwable, Predicate)`.
 - Removed `HttpException.redirectLoop()` and `HttpException.responseTooLarge()` static factory methods; use the builder instead.
-- Added `HttpException.builder().redirectLoop(HttpStatus)` builder method.
+- Added `HttpException.Builder.redirectLoop(HttpStatus)` to set the exception as redirect loop with status.
+- Added `HttpException.Builder.responseTooLarge(long, int)` to set the exception as response too large with content length and maximum size.
 - Changed `HttpException.ifThrows` to catch `Throwable` instead of `Exception` for customizer support.
 - Fixed Apache HC5 redirect loop detection to walk the cause chain when `CircularRedirectException` is wrapped (in `ClientProtocolException`).
 - Upgraded `morphix-all` to `1.0.42`.

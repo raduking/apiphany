@@ -916,6 +916,7 @@ class JavaNetHttpExchangeClientTest {
 		}
 
 		@Test
+		@SuppressWarnings("resource")
 		void shouldWrapIoExceptionWhenInputStreamReadFails() throws Exception {
 			ClientProperties properties = new ClientProperties();
 			JavaNetHttpExchangeClient exchangeClient = new JavaNetHttpExchangeClient(properties);
