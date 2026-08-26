@@ -183,7 +183,7 @@ class HttpExceptionTest {
 	void shouldThrowWhenRedirectLoopFailurePredicateIsNull() {
 		RuntimeException e = new RuntimeException("x");
 		NullPointerException exception = assertThrows(NullPointerException.class,
-				() -> HttpMessages.isRedirectLoopFailure(e, null));
+				() -> HttpMessages.isFailure(e, null));
 
 		assertThat(exception.getMessage(), equalTo("predicate cannot be null"));
 	}
@@ -196,7 +196,8 @@ class HttpExceptionTest {
 		cause.initCause(exception);
 
 		Predicate<Throwable> predicate = t -> t == cause;
-		assertThat(HttpMessages.isRedirectLoopFailure(exception, predicate), equalTo(true));
+
+		assertThat(HttpMessages.isFailure(exception, predicate), equalTo(true));
 	}
 
 	@Test
@@ -229,9 +230,9 @@ class HttpExceptionTest {
 
 	@Test
 	void shouldCreateRedirectLoopException() {
-		HttpException exception = HttpException.redirectLoop();
+		HttpException exception = HttpException.builder().redirectLoop().build();
 
-		assertThat(exception.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR.getCode()));
+		assertThat(exception.getStatusCode(), equalTo(Status.UNKNOWN));
 		assertThat(exception.getMessage(), containsString("Redirect loop detected"));
 		assertThat(exception.getCause(), nullValue());
 	}
@@ -240,9 +241,29 @@ class HttpExceptionTest {
 	void shouldCreateRedirectLoopExceptionWithCause() {
 		RuntimeException cause = new RuntimeException(CAUSE_ERROR_MESSAGE);
 
-		HttpException exception = HttpException.redirectLoop(cause);
+		HttpException exception = HttpException.builder().cause(cause).redirectLoop().build();
 
-		assertThat(exception.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR.getCode()));
+		assertThat(exception.getStatusCode(), equalTo(Status.UNKNOWN));
+		assertThat(exception.getMessage(), containsString("Redirect loop detected"));
+		assertThat(exception.getCause(), equalTo(cause));
+	}
+
+	@Test
+	void shouldCreateRedirectLoopExceptionWithStatus() {
+		HttpException exception = HttpException.builder().redirectLoop(HttpStatus.MOVED_PERMANENTLY).build();
+
+		assertThat(exception.getStatus(), equalTo(HttpStatus.MOVED_PERMANENTLY));
+		assertThat(exception.getMessage(), containsString("Redirect loop detected"));
+		assertThat(exception.getCause(), nullValue());
+	}
+
+	@Test
+	void shouldCreateRedirectLoopExceptionWithStatusAndCause() {
+		RuntimeException cause = new RuntimeException(CAUSE_ERROR_MESSAGE);
+
+		HttpException exception = HttpException.builder().cause(cause).redirectLoop(HttpStatus.FOUND).build();
+
+		assertThat(exception.getStatus(), equalTo(HttpStatus.FOUND));
 		assertThat(exception.getMessage(), containsString("Redirect loop detected"));
 		assertThat(exception.getCause(), equalTo(cause));
 	}

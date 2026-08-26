@@ -364,7 +364,7 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 			return;
 		}
 		if (contentLength > maxBodySize) {
-			throw HttpException.responseTooLarge(contentLength, maxBodySize);
+			throw HttpException.builder().responseTooLarge(contentLength, maxBodySize).build();
 		}
 	}
 
@@ -381,7 +381,7 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 			return;
 		}
 		if (bytes.length > maxBodySize) {
-			throw HttpException.responseTooLarge(bytes.length, maxBodySize);
+			throw HttpException.builder().responseTooLarge(bytes.length, maxBodySize).build();
 		}
 	}
 
@@ -448,12 +448,13 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	 * @param throwable the throwable to extract information from
 	 */
 	protected void customizeHttpExceptionBuilder(final HttpException.Builder httpExceptionBuilder, final Throwable throwable) {
+		HttpStatus status = extractHttpStatus(throwable);
 		if (getClientProperties().getConnection().isFollowRedirects()
-				&& HttpMessages.isRedirectLoopFailure(throwable, getRedirectLoopFailurePredicate())) {
-			httpExceptionBuilder.redirectLoop();
+				&& HttpMessages.isFailure(throwable, getRedirectLoopFailurePredicate())) {
+			httpExceptionBuilder.redirectLoop(status);
 		} else {
 			httpExceptionBuilder
-					.status(extractHttpStatus(throwable))
+					.status(status)
 					.responseHeaders(extractResponseHeaders(throwable))
 					.responseBody(extractResponseBody(throwable));
 		}

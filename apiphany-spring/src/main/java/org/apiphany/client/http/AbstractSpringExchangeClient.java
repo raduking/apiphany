@@ -228,7 +228,7 @@ public abstract class AbstractSpringExchangeClient extends AbstractHttpExchangeC
 		Map<String, List<String>> headers = responseEntity.getHeaders();
 		HttpStatus httpStatus = HttpStatus.fromCode(responseEntity.getStatusCode().value());
 		if (isTerminalRedirectWithLocation(httpStatus, headers)) {
-			throw HttpException.redirectLoop();
+			throw HttpException.builder().redirectLoop(httpStatus).build();
 		}
 		U responseBody = responseEntity.getBody();
 
@@ -286,7 +286,14 @@ public abstract class AbstractSpringExchangeClient extends AbstractHttpExchangeC
 	protected HttpStatus extractHttpStatus(final Throwable throwable) {
 		return switch (throwable) {
 			case HttpStatusCodeException httpStatusCodeException -> HttpStatus.fromCode(httpStatusCodeException.getStatusCode().value());
-			default -> super.extractHttpStatus(throwable);
+			default -> {
+				if (getClientProperties().getConnection().isFollowRedirects()
+						&& SpringRedirectFailureDetector.isRedirectFailure(throwable)) {
+					yield HttpStatus.FOUND;
+				} else {
+					yield super.extractHttpStatus(throwable);
+				}
+			}
 		};
 	}
 

@@ -68,8 +68,8 @@ class AbstractHttpExchangeClientTest {
 			var headers = Map.of(HttpHeader.CONTENT_LENGTH.value(), List.of("11"));
 			HttpException exception = assertThrows(HttpException.class, () -> exchangeClient.callEnsureContentLengthWithinLimit(headers, 10));
 
-			assertThat(exception.getStatus(), equalTo(HttpStatus.PAYLOAD_TOO_LARGE));
-			assertThat(exception.getMessage(), startsWith("[413 Payload Too Large] Response body exceeds configured max size"));
+			assertThat(exception.getStatus(), equalTo(null));
+			assertThat(exception.getMessage(), startsWith("[unknown status] Response body exceeds configured max size"));
 		}
 
 		private static Stream<Arguments> provideContentLengthHeaderTestCases() {
@@ -105,8 +105,8 @@ class AbstractHttpExchangeClientTest {
 
 			HttpException exception = assertThrows(HttpException.class, () -> exchangeClient.callEnsureBodySizeWithinLimit(new byte[4], 3));
 
-			assertThat(exception.getStatus(), equalTo(HttpStatus.PAYLOAD_TOO_LARGE));
-			assertThat(exception.getMessage(), startsWith("[413 Payload Too Large] Response body exceeds configured max size"));
+			assertThat(exception.getStatus(), equalTo(null));
+			assertThat(exception.getMessage(), startsWith("[unknown status] Response body exceeds configured max size"));
 		}
 	}
 
@@ -123,8 +123,8 @@ class AbstractHttpExchangeClientTest {
 
 			HttpException exception = builder.build();
 
-			assertThat(exception.getStatus(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
-			assertThat(exception.getMessage(), startsWith("[500 Internal Server Error] Redirect loop detected"));
+			assertThat(exception.getStatus(), equalTo(null));
+			assertThat(exception.getMessage(), startsWith("[unknown status] Redirect loop detected"));
 			assertThat(exception.getResponseBody(), nullValue());
 		}
 

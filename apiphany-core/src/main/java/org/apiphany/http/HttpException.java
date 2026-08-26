@@ -166,36 +166,6 @@ public class HttpException extends RuntimeException implements Status.Aware, Bod
 	}
 
 	/**
-	 * Creates a normalized redirect-loop exception.
-	 *
-	 * @return redirect-loop HTTP exception
-	 */
-	public static HttpException redirectLoop() {
-		return redirectLoop(null);
-	}
-
-	/**
-	 * Creates a normalized redirect-loop exception with cause.
-	 *
-	 * @param cause redirect-loop cause
-	 * @return redirect-loop HTTP exception
-	 */
-	public static HttpException redirectLoop(final Throwable cause) {
-		return builder().cause(cause).redirectLoop().build();
-	}
-
-	/**
-	 * Creates an HttpException indicating that the response body exceeds the configured maximum size.
-	 *
-	 * @param contentLength the actual content length of the response body
-	 * @param maxBodySize the configured maximum body size in bytes
-	 * @return an HttpException with status {@link HttpStatus#PAYLOAD_TOO_LARGE} and a message describing the issue
-	 */
-	public static HttpException responseTooLarge(final long contentLength, final int maxBodySize) {
-		return builder().responseTooLarge(contentLength, maxBodySize).build();
-	}
-
-	/**
 	 * Returns the HTTP status associated with this exception.
 	 *
 	 * @return the HTTP status.
@@ -447,27 +417,36 @@ public class HttpException extends RuntimeException implements Status.Aware, Bod
 		}
 
 		/**
-		 * Sets the HTTP status to {@link HttpStatus#PAYLOAD_TOO_LARGE} and the message to a normalized response-too-large
-		 * message, including the actual content length and the configured maximum body size.
+		 * Sets the message to a normalized response-too-large message, including the actual content length and the configured
+		 * maximum body size.
 		 *
 		 * @param contentLength the actual content length of the response body
 		 * @param maxBodySize the configured maximum body size in bytes
 		 * @return this Builder instance for method chaining
 		 */
 		public Builder responseTooLarge(final long contentLength, final int maxBodySize) {
-			return status(HttpStatus.PAYLOAD_TOO_LARGE)
-					.message(Message.RESPONSE_TOO_LARGE + ": " + contentLength + " > " + maxBodySize);
+			return message(Message.RESPONSE_TOO_LARGE + ": " + contentLength + " > " + maxBodySize);
 		}
 
 		/**
-		 * Sets the HTTP status to {@link HttpStatus#INTERNAL_SERVER_ERROR} and the message to a normalized redirect-loop
-		 * message.
+		 * Sets the message to a normalized redirect-loop message.
 		 *
 		 * @return this Builder instance for method chaining
 		 */
 		public Builder redirectLoop() {
-			return status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.message(Message.REDIRECT_LOOP + ".");
+			return message(Message.REDIRECT_LOOP + ".");
+		}
+
+		/**
+		 * Sets the HTTP status and a normalized redirect-loop message. The status represents the HTTP response that triggered
+		 * the redirect-loop detection and is an actual HTTP response status, not a client-side validation status.
+		 *
+		 * @param status the HTTP status from the response that triggered the redirect-loop detection
+		 * @return this Builder instance for method chaining
+		 */
+		public Builder redirectLoop(final HttpStatus status) {
+			return redirectLoop()
+					.status(status);
 		}
 
 		/**

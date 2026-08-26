@@ -9,6 +9,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.util.List;
@@ -29,6 +30,8 @@ public interface RedirectsContract extends ApiphanyContract {
 	@DisplayName("Redirects: By default, the client should not follow redirects")
 	@Test
 	default void shouldNotFollowRedirectsByDefault() throws Exception {
+		assumeFalse(enableRedirects(), "Redirects are enabled");
+
 		wiremock().stubFor(get("/redirect")
 				.willReturn(aResponse()
 						.withStatus(302)
@@ -89,9 +92,73 @@ public interface RedirectsContract extends ApiphanyContract {
 		wiremock().verify(getRequestedFor(urlEqualTo("/target")));
 	}
 
+	@DisplayName("Redirects: By default, the client should not follow 301 redirects")
+	@Test
+	default void shouldNotFollow301ByDefault() throws Exception {
+		assumeFalse(enableRedirects(), "Redirects are enabled");
+
+		wiremock().stubFor(get("/redirect301")
+				.willReturn(aResponse()
+						.withStatus(301)
+						.withHeader("Location", "/target")));
+
+		wiremock().stubFor(get("/target")
+				.willReturn(aResponse()
+						.withStatus(200)
+						.withBody("OK")));
+
+		ApiClient api = apiClient();
+		try (api) {
+			var result = api.client()
+					.http()
+					.get()
+					.path("redirect301")
+					.retrieve(String.class)
+					.orNull();
+			assertNull(result);
+		}
+
+		wiremock().verify(1, getRequestedFor(urlEqualTo("/redirect301")));
+		wiremock().verify(0, getRequestedFor(urlEqualTo("/target")));
+	}
+
+	@DisplayName("Redirects: The client should follow 301 redirects when enabled")
+	@Test
+	default void shouldFollow301WhenEnabled() throws Exception {
+		assumeTrue(enableRedirects(), "This client does not support redirects");
+
+		wiremock().stubFor(get("/redirect301")
+				.willReturn(aResponse()
+						.withStatus(301)
+						.withHeader("Location", "/target")));
+
+		wiremock().stubFor(get("/target")
+				.willReturn(aResponse()
+						.withStatus(200)
+						.withBody("OK")));
+
+		ApiClient api = apiClient();
+		try (api) {
+			var result = api
+					.client()
+					.http()
+					.get()
+					.path("redirect301")
+					.retrieve(String.class)
+					.orNull();
+
+			assertEquals("OK", result);
+		}
+
+		wiremock().verify(getRequestedFor(urlEqualTo("/redirect301")));
+		wiremock().verify(getRequestedFor(urlEqualTo("/target")));
+	}
+
 	@DisplayName("Redirects: The client should expose 307 responses without following redirects by default")
 	@Test
 	default void shouldNotTransformPostToGetOn307() throws Exception {
+		assumeFalse(enableRedirects(), "Redirects are enabled");
+
 		wiremock().stubFor(post("/redirect307")
 				.willReturn(aResponse()
 						.withStatus(307)
@@ -152,6 +219,71 @@ public interface RedirectsContract extends ApiphanyContract {
 		wiremock().verify(0, getRequestedFor(urlEqualTo("/target")));
 	}
 
+	@DisplayName("Redirects: The client should expose 308 responses without following redirects by default")
+	@Test
+	default void shouldNotTransformPostToGetOn308() throws Exception {
+		assumeFalse(enableRedirects(), "Redirects are enabled");
+
+		wiremock().stubFor(post("/redirect308")
+				.willReturn(aResponse()
+						.withStatus(308)
+						.withHeader("Location", "/target")));
+
+		ApiClient api = apiClient();
+		try (api) {
+			ApiResponse<?> response = api.client()
+					.http()
+					.post()
+					.path("redirect308")
+					.body("test")
+					.retrieve();
+
+			assertNull(response.orNull());
+			assertEquals(308, response.getStatus().getCode());
+			assertEquals(List.of("/target"), response.getHeaders().get("Location"));
+		}
+
+		wiremock().verify(postRequestedFor(urlEqualTo("/redirect308")));
+		wiremock().verify(0, getRequestedFor(urlEqualTo("/target")));
+	}
+
+	@DisplayName("Redirects: The client should preserve method and body on 308 redirects")
+	@Test
+	default void shouldPreserveMethodAndBodyOn308Redirect() throws Exception {
+		assumeTrue(enableRedirects(), "This client does not support redirects");
+
+		wiremock().stubFor(post("/redirect308")
+				.willReturn(aResponse()
+						.withStatus(308)
+						.withHeader("Location", "/target")));
+
+		wiremock().stubFor(post("/target")
+				.willReturn(aResponse()
+						.withStatus(200)
+						.withBody("OK")));
+
+		ApiClient api = apiClient();
+		try (api) {
+			String result = api.client()
+					.http()
+					.post()
+					.path("redirect308")
+					.body("test")
+					.retrieve(String.class)
+					.orNull();
+
+			assertEquals("OK", result);
+		}
+
+		wiremock().verify(postRequestedFor(urlEqualTo("/redirect308"))
+				.withRequestBody(equalTo("test")));
+
+		wiremock().verify(postRequestedFor(urlEqualTo("/target"))
+				.withRequestBody(equalTo("test")));
+
+		wiremock().verify(0, getRequestedFor(urlEqualTo("/target")));
+	}
+
 	@DisplayName("Redirects: The client should transform POST to GET on 303 redirects")
 	@Test
 	default void shouldTransformPostToGetOn303() throws Exception {
@@ -202,8 +334,8 @@ public interface RedirectsContract extends ApiphanyContract {
 					.path("loop")
 					.retrieve(String.class);
 
-			assertEquals(500, response.getStatusCode());
-			assertEquals("Exchange error: [500 Internal Server Error] Redirect loop detected.", response.getErrorMessage());
+			assertEquals(302, response.getStatusCode());
+			assertEquals("Exchange error: [302 Found] Redirect loop detected.", response.getErrorMessage());
 			assertNull(response.orNull());
 		}
 	}

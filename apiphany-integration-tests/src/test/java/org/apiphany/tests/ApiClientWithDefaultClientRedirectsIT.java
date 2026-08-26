@@ -1,20 +1,14 @@
 package org.apiphany.tests;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.apiphany.ApiClient;
-import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.tests.contract.ApiphanyContract;
 import org.apiphany.tests.contract.RedirectsContract;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 
 /**
@@ -78,83 +72,6 @@ class ApiClientWithDefaultClientRedirectsIT implements ApiphanyContract {
 
 	@Nested
 	class Redirects extends NestedContract implements RedirectsContract {
-
-		@DisplayName("Redirects: With redirects enabled, client should follow 302")
-		@Test
-		@Override
-		public void shouldNotFollowRedirectsByDefault() throws Exception {
-			wiremock().stubFor(WireMock.get("/redirect")
-					.willReturn(WireMock.aResponse()
-							.withStatus(302)
-							.withHeader("Location", "/target")));
-
-			wiremock().stubFor(WireMock.get("/target")
-					.willReturn(WireMock.aResponse()
-							.withStatus(200)
-							.withBody("OK")));
-
-			ApiClient api = apiClient();
-			try (api) {
-				String result = api.client()
-						.http()
-						.get()
-						.path("redirect")
-						.retrieve(String.class)
-						.orNull();
-
-				assertEquals("OK", result);
-			}
-		}
-
-		@DisplayName("Redirects: With redirects enabled, 307 should preserve method and body")
-		@Test
-		@Override
-		public void shouldNotTransformPostToGetOn307() throws Exception {
-			wiremock().stubFor(WireMock.post("/redirect307")
-					.willReturn(WireMock.aResponse()
-							.withStatus(307)
-							.withHeader("Location", "/target")));
-
-			wiremock().stubFor(WireMock.post("/target")
-					.willReturn(WireMock.aResponse()
-							.withStatus(200)
-							.withBody("OK")));
-
-			ApiClient api = apiClient();
-			try (api) {
-				String result = api.client()
-						.http()
-						.post()
-						.path("redirect307")
-						.body("test")
-						.retrieve(String.class)
-						.orNull();
-
-				assertEquals("OK", result);
-			}
-		}
-
-		@DisplayName("Redirects: The client should fail with normalized error when redirects exceed the maximum limit")
-		@Test
-		@Override
-		public void shouldFailOnRedirectLoop() throws Exception {
-			wiremock().stubFor(WireMock.get("/loop")
-					.willReturn(WireMock.aResponse()
-							.withStatus(302)
-							.withHeader("Location", "/loop")));
-
-			ApiClient api = apiClient();
-			try (api) {
-				ApiResponse<String> response = api.client()
-						.http()
-						.get()
-						.path("loop")
-						.retrieve(String.class);
-
-				assertEquals(500, response.getStatusCode());
-				assertEquals("Exchange error: [500 Internal Server Error] Redirect loop detected.", response.getErrorMessage());
-				assertNull(response.orNull());
-			}
-		}
+		// empty - inherits all tests from RedirectsContract
 	}
 }
