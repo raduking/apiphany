@@ -19,6 +19,7 @@ import org.apache.hc.core5.http.io.SocketConfig;
 import org.apache.hc.core5.util.Timeout;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.http.ApacheHC5Properties;
+import org.morphix.lang.Throwables;
 import org.morphix.lang.function.Consumers;
 
 /**
@@ -203,7 +204,7 @@ public interface ApacheHC5Clients {
 	 * @return true if throwable matches Apache HC5 circular redirect exception type
 	 */
 	static boolean isCircularRedirectException(final Throwable throwable) {
-		return throwable instanceof CircularRedirectException;
+		return Throwables.anyMatch(throwable, CircularRedirectException.class::isInstance);
 	}
 
 	/**

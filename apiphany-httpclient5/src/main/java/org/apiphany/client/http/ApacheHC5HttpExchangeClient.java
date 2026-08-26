@@ -206,6 +206,18 @@ public class ApacheHC5HttpExchangeClient extends AbstractHttpExchangeClient {
 	}
 
 	/**
+	 * @see AbstractHttpExchangeClient#extractHttpStatus(Throwable)
+	 */
+	@Override
+	protected HttpStatus extractHttpStatus(final Throwable throwable) {
+		if (getClientProperties().getConnection().isFollowRedirects()
+				&& ApacheHC5Clients.isCircularRedirectException(throwable)) {
+			return HttpStatus.FOUND;
+		}
+		return super.extractHttpStatus(throwable);
+	}
+
+	/**
 	 * Builds the HTTP URI request object.
 	 *
 	 * @param <T> request body type

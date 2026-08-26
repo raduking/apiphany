@@ -79,19 +79,18 @@ public class HttpMessages {
 	 * @return true if redirect loop was detected, false otherwise
 	 */
 	public static boolean isRedirectLoopFailure(final Throwable throwable) {
-		return isRedirectLoopFailure(throwable, defaultRedirectLoopFailurePredicate());
+		return isFailure(throwable, defaultRedirectLoopFailurePredicate());
 	}
 
 	/**
-	 * Returns true when the throwable indicates redirect-loop/too-many-redirects failure.
+	 * Returns true when the throwable matches the given predicate.
 	 *
 	 * @param throwable throwable to inspect
-	 * @param redirectLoopFailurePredicate predicate to determine if a throwable indicates redirect-loop/too-many-redirects
-	 *     failure
-	 * @return true if redirect loop was detected, false otherwise
+	 * @param predicate predicate to determine if a throwable indicates the expected failure
+	 * @return true if the predicate matched, false otherwise
 	 */
-	public static boolean isRedirectLoopFailure(final Throwable throwable, final Predicate<Throwable> redirectLoopFailurePredicate) {
-		return Throwables.anyMatch(throwable, redirectLoopFailurePredicate);
+	public static boolean isFailure(final Throwable throwable, final Predicate<Throwable> predicate) {
+		return Throwables.anyMatch(throwable, predicate);
 	}
 
 	/**

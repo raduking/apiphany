@@ -11,6 +11,11 @@
 - Added `IOStreams.toByteArray(Serializable)` utility method for Java object serialization.
 - Changed redaction for complex JSON types: collections, maps, and nested objects now serialize as empty containers.
 - Added `JsonObjects` utility class with `isStructured(Object)` to determine if a value should be serialized as a structured JSON object or a scalar.
+- Renamed `HttpMessages.isRedirectLoopFailure(Throwable, Predicate)` to `HttpMessages.isFailure(Throwable, Predicate)`.
+- Removed `HttpException.redirectLoop()` and `HttpException.responseTooLarge()` static factory methods; use the builder instead.
+- Added `HttpException.builder().redirectLoop(HttpStatus)` builder method.
+- Changed `HttpException.ifThrows` to catch `Throwable` instead of `Exception` for customizer support.
+- Fixed Apache HC5 redirect loop detection to walk the cause chain when `CircularRedirectException` is wrapped (in `ClientProtocolException`).
 - Upgraded `morphix-all` to `1.0.42`.
 - Upgraded `nimbus-jose-jwt` to `10.9.1`.
 - Upgraded `oauth2-oidc-sdk` to `11.38.2`.

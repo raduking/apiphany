@@ -219,7 +219,7 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 		HttpStatus httpStatus = HttpStatus.fromCode(httpResponse.statusCode());
 		Map<String, List<String>> headers = Nullables.apply(httpResponse.headers(), HttpHeaders::map);
 		if (isTerminalRedirectWithLocation(httpStatus, headers)) {
-			throw HttpException.redirectLoop();
+			throw HttpException.builder().redirectLoop(httpStatus).build();
 		}
 
 		int maxBodySize = getMaxResponseBodySize();

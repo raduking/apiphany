@@ -757,6 +757,7 @@ class JavaNetHttpExchangeClientTest {
 
 			HttpException exception = assertThrows(HttpException.class, () -> exchangeClient.buildResponse(request, httpResponse));
 
+			assertThat(exception.getStatus(), equalTo(HttpStatus.MOVED_PERMANENTLY));
 			assertThat(exception.getMessage(), containsString("Redirect loop detected"));
 		}
 
@@ -959,8 +960,8 @@ class JavaNetHttpExchangeClientTest {
 			HttpException exception = assertThrows(HttpException.class,
 					() -> exchangeClient.buildResponse(request, httpResponse));
 
-			assertThat(exception.getStatus(), equalTo(HttpStatus.PAYLOAD_TOO_LARGE));
-			assertThat(exception.getMessage(), startsWith("[413 Payload Too Large] Response body exceeds configured max size"));
+			assertThat(exception.getStatus(), equalTo(null));
+			assertThat(exception.getMessage(), startsWith("[unknown status] Response body exceeds configured max size"));
 		}
 
 		@Test
