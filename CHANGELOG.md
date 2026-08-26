@@ -1,5 +1,9 @@
 ## Release Notes
 
+`1.2.18`
+
+---
+
 `1.2.17`
 
 - Added `ApiClientFluentAdapter.responseType(GenericType)` for setting a response type using `GenericType`.
