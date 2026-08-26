@@ -37,7 +37,7 @@ class ApacheHC5ClientsTest {
 	}
 
 	@Test
-	void shouldIdentifyCircularRedirectException() throws CircularRedirectException {
+	void shouldIdentifyCircularRedirectException() {
 		CircularRedirectException exception = new CircularRedirectException("circular redirect");
 
 		assertThat(ApacheHC5Clients.isCircularRedirectException(exception), equalTo(true));

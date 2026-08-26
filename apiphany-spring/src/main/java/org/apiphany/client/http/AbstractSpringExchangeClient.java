@@ -290,9 +290,8 @@ public abstract class AbstractSpringExchangeClient extends AbstractHttpExchangeC
 				if (getClientProperties().getConnection().isFollowRedirects()
 						&& SpringRedirectFailureDetector.isRedirectFailure(throwable)) {
 					yield HttpStatus.FOUND;
-				} else {
-					yield super.extractHttpStatus(throwable);
 				}
+				yield super.extractHttpStatus(throwable);
 			}
 		};
 	}
