@@ -119,15 +119,15 @@ class AbstractSpringExchangeClientTest {
 		}
 
 		@Test
-		@SuppressWarnings({ "resource", "unchecked" })
+		@SuppressWarnings("resource")
 		void shouldCreateHttpEntityForSerializable() {
 			TestSpringExchangeClient client = createClient();
 
-			ApiRequest<Integer> request = mock(ApiRequest.class);
-			when(request.getHeaders()).thenReturn(null);
-			when(request.getBody()).thenReturn(42);
+			ApiRequest<?> request = mock(ApiRequest.class);
+			doReturn(null).when(request).getHeaders();
+			doReturn(42).when(request).getBody();
 
-			HttpEntity<Integer> entity = client.buildRequest(request);
+			HttpEntity<?> entity = client.buildRequest(request);
 
 			assertThat(entity.getBody(), instanceOf(byte[].class));
 		}
