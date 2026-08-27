@@ -3,8 +3,8 @@ package org.apiphany.spring;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.util.function.Consumer;
 
@@ -22,18 +22,13 @@ import org.springframework.context.ApplicationContext;
 @ExtendWith(MockitoExtension.class)
 class BeanFinderTest {
 
-	private static TestBeanFinder createFinder(final ApplicationContext ctx) {
-		return new TestBeanFinder(ctx);
-	}
-
 	@Nested
 	class GetBeanByNameTests {
 
 		@Test
 		void shouldReturnBeanByName() {
 			ApplicationContext ctx = mock(ApplicationContext.class);
-			when(ctx.getBean("myBean")).thenReturn("value");
-
+			doReturn("value").when(ctx).getBean("myBean");
 			TestBeanFinder finder = createFinder(ctx);
 
 			String result = finder.getBean("myBean");
@@ -44,8 +39,7 @@ class BeanFinderTest {
 		@Test
 		void shouldReturnNullWhenBeanNotFoundByName() {
 			ApplicationContext ctx = mock(ApplicationContext.class);
-			when(ctx.getBean("missing")).thenReturn(null);
-
+			doReturn(null).when(ctx).getBean("missing");
 			TestBeanFinder finder = createFinder(ctx);
 
 			String result = finder.getBean("missing");
@@ -57,11 +51,10 @@ class BeanFinderTest {
 		@SuppressWarnings("unchecked")
 		void shouldCallOnErrorWhenBeanNotFoundByName() {
 			ApplicationContext ctx = mock(ApplicationContext.class);
-			when(ctx.getBean("missing")).thenReturn(null);
-
+			doReturn(null).when(ctx).getBean("missing");
+			Consumer<Exception> onError = mock(Consumer.class);
 			TestBeanFinder finder = createFinder(ctx);
 
-			Consumer<Exception> onError = mock(Consumer.class);
 			String result = finder.getBean("missing", onError);
 
 			assertThat(result, nullValue());
@@ -74,8 +67,7 @@ class BeanFinderTest {
 		@Test
 		void shouldReturnBeanByClass() {
 			ApplicationContext ctx = mock(ApplicationContext.class);
-			when(ctx.getBean(String.class)).thenReturn("value");
-
+			doReturn("value").when(ctx).getBean(String.class);
 			TestBeanFinder finder = createFinder(ctx);
 
 			String result = finder.getBean(String.class);
@@ -86,8 +78,7 @@ class BeanFinderTest {
 		@Test
 		void shouldReturnNullWhenBeanNotFoundByClass() {
 			ApplicationContext ctx = mock(ApplicationContext.class);
-			when(ctx.getBean(String.class)).thenReturn(null);
-
+			doReturn(null).when(ctx).getBean(String.class);
 			TestBeanFinder finder = createFinder(ctx);
 
 			String result = finder.getBean(String.class);
@@ -99,11 +90,10 @@ class BeanFinderTest {
 		@SuppressWarnings("unchecked")
 		void shouldCallOnErrorWhenBeanNotFoundByClass() {
 			ApplicationContext ctx = mock(ApplicationContext.class);
-			when(ctx.getBean(String.class)).thenReturn(null);
-
+			doReturn(null).when(ctx).getBean(String.class);
+			Consumer<Exception> onError = mock(Consumer.class);
 			TestBeanFinder finder = createFinder(ctx);
 
-			Consumer<Exception> onError = mock(Consumer.class);
 			String result = finder.getBean(String.class, onError);
 
 			assertThat(result, nullValue());
@@ -122,5 +112,9 @@ class BeanFinderTest {
 		public ApplicationContext getApplicationContext() {
 			return applicationContext;
 		}
+	}
+
+	private static TestBeanFinder createFinder(final ApplicationContext ctx) {
+		return new TestBeanFinder(ctx);
 	}
 }
