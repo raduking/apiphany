@@ -3,6 +3,8 @@ package org.apiphany.meters;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
@@ -11,7 +13,9 @@ import java.util.function.Supplier;
 
 import org.apiphany.lang.Strings;
 import org.apiphany.lang.builder.PropertyNameBuilder;
+import org.morphix.async.CompletableFutures;
 import org.morphix.lang.Nullables;
+import org.morphix.lang.Throwables;
 import org.morphix.lang.Unchecked;
 import org.morphix.lang.function.InstanceFunction;
 import org.morphix.lang.function.Predicates;
@@ -196,6 +200,47 @@ public record BasicMeters(
 		} finally {
 			latency().record(Duration.between(startTime, Instant.now()));
 		}
+	}
+
+	/**
+	 * Wraps an asynchronous supplier with metrics, recording latency, requests, and errors. This is the asynchronous
+	 * counterpart of {@link #wrap(Supplier, Predicate, Function)}. It increments the request counter synchronously, then on
+	 * completion records the latency. A successful result is checked against the given predicate and a non-successful one
+	 * increments the error counter. An exceptionally completing supplied future is converted into a fallback value via the
+	 * error handler when its (unwrapped) cause is an {@link Exception}, otherwise the future stays exceptional, mirroring
+	 * the synchronous {@link #wrap(Supplier, Predicate, Function)} which only swallows {@link Exception}s.
+	 *
+	 * @param <T> the return type of the supplier.
+	 *
+	 * @param supplier the code to wrap with metrics.
+	 * @param isSuccess the predicate to determine if the result of the supplier is considered a success
+	 * @param onError the function to handle errors and provide a fallback value.
+	 * @return a {@link CompletableFuture} with the result of the supplier on success, or the result of the error handler on
+	 * failure.
+	 */
+	public <T> CompletableFuture<T> asyncWrap(final Supplier<CompletableFuture<T>> supplier, final Predicate<T> isSuccess,
+			final Function<? super Exception, T> onError) {
+		requests().increment();
+		Instant startTime = Instant.now();
+		return CompletableFutures.supplyAsync(supplier).handle((result, error) -> {
+			T finalResult = result;
+			if (null == error) {
+				if (!isSuccess.test(result)) {
+					errors().increment();
+				}
+			} else {
+				Throwable cause = Throwables.unwrap(error, CompletionException.class);
+				if (cause instanceof Exception exception) {
+					errors().increment();
+					finalResult = onError.apply(exception);
+				} else {
+					latency().record(Duration.between(startTime, Instant.now()));
+					return Unchecked.Undeclared.reThrow(cause);
+				}
+			}
+			latency().record(Duration.between(startTime, Instant.now()));
+			return finalResult;
+		});
 	}
 
 	/**

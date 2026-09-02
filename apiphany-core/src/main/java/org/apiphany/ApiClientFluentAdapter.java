@@ -23,6 +23,7 @@ import org.apiphany.meters.BasicMeters;
 import org.apiphany.multipart.MultipartMessage;
 import org.apiphany.openapi.MultiValueStrategy;
 import org.apiphany.security.AuthenticationType;
+import org.morphix.async.retry.AsyncRetry;
 import org.morphix.convert.function.SimpleConverter;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Nullables;
@@ -771,6 +772,17 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	}
 
 	/**
+	 * Sets the async retry for the request.
+	 *
+	 * @param asyncRetry async retry
+	 * @return this
+	 */
+	public ApiClientFluentAdapter asyncRetry(final AsyncRetry asyncRetry) {
+		this.asyncRetry = asyncRetry;
+		return this;
+	}
+
+	/**
 	 * Sets all the information from the given API request except the response type and authentication type.
 	 * <p>
 	 * The response type and authentication type are not set from the given API request because the response type is
@@ -800,7 +812,8 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 				.urlEncode(apiRequest.isUrlEncoded())
 				.stream(apiRequest.isStream())
 				.meters(apiRequest.getMeters())
-				.retry(apiRequest.getRetry());
+				.retry(apiRequest.getRetry())
+				.asyncRetry(apiRequest.getAsyncRetry());
 	}
 
 	/**

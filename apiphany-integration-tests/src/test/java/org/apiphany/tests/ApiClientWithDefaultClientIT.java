@@ -8,6 +8,7 @@ import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.security.AuthenticationType;
 import org.apiphany.tests.contract.ApiphanyContract;
+import org.apiphany.tests.contract.AsyncRetryContract;
 import org.apiphany.tests.contract.AuthenticationContract;
 import org.apiphany.tests.contract.BasicContract;
 import org.apiphany.tests.contract.BodyContract;
@@ -117,6 +118,11 @@ class ApiClientWithDefaultClientIT implements ApiphanyContract {
 	@Nested
 	class Retries extends NestedContract implements RetryContract {
 		// empty - inherits all tests from RetryContract
+	}
+
+	@Nested
+	class AsyncRetries extends NestedContract implements AsyncRetryContract {
+		// empty - inherits all tests from AsyncRetryContract
 	}
 
 	@Nested

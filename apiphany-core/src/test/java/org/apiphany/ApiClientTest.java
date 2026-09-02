@@ -23,6 +23,7 @@ import org.apiphany.security.AuthenticationType;
 import org.apiphany.utils.TestDto;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.morphix.async.retry.AsyncRetry;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.retry.Retry;
 
@@ -428,6 +429,20 @@ class ApiClientTest {
 		Retry result = api.getRetry();
 
 		assertThat(result, sameInstance(retry));
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldSetTheAsyncRetry() {
+		ExchangeClient exchangeClient = mock(ExchangeClient.class);
+		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
+		AsyncRetry asyncRetry = mock(AsyncRetry.class);
+		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
+		api.setAsyncRetry(asyncRetry);
+
+		AsyncRetry result = api.getAsyncRetry();
+
+		assertThat(result, sameInstance(asyncRetry));
 	}
 
 	@Test

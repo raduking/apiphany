@@ -2,6 +2,12 @@
 
 `1.2.18`
 
+- Added `ApiClient.asyncExchange(ApiRequest)` full implementation as the asynchronous counterpart of `ApiClient.exchange(ApiRequest)`.
+- Added `BasicMeters.asyncWrap(Supplier, Predicate, Function)` as the asynchronous counterpart of `BasicMeters.wrap` for recording requests, errors, and latency on async exchanges.
+- Changed `ExchangeClient.asyncExchange()` implementation using virtual thread executors for non-blocking async HTTP calls across all transports (JavaNet, Apache HC5, Spring).
+- Async exchanges now use Morphix's shared virtual thread executor (`Threads.sharedVirtualThreadPerTaskExecutor()`) — a true singleton with lazy holder initialization.
+- Upgraded `morphix-all` to `1.0.43`.
+
 ---
 
 `1.2.17`

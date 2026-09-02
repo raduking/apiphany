@@ -11,6 +11,7 @@ import org.apiphany.lang.annotation.FieldName;
 import org.apiphany.lang.annotation.Ignored;
 import org.apiphany.meters.BasicMeters;
 import org.apiphany.security.AuthenticationType;
+import org.morphix.async.retry.AsyncRetry;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.retry.Retry;
 import org.morphix.reflection.GenericClass;
@@ -75,6 +76,11 @@ public class ApiRequest<T> extends ApiMessage<T> {
 	 * Configuration for retry logic in case of request failures.
 	 */
 	protected Retry retry;
+
+	/**
+	 * Configuration for async retry logic in case of request failures.
+	 */
+	protected AsyncRetry asyncRetry;
 
 	/**
 	 * Metrics tracking for the request, such as success/failure counts and latency.
@@ -231,6 +237,15 @@ public class ApiRequest<T> extends ApiMessage<T> {
 	 */
 	public Retry getRetry() {
 		return retry;
+	}
+
+	/**
+	 * Returns the async retry configuration for the request.
+	 *
+	 * @return the async retry configuration
+	 */
+	public AsyncRetry getAsyncRetry() {
+		return asyncRetry;
 	}
 
 	/**

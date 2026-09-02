@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
 import org.apiphany.ApiRequest;
@@ -70,11 +71,10 @@ class ExchangeClientTest {
 	}
 
 	@Test
-	void shouldThrowExceptionOnAsyncExchange() {
-		UnsupportedOperationException exception = assertThrows(UnsupportedOperationException.class,
-				() -> exchangeClient.asyncExchange(null));
+	void shouldDelegateToSyncExchangeOnAsyncExchange() {
+		CompletableFuture<ApiResponse<String>> future = exchangeClient.asyncExchange(null);
 
-		assertEquals("asyncExchange(ApiRequest)", exception.getMessage());
+		assertNull(future.join()); // sync exchange returns null in this test implementation
 	}
 
 	@Test
@@ -199,8 +199,8 @@ class ExchangeClientTest {
 	@Nested
 	class AsTests {
 
-		@SuppressWarnings("resource")
 		@Test
+		@SuppressWarnings("resource")
 		void shouldCastToExchangeClientTypeWhenAssignable() {
 			ExchangeClient result = exchangeClient.as(ExchangeClient.class);
 

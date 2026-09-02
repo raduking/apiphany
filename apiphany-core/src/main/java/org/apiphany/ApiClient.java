@@ -16,6 +16,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import org.apiphany.client.ClientLifecycle;
 import org.apiphany.client.ClientProperties;
@@ -29,6 +30,7 @@ import org.apiphany.logging.Slf4jLoggerAdapter;
 import org.apiphany.meters.BasicMeters;
 import org.apiphany.meters.MeterFactory;
 import org.apiphany.security.AuthenticationType;
+import org.morphix.async.retry.AsyncRetry;
 import org.morphix.lang.JavaArrays;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Messages;
@@ -90,6 +92,12 @@ public class ApiClient implements AutoCloseable {
 	 * can set the same retry for all requests if needed.
 	 */
 	private Retry retry = Retry.NO_RETRY;
+
+	/**
+	 * Asynchronous retry for API calls. By default, no asynchronous retry is configured. This object is present here so
+	 * that the implementing client can set the same asynchronous retry for all requests if needed.
+	 */
+	private AsyncRetry asyncRetry = AsyncRetry.NO_RETRY;
 
 	/**
 	 * Metrics enable/disable flag.
@@ -282,8 +290,7 @@ public class ApiClient implements AutoCloseable {
 		if (JavaArrays.isEmpty(exchangeClientBuilders)) {
 			return List.of(withDefaultClient().build());
 		}
-		return List.of(exchangeClientBuilders)
-				.stream()
+		return Stream.of(exchangeClientBuilders)
 				.map(ExchangeClientBuilder::build)
 				.toList();
 	}
@@ -618,15 +625,33 @@ public class ApiClient implements AutoCloseable {
 	/**
 	 * Asynchronous API call for resource.
 	 * <p>
-	 * TODO: implement proper async handling with non-blocking IO in the exchange clients.
+	 * Uses the active asynchronous retry (via {@link #setAsyncRetry(AsyncRetry)} or per-request) for non-blocking retry
+	 * waits, while preserving all cross-cutting concerns (metrics, logging, duration, bleed exceptions). By default, the
+	 * asynchronous retry is {@link AsyncRetry#NO_RETRY}.
 	 *
 	 * @param <T> response type
 	 *
 	 * @param apiRequest API request object
-	 * @return API response object
+	 * @return a {@link CompletableFuture} for the API response
 	 */
+	@SuppressWarnings("resource")
 	public <T> CompletableFuture<ApiResponse<T>> asyncExchange(final ApiRequest<T> apiRequest) {
-		return CompletableFuture.supplyAsync(() -> exchange(apiRequest));
+		ExchangeClient exchangeClient = getExchangeClient(apiRequest.getAuthenticationType());
+
+		BasicMeters activeMeters = getActiveMeters(apiRequest);
+		AsyncRetry activeAsyncRetry = getActiveAsyncRetry(apiRequest);
+		DurationAccumulator durationAccumulator = DurationAccumulator.of();
+
+		CompletableFuture<ApiResponse<T>> apiResponseFuture = activeAsyncRetry.until(
+				() -> asyncExchange(apiRequest, exchangeClient, activeMeters),
+				ApiResponse::isSuccessful,
+				(response, duration) -> logExchange(getClass(), exchangeClient, apiRequest, response, duration),
+				e -> activeMeters.retries().increment(),
+				durationAccumulator);
+
+		return apiResponseFuture.thenApply(apiResponse -> isBleedExceptions() && apiResponse.hasException()
+				? Unchecked.reThrow(apiResponse.getException())
+				: apiResponse);
 	}
 
 	/**
@@ -644,6 +669,25 @@ public class ApiClient implements AutoCloseable {
 	private <T> ApiResponse<T> exchange(final ApiRequest<T> apiRequest, final ExchangeClient exchangeClient, final BasicMeters activeMeters) {
 		return activeMeters.wrap(
 				() -> exchangeClient.exchange(apiRequest),
+				ApiResponse::safeIsSuccessful,
+				exception -> buildErrorResponse(exception, apiRequest, exchangeClient));
+	}
+
+	/**
+	 * Performs an asynchronous exchange on the given exchange client, recording metrics and building an error response on
+	 * failure. This is the asynchronous counterpart of {@link #exchange(ApiRequest, ExchangeClient, BasicMeters)}.
+	 *
+	 * @param <T> request body type
+	 *
+	 * @param apiRequest API request object
+	 * @param exchangeClient the exchange client doing the request
+	 * @param activeMeters the metrics for the exchange
+	 * @return a {@link CompletableFuture} for the API response
+	 */
+	private <T> CompletableFuture<ApiResponse<T>> asyncExchange(final ApiRequest<T> apiRequest, final ExchangeClient exchangeClient,
+			final BasicMeters activeMeters) {
+		return activeMeters.asyncWrap(
+				() -> exchangeClient.asyncExchange(apiRequest),
 				ApiResponse::safeIsSuccessful,
 				exception -> buildErrorResponse(exception, apiRequest, exchangeClient));
 	}
@@ -721,6 +765,18 @@ public class ApiClient implements AutoCloseable {
 	}
 
 	/**
+	 * Returns the active asynchronous retry.
+	 *
+	 * @param <T> request body type
+	 *
+	 * @param apiRequest the API request object
+	 * @return the active asynchronous retry
+	 */
+	protected <T> AsyncRetry getActiveAsyncRetry(final ApiRequest<T> apiRequest) {
+		return Nullables.nonNullOrDefault(apiRequest.getAsyncRetry(), this::getAsyncRetry);
+	}
+
+	/**
 	 * Returns true if the client re-throws exceptions to the caller.
 	 *
 	 * @return true if the client re-throws exceptions
@@ -768,6 +824,24 @@ public class ApiClient implements AutoCloseable {
 	 */
 	public void setRetry(final Retry retry) {
 		this.retry = retry;
+	}
+
+	/**
+	 * Returns the asynchronous retry object.
+	 *
+	 * @return the asynchronous retry object
+	 */
+	public AsyncRetry getAsyncRetry() {
+		return asyncRetry;
+	}
+
+	/**
+	 * Sets the asynchronous retry object for all requests.
+	 *
+	 * @param asyncRetry asynchronous retry
+	 */
+	public void setAsyncRetry(final AsyncRetry asyncRetry) {
+		this.asyncRetry = asyncRetry;
 	}
 
 	/**
