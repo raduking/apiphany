@@ -9,9 +9,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.startsWith;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
@@ -19,6 +21,8 @@ import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
@@ -26,6 +30,7 @@ import org.apiphany.lang.builder.PropertyNameBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.morphix.lang.JavaObjects;
+import org.morphix.lang.function.Predicates;
 import org.morphix.lang.thread.Threads;
 import org.morphix.reflection.Constructors;
 import org.morphix.reflection.Methods;
@@ -631,6 +636,150 @@ class BasicMetersTest {
 		assertThat(search, hasSize(1));
 		Counter retries = JavaObjects.cast(search.iterator().next());
 		assertThat(retries.count(), equalTo(0.0));
+	}
+
+	@Test
+	void shouldAsyncWrapSendMetricsOnSuccess() {
+		Tags tags = Tags.of(TAG_KEY, TAG_VALUE);
+
+		MeterFactory factory = mock(MeterFactory.class);
+
+		MeterTimer latency = mock(MeterTimer.class);
+		doReturn(latency).when(factory).timer(METRICS_PREFIX, BasicMeters.Name.LATENCY, tags);
+		MeterCounter requests = mock(MeterCounter.class);
+		doReturn(requests).when(factory).counter(METRICS_PREFIX, BasicMeters.Name.REQUEST, tags);
+		MeterCounter errors = mock(MeterCounter.class);
+		doReturn(errors).when(factory).counter(METRICS_PREFIX, BasicMeters.Name.ERROR, tags);
+
+		BasicMeters meters = BasicMeters.of(factory, METRICS_PREFIX, tags);
+
+		String result = meters.asyncWrap(
+				() -> CompletableFuture.completedFuture(SOME_STRING),
+				Predicates.alwaysTrue(),
+				e -> null).join();
+
+		assertThat(result, equalTo(SOME_STRING));
+
+		verify(requests).increment();
+		verify(errors, never()).increment();
+		verify(latency).record(any());
+	}
+
+	@Test
+	void shouldAsyncWrapSendMetricsOnNonSuccess() {
+		Tags tags = Tags.of(TAG_KEY, TAG_VALUE);
+
+		MeterFactory factory = mock(MeterFactory.class);
+
+		MeterTimer latency = mock(MeterTimer.class);
+		doReturn(latency).when(factory).timer(METRICS_PREFIX, BasicMeters.Name.LATENCY, tags);
+		MeterCounter requests = mock(MeterCounter.class);
+		doReturn(requests).when(factory).counter(METRICS_PREFIX, BasicMeters.Name.REQUEST, tags);
+		MeterCounter errors = mock(MeterCounter.class);
+		doReturn(errors).when(factory).counter(METRICS_PREFIX, BasicMeters.Name.ERROR, tags);
+
+		BasicMeters meters = BasicMeters.of(factory, METRICS_PREFIX, tags);
+
+		String result = meters.asyncWrap(
+				() -> CompletableFuture.completedFuture(SOME_STRING),
+				s -> false,
+				e -> null).join();
+
+		assertThat(result, equalTo(SOME_STRING));
+
+		verify(requests).increment();
+		verify(errors).increment();
+		verify(latency).record(any());
+	}
+
+	@Test
+	void shouldAsyncWrapSendMetricsAndConvertExceptionToFallbackValue() {
+		Tags tags = Tags.of(TAG_KEY, TAG_VALUE);
+
+		MeterFactory factory = mock(MeterFactory.class);
+
+		MeterTimer latency = mock(MeterTimer.class);
+		doReturn(latency).when(factory).timer(METRICS_PREFIX, BasicMeters.Name.LATENCY, tags);
+		MeterCounter requests = mock(MeterCounter.class);
+		doReturn(requests).when(factory).counter(METRICS_PREFIX, BasicMeters.Name.REQUEST, tags);
+		MeterCounter errors = mock(MeterCounter.class);
+		doReturn(errors).when(factory).counter(METRICS_PREFIX, BasicMeters.Name.ERROR, tags);
+
+		BasicMeters meters = BasicMeters.of(factory, METRICS_PREFIX, tags);
+
+		RuntimeException exception = new RuntimeException(TEST_EXCEPTION_MESSAGE);
+
+		String result = meters.asyncWrap(
+				() -> CompletableFuture.failedFuture(exception),
+				s -> true,
+				e -> SOME_STRING).join();
+
+		assertThat(result, equalTo(SOME_STRING));
+
+		verify(requests).increment();
+		verify(errors).increment();
+		verify(latency).record(any());
+	}
+
+	@Test
+	void shouldAsyncWrapUnwrapCompletionExceptionBeforeErrorHandler() {
+		Tags tags = Tags.of(TAG_KEY, TAG_VALUE);
+
+		MeterFactory factory = mock(MeterFactory.class);
+
+		MeterTimer latency = mock(MeterTimer.class);
+		doReturn(latency).when(factory).timer(METRICS_PREFIX, BasicMeters.Name.LATENCY, tags);
+		MeterCounter requests = mock(MeterCounter.class);
+		doReturn(requests).when(factory).counter(METRICS_PREFIX, BasicMeters.Name.REQUEST, tags);
+		MeterCounter errors = mock(MeterCounter.class);
+		doReturn(errors).when(factory).counter(METRICS_PREFIX, BasicMeters.Name.ERROR, tags);
+
+		BasicMeters meters = BasicMeters.of(factory, METRICS_PREFIX, tags);
+
+		RuntimeException exception = new RuntimeException(TEST_EXCEPTION_MESSAGE);
+
+		String result = meters.asyncWrap(
+				() -> CompletableFuture.failedFuture(new CompletionException(exception)),
+				s -> true,
+				e -> {
+					assertThat(e, sameInstance(exception));
+					return SOME_STRING;
+				}).join();
+
+		assertThat(result, equalTo(SOME_STRING));
+
+		verify(requests).increment();
+		verify(errors).increment();
+		verify(latency).record(any());
+	}
+
+	@Test
+	void shouldAsyncWrapRethrowNonExceptionError() {
+		Tags tags = Tags.of(TAG_KEY, TAG_VALUE);
+
+		MeterFactory factory = mock(MeterFactory.class);
+
+		MeterTimer latency = mock(MeterTimer.class);
+		doReturn(latency).when(factory).timer(METRICS_PREFIX, BasicMeters.Name.LATENCY, tags);
+		MeterCounter requests = mock(MeterCounter.class);
+		doReturn(requests).when(factory).counter(METRICS_PREFIX, BasicMeters.Name.REQUEST, tags);
+		MeterCounter errors = mock(MeterCounter.class);
+		doReturn(errors).when(factory).counter(METRICS_PREFIX, BasicMeters.Name.ERROR, tags);
+
+		BasicMeters meters = BasicMeters.of(factory, METRICS_PREFIX, tags);
+
+		AssertionError error = new AssertionError("boom");
+
+		CompletionException result = assertThrows(CompletionException.class, () -> meters.asyncWrap(
+				() -> CompletableFuture.failedFuture(error),
+				s -> true,
+				e -> SOME_STRING).join());
+
+		assertThat(result.getCause(), sameInstance(error));
+
+		verify(requests).increment();
+		verify(errors, never()).increment();
+		verify(latency).record(any());
 	}
 
 	private Integer foo() {

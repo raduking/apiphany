@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.function.Predicate;
 
 import org.apiphany.ApiMessage;
@@ -14,6 +15,7 @@ import org.apiphany.security.AuthenticationType;
 import org.apiphany.security.Sensitive;
 import org.morphix.lang.collections.Maps;
 import org.morphix.lang.function.Predicates;
+import org.morphix.lang.thread.Threads;
 
 /**
  * Interface for exchange clients.
@@ -45,16 +47,19 @@ public interface ExchangeClient extends AutoCloseable {
 	}
 
 	/**
-	 * Basic rest template like async exchange method.
+	 * Asynchronously exchanges the given API request and returns a {@link CompletableFuture} for the API response. This
+	 * implementation uses Morphix's shared virtual thread executor to run the synchronous exchange on a virtual thread.
 	 *
-	 * @param <T> request/response body type
-	 * @param <U> response body type
+	 * @param <T> the type of the original request body
+	 * @param <U> the target type for the response body
 	 *
-	 * @param apiRequest request properties
-	 * @return response
+	 * @param apiRequest the API request to be exchanged
+	 * @return a CompletableFuture for the API response
 	 */
+	@SuppressWarnings("resource")
 	default <T, U> CompletableFuture<ApiResponse<U>> asyncExchange(final ApiRequest<T> apiRequest) {
-		throw new UnsupportedOperationException("asyncExchange(ApiRequest)");
+		ExecutorService executorService = Threads.sharedVirtualThreadPerTaskExecutor();
+		return CompletableFuture.supplyAsync(() -> exchange(apiRequest), executorService);
 	}
 
 	/**
