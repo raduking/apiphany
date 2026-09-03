@@ -1,6 +1,7 @@
 package org.apiphany.client.http;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -11,6 +12,9 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.converter.ByteArrayHttpMessageConverter;
+import org.springframework.http.converter.ResourceHttpMessageConverter;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.client.RestClient;
 
 /**
@@ -25,40 +29,50 @@ class SpringRestExchangeClientTest {
 	class ConstructorTests {
 
 		@Test
+		@SuppressWarnings("resource")
 		void shouldBuildWithDefaultConstructor() throws Exception {
 			try (SpringRestExchangeClient client = new SpringRestExchangeClient()) {
 				assertThat(client.getMessageConverters(), notNullValue());
 				assertThat(client.getClientProperties(), notNullValue());
+				assertThat(client.getRequestFactory(), notNullValue());
 			}
 		}
 
 		@Test
+		@SuppressWarnings("resource")
 		void shouldBuildWithClientProperties() throws Exception {
 			ClientProperties properties = ClientProperties.defaults();
 
 			try (SpringRestExchangeClient client = new SpringRestExchangeClient(properties)) {
 				assertThat(client.getMessageConverters(), notNullValue());
 				assertThat(client.getClientProperties(), notNullValue());
+				assertThat(client.getRequestFactory(), notNullValue());
 			}
 		}
 
 		@Test
+		@SuppressWarnings("resource")
 		void shouldBuildWithRestClientBuilder() throws Exception {
 			ClientProperties properties = ClientProperties.defaults();
 			RestClient.Builder builder = RestClient.builder();
 
 			try (SpringRestExchangeClient client = new SpringRestExchangeClient(properties, builder)) {
 				assertThat(client.getMessageConverters(), notNullValue());
+				assertThat(client.getClientProperties(), notNullValue());
+				assertThat(client.getRequestFactory(), notNullValue());
 			}
 		}
 
 		@Test
+		@SuppressWarnings("resource")
 		void shouldBuildWithCustomRestClient() throws Exception {
 			ClientProperties properties = ClientProperties.defaults();
 			RestClient customClient = RestClient.builder().build();
 
 			try (SpringRestExchangeClient client = new SpringRestExchangeClient(properties, customClient)) {
+				assertThat(client.getClientProperties(), notNullValue());
 				assertThat(client.getMessageConverters(), notNullValue());
+				assertThat(client.getRequestFactory(), notNullValue());
 			}
 		}
 	}
@@ -73,6 +87,9 @@ class SpringRestExchangeClientTest {
 				List<?> converters = client.getMessageConverters();
 
 				assertThat(converters.size(), equalTo(3));
+				assertThat(converters.get(0), instanceOf(ByteArrayHttpMessageConverter.class));
+				assertThat(converters.get(1), instanceOf(StringHttpMessageConverter.class));
+				assertThat(converters.get(2), instanceOf(ResourceHttpMessageConverter.class));
 			}
 		}
 	}

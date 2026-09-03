@@ -21,6 +21,8 @@ import org.apiphany.client.ClientProperties;
 import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpStatus;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,11 +43,21 @@ class AbstractSpringExchangeClientTest {
 	@Nested
 	class BuildRequestTests {
 
-		@Test
-		@SuppressWarnings({ "unchecked", "resource" })
-		void shouldBuildRequestWithHeaders() {
-			TestSpringExchangeClient client = createClient();
+		private TestSpringExchangeClient client;
 
+		@BeforeEach
+		void setUp() {
+			client = createClient();
+		}
+
+		@AfterEach
+		void tearDown() throws Exception {
+			client.close();
+		}
+
+		@Test
+		@SuppressWarnings({ "unchecked" })
+		void shouldBuildRequestWithHeaders() {
 			ApiRequest<String> request = mock(ApiRequest.class);
 			when(request.getHeaders()).thenReturn(Map.of(
 					HttpHeader.CONTENT_TYPE.value(), List.of("application/json")));
@@ -58,10 +70,8 @@ class AbstractSpringExchangeClientTest {
 		}
 
 		@Test
-		@SuppressWarnings({ "unchecked", "resource" })
+		@SuppressWarnings({ "unchecked" })
 		void shouldBuildRequestWithNullBody() {
-			TestSpringExchangeClient client = createClient();
-
 			ApiRequest<String> request = mock(ApiRequest.class);
 			when(request.getHeaders()).thenReturn(Map.of());
 			when(request.getBody()).thenReturn(null);
@@ -72,10 +82,8 @@ class AbstractSpringExchangeClientTest {
 		}
 
 		@Test
-		@SuppressWarnings({ "resource", "unchecked" })
+		@SuppressWarnings({ "unchecked" })
 		void shouldBuildRequestWithNullHeaders() {
-			TestSpringExchangeClient client = createClient();
-
 			ApiRequest<String> request = mock(ApiRequest.class);
 			when(request.getHeaders()).thenReturn(null);
 			when(request.getBody()).thenReturn(null);
@@ -89,11 +97,21 @@ class AbstractSpringExchangeClientTest {
 	@Nested
 	class CreateHttpEntityTests {
 
-		@Test
-		@SuppressWarnings({ "resource", "unchecked" })
-		void shouldCreateHttpEntityForString() {
-			TestSpringExchangeClient client = createClient();
+		private TestSpringExchangeClient client;
 
+		@BeforeEach
+		void setUp() {
+			client = createClient();
+		}
+
+		@AfterEach
+		void tearDown() throws Exception {
+			client.close();
+		}
+
+		@Test
+		@SuppressWarnings({ "unchecked" })
+		void shouldCreateHttpEntityForString() {
 			ApiRequest<String> request = mock(ApiRequest.class);
 			when(request.getHeaders()).thenReturn(null);
 			when(request.getBody()).thenReturn("hello");
@@ -104,10 +122,8 @@ class AbstractSpringExchangeClientTest {
 		}
 
 		@Test
-		@SuppressWarnings({ "resource", "unchecked" })
+		@SuppressWarnings({ "unchecked" })
 		void shouldCreateHttpEntityForByteArray() {
-			TestSpringExchangeClient client = createClient();
-
 			byte[] bytes = { 0x01, 0x02 };
 			ApiRequest<byte[]> request = mock(ApiRequest.class);
 			when(request.getHeaders()).thenReturn(null);
@@ -119,10 +135,7 @@ class AbstractSpringExchangeClientTest {
 		}
 
 		@Test
-		@SuppressWarnings("resource")
 		void shouldCreateHttpEntityForSerializable() {
-			TestSpringExchangeClient client = createClient();
-
 			ApiRequest<?> request = mock(ApiRequest.class);
 			doReturn(null).when(request).getHeaders();
 			doReturn(42).when(request).getBody();
@@ -133,10 +146,8 @@ class AbstractSpringExchangeClientTest {
 		}
 
 		@Test
-		@SuppressWarnings({ "resource", "unchecked" })
+		@SuppressWarnings({ "unchecked" })
 		void shouldCreateHttpEntityForUnsupportedType() {
-			TestSpringExchangeClient client = createClient();
-
 			Object unsupportedBody = new Object() {
 				@Override
 				public String toString() {
@@ -158,11 +169,21 @@ class AbstractSpringExchangeClientTest {
 	@Nested
 	class BuildResponseTests {
 
-		@Test
-		@SuppressWarnings({ "resource", "unchecked" })
-		void shouldBuildSuccessResponse() {
-			TestSpringExchangeClient client = createClient();
+		private TestSpringExchangeClient client;
 
+		@BeforeEach
+		void setUp() {
+			client = createClient();
+		}
+
+		@AfterEach
+		void tearDown() throws Exception {
+			client.close();
+		}
+
+		@Test
+		@SuppressWarnings({ "unchecked" })
+		void shouldBuildSuccessResponse() {
 			ApiRequest<byte[]> request = mock(ApiRequest.class);
 			doReturn(byte[].class).when(request).getClassResponseType();
 
@@ -175,10 +196,8 @@ class AbstractSpringExchangeClientTest {
 		}
 
 		@Test
-		@SuppressWarnings({ "resource", "unchecked" })
+		@SuppressWarnings({ "unchecked" })
 		void shouldBuildErrorResponse() {
-			TestSpringExchangeClient client = createClient();
-
 			ApiRequest<byte[]> request = mock(ApiRequest.class);
 
 			ResponseEntity<byte[]> responseEntity = ResponseEntity.status(404)
@@ -194,11 +213,21 @@ class AbstractSpringExchangeClientTest {
 	@Nested
 	class GetResponseTypeTests {
 
-		@Test
-		@SuppressWarnings({ "resource", "unchecked" })
-		void shouldReturnInputStreamForStreamRequest() {
-			TestSpringExchangeClient client = createClient();
+		private TestSpringExchangeClient client;
 
+		@BeforeEach
+		void setUp() {
+			client = createClient();
+		}
+
+		@AfterEach
+		void tearDown() throws Exception {
+			client.close();
+		}
+
+		@Test
+		@SuppressWarnings({ "unchecked" })
+		void shouldReturnInputStreamForStreamRequest() {
 			ApiRequest<byte[]> request = mock(ApiRequest.class);
 			when(request.isStream()).thenReturn(true);
 
@@ -208,10 +237,8 @@ class AbstractSpringExchangeClientTest {
 		}
 
 		@Test
-		@SuppressWarnings({ "resource", "unchecked" })
+		@SuppressWarnings({ "unchecked" })
 		void shouldReturnByteArrayForNonStreamRequest() {
-			TestSpringExchangeClient client = createClient();
-
 			ApiRequest<byte[]> request = mock(ApiRequest.class);
 			when(request.isStream()).thenReturn(false);
 
@@ -224,11 +251,22 @@ class AbstractSpringExchangeClientTest {
 	@Nested
 	class ExtractHttpStatusTests {
 
-		@Test
-		@SuppressWarnings("resource")
-		void shouldExtractStatusFromHttpException() {
-			TestSpringExchangeClient client = createClient();
+		private TestSpringExchangeClient client;
+		private ClientProperties clientProperties;
 
+		@BeforeEach
+		void setUp() {
+			clientProperties = ClientProperties.defaults();
+		}
+
+		@AfterEach
+		void tearDown() throws Exception {
+			client.close();
+		}
+
+		@Test
+		void shouldExtractStatusFromHttpException() {
+			client = createClient(clientProperties);
 			HttpException exception = HttpException.builder()
 					.status(HttpStatus.NOT_FOUND)
 					.build();
@@ -239,10 +277,8 @@ class AbstractSpringExchangeClientTest {
 		}
 
 		@Test
-		@SuppressWarnings("resource")
 		void shouldExtractStatusFromHttpStatusCodeException() {
-			TestSpringExchangeClient client = createClient();
-
+			client = createClient(clientProperties);
 			HttpStatusCodeException exception = mock(HttpStatusCodeException.class);
 			when(exception.getStatusCode()).thenReturn(org.springframework.http.HttpStatus.FORBIDDEN);
 
@@ -252,11 +288,9 @@ class AbstractSpringExchangeClientTest {
 		}
 
 		@Test
-		@SuppressWarnings("resource")
 		void shouldReturnFoundForRedirectFailureWhenFollowRedirects() {
-			ClientProperties properties = ClientProperties.defaults();
-			properties.getConnection().setFollowRedirects(true);
-			TestSpringExchangeClient client = createClient(properties);
+			clientProperties.getConnection().setFollowRedirects(true);
+			client = createClient(clientProperties);
 
 			HttpStatus status = client.extractHttpStatus(new CircularRedirectException("redirect loop"));
 
@@ -264,10 +298,8 @@ class AbstractSpringExchangeClientTest {
 		}
 
 		@Test
-		@SuppressWarnings("resource")
 		void shouldReturnNullForNonHttpExceptionWhenNotFollowingRedirects() {
-			TestSpringExchangeClient client = createClient();
-
+			client = createClient(clientProperties);
 			HttpStatus status = client.extractHttpStatus(new RuntimeException("error"));
 
 			assertThat(status, nullValue());
@@ -277,11 +309,20 @@ class AbstractSpringExchangeClientTest {
 	@Nested
 	class ExtractResponseBodyTests {
 
-		@Test
-		@SuppressWarnings("resource")
-		void shouldExtractResponseBodyFromHttpException() {
-			TestSpringExchangeClient client = createClient();
+		private TestSpringExchangeClient client;
 
+		@BeforeEach
+		void setUp() {
+			client = createClient();
+		}
+
+		@AfterEach
+		void tearDown() throws Exception {
+			client.close();
+		}
+
+		@Test
+		void shouldExtractResponseBodyFromHttpException() {
 			HttpException exception = HttpException.builder()
 					.responseBody("error body")
 					.build();
@@ -292,10 +333,7 @@ class AbstractSpringExchangeClientTest {
 		}
 
 		@Test
-		@SuppressWarnings("resource")
 		void shouldExtractResponseBodyFromHttpStatusCodeException() {
-			TestSpringExchangeClient client = createClient();
-
 			HttpStatusCodeException exception = mock(HttpStatusCodeException.class);
 			when(exception.getResponseBodyAsString()).thenReturn("error response");
 
@@ -305,10 +343,7 @@ class AbstractSpringExchangeClientTest {
 		}
 
 		@Test
-		@SuppressWarnings("resource")
 		void shouldReturnNullForGenericException() {
-			TestSpringExchangeClient client = createClient();
-
 			String body = client.extractResponseBody(new RuntimeException("error"));
 
 			assertThat(body, nullValue());
@@ -318,11 +353,20 @@ class AbstractSpringExchangeClientTest {
 	@Nested
 	class ExtractResponseHeadersTests {
 
-		@Test
-		@SuppressWarnings("resource")
-		void shouldExtractHeadersFromHttpStatusCodeException() {
-			TestSpringExchangeClient client = createClient();
+		private TestSpringExchangeClient client;
 
+		@BeforeEach
+		void setUp() {
+			client = createClient();
+		}
+
+		@AfterEach
+		void tearDown() throws Exception {
+			client.close();
+		}
+
+		@Test
+		void shouldExtractHeadersFromHttpStatusCodeException() {
 			HttpStatusCodeException exception = mock(HttpStatusCodeException.class);
 			HttpHeaders responseHeaders = new HttpHeaders();
 			responseHeaders.set("X-Custom", "value");
@@ -334,10 +378,7 @@ class AbstractSpringExchangeClientTest {
 		}
 
 		@Test
-		@SuppressWarnings("resource")
 		void shouldReturnNullForGenericExceptionHeaders() {
-			TestSpringExchangeClient client = createClient();
-
 			Map<String, List<String>> headers = client.extractResponseHeaders(new RuntimeException("error"));
 
 			assertThat(headers, nullValue());
@@ -347,11 +388,20 @@ class AbstractSpringExchangeClientTest {
 	@Nested
 	class GetMessageConvertersTests {
 
-		@Test
-		@SuppressWarnings("resource")
-		void shouldReturnThreeDefaultConverters() {
-			TestSpringExchangeClient client = createClient();
+		private TestSpringExchangeClient client;
 
+		@BeforeEach
+		void setUp() {
+			client = createClient();
+		}
+
+		@AfterEach
+		void tearDown() throws Exception {
+			client.close();
+		}
+
+		@Test
+		void shouldReturnThreeDefaultConverters() {
 			List<?> converters = client.getMessageConverters();
 
 			assertThat(converters.size(), equalTo(3));
@@ -374,11 +424,20 @@ class AbstractSpringExchangeClientTest {
 	@Nested
 	class RedirectLoopFailurePredicateTests {
 
-		@Test
-		@SuppressWarnings("resource")
-		void shouldReturnNonEmptyPredicate() {
-			TestSpringExchangeClient client = createClient();
+		private TestSpringExchangeClient client;
 
+		@BeforeEach
+		void setUp() {
+			client = createClient();
+		}
+
+		@AfterEach
+		void tearDown() throws Exception {
+			client.close();
+		}
+
+		@Test
+		void shouldReturnNonEmptyPredicate() {
 			var predicate = client.getRedirectLoopFailurePredicate();
 
 			assertThat(predicate, notNullValue());
