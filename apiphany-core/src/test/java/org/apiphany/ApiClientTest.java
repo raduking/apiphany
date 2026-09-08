@@ -6,12 +6,15 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
@@ -443,6 +446,74 @@ class ApiClientTest {
 		AsyncRetry result = api.getAsyncRetry();
 
 		assertThat(result, sameInstance(asyncRetry));
+	}
+
+	@Test
+	@SuppressWarnings({ "unchecked", "resource" })
+	void shouldReturnResponseOnAsyncExchange() {
+		ExchangeClient exchangeClient = mock(ExchangeClient.class);
+		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
+		ApiRequest<String> request = mock(ApiRequest.class);
+		doReturn(AuthenticationType.OAUTH2).when(request).getAuthenticationType();
+		ApiResponse<String> expected = ApiResponse.<String>builder().body("body").status(HttpStatus.OK).build();
+		doReturn(CompletableFuture.completedFuture(expected)).when(exchangeClient).asyncExchange(request);
+		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
+
+		ApiResponse<String> result = api.<String>asyncExchange(request).join();
+
+		assertThat(result, sameInstance(expected));
+	}
+
+	@Test
+	@SuppressWarnings({ "unchecked", "resource" })
+	void shouldBuildErrorResponseOnAsyncExchangeFailure() {
+		ExchangeClient exchangeClient = mock(ExchangeClient.class);
+		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
+		ApiRequest<String> request = mock(ApiRequest.class);
+		doReturn(AuthenticationType.OAUTH2).when(request).getAuthenticationType();
+		RuntimeException exception = new RuntimeException(SOME_ERROR_MESSAGE);
+		doReturn(CompletableFuture.failedFuture(exception)).when(exchangeClient).asyncExchange(request);
+		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
+
+		ApiResponse<String> result = api.<String>asyncExchange(request).join();
+
+		assertThat(result.getException(), sameInstance(exception));
+		assertThat(result.getExchangeClient(), sameInstance(exchangeClient));
+	}
+
+	@Test
+	@SuppressWarnings({ "unchecked", "resource" })
+	void shouldCompleteAsyncExchangeExceptionallyWhenBleedExceptionsIsTrue() {
+		ExchangeClient exchangeClient = mock(ExchangeClient.class);
+		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
+		ApiRequest<String> request = mock(ApiRequest.class);
+		doReturn(AuthenticationType.OAUTH2).when(request).getAuthenticationType();
+		RuntimeException exception = new RuntimeException(SOME_ERROR_MESSAGE);
+		doReturn(CompletableFuture.failedFuture(exception)).when(exchangeClient).asyncExchange(request);
+		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
+		api.setBleedExceptions(true);
+		CompletableFuture<?> future = api.asyncExchange(request);
+
+		CompletionException result = assertThrows(CompletionException.class, future::join);
+
+		assertThat(result.getCause(), sameInstance(exception));
+	}
+
+	@Test
+	@SuppressWarnings({ "resource", "unchecked" })
+	void shouldPreferRequestAsyncRetryOverClientAsyncRetry() {
+		ExchangeClient exchangeClient = mock(ExchangeClient.class);
+		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
+		ApiRequest<Object> request = mock(ApiRequest.class);
+		AsyncRetry clientAsyncRetry = mock(AsyncRetry.class);
+		AsyncRetry requestAsyncRetry = mock(AsyncRetry.class);
+		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
+		api.setAsyncRetry(clientAsyncRetry);
+
+		assertThat(api.getActiveAsyncRetry(request), sameInstance(clientAsyncRetry));
+
+		doReturn(requestAsyncRetry).when(request).getAsyncRetry();
+		assertThat(api.getActiveAsyncRetry(request), sameInstance(requestAsyncRetry));
 	}
 
 	@Test

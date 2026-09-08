@@ -27,6 +27,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.morphix.reflection.Fields;
+import org.slf4j.MDC;
 
 /**
  * Test class for {@link ExchangeClient}.
@@ -75,6 +76,33 @@ class ExchangeClientTest {
 		CompletableFuture<ApiResponse<String>> future = exchangeClient.asyncExchange(null);
 
 		assertNull(future.join()); // sync exchange returns null in this test implementation
+	}
+
+	@Test
+	void shouldPropagateMdcToAsyncExchangeVirtualThread() throws Exception {
+		ExchangeClient client = new ExchangeClient() {
+			@Override
+			@SuppressWarnings("unchecked")
+			public <T, U> ApiResponse<U> exchange(final ApiRequest<T> request) {
+				return ApiResponse.<U>builder().body((U) MDC.get("traceId")).build();
+			}
+
+			@Override
+			public void close() {
+				// empty
+			}
+		};
+
+		try (client) {
+			MDC.put("traceId", "some-trace-id");
+
+			ApiResponse<String> response = client.<Object, String>asyncExchange(null).join();
+
+			assertThat(response.getBody(), equalTo("some-trace-id"));
+			assertThat(MDC.get("traceId"), equalTo("some-trace-id"));
+		} finally {
+			MDC.clear();
+		}
 	}
 
 	@Test

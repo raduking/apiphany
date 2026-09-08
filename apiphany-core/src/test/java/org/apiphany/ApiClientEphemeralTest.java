@@ -19,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 import org.apiphany.client.ClientLifecycle;
 import org.apiphany.client.ExchangeClientBuilder;
@@ -126,6 +127,28 @@ class ApiClientEphemeralTest {
 
 		ApiClient apiClient = request.getApiClient();
 		assertThat(apiClient.getLifecycle(), equalTo(ClientLifecycle.EPHEMERAL));
+	}
+
+	@Test
+	@SuppressWarnings({ "resource", "unchecked" })
+	void shouldCloseEphemeralClientWhenRetrieveAsyncCompletes() throws Exception {
+		HttpExchangeClient exchangeClient = mock(HttpExchangeClient.class);
+		doReturn(AuthenticationType.NONE).when(exchangeClient).getAuthenticationType();
+		doReturn(exchangeClient).when(exchangeClient).as(HttpExchangeClient.class);
+		doReturn(HttpMethod.GET).when(exchangeClient).get();
+		doReturn(CompletableFuture.completedFuture(ApiResponse.builder().build()))
+				.when(exchangeClient).asyncExchange(any(ApiRequest.class));
+
+		ScopedResource<HttpExchangeClient> scopedClient = ScopedResource.managed(exchangeClient);
+		ExchangeClientBuilder builder = mock(ExchangeClientBuilder.class);
+		doReturn(scopedClient).when(builder).build();
+
+		ApiClient apiClient = ApiClient.of(builder);
+		apiClient.setLifecycle(ClientLifecycle.EPHEMERAL);
+
+		apiClient.http().get().url(BASE_URL).retrieveAsync(String.class).join();
+
+		verify(exchangeClient).close();
 	}
 
 	@Test

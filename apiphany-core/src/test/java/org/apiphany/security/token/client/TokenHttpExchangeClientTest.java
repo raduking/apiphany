@@ -135,6 +135,27 @@ class TokenHttpExchangeClientTest {
 	}
 
 	@Test
+	void shouldAddTheAuthorizationHeaderToTheRequestOnAsyncExchange() {
+		exchangeClientSetup(clientProperties);
+		client = new TokenHttpExchangeClient(exchangeClient);
+		client.setDefaultTokenExpirationSupplier(() -> DEFAULT_EXPIRATION);
+
+		AuthenticationToken authenticationToken = new AuthenticationToken();
+		authenticationToken.setAccessToken(TOKEN);
+		client.setAuthenticationToken(authenticationToken);
+		client.setAuthenticationScheme(HttpAuthenticationScheme.BEARER);
+
+		ApiRequest<Object> apiRequest = new ApiRequest<>();
+
+		client.asyncExchange(apiRequest);
+
+		Map<String, List<String>> headers = apiRequest.getHeaders();
+		String authorizationHeader = Headers.get(HttpHeader.AUTHORIZATION, headers).getFirst();
+
+		assertThat(authorizationHeader, equalTo(HeaderValues.value(HttpAuthenticationScheme.BEARER, TOKEN)));
+	}
+
+	@Test
 	void shouldAddTheBearerAuthorizationHeaderToTheRequestWithTokenSpecifiedInClientProperties() {
 		TokenProperties tokenProperties = new TokenProperties();
 		tokenProperties.setValue(TOKEN);

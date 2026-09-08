@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -23,6 +24,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
 import org.apiphany.client.ExchangeClient;
@@ -31,6 +33,7 @@ import org.apiphany.header.Header;
 import org.apiphany.header.Headers;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
+import org.apiphany.http.HttpStatus;
 import org.apiphany.io.ContentType;
 import org.apiphany.lang.Strings;
 import org.apiphany.meters.BasicMeters;
@@ -481,6 +484,152 @@ class ApiClientFluentAdapterTest {
 			assertTrue(request.hasGenericType());
 			assertTrue(request.hasResponseType());
 			assertThat(request.getResponseType(), Matchers.instanceOf(ParameterizedType.class));
+		}
+	}
+
+	@Nested
+	class RetrieveAsyncTests {
+
+		@Test
+		@SuppressWarnings("resource")
+		void shouldCallApiClientAsyncExchangeAndValidateResponse() {
+			ExchangeClient exchangeClient = mock(ExchangeClient.class);
+			doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
+			ApiResponse<String> apiResponse = ApiResponse.<String>builder().body(BODY).build();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.authenticationType(AuthenticationType.SESSION);
+			doReturn(CompletableFuture.completedFuture(apiResponse)).when(apiClient).asyncExchange(request);
+
+			ApiResponse<String> response = request.retrieveAsync(String.class).join();
+
+			assertThat(response, equalTo(apiResponse));
+			assertThat(request.getClassResponseType(), equalTo(String.class));
+			verify(apiClient).asyncExchange(request);
+			verify(apiClient).closeIfEphemeral();
+		}
+
+		@Test
+		@SuppressWarnings("resource")
+		void shouldBuildErrorResponseWhenAsyncResponseTypeDoesNotMatch() {
+			ExchangeClient exchangeClient = mock(ExchangeClient.class);
+			doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.NONE);
+			ApiResponse<String> apiResponse = ApiResponse.<String>builder().body(BODY).build();
+			ApiResponse<?> errorResponse = ApiResponse.builder().build();
+			ArgumentCaptor<Exception> exceptionCaptor = ArgumentCaptor.forClass(Exception.class);
+			doReturn(errorResponse).when(apiClient).buildErrorResponse(exceptionCaptor.capture(), any(), any());
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.authenticationType(AuthenticationType.NONE);
+			doReturn(CompletableFuture.completedFuture(apiResponse)).when(apiClient).asyncExchange(request);
+
+			request.retrieveAsync(Integer.class).join();
+
+			assertThat(exceptionCaptor.getValue().getMessage(), equalTo("Received response body of type: " + String.class
+					+ " but expected type was: " + Integer.class));
+		}
+
+		@Test
+		@SuppressWarnings("resource")
+		void shouldCloseEphemeralClientWhenAsyncExchangeSetupThrows() {
+			ExchangeClient exchangeClient = mock(ExchangeClient.class);
+			doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.authenticationType(AuthenticationType.SESSION);
+			RuntimeException expected = new RuntimeException("boom");
+			doThrow(expected).when(apiClient).asyncExchange(request);
+
+			RuntimeException result = assertThrows(RuntimeException.class, request::retrieveAsync);
+
+			assertThat(result, equalTo(expected));
+			verify(apiClient).closeIfEphemeral();
+		}
+
+		@Test
+		@SuppressWarnings("resource")
+		void shouldEncodeParamsOnRetrieveAsyncWhenEncodingIsEnabled() {
+			ExchangeClient exchangeClient = mock(ExchangeClient.class);
+			doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.authenticationType(AuthenticationType.SESSION)
+					.url(URL)
+					.params(parameter("sum", "1+2+3"))
+					.urlEncoded();
+			doReturn(CompletableFuture.completedFuture(ApiResponse.builder().build())).when(apiClient).asyncExchange(request);
+
+			request.retrieveAsync().join();
+
+			assertThat(request.getParams(), equalTo(RequestParameters.of(parameter("sum", "1%2B2%2B3"))));
+		}
+
+		@Test
+		@SuppressWarnings("resource")
+		void shouldSetGenericResponseTypesOnRetrieveAsync() {
+			ExchangeClient exchangeClient = mock(ExchangeClient.class);
+			doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
+			ApiClientFluentAdapter genericClassRequest = ApiClientFluentAdapter.of(apiClient)
+					.authenticationType(AuthenticationType.SESSION);
+			ApiClientFluentAdapter genericTypeRequest = ApiClientFluentAdapter.of(apiClient)
+					.authenticationType(AuthenticationType.SESSION);
+			doReturn(CompletableFuture.completedFuture(ApiResponse.builder().build())).when(apiClient).asyncExchange(any());
+
+			var genericClass = new GenericClass<List<Integer>>() {
+				// empty
+			};
+			genericClassRequest.retrieveAsync(genericClass).join();
+			genericTypeRequest.retrieveAsync(GenericType.of(List.class, GenericType.Arguments.of(Integer.class))).join();
+
+			assertTrue(genericClassRequest.hasGenericType());
+			assertTrue(genericTypeRequest.hasGenericType());
+		}
+
+		@Test
+		@SuppressWarnings("resource")
+		void shouldSetStreamOnDownloadAsync() {
+			ExchangeClient exchangeClient = mock(ExchangeClient.class);
+			doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.authenticationType(AuthenticationType.SESSION);
+			doReturn(CompletableFuture.completedFuture(ApiResponse.builder().build())).when(apiClient).asyncExchange(request);
+
+			request.downloadAsync().join();
+
+			assertTrue(request.isStream());
+		}
+
+		@Test
+		@SuppressWarnings("resource")
+		void shouldCloseEphemeralClientWhenRetrieveAsyncIsCancelled() {
+			ExchangeClient exchangeClient = mock(ExchangeClient.class);
+			doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.authenticationType(AuthenticationType.SESSION);
+			CompletableFuture<ApiResponse<Object>> sourceFuture = new CompletableFuture<>();
+			doReturn(sourceFuture).when(apiClient).asyncExchange(request);
+
+			CompletableFuture<ApiResponse<Object>> resultFuture = request.retrieveAsync();
+			resultFuture.cancel(true);
+
+			assertTrue(resultFuture.isCancelled());
+			assertTrue(sourceFuture.isCancelled());
+			verify(apiClient).closeIfEphemeral();
+		}
+
+		@Test
+		@SuppressWarnings("resource")
+		void shouldExposeTheResponseBodyWithoutUnwrappingTheApiResponse() {
+			ExchangeClient exchangeClient = mock(ExchangeClient.class);
+			doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
+			ApiResponse<String> apiResponse = ApiResponse.create(BODY).status(HttpStatus.OK).build();
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.authenticationType(AuthenticationType.SESSION);
+			doReturn(CompletableFuture.completedFuture(apiResponse)).when(apiClient).asyncExchange(request);
+
+			String body = request.retrieveAsync(String.class).orDefault("none").join();
+
+			assertThat(body, equalTo(BODY));
 		}
 	}
 

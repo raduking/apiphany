@@ -4,12 +4,17 @@ This document tracks known contract/docs/implementation gaps.
 
 ## 1. Planned
 
-### 1.1 Async exchange is not implemented
+### 1.1 Native asynchronous transport IO is not implemented
 
-`ExchangeClient.asyncExchange(ApiRequest)` is a default method that throws `UnsupportedOperationException`. No exchange client overrides it. `ApiClient.asyncExchange` fakes it with `CompletableFuture.supplyAsync(() -> exchange(...))`, which runs blocking IO on a common pool thread.
+`ApiClient.asyncExchange(ApiRequest)` provides asynchronous retry, metrics, logging, duration tracking, and exception
+handling. `ExchangeClient.asyncExchange(ApiRequest)` runs the synchronous transport exchange on Morphix's shared
+virtual-thread executor, so it does not block the calling thread.
 
-- `ExchangeClient.java:56-58`
-- `ApiClient.java:621,628-630`
+The transports still use their synchronous IO APIs internally. Native asynchronous IO, such as JDK
+`HttpClient.sendAsync`, Apache HttpClient async, or a Spring reactive transport, remains planned.
+
+- `ExchangeClient.java`
+- `ApiClient.java`
 
 ### 1.2 OAuth2ApiClient only implements CLIENT_CREDENTIALS grant
 

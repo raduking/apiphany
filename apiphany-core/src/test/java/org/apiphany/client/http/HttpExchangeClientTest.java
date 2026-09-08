@@ -19,6 +19,7 @@ import org.apiphany.header.HeaderValues;
 import org.apiphany.header.Headers;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
+import org.apiphany.http.TracingHeader;
 import org.apiphany.security.AuthenticationType;
 import org.apiphany.security.Sensitive;
 import org.apiphany.security.http.DefaultHttpSensitivity;
@@ -139,6 +140,30 @@ class HttpExchangeClientTest {
 			Map<String, List<String>> tracingHeaders = client.getTracingHeaders();
 
 			assertThat(tracingHeaders.size(), equalTo(2));
+		} finally {
+			MDC.clear();
+		}
+	}
+
+	@Test
+	void shouldAddTracingHeadersDuringAsyncExchange() throws Exception {
+		HttpExchangeClient client = new DummyHttpExchangeClient() {
+			@Override
+			public <T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest) {
+				apiRequest.addHeaders(getTracingHeaders());
+				return null;
+			}
+		};
+		ApiRequest<Object> request = new ApiRequest<>();
+
+		try (client) {
+			MDC.put("traceId", "some-trace-id");
+			MDC.put("spanId", "some-span-id");
+
+			client.asyncExchange(request).join();
+
+			assertThat(Headers.get(TracingHeader.B3_TRACE_ID, request.getHeaders()).getFirst(), equalTo("some-trace-id"));
+			assertThat(Headers.get(TracingHeader.B3_SPAN_ID, request.getHeaders()).getFirst(), equalTo("some-span-id"));
 		} finally {
 			MDC.clear();
 		}

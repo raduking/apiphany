@@ -1,5 +1,6 @@
 package org.apiphany.client.http;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apiphany.ApiRequest;
@@ -36,6 +37,15 @@ public class CountingHttpExchangeClient extends DecoratingExchangeClient impleme
 	public <T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest) {
 		requestCount.incrementAndGet();
 		return super.exchange(apiRequest);
+	}
+
+	/**
+	 * @see DecoratingExchangeClient#asyncExchange(ApiRequest)
+	 */
+	@Override
+	public <T, U> CompletableFuture<ApiResponse<U>> asyncExchange(final ApiRequest<T> apiRequest) {
+		requestCount.incrementAndGet();
+		return super.asyncExchange(apiRequest);
 	}
 
 	/**

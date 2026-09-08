@@ -142,6 +142,24 @@ HTTP request, including returned types, headers, etc
   - `retrieve(Class<T>)` specifies the type to be retrieved
   - `retrieve(GenericClass<T>)` specifies a parameterized type to be retrieved
   - `retrieve(GenericType)` specifies a parameterized type to be retrieved using `GenericType`
+  - `retrieveAsync(...)` provides asynchronous variants returning an [`ApiResponseAsync`](../apiphany-core/src/main/java/org/apiphany/ApiResponseAsync.java)
+  - `downloadAsync()` asynchronously starts a streaming download
+
+[`ApiResponseAsync`](../apiphany-core/src/main/java/org/apiphany/ApiResponseAsync.java) is a
+`CompletableFuture<ApiResponse<T>>`, so it composes with any `CompletionStage` operation, but it also exposes the
+`orNull()` and `orDefault(...)` terminals directly so the body can be extracted without unwrapping the `ApiResponse`:
+
+```java
+CompletableFuture<Info> info = Api.http(builder)
+        .get()
+        .path(API, V1, INFO)
+        .retrieveAsync(Info.class)
+        .orDefault(Info::new);
+```
+
+The asynchronous API currently runs blocking transport IO on virtual threads. Clients created through `Api.http(...)`
+are ephemeral; both `retrieve(...)` and `retrieveAsync(...)` close their underlying managed client when the terminal
+operation completes.
 
 - Many others (details found in separate sections)
 
@@ -251,7 +269,7 @@ prefix given as parameter.
 
 ### Retries
 
-This is the same as adding metrics but using the [`Retry`](../apiphany-core/src/main/java/org/apiphany/lang/retry/Retry.java) class.
+This is the same as adding metrics but using the `org.morphix.lang.retry.Retry` class.
 1. for the whole client - all requests will use the same retry specification
 2. per request - each request has its own retry specification
 
