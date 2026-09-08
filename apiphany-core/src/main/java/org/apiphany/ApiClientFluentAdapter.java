@@ -7,6 +7,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
 import org.apiphany.client.ClientProperties;
@@ -122,6 +124,71 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	}
 
 	/**
+	 * Retrieves the API response asynchronously.
+	 *
+	 * @param <T> response type
+	 * @return an asynchronous API response
+	 */
+	public <T> ApiResponseAsync<T> retrieveAsync() {
+		if (isUrlEncoded()) {
+			this.params = RequestParameters.encode(params, getCharset());
+		}
+		boolean attached = false;
+		try {
+			CompletableFuture<ApiResponse<T>> responseFuture = JavaObjects.cast(apiClient.asyncExchange(this));
+			ApiResponseAsync<T> result = validateAndCloseIfEphemeralOnCompletion(responseFuture);
+			attached = true;
+			return result;
+		} finally {
+			if (!attached) {
+				apiClient.closeIfEphemeral();
+			}
+		}
+	}
+
+	/**
+	 * Closes an ephemeral API client before forwarding the completion of the given future. Canceling the returned future
+	 * also cancels the source future and closes the client.
+	 *
+	 * @param <T> response type
+	 *
+	 * @param sourceFuture source future
+	 * @return a future that completes after ephemeral cleanup
+	 */
+	private <T> ApiResponseAsync<T> validateAndCloseIfEphemeralOnCompletion(final CompletableFuture<ApiResponse<T>> sourceFuture) {
+		ApiResponseAsync<T> resultFuture = new ApiResponseAsync<>();
+		AtomicBoolean completed = new AtomicBoolean();
+
+		resultFuture.whenComplete((response, error) -> {
+			if (resultFuture.isCancelled() && completed.compareAndSet(false, true)) {
+				sourceFuture.cancel(true);
+				apiClient.closeIfEphemeral();
+			}
+		});
+		sourceFuture.whenComplete((response, error) -> {
+			if (completed.compareAndSet(false, true)) {
+				ApiResponse<T> finalResponse = response;
+				Throwable completionError = error;
+				try {
+					if (null == error) {
+						finalResponse = validateResponse(response);
+					}
+				} catch (Throwable e) { // NOSONAR must complete the future even on Error
+					completionError = e;
+				} finally {
+					apiClient.closeIfEphemeral();
+				}
+				if (null == completionError) {
+					resultFuture.complete(finalResponse);
+				} else {
+					resultFuture.completeExceptionally(completionError);
+				}
+			}
+		});
+		return resultFuture;
+	}
+
+	/**
 	 * Validates the API response. This method checks if the response is null or if the response body is not of the expected
 	 * type and in both cases it builds an error response using the {@link ApiClient#buildErrorResponse} method.
 	 *
@@ -174,6 +241,19 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	}
 
 	/**
+	 * Retrieves the API response asynchronously. This is exclusive with {@link #retrieveAsync(GenericClass)} and
+	 * {@link #retrieveAsync(GenericType)}.
+	 *
+	 * @param <T> response type
+	 *
+	 * @param responseType the response type class
+	 * @return an asynchronous API response
+	 */
+	public <T> ApiResponseAsync<T> retrieveAsync(final Class<T> responseType) {
+		return responseType(responseType).retrieveAsync();
+	}
+
+	/**
 	 * Retrieves the API response. This is exclusive with {@link #retrieve(Class)}.
 	 *
 	 * @param <T> response type
@@ -183,6 +263,18 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 */
 	public <T> ApiResponse<T> retrieve(final GenericClass<T> responseType) {
 		return responseType(responseType).retrieve();
+	}
+
+	/**
+	 * Retrieves the API response asynchronously. This is exclusive with {@link #retrieveAsync(Class)}.
+	 *
+	 * @param <T> response type
+	 *
+	 * @param responseType the response type generic class
+	 * @return an asynchronous API response
+	 */
+	public <T> ApiResponseAsync<T> retrieveAsync(final GenericClass<T> responseType) {
+		return responseType(responseType).retrieveAsync();
 	}
 
 	/**
@@ -198,6 +290,18 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	}
 
 	/**
+	 * Retrieves the API response asynchronously. This is exclusive with {@link #retrieveAsync(Class)}.
+	 *
+	 * @param <T> response type
+	 *
+	 * @param responseType the response type generic type
+	 * @return an asynchronous API response
+	 */
+	public <T> ApiResponseAsync<T> retrieveAsync(final GenericType responseType) {
+		return responseType(responseType).retrieveAsync();
+	}
+
+	/**
 	 * Downloads content.
 	 *
 	 * @param <T> response type
@@ -205,6 +309,16 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 */
 	public <T> ApiResponse<T> download() {
 		return stream().retrieve();
+	}
+
+	/**
+	 * Downloads content asynchronously.
+	 *
+	 * @param <T> response type
+	 * @return an asynchronous API response
+	 */
+	public <T> ApiResponseAsync<T> downloadAsync() {
+		return stream().retrieveAsync();
 	}
 
 	/**

@@ -16,6 +16,7 @@ import org.apiphany.security.Sensitive;
 import org.morphix.lang.collections.Maps;
 import org.morphix.lang.function.Predicates;
 import org.morphix.lang.thread.Threads;
+import org.slf4j.MDC;
 
 /**
  * Interface for exchange clients.
@@ -59,7 +60,29 @@ public interface ExchangeClient extends AutoCloseable {
 	@SuppressWarnings("resource")
 	default <T, U> CompletableFuture<ApiResponse<U>> asyncExchange(final ApiRequest<T> apiRequest) {
 		ExecutorService executorService = Threads.sharedVirtualThreadPerTaskExecutor();
-		return CompletableFuture.supplyAsync(() -> exchange(apiRequest), executorService);
+		Map<String, String> contextMap = MDC.getCopyOfContextMap();
+		return CompletableFuture.supplyAsync(() -> {
+			Map<String, String> previousContextMap = MDC.getCopyOfContextMap();
+			try {
+				setMdcContext(contextMap);
+				return exchange(apiRequest);
+			} finally {
+				setMdcContext(previousContextMap);
+			}
+		}, executorService);
+	}
+
+	/**
+	 * Sets the MDC context, clearing it when the given map is null.
+	 *
+	 * @param contextMap MDC context map
+	 */
+	private static void setMdcContext(final Map<String, String> contextMap) {
+		if (null == contextMap) {
+			MDC.clear();
+		} else {
+			MDC.setContextMap(contextMap);
+		}
 	}
 
 	/**

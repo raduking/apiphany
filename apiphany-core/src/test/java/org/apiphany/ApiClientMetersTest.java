@@ -14,6 +14,7 @@ import static org.mockito.Mockito.verify;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.http.HttpExchangeClient;
@@ -238,6 +239,42 @@ class ApiClientMetersTest {
 		verify(requests, times(RETRY_COUNT)).increment();
 		verify(latency, times(RETRY_COUNT)).record(any(Duration.class));
 		verify(errors, times(RETRY_COUNT)).increment();
+	}
+
+	@Test
+	@SuppressWarnings({ "unchecked", "resource" })
+	void shouldSetMetricsOnAsyncExchangeWhenResponseIsNotSuccessful() {
+		ExchangeClient exchangeClient = mock(ExchangeClient.class);
+		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
+
+		MeterFactory meterFactory = mock(MeterFactory.class);
+		MeterTimer latency = mock(MeterTimer.class);
+		MeterCounter requests = mock(MeterCounter.class);
+		MeterCounter errors = mock(MeterCounter.class);
+		MeterCounter retries = mock(MeterCounter.class);
+		doReturn(latency).when(meterFactory).timer(eq(METRICS_PREFIX), eq(BasicMeters.Name.LATENCY), any(List.class));
+		doReturn(requests).when(meterFactory).counter(eq(METRICS_PREFIX), eq(BasicMeters.Name.REQUEST), any(List.class));
+		doReturn(errors).when(meterFactory).counter(eq(METRICS_PREFIX), eq(BasicMeters.Name.ERROR), any(List.class));
+		doReturn(retries).when(meterFactory).counter(eq(METRICS_PREFIX), eq(BasicMeters.Name.RETRY), any(List.class));
+
+		BasicMeters meters = BasicMeters.of(meterFactory, METRICS_PREFIX);
+		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
+		api.setMetricsEnabled(true);
+		api.setMeters(meters);
+
+		ApiRequest<Object> request = mock(ApiRequest.class);
+		doReturn(AuthenticationType.OAUTH2).when(request).getAuthenticationType();
+		ApiResponse<Object> response = mock(ApiResponse.class);
+		doReturn(false).when(response).isSuccessful();
+		doReturn(CompletableFuture.completedFuture(response)).when(exchangeClient).asyncExchange(request);
+
+		ApiResponse<Object> result = api.asyncExchange(request).join();
+
+		assertThat(result, sameInstance(response));
+		verify(requests).increment();
+		verify(latency).record(any(Duration.class));
+		verify(errors).increment();
+		verify(retries, times(0)).increment();
 	}
 
 	@Test

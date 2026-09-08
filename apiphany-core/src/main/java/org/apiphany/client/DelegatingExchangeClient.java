@@ -1,5 +1,7 @@
 package org.apiphany.client;
 
+import java.util.concurrent.CompletableFuture;
+
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
 import org.apiphany.security.AuthenticationType;
@@ -37,6 +39,27 @@ public interface DelegatingExchangeClient extends ExchangeClient {
 	default <T, U> ApiResponse<U> exchange(final ApiRequest<T> apiRequest) {
 		apiRequest.addHeaders(getCommonHeaders());
 		return getExchangeClient().exchange(apiRequest);
+	}
+
+	/**
+	 * Delegates the asynchronous exchange to the underlying exchange client.
+	 * <p>
+	 * Implementations may override this method to perform asynchronous decoration as needed, but they should call
+	 * {@code super.asyncExchange(...)} to delegate to the underlying exchange client.
+	 *
+	 * @param <T> request body type
+	 * @param <U> response body type
+	 *
+	 * @param apiRequest the API request
+	 * @return a future for the API response
+	 *
+	 * @see ExchangeClient#asyncExchange(ApiRequest)
+	 */
+	@SuppressWarnings("resource")
+	@Override
+	default <T, U> CompletableFuture<ApiResponse<U>> asyncExchange(final ApiRequest<T> apiRequest) {
+		apiRequest.addHeaders(getCommonHeaders());
+		return getExchangeClient().asyncExchange(apiRequest);
 	}
 
 	/**

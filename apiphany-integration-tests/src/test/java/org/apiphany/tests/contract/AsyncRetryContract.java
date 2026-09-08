@@ -50,10 +50,10 @@ public interface AsyncRetryContract extends ApiphanyContract {
 		api.setAsyncRetry(asyncRetry);
 
 		try (api) {
-			ApiClientFluentAdapter request = api.client().http().get().path("async-retry-success").responseType(String.class);
-			CompletableFuture<ApiResponse<Object>> future = api.asyncExchange(request);
+			ApiClientFluentAdapter request = api.client().http().get().path("async-retry-success");
+			CompletableFuture<ApiResponse<String>> future = request.retrieveAsync(String.class);
 
-			ApiResponse<Object> response = future.get();
+			ApiResponse<String> response = future.get();
 
 			assertEquals(200, response.getStatus().getCode());
 			assertEquals("OK", response.getBody());
@@ -87,14 +87,14 @@ public interface AsyncRetryContract extends ApiphanyContract {
 		long start = System.currentTimeMillis();
 
 		try (api) {
-			ApiClientFluentAdapter request = api.client().http().get().path("async-retry-wait").responseType(String.class);
-			CompletableFuture<ApiResponse<Object>> future = api.asyncExchange(request);
+			ApiClientFluentAdapter request = api.client().http().get().path("async-retry-wait");
+			CompletableFuture<ApiResponse<String>> future = request.retrieveAsync(String.class);
 
-			// the asyncExchange call itself must return (non-blocking), well before the 1s retry wait elapses
+			// the retrieveAsync call itself must return (non-blocking), well before the 1s retry wait elapses
 			long elapsedToReturn = System.currentTimeMillis() - start;
-			assertTrue(elapsedToReturn < 500, "asyncExchange should return immediately, took: " + elapsedToReturn + " ms");
+			assertTrue(elapsedToReturn < 500, "retrieveAsync should return immediately, took: " + elapsedToReturn + " ms");
 
-			ApiResponse<Object> response = future.get();
+			ApiResponse<String> response = future.get();
 			assertEquals(200, response.getStatus().getCode());
 			assertEquals("OK", response.getBody());
 		}

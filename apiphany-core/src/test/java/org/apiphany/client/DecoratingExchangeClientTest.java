@@ -6,6 +6,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import java.util.List;
+import java.util.Map;
+
 import org.apiphany.ApiRequest;
 import org.junit.jupiter.api.Test;
 import org.morphix.lang.resource.ScopedResource;
@@ -50,6 +53,25 @@ class DecoratingExchangeClientTest {
 			client.exchange(request);
 
 			verify(delegate).exchange(request);
+		}
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldDelegateAsyncExchangeCallAndAddCommonHeaders() throws Exception {
+		try (ExchangeClient delegate = mock(ExchangeClient.class);
+				DecoratingExchangeClient client = new DecoratingExchangeClient(delegate) {
+					@Override
+					public Map<String, List<String>> getCommonHeaders() {
+						return Map.of("common", List.of("value"));
+					}
+				}) {
+			ApiRequest<String> request = new ApiRequest<>();
+
+			client.asyncExchange(request);
+
+			assertThat(request.getHeaders().get("common"), equalTo(List.of("value")));
+			verify(delegate).asyncExchange(request);
 		}
 	}
 

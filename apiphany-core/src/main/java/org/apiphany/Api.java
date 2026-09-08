@@ -20,9 +20,9 @@ public interface Api {
 	/**
 	 * Returns an {@link HttpClientFluentAdapter} for fluent syntax using the default exchange client.
 	 * <p>
-	 * This method assumes that one of the {@link ApiClientFluentAdapter}.{@code retrieve(...)} methods is called as a
-	 * terminal operation on the returned adapter, which will trigger the closure of the underlying API client after the
-	 * operation is completed.
+	 * This method assumes that one of the {@link ApiClientFluentAdapter}.{@code retrieve(...)} or
+	 * {@link ApiClientFluentAdapter}.{@code retrieveAsync(...)} methods is called as a terminal operation on the returned
+	 * adapter, which will trigger the closure of the underlying API client after the operation is completed.
 	 *
 	 * @return API client adapter
 	 */

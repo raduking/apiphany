@@ -222,24 +222,23 @@ public record BasicMeters(
 			final Function<? super Exception, T> onError) {
 		requests().increment();
 		Instant startTime = Instant.now();
-		return CompletableFutures.supplyAsync(supplier).handle((result, error) -> {
-			T finalResult = result;
-			if (null == error) {
-				if (!isSuccess.test(result)) {
-					errors().increment();
+		return CompletableFutures.invoke(supplier).handle((result, error) -> {
+			try {
+				if (null == error) {
+					if (!isSuccess.test(result)) {
+						errors().increment();
+					}
+					return result;
 				}
-			} else {
 				Throwable cause = Throwables.unwrap(error, CompletionException.class);
 				if (cause instanceof Exception exception) {
 					errors().increment();
-					finalResult = onError.apply(exception);
-				} else {
-					latency().record(Duration.between(startTime, Instant.now()));
-					return Unchecked.Undeclared.reThrow(cause);
+					return onError.apply(exception);
 				}
+				return Unchecked.Undeclared.reThrow(cause);
+			} finally {
+				latency().record(Duration.between(startTime, Instant.now()));
 			}
-			latency().record(Duration.between(startTime, Instant.now()));
-			return finalResult;
 		});
 	}
 

@@ -336,6 +336,23 @@ class ApiClientCloseTest {
 
 	@Test
 	@SuppressWarnings("resource")
+	void shouldCloseExchangeClientWithEphemeralClientOnRetrieveAsync() {
+		SomeHttpExchangeClient exchangeClient = new SomeHttpExchangeClient(clientProperties);
+		ScopedResource<ExchangeClient> scopedClient = ScopedResource.managed(exchangeClient);
+		SomeCustomExchangeClientBuilder builder = new SomeCustomExchangeClientBuilder(scopedClient);
+
+		Api.http(builder)
+				.get()
+				.url(BASE_URL)
+				.retrieveAsync(String.class)
+				.orNull()
+				.join();
+
+		assertTrue(exchangeClient.isClosed());
+	}
+
+	@Test
+	@SuppressWarnings("resource")
 	void shouldNotThrowExceptionOnCloseIfEphemeralIfApiClientThrowsExceptionOnClose() {
 		NotClosingHttpExchangeClient exchangeClient = new NotClosingHttpExchangeClient(clientProperties);
 		ScopedResource<ExchangeClient> scopedClient = ScopedResource.managed(exchangeClient);
