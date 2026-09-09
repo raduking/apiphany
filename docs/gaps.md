@@ -71,7 +71,7 @@ Missing support for version params (`application/*`), format params (`text/*`), 
 
 ### 2.7 Tracing hardcoded to B3 only
 
-`getTracingHeaders()` reads only `traceId`/`spanId` from SLF4J MDC and emits `b3-traceid`/`b3-spanid`. W3C `traceparent`, Jaeger, etc. unsupported.
+`getTracingHeaders()` reads only `traceId`/`spanId` from `DiagnosticContext` and emits `b3-traceid`/`b3-spanid`. W3C `traceparent`, Jaeger, etc. unsupported.
 
 - `HttpExchangeClient.java:148-164`
 
