@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import org.apiphany.logging.Slf4jLoggerAdapter;
+import org.apiphany.logging.LoggerAdapters;
 import org.morphix.lang.function.LoggerAdapter;
 
 /**
@@ -22,7 +22,7 @@ public class OAuth2Registry {
 	/**
 	 * The class logger.
 	 */
-	private static final LoggerAdapter LOGGER = Slf4jLoggerAdapter.of(OAuth2Registry.class);
+	private static final LoggerAdapter LOGGER = LoggerAdapters.of(OAuth2Registry.class);
 
 	/**
 	 * Resolved registrations entries map.

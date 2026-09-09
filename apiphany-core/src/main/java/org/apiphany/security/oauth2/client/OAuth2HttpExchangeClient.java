@@ -7,7 +7,7 @@ import java.util.List;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.DecoratingExchangeClient;
 import org.apiphany.client.ExchangeClient;
-import org.apiphany.logging.Slf4jLoggerAdapter;
+import org.apiphany.logging.LoggerAdapters;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationTokenProvider;
 import org.apiphany.security.AuthenticationType;
@@ -30,7 +30,7 @@ public class OAuth2HttpExchangeClient extends TokenHttpExchangeClient {
 	/**
 	 * The class logger.
 	 */
-	private static final LoggerAdapter LOGGER = Slf4jLoggerAdapter.of(OAuth2HttpExchangeClient.class);
+	private static final LoggerAdapter LOGGER = LoggerAdapters.of(OAuth2HttpExchangeClient.class);
 
 	/**
 	 * The exchange client doing the token refresh.

@@ -11,7 +11,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
-import org.apiphany.logging.Slf4jLoggerAdapter;
+import org.apiphany.logging.LoggerAdapters;
 import org.morphix.lang.function.Consumers;
 import org.morphix.lang.function.LoggerAdapter;
 import org.morphix.lang.function.Predicates;
@@ -33,7 +33,7 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 	/**
 	 * The class logger.
 	 */
-	private static final LoggerAdapter LOGGER = Slf4jLoggerAdapter.of(OAuth2TokenProviderRegistry.class);
+	private static final LoggerAdapter LOGGER = LoggerAdapters.of(OAuth2TokenProviderRegistry.class);
 
 	/**
 	 * The registered providers map.

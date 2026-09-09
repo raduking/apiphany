@@ -6,12 +6,13 @@ import org.apiphany.client.ClientProperties;
 import org.apiphany.client.DecoratingExchangeClient;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.http.HttpExchangeClient;
-import org.apiphany.logging.Slf4jLoggerAdapter;
+import org.apiphany.logging.LoggerAdapters;
 import org.apiphany.security.AuthenticationType;
 import org.apiphany.security.ssl.SSLContextAware;
 import org.apiphany.security.ssl.SSLProperties;
 import org.morphix.lang.Messages;
 import org.morphix.lang.Nullables;
+import org.morphix.lang.function.LoggerAdapter;
 import org.morphix.lang.resource.ScopedResource;
 
 /**
@@ -32,7 +33,7 @@ public class SSLHttpExchangeClient extends DecoratingExchangeClient implements H
 	/**
 	 * Class logger.
 	 */
-	private static final Slf4jLoggerAdapter LOGGER = Slf4jLoggerAdapter.of(SSLHttpExchangeClient.class);
+	private static final LoggerAdapter LOGGER = LoggerAdapters.of(SSLHttpExchangeClient.class);
 
 	/**
 	 * Decorates an exchange client with SSL authentication.

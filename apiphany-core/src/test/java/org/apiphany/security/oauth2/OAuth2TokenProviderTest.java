@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apiphany.lang.Strings;
-import org.apiphany.logging.Slf4jLoggerAdapter;
+import org.apiphany.logging.slf4j.Slf4jLoggerAdapter;
 import org.apiphany.security.AuthenticationException;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationTokenProvider;

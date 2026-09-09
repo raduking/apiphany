@@ -3,9 +3,9 @@ package org.apiphany.json;
 import java.lang.reflect.Type;
 
 import org.apiphany.lang.Strings;
+import org.apiphany.logging.LoggerAdapters;
 import org.apiphany.logging.Logging;
 import org.apiphany.logging.LoggingFormat;
-import org.apiphany.logging.Slf4jLoggerAdapter;
 import org.morphix.convert.Converter;
 import org.morphix.lang.function.LoggerAdapter;
 import org.morphix.reflection.Constructors;
@@ -78,7 +78,7 @@ public class JsonObservability implements LoggerAdapter {
 	 * @param jsonBuilder the JSON builder instance to use for configuration and logging
 	 */
 	public JsonObservability(final JsonBuilder jsonBuilder) {
-		this(Slf4jLoggerAdapter.of(jsonBuilder.getClass()), jsonBuilder);
+		this(LoggerAdapters.of(jsonBuilder.getClass()), jsonBuilder);
 	}
 
 	/**

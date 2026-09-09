@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import org.apiphany.logging.Slf4jLoggerAdapter;
+import org.apiphany.logging.LoggerAdapters;
 import org.apiphany.security.AuthenticationException;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationTokenProvider;
@@ -44,7 +44,7 @@ public class OAuth2TokenProvider implements AuthenticationTokenProvider, AutoClo
 	/**
 	 * The logger object.
 	 */
-	private static final LoggerAdapter LOGGER = Slf4jLoggerAdapter.of(OAuth2TokenProvider.class);
+	private static final LoggerAdapter LOGGER = LoggerAdapters.of(OAuth2TokenProvider.class);
 
 	/**
 	 * The self rescheduling task that handles the token refresh scheduling.

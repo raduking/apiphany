@@ -2,7 +2,7 @@ package org.apiphany.security.oauth2.client;
 
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.ExchangeClientBuilder;
-import org.apiphany.logging.Slf4jLoggerAdapter;
+import org.apiphany.logging.LoggerAdapters;
 import org.morphix.lang.Nullables;
 import org.morphix.lang.function.LoggerAdapter;
 import org.morphix.lang.resource.ScopedResource;
@@ -14,7 +14,7 @@ import org.morphix.lang.resource.ScopedResource;
  */
 public class OAuth2HttpExchangeClientBuilder extends ExchangeClientBuilder {
 
-	private static final LoggerAdapter LOGGER = Slf4jLoggerAdapter.of(OAuth2HttpExchangeClientBuilder.class);
+	private static final LoggerAdapter LOGGER = LoggerAdapters.of(OAuth2HttpExchangeClientBuilder.class);
 
 	/**
 	 * Token exchange client class.

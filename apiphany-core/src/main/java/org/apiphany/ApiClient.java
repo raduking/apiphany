@@ -26,7 +26,7 @@ import org.apiphany.client.http.HttpClientFluentAdapter;
 import org.apiphany.http.HttpException;
 import org.apiphany.lang.Strings;
 import org.apiphany.logging.ExchangeLogger;
-import org.apiphany.logging.Slf4jLoggerAdapter;
+import org.apiphany.logging.LoggerAdapters;
 import org.apiphany.meters.BasicMeters;
 import org.apiphany.meters.MeterFactory;
 import org.apiphany.security.AuthenticationType;
@@ -55,7 +55,7 @@ public class ApiClient implements AutoCloseable {
 	/**
 	 * Class logger.
 	 */
-	private static final LoggerAdapter LOGGER = Slf4jLoggerAdapter.of(ApiClient.class);
+	private static final LoggerAdapter LOGGER = LoggerAdapters.of(ApiClient.class);
 
 	/**
 	 * <code>"api"</code> string used in most APIs.
