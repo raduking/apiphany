@@ -3,7 +3,7 @@ package org.apiphany;
 import java.util.List;
 import java.util.function.Predicate;
 
-import org.apiphany.logging.Slf4jLoggerAdapter;
+import org.apiphany.logging.LoggerAdapters;
 import org.morphix.lang.function.LoggerAdapter;
 import org.morphix.reflection.Constructors;
 
@@ -17,7 +17,7 @@ public class ApiPredicates {
 	/**
 	 * The class logger.
 	 */
-	private static final LoggerAdapter LOGGER = Slf4jLoggerAdapter.of(ApiPredicates.class);
+	private static final LoggerAdapter LOGGER = LoggerAdapters.of(ApiPredicates.class);
 
 	/**
 	 * Name space class for logging messages.

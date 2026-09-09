@@ -13,7 +13,7 @@ import java.util.function.Consumer;
 
 import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.lang.Require;
-import org.apiphany.logging.Slf4jLoggerAdapter;
+import org.apiphany.logging.LoggerAdapters;
 import org.apiphany.security.client.SecuredExchangeClientBuilder;
 import org.morphix.lang.Unchecked;
 import org.morphix.lang.collections.Lists;
@@ -41,7 +41,7 @@ public class ExchangeClientBuilder {
 	/**
 	 * The logger object.
 	 */
-	private static final LoggerAdapter LOGGER = Slf4jLoggerAdapter.of(ExchangeClientBuilder.class);
+	private static final LoggerAdapter LOGGER = LoggerAdapters.of(ExchangeClientBuilder.class);
 
 	/**
 	 * Delegate exchange client builder. This is used when decorating builders and has priority over the other fields.

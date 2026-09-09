@@ -26,7 +26,7 @@ public class DiagnosticContext {
 		/**
 		 * The diagnostic context instance.
 		 */
-		private static final DiagnosticContext INSTANCE = initializeInstance(Slf4jLibrary.DESCRIPTOR);
+		private static final DiagnosticContext INSTANCE = initializeInstance(Slf4jLibrary.DIAGNOSTIC_CONTEXT);
 	}
 
 	/**

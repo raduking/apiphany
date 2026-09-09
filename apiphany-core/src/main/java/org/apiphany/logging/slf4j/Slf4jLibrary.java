@@ -1,6 +1,7 @@
 package org.apiphany.logging.slf4j;
 
 import org.apiphany.logging.DiagnosticContext;
+import org.morphix.lang.function.LoggerAdapter;
 import org.morphix.reflection.Constructors;
 import org.morphix.runtime.OptionalLibrary;
 
@@ -15,9 +16,9 @@ import org.morphix.runtime.OptionalLibrary;
 public class Slf4jLibrary {
 
 	/**
-	 * The SLF4J MDC class name.
+	 * The SLF4J Logger class name.
 	 */
-	private static final String SLF4J_MDC_CLASS_NAME = "org.slf4j.MDC";
+	private static final String SLF4J_LOGGER_CLASS_NAME = "org.slf4j.Logger";
 
 	/**
 	 * A {@link OptionalLibrary} indicating whether the SLF4J library is present on the classpath, along with the
@@ -25,10 +26,21 @@ public class Slf4jLibrary {
 	 * <p>
 	 * The {@link OptionalLibrary#isPresent()} value is {@code true} if SLF4J is detected, {@code false} otherwise.
 	 */
-	public static final OptionalLibrary<? extends DiagnosticContext> DESCRIPTOR =
+	public static final OptionalLibrary<? extends DiagnosticContext> DIAGNOSTIC_CONTEXT =
 			OptionalLibrary.of(
-					SLF4J_MDC_CLASS_NAME,
+					SLF4J_LOGGER_CLASS_NAME,
 					Slf4jDiagnosticContext.class);
+
+	/**
+	 * A {@link OptionalLibrary} indicating whether the SLF4J library is present on the classpath, along with the
+	 * {@link LoggerAdapter} implementation class to use if it is available.
+	 * <p>
+	 * The {@link OptionalLibrary#isPresent()} value is {@code true} if SLF4J is detected, {@code false} otherwise.
+	 */
+	public static final OptionalLibrary<? extends LoggerAdapter> LOGGER_ADAPTER =
+			OptionalLibrary.of(
+					SLF4J_LOGGER_CLASS_NAME,
+					Slf4jLoggerAdapter.class);
 
 	/**
 	 * Checks if the SLF4J library is present in the classpath.
@@ -36,7 +48,7 @@ public class Slf4jLibrary {
 	 * @return {@code true} if the SLF4J library is present, {@code false} otherwise
 	 */
 	public static boolean isPresent() {
-		return DESCRIPTOR.isPresent();
+		return LOGGER_ADAPTER.isPresent();
 	}
 
 	/**

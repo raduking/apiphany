@@ -11,8 +11,8 @@ import org.slf4j.MDC;
  * This class adapts the {@code org.apiphany.logging} diagnostic context abstraction to SLF4J's mapped diagnostic
  * context.
  * <p>
- * <h2>Library presence detection</h2> The static field {@link Slf4jLibrary#DESCRIPTOR} can be used to detect at runtime
- * whether the SLF4J library is present on the classpath. This allows code to conditionally enable SLF4J-backed
+ * <h2>Library presence detection</h2> The static field {@link Slf4jLibrary#DIAGNOSTIC_CONTEXT} can be used to detect at
+ * runtime whether the SLF4J library is present on the classpath. This allows code to conditionally enable SLF4J-backed
  * diagnostic context without a hard dependency.
  *
  * @author Radu Sebastian LAZIN
@@ -59,7 +59,7 @@ public class Slf4jDiagnosticContext extends DiagnosticContext {
 	}
 
 	/**
-	 * @see #setContextMap(Map) 
+	 * @see #setContextMap(Map)
 	 */
 	@Override
 	public void setContextMap(final Map<String, String> contextMap) {

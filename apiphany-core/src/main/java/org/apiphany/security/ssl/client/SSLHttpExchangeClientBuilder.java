@@ -4,12 +4,13 @@ import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.ExchangeClientBuilder;
 import org.apiphany.lang.Strings;
-import org.apiphany.logging.Slf4jLoggerAdapter;
+import org.apiphany.logging.LoggerAdapters;
 import org.apiphany.security.ssl.KeyStoreType;
 import org.apiphany.security.ssl.SSLProperties;
 import org.apiphany.security.ssl.SSLProtocol;
 import org.apiphany.security.ssl.StoreInfo;
 import org.morphix.lang.Nullables;
+import org.morphix.lang.function.LoggerAdapter;
 import org.morphix.lang.resource.ScopedResource;
 
 /**
@@ -25,7 +26,7 @@ public class SSLHttpExchangeClientBuilder extends ExchangeClientBuilder {
 	/**
 	 * Class logger.
 	 */
-	private static final Slf4jLoggerAdapter LOGGER = Slf4jLoggerAdapter.of(SSLHttpExchangeClient.class);
+	private static final LoggerAdapter LOGGER = LoggerAdapters.of(SSLHttpExchangeClient.class);
 
 	/**
 	 * The SSL properties to configure.

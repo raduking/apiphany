@@ -28,6 +28,11 @@ class Slf4jLibraryTest {
 
 	@Test
 	void shouldReturnSlf4jDiagnosticContextFromDescriptor() {
-		assertThat(Slf4jLibrary.DESCRIPTOR.getSpecificInstance().getClass(), equalTo(Slf4jDiagnosticContext.class));
+		assertThat(Slf4jLibrary.DIAGNOSTIC_CONTEXT.getSpecificInstance().getClass(), equalTo(Slf4jDiagnosticContext.class));
+	}
+
+	@Test
+	void shouldReturnSlf4jLoggerAdapterFromDescriptor() {
+		assertThat(Slf4jLibrary.LOGGER_ADAPTER.getFacadeClass(), equalTo(Slf4jLoggerAdapter.class));
 	}
 }

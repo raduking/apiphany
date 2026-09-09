@@ -1,4 +1,4 @@
-package org.apiphany.logging;
+package org.apiphany.logging.slf4j;
 
 import java.util.Objects;
 
@@ -18,6 +18,16 @@ public final class Slf4jLoggerAdapter implements LoggerAdapter {
 	 * The SLF4J logger instance to which log messages will be delegated.
 	 */
 	private final Logger logger;
+
+	/**
+	 * Constructs a new {@code Slf4jLoggerAdapter} for the specified class.
+	 *
+	 * @param clazz the class for which the SLF4J logger will be created
+	 * @throws NullPointerException if the provided class is null
+	 */
+	public Slf4jLoggerAdapter(final Class<?> clazz) {
+		this(LoggerFactory.getLogger(Objects.requireNonNull(clazz, "class must not be null")));
+	}
 
 	/**
 	 * Constructs a new {@code Slf4jLoggerAdapter} with the specified SLF4J logger.
@@ -49,7 +59,7 @@ public final class Slf4jLoggerAdapter implements LoggerAdapter {
 	 * @throws NullPointerException if the provided class is null
 	 */
 	public static Slf4jLoggerAdapter of(final Class<?> clazz) {
-		return of(LoggerFactory.getLogger(Objects.requireNonNull(clazz, "class must not be null")));
+		return new Slf4jLoggerAdapter(clazz);
 	}
 
 	/**
