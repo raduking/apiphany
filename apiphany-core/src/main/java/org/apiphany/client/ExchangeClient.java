@@ -11,12 +11,12 @@ import org.apiphany.ApiMessage;
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
 import org.apiphany.header.HeaderValues;
+import org.apiphany.logging.DiagnosticContext;
 import org.apiphany.security.AuthenticationType;
 import org.apiphany.security.Sensitive;
 import org.morphix.lang.collections.Maps;
 import org.morphix.lang.function.Predicates;
 import org.morphix.lang.thread.Threads;
-import org.slf4j.MDC;
 
 /**
  * Interface for exchange clients.
@@ -60,29 +60,17 @@ public interface ExchangeClient extends AutoCloseable {
 	@SuppressWarnings("resource")
 	default <T, U> CompletableFuture<ApiResponse<U>> asyncExchange(final ApiRequest<T> apiRequest) {
 		ExecutorService executorService = Threads.sharedVirtualThreadPerTaskExecutor();
-		Map<String, String> contextMap = MDC.getCopyOfContextMap();
+		DiagnosticContext diagnosticContext = DiagnosticContext.instance();
+		Map<String, String> contextMap = diagnosticContext.getCopyOfContextMap();
 		return CompletableFuture.supplyAsync(() -> {
-			Map<String, String> previousContextMap = MDC.getCopyOfContextMap();
+			Map<String, String> previousContextMap = diagnosticContext.getCopyOfContextMap();
 			try {
-				setMdcContext(contextMap);
+				diagnosticContext.setContext(contextMap);
 				return exchange(apiRequest);
 			} finally {
-				setMdcContext(previousContextMap);
+				diagnosticContext.setContext(previousContextMap);
 			}
 		}, executorService);
-	}
-
-	/**
-	 * Sets the MDC context, clearing it when the given map is null.
-	 *
-	 * @param contextMap MDC context map
-	 */
-	private static void setMdcContext(final Map<String, String> contextMap) {
-		if (null == contextMap) {
-			MDC.clear();
-		} else {
-			MDC.setContextMap(contextMap);
-		}
 	}
 
 	/**

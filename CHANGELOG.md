@@ -6,6 +6,7 @@
 - Added `BasicMeters.asyncWrap(Supplier, Predicate, Function)` as the asynchronous counterpart of `BasicMeters.wrap` for recording asynchronous exchanges.
 - Changed `ExchangeClient.asyncExchange()` to run blocking transport exchanges on a virtual-thread executor.
 - Added `ApiResponseAsync` as the asynchronous counterpart of `ApiResponse`, returned by `ApiClientFluentAdapter.retrieveAsync(...)` and `downloadAsync()`.
+- Added `DiagnosticContext` as a diagnostic context abstraction, with `Slf4jDiagnosticContext` selected at runtime when SLF4J is present.
 - Changed asynchronous exchanges to use Morphix's shared virtual thread executor (`Threads.sharedVirtualThreadPerTaskExecutor()`).
 - Upgraded `morphix-all` to `1.0.43`.
 

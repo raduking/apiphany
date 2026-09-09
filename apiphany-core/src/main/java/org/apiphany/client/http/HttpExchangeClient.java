@@ -13,10 +13,10 @@ import org.apiphany.header.Headers;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.TracingHeader;
 import org.apiphany.lang.Strings;
+import org.apiphany.logging.DiagnosticContext;
 import org.apiphany.security.http.DefaultHttpSensitivity;
 import org.apiphany.security.ssl.SSLContextAware;
 import org.morphix.lang.Nullables;
-import org.slf4j.MDC;
 
 /**
  * Adds the HTTP methods to the {@link ExchangeClient} interface.
@@ -153,9 +153,10 @@ public interface HttpExchangeClient extends ExchangeClient, SSLContextAware {
 	 */
 	@Override
 	default Map<String, List<String>> getTracingHeaders() {
-		String traceId = MDC.get("traceId");
+		DiagnosticContext diagnosticContext = DiagnosticContext.instance();
+		String traceId = diagnosticContext.get("traceId");
 		if (Strings.isNotEmpty(traceId)) {
-			String spanId = MDC.get("spanId");
+			String spanId = diagnosticContext.get("spanId");
 			return Headers.of(
 					Header.of(TracingHeader.B3_TRACE_ID, traceId),
 					Header.of(TracingHeader.B3_SPAN_ID, spanId));
