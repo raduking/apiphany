@@ -4,14 +4,18 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Mockito.mock;
 
 import java.util.List;
 
 import org.apiphany.client.ClientProperties;
+import org.apiphany.http.SpringHttpSupport;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.morphix.reflection.Fields;
+import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.ResourceHttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
@@ -52,14 +56,25 @@ class SpringRestExchangeClientTest {
 
 		@Test
 		@SuppressWarnings("resource")
-		void shouldBuildWithRestClientBuilder() throws Exception {
+		void shouldKeepConfiguredRequestFactoryOnRestClientBuilder() throws Exception {
+			ClientProperties properties = ClientProperties.defaults();
+			ClientHttpRequestFactory requestFactory = mock(ClientHttpRequestFactory.class);
+			RestClient.Builder builder = RestClient.builder().requestFactory(requestFactory);
+
+			try (SpringRestExchangeClient client = new SpringRestExchangeClient(properties, builder)) {
+				assertThat(SpringHttpSupport.getRequestFactory(builder), equalTo(requestFactory));
+				assertThat(Fields.IgnoreAccess.get(client.getRequestFactory(), "delegate"), equalTo(requestFactory));
+			}
+		}
+
+		@Test
+		@SuppressWarnings("resource")
+		void shouldSetDetectedRequestFactoryWhenRestClientBuilderHasNone() throws Exception {
 			ClientProperties properties = ClientProperties.defaults();
 			RestClient.Builder builder = RestClient.builder();
 
 			try (SpringRestExchangeClient client = new SpringRestExchangeClient(properties, builder)) {
-				assertThat(client.getMessageConverters(), notNullValue());
-				assertThat(client.getClientProperties(), notNullValue());
-				assertThat(client.getRequestFactory(), notNullValue());
+				assertThat(SpringHttpSupport.getRequestFactory(builder), equalTo(client.getRequestFactory()));
 			}
 		}
 

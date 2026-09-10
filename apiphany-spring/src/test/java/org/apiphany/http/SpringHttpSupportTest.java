@@ -15,13 +15,16 @@ import java.util.List;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.web.client.RestClient;
 
 /**
  * Tests for {@link SpringHttpSupport}.
@@ -168,6 +171,64 @@ class SpringHttpSupportTest {
 			MediaType contentType = SpringHttpSupport.getContentType(response);
 
 			assertThat(contentType, equalTo(MediaType.APPLICATION_OCTET_STREAM));
+		}
+	}
+
+	@Nested
+	class RequestFactoryTests {
+
+		@Test
+		void shouldReturnNullRequestFactoryForDefaultRestClientBuilder() {
+			assertThat(SpringHttpSupport.getRequestFactory(RestClient.builder()), equalTo(null));
+		}
+
+		@Test
+		void shouldReturnConfiguredRequestFactoryFromRestClientBuilder() {
+			ClientHttpRequestFactory requestFactory = mock(ClientHttpRequestFactory.class);
+			RestClient.Builder builder = RestClient.builder().requestFactory(requestFactory);
+
+			assertThat(SpringHttpSupport.getRequestFactory(builder), equalTo(requestFactory));
+		}
+
+		@Test
+		void shouldReturnNullRequestFactoryWhenRestClientBuilderIsNull() {
+			assertThat(SpringHttpSupport.getRequestFactory((RestClient.Builder) null), equalTo(null));
+		}
+
+		@Test
+		void shouldReturnFalseWhenRestTemplateBuilderHasNoExplicitRequestFactory() {
+			assertThat(SpringHttpSupport.hasRequestFactory(new RestTemplateBuilder()), equalTo(false));
+		}
+
+		@Test
+		void shouldReturnTrueWhenRestTemplateBuilderHasExplicitRequestFactory() {
+			ClientHttpRequestFactory requestFactory = mock(ClientHttpRequestFactory.class);
+			RestTemplateBuilder builder = new RestTemplateBuilder().requestFactory(() -> requestFactory);
+
+			assertThat(SpringHttpSupport.hasRequestFactory(builder), equalTo(true));
+		}
+
+		@Test
+		void shouldReturnFalseWhenRestTemplateBuilderIsNull() {
+			assertThat(SpringHttpSupport.hasRequestFactory(null), equalTo(false));
+		}
+
+		@Test
+		void shouldReturnNullRequestFactoryForDefaultRestTemplateBuilder() {
+			assertThat(SpringHttpSupport.getRequestFactory(new RestTemplateBuilder()), equalTo(null));
+		}
+
+		@Test
+		void shouldReturnConfiguredRequestFactoryFromRestTemplateBuilder() {
+			ClientHttpRequestFactory requestFactory = mock(ClientHttpRequestFactory.class);
+			RestTemplateBuilder builder = new RestTemplateBuilder().requestFactory(() -> requestFactory);
+
+			assertThat(SpringHttpSupport.getRequestFactory(builder), equalTo(requestFactory));
+		}
+
+		@Test
+		void shouldReturnNullRequestFactoryWhenRestTemplateBuilderIsNull() {
+			assertThat(SpringHttpSupport.getRequestFactory((RestTemplateBuilder) null), equalTo(null));
 		}
 	}
 

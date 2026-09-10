@@ -6,15 +6,19 @@ import java.util.ArrayList;
 
 import org.apiphany.io.OneShotInputStreamSupplier;
 import org.morphix.reflection.Constructors;
+import org.morphix.reflection.Fields;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.web.client.RestClient;
 
 /**
  * Utility methods for HTTP requests/responses in a Spring context.
@@ -104,6 +108,47 @@ public class SpringHttpSupport {
 			contentType = MediaType.APPLICATION_OCTET_STREAM;
 		}
 		return contentType;
+	}
+
+	/**
+	 * Returns the request factory configured on the given {@link RestClient.Builder}, or {@code null} if none is set.
+	 *
+	 * @param restClientBuilder the REST client builder
+	 * @return the request factory, or {@code null} if the builder has none
+	 */
+	public static ClientHttpRequestFactory getRequestFactory(final RestClient.Builder restClientBuilder) {
+		if (null == restClientBuilder) {
+			return null;
+		}
+		return Fields.IgnoreAccess.get(restClientBuilder, "requestFactory");
+	}
+
+	/**
+	 * Returns the request factory configured on the given {@link RestTemplateBuilder}, or {@code null} if none is set
+	 * explicitly. A default builder with classpath detection enabled is not treated as having a factory.
+	 *
+	 * @param restTemplateBuilder the REST template builder
+	 * @return the request factory, or {@code null} if the builder has none
+	 */
+	public static ClientHttpRequestFactory getRequestFactory(final RestTemplateBuilder restTemplateBuilder) {
+		if (!hasRequestFactory(restTemplateBuilder)) {
+			return null;
+		}
+		return restTemplateBuilder.buildRequestFactory();
+	}
+
+	/**
+	 * Returns {@code true} when the given {@link RestTemplateBuilder} has an explicit request factory, {@code false}
+	 * otherwise.
+	 *
+	 * @param restTemplateBuilder the REST template builder
+	 * @return {@code true} if a request factory has been configured on the builder
+	 */
+	public static boolean hasRequestFactory(final RestTemplateBuilder restTemplateBuilder) {
+		if (null == restTemplateBuilder) {
+			return false;
+		}
+		return null != Fields.IgnoreAccess.get(restTemplateBuilder, "requestFactoryBuilder");
 	}
 
 	/**

@@ -8,6 +8,9 @@
 - Added `ApiResponseAsync` as the asynchronous counterpart of `ApiResponse`, returned by `ApiClientFluentAdapter.retrieveAsync(...)` and `downloadAsync()`.
 - Added `DiagnosticContext` as a diagnostic context abstraction, with `Slf4jDiagnosticContext` selected at runtime when SLF4J is present.
 - Added `LoggerAdapters` as a logger factory abstraction, with `Slf4jLoggerAdapter` when SLF4J is present and Morphix `JulLoggerAdapter` as the fallback.
+- Changed `SpringRestExchangeClient` to keep a request factory already configured on the builder, and to use that same factory for streaming downloads.
+- Changed `RestTemplateExchangeClient` to keep a request factory already configured on the builder, and to use that same factory for streaming downloads.
+- Fixed `AbstractSpringExchangeClient` and `Stream already closed` errors the configured factory is no longer replaced by the detected one.
 - Changed asynchronous exchanges to use Morphix's shared virtual thread executor (`Threads.sharedVirtualThreadPerTaskExecutor()`).
 - Upgraded `morphix-all` to `1.0.44`.
 - Upgraded `pitest-maven` to `1.30.0`.
