@@ -33,6 +33,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpRequest;
+import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -60,17 +61,55 @@ public abstract class AbstractSpringExchangeClient extends AbstractHttpExchangeC
 	private final List<HttpMessageConverter<?>> messageConverters;
 
 	/**
-	 * Constructor with client properties.
+	 * Constructor with client properties. Detects a request factory from the classpath and client properties.
 	 *
 	 * @param clientProperties client properties
 	 */
 	protected AbstractSpringExchangeClient(final ClientProperties clientProperties) {
+		this(clientProperties, null);
+	}
+
+	/**
+	 * Constructor with client properties and an optional request factory. When {@code requestFactory} is {@code null} a
+	 * factory is detected from the classpath and client properties. Otherwise the given factory is used as-is when it is
+	 * already closeable, or wrapped so it can be closed with the exchange client.
+	 *
+	 * @param clientProperties client properties
+	 * @param requestFactory the request factory, or {@code null} to detect one
+	 */
+	protected AbstractSpringExchangeClient(final ClientProperties clientProperties, final ClientHttpRequestFactory requestFactory) {
 		super(clientProperties);
-		this.requestFactory = CloseableHttpRequestFactory.detect(clientProperties, getSslContext());
-		this.messageConverters = List.of(
+		this.requestFactory = wrapRequestFactory(requestFactory);
+		this.messageConverters = defaultMessageConverters();
+	}
+
+	/**
+	 * Returns the default HTTP message converters used by Spring exchange clients.
+	 *
+	 * @return the default HTTP message converters
+	 */
+	protected static List<HttpMessageConverter<?>> defaultMessageConverters() {
+		return List.of(
 				new ByteArrayHttpMessageConverter(),
 				new StringHttpMessageConverter(),
 				new ResourceHttpMessageConverter());
+	}
+
+	/**
+	 * Wraps the given factory so it can be closed with the exchange client. {@code null} detects a factory from the
+	 * classpath and client properties. Existing {@link CloseableHttpRequestFactory} instances are reused.
+	 *
+	 * @param requestFactory the request factory, or {@code null} to detect one
+	 * @return a closeable request factory
+	 */
+	private CloseableHttpRequestFactory wrapRequestFactory(final ClientHttpRequestFactory requestFactory) {
+		if (null == requestFactory) {
+			return CloseableHttpRequestFactory.detect(getClientProperties(), getSslContext());
+		}
+		if (requestFactory instanceof CloseableHttpRequestFactory closeableHttpRequestFactory) {
+			return closeableHttpRequestFactory;
+		}
+		return CloseableHttpRequestFactory.of(requestFactory);
 	}
 
 	/**

@@ -32,7 +32,7 @@ public class RestTemplateExchangeClient extends AbstractSpringExchangeClient {
 	 * @param restTemplateBuilder REST template builder
 	 */
 	public RestTemplateExchangeClient(final ClientProperties clientProperties, final RestTemplateBuilder restTemplateBuilder) {
-		super(clientProperties);
+		super(clientProperties, SpringHttpSupport.getRequestFactory(restTemplateBuilder));
 		this.restTemplate = customize(restTemplateBuilder).build();
 	}
 
@@ -53,17 +53,19 @@ public class RestTemplateExchangeClient extends AbstractSpringExchangeClient {
 	}
 
 	/**
-	 * Customizes the REST template builder so that the underlying {@link RestTemplate} does not add any extra logic to the
-	 * HTTP request, such as following redirects. This ensures that the behavior of the client is consistent with apiphany's
-	 * expectations and allows for better control over the HTTP interactions.
+	 * Customizes the REST template builder so that the underlying {@link RestTemplate} does not add extra request logic
+	 * such as following redirects. The request factory is set only when the builder does not already have one, so
+	 * caller-provided transport settings are preserved.
 	 *
 	 * @param restTemplateBuilder the REST template builder to customize
 	 * @return the customized REST template builder
 	 */
 	private RestTemplateBuilder customize(final RestTemplateBuilder restTemplateBuilder) {
-		return restTemplateBuilder
-				.requestFactory(this::getRequestFactory)
-				.messageConverters(getMessageConverters());
+		RestTemplateBuilder customized = restTemplateBuilder.messageConverters(getMessageConverters());
+		if (SpringHttpSupport.hasRequestFactory(restTemplateBuilder)) {
+			return customized;
+		}
+		return customized.requestFactory(this::getRequestFactory);
 	}
 
 	/**

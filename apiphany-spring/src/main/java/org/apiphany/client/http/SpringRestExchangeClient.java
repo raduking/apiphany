@@ -30,8 +30,8 @@ public class SpringRestExchangeClient extends AbstractSpringExchangeClient {
 	 * @param restClientBuilder REST client builder
 	 */
 	public SpringRestExchangeClient(final ClientProperties clientProperties, final RestClient.Builder restClientBuilder) {
-		super(clientProperties);
-		this.restClient = customize(restClientBuilder, clientProperties).build();
+		super(clientProperties, SpringHttpSupport.getRequestFactory(restClientBuilder));
+		this.restClient = customize(restClientBuilder).build();
 	}
 
 	/**
@@ -62,20 +62,19 @@ public class SpringRestExchangeClient extends AbstractSpringExchangeClient {
 	}
 
 	/**
-	 * Customizes the REST client builder by applying the client properties and message converters. This method sets the
-	 * base URL of the REST client if it is specified in the client properties, and configures the request factory and
-	 * message converters to ensure that the underlying REST client behaves according to apiphany's expectations and allows
-	 * for better control over the HTTP interactions.
+	 * Customizes the REST client builder by applying message converters and, when the builder has no request factory, the
+	 * factory detected from client properties. An already configured request factory is left unchanged so caller-provided
+	 * transport settings are preserved.
 	 *
 	 * @param restClientBuilder the REST client builder to customize
-	 * @param clientProperties the client properties to apply to the REST client builder
 	 * @return the customized REST client builder
 	 */
 	@SuppressWarnings("resource")
-	private RestClient.Builder customize(final RestClient.Builder restClientBuilder, final ClientProperties clientProperties) {
-		return restClientBuilder
-				.requestFactory(getRequestFactory())
-				.messageConverters(getMessageConverters());
+	private RestClient.Builder customize(final RestClient.Builder restClientBuilder) {
+		if (null == SpringHttpSupport.getRequestFactory(restClientBuilder)) {
+			restClientBuilder.requestFactory(getRequestFactory());
+		}
+		return restClientBuilder.messageConverters(getMessageConverters());
 	}
 
 	/**
