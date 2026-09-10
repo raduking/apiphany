@@ -89,7 +89,7 @@ public class DiagnosticContext {
 	 * @return a copy of the context map, or {@code null} if no context is set
 	 */
 	public Map<String, String> getCopyOfContextMap() {
-		return null;
+		return null; // NOSONAR documented to return null when no context is set
 	}
 
 	/**

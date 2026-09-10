@@ -617,9 +617,7 @@ public class ApiClient implements AutoCloseable {
 				e -> activeMeters.retries().increment(),
 				durationAccumulator);
 
-		return isBleedExceptions() && apiResponse.hasException()
-				? Unchecked.reThrow(apiResponse.getException())
-				: apiResponse;
+		return reThrowIfConfigured(apiResponse);
 	}
 
 	/**
@@ -649,9 +647,21 @@ public class ApiClient implements AutoCloseable {
 				e -> activeMeters.retries().increment(),
 				durationAccumulator);
 
-		return apiResponseFuture.thenApply(apiResponse -> isBleedExceptions() && apiResponse.hasException()
+		return apiResponseFuture.thenApply(this::reThrowIfConfigured);
+	}
+
+	/**
+	 * Throws the exception if bleed exceptions is enabled and the API response has an exception.
+	 *
+	 * @param <T> response type
+	 *
+	 * @param apiResponse API response object
+	 * @return API response object
+	 */
+	protected <T> ApiResponse<T> reThrowIfConfigured(final ApiResponse<T> apiResponse) {
+		return isBleedExceptions() && apiResponse.hasException()
 				? Unchecked.reThrow(apiResponse.getException())
-				: apiResponse);
+				: apiResponse;
 	}
 
 	/**

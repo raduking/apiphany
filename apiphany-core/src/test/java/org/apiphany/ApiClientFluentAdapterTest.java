@@ -5,6 +5,7 @@ import static org.apiphany.header.HeaderFunction.header;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -25,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.function.Supplier;
 
 import org.apiphany.client.ExchangeClient;
@@ -630,6 +632,42 @@ class ApiClientFluentAdapterTest {
 			String body = request.retrieveAsync(String.class).orDefault("none").join();
 
 			assertThat(body, equalTo(BODY));
+		}
+
+		@Test
+		@SuppressWarnings({ "resource" })
+		void shouldCompleteExceptionallyAndCloseEphemeralWhenAsyncExchangeFails() {
+			ExchangeClient exchangeClient = mock(ExchangeClient.class);
+			doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.authenticationType(AuthenticationType.SESSION);
+			RuntimeException expected = new RuntimeException("someErrorMessage");
+			doReturn(CompletableFuture.failedFuture(expected)).when(apiClient).asyncExchange(request);
+
+			CompletableFuture<ApiResponse<Object>> result = request.retrieveAsync();
+
+			CompletionException completionException = assertThrows(CompletionException.class, result::join);
+			assertThat(completionException.getCause(), sameInstance(expected));
+			verify(apiClient).closeIfEphemeral();
+		}
+
+		@Test
+		@SuppressWarnings({ "unchecked", "resource" })
+		void shouldCompleteExceptionallyAndCloseEphemeralWhenValidationFails() {
+			ExchangeClient exchangeClient = mock(ExchangeClient.class);
+			doReturn(exchangeClient).when(apiClient).getExchangeClient(AuthenticationType.SESSION);
+			ApiResponse<String> apiResponse = ApiResponse.<String>builder().body(BODY).build();
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.authenticationType(AuthenticationType.SESSION);
+			doReturn(CompletableFuture.completedFuture(apiResponse)).when(apiClient).asyncExchange(request);
+			Error expectedError = new OutOfMemoryError("validation boom");
+			doThrow(expectedError).when(apiClient).buildErrorResponse(any(Exception.class), any(ApiRequest.class), any());
+
+			CompletableFuture<?> result = request.retrieveAsync(Integer.class);
+
+			CompletionException completionException = assertThrows(CompletionException.class, result::join);
+			assertThat(completionException.getCause(), sameInstance(expectedError));
+			verify(apiClient).closeIfEphemeral();
 		}
 	}
 

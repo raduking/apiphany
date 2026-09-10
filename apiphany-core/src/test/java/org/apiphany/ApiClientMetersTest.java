@@ -25,6 +25,8 @@ import org.apiphany.meters.MeterFactory;
 import org.apiphany.meters.MeterTimer;
 import org.apiphany.security.AuthenticationType;
 import org.junit.jupiter.api.Test;
+import org.morphix.async.retry.AsyncRetry;
+import org.morphix.async.retry.AsyncWaitCounter;
 import org.morphix.lang.retry.Retry;
 import org.morphix.lang.retry.WaitCounter;
 
@@ -275,6 +277,47 @@ class ApiClientMetersTest {
 		verify(latency).record(any(Duration.class));
 		verify(errors).increment();
 		verify(retries, times(0)).increment();
+	}
+
+	@Test
+	@SuppressWarnings({ "unchecked", "resource" })
+	void shouldSetMetricsOnAsyncExchangeWhenThereAreExceptions() {
+		ExchangeClient exchangeClient = mock(ExchangeClient.class);
+		doReturn(AuthenticationType.OAUTH2).when(exchangeClient).getAuthenticationType();
+
+		MeterFactory meterFactory = mock(MeterFactory.class);
+		MeterTimer latency = mock(MeterTimer.class);
+		MeterCounter requests = mock(MeterCounter.class);
+		MeterCounter errors = mock(MeterCounter.class);
+		MeterCounter retries = mock(MeterCounter.class);
+		doReturn(latency).when(meterFactory).timer(eq(METRICS_PREFIX), eq(BasicMeters.Name.LATENCY), any(List.class));
+		doReturn(requests).when(meterFactory).counter(eq(METRICS_PREFIX), eq(BasicMeters.Name.REQUEST), any(List.class));
+		doReturn(errors).when(meterFactory).counter(eq(METRICS_PREFIX), eq(BasicMeters.Name.ERROR), any(List.class));
+		doReturn(retries).when(meterFactory).counter(eq(METRICS_PREFIX), eq(BasicMeters.Name.RETRY), any(List.class));
+
+		BasicMeters meters = BasicMeters.of(meterFactory, METRICS_PREFIX);
+
+		ApiClient api = ApiClient.of(BASE_URL, exchangeClient);
+		api.setMetricsEnabled(true);
+		api.setMeters(meters);
+
+		AsyncRetry asyncRetry = AsyncRetry.of(AsyncWaitCounter.of(RETRY_COUNT, Duration.ofMillis(10)));
+		api.setAsyncRetry(asyncRetry);
+
+		ApiRequest<?> request = mock(ApiRequest.class);
+		doReturn(AuthenticationType.OAUTH2).when(request).getAuthenticationType();
+
+		RuntimeException exception = new RuntimeException(SOME_ERROR_MESSAGE);
+		doReturn(CompletableFuture.failedFuture(exception)).when(exchangeClient).asyncExchange(request);
+
+		ApiResponse<?> result = api.asyncExchange(request).join();
+
+		assertThat(result.getException(), sameInstance(exception));
+
+		verify(retries, times(RETRY_COUNT)).increment();
+		verify(requests, times(RETRY_COUNT)).increment();
+		verify(latency, times(RETRY_COUNT)).record(any(Duration.class));
+		verify(errors, times(RETRY_COUNT)).increment();
 	}
 
 	@Test
