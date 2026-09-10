@@ -99,6 +99,24 @@ class DiagnosticContextTest {
 		assertTrue(contextMapSet.get());
 	}
 
+	@Test
+	void shouldNotThrowOnNoOpClear() {
+		DiagnosticContext diagnosticContext = new DiagnosticContext();
+
+		diagnosticContext.clear();
+
+		assertThat(diagnosticContext.getCopyOfContextMap(), nullValue());
+	}
+
+	@Test
+	void shouldNotThrowOnNoOpSetContextMap() {
+		DiagnosticContext diagnosticContext = new DiagnosticContext();
+
+		diagnosticContext.setContextMap(Collections.emptyMap());
+
+		assertThat(diagnosticContext.getCopyOfContextMap(), nullValue());
+	}
+
 	static class DummyDiagnosticContext extends DiagnosticContext {
 		// empty
 	}
