@@ -81,7 +81,7 @@
 
 		<!-- Testing dependencies versions -->
 		<hamcrest.version>3.0</hamcrest.version>
-		<junit.jupiter.version>6.1.0</junit.jupiter.version>
+		<junit.jupiter.version>6.1.3</junit.jupiter.version>
 		<mockito.version>5.23.0</mockito.version>
 		<logback.version>1.5.34</logback.version>
 		<spring.security.version>7.1.0</spring.security.version>
@@ -101,7 +101,7 @@
 		<central.publishing.maven.plugin.version>0.11.0</central.publishing.maven.plugin.version>
 
 		<!-- Testing plugins versions -->
-		<pitest.maven.plugin.version>1.25.9</pitest.maven.plugin.version>
+		<pitest.maven.plugin.version>1.30.0</pitest.maven.plugin.version>
 		<pitest.junit5.plugin.version>1.2.3</pitest.junit5.plugin.version>
 		<jacoco.maven.plugin.version>0.8.15</jacoco.maven.plugin.version>
 		<maven.project.info.reports.plugin.version>3.9.0</maven.project.info.reports.plugin.version>

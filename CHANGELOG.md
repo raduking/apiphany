@@ -10,6 +10,7 @@
 - Added `LoggerAdapters` as a logger factory abstraction, with `Slf4jLoggerAdapter` when SLF4J is present and Morphix `JulLoggerAdapter` as the fallback.
 - Changed asynchronous exchanges to use Morphix's shared virtual thread executor (`Threads.sharedVirtualThreadPerTaskExecutor()`).
 - Upgraded `morphix-all` to `1.0.44`.
+- Upgraded `pitest-maven` to `1.30.0`.
 
 ---
 
