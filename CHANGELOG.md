@@ -1,5 +1,9 @@
 ## Release Notes
 
+`1.2.19`
+
+---
+
 `1.2.18`
 
 - Added `ApiClient.asyncExchange(ApiRequest)` full implementation as the asynchronous counterpart of `ApiClient.exchange(ApiRequest)`.
