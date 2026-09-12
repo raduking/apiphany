@@ -11,10 +11,12 @@ import static org.mockito.Mockito.when;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
+import org.apiphany.test.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.morphix.reflection.Constructors;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -24,6 +26,22 @@ import org.springframework.context.ApplicationContext;
  */
 @ExtendWith(MockitoExtension.class)
 class BeansTest {
+
+	@Nested
+	class ConstructorsTests {
+
+		@Test
+		void shouldHaveMessageConstructor() {
+			UnsupportedOperationException e = Assertions.assertDefaultConstructorThrows(Beans.class);
+			assertThat(e.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
+		}
+
+		@Test
+		void shouldHavePrivateMessageConstructor() {
+			UnsupportedOperationException e = Assertions.assertDefaultConstructorThrows(Beans.Message.class);
+			assertThat(e.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
+		}
+	}
 
 	@Nested
 	class GetBeanByNameTests {
