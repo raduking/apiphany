@@ -36,6 +36,8 @@ public class EnvironmentProperties {
 	/**
 	 * Sets an environment property.
 	 *
+	 * @param <T> property value type
+	 *
 	 * @param env configurable environment
 	 * @param key property key
 	 * @param value property value

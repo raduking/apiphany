@@ -181,7 +181,7 @@ class EnvironmentPropertiesTest {
 		void shouldReturnDefaultValueFromSupplierWhenPropertyIsMissing() {
 			ConfigurableEnvironment env = new EmptyEnvironment();
 
-			String result = EnvironmentProperties.get(env, "missing.key", String.class, () -> "supplied-default");
+			String result = EnvironmentProperties.get(env, "missing.key", String.class, (Supplier<String>) () -> "supplied-default");
 
 			assertThat(result, equalTo("supplied-default"));
 		}
@@ -191,7 +191,7 @@ class EnvironmentPropertiesTest {
 			ConfigurableEnvironment env = new EmptyEnvironment();
 			env.getPropertySources().addLast(new MapPropertySource("test", Map.of(KEY, VALUE)));
 
-			String result = EnvironmentProperties.get(env, KEY, String.class, () -> "supplied-default");
+			String result = EnvironmentProperties.get(env, KEY, String.class, (Supplier<String>) () -> "supplied-default");
 
 			assertThat(result, equalTo(VALUE));
 		}
