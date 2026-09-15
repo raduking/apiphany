@@ -2,6 +2,7 @@ package org.apiphany.spring.env;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -48,6 +49,7 @@ public class EnvironmentProperties {
 			propertySources.addFirst(propertySource);
 		} else {
 			propertySource.getSource().put(key, value);
+			propertySources.addFirst(propertySource);
 		}
 	}
 
@@ -67,35 +69,63 @@ public class EnvironmentProperties {
 	}
 
 	/**
-	 * Returns all Spring environment properties as a list of strings in the following format:
-	 * <code>propertyname=propertyvalue</code>
+	 * Returns all Spring environment properties as a map with property names as keys and property values as values.
+	 * Properties with null values are skipped.
 	 *
 	 * @param env environment
 	 * @return all Spring environment properties
 	 */
-	public static List<String> getAll(final ConfigurableEnvironment env) {
-		return getAll(env, Predicates.acceptAll());
+	public static Map<String, String> getMap(final ConfigurableEnvironment env) {
+		return getMap(env, Predicates.acceptAll());
 	}
 
 	/**
-	 * Returns all Spring environment properties as a list of strings in the following format:
-	 * <code>propertyname=propertyvalue</code>
-	 * <p>
-	 * TODO: consider implementing with Map instead of list.
+	 * Returns all Spring environment properties as a map with property names as keys and property values as values.
+	 * Properties with null values are skipped.
 	 *
 	 * @param env environment
 	 * @param predicate property name predicate
 	 * @return all Spring environment properties
 	 */
-	public static List<String> getAll(final ConfigurableEnvironment env, final Predicate<String> predicate) {
+	public static Map<String, String> getMap(final ConfigurableEnvironment env, final Predicate<String> predicate) {
 		final MutablePropertySources propertySources = env.getPropertySources();
-		return StreamSupport.stream(propertySources.spliterator(), false)
+		final Map<String, String> properties = new LinkedHashMap<>();
+		StreamSupport.stream(propertySources.spliterator(), false)
 				.filter(EnumerablePropertySource.class::isInstance)
 				.map(ps -> ((EnumerablePropertySource<?>) ps).getPropertyNames())
 				.flatMap(Arrays::stream)
-				.distinct()
 				.filter(predicate)
-				.map(prop -> String.join("=", prop, env.getProperty(prop)))
+				.forEach(prop -> {
+					String value = env.getProperty(prop);
+					if (Objects.nonNull(value)) {
+						properties.put(prop, value);
+					}
+				});
+		return properties;
+	}
+
+	/**
+	 * Returns all Spring environment properties as a list of strings in the following format:
+	 * <code>propertyname=propertyvalue</code>
+	 *
+	 * @param env environment
+	 * @return all Spring environment properties
+	 */
+	public static List<String> getList(final ConfigurableEnvironment env) {
+		return getList(env, Predicates.acceptAll());
+	}
+
+	/**
+	 * Returns all Spring environment properties as a list of strings in the following format:
+	 * <code>propertyname=propertyvalue</code>
+	 *
+	 * @param env environment
+	 * @param predicate property name predicate
+	 * @return all Spring environment properties
+	 */
+	public static List<String> getList(final ConfigurableEnvironment env, final Predicate<String> predicate) {
+		return getMap(env, predicate).entrySet().stream()
+				.map(entry -> String.join("=", entry.getKey(), entry.getValue()))
 				.toList();
 	}
 
