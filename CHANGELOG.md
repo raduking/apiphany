@@ -1,5 +1,11 @@
 ## Release Notes
 
+`1.2.19`
+
+- Added `EnvironmentProperties` utility class for working with Spring environment properties.
+
+---
+
 `1.2.18`
 
 - Added `ApiClient.asyncExchange(ApiRequest)` full implementation as the asynchronous counterpart of `ApiClient.exchange(ApiRequest)`.
