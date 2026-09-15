@@ -7,13 +7,22 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.morphix.lang.function.Suppliers;
 import org.morphix.reflection.Constructors;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
@@ -26,6 +35,7 @@ import org.springframework.core.env.StandardEnvironment;
  *
  * @author Radu Sebastian LAZIN
  */
+@ExtendWith(MockitoExtension.class)
 class EnvironmentPropertiesTest {
 
 	private static final String PROPERTY_SOURCE_PREFIX = "property.source.";
@@ -127,7 +137,9 @@ class EnvironmentPropertiesTest {
 
 			EnvironmentProperties.set(env, KEY, 42);
 
-			assertThat(EnvironmentProperties.get(env, KEY, Integer.class, null), equalTo(42));
+			Integer result = EnvironmentProperties.get(env, KEY, Integer.class, Suppliers.supplyNull());
+
+			assertThat(result, equalTo(42));
 		}
 	}
 
@@ -139,15 +151,20 @@ class EnvironmentPropertiesTest {
 			ConfigurableEnvironment env = new EmptyEnvironment();
 			env.getPropertySources().addLast(new MapPropertySource("test", Map.of(KEY, VALUE)));
 
-			assertThat(EnvironmentProperties.get(env, KEY, String.class, null), equalTo(VALUE));
+			String result = EnvironmentProperties.get(env, KEY, String.class, (String) null);
+
+			assertThat(result, equalTo(VALUE));
 		}
 
 		@Test
 		void shouldReturnDefaultValueWhenPropertyIsMissing() {
 			ConfigurableEnvironment env = new EmptyEnvironment();
 
-			assertThat(EnvironmentProperties.get(env, "missing.key", String.class, "default"), equalTo("default"));
-			assertThat(EnvironmentProperties.get(env, "missing.key", String.class, null), nullValue());
+			String result1 = EnvironmentProperties.get(env, "missing.key", String.class, "default");
+			String result2 = EnvironmentProperties.get(env, "missing.key", String.class, (String) null);
+
+			assertThat(result1, equalTo("default"));
+			assertThat(result2, nullValue());
 		}
 
 		@Test
@@ -155,7 +172,53 @@ class EnvironmentPropertiesTest {
 			ConfigurableEnvironment env = new EmptyEnvironment();
 			env.getPropertySources().addLast(new MapPropertySource("test", Map.of(KEY, "42")));
 
-			assertThat(EnvironmentProperties.get(env, KEY, Integer.class, 0), equalTo(42));
+			Integer result = EnvironmentProperties.get(env, KEY, Integer.class, 0);
+
+			assertThat(result, equalTo(42));
+		}
+
+		@Test
+		void shouldReturnDefaultValueFromSupplierWhenPropertyIsMissing() {
+			ConfigurableEnvironment env = new EmptyEnvironment();
+
+			String result = EnvironmentProperties.get(env, "missing.key", String.class, () -> "supplied-default");
+
+			assertThat(result, equalTo("supplied-default"));
+		}
+
+		@Test
+		void shouldReturnPropertyValueWhenDefaultValueIsSupplied() {
+			ConfigurableEnvironment env = new EmptyEnvironment();
+			env.getPropertySources().addLast(new MapPropertySource("test", Map.of(KEY, VALUE)));
+
+			String result = EnvironmentProperties.get(env, KEY, String.class, () -> "supplied-default");
+
+			assertThat(result, equalTo(VALUE));
+		}
+
+		@Test
+		@SuppressWarnings("unchecked")
+		void shouldNotEvaluateSupplierWhenPropertyIsPresent() {
+			ConfigurableEnvironment env = new EmptyEnvironment();
+			env.getPropertySources().addLast(new MapPropertySource("test", Map.of(KEY, VALUE)));
+			Supplier<String> supplier = mock(Supplier.class);
+
+			EnvironmentProperties.get(env, KEY, String.class, supplier);
+
+			verify(supplier, never()).get();
+		}
+
+		@Test
+		@SuppressWarnings("unchecked")
+		void shouldEvaluateSupplierWhenPropertyIsMissing() {
+			ConfigurableEnvironment env = new EmptyEnvironment();
+			Supplier<String> supplier = mock(Supplier.class);
+			when(supplier.get()).thenReturn("supplied-default");
+
+			String result = EnvironmentProperties.get(env, "missing.key", String.class, supplier);
+
+			assertThat(result, equalTo("supplied-default"));
+			verify(supplier, times(1)).get();
 		}
 	}
 
@@ -273,7 +336,9 @@ class EnvironmentPropertiesTest {
 
 			EnvironmentProperties.set(env, KEY, VALUE);
 
-			assertThat(EnvironmentProperties.getList(env), equalTo(List.of(KEY + "=" + VALUE)));
+			List<String> result = EnvironmentProperties.getList(env);
+
+			assertThat(result, equalTo(List.of(KEY + "=" + VALUE)));
 		}
 
 		@Test
