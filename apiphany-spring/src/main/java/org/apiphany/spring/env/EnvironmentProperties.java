@@ -7,9 +7,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.StreamSupport;
 
 import org.morphix.lang.JavaObjects;
+import org.morphix.lang.Nullables;
 import org.morphix.lang.function.Predicates;
 import org.morphix.reflection.Constructors;
 import org.springframework.core.env.ConfigurableEnvironment;
@@ -27,6 +29,11 @@ import org.springframework.core.env.PropertySource;
 public class EnvironmentProperties {
 
 	/**
+	 * Prefix for property source names.
+	 */
+	private static final String PROPERTY_SOURCE_PREFIX = "property.source.";
+
+	/**
 	 * Sets an environment property.
 	 *
 	 * @param env configurable environment
@@ -37,7 +44,7 @@ public class EnvironmentProperties {
 		MutablePropertySources propertySources = env.getPropertySources();
 		MapPropertySource propertySource = null;
 		for (PropertySource<?> ps : propertySources) {
-			if (Objects.equals(ps.getName(), "property.source." + key)) {
+			if (Objects.equals(ps.getName(), PROPERTY_SOURCE_PREFIX + key)) {
 				propertySource = JavaObjects.cast(ps);
 				break;
 			}
@@ -45,12 +52,11 @@ public class EnvironmentProperties {
 		if (null == propertySource) {
 			Map<String, Object> properties = new HashMap<>();
 			properties.put(key, value);
-			propertySource = new MapPropertySource("property.source." + key, properties);
-			propertySources.addFirst(propertySource);
+			propertySource = new MapPropertySource(PROPERTY_SOURCE_PREFIX + key, properties);
 		} else {
 			propertySource.getSource().put(key, value);
-			propertySources.addFirst(propertySource);
 		}
+		propertySources.addFirst(propertySource);
 	}
 
 	/**
@@ -66,6 +72,22 @@ public class EnvironmentProperties {
 	 */
 	public static <T> T get(final Environment env, final String key, final Class<T> type, final T defaultValue) {
 		return env.getProperty(key, type, defaultValue);
+	}
+
+	/**
+	 * Returns a property from the Spring environment or the value supplied by the default value supplier if the property is
+	 * missing.
+	 *
+	 * @param <T> property value type
+	 *
+	 * @param env environment
+	 * @param key property key
+	 * @param type property class
+	 * @param defaultValueSupplier default value supplier
+	 * @return environment property
+	 */
+	public static <T> T get(final Environment env, final String key, final Class<T> type, final Supplier<T> defaultValueSupplier) {
+		return Nullables.nonNullOrDefault(env.getProperty(key, type), defaultValueSupplier);
 	}
 
 	/**
