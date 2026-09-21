@@ -1,6 +1,7 @@
 package org.apiphany.spring;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.morphix.lang.JavaObjects;
@@ -73,7 +74,7 @@ public class Beans {
 	 * @param <T> bean type
 	 * @param beanName bean name
 	 * @param ctx application context
-	 * @return a bean
+	 * @return a bean, or {@code null} if the bean is not found or an exception occurs
 	 */
 	public static <T> T getBean(final String beanName, final ApplicationContext ctx) {
 		return getBean(beanName, ctx, e -> LOGGER.error(Message.BEAN_NOT_FOUND, beanName));
@@ -86,7 +87,7 @@ public class Beans {
 	 * @param beanName bean name
 	 * @param neededInClass needed in the given class
 	 * @param ctx application context
-	 * @return a bean
+	 * @return a bean, or {@code null} if the bean is not found or an exception occurs
 	 */
 	public static <T> T getBean(final String beanName, final Class<?> neededInClass, final ApplicationContext ctx) {
 		return getBean(beanName, ctx, e -> LOGGER.error(Message.BEAN_NOT_FOUND_NEEDED_IN, beanName, neededInClass));
@@ -111,7 +112,7 @@ public class Beans {
 	 * @param <T> bean type
 	 * @param beanClass bean class
 	 * @param ctx application context
-	 * @return a bean
+	 * @return a bean, or {@code null} if the bean is not found or an exception occurs
 	 */
 	public static <T> T getBean(final Class<?> beanClass, final ApplicationContext ctx) {
 		return getBean(beanClass, ctx, e -> LOGGER.error(Message.BEAN_NOT_FOUND, beanClass, e));
@@ -124,7 +125,7 @@ public class Beans {
 	 * @param beanClass bean class
 	 * @param neededInClass needed in the given class
 	 * @param ctx application context
-	 * @return a bean
+	 * @return a bean, or {@code null} if the bean is not found or an exception occurs
 	 */
 	public static <T> T getBean(final Class<?> beanClass, final Class<?> neededInClass, final ApplicationContext ctx) {
 		return getBean(beanClass, ctx, e -> LOGGER.error(Message.BEAN_NOT_FOUND_NEEDED_IN, beanClass, neededInClass, e));
@@ -141,22 +142,42 @@ public class Beans {
 	 * @param beanSupplier a supplier that provides the logic to retrieve the bean
 	 * @param beanId an identifier for the bean, used for logging purposes in case of an error
 	 * @param onError a consumer that handles any exceptions that occur during the bean retrieval process
-	 * @return the retrieved bean, or {@code null} if an error occurs
+	 * @return a bean, or {@code null} if the bean is not found or an exception occurs
 	 */
 	public static <T> T getBean(final Supplier<Object> beanSupplier, final Object beanId, final Consumer<Exception> onError) {
+		return getBean(beanSupplier, beanId, e -> {
+			onError.accept(e);
+			return null;
+		});
+	}
+
+	/**
+	 * Returns a bean using the given supplier, which can be used to retrieve the bean from any source, such as an
+	 * application context or a custom bean registry. The method handles any exceptions that may occur during the retrieval
+	 * process and allows the caller to specify a custom error handling strategy through the {@code onError} function. If an
+	 * exception occurs, the method logs the error and returns the value provided by the {@code onError} function.
+	 *
+	 * @param <T> the type of the bean to be retrieved
+	 *
+	 * @param beanSupplier a supplier that provides the logic to retrieve the bean
+	 * @param beanId an identifier for the bean, used for logging purposes in case of an error
+	 * @param onError a function that handles any exceptions that occur during the bean retrieval process and returns a
+	 *     value to be returned in case of an error
+	 * @return the retrieved bean, or the value provided by {@code onError} if an error occurs
+	 */
+	public static <T> T getBean(final Supplier<Object> beanSupplier, final Object beanId, final Function<Exception, T> onError) {
 		try {
 			return JavaObjects.cast(beanSupplier.get());
 		} catch (Exception e) {
 			if (LOGGER.isTraceEnabled()) {
 				LOGGER.trace(Message.BEAN_NOT_FOUND, beanId, e);
 			}
-			onError.accept(e);
-			return null;
+			return onError.apply(e);
 		}
 	}
 
 	/**
-	 * Consumer to be used in conjunction with:
+	 * Consumer that signifies that a null will be returned on error to be used in conjunction with:
 	 * <ul>
 	 * <li>{@link #getBean(Class, ApplicationContext, Consumer)}</li>
 	 * <li>{@link #getBean(String, ApplicationContext, Consumer)}</li>
