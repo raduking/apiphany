@@ -44,9 +44,10 @@ public class EnvironmentProperties {
 	 */
 	public static <T> void set(final ConfigurableEnvironment env, final String key, final T value) {
 		MutablePropertySources propertySources = env.getPropertySources();
+		String sourceName = PROPERTY_SOURCE_PREFIX + key;
 		MapPropertySource propertySource = null;
 		for (PropertySource<?> ps : propertySources) {
-			if (Objects.equals(ps.getName(), PROPERTY_SOURCE_PREFIX + key)) {
+			if (Objects.equals(ps.getName(), sourceName)) {
 				propertySource = JavaObjects.cast(ps);
 				break;
 			}
@@ -54,7 +55,7 @@ public class EnvironmentProperties {
 		if (null == propertySource) {
 			Map<String, Object> properties = new HashMap<>();
 			properties.put(key, value);
-			propertySource = new MapPropertySource(PROPERTY_SOURCE_PREFIX + key, properties);
+			propertySource = new MapPropertySource(sourceName, properties);
 		} else {
 			propertySource.getSource().put(key, value);
 		}

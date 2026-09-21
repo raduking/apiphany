@@ -3,6 +3,8 @@
 `1.2.19`
 
 - Added `EnvironmentProperties` utility class for working with Spring environment properties.
+- Added `EnvironmentPropertyFinder` interface with a default `getEnvironmentProperty(key, type, defaultValue)` method, resolving the `Environment` from the application context.
+- Added `Beans.getBean(Supplier, Object, Function)` overload that accepts a function for custom error handling and return value control.
 
 ---
 
