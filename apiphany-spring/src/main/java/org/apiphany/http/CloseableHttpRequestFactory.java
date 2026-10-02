@@ -191,6 +191,7 @@ public class CloseableHttpRequestFactory implements ClientHttpRequestFactory, Au
 		 */
 		@SuppressWarnings("resource")
 		public static CloseableHttpRequestFactory create(final ClientProperties clientProperties, final Map<Class<?>, Object> args) { // NOSONAR
+			ApacheHC5Library.verifyVersion();
 			CloseableHttpClient httpClient = ApacheHC5Clients.createClient(clientProperties,
 					connectionManagerBuilder -> {
 						SSLContext sslContext = JavaObjects.cast(args.get(SSLContext.class));
