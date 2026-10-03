@@ -13,10 +13,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: 21
@@ -26,3 +26,25 @@ jobs:
         run: mvn -B clean verify
         # For ignoring local cache issues, uncomment the following line and comment the above line
         #run: mvn -B clean verify -U -f pom.xml
+
+  httpclient5-version-matrix:
+    needs: build
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        httpclient5-profile: [ httpclient5-min, httpclient5-max ]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+
+      - name: Verify against ${{ matrix.httpclient5-profile }}
+        run: mvn -B -pl integration/apiphany-httpclient5-tests -am clean verify -P${{ matrix.httpclient5-profile }}
