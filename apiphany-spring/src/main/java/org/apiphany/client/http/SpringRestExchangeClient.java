@@ -9,7 +9,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClient.RequestBodySpec;
-import org.springframework.web.client.RestClient.RequestHeadersSpec;
 
 /**
  * Exchange client implemented with {@link RestClient}.
@@ -84,18 +83,17 @@ public class SpringRestExchangeClient extends AbstractSpringExchangeClient {
 	protected <T, U> ResponseEntity<U> sendRequest(final ApiRequest<T> apiRequest, final HttpEntity<T> httpEntity) {
 		HttpMethod httpMethod = apiRequest.getMethod();
 		var springHttpMethod = SpringHttpSupport.getHttpMethod(httpMethod.value());
+		T body = httpEntity.getBody();
 
-		RequestBodySpec requestSpec = restClient.method(springHttpMethod)
+		RequestBodySpec requestSpec = restClient
+				.method(springHttpMethod)
 				.uri(apiRequest.getUri())
 				.headers(headers -> headers.addAll(httpEntity.getHeaders()));
-		RequestHeadersSpec<?> headerSpec;
-		if (null != httpEntity.getBody()) {
-			headerSpec = requestSpec.body(httpEntity.getBody()); // NOSONAR
-		} else {
-			headerSpec = requestSpec;
+		if (null != body) {
+			requestSpec = requestSpec.body(body);
 		}
-		Class<U> responseType = getResponseType(apiRequest);
-		return headerSpec.exchange((request, response) -> {
+		return requestSpec.exchange((request, response) -> {
+			Class<U> responseType = getResponseType(apiRequest);
 			ResponseEntityExtractor<U> responseExtractor = new ResponseEntityExtractor<>(responseType, getMessageConverters(),
 					getMaxResponseBodySize());
 			return responseExtractor.extractData(response);

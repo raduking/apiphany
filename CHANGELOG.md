@@ -1,5 +1,19 @@
 ## Release Notes
 
+`1.2.19`
+
+- Added `EnvironmentProperties` utility class for working with Spring environment properties.
+- Added `EnvironmentPropertyFinder` interface with a default `getEnvironmentProperty(key, type, defaultValue)` method, resolving the `Environment` from the application context.
+- Added `Beans.getBean(Supplier, Object, Function)` overload that accepts a function for custom error handling and return value control.
+- Added `ApacheHC5Library.minimumVersion()` returning the minimum Apache HTTP Client 5 version (`5.5.0`) required at runtime.
+- Added `ApacheHC5Library.version()` to detect the runtime Apache HTTP Client 5 version from the jar manifest.
+- Added `ApacheHC5Library.verifyVersion()` to fail fast with a clear message if the runtime version is older than the minimum.
+- Added version check in `ApacheHC5HttpExchangeClient` construction.
+- Upgraded `morphix-all` to `1.0.45` (adds `LibraryVersion` for library version detection and comparison).
+- Added `httpclient5-min`/`httpclient5-max` Maven profiles to the parent POM and a CI matrix job to run the integration tests against the supported versions.
+
+---
+
 `1.2.18`
 
 - Added `ApiClient.asyncExchange(ApiRequest)` full implementation as the asynchronous counterpart of `ApiClient.exchange(ApiRequest)`.
