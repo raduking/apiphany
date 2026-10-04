@@ -26,6 +26,14 @@ public class ApacheHC5Library {
 	private static final LibraryVersion MINIMUM_VERSION = LibraryVersion.of(CLIENT_NAME, 5, 5);
 
 	/**
+	 * The maximum Apache HttpClient 5 version this module supports, i.e. the highest version it was tested against:
+	 * <code>5.6.4</code>.
+	 * <p>
+	 * A newer runtime version is outside the tested range and is rejected by {@link #verifyVersion()}.
+	 */
+	private static final LibraryVersion MAXIMUM_VERSION = LibraryVersion.of(CLIENT_NAME, 5, 6, 4);
+
+	/**
 	 * The Apache HttpClient 5 CloseableHttpClient class name.
 	 */
 	private static final String CLOSEABLE_HTTP_CLIENT_CLASS_NAME =
@@ -67,16 +75,28 @@ public class ApacheHC5Library {
 	}
 
 	/**
-	 * Verifies that the Apache HttpClient 5 library found on the classpath at runtime is at least {@link #MINIMUM_VERSION},
-	 * which is the minimum version this module was built against and relies on.
+	 * Returns the maximum Apache HttpClient 5 version this module was built against and requires at runtime.
+	 *
+	 * @return the maximum required Apache HttpClient 5 version
+	 */
+	public static LibraryVersion maximumVersion() {
+		return MAXIMUM_VERSION;
+	}
+
+	/**
+	 * Verifies that the Apache HttpClient 5 library found on the classpath at runtime is within the supported range, i.e.
+	 * at least {@link #MINIMUM_VERSION} and at most {@link #MAXIMUM_VERSION}. Versions outside that range are rejected:
+	 * older versions are missing APIs this module relies on, while newer versions are outside the tested range.
 	 * <p>
 	 * If the runtime version cannot be determined (e.g. missing manifest information) the check is skipped since it cannot
 	 * be reliably enforced.
 	 *
-	 * @throws IllegalStateException if a runtime version older than {@link #MINIMUM_VERSION} is detected
+	 * @throws IllegalStateException if a runtime version older than {@link #MINIMUM_VERSION} or newer than
+	 *     {@link #MAXIMUM_VERSION} is detected
 	 */
 	public static void verifyVersion() {
 		VERSION.verifyAtLeast(MINIMUM_VERSION);
+		VERSION.verifyAtMost(MAXIMUM_VERSION);
 	}
 
 	/**

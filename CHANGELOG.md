@@ -6,11 +6,12 @@
 - Added `EnvironmentPropertyFinder` interface with a default `getEnvironmentProperty(key, type, defaultValue)` method, resolving the `Environment` from the application context.
 - Added `Beans.getBean(Supplier, Object, Function)` overload that accepts a function for custom error handling and return value control.
 - Added `ApacheHC5Library.minimumVersion()` returning the minimum Apache HTTP Client 5 version (`5.5.0`) required at runtime.
+- Added `ApacheHC5Library.maximumVersion()` returning the maximum Apache HTTP Client 5 version (`5.6.4`) supported at runtime.
 - Added `ApacheHC5Library.version()` to detect the runtime Apache HTTP Client 5 version from the jar manifest.
-- Added `ApacheHC5Library.verifyVersion()` to fail fast with a clear message if the runtime version is older than the minimum.
+- Added `ApacheHC5Library.verifyVersion()` to fail fast with a clear message if the runtime version is outside the supported range (`5.5.0` to `5.6.4`).
 - Added version check in `ApacheHC5HttpExchangeClient` construction.
-- Upgraded `morphix-all` to `1.0.45` (adds `LibraryVersion` for library version detection and comparison).
-- Added `httpclient5-min`/`httpclient5-max` Maven profiles to the parent POM and a CI matrix job to run the integration tests against the supported versions.
+- Upgraded `morphix-all` to `1.0.46`.
+- Added `httpclient5-min`/`httpclient5-5.6`/`httpclient5-max` Maven profiles to the parent POM and a CI matrix job to run the integration tests against the supported versions.
 
 ---
 
