@@ -10,6 +10,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+	# Run on push always. On PRs, skip if the head branch is master/develop
+	# (those are already covered by the push trigger).
+    if: github.event_name == 'push' || !contains(fromJSON('["master","develop"]'), github.head_ref)
 
     steps:
       - name: Checkout repository
@@ -30,6 +33,7 @@ jobs:
   httpclient5-version-matrix:
     needs: build
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' || !contains(fromJSON('["master","develop"]'), github.head_ref)
 
     strategy:
       matrix:
