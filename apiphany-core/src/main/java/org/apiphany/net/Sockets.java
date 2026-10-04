@@ -103,7 +103,7 @@ public final class Sockets {
 
 		int attempts = maxPortRange - minPortRange + 1;
 		for (int i = 0; i < attempts; ++i) {
-			int currentPort = nextPort(minPortRange, maxPortRange);
+			int currentPort = randomPort(minPortRange, maxPortRange);
 			if (isTcpPortAvailable(currentPort, timeout)) {
 				return currentPort;
 			}
@@ -196,7 +196,7 @@ public final class Sockets {
 	 * @param maxPortRange maximum port range
 	 * @return a random port in the given range
 	 */
-	private static int nextPort(final int minPortRange, final int maxPortRange) {
+	private static int randomPort(final int minPortRange, final int maxPortRange) {
 		int bound = maxPortRange - minPortRange + 1;
 		return RANDOM.nextInt(bound) + minPortRange;
 	}
