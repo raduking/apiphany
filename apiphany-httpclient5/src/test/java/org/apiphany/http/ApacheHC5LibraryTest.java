@@ -54,10 +54,49 @@ class ApacheHC5LibraryTest {
 		}
 
 		@Test
+		void shouldThrowWhenRuntimeVersionIsNewerThanMaximum() {
+			LibraryVersion newVersion = LibraryVersion.of(ApacheHC5Library.CLIENT_NAME, "5.7.0");
+			LibraryVersion maximumVersion = ApacheHC5Library.maximumVersion();
+
+			assertThrows(IllegalStateException.class, () -> newVersion.verifyAtMost(maximumVersion));
+		}
+
+		@Test
+		void shouldNotThrowForMaximumVersionItself() {
+			LibraryVersion maximumVersion = ApacheHC5Library.maximumVersion();
+
+			assertDoesNotThrow(() -> maximumVersion.verifyAtMost(ApacheHC5Library.maximumVersion()));
+		}
+
+		@Test
 		void shouldNotThrowWhenRuntimeVersionCannotBeDetermined() {
 			LibraryVersion undeterminedVersion = LibraryVersion.of(ApacheHC5Library.CLIENT_NAME, (String) null);
 
 			assertDoesNotThrow(() -> undeterminedVersion.verifyAtLeast(ApacheHC5Library.minimumVersion()));
+			assertDoesNotThrow(() -> undeterminedVersion.verifyAtMost(ApacheHC5Library.maximumVersion()));
+		}
+	}
+
+	@Nested
+	class MinimumVersionTests {
+
+		@Test
+		void shouldReturnMinimumRequiredVersion() {
+			assertThat(ApacheHC5Library.minimumVersion().value(), equalTo("5.5.0"));
+		}
+
+		@Test
+		void shouldNotBeNewerThanMaximumVersion() {
+			assertThat(ApacheHC5Library.minimumVersion().isAtMost(ApacheHC5Library.maximumVersion()), equalTo(true));
+		}
+	}
+
+	@Nested
+	class MaximumVersionTests {
+
+		@Test
+		void shouldReturnMaximumSupportedVersion() {
+			assertThat(ApacheHC5Library.maximumVersion().value(), equalTo("5.6.4"));
 		}
 	}
 
