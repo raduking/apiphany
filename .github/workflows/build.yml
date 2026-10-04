@@ -33,7 +33,7 @@ jobs:
 
     strategy:
       matrix:
-        httpclient5-profile: [ httpclient5-min, httpclient5-max ]
+        httpclient5-profile: [ httpclient5-min, httpclient5-5.6, httpclient5-max ]
 
     steps:
       - name: Checkout repository
