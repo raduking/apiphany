@@ -8,7 +8,6 @@ import java.time.Duration;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.http.client.KeyValueApiClient;
 import org.apiphany.http.server.KeyValueHttpServer;
-import org.apiphany.net.Sockets;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 
@@ -20,12 +19,11 @@ import org.junit.jupiter.api.Test;
 class ApiClientKeyValueTest {
 
 	private static final Duration PORT_CHECK_TIMEOUT = Duration.ofMillis(500);
-	private static final int API_SERVER_PORT = Sockets.findAvailableTcpPort(PORT_CHECK_TIMEOUT);
 
 	private static final ClientProperties CLIENT_PROPERTIES = new ClientProperties();
 
-	private static final KeyValueHttpServer API_SERVER = new KeyValueHttpServer(API_SERVER_PORT);
-	private static final KeyValueApiClient API_CLIENT = new KeyValueApiClient("http://localhost:" + API_SERVER_PORT, CLIENT_PROPERTIES);
+	private static final KeyValueHttpServer API_SERVER = new KeyValueHttpServer(PORT_CHECK_TIMEOUT);
+	private static final KeyValueApiClient API_CLIENT = new KeyValueApiClient(API_SERVER.getPort(), CLIENT_PROPERTIES);
 
 	private static final String NEW_KEY = "Bubu";
 	private static final String NEW_VALUE_1 = "Juju";

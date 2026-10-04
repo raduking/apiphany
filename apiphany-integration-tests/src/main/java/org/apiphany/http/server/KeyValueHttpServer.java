@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,6 +18,7 @@ import org.apiphany.http.HttpStatus;
 import org.apiphany.io.ContentType;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
+import org.apiphany.net.Sockets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,6 +74,11 @@ public class KeyValueHttpServer implements AutoCloseable {
 	public static final String ALLOW_HEADER_VALUE = String.join(", ", ALLOW.stream().map(HttpMethod::toString).toList());
 
 	/**
+	 * Timeout duration for finding an available port.
+	 */
+	public static final Duration PORT_FIND_TIMEOUT = Duration.ofMillis(500);
+
+	/**
 	 * Constant indicating no body in the response.
 	 */
 	private static final int NO_BODY = -1;
@@ -110,10 +117,26 @@ public class KeyValueHttpServer implements AutoCloseable {
 		this.httpServer.start();
 
 		this.port = port;
-
 		this.map.put(DEFAULT_KEY, DEFAULT_VALUE);
 
 		LOGGER.info("Server started on port: {}", port);
+	}
+
+	/**
+	 * Constructs and starts the key-value HTTP server on an available port within the specified timeout.
+	 *
+	 * @param timeout the duration to wait for an available port
+	 */
+	public KeyValueHttpServer(final Duration timeout) {
+		this(Sockets.findAvailableTcpPort(timeout));
+	}
+
+	/**
+	 * Constructs and starts the key-value HTTP server on an available port. If no available port is found within 500
+	 * milliseconds, an exception is thrown.
+	 */
+	public KeyValueHttpServer() {
+		this(PORT_FIND_TIMEOUT);
 	}
 
 	/**
