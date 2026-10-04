@@ -1,12 +1,8 @@
 name: build
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.head.sha || github.sha }}
-  cancel-in-progress: true
-
 on:
   push:
-    branches: [ master, develop ]
+    branches: [ master ]
   pull_request:
     types: [ opened, synchronize, reopened ]
     branches: [ master, develop ]
