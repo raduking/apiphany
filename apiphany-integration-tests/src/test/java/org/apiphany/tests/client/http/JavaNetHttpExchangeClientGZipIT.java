@@ -2,15 +2,16 @@ package org.apiphany.tests.client.http;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.notNullValue;
 
 import java.time.Duration;
+import java.util.Map;
 
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.http.client.KeyValueApiClient;
 import org.apiphany.http.server.GZipKeyValueHttpServer;
 import org.apiphany.http.server.KeyValueHttpServer;
-import org.apiphany.net.Sockets;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 
@@ -22,12 +23,11 @@ import org.junit.jupiter.api.Test;
 class JavaNetHttpExchangeClientGZipIT {
 
 	private static final Duration PORT_CHECK_TIMEOUT = Duration.ofMillis(500);
-	private static final int API_SERVER_PORT = Sockets.findAvailableTcpPort(PORT_CHECK_TIMEOUT);
 
 	private static final ClientProperties CLIENT_PROPERTIES = new ClientProperties();
 
-	private static final GZipKeyValueHttpServer API_SERVER = new GZipKeyValueHttpServer(API_SERVER_PORT);
-	private static final KeyValueApiClient API_CLIENT = new KeyValueApiClient("http://localhost:" + API_SERVER_PORT, CLIENT_PROPERTIES);
+	private static final GZipKeyValueHttpServer API_SERVER = new GZipKeyValueHttpServer(PORT_CHECK_TIMEOUT);
+	private static final KeyValueApiClient API_CLIENT = new KeyValueApiClient(API_SERVER.getPort(), CLIENT_PROPERTIES);
 
 	private static final String NEW_KEY = "Bubu";
 	private static final String NEW_VALUE_1 = "Juju";
@@ -62,5 +62,12 @@ class JavaNetHttpExchangeClientGZipIT {
 
 		value = API_CLIENT.delete(NEW_KEY);
 		assertThat(value, equalTo(NEW_VALUE_2 + NEW_VALUE_1));
+	}
+
+	@Test
+	void shouldReturnMapWhenGettingAllValues() {
+		Map<String, String> values = API_CLIENT.getAll();
+
+		assertThat(values, notNullValue());
 	}
 }

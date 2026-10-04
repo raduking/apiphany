@@ -56,7 +56,8 @@ public class KeyValueApiClient extends ApiClient {
 
 	/**
 	 * Constructs a key-value API client on the given port with the provided client properties. The URL is constructed as
-	 * "http://localhost:" + port and the default {@link JavaNetHttpExchangeClient} is used as the underlying HTTP client.
+	 * <code>"http://localhost:" + port</code> and the default {@link JavaNetHttpExchangeClient} is used as the underlying
+	 * HTTP client.
 	 *
 	 * @param port the port
 	 * @param properties the client properties

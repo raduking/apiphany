@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -16,7 +17,9 @@ import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
 import org.apiphany.io.ContentType;
 import org.apiphany.io.gzip.GZip;
+import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
+import org.apiphany.net.Sockets;
 import org.morphix.lang.Nullables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,6 +60,11 @@ public class GZipKeyValueHttpServer implements AutoCloseable {
 	public static final String DEFAULT_VALUE = "Cucu";
 
 	/**
+	 * Timeout duration for finding an available port.
+	 */
+	public static final Duration PORT_FIND_TIMEOUT = Duration.ofMillis(500);
+
+	/**
 	 * Constant indicating no body in response.
 	 */
 	private static final int NO_BODY = -1;
@@ -65,8 +73,20 @@ public class GZipKeyValueHttpServer implements AutoCloseable {
 	 * Underlying HTTP server.
 	 */
 	private final HttpServer server;
+
+	/**
+	 * Executor service for handling requests.
+	 */
 	private final ExecutorService executor;
+
+	/**
+	 * Port the server is running on.
+	 */
 	private final int port;
+
+	/**
+	 * In-memory key-value store.
+	 */
 	private final Map<String, String> map = new ConcurrentHashMap<>();
 
 	/**
@@ -83,9 +103,26 @@ public class GZipKeyValueHttpServer implements AutoCloseable {
 		this.server.setExecutor(executor);
 		this.server.start();
 
-		map.put(DEFAULT_KEY, DEFAULT_VALUE);
+		this.map.put(DEFAULT_KEY, DEFAULT_VALUE);
 
 		LOGGER.info("GZip-aware server started on port {}", port);
+	}
+
+	/**
+	 * Constructs and starts the key-value HTTP server on an available port within the specified timeout.
+	 *
+	 * @param timeout the duration to wait for an available port
+	 */
+	public GZipKeyValueHttpServer(final Duration timeout) {
+		this(Sockets.findAvailableTcpPort(timeout));
+	}
+
+	/**
+	 * Constructs and starts the key-value HTTP server on an available port. If no available port is found within 500
+	 * milliseconds, an exception is thrown.
+	 */
+	public GZipKeyValueHttpServer() {
+		this(PORT_FIND_TIMEOUT);
 	}
 
 	/**
@@ -158,8 +195,16 @@ public class GZipKeyValueHttpServer implements AutoCloseable {
 		 */
 		private void handleGet(final HttpExchange exchange) throws IOException {
 			String key = getKeyFromPath(exchange);
-			String response = null == key ? null : map.getOrDefault(key, null);
-
+			String response = null;
+			if (null == key) {
+				response = JsonBuilder.toJson(map);
+				HttpContentType contentType = HttpContentType.of(ContentType.APPLICATION_JSON, StandardCharsets.UTF_8);
+				exchange.getResponseHeaders().set(HttpHeader.CONTENT_TYPE.value(), contentType.value());
+			} else {
+				response = map.getOrDefault(key, null);
+				HttpContentType contentType = HttpContentType.of(ContentType.TEXT_PLAIN, StandardCharsets.UTF_8);
+				exchange.getResponseHeaders().set(HttpHeader.CONTENT_TYPE.value(), contentType.value());
+			}
 			if (null == response) {
 				exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.value(), NO_BODY);
 				return;
@@ -258,9 +303,6 @@ public class GZipKeyValueHttpServer implements AutoCloseable {
 		private static void sendResponse(final HttpExchange exchange, final HttpStatus status, final String response) throws IOException {
 			byte[] compressed = GZip.compress(response);
 			exchange.getResponseHeaders().set(HttpHeader.CONTENT_ENCODING.value(), ContentEncoding.GZIP.value());
-
-			HttpContentType contentType = HttpContentType.of(ContentType.TEXT_PLAIN, StandardCharsets.UTF_8);
-			exchange.getResponseHeaders().set(HttpHeader.CONTENT_TYPE.value(), contentType.value());
 
 			exchange.sendResponseHeaders(status.getCode(), compressed.length);
 			try (OutputStream os = exchange.getResponseBody()) {

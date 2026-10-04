@@ -109,6 +109,7 @@ public class KeyValueHttpServer implements AutoCloseable {
 	 * @param port the port number
 	 */
 	public KeyValueHttpServer(final int port) {
+		this.port = port;
 		this.executor = Executors.newVirtualThreadPerTaskExecutor();
 
 		this.httpServer = createHttpServer(port);
@@ -116,7 +117,6 @@ public class KeyValueHttpServer implements AutoCloseable {
 		this.httpServer.setExecutor(executor);
 		this.httpServer.start();
 
-		this.port = port;
 		this.map.put(DEFAULT_KEY, DEFAULT_VALUE);
 
 		LOGGER.info("Server started on port: {}", port);

@@ -12,6 +12,7 @@ import java.util.Map;
 
 import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
+import org.apiphany.client.http.JavaNetHttpExchangeClient;
 import org.apiphany.header.Headers;
 import org.apiphany.http.HttpContentType;
 import org.apiphany.http.HttpHeader;
@@ -19,7 +20,6 @@ import org.apiphany.http.HttpMethod;
 import org.apiphany.http.client.KeyValueApiClient;
 import org.apiphany.http.server.KeyValueHttpServer;
 import org.apiphany.io.ContentType;
-import org.apiphany.net.Sockets;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 
@@ -31,12 +31,11 @@ import org.junit.jupiter.api.Test;
 class JavaNetHttpExchangeClientIT {
 
 	private static final Duration PORT_CHECK_TIMEOUT = Duration.ofMillis(500);
-	private static final int API_SERVER_PORT = Sockets.findAvailableTcpPort(PORT_CHECK_TIMEOUT);
 
 	private static final ClientProperties CLIENT_PROPERTIES = new ClientProperties();
 
-	private static final KeyValueHttpServer API_SERVER = new KeyValueHttpServer(API_SERVER_PORT);
-	private static final KeyValueApiClient API_CLIENT = new KeyValueApiClient("http://localhost:" + API_SERVER_PORT, CLIENT_PROPERTIES);
+	private static final KeyValueHttpServer API_SERVER = new KeyValueHttpServer(PORT_CHECK_TIMEOUT);
+	private static final KeyValueApiClient API_CLIENT = new KeyValueApiClient(API_SERVER.getPort(), CLIENT_PROPERTIES);
 
 	private static final String NEW_KEY = "Bubu";
 	private static final String NEW_VALUE_1 = "Juju";
@@ -74,6 +73,13 @@ class JavaNetHttpExchangeClientIT {
 	}
 
 	@Test
+	void shouldReturnMapWhenGettingAllValues() {
+		Map<String, String> values = API_CLIENT.getAll();
+
+		assertThat(values, notNullValue());
+	}
+
+	@Test
 	void shouldReturnHeaders() {
 		String value = API_CLIENT.get(KeyValueHttpServer.DEFAULT_KEY);
 		Map<String, List<String>> headers = API_CLIENT.head(KeyValueHttpServer.DEFAULT_KEY);
@@ -92,13 +98,6 @@ class JavaNetHttpExchangeClientIT {
 		assertThat(Headers.get(HttpHeader.ACCESS_CONTROL_ALLOW_ORIGIN, headers), equalTo(List.of("*")));
 		assertThat(Headers.get(HttpHeader.ACCESS_CONTROL_ALLOW_METHODS, headers), equalTo(List.of(KeyValueHttpServer.ALLOW_HEADER_VALUE)));
 		assertThat(Headers.get(HttpHeader.ACCESS_CONTROL_ALLOW_HEADERS, headers), equalTo(List.of(HttpHeader.CONTENT_TYPE.value())));
-	}
-
-	@Test
-	void shouldReturnMapWhenGettingAllValues() {
-		Map<String, String> values = API_CLIENT.getAll();
-
-		assertThat(values, notNullValue());
 	}
 
 	@Test
