@@ -24,7 +24,7 @@ import org.morphix.lang.resource.ScopedResource;
  * <p>
  * When constructing the token provider registry prefer using the builder method for more complex configurations, as it
  * provides a more fluent API and better readability when multiple optional parameters are involved, such as the
- * provider name converter, provider name filter, and created provider customizer.
+ * client registration filter, provider name converter, provider name filter, and created provider customizer.
  *
  * @author Radu Sebastian LAZIN
  */
@@ -64,30 +64,43 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 
 	/**
 	 * Adds a new OAuth2 token provider to the registry based on the given client registration name and builder
-	 * configuration. This method will use the builder's provider name converter to determine the provider name and the
-	 * provider name filter to determine whether to include the provider in the registry. If the provider is included, it
-	 * will use the builder's provider customizer to customize the token provider specification and then create the provider
-	 * using the underlying OAuth2 registry. After the provider is created, the builder's provider post construct consumer
-	 * will be called with the provider name and the created provider instance.
+	 * configuration. This method applies both filters in order.
+	 * <p>
+	 * First, the builder's client registration filter is applied on the resolved OAuth2 client registration and if the
+	 * registration is filtered out, the method returns without converting the provider name.
+	 * <p>
+	 * Second the builder's provider name converter is used to determine the provider name and the builder's provider name
+	 * filter is applied on it. If the provider name is filtered out, the method returns as well.
+	 * <p>
+	 * If the provider passes both filters, this method will use the builder's provider customizer to customize the token
+	 * provider specification and then create the provider using the underlying OAuth2 registry. After the provider is
+	 * created, the builder's provider post construct consumer will be called with the provider name and the created
+	 * provider instance.
 	 *
 	 * @param registration the resolved client registration to build the token provider for
-	 * @param builder the builder containing the configuration for building the token provider, including the provider name
-	 *     converter, provider name filter, provider customizer, and provider post construct consumer
+	 * @param builder the builder containing the configuration for building the token provider, including the client
+	 *     registration filter, provider name converter, provider name filter, provider customizer, and provider post
+	 *     construct consumer
 	 */
 	@SuppressWarnings("resource")
 	private void addProvider(final OAuth2ResolvedRegistration registration, final Builder builder) {
 		String clientRegistrationName = registration.getClientRegistrationName();
+		if (Predicates.not(builder.clientRegistrationFilter).test(registration.getClientRegistration())) {
+			LOGGER.info("Skipping OAuth2 token provider creation for client registration: '{}' as it was filtered out.",
+					clientRegistrationName);
+			return;
+		}
 		String providerName = builder.providerNameConverter.apply(clientRegistrationName);
-		if (builder.providerNameFilter.test(providerName)) {
-			OAuth2TokenProvider.Builder providerBuilder = OAuth2TokenProvider.builder().registration(registration);
-			builder.providerBuilderCustomizer.accept(providerBuilder);
-			OAuth2TokenProvider provider = providerBuilder.build();
-			addProvider(providerName, ScopedResource.managed(provider));
-			builder.providerPostConstruct.accept(providerName, provider);
-		} else {
+		if (Predicates.not(builder.providerNameFilter).test(providerName)) {
 			LOGGER.info("Skipping OAuth2 token provider creation for client registration: '{}' "
 					+ "as the provider name: '{}' was filtered out.", clientRegistrationName, providerName);
+			return;
 		}
+		OAuth2TokenProvider.Builder providerBuilder = OAuth2TokenProvider.builder().registration(registration);
+		builder.providerBuilderCustomizer.accept(providerBuilder);
+		OAuth2TokenProvider provider = providerBuilder.build();
+		addProvider(providerName, ScopedResource.managed(provider));
+		builder.providerPostConstruct.accept(providerName, provider);
 	}
 
 	/**
@@ -267,10 +280,16 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 	 * When building the token providers, the given token client supplier is used and when building the provider name the
 	 * token provider name converter is used.
 	 * <p>
-	 * The builder allows filtering which providers to create based on their converted name. When a provider name is
-	 * filtered out, no token provider is created for the corresponding client registration.
+	 * The builder allows filtering which providers to create based either on the resolved OAuth2 client registration or on
+	 * the converted provider name. Both filters are optional and a client registration must pass both of them for a token
+	 * provider to be created. When either filter rejects a client registration, no token provider is created for it.
 	 * <p>
-	 * Note: The filter is applied on the converted provider name.
+	 * The client registration filter is applied first, on the resolved {@link OAuth2ClientRegistration}, before the
+	 * provider name is converted, so it can be used to reject registrations based on their configuration, such as the
+	 * OAuth2 provider they are configured for, or their scopes.
+	 * <p>
+	 * Note: The provider name filter is applied on the converted provider name, so it can be used to control which
+	 * providers to create based on their final name in the registry, not just based on the client registration name.
 	 *
 	 * @author Radu Sebastian LAZIN
 	 */
@@ -296,6 +315,14 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 		 * set, the registry will use the client registration name as the token provider name.
 		 */
 		private UnaryOperator<String> providerNameConverter = UnaryOperator.identity();
+
+		/**
+		 * A predicate to filter which client registrations to include by their configuration. This is an optional field and if
+		 * not set, the registry will include all client registrations. The filter is applied on the client registration
+		 * configuration, so it can be used to control which providers to create based on their configuration, not just based on
+		 * the client registration name.
+		 */
+		private Predicate<OAuth2ClientRegistration> clientRegistrationFilter = Predicates.acceptAll();
 
 		/**
 		 * A predicate to filter which providers to include by their converted name. This is an optional field and if not set,
@@ -372,10 +399,30 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 		}
 
 		/**
+		 * Sets the client registration filter to be used for filtering which OAuth2 client registrations to include. This is an
+		 * optional field and if not set, the registry will include all client registrations.
+		 * <p>
+		 * The filter is applied on the resolved {@link OAuth2ClientRegistration}, before the provider name is converted, so it
+		 * can be used to filter out registrations based on their configuration, such as the OAuth2 provider they are configured
+		 * for, or their scopes. A client registration must pass this filter and the {@link #providerNameFilter(Predicate)} for
+		 * a token provider to be created. The resolved client registration is never null, so the given filter does not need to
+		 * handle null.
+		 *
+		 * @param clientRegistrationFilter the client registration filter to be used for filtering which client registrations to
+		 *     include
+		 * @return this builder instance for chaining
+		 */
+		public Builder clientRegistrationFilter(final Predicate<OAuth2ClientRegistration> clientRegistrationFilter) {
+			this.clientRegistrationFilter = Objects.requireNonNull(clientRegistrationFilter, "Client registration filter cannot be null");
+			return this;
+		}
+
+		/**
 		 * Sets the provider name filter to be used for filtering which providers to include by their converted name. This is an
 		 * optional field and if not set, the registry will include all providers. The filter is applied on the converted
 		 * provider name, so it can be used to control which providers to create based on their final name in the registry, not
-		 * just based on the client registration name.
+		 * just based on the client registration name. A client registration must pass this filter and the
+		 * {@link #clientRegistrationFilter(Predicate)} for a token provider to be created.
 		 *
 		 * @param providerNameFilter the provider name filter to be used for filtering which providers to include by their
 		 *     converted name
@@ -402,8 +449,9 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 
 		/**
 		 * Builds the OAuth2 token provider registry based on the provided configuration. This method will create token
-		 * providers for all client registrations in the underlying OAuth2 registry that pass the provider name filter and will
-		 * use the provided token client supplier and provider name converter for building the providers.
+		 * providers for all client registrations in the underlying OAuth2 registry that pass both the client registration
+		 * filter and the provider name filter and will use the provided token client supplier and provider name converter for
+		 * building the providers.
 		 *
 		 * @return a new OAuth2 token provider registry based on the provided configuration
 		 */
