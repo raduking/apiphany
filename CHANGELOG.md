@@ -1,5 +1,9 @@
 ## Release Notes
 
+`1.2.20`
+
+---
+
 `1.2.19`
 
 - Added `EnvironmentProperties` utility class for working with Spring environment properties.
