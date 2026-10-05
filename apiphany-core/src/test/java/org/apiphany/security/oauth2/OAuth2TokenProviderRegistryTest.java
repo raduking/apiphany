@@ -44,12 +44,14 @@ class OAuth2TokenProviderRegistryTest {
 	private static final String PROVIDER_NAME_BAD = "bad";
 	private static final String PROVIDER_NAME_1 = "provider1";
 	private static final String PROVIDER_NAME_2 = "provider2";
+	private static final String PROVIDER_NAME_3 = "provider3";
 
 	private static final String ERROR_MESSAGE = "boom";
 
 	private static final String CLIENT_REGISTRATION_NAME = "clientRegistration";
 	private static final String CLIENT_REGISTRATION_1 = "registration1";
 	private static final String CLIENT_REGISTRATION_2 = "registration2";
+	private static final String CLIENT_REGISTRATION_3 = "registration3";
 
 	private static final String UNKNOWN_PROVIDER = "unknownProvider";
 
@@ -526,6 +528,144 @@ class OAuth2TokenProviderRegistryTest {
 
 			verify(customizer, never()).accept(eq(expectedRegistration1Name), any(OAuth2TokenProvider.class));
 			verify(customizer).accept(eq(expectedRegistration2Name), any(OAuth2TokenProvider.class));
+		}
+
+		@Test
+		@SuppressWarnings({ "resource", "unchecked" })
+		void shouldCreateRegistryWithClientRegistrationFilterAndNoFilter() throws Exception {
+			OAuth2Registry mockRegistry = mock(OAuth2Registry.class);
+
+			OAuth2ClientRegistration clientRegistration = mock(OAuth2ClientRegistration.class);
+
+			OAuth2ResolvedRegistration registration = mock(OAuth2ResolvedRegistration.class);
+			doReturn(List.of(registration)).when(mockRegistry).entries();
+			doReturn(CLIENT_REGISTRATION_NAME).when(registration).getClientRegistrationName();
+			doReturn(clientRegistration).when(registration).getClientRegistration();
+
+			OAuth2TokenClientSupplier tokenClientSupplier = mock(OAuth2TokenClientSupplier.class);
+			BiConsumer<String, OAuth2TokenProvider> customizer = mock(BiConsumer.class);
+
+			OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.builder()
+					.oAuth2Registry(mockRegistry)
+					.customizeProviderBuilder(builder -> builder.tokenClientSupplier(tokenClientSupplier))
+					.providerNameConverter(OAuth2TokenProviderRegistryTest::nameConverter)
+					.clientRegistrationFilter(cr -> true)
+					.providerPostConstruct(customizer)
+					.build();
+
+			registry.close();
+
+			String expectedName = nameConverter(CLIENT_REGISTRATION_NAME);
+
+			assertThat(registry.getProviders(), hasSize(1));
+			assertThat(registry.getProviderNames(), hasSize(1));
+			assertThat(registry.getProviderNames().getFirst(), equalTo(expectedName));
+
+			verify(mockRegistry).entries();
+			verify(customizer).accept(eq(expectedName), any(OAuth2TokenProvider.class));
+		}
+
+		@Test
+		@SuppressWarnings({ "resource", "unchecked" })
+		void shouldCreateRegistryWithClientRegistrationFilterAndFilterOutRegistrations() throws Exception {
+			OAuth2Registry mockRegistry = mock(OAuth2Registry.class);
+
+			OAuth2ClientRegistration clientRegistration1 = mock(OAuth2ClientRegistration.class);
+			doReturn(PROVIDER_NAME_1).when(clientRegistration1).getProvider();
+			OAuth2ClientRegistration clientRegistration2 = mock(OAuth2ClientRegistration.class);
+			doReturn(PROVIDER_NAME_2).when(clientRegistration2).getProvider();
+
+			OAuth2ResolvedRegistration registration1 = mock(OAuth2ResolvedRegistration.class);
+			doReturn(CLIENT_REGISTRATION_1).when(registration1).getClientRegistrationName();
+			doReturn(clientRegistration1).when(registration1).getClientRegistration();
+
+			OAuth2ResolvedRegistration registration2 = mock(OAuth2ResolvedRegistration.class);
+			doReturn(CLIENT_REGISTRATION_2).when(registration2).getClientRegistrationName();
+			doReturn(clientRegistration2).when(registration2).getClientRegistration();
+
+			doReturn(List.of(registration1, registration2)).when(mockRegistry).entries();
+
+			OAuth2TokenClientSupplier tokenClientSupplier = mock(OAuth2TokenClientSupplier.class);
+			BiConsumer<String, OAuth2TokenProvider> customizer = mock(BiConsumer.class);
+
+			OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.builder()
+					.oAuth2Registry(mockRegistry)
+					.customizeProviderBuilder(builder -> builder.tokenClientSupplier(tokenClientSupplier))
+					.providerNameConverter(OAuth2TokenProviderRegistryTest::nameConverter)
+					.clientRegistrationFilter(cr -> !PROVIDER_NAME_1.equals(cr.getProvider()))
+					.providerPostConstruct(customizer)
+					.build();
+
+			registry.close();
+
+			String expectedRegistration1Name = nameConverter(CLIENT_REGISTRATION_1);
+			String expectedRegistration2Name = nameConverter(CLIENT_REGISTRATION_2);
+
+			assertThat(registry.getProviders(), hasSize(1));
+			assertThat(registry.getProviderNames(), hasSize(1));
+			assertThat(registry.getProviderNames().getFirst(), equalTo(expectedRegistration2Name));
+
+			verify(mockRegistry).entries();
+
+			verify(customizer, never()).accept(eq(expectedRegistration1Name), any(OAuth2TokenProvider.class));
+			verify(customizer).accept(eq(expectedRegistration2Name), any(OAuth2TokenProvider.class));
+		}
+
+		@Test
+		@SuppressWarnings({ "resource", "unchecked" })
+		void shouldApplyBothClientRegistrationFilterAndProviderNameFilter() throws Exception {
+			OAuth2Registry mockRegistry = mock(OAuth2Registry.class);
+
+			OAuth2ClientRegistration clientRegistration1 = mock(OAuth2ClientRegistration.class);
+			doReturn(PROVIDER_NAME_1).when(clientRegistration1).getProvider();
+			OAuth2ClientRegistration clientRegistration2 = mock(OAuth2ClientRegistration.class);
+			doReturn(PROVIDER_NAME_2).when(clientRegistration2).getProvider();
+			OAuth2ClientRegistration clientRegistration3 = mock(OAuth2ClientRegistration.class);
+			doReturn(PROVIDER_NAME_3).when(clientRegistration3).getProvider();
+
+			OAuth2ResolvedRegistration registration1 = mock(OAuth2ResolvedRegistration.class);
+			doReturn(CLIENT_REGISTRATION_1).when(registration1).getClientRegistrationName();
+			doReturn(clientRegistration1).when(registration1).getClientRegistration();
+
+			OAuth2ResolvedRegistration registration2 = mock(OAuth2ResolvedRegistration.class);
+			doReturn(CLIENT_REGISTRATION_2).when(registration2).getClientRegistrationName();
+			doReturn(clientRegistration2).when(registration2).getClientRegistration();
+
+			OAuth2ResolvedRegistration registration3 = mock(OAuth2ResolvedRegistration.class);
+			doReturn(CLIENT_REGISTRATION_3).when(registration3).getClientRegistrationName();
+			doReturn(clientRegistration3).when(registration3).getClientRegistration();
+
+			doReturn(List.of(registration1, registration2, registration3)).when(mockRegistry).entries();
+
+			OAuth2TokenClientSupplier tokenClientSupplier = mock(OAuth2TokenClientSupplier.class);
+			BiConsumer<String, OAuth2TokenProvider> customizer = mock(BiConsumer.class);
+
+			// registration1 is dropped by the client registration filter, before the provider name is even computed,
+			// registration2 passes that filter but is dropped by the provider name filter, and registration3 passes both
+			OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.builder()
+					.oAuth2Registry(mockRegistry)
+					.customizeProviderBuilder(builder -> builder.tokenClientSupplier(tokenClientSupplier))
+					.providerNameConverter(OAuth2TokenProviderRegistryTest::nameConverter)
+					.clientRegistrationFilter(cr -> !PROVIDER_NAME_1.equals(cr.getProvider()))
+					.providerNameFilter(name -> !nameConverter(CLIENT_REGISTRATION_2).equals(name))
+					.providerPostConstruct(customizer)
+					.build();
+
+			registry.close();
+
+			String expectedName1 = nameConverter(CLIENT_REGISTRATION_1);
+			String expectedName2 = nameConverter(CLIENT_REGISTRATION_2);
+			String expectedName3 = nameConverter(CLIENT_REGISTRATION_3);
+
+			assertThat(registry.getProviders(), hasSize(1));
+			assertThat(registry.getProviderNames(), hasSize(1));
+			assertThat(registry.getProviderNames().getFirst(), equalTo(expectedName3));
+
+			verify(mockRegistry).entries();
+
+			verify(customizer, never()).accept(eq(expectedName1), any(OAuth2TokenProvider.class));
+			verify(customizer, never()).accept(eq(expectedName2), any(OAuth2TokenProvider.class));
+			verify(customizer).accept(eq(expectedName3), any(OAuth2TokenProvider.class));
 		}
 
 		@Test
