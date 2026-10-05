@@ -23,8 +23,8 @@ import org.morphix.lang.resource.ScopedResource;
  * registry is closed.
  * <p>
  * When constructing the token provider registry prefer using the builder method for more complex configurations, as it
- * provides a more fluent API and better readability when multiple optional parameters are involved, such as the
- * client registration filter, provider name converter, provider name filter, and created provider customizer.
+ * provides a more fluent API and better readability when multiple optional parameters are involved, such as the client
+ * registration filter, provider name converter, provider name filter, and created provider customizer.
  *
  * @author Radu Sebastian LAZIN
  */
