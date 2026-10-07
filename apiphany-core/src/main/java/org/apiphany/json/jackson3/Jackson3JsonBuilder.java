@@ -106,6 +106,8 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * Constructor with extra configurations:
 	 * <ul>
 	 * <li>do not fail on empty beans</li>
+	 * <li>ignore unknown JSON fields on de-serialization instead of failing (only the properties mapper in Jackson 2 had
+	 * this, now it is explicit on the main mapper for both Jackson 2 and Jackson 3)</li>
 	 * <li>for some strange reason in Jackson 3 the properties are sorted alphabetically by default so we change the default
 	 * to be the same as in Jackson 2, which is to keep the order of the properties as they are in the class</li>
 	 * <li>accept case insensitive enums</li>
@@ -121,6 +123,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 			builder.addModule(moduleSupplier.get());
 		}
 		builder.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+		builder.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		builder.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS, true);
 		builder.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, false);
 		builder.changeDefaultPropertyInclusion(inclusion -> inclusion
