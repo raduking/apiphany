@@ -212,6 +212,15 @@ class Jackson2JsonBuilderTest {
 		}
 
 		@Test
+		void shouldIgnoreUnknownJsonFieldsWhenDeserializing() {
+			String json = "{\"name\":\"john\",\"extraField\":123}";
+
+			C c = Jackson2JsonBuilder.fromJson(json, C.class);
+
+			assertThat(c.getName(), equalTo("john"));
+		}
+
+		@Test
 		void shouldTransformGenericObjectToJsonStringAndReadItBack() {
 			Map<String, B> elements1 = Map.of(CUSTOMER_ONE, new B(CUSTOMER_ID1, TENANT_ID1));
 

@@ -2,6 +2,8 @@
 
 `1.2.20`
 
+- Changed `Jackson2JsonBuilder` and `Jackson3JsonBuilder` to ignore unknown JSON fields when de-serializing.
+
 ---
 
 `1.2.19`

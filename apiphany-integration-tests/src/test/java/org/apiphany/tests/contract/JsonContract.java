@@ -8,6 +8,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.apiphany.ApiClient;
@@ -263,10 +264,36 @@ public interface JsonContract extends ApiphanyContract {
 					.orNull();
 
 			assertEquals("john", result.name());
-			assertEquals(null, result.value());
+			assertNull(result.value());
 		}
 
 		wiremock().verify(getRequestedFor(urlEqualTo("/json-null")));
+	}
+
+	@DisplayName("JSON: The client should ignore unknown JSON fields not present in the target class")
+	@Test
+	default void shouldIgnoreUnknownJsonFields() throws Exception {
+		wiremock().stubFor(get("/json-unknown-field")
+				.willReturn(aResponse()
+						.withStatus(200)
+						.withHeader("Content-Type", "application/json")
+						.withBody("""
+									{"name":"john","extraField":123}
+								""")));
+
+		ApiClient api = apiClient();
+		try (api) {
+			MyDto result = api.client()
+					.http()
+					.get()
+					.path("json-unknown-field")
+					.retrieve(MyDto.class)
+					.orNull();
+
+			assertEquals("john", result.name());
+		}
+
+		wiremock().verify(getRequestedFor(urlEqualTo("/json-unknown-field")));
 	}
 
 	@DisplayName("JSON: Empty response body with application/json should fail deserialization")
