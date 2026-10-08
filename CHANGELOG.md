@@ -3,6 +3,7 @@
 `1.2.20`
 
 - Changed `Jackson2JsonBuilder` and `Jackson3JsonBuilder` to ignore unknown JSON fields when de-serializing.
+- Upgraded `httpclient5` to `5.6.3` because of `CVE-2026-64607`.
 
 ---
 
