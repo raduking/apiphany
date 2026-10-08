@@ -70,7 +70,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	/**
 	 * Thread local override for the singleton instance.
 	 * <p>
-	 * The {@link ThreadLocal#remove()} is handled correctly in #with(Jackson2JsonBuilder, Supplier) which calls
+	 * The {@link ThreadLocal#remove()} is handled correctly in {@link #with(Jackson3JsonBuilder, Supplier)} which calls
 	 * {@link JsonBuilder#with(JsonBuilder, ThreadLocal, Supplier)} so no memory leak problems occur.
 	 */
 	private static final ThreadLocal<Jackson3JsonBuilder> OVERRIDE = new ThreadLocal<>(); // NOSONAR see JavaDoc
@@ -106,10 +106,11 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * Constructor with extra configurations:
 	 * <ul>
 	 * <li>do not fail on empty beans</li>
+	 * <li>ignore unknown JSON fields on de-serialization instead of failing</li>
 	 * <li>for some strange reason in Jackson 3 the properties are sorted alphabetically by default so we change the default
 	 * to be the same as in Jackson 2, which is to keep the order of the properties as they are in the class</li>
 	 * <li>accept case insensitive enums</li>
-	 * <li>do not serialize null values</li>
+	 * <li>do not serialize <code>null</code> values</li>
 	 * </ul>
 	 *
 	 * @param jsonMapper the object mapper to use
@@ -121,6 +122,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 			builder.addModule(moduleSupplier.get());
 		}
 		builder.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+		builder.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		builder.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS, true);
 		builder.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, false);
 		builder.changeDefaultPropertyInclusion(inclusion -> inclusion
@@ -149,7 +151,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 *
 	 * @return the runtime JSON builder instance
 	 */
-	public static Jackson3JsonBuilder runtime() {
+	public static Jackson3JsonBuilder runtime() { // NOSONAR we want it hidden
 		return runtime(OVERRIDE, InstanceHolder.INSTANCE);
 	}
 
@@ -206,7 +208,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @return JSON String if conversion is possible, <code>null</code> if parameter is <code>null</code>,
 	 * {@link #toIdentityJsonString(Object)} otherwise.
 	 */
-	public static <T> String toJson(final T obj) {
+	public static <T> String toJson(final T obj) { // NOSONAR we want it hidden
 		return runtime().toJsonString(obj);
 	}
 
@@ -220,7 +222,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @param cls class of the output object
 	 * @return an object from the JSON input object
 	 */
-	public static <O, T> T fromJson(final O json, final Class<T> cls) {
+	public static <O, T> T fromJson(final O json, final Class<T> cls) { // NOSONAR we want it hidden
 		return switch (json) {
 			case String string -> runtime().fromJsonString(string, cls);
 			case byte[] bytes -> runtime().fromJsonBytes(bytes, cls);
@@ -239,7 +241,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @param genericClass generic class wrapper for the type of the generic output object
 	 * @return an object from the JSON input object
 	 */
-	public static <O, T> T fromJson(final O json, final GenericClass<T> genericClass) {
+	public static <O, T> T fromJson(final O json, final GenericClass<T> genericClass) { // NOSONAR we want it hidden
 		return switch (json) {
 			case String string -> runtime().fromJsonString(string, genericClass);
 			case byte[] bytes -> runtime().fromJsonBytes(bytes, genericClass);
@@ -268,8 +270,8 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	}
 
 	/**
-	 * Transforms the parameter to a JSON String. If the object is null, returns null. If the object cannot be serialized,
-	 * returns the result of {@link #toIdentityJsonString(Object)}.
+	 * Transforms the parameter to a JSON String. If the object is <code>null</code>, returns <code>null</code>. If the
+	 * object cannot be serialized, returns the result of {@link #toIdentityJsonString(Object)}.
 	 *
 	 * @param <T> type of the object
 	 *
@@ -286,7 +288,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	}
 
 	/**
-	 * Returns an object from the JSON string. If the JSON string cannot be de-serialized, returns null.
+	 * Returns an object from the JSON string. If the JSON string cannot be de-serialized, returns <code>null</code>.
 	 *
 	 * @param <T> type of the object
 	 *
@@ -300,7 +302,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	}
 
 	/**
-	 * Returns an object from the JSON string. If the JSON string cannot be de-serialized, returns null.
+	 * Returns an object from the JSON string. If the JSON string cannot be de-serialized, returns <code>null</code>.
 	 *
 	 * @param <T> type of the object
 	 *
@@ -320,7 +322,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	}
 
 	/**
-	 * Returns an object from the JSON string. If the JSON string cannot be de-serialized, returns null.
+	 * Returns an object from the JSON string. If the JSON string cannot be de-serialized, returns <code>null</code>.
 	 *
 	 * @param <T> type of the object
 	 *
@@ -333,7 +335,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	}
 
 	/**
-	 * Returns an object from the given byte array. If the byte array cannot be de-serialized, returns null.
+	 * Returns an object from the given byte array. If the byte array cannot be de-serialized, returns <code>null</code>.
 	 *
 	 * @param <T> type of the object
 	 *
@@ -347,7 +349,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	}
 
 	/**
-	 * Returns an object from the JSON byte array. If the byte array cannot be de-serialized, returns null.
+	 * Returns an object from the JSON byte array. If the byte array cannot be de-serialized, returns <code>null</code>.
 	 *
 	 * @param <T> type of the object
 	 *
@@ -367,7 +369,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	}
 
 	/**
-	 * Returns an object from the JSON byte array. If the byte array cannot be de-serialized, returns null.
+	 * Returns an object from the JSON byte array. If the byte array cannot be de-serialized, returns <code>null</code>.
 	 *
 	 * @param <T> type of the object
 	 *
@@ -380,7 +382,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	}
 
 	/**
-	 * Returns an object from the given input stream. If the byte array cannot be de-serialized, returns null.
+	 * Returns an object from the given input stream. If the byte array cannot be de-serialized, returns <code>null</code>.
 	 *
 	 * @param <T> type of the object
 	 *
@@ -394,7 +396,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	}
 
 	/**
-	 * Returns an object from the given input stream. If the byte array cannot be de-serialized, returns null.
+	 * Returns an object from the given input stream. If the byte array cannot be de-serialized, returns <code>null</code>.
 	 *
 	 * @param <T> type of the object
 	 *
@@ -414,7 +416,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	}
 
 	/**
-	 * Returns an object from the given input stream. If the byte array cannot be de-serialized, returns null.
+	 * Returns an object from the given input stream. If the byte array cannot be de-serialized, returns <code>null</code>.
 	 *
 	 * @param <T> type of the object
 	 *
@@ -439,8 +441,6 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	@Override
 	public <T> T fromPropertiesMap(final Map<String, Object> propertiesMap, final Class<T> cls, final Consumer<Exception> onError) {
 		JsonMapper.Builder propertiesJsonMapperBuilder = jsonMapper.rebuild()
-				.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-				.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
 				.propertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
 		final JsonMapper propertiesJsonMapper = propertiesJsonMapperBuilder.build();
 		try {
@@ -465,7 +465,6 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	@Override
 	public <T> Map<String, Object> toPropertiesMap(final T properties, final Consumer<Exception> onError) {
 		JsonMapper.Builder propertiesJsonMapperBuilder = jsonMapper.rebuild()
-				.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
 				.propertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
 		configureSensitivity(propertiesJsonMapperBuilder,
 				SensitiveJackson3AnnotationIntrospector.allowSensitive(), defaultAnnotationIntrospector);
@@ -494,7 +493,8 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 *
 	 * @param moduleName the module name
 	 * @param moduleSupplier the supplier of the module to register
-	 * @return the existing module supplier if a module with the same name is already registered, null otherwise
+	 * @return the existing module supplier if a module with the same name is already registered, <code>null</code>
+	 * otherwise
 	 */
 	public static Supplier<SimpleModule> registerModule(final String moduleName, final Supplier<SimpleModule> moduleSupplier) {
 		if (Jackson3JsonBuilder.singletonMaterialized) {

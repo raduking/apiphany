@@ -121,6 +121,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 		indentOutput(isIndentOutput());
 		this.objectMapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL);
 		this.objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+		this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
 		this.defaultAnnotationIntrospector = objectMapper.getSerializationConfig().getAnnotationIntrospector();
 		configureSensitivity(SensitiveJackson2AnnotationIntrospector.hideSensitive());
@@ -428,7 +429,6 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	@Override
 	public <T> T fromPropertiesMap(final Map<String, Object> propertiesMap, final Class<T> cls, final Consumer<Exception> onError) {
 		final ObjectMapper propertiesObjectMapper = objectMapper.copy()
-				.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 				.setPropertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
 		try {
 			String json = propertiesObjectMapper.writeValueAsString(propertiesMap);
