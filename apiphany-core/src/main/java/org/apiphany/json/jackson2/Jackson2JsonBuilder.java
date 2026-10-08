@@ -429,7 +429,6 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	@Override
 	public <T> T fromPropertiesMap(final Map<String, Object> propertiesMap, final Class<T> cls, final Consumer<Exception> onError) {
 		final ObjectMapper propertiesObjectMapper = objectMapper.copy()
-				.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 				.setPropertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
 		try {
 			String json = propertiesObjectMapper.writeValueAsString(propertiesMap);
