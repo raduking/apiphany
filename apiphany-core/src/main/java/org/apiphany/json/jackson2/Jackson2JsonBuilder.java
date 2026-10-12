@@ -150,7 +150,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 *
 	 * @return the runtime JSON builder instance
 	 */
-	public static Jackson2JsonBuilder runtime() {
+	public static Jackson2JsonBuilder runtime() { // NOSONAR we want it hidden
 		return runtime(OVERRIDE, InstanceHolder.INSTANCE);
 	}
 
@@ -196,7 +196,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @return JSON String if conversion is possible, <code>null</code> if parameter is <code>null</code>,
 	 * {@link #toIdentityJsonString(Object)} otherwise.
 	 */
-	public static <T> String toJson(final T obj) {
+	public static <T> String toJson(final T obj) { // NOSONAR we want it hidden
 		return runtime().toJsonString(obj);
 	}
 
@@ -210,7 +210,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @param cls class of the output object
 	 * @return an object from the JSON input object
 	 */
-	public static <O, T> T fromJson(final O json, final Class<T> cls) {
+	public static <O, T> T fromJson(final O json, final Class<T> cls) { // NOSONAR we want it hidden
 		return switch (json) {
 			case String string -> runtime().fromJsonString(string, cls);
 			case byte[] bytes -> runtime().fromJsonBytes(bytes, cls);
@@ -229,7 +229,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @param genericClass generic class wrapper for the type of the generic output object
 	 * @return an object from the JSON input object
 	 */
-	public static <O, T> T fromJson(final O json, final GenericClass<T> genericClass) {
+	public static <O, T> T fromJson(final O json, final GenericClass<T> genericClass) { // NOSONAR we want it hidden
 		return switch (json) {
 			case String string -> runtime().fromJsonString(string, genericClass);
 			case byte[] bytes -> runtime().fromJsonBytes(bytes, genericClass);
