@@ -42,12 +42,8 @@ class ApiphanyJackson2ModuleTest {
 		SimpleModule module = ApiphanyJackson2Module.instance();
 
 		SimpleSerializers serializers = Fields.IgnoreAccess.get(module, "_serializers");
-		Map<ClassKey, JsonSerializer<?>> serializerMap = Fields.IgnoreAccess.get(serializers, "_classMappings");
-		if (null == serializerMap) {
-			serializerMap = Fields.IgnoreAccess.get(serializers, "_interfaceMappings");
-		}
 
-		RequestMethodSerializer rms = (RequestMethodSerializer) serializerMap.get(new ClassKey(RequestMethod.class));
+		RequestMethodSerializer rms = (RequestMethodSerializer) findSerializer(serializers, RequestMethod.class);
 
 		assertNotNull(rms);
 	}
@@ -62,5 +58,25 @@ class ApiphanyJackson2ModuleTest {
 		RequestMethodDeserializer rmds = (RequestMethodDeserializer) deserializerMap.get(new ClassKey(RequestMethod.class));
 
 		assertNotNull(rmds);
+	}
+
+	/**
+	 * Looks up a serializer by type in both the class and interface mappings, since interface types (like
+	 * {@link RequestMethod}) are stored separately from class types.
+	 *
+	 * @param serializers the serializers to look into
+	 * @param type the type of the serializer
+	 * @return the serializer for the given type or {@code null} if none is found
+	 */
+	private static JsonSerializer<?> findSerializer(final SimpleSerializers serializers, final Class<?> type) {
+		Map<ClassKey, JsonSerializer<?>> classMappings = Fields.IgnoreAccess.get(serializers, "_classMappings");
+		if (null != classMappings) {
+			JsonSerializer<?> serializer = classMappings.get(new ClassKey(type));
+			if (null != serializer) {
+				return serializer;
+			}
+		}
+		Map<ClassKey, JsonSerializer<?>> interfaceMappings = Fields.IgnoreAccess.get(serializers, "_interfaceMappings");
+		return null == interfaceMappings ? null : interfaceMappings.get(new ClassKey(type));
 	}
 }

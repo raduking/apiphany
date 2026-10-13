@@ -21,6 +21,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
@@ -69,6 +70,9 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 		private static Jackson2JsonBuilder create() {
 			Jackson2JsonBuilder instance = new Jackson2JsonBuilder();
 			Jackson2JsonBuilder.singletonMaterialized = true;
+			if (!Jackson2Library.isJdk8ModulePresent()) {
+				instance.observability().jdk8ModuleNotFound();
+			}
 			return instance;
 		}
 	}
@@ -85,10 +89,13 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * Map of modules to register to the underlying {@link ObjectMapper}. The key is the module class name. This allows
 	 * registering modules to the underlying {@link ObjectMapper} without creating a dependency on the module's library.
 	 */
-	protected static final Map<String, Supplier<SimpleModule>> MODULES = new ConcurrentHashMap<>();
+	protected static final Map<String, Supplier<? extends Module>> MODULES = new ConcurrentHashMap<>();
 	static {
 		registerModule(JavaTimeModule.class.getName(), () -> newJavaTimeModule(DateTimeFormatter.ISO_DATE_TIME, DateTimeFormatter.ISO_DATE));
-		registerModule(ApiphanyJackson2Module.NAME, () -> apiphanySerializationModule());
+		if (Jackson2Library.isJdk8ModulePresent()) {
+			registerModule(Jackson2Library.jdk8ModuleClassName(), Jackson2Library::newJdk8Module);
+		}
+		registerModule(ApiphanyJackson2Module.NAME, Jackson2JsonBuilder::apiphanySerializationModule);
 		registerModules(ServiceLoader.load(Jackson2ModuleProvider.class));
 	}
 
@@ -116,7 +123,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 */
 	Jackson2JsonBuilder(final ObjectMapper objectMapper) {
 		this.objectMapper = objectMapper;
-		for (Supplier<SimpleModule> moduleSupplier : MODULES.values()) {
+		for (Supplier<? extends Module> moduleSupplier : MODULES.values()) {
 			this.objectMapper.registerModule(moduleSupplier.get());
 		}
 		indentOutput(isIndentOutput());
@@ -124,6 +131,9 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 				JsonInclude.Include.NON_NULL, JsonInclude.Include.NON_NULL));
 		this.objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 		this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		// write date/time and duration values as ISO strings instead of numeric timestamps
+		this.objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+		this.objectMapper.configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false);
 		configure(this.objectMapper, MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS, true);
 
 		this.defaultAnnotationIntrospector = objectMapper.getSerializationConfig().getAnnotationIntrospector();
@@ -484,11 +494,11 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @param moduleSupplier the supplier of the module to register
 	 * @return the existing module supplier if a module with the same name is already registered, null otherwise
 	 */
-	public static Supplier<SimpleModule> registerModule(final String moduleName, final Supplier<SimpleModule> moduleSupplier) {
+	public static Supplier<? extends Module> registerModule(final String moduleName, final Supplier<? extends Module> moduleSupplier) {
 		if (Jackson2JsonBuilder.singletonMaterialized) {
 			instance().observability().lateModuleRegistration(moduleName);
 		}
-		Supplier<SimpleModule> existing = MODULES.putIfAbsent(moduleName, moduleSupplier);
+		Supplier<? extends Module> existing = MODULES.putIfAbsent(moduleName, moduleSupplier);
 		if (null != existing) {
 			instance().observability().moduleAlreadyRegistered(moduleName);
 		}

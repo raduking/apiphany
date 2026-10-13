@@ -55,6 +55,12 @@ public class JsonObservability implements LoggerAdapter {
 		public static final String MODULE_REGISTERED_AFTER_INITIALIZATION = "Module registered after initialization: {}";
 
 		/**
+		 * Error message logged when Jackson's JDK 8 module is not on the classpath.
+		 */
+		public static final String JDK8_MODULE_NOT_FOUND = "jackson-datatype-jdk8 was not found in the classpath. "
+				+ "Optional values use Jackson's default handling";
+
+		/**
 		 * Hide constructor.
 		 */
 		private ErrorMessage() {
@@ -114,6 +120,13 @@ public class JsonObservability implements LoggerAdapter {
 	public void jsonLibraryNotFound() {
 		warn("{}, JsonBuilder.toJson will only build JSONs like { \"identity\":\"<class-name>@<identity-hashcode>\" }!",
 				ErrorMessage.JSON_LIBRARY_NOT_FOUND);
+	}
+
+	/**
+	 * Logs a warning when Jackson's JDK 8 module is not on the classpath.
+	 */
+	public void jdk8ModuleNotFound() {
+		warn(ErrorMessage.JDK8_MODULE_NOT_FOUND);
 	}
 
 	/**

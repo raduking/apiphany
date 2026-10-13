@@ -7,13 +7,13 @@ import org.apiphany.json.JsonBuilder;
  * <p>
  * These tests must pass for every JSON library implementation, as they verify the basic contract of transforming
  * objects to JSON and back. The test methods are defined once in the shared JSON contract interfaces
- * ({@link JsonBuilderContract}, {@link JsonBuilderAnnotationContract}, {@link JsonBuilderTimeContract}) and inherited
- * here, so every JSON library integration test module runs the exact same contract and cross-library parity is trivial
- * to verify.
+ * ({@link JsonBuilderContract}, {@link JsonBuilderAnnotationContract}, {@link JsonBuilderTimeContract},
+ * {@link JsonBuilderJdkTypesContract}) and inherited here, so every JSON library integration test module runs the exact
+ * same contract and cross-library parity is trivial to verify.
  *
  * @author Radu Sebastian LAZIN
  */
-class JsonBuilderIT implements JsonBuilderAnnotationContract, JsonBuilderTimeContract {
+class JsonBuilderIT implements JsonBuilderAnnotationContract, JsonBuilderTimeContract, JsonBuilderJdkTypesContract {
 
 	// tests are inherited from the JSON contract interfaces
 

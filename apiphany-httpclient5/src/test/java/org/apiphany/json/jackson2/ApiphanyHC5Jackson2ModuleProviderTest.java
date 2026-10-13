@@ -6,7 +6,7 @@ import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.Module;
 
 /**
  * Test class for {@link ApiphanyHC5Jackson2ModuleProvider}.
@@ -17,7 +17,7 @@ class ApiphanyHC5Jackson2ModuleProviderTest {
 
 	@Test
 	void shouldLoadThisProviderWithServiceLoader() {
-		Supplier<SimpleModule> moduleSupplier = Jackson2JsonBuilder.MODULES.get(ApiphanyHC5Jackson2Module.NAME);
+		Supplier<? extends Module> moduleSupplier = Jackson2JsonBuilder.MODULES.get(ApiphanyHC5Jackson2Module.NAME);
 
 		assertNotNull(moduleSupplier, "The ApiphanyHC5Jackson2Module provider should be loaded with ServiceLoader");
 	}

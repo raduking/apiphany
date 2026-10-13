@@ -23,6 +23,7 @@ import tools.jackson.databind.MapperFeature;
 import tools.jackson.databind.ObjectWriter;
 import tools.jackson.databind.PropertyNamingStrategies;
 import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.cfg.DateTimeFeature;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.module.SimpleModule;
 
@@ -115,6 +116,9 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * order of the properties as they are in the class</li>
 	 * <li>accept case insensitive enums</li>
 	 * <li>do not serialize <code>null</code> values</li>
+	 * <li>lock the date/time serialization features to explicit values so the JSON output is stable: date/time and duration
+	 * values are written as ISO strings (not numeric timestamps), and classic {@link java.util.Date}/
+	 * {@link java.util.Calendar} values use a numeric zero offset (<code>+00:00</code>) instead of <code>Z</code></li>
 	 * </ul>
 	 *
 	 * @param jsonMapper the object mapper to use
@@ -133,6 +137,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 				.withContentInclusion(JsonInclude.Include.NON_NULL)
 				.withValueInclusion(JsonInclude.Include.NON_NULL));
 
+		configureDateTimeFeatures(builder);
 		configureSensitivity(builder, SensitiveJackson3AnnotationIntrospector.hideSensitive());
 		configureIndent(builder, Indentation.fromBoolean(isIndentOutput()));
 
@@ -543,6 +548,27 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 			case ENABLED -> builder.enable(SerializationFeature.INDENT_OUTPUT);
 			case DISABLED -> builder.disable(SerializationFeature.INDENT_OUTPUT);
 		};
+	}
+
+	/**
+	 * Locks the date/time serialization features of the given {@link JsonMapper.Builder} to explicit values so the JSON
+	 * output does not silently change if library defaults change. Date/time and duration values are written as ISO strings
+	 * (not numeric timestamps), and classic {@link java.util.Date}/{@link java.util.Calendar} values use a numeric zero
+	 * offset (<code>+00:00</code>) instead of <code>Z</code>.
+	 *
+	 * @param builder the JSON mapper builder to configure
+	 * @return the configured JSON mapper builder
+	 */
+	public static JsonMapper.Builder configureDateTimeFeatures(final JsonMapper.Builder builder) {
+		builder.configure(DateTimeFeature.TRUNCATE_TO_MSECS_ON_WRITE, false);
+		builder.configure(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+		builder.configure(DateTimeFeature.WRITE_DATE_KEYS_AS_TIMESTAMPS, false);
+		builder.configure(DateTimeFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS, true);
+		builder.configure(DateTimeFeature.WRITE_DATES_WITH_CONTEXT_TIME_ZONE, true);
+		builder.configure(DateTimeFeature.WRITE_DATES_WITH_ZONE_ID, false);
+		builder.configure(DateTimeFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false);
+		builder.configure(DateTimeFeature.WRITE_UTC_AS_OFFSET, true);
+		return builder;
 	}
 
 	/**

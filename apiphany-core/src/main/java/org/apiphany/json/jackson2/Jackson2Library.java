@@ -1,7 +1,9 @@
 package org.apiphany.json.jackson2;
 
 import org.apiphany.json.JsonBuilder;
+import org.morphix.reflection.Classes;
 import org.morphix.reflection.Constructors;
+import org.morphix.reflection.Reflection;
 import org.morphix.runtime.OptionalLibrary;
 
 /**
@@ -24,6 +26,11 @@ public class Jackson2Library {
 	private static final String JACKSON_2_OBJECT_MAPPER_CLASS_NAME = "com.fasterxml.jackson.databind.ObjectMapper";
 
 	/**
+	 * Jackson JDK 8 module class name. Kept as a string so callers can load when that library is absent.
+	 */
+	private static final String JDK8_MODULE_CLASS_NAME = "com.fasterxml.jackson.datatype.jdk8.Jdk8Module";
+
+	/**
 	 * Library descriptor that shows if Jackson 2 JSON library is present in the classpath and the {@link JsonBuilder}
 	 * specific class.
 	 * <p>
@@ -42,6 +49,35 @@ public class Jackson2Library {
 	 */
 	public static boolean isPresent() {
 		return DESCRIPTOR.isPresent();
+	}
+
+	/**
+	 * Checks if Jackson's JDK 8 module is present in the classpath.
+	 *
+	 * @return {@code true} if {@code jackson-datatype-jdk8} is present, {@code false} otherwise
+	 */
+	public static boolean isJdk8ModulePresent() {
+		return Reflection.isClassPresent(JDK8_MODULE_CLASS_NAME);
+	}
+
+	/**
+	 * Returns the class name of Jackson's JDK 8 module.
+	 *
+	 * @return the JDK 8 module class name
+	 */
+	public static String jdk8ModuleClassName() {
+		return JDK8_MODULE_CLASS_NAME;
+	}
+
+	/**
+	 * Creates Jackson's JDK 8 module by name. Call this only when {@link #isJdk8ModulePresent()} is {@code true}.
+	 *
+	 * @param <T> module type
+	 *
+	 * @return the module instance
+	 */
+	public static <T> T newJdk8Module() {
+		return Constructors.IgnoreAccess.newInstance(Classes.getOne(JDK8_MODULE_CLASS_NAME));
 	}
 
 	/**
