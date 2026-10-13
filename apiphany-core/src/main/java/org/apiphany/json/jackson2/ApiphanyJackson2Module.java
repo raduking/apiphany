@@ -1,16 +1,23 @@
 package org.apiphany.json.jackson2;
 
 import java.io.Serial;
+import java.sql.Date;
+import java.time.Month;
+import java.util.Locale;
 
 import org.apiphany.RequestMethod;
+import org.apiphany.json.jackson2.serializers.MonthDeserializer;
 import org.apiphany.json.jackson2.serializers.RequestMethodDeserializer;
 import org.apiphany.json.jackson2.serializers.RequestMethodSerializer;
+import org.apiphany.json.jackson2.serializers.StringValueKeySerializer;
+import org.apiphany.json.jackson2.serializers.StringValueSerializer;
 
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
 /**
  * Custom Jackson module to register serializers and deserializers for Apiphany-specific types, such as
- * {@link RequestMethod}.
+ * {@link RequestMethod}, and for JDK types whose JSON representation is fixed by this module ({@link Locale},
+ * {@link Month} and {@link Date} map keys).
  *
  * @author Radu Sebastian LAZIN
  */
@@ -69,6 +76,10 @@ public class ApiphanyJackson2Module extends SimpleModule {
 		 */
 		private static final SimpleModule INSTANCE = new ApiphanyJackson2Module()
 				.addSerializer(RequestMethod.class, new RequestMethodSerializer())
-				.addDeserializer(RequestMethod.class, new RequestMethodDeserializer());
+				.addDeserializer(RequestMethod.class, new RequestMethodDeserializer())
+				.addSerializer(Locale.class, new StringValueSerializer<>(Locale::toLanguageTag))
+				.addKeySerializer(Locale.class, new StringValueKeySerializer<>(Locale::toLanguageTag))
+				.addKeySerializer(Date.class, new StringValueKeySerializer<>(date -> date.toLocalDate().toString()))
+				.addDeserializer(Month.class, new MonthDeserializer());
 	}
 }

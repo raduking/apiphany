@@ -13,11 +13,11 @@ import org.junit.jupiter.api.Test;
 import org.morphix.reflection.Fields;
 
 import tools.jackson.databind.JacksonModule.SetupContext;
+import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.deser.std.StdDeserializer;
 import tools.jackson.databind.module.SimpleDeserializers;
 import tools.jackson.databind.module.SimpleModule;
 import tools.jackson.databind.module.SimpleSerializers;
-import tools.jackson.databind.ser.std.StdSerializer;
 import tools.jackson.databind.type.ClassKey;
 
 /**
@@ -42,12 +42,8 @@ class ApiphanyJackson3ModuleTest {
 		SimpleModule module = ApiphanyJackson3Module.instance();
 
 		SimpleSerializers serializers = Fields.IgnoreAccess.get(module, "_serializers");
-		Map<ClassKey, StdSerializer<?>> serializerMap = Fields.IgnoreAccess.get(serializers, "_classMappings");
-		if (null == serializerMap) {
-			serializerMap = Fields.IgnoreAccess.get(serializers, "_interfaceMappings");
-		}
 
-		RequestMethodSerializer rms = (RequestMethodSerializer) serializerMap.get(new ClassKey(RequestMethod.class));
+		RequestMethodSerializer rms = (RequestMethodSerializer) findSerializer(serializers, RequestMethod.class);
 
 		assertNotNull(rms);
 	}
@@ -62,5 +58,25 @@ class ApiphanyJackson3ModuleTest {
 		RequestMethodDeserializer rmds = (RequestMethodDeserializer) deserializerMap.get(new ClassKey(RequestMethod.class));
 
 		assertNotNull(rmds);
+	}
+
+	/**
+	 * Looks up a serializer by type in both the class and interface mappings, since interface types (like
+	 * {@link RequestMethod}) are stored separately from class types.
+	 *
+	 * @param serializers the serializers to look into
+	 * @param type the type of the serializer
+	 * @return the serializer for the given type or {@code null} if none is found
+	 */
+	private static ValueSerializer<?> findSerializer(final SimpleSerializers serializers, final Class<?> type) {
+		Map<ClassKey, ValueSerializer<?>> classMappings = Fields.IgnoreAccess.get(serializers, "_classMappings");
+		if (null != classMappings) {
+			ValueSerializer<?> serializer = classMappings.get(new ClassKey(type));
+			if (null != serializer) {
+				return serializer;
+			}
+		}
+		Map<ClassKey, ValueSerializer<?>> interfaceMappings = Fields.IgnoreAccess.get(serializers, "_interfaceMappings");
+		return null == interfaceMappings ? null : interfaceMappings.get(new ClassKey(type));
 	}
 }

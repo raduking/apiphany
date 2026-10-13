@@ -8,6 +8,13 @@
 - Added `configure(Consumer)` to `Jackson2JsonBuilder` and `Jackson3JsonBuilder` to reconfigure the underlying mapper at runtime.
 - Fixed `Jackson3JsonBuilder` runtime indentation (`indentOutput(boolean)`) by rebuilding the underlying `JsonMapper` through `configure(...)`.
 - Changed `RequestMethodDeserializer` (Jackson 2 and 3) so a JSON `null` value deserializes to `null`.
+- Changed `Jackson2JsonBuilder` to write date/time and duration values as ISO strings (not numeric timestamps), matching Jackson 3.
+- Added `Jackson3JsonBuilder` date/time serialization features to explicit values so the ISO output no longer depends on library defaults.
+- Aligned `java.util.Date` and `java.util.Calendar` serialization between Jackson 2 and 3 (zero offset as `+00:00`).
+- Aligned `java.time.Year`, `java.time.Month`, `java.sql.Date` and `java.util.Locale` JSON serialization between Jackson 2 and 3.
+- Aligned `java.util.Optional`/`OptionalInt`/`OptionalLong`/`OptionalDouble` JSON serialization between Jackson 2 and 3 by registering Jackson's `Jdk8Module` on `Jackson2JsonBuilder` when `jackson-datatype-jdk8` is on the classpath. `JsonBuilder` still starts without that library.
+- Changed `Jackson2JsonBuilder.registerModule` to accept a Jackson `Module`, so `Jdk8Module` is registered through the same method as the other modules.
+- Aligned the JSON map key representation of `java.util.Locale` and `java.sql.Date` between Jackson 2 and 3.
 - Upgraded `httpclient5` to `5.6.3` because of `CVE-2026-64607`.
 
 ---

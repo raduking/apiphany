@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.hamcrest.Matchers.startsWith;
@@ -17,6 +18,7 @@ import static org.mockito.Mockito.verify;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -39,6 +41,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
@@ -573,12 +576,12 @@ class Jackson2JsonBuilderTest {
 		void shouldNotRegisterTheSameModuleTwice() {
 			int initialModulesSize = Jackson2JsonBuilder.MODULES.size();
 
-			Supplier<SimpleModule> moduleSupplier = SimpleModule::new;
-			Supplier<SimpleModule> ms1 = Jackson2JsonBuilder.registerModule(ApiphanyJackson2Module.NAME + "-1", moduleSupplier);
+			Supplier<? extends Module> moduleSupplier = SimpleModule::new;
+			Supplier<? extends Module> ms1 = Jackson2JsonBuilder.registerModule(ApiphanyJackson2Module.NAME + "-1", moduleSupplier);
 
 			assertThat(ms1, nullValue());
 
-			Supplier<SimpleModule> ms2 = Jackson2JsonBuilder.registerModule(ApiphanyJackson2Module.NAME + "-1", SimpleModule::new);
+			Supplier<? extends Module> ms2 = Jackson2JsonBuilder.registerModule(ApiphanyJackson2Module.NAME + "-1", SimpleModule::new);
 
 			assertThat(ms2, sameInstance(moduleSupplier));
 			assertThat(Jackson2JsonBuilder.MODULES.size(), equalTo(initialModulesSize + 1));
@@ -600,12 +603,30 @@ class Jackson2JsonBuilderTest {
 			SimpleModule module = new SimpleModule();
 			module.addSerializer(Exception.class, new SimpleExceptionSerializer());
 
-			Supplier<SimpleModule> ms = Jackson2JsonBuilder.registerModule(moduleName, () -> module);
+			Supplier<? extends Module> ms = Jackson2JsonBuilder.registerModule(moduleName, () -> module);
 
 			json = Strings.removeAllWhitespace(Jackson2JsonBuilder.toJson(d));
 
 			assertThat(ms, nullValue());
 			assertThat(json, not(equalTo("{\"exception\":\"java.lang.Exception\"}")));
+		}
+
+		@Test
+		void shouldRegisterJdk8ModuleWhenTheClassIsPresent() {
+			Supplier<? extends Module> supplier = Jackson2JsonBuilder.MODULES.get(Jackson2Library.jdk8ModuleClassName());
+
+			assertThat(supplier, notNullValue());
+			assertThat(supplier.get().getClass().getName(), equalTo(Jackson2Library.jdk8ModuleClassName()));
+		}
+
+		@Test
+		void shouldNotReferenceJdk8ModuleAsAClassDependency() throws IOException {
+			String classResource = Jackson2JsonBuilder.class.getName().replace('.', '/') + ".class";
+			try (InputStream inputStream = Jackson2JsonBuilder.class.getClassLoader().getResourceAsStream(classResource)) {
+				String classBytes = new String(inputStream.readAllBytes(), StandardCharsets.ISO_8859_1);
+
+				assertThat(classBytes.contains("com/fasterxml/jackson/datatype/jdk8/Jdk8Module"), equalTo(false));
+			}
 		}
 
 		@Test
