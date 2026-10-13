@@ -1,6 +1,7 @@
 package org.apiphany.json.jackson2.serializers;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import org.apiphany.ApiMethod;
 import org.apiphany.RequestMethod;
@@ -9,7 +10,6 @@ import org.apiphany.http.HttpMethod;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  * Custom JSON deserializer for converting JSON values into {@link RequestMethod} instances.
@@ -35,7 +35,7 @@ public class RequestMethodDeserializer extends JsonDeserializer<RequestMethod> {
 	 * <p>
 	 * The method processes the JSON input as follows:
 	 * <ol>
-	 * <li>Reads the JSON node value as text</li>
+	 * <li>Reads the JSON value as text (a JSON {@code null} becomes an empty string)</li>
 	 * <li>Attempts to parse it as a standard HTTP method</li>
 	 * <li>If that fails, creates an API-specific method instance</li>
 	 * </ol>
@@ -47,8 +47,7 @@ public class RequestMethodDeserializer extends JsonDeserializer<RequestMethod> {
 	 */
 	@Override
 	public RequestMethod deserialize(final JsonParser p, final DeserializationContext ct) throws IOException {
-		JsonNode node = p.getCodec().readTree(p);
-		String nodeText = node.asText();
+		String nodeText = Objects.toString(p.getValueAsString(), "");
 		try {
 			return HttpMethod.fromString(nodeText);
 		} catch (IllegalArgumentException e) {

@@ -3,6 +3,7 @@ package org.apiphany.json.jackson2;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.hamcrest.Matchers.startsWith;
@@ -36,6 +37,7 @@ import org.morphix.reflection.GenericClass;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
+import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -437,6 +439,8 @@ class Jackson2JsonBuilderTest {
 			ObjectMapper objectMapper = mock(ObjectMapper.class);
 			SerializationConfig serializationConfig = mock(SerializationConfig.class);
 			doReturn(serializationConfig).when(objectMapper).getSerializationConfig();
+			DeserializationConfig deserializationConfig = mock(DeserializationConfig.class);
+			doReturn(deserializationConfig).when(objectMapper).getDeserializationConfig();
 
 			Jackson2JsonBuilder jacksonJsonBuilder = new Jackson2JsonBuilder(objectMapper);
 
@@ -670,6 +674,83 @@ class Jackson2JsonBuilderTest {
 			Jackson2JsonBuilder instance2 = Jackson2JsonBuilder.instance();
 
 			assertThat(instance1, sameInstance(instance2));
+		}
+	}
+
+	@Nested
+	class CompatibilityTests {
+
+		enum SimpleEnum {
+
+			ALPHA,
+			BETA;
+		}
+
+		static class NullContentHolder {
+
+			private List<String> list;
+
+			private Map<String, String> map;
+
+			public List<String> getList() {
+				return list;
+			}
+
+			public void setList(final List<String> list) {
+				this.list = list;
+			}
+
+			public Map<String, String> getMap() {
+				return map;
+			}
+
+			public void setMap(final Map<String, String> map) {
+				this.map = map;
+			}
+		}
+
+		@Test
+		void shouldDeserializeEnumsCaseInsensitively() {
+			SimpleEnum result = jsonBuilder.fromJsonString("\"alpha\"", SimpleEnum.class);
+
+			assertThat(result, equalTo(SimpleEnum.ALPHA));
+		}
+
+		@Test
+		void shouldSerializeNullContentInCollectionsAndMaps() {
+			List<String> list = new ArrayList<>();
+			list.add("a");
+			list.add(null);
+
+			NullContentHolder holder = new NullContentHolder();
+			holder.setList(list);
+			holder.setMap(Collections.singletonMap("k", null));
+
+			jsonBuilder.indentOutput(false);
+			String json = jsonBuilder.toJsonString(holder);
+
+			assertThat(json, equalTo("{\"list\":[\"a\",null],\"map\":{}}"));
+		}
+	}
+
+	@Nested
+	class ConfigureTests {
+
+		@Test
+		void shouldApplyCustomizerToTheUnderlyingMapper() {
+			jsonBuilder.indentOutput(false);
+
+			A a = new A();
+			a.setElements(Map.of(CUSTOMER_ONE, new B(CUSTOMER_ID1, TENANT_ID1)));
+
+			String before = jsonBuilder.toJsonString(a);
+			assertThat(before, containsString("customerId"));
+
+			jsonBuilder.configure(mapper -> mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE));
+
+			String after = jsonBuilder.toJsonString(a);
+			assertThat(after, containsString("customer_id"));
+			assertThat(after, not(equalTo(before)));
 		}
 	}
 

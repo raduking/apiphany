@@ -3,6 +3,11 @@
 `1.2.20`
 
 - Changed `Jackson2JsonBuilder` and `Jackson3JsonBuilder` to ignore unknown JSON fields when de-serializing.
+- Changed `Jackson2JsonBuilder` to de-serialize enums case-insensitively (`MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS`), matching Jackson 3.
+- Changed `Jackson2JsonBuilder` default property inclusion to also apply to content (e.g. `Map` values), matching Jackson 3.
+- Added `configure(Consumer)` to `Jackson2JsonBuilder` and `Jackson3JsonBuilder` to reconfigure the underlying mapper at runtime.
+- Fixed `Jackson3JsonBuilder` runtime indentation (`indentOutput(boolean)`) by rebuilding the underlying `JsonMapper` through `configure(...)`.
+- Changed `RequestMethodDeserializer` (Jackson 2 and 3) to consistently treat a JSON `null` value as an empty string.
 - Upgraded `httpclient5` to `5.6.3` because of `CVE-2026-64607`.
 
 ---
