@@ -1,6 +1,7 @@
 package org.apiphany.tests.json;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
@@ -310,6 +311,22 @@ public interface JsonBuilderContract {
 		assertThat(method, equalTo(HttpMethod.GET));
 		assertThat(lower, equalTo(HttpMethod.GET));
 		assertThat(custom, equalTo(ApiMethod.of("CUSTOM")));
+	}
+
+	@DisplayName("JSON: a JSON null RequestMethod is deserialized as null")
+	@Test
+	default void shouldDeserializeNullRequestMethodToNull() {
+		RequestMethod method = JsonBuilder.fromJson("null", RequestMethod.class);
+
+		assertThat(method, nullValue());
+	}
+
+	@DisplayName("JSON: a JSON empty RequestMethod is deserialized as an empty ApiMethod")
+	@Test
+	default void shouldDeserializeEmptyRequestMethodToEmptyApiMethod() {
+		RequestMethod method = JsonBuilder.fromJson("\"\"", RequestMethod.class);
+
+		assertThat(method, equalTo(ApiMethod.of("")));
 	}
 
 	@DisplayName("JSON: indentation can be toggled at runtime")

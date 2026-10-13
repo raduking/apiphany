@@ -1,7 +1,5 @@
 package org.apiphany.json.jackson3.serializers;
 
-import java.util.Objects;
-
 import org.apiphany.ApiMethod;
 import org.apiphany.RequestMethod;
 import org.apiphany.http.HttpMethod;
@@ -35,19 +33,22 @@ public class RequestMethodDeserializer extends StdDeserializer<RequestMethod> {
 	 * <p>
 	 * The method processes the JSON input as follows:
 	 * <ol>
-	 * <li>Reads the JSON value as text (a JSON {@code null} becomes an empty string)</li>
+	 * <li>Reads the JSON value as text (a JSON {@code null} deserializes to {@code null})</li>
 	 * <li>Attempts to parse it as a standard HTTP method</li>
 	 * <li>If that fails, creates an API-specific method instance</li>
 	 * </ol>
 	 *
 	 * @param p the JSON parser containing the input to deserialize
 	 * @param ctxt the deserialization context
-	 * @return the deserialized {@link RequestMethod} instance
+	 * @return the deserialized {@link RequestMethod} instance or {@code null} if the JSON value is {@code null}
 	 * @throws JacksonException if there is an error reading the JSON content
 	 */
 	@Override
 	public RequestMethod deserialize(final JsonParser p, final DeserializationContext ctxt) throws JacksonException {
-		String nodeText = Objects.toString(p.getValueAsString(), "");
+		String nodeText = p.getValueAsString();
+		if (null == nodeText) {
+			return null;
+		}
 		try {
 			return HttpMethod.fromString(nodeText);
 		} catch (IllegalArgumentException e) {
