@@ -1,6 +1,7 @@
 package org.apiphany.json.jackson3.serializers;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -53,9 +54,20 @@ class RequestMethodDeserializerTest {
 
 	@Test
 	@SuppressWarnings("resource")
-	void shouldReturnEmptyApiMethodWhenJsonValueIsNull() {
+	void shouldReturnNullWhenJsonValueIsNull() {
 		JsonParser parser = mock(JsonParser.class);
 		doReturn(null).when(parser).getValueAsString();
+
+		RequestMethod result = victim.deserialize(parser, null);
+
+		assertThat(result, nullValue());
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldReturnEmptyApiMethodWhenJsonValueIsEmpty() {
+		JsonParser parser = mock(JsonParser.class);
+		doReturn("").when(parser).getValueAsString();
 
 		RequestMethod result = victim.deserialize(parser, null);
 

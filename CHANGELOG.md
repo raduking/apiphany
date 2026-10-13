@@ -7,7 +7,7 @@
 - Changed `Jackson2JsonBuilder` default property inclusion to also apply to content (e.g. `Map` values), matching Jackson 3.
 - Added `configure(Consumer)` to `Jackson2JsonBuilder` and `Jackson3JsonBuilder` to reconfigure the underlying mapper at runtime.
 - Fixed `Jackson3JsonBuilder` runtime indentation (`indentOutput(boolean)`) by rebuilding the underlying `JsonMapper` through `configure(...)`.
-- Changed `RequestMethodDeserializer` (Jackson 2 and 3) to consistently treat a JSON `null` value as an empty string.
+- Changed `RequestMethodDeserializer` (Jackson 2 and 3) so a JSON `null` value deserializes to `null`.
 - Upgraded `httpclient5` to `5.6.3` because of `CVE-2026-64607`.
 
 ---
