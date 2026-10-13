@@ -50,4 +50,15 @@ class RequestMethodDeserializerTest {
 
 		assertThat(result, equalTo(ApiMethod.of(SOME_REQUEST_METHOD)));
 	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldReturnEmptyApiMethodWhenJsonValueIsNull() {
+		JsonParser parser = mock(JsonParser.class);
+		doReturn(null).when(parser).getValueAsString();
+
+		RequestMethod result = victim.deserialize(parser, null);
+
+		assertThat(result, equalTo(ApiMethod.of("")));
+	}
 }

@@ -6,13 +6,12 @@ import org.apiphany.client.ContentConverter;
 import org.apiphany.client.http.HttpContentConverter;
 import org.apiphany.header.HeaderValues;
 import org.apiphany.io.ContentType;
-import org.apiphany.json.jackson2.Jackson2JsonBuilder;
 import org.morphix.convert.ObjectConverterException;
 import org.morphix.reflection.GenericClass;
 
 /**
  * A {@link ContentConverter} implementation that converts JSON content to objects of type {@code T}. This converter
- * uses the {@link Jackson2JsonBuilder} to de-serialize JSON strings into Java objects. It supports content with the
+ * uses the {@link Jackson3JsonBuilder} to de-serialize JSON strings into Java objects. It supports content with the
  * {@code application/json} content type.
  *
  * @param <T> the type of the object to which the JSON content will be converted.
@@ -38,7 +37,7 @@ public class Jackson3JsonHttpContentConverter<T> implements HttpContentConverter
 	 * @return the de-serialized object of type {@code T}
 	 * @throws UnsupportedOperationException if the input object is not a JSON string
 	 * @see ContentConverter#from(Object, ApiMimeType, Class)
-	 * @see Jackson2JsonBuilder#fromJson(Object, Class)
+	 * @see Jackson3JsonBuilder#fromJson(Object, Class)
 	 */
 	@Override
 	public T from(final Object obj, final ApiMimeType mimeType, final Class<T> targetClass) {
@@ -58,7 +57,7 @@ public class Jackson3JsonHttpContentConverter<T> implements HttpContentConverter
 	 * @return the de-serialized object of type {@code T}
 	 * @throws UnsupportedOperationException if the input object is not a JSON
 	 * @see ContentConverter#from(Object, ApiMimeType, GenericClass)
-	 * @see Jackson2JsonBuilder#fromJson(Object, GenericClass)
+	 * @see Jackson3JsonBuilder#fromJson(Object, GenericClass)
 	 */
 	@Override
 	public T from(final Object obj, final ApiMimeType mimeType, final GenericClass<T> targetGenericClass) {

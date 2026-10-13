@@ -20,6 +20,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
@@ -119,9 +120,11 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 			this.objectMapper.registerModule(moduleSupplier.get());
 		}
 		indentOutput(isIndentOutput());
-		this.objectMapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL);
+		this.objectMapper.setDefaultPropertyInclusion(JsonInclude.Value.construct(
+				JsonInclude.Include.NON_NULL, JsonInclude.Include.NON_NULL));
 		this.objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 		this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		configure(this.objectMapper, MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS, true);
 
 		this.defaultAnnotationIntrospector = objectMapper.getSerializationConfig().getAnnotationIntrospector();
 		configureSensitivity(SensitiveJackson2AnnotationIntrospector.hideSensitive());
@@ -573,6 +576,37 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 		super.indentOutput(enable);
 		Consumer<SerializationFeature> indentation = enable ? objectMapper::enable : objectMapper::disable;
 		indentation.accept(SerializationFeature.INDENT_OUTPUT);
+	}
+
+	/**
+	 * Applies the given customizer to the underlying {@link ObjectMapper}. Because the mapper is mutable, the customizer
+	 * changes it in place, without replacing the reference.
+	 * <p>
+	 * The mapper caches are cleared afterwards so that structural changes (for example a property naming strategy) also
+	 * take effect on types that were already serialized or de-serialized.
+	 *
+	 * @param customizer the customizer to apply to the underlying {@link ObjectMapper}
+	 */
+	public void configure(final Consumer<ObjectMapper> customizer) {
+		customizer.accept(objectMapper);
+		objectMapper.clearCaches();
+		super.indentOutput(objectMapper.isEnabled(SerializationFeature.INDENT_OUTPUT));
+	}
+
+	/**
+	 * Configures the given {@link MapperFeature} to the given state on both the serialization and de-serialization
+	 * configurations of the given {@link ObjectMapper}.
+	 * <p>
+	 * {@code ObjectMapper.configure(MapperFeature, boolean)} is deprecated since Jackson 2.13, so the feature is applied
+	 * directly on the configurations instead of using the deprecated method.
+	 *
+	 * @param objectMapper the object mapper to configure
+	 * @param feature the mapper feature to configure
+	 * @param state the state to configure the feature to
+	 */
+	private static void configure(final ObjectMapper objectMapper, final MapperFeature feature, final boolean state) {
+		objectMapper.setConfig(objectMapper.getSerializationConfig().with(feature, state));
+		objectMapper.setConfig(objectMapper.getDeserializationConfig().with(feature, state));
 	}
 
 	/**

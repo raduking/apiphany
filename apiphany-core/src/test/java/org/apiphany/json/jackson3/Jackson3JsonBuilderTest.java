@@ -3,6 +3,7 @@ package org.apiphany.json.jackson3;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.hamcrest.Matchers.startsWith;
@@ -686,6 +687,62 @@ class Jackson3JsonBuilderTest extends Jackson3Test {
 
 			verify(builder).disable(SerializationFeature.INDENT_OUTPUT);
 			assertThat(builder, sameInstance(builder));
+		}
+
+		@Test
+		void shouldToggleIndentationAtRuntime() {
+			Jackson3JsonBuilder jacksonJsonBuilder = new Jackson3JsonBuilder();
+			jacksonJsonBuilder.indentOutput(false);
+
+			A a = new A();
+			a.setElements(Map.of(CUSTOMER_ONE, new B(CUSTOMER_ID1, TENANT_ID1)));
+
+			String compact = jacksonJsonBuilder.toJsonString(a);
+
+			jacksonJsonBuilder.indentOutput(true);
+			String indented = jacksonJsonBuilder.toJsonString(a);
+
+			assertThat(indented, not(equalTo(compact)));
+			assertThat(indented, startsWith(System.lineSeparator()));
+
+			jacksonJsonBuilder.indentOutput(false);
+			assertThat(jacksonJsonBuilder.toJsonString(a), equalTo(compact));
+		}
+	}
+
+	@Nested
+	class ConfigureTests {
+
+		@Test
+		void shouldReconfigureTheUnderlyingMapperAtRuntime() {
+			Jackson3JsonBuilder jacksonJsonBuilder = new Jackson3JsonBuilder();
+			jacksonJsonBuilder.indentOutput(false);
+
+			A a = new A();
+			a.setElements(Map.of(CUSTOMER_ONE, new B(CUSTOMER_ID1, TENANT_ID1)));
+
+			String before = jacksonJsonBuilder.toJsonString(a);
+			assertThat(before, containsString("customerId"));
+
+			jacksonJsonBuilder.configure(builder -> builder.propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE));
+
+			String after = jacksonJsonBuilder.toJsonString(a);
+			assertThat(after, containsString("customer_id"));
+			assertThat(after, not(equalTo(before)));
+		}
+
+		@Test
+		void shouldSyncIndentationWhenReconfiguringTheUnderlyingMapper() {
+			Jackson3JsonBuilder jacksonJsonBuilder = new Jackson3JsonBuilder();
+			jacksonJsonBuilder.indentOutput(false);
+
+			A a = new A();
+			a.setElements(Map.of(CUSTOMER_ONE, new B(CUSTOMER_ID1, TENANT_ID1)));
+
+			jacksonJsonBuilder.configure(builder -> builder.enable(SerializationFeature.INDENT_OUTPUT));
+
+			assertThat(jacksonJsonBuilder.isIndentOutput(), equalTo(true));
+			assertThat(jacksonJsonBuilder.toJsonString(a), containsString(System.lineSeparator()));
 		}
 	}
 

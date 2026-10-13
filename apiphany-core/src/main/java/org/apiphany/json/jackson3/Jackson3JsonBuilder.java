@@ -94,8 +94,12 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 
 	/**
 	 * The underlying {@link JsonMapper}.
+	 * <p>
+	 * Because Jackson 3 mappers are immutable, reconfiguring the builder at runtime (see {@link #configure(Consumer)})
+	 * builds a new mapper and replaces this reference. It is volatile because it can be replaced while other threads
+	 * serialize or de-serialize.
 	 */
-	protected final JsonMapper jsonMapper;
+	private volatile JsonMapper jsonMapper;
 
 	/**
 	 * The default annotation introspector.
@@ -107,8 +111,8 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * <ul>
 	 * <li>do not fail on empty beans</li>
 	 * <li>ignore unknown JSON fields on de-serialization instead of failing</li>
-	 * <li>for some strange reason in Jackson 3 the properties are sorted alphabetically by default so we change the default
-	 * to be the same as in Jackson 2, which is to keep the order of the properties as they are in the class</li>
+	 * <li>for some strange reason the properties are sorted alphabetically by default so we change the default to keep the
+	 * order of the properties as they are in the class</li>
 	 * <li>accept case insensitive enums</li>
 	 * <li>do not serialize <code>null</code> values</li>
 	 * </ul>
@@ -575,5 +579,38 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 */
 	public JsonMapper getJsonMapper() {
 		return jsonMapper;
+	}
+
+	/**
+	 * Applies the given customizer to the underlying {@link JsonMapper}. Because the mapper is immutable, the current
+	 * mapper is rebuilt with the customizer applied and the reference is replaced, so callers do not have to manage the
+	 * replacement themselves.
+	 * <p>
+	 * The call is ignored while the builder instance is being constructed, because the mapper does not exist yet.
+	 *
+	 * @param customizer the customizer to apply to the underlying {@link JsonMapper.Builder}
+	 */
+	public void configure(final Consumer<JsonMapper.Builder> customizer) {
+		JsonMapper mapper = this.jsonMapper;
+		if (null == mapper) {
+			return;
+		}
+		JsonMapper.Builder builder = mapper.rebuild();
+		customizer.accept(builder);
+		this.jsonMapper = builder.build();
+		super.indentOutput(this.jsonMapper.isEnabled(SerializationFeature.INDENT_OUTPUT));
+	}
+
+	/**
+	 * Enable/disable JSON indentation. Because the underlying {@link JsonMapper} is immutable, the mapper is rebuilt via
+	 * {@link #configure(Consumer)} with the indentation feature enabled or disabled, so the setting can be changed at any
+	 * time.
+	 *
+	 * @param enable true to enable, false to disable
+	 */
+	@Override
+	public void indentOutput(final boolean enable) {
+		super.indentOutput(enable);
+		configure(builder -> configureIndent(builder, Indentation.fromBoolean(enable)));
 	}
 }
