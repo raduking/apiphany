@@ -125,6 +125,9 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * <li>fail when tokens follow the first JSON value</li>
 	 * <li>accept case-insensitive enums</li>
 	 * <li>write and read enum values and map keys with {@code toString()}</li>
+	 * <li>do not use a collection or map getter as a setter</li>
+	 * <li>do not set {@code final} fields by reflection</li>
+	 * <li>derive an acronym getter such as {@code getURL()} as the property name {@code URL}</li>
 	 * <li>do not serialize <code>null</code> values</li>
 	 * <li>write date/time and duration values as ISO strings (not numeric timestamps)</li>
 	 * </ul>
@@ -149,6 +152,9 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 		this.objectMapper.configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
 		this.objectMapper.configure(DeserializationFeature.READ_ENUMS_USING_TO_STRING, true);
 		configure(this.objectMapper, MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS, true);
+		configure(this.objectMapper, MapperFeature.USE_GETTERS_AS_SETTERS, false);
+		configure(this.objectMapper, MapperFeature.ALLOW_FINAL_FIELDS_AS_MUTATORS, false);
+		configure(this.objectMapper, MapperFeature.USE_STD_BEAN_NAMING, true);
 
 		this.defaultAnnotationIntrospector = objectMapper.getSerializationConfig().getAnnotationIntrospector();
 		configureSensitivity(SensitiveJackson2AnnotationIntrospector.hideSensitive());
