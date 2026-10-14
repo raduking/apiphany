@@ -1,6 +1,7 @@
 package org.apiphany.tests.json.contract;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -203,6 +204,64 @@ public interface JsonBuilderContract {
 		}
 	}
 
+	/**
+	 * Transfer object with primitive fields and one boxed field.
+	 *
+	 * @author Radu Sebastian LAZIN
+	 */
+	class PrimitiveFieldsDTO {
+
+		private int count;
+
+		private long total;
+
+		private boolean enabled;
+
+		private double ratio;
+
+		private Integer boxed;
+
+		public int getCount() {
+			return count;
+		}
+
+		public void setCount(final int count) {
+			this.count = count;
+		}
+
+		public long getTotal() {
+			return total;
+		}
+
+		public void setTotal(final long total) {
+			this.total = total;
+		}
+
+		public boolean isEnabled() {
+			return enabled;
+		}
+
+		public void setEnabled(final boolean enabled) {
+			this.enabled = enabled;
+		}
+
+		public double getRatio() {
+			return ratio;
+		}
+
+		public void setRatio(final double ratio) {
+			this.ratio = ratio;
+		}
+
+		public Integer getBoxed() {
+			return boxed;
+		}
+
+		public void setBoxed(final Integer boxed) {
+			this.boxed = boxed;
+		}
+	}
+
 	@DisplayName("JSON: an object is serialized and read back without losing information")
 	@Test
 	default void shouldTransformObjectToJsonAndReadItBack() {
@@ -296,6 +355,40 @@ public interface JsonBuilderContract {
 		});
 
 		assertThat(read.get(LabeledEnum.YES), equalTo("value"));
+	}
+
+	@DisplayName("JSON: null for a primitive field fails the read, while a missing field keeps the default and a boxed null stays null")
+	@Test
+	default void shouldFailWhenJsonNullIsReadIntoAPrimitive() {
+		PrimitiveFieldsDTO read =
+				JsonBuilder.fromJson("{\"count\":1,\"total\":2,\"enabled\":true,\"ratio\":1.5,\"boxed\":3}", PrimitiveFieldsDTO.class);
+
+		assertThat(read, notNullValue());
+		assertThat(read.getCount(), equalTo(1));
+		assertThat(read.getTotal(), equalTo(2L));
+		assertThat(read.isEnabled(), equalTo(true));
+		assertThat(read.getRatio(), equalTo(1.5d));
+		assertThat(read.getBoxed(), equalTo(3));
+
+		PrimitiveFieldsDTO missing = JsonBuilder.fromJson("{}", PrimitiveFieldsDTO.class);
+
+		assertThat(missing, notNullValue());
+		assertThat(missing.getCount(), equalTo(0));
+		assertThat(missing.getTotal(), equalTo(0L));
+		assertThat(missing.isEnabled(), equalTo(false));
+		assertThat(missing.getRatio(), equalTo(0.0d));
+		assertThat(missing.getBoxed(), nullValue());
+
+		assertThat(JsonBuilder.fromJson("{\"count\":null}", PrimitiveFieldsDTO.class), nullValue());
+		assertThat(JsonBuilder.fromJson("{\"total\":null}", PrimitiveFieldsDTO.class), nullValue());
+		assertThat(JsonBuilder.fromJson("{\"enabled\":null}", PrimitiveFieldsDTO.class), nullValue());
+		assertThat(JsonBuilder.fromJson("{\"ratio\":null}", PrimitiveFieldsDTO.class), nullValue());
+
+		PrimitiveFieldsDTO boxedNull = JsonBuilder.fromJson("{\"boxed\":null}", PrimitiveFieldsDTO.class);
+
+		assertThat(boxedNull, notNullValue());
+		assertThat(boxedNull.getBoxed(), nullValue());
+		assertThat(boxedNull.getCount(), equalTo(0));
 	}
 
 	@DisplayName("JSON: unknown fields are ignored on deserialization")
