@@ -30,7 +30,7 @@ Jackson is optional. A module that serializes with `JsonBuilder` declares the Ja
 | `json-builder.to-json.indent-output=true` | Pretty-print JSON. `JsonBuilder.indentJsonOutput(boolean)` changes the same flag at runtime. |
 | `json-builder.to-json.debug-string=true` | Allows JSON previews in error logs. Do not enable this in production. |
 
-Both Jackson builders omit `null` values, ignore unknown JSON fields, accept enum names case-insensitively, and do not fail on empty beans. Date, time, and duration values are ISO strings. `java.util.Date` and `java.util.Calendar` use a numeric zero offset (`+00:00`).
+Both Jackson builders omit `null` values, ignore unknown JSON fields, write and read enums with `toString()` (values and map keys), accept those values case-insensitively, and do not fail on empty beans. `@AsValue` still selects the annotated member. Date, time, and duration values are ISO strings. `java.util.Date` and `java.util.Calendar` use a numeric zero offset (`+00:00`).
 
 `configure(Consumer)` changes the underlying mapper at runtime. Jackson 2 updates the mutable `ObjectMapper` in place. Jackson 3 builds a new `JsonMapper` and replaces the reference.
 

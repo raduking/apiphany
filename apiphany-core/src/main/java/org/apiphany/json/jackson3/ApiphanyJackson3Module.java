@@ -7,11 +7,11 @@ import java.time.Year;
 import java.util.Locale;
 
 import org.apiphany.RequestMethod;
+import org.apiphany.json.jackson3.serializers.FieldNameSerializer;
+import org.apiphany.json.jackson3.serializers.FieldValueSerializer;
 import org.apiphany.json.jackson3.serializers.MonthDeserializer;
 import org.apiphany.json.jackson3.serializers.RequestMethodDeserializer;
 import org.apiphany.json.jackson3.serializers.RequestMethodSerializer;
-import org.apiphany.json.jackson3.serializers.StringValueKeySerializer;
-import org.apiphany.json.jackson3.serializers.StringValueSerializer;
 
 import tools.jackson.databind.module.SimpleModule;
 
@@ -78,11 +78,11 @@ public class ApiphanyJackson3Module extends SimpleModule {
 		private static final SimpleModule INSTANCE = new ApiphanyJackson3Module()
 				.addSerializer(RequestMethod.class, new RequestMethodSerializer())
 				.addDeserializer(RequestMethod.class, new RequestMethodDeserializer())
-				.addSerializer(Year.class, new StringValueSerializer<>(Year::toString))
-				.addSerializer(Month.class, new StringValueSerializer<>(Month::name))
+				.addSerializer(Year.class, new FieldValueSerializer<>(Year::toString))
+				.addSerializer(Month.class, new FieldValueSerializer<>(Month::name))
 				.addDeserializer(Month.class, new MonthDeserializer())
-				.addSerializer(Date.class, new StringValueSerializer<>(date -> date.toLocalDate().toString()))
-				.addKeySerializer(Locale.class, new StringValueKeySerializer<>(Locale::toLanguageTag))
-				.addKeySerializer(Date.class, new StringValueKeySerializer<>(date -> date.toLocalDate().toString()));
+				.addSerializer(Date.class, new FieldValueSerializer<>(date -> date.toLocalDate().toString()))
+				.addKeySerializer(Locale.class, new FieldNameSerializer<>(Locale::toLanguageTag))
+				.addKeySerializer(Date.class, new FieldNameSerializer<>(date -> date.toLocalDate().toString()));
 	}
 }

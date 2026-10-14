@@ -8,14 +8,13 @@ import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ValueSerializer;
 
 /**
- * Generic serializer that writes a value as a JSON field name using the given conversion function. The field name uses
- * the same conversion as the corresponding value representation.
+ * Generic serializer that writes a value as a JSON string using the given conversion function.
  *
  * @param <T> the type of the value being serialized
  *
  * @author Radu Sebastian LAZIN
  */
-public class StringValueKeySerializer<T> extends ValueSerializer<T> {
+public class FieldValueSerializer<T> extends ValueSerializer<T> {
 
 	/**
 	 * Function used to convert the value to its JSON string representation.
@@ -23,11 +22,11 @@ public class StringValueKeySerializer<T> extends ValueSerializer<T> {
 	private final Function<T, String> toString;
 
 	/**
-	 * Constructs a new key serializer.
+	 * Constructs a new serializer.
 	 *
 	 * @param toString function used to convert the value to its JSON string representation
 	 */
-	public StringValueKeySerializer(final Function<T, String> toString) {
+	public FieldValueSerializer(final Function<T, String> toString) {
 		this.toString = toString;
 	}
 
@@ -37,6 +36,6 @@ public class StringValueKeySerializer<T> extends ValueSerializer<T> {
 	@Override
 	@SuppressWarnings("resource")
 	public void serialize(final T value, final JsonGenerator gen, final SerializationContext ctxt) throws JacksonException {
-		gen.writeName(toString.apply(value));
+		gen.writeString(toString.apply(value));
 	}
 }
