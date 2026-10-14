@@ -122,6 +122,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * <li>do not fail on empty beans</li>
 	 * <li>ignore unknown JSON fields on de-serialization instead of failing</li>
 	 * <li>fail when JSON {@code null} is read into a primitive field</li>
+	 * <li>fail when tokens follow the first JSON value</li>
 	 * <li>accept case-insensitive enums</li>
 	 * <li>write and read enum values and map keys with {@code toString()}</li>
 	 * <li>do not serialize <code>null</code> values</li>
@@ -141,12 +142,10 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 				JsonInclude.Include.NON_NULL, JsonInclude.Include.NON_NULL));
 		this.objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 		this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		// fail when JSON null is read into a primitive field
 		this.objectMapper.configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, true);
-		// write date/time and duration values as ISO strings instead of numeric timestamps
+		this.objectMapper.configure(DeserializationFeature.FAIL_ON_TRAILING_TOKENS, true);
 		this.objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 		this.objectMapper.configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false);
-		// write and read enum values and map keys with toString()
 		this.objectMapper.configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
 		this.objectMapper.configure(DeserializationFeature.READ_ENUMS_USING_TO_STRING, true);
 		configure(this.objectMapper, MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS, true);

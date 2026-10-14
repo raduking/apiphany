@@ -114,6 +114,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * <li>do not fail on empty beans</li>
 	 * <li>ignore unknown JSON fields on de-serialization instead of failing</li>
 	 * <li>fail when JSON {@code null} is read into a primitive field</li>
+	 * <li>fail when tokens follow the first JSON value</li>
 	 * <li>for some strange reason the properties are sorted alphabetically by default so we change the default to keep the
 	 * order of the properties as they are in the class</li>
 	 * <li>accept case-insensitive enums</li>
@@ -139,12 +140,11 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 				.withValueInclusion(JsonInclude.Include.NON_NULL));
 		builder.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 		builder.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		// fail when JSON null is read into a primitive field
 		builder.configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, true);
-		builder.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS, true);
-		// write and read enum values and map keys with toString()
+		builder.configure(DeserializationFeature.FAIL_ON_TRAILING_TOKENS, true);
 		builder.configure(EnumFeature.WRITE_ENUMS_USING_TO_STRING, true);
 		builder.configure(EnumFeature.READ_ENUMS_USING_TO_STRING, true);
+		builder.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS, true);
 		builder.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, false);
 
 		configureDateTimeFeatures(builder);

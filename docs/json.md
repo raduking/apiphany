@@ -35,6 +35,7 @@ Both Jackson builders apply the same rules:
 - Empty beans serialize. Serialization does not fail when a bean has no properties.
 - Unknown JSON fields are ignored on read.
 - A JSON `null` for a primitive field (`int`, `long`, `boolean`, `double`, and the other primitives) fails the read. `fromJson` logs the error and returns `null`. A missing field keeps the primitive default (`0`, `false`, `0.0`). A null wrapper, such as `Integer`, stays null and the rest of the object is read.
+- Tokens after the first JSON value fail the read. `{"a":1} junk` and `{"a":1}{"b":2}` make `fromJson` return `null`. Whitespace after the value is still accepted.
 - Enum values and map keys are written and read with `toString()`. The match ignores case. `@AsValue` still selects the annotated member. When `toString()` differs from the constant name, the constant name is not accepted.
 - Null properties are omitted, including null map values. Null elements inside a list are kept.
 - Properties follow the order of the fields in the class. Jackson 3 disables alphabetical sorting, which is that library's default.
