@@ -30,7 +30,15 @@ Jackson is optional. A module that serializes with `JsonBuilder` declares the Ja
 | `json-builder.to-json.indent-output=true` | Pretty-print JSON. `JsonBuilder.indentJsonOutput(boolean)` changes the same flag at runtime. |
 | `json-builder.to-json.debug-string=true` | Allows JSON previews in error logs. Do not enable this in production. |
 
-Both Jackson builders omit `null` values, ignore unknown JSON fields, write and read enums with `toString()` (values and map keys), accept those values case-insensitively, and do not fail on empty beans. `@AsValue` still selects the annotated member. Date, time, and duration values are ISO strings. `java.util.Date` and `java.util.Calendar` use a numeric zero offset (`+00:00`).
+Both Jackson builders apply the same rules:
+
+- Empty beans serialize. Serialization does not fail when a bean has no properties.
+- Unknown JSON fields are ignored on read.
+- A JSON `null` for a primitive field (`int`, `long`, `boolean`, `double`, and the other primitives) fails the read. `fromJson` logs the error and returns `null`. A missing field keeps the primitive default (`0`, `false`, `0.0`). A null wrapper, such as `Integer`, stays null and the rest of the object is read.
+- Enum values and map keys are written and read with `toString()`. The match ignores case. `@AsValue` still selects the annotated member. When `toString()` differs from the constant name, the constant name is not accepted.
+- Null properties are omitted, including null map values. Null elements inside a list are kept.
+- Properties follow the order of the fields in the class. Jackson 3 disables alphabetical sorting, which is that library's default.
+- Date, time, and duration values are ISO-8601 strings, not numeric timestamps. `java.util.Date` and `java.util.Calendar` use a numeric zero offset (`+00:00`). Jackson 3 also pins nanosecond timestamp precision, date map keys as strings, the context time zone on write, and omission of the zone id, so that output stays stable if library defaults change.
 
 `configure(Consumer)` changes the underlying mapper at runtime. Jackson 2 updates the mutable `ObjectMapper` in place. Jackson 3 builds a new `JsonMapper` and replaces the reference.
 

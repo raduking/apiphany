@@ -5,6 +5,7 @@
 - Changed `Jackson2JsonBuilder` and `Jackson3JsonBuilder` to ignore unknown JSON fields when de-serializing.
 - Changed `Jackson2JsonBuilder` to de-serialize enums case-insensitively (`MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS`), matching Jackson 3.
 - Changed `Jackson2JsonBuilder` to write and read enums with `toString()` (values and map keys), matching Jackson 3. `Jackson3JsonBuilder` pins the same enum features explicitly.
+- Changed `Jackson2JsonBuilder` to fail when JSON `null` is read into a primitive field, matching Jackson 3. `Jackson3JsonBuilder` pins the same feature explicitly.
 - Changed `Jackson2JsonBuilder` default property inclusion to also apply to content (e.g. `Map` values), matching Jackson 3.
 - Added `configure(Consumer)` to `Jackson2JsonBuilder` and `Jackson3JsonBuilder` to reconfigure the underlying mapper at runtime.
 - Fixed `Jackson3JsonBuilder` runtime indentation (`indentOutput(boolean)`) by rebuilding the underlying `JsonMapper` through `configure(...)`.
@@ -13,7 +14,7 @@
 - Added `Jackson3JsonBuilder` date/time serialization features to explicit values so the ISO output no longer depends on library defaults.
 - Aligned `java.util.Date` and `java.util.Calendar` serialization between Jackson 2 and 3 (zero offset as `+00:00`).
 - Aligned `java.time.Year`, `java.time.Month`, `java.sql.Date` and `java.util.Locale` JSON serialization between Jackson 2 and 3.
-- Aligned `java.util.Optional`/`OptionalInt`/`OptionalLong`/`OptionalDouble` JSON serialization between Jackson 2 and 3 by registering Jackson's `Jdk8Module` on `Jackson2JsonBuilder` when `jackson-datatype-jdk8` is on the classpath. `JsonBuilder` still starts without that library.
+- Aligned Java `Optional*` JSON serialization between Jackson 2 and 3 by registering Jackson's `Jdk8Module` on `Jackson2JsonBuilder` when `jackson-datatype-jdk8` is on the classpath.
 - Changed `Jackson2JsonBuilder.registerModule` to accept a Jackson `Module`, so `Jdk8Module` is registered through the same method as the other modules.
 - Aligned the JSON map key representation of `java.util.Locale` and `java.sql.Date` between Jackson 2 and 3.
 - Upgraded `httpclient5` to `5.6.3` because of `CVE-2026-64607`.

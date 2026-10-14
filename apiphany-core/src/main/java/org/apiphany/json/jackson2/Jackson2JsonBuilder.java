@@ -117,7 +117,18 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	protected final AnnotationIntrospector defaultAnnotationIntrospector;
 
 	/**
-	 * Hide constructor.
+	 * Constructor with extra configurations:
+	 * <ul>
+	 * <li>do not fail on empty beans</li>
+	 * <li>ignore unknown JSON fields on de-serialization instead of failing</li>
+	 * <li>fail when JSON {@code null} is read into a primitive field</li>
+	 * <li>accept case-insensitive enums</li>
+	 * <li>write and read enum values and map keys with {@code toString()}</li>
+	 * <li>do not serialize <code>null</code> values</li>
+	 * <li>write date/time and duration values as ISO strings (not numeric timestamps)</li>
+	 * </ul>
+	 * Note: classic {@link java.util.Date}/{@link java.util.Calendar} values use a numeric zero offset
+	 * (<code>+00:00</code>) instead of <code>Z</code>
 	 *
 	 * @param objectMapper the object mapper to use
 	 */
@@ -130,6 +141,8 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 				JsonInclude.Include.NON_NULL, JsonInclude.Include.NON_NULL));
 		this.objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 		this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		// fail when JSON null is read into a primitive field
+		this.objectMapper.configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, true);
 		// write date/time and duration values as ISO strings instead of numeric timestamps
 		this.objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 		this.objectMapper.configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false);
