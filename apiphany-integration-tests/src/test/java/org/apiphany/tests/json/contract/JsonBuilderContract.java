@@ -391,6 +391,19 @@ public interface JsonBuilderContract {
 		assertThat(boxedNull.getCount(), equalTo(0));
 	}
 
+	@DisplayName("JSON: tokens after the first value fail the read, while trailing whitespace is accepted")
+	@Test
+	default void shouldFailWhenJsonHasTrailingTokens() {
+		SimpleDTO read = JsonBuilder.fromJson("{\"id\":\"id1\",\"name\":\"name1\"}\n", SimpleDTO.class);
+
+		assertThat(read, notNullValue());
+		assertThat(read.getId(), equalTo(ID));
+		assertThat(read.getName(), equalTo(NAME));
+
+		assertThat(JsonBuilder.fromJson("{\"id\":\"id1\",\"name\":\"name1\"} junk", SimpleDTO.class), nullValue());
+		assertThat(JsonBuilder.fromJson("{\"id\":\"id1\"}{\"id\":\"id2\"}", SimpleDTO.class), nullValue());
+	}
+
 	@DisplayName("JSON: unknown fields are ignored on deserialization")
 	@Test
 	default void shouldIgnoreUnknownJsonFields() {
