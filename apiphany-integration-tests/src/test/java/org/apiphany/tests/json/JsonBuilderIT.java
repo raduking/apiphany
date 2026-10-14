@@ -1,6 +1,14 @@
 package org.apiphany.tests.json;
 
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.tests.contract.json.JsonBuilderAnnotationContract;
+import org.apiphany.tests.contract.json.JsonBuilderContract;
+import org.apiphany.tests.contract.json.JsonBuilderLocaleContract;
+import org.apiphany.tests.contract.json.JsonBuilderMonthContract;
+import org.apiphany.tests.contract.json.JsonBuilderOptionalContract;
+import org.apiphany.tests.contract.json.JsonBuilderSqlDateContract;
+import org.apiphany.tests.contract.json.JsonBuilderTimeContract;
+import org.apiphany.tests.contract.json.JsonBuilderYearContract;
 
 /**
  * Integration tests for {@link JsonBuilder}.
