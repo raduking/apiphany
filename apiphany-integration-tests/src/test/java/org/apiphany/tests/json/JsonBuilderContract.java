@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.not;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -119,6 +120,22 @@ public interface JsonBuilderContract {
 
 		ALPHA,
 		BETA;
+	}
+
+	/**
+	 * Enum whose {@code toString()} differs from the constant name, used to verify the enum JSON representation.
+	 *
+	 * @author Radu Sebastian LAZIN
+	 */
+	enum LabeledEnum {
+
+		YES,
+		NO;
+
+		@Override
+		public String toString() {
+			return this == YES ? "affirmative" : "negative";
+		}
 	}
 
 	/**
@@ -256,6 +273,29 @@ public interface JsonBuilderContract {
 
 		assertThat(lower, equalTo(PlainEnum.ALPHA));
 		assertThat(upper, equalTo(PlainEnum.BETA));
+	}
+
+	@DisplayName("JSON: enums are serialized and read with toString, including map keys")
+	@Test
+	default void shouldTransformEnumsUsingToString() {
+		String json = Strings.removeAllWhitespace(JsonBuilder.toJson(LabeledEnum.YES));
+
+		assertThat(json, equalTo("\"affirmative\""));
+		assertThat(JsonBuilder.fromJson("\"affirmative\"", LabeledEnum.class), equalTo(LabeledEnum.YES));
+		assertThat(JsonBuilder.fromJson("\"AFFIRMATIVE\"", LabeledEnum.class), equalTo(LabeledEnum.YES));
+		assertThat(JsonBuilder.fromJson("\"YES\"", LabeledEnum.class), nullValue());
+
+		Map<LabeledEnum, String> map = new LinkedHashMap<>();
+		map.put(LabeledEnum.YES, "value");
+		String mapJson = Strings.removeAllWhitespace(JsonBuilder.toJson(map));
+
+		assertThat(mapJson, equalTo("{\"affirmative\":\"value\"}"));
+
+		Map<LabeledEnum, String> read = JsonBuilder.fromJson(mapJson, new GenericClass<>() {
+			// empty
+		});
+
+		assertThat(read.get(LabeledEnum.YES), equalTo("value"));
 	}
 
 	@DisplayName("JSON: unknown fields are ignored on deserialization")

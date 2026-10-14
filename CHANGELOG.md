@@ -4,6 +4,7 @@
 
 - Changed `Jackson2JsonBuilder` and `Jackson3JsonBuilder` to ignore unknown JSON fields when de-serializing.
 - Changed `Jackson2JsonBuilder` to de-serialize enums case-insensitively (`MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS`), matching Jackson 3.
+- Changed `Jackson2JsonBuilder` to write and read enums with `toString()` (values and map keys), matching Jackson 3. `Jackson3JsonBuilder` pins the same enum features explicitly.
 - Changed `Jackson2JsonBuilder` default property inclusion to also apply to content (e.g. `Map` values), matching Jackson 3.
 - Added `configure(Consumer)` to `Jackson2JsonBuilder` and `Jackson3JsonBuilder` to reconfigure the underlying mapper at runtime.
 - Fixed `Jackson3JsonBuilder` runtime indentation (`indentOutput(boolean)`) by rebuilding the underlying `JsonMapper` through `configure(...)`.

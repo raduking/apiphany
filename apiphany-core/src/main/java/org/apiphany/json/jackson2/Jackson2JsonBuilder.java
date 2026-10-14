@@ -126,7 +126,6 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 		for (Supplier<? extends Module> moduleSupplier : MODULES.values()) {
 			this.objectMapper.registerModule(moduleSupplier.get());
 		}
-		indentOutput(isIndentOutput());
 		this.objectMapper.setDefaultPropertyInclusion(JsonInclude.Value.construct(
 				JsonInclude.Include.NON_NULL, JsonInclude.Include.NON_NULL));
 		this.objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
@@ -134,10 +133,14 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 		// write date/time and duration values as ISO strings instead of numeric timestamps
 		this.objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 		this.objectMapper.configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false);
+		// write and read enum values and map keys with toString()
+		this.objectMapper.configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
+		this.objectMapper.configure(DeserializationFeature.READ_ENUMS_USING_TO_STRING, true);
 		configure(this.objectMapper, MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS, true);
 
 		this.defaultAnnotationIntrospector = objectMapper.getSerializationConfig().getAnnotationIntrospector();
 		configureSensitivity(SensitiveJackson2AnnotationIntrospector.hideSensitive());
+		indentOutput(isIndentOutput());
 	}
 
 	/**

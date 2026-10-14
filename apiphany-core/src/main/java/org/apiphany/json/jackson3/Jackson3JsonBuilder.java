@@ -24,6 +24,7 @@ import tools.jackson.databind.ObjectWriter;
 import tools.jackson.databind.PropertyNamingStrategies;
 import tools.jackson.databind.SerializationFeature;
 import tools.jackson.databind.cfg.DateTimeFeature;
+import tools.jackson.databind.cfg.EnumFeature;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.module.SimpleModule;
 
@@ -114,14 +115,17 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * <li>ignore unknown JSON fields on de-serialization instead of failing</li>
 	 * <li>for some strange reason the properties are sorted alphabetically by default so we change the default to keep the
 	 * order of the properties as they are in the class</li>
-	 * <li>accept case insensitive enums</li>
+	 * <li>accept case-insensitive enums</li>
+	 * <li>write and read enum values and map keys with {@code toString()}</li>
 	 * <li>do not serialize <code>null</code> values</li>
-	 * <li>lock the date/time serialization features to explicit values so the JSON output is stable: date/time and duration
-	 * values are written as ISO strings (not numeric timestamps), and classic {@link java.util.Date}/
-	 * {@link java.util.Calendar} values use a numeric zero offset (<code>+00:00</code>) instead of <code>Z</code></li>
+	 * <li>lock the date/time serialization features to explicit values so the JSON output is stable</li>
 	 * </ul>
+	 * Note: date/time and duration values are written as ISO strings (not numeric timestamps), and classic
+	 * {@link java.util.Date}/ {@link java.util.Calendar} values use a numeric zero offset (<code>+00:00</code>) instead of
+	 * <code>Z</code>
 	 *
-	 * @param jsonMapper the object mapper to use
+	 * @param builder the JSON mapper builder
+	 * @param builderCustomizer the JSON mapper builder customizer
 	 */
 	Jackson3JsonBuilder(final JsonMapper.Builder builder, final Consumer<JsonMapper.Builder> builderCustomizer) {
 		this.defaultAnnotationIntrospector = builder.annotationIntrospector();
@@ -129,13 +133,16 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 		for (Supplier<SimpleModule> moduleSupplier : MODULES.values()) {
 			builder.addModule(moduleSupplier.get());
 		}
-		builder.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
-		builder.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		builder.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS, true);
-		builder.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, false);
 		builder.changeDefaultPropertyInclusion(inclusion -> inclusion
 				.withContentInclusion(JsonInclude.Include.NON_NULL)
 				.withValueInclusion(JsonInclude.Include.NON_NULL));
+		builder.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+		builder.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		builder.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS, true);
+		// write and read enum values and map keys with toString()
+		builder.configure(EnumFeature.WRITE_ENUMS_USING_TO_STRING, true);
+		builder.configure(EnumFeature.READ_ENUMS_USING_TO_STRING, true);
+		builder.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, false);
 
 		configureDateTimeFeatures(builder);
 		configureSensitivity(builder, SensitiveJackson3AnnotationIntrospector.hideSensitive());

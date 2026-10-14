@@ -1,11 +1,11 @@
-package org.apiphany.json.jackson3.serializers;
+package org.apiphany.json.jackson2.serializers;
 
+import java.io.IOException;
 import java.util.function.Function;
 
-import tools.jackson.core.JacksonException;
-import tools.jackson.core.JsonGenerator;
-import tools.jackson.databind.SerializationContext;
-import tools.jackson.databind.ValueSerializer;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
 
 /**
  * Generic serializer that writes a value as a JSON string using the given conversion function.
@@ -14,7 +14,7 @@ import tools.jackson.databind.ValueSerializer;
  *
  * @author Radu Sebastian LAZIN
  */
-public class StringValueSerializer<T> extends ValueSerializer<T> {
+public class FieldValueSerializer<T> extends JsonSerializer<T> {
 
 	/**
 	 * Function used to convert the value to its JSON string representation.
@@ -26,16 +26,15 @@ public class StringValueSerializer<T> extends ValueSerializer<T> {
 	 *
 	 * @param toString function used to convert the value to its JSON string representation
 	 */
-	public StringValueSerializer(final Function<T, String> toString) {
+	public FieldValueSerializer(final Function<T, String> toString) {
 		this.toString = toString;
 	}
 
 	/**
-	 * @see ValueSerializer#serialize(Object, JsonGenerator, SerializationContext)
+	 * @see JsonSerializer#serialize(Object, JsonGenerator, SerializerProvider)
 	 */
 	@Override
-	@SuppressWarnings("resource")
-	public void serialize(final T value, final JsonGenerator gen, final SerializationContext ctxt) throws JacksonException {
+	public void serialize(final T value, final JsonGenerator gen, final SerializerProvider serializers) throws IOException {
 		gen.writeString(toString.apply(value));
 	}
 }

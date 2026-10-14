@@ -34,7 +34,9 @@ import org.junit.jupiter.api.Test;
  * {@code java.util.Calendar} values use a numeric zero offset ({@code +00:00}).
  * <p>
  * The remaining JDK types ({@code java.time.Year}, {@code java.time.Month}, {@code java.sql.Date},
- * {@code java.util.Locale} and {@code java.util.Optional}) are covered by {@link JsonBuilderJdkTypesContract}.
+ * {@code java.util.Locale} and {@code java.util.Optional}) are covered by their own dedicated contracts
+ * ({@link JsonBuilderYearContract}, {@link JsonBuilderMonthContract}, {@link JsonBuilderSqlDateContract},
+ * {@link JsonBuilderLocaleContract} and {@link JsonBuilderOptionalContract}).
  *
  * @author Radu Sebastian LAZIN
  */
