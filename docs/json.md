@@ -38,6 +38,9 @@ Both Jackson builders apply the same rules:
 - Tokens after the first JSON value fail the read. `{"a":1} junk` and `{"a":1}{"b":2}` make `fromJson` return `null`. Whitespace after the value is still accepted.
 - Enum values and map keys are written and read with `toString()`. The match ignores case. `@AsValue` still selects the annotated member. When `toString()` differs from the constant name, the constant name is not accepted.
 - Null properties are omitted, including null map values. Null elements inside a list are kept.
+- A getter that returns a collection or map is not used as a setter. JSON does not add elements through that getter. A property with a setter is still read.
+- A `final` field is not set from JSON. A constructor parameter is still bound.
+- A getter such as `getURL()` is the property `URL`. Jackson 2 enables standard bean naming for that. Jackson 3 already derives the name that way.
 - Properties follow the order of the fields in the class. Jackson 3 disables alphabetical sorting, which is that library's default.
 - Date, time, and duration values are ISO-8601 strings, not numeric timestamps. `java.util.Date` and `java.util.Calendar` use a numeric zero offset (`+00:00`). Jackson 3 also pins nanosecond timestamp precision, date map keys as strings, the context time zone on write, and omission of the zone id, so that output stays stable if library defaults change.
 

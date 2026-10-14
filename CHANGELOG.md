@@ -7,6 +7,9 @@
 - Changed `Jackson2JsonBuilder` to write and read enums with `toString()` (values and map keys), matching Jackson 3. `Jackson3JsonBuilder` pins the same enum features explicitly.
 - Changed `Jackson2JsonBuilder` to fail when JSON `null` is read into a primitive field, matching Jackson 3. `Jackson3JsonBuilder` pins the same feature explicitly.
 - Changed `Jackson2JsonBuilder` to fail when tokens follow the first JSON value, matching Jackson 3. `Jackson3JsonBuilder` pins the same feature explicitly.
+- Changed `Jackson2JsonBuilder` so a collection getter is not a setter, matching Jackson 3. `Jackson3JsonBuilder` pins the same feature explicitly.
+- Changed `Jackson2JsonBuilder` so `final` fields are not set by reflection, matching Jackson 3. `Jackson3JsonBuilder` pins the same feature explicitly.
+- Changed `Jackson2JsonBuilder` so a getter such as `getURL()` is the property `URL` (standard bean naming), matching Jackson 3.
 - Changed `Jackson2JsonBuilder` default property inclusion to also apply to content (e.g. `Map` values), matching Jackson 3.
 - Added `configure(Consumer)` to `Jackson2JsonBuilder` and `Jackson3JsonBuilder` to reconfigure the underlying mapper at runtime.
 - Fixed `Jackson3JsonBuilder` runtime indentation (`indentOutput(boolean)`) by rebuilding the underlying `JsonMapper` through `configure(...)`.

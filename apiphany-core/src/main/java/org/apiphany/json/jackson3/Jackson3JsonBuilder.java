@@ -119,6 +119,9 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * order of the properties as they are in the class</li>
 	 * <li>accept case-insensitive enums</li>
 	 * <li>write and read enum values and map keys with {@code toString()}</li>
+	 * <li>do not use a collection or map getter as a setter</li>
+	 * <li>do not set {@code final} fields by reflection</li>
+	 * <li>derive an acronym getter such as {@code getURL()} as the property name {@code URL}</li>
 	 * <li>do not serialize <code>null</code> values</li>
 	 * <li>lock the date/time serialization features to explicit values so the JSON output is stable</li>
 	 * </ul>
@@ -145,6 +148,8 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 		builder.configure(EnumFeature.WRITE_ENUMS_USING_TO_STRING, true);
 		builder.configure(EnumFeature.READ_ENUMS_USING_TO_STRING, true);
 		builder.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS, true);
+		builder.configure(MapperFeature.USE_GETTERS_AS_SETTERS, false);
+		builder.configure(MapperFeature.ALLOW_FINAL_FIELDS_AS_MUTATORS, false);
 		builder.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, false);
 
 		configureDateTimeFeatures(builder);

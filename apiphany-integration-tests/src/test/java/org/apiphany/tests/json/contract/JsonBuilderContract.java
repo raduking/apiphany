@@ -205,6 +205,70 @@ public interface JsonBuilderContract {
 	}
 
 	/**
+	 * Transfer object whose list is exposed only by a getter.
+	 *
+	 * @author Radu Sebastian LAZIN
+	 */
+	class ReadOnlyItemsDTO {
+
+		private final List<String> items = new ArrayList<>();
+
+		public List<String> getItems() {
+			return items;
+		}
+	}
+
+	/**
+	 * Transfer object with a list setter.
+	 *
+	 * @author Radu Sebastian LAZIN
+	 */
+	class ItemsDTO {
+
+		private List<String> items;
+
+		public List<String> getItems() {
+			return items;
+		}
+
+		public void setItems(final List<String> items) {
+			this.items = items;
+		}
+	}
+
+	/**
+	 * Transfer object with a public final field assigned by the constructor.
+	 *
+	 * @author Radu Sebastian LAZIN
+	 */
+	class FinalNameDTO {
+
+		public final String name;
+
+		public FinalNameDTO() {
+			this.name = "initial";
+		}
+	}
+
+	/**
+	 * Transfer object whose property comes from {@code getURL()}/{@code setURL(String)}.
+	 *
+	 * @author Radu Sebastian LAZIN
+	 */
+	class UrlDTO {
+
+		private String value;
+
+		public String getURL() {
+			return value;
+		}
+
+		public void setURL(final String value) {
+			this.value = value;
+		}
+	}
+
+	/**
 	 * Transfer object with primitive fields and one boxed field.
 	 *
 	 * @author Radu Sebastian LAZIN
@@ -402,6 +466,49 @@ public interface JsonBuilderContract {
 
 		assertThat(JsonBuilder.fromJson("{\"id\":\"id1\",\"name\":\"name1\"} junk", SimpleDTO.class), nullValue());
 		assertThat(JsonBuilder.fromJson("{\"id\":\"id1\"}{\"id\":\"id2\"}", SimpleDTO.class), nullValue());
+	}
+
+	@DisplayName("JSON: a collection getter is not used as a setter")
+	@Test
+	default void shouldNotUseACollectionGetterAsASetter() {
+		ReadOnlyItemsDTO read = JsonBuilder.fromJson("{\"items\":[\"a\"]}", ReadOnlyItemsDTO.class);
+
+		assertThat(read, notNullValue());
+		assertThat(read.getItems(), equalTo(List.of()));
+
+		ReadOnlyItemsDTO written = new ReadOnlyItemsDTO();
+		written.getItems().add("a");
+
+		assertThat(Strings.removeAllWhitespace(JsonBuilder.toJson(written)), equalTo("{\"items\":[\"a\"]}"));
+
+		ItemsDTO mutable = JsonBuilder.fromJson("{\"items\":[\"a\"]}", ItemsDTO.class);
+
+		assertThat(mutable, notNullValue());
+		assertThat(mutable.getItems(), equalTo(List.of("a")));
+	}
+
+	@DisplayName("JSON: a final field is not set from JSON")
+	@Test
+	default void shouldNotSetAFinalFieldFromJson() {
+		FinalNameDTO read = JsonBuilder.fromJson("{\"name\":\"changed\"}", FinalNameDTO.class);
+
+		assertThat(read, notNullValue());
+		assertThat(read.name, equalTo("initial"));
+	}
+
+	@DisplayName("JSON: an acronym getter such as getURL is the property URL")
+	@Test
+	default void shouldUseTheAcronymAsThePropertyName() {
+		UrlDTO dto = new UrlDTO();
+		dto.setURL("addr");
+
+		assertThat(Strings.removeAllWhitespace(JsonBuilder.toJson(dto)), equalTo("{\"URL\":\"addr\"}"));
+		assertThat(JsonBuilder.fromJson("{\"URL\":\"addr\"}", UrlDTO.class).getURL(), equalTo("addr"));
+
+		UrlDTO ignored = JsonBuilder.fromJson("{\"url\":\"addr\"}", UrlDTO.class);
+
+		assertThat(ignored, notNullValue());
+		assertThat(ignored.getURL(), nullValue());
 	}
 
 	@DisplayName("JSON: unknown fields are ignored on deserialization")
