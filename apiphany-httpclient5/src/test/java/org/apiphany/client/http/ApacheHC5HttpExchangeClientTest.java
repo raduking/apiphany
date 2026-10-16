@@ -64,6 +64,7 @@ import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
+import org.apiphany.json.JsonBuilder;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -592,6 +593,26 @@ class ApacheHC5HttpExchangeClientTest {
 
 		@Test
 		@SuppressWarnings({ "resource", "unchecked" })
+		void shouldCreateJsonEntityFromSerializableWhenContentTypeIsJson() throws Exception {
+			ClientProperties properties = ClientProperties.defaults();
+
+			try (ApacheHC5HttpExchangeClient client = new ApacheHC5HttpExchangeClient(properties)) {
+				Map<String, List<String>> headers = Map.of(HttpHeader.CONTENT_TYPE.value(), List.of("application/json"));
+
+				ApiRequest<Serializable> apiRequest = mock(ApiRequest.class);
+				doReturn(42).when(apiRequest).getBody();
+				doReturn(headers).when(apiRequest).getHeaders();
+				doReturn(null).when(apiRequest).getCharset();
+
+				HttpEntity entity = client.createHttpEntity(apiRequest);
+
+				assertNotNull(entity);
+				assertThat(EntityUtils.toString(entity), equalTo(JsonBuilder.toJson(42)));
+			}
+		}
+
+		@Test
+		@SuppressWarnings({ "resource", "unchecked" })
 		void shouldCreateEntityFromJsonObject() throws Exception {
 			ClientProperties properties = ClientProperties.defaults();
 
@@ -603,8 +624,6 @@ class ApacheHC5HttpExchangeClientTest {
 				doReturn(dto).when(apiRequest).getBody();
 				doReturn(headers).when(apiRequest).getHeaders();
 				doReturn(null).when(apiRequest).getCharset();
-				doReturn(true).when(apiRequest).containsHeader(org.mockito.ArgumentMatchers.eq(HttpHeader.CONTENT_TYPE),
-						org.mockito.ArgumentMatchers.any());
 
 				HttpEntity entity = client.createHttpEntity(apiRequest);
 
@@ -624,8 +643,6 @@ class ApacheHC5HttpExchangeClientTest {
 				doReturn(TestDto.of("id1", 42)).when(apiRequest).getBody();
 				doReturn(Map.of(HttpHeader.CONTENT_TYPE.value(), List.of("application/json"))).when(apiRequest).getHeaders();
 				doReturn(null).when(apiRequest).getCharset();
-				doReturn(true).when(apiRequest).containsHeader(org.mockito.ArgumentMatchers.eq(HttpHeader.CONTENT_TYPE),
-						org.mockito.ArgumentMatchers.any());
 
 				HttpEntity entity = client.createHttpEntity(apiRequest);
 

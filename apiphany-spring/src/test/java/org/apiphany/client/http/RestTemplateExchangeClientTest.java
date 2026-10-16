@@ -15,7 +15,6 @@ import org.apiphany.client.ClientProperties;
 import org.apiphany.http.HttpEntityRequestCallback;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.ResponseEntityExtractor;
-import org.apiphany.io.ContentType;
 import org.apiphany.json.JsonBuilder;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -130,7 +129,6 @@ class RestTemplateExchangeClientTest {
 	class JsonBodyTests {
 
 		@Test
-		@SuppressWarnings({ "unchecked", "resource" })
 		void shouldWriteJsonWithTheObjectMapperFromTheRestTemplateBuilder() throws Exception {
 			ObjectMapper objectMapper = new ObjectMapper();
 			objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
@@ -145,7 +143,6 @@ class RestTemplateExchangeClientTest {
 		}
 
 		@Test
-		@SuppressWarnings({ "unchecked", "resource" })
 		void shouldWriteJsonWithJsonBuilderWhenTheRestTemplateBuilderHasNoJacksonConverter() throws Exception {
 			NamedPerson person = person();
 
@@ -166,7 +163,6 @@ class RestTemplateExchangeClientTest {
 		private static <T> ApiRequest<T> jsonRequest(final T body) {
 			ApiRequest<T> request = mock(ApiRequest.class);
 			doReturn(Map.of(HttpHeader.CONTENT_TYPE.value(), List.of("application/json"))).when(request).getHeaders();
-			doReturn(true).when(request).containsHeader(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_JSON);
 			doReturn(body).when(request).getBody();
 			return request;
 		}

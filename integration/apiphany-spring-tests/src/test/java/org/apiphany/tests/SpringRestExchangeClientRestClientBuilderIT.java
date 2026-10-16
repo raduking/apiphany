@@ -21,6 +21,7 @@ import org.apiphany.http.HttpStatus;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.morphix.reflection.TypeHolder;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -132,7 +133,7 @@ class SpringRestExchangeClientRestClientBuilderIT {
 		SimpleGetRequest(final String url) {
 			this.method = HttpMethod.GET;
 			this.url = url;
-			this.classResponseType = byte[].class;
+			this.responseTypeHolder = TypeHolder.of(byte[].class);
 		}
 	}
 
