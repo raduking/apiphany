@@ -40,6 +40,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.morphix.reflection.TypeHolder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -217,7 +218,7 @@ class AbstractSpringExchangeClientTest {
 		@SuppressWarnings({ "unchecked" })
 		void shouldBuildSuccessResponse() {
 			ApiRequest<byte[]> request = mock(ApiRequest.class);
-			doReturn(byte[].class).when(request).getClassResponseType();
+			doReturn(TypeHolder.of(byte[].class)).when(request).getResponseTypeHolder();
 
 			ResponseEntity<byte[]> responseEntity = ResponseEntity.ok("hello".getBytes());
 

@@ -44,10 +44,10 @@ import org.springframework.web.client.RequestCallback;
 /**
  * Abstract exchange client implemented with Spring.
  * <p>
- * JSON request bodies are written by {@link #convertRequestBody(org.apiphany.ApiRequest, Object)}.
- * {@link SpringRestExchangeClient} and {@link RestTemplateExchangeClient} register the {@code ObjectMapper}
- * {@link org.apiphany.http.SpringJson} finds on the Spring client builder as the first content converter. When that
- * builder has no Jackson converter, {@link org.apiphany.json.JsonBuilder} writes the body.
+ * JSON request bodies are written by {@link #toJson(org.apiphany.ApiRequest, Object)}. {@link SpringRestExchangeClient}
+ * and {@link RestTemplateExchangeClient} register the {@code ObjectMapper} {@link org.apiphany.http.SpringJson} finds
+ * on the Spring client builder as the first content converter. When that builder has no Jackson converter,
+ * {@link org.apiphany.json.JsonBuilder} writes the body.
  *
  * @author Radu Sebastian LAZIN
  */
@@ -232,8 +232,8 @@ public abstract class AbstractSpringExchangeClient extends AbstractHttpExchangeC
 	 * bodies, such as strings, byte arrays, input streams, and suppliers of input streams.
 	 * <p>
 	 * If the body is a supplier, it will be evaluated to get the actual body value. A JSON object is written with
-	 * {@link #convertRequestBody(ApiRequest, Object)}. Other bodies are converted with {@link Strings#safeToString} when
-	 * none of the typed cases match.
+	 * {@link #toJson(ApiRequest, Object)}. Other bodies are converted with {@link Strings#safeToString} when none of the
+	 * typed cases match.
 	 *
 	 * @param <T> request entity type
 	 *
@@ -251,7 +251,7 @@ public abstract class AbstractSpringExchangeClient extends AbstractHttpExchangeC
 			case Supplier<?> supplier -> createHttpEntity(apiRequest, JavaObjects.cast(supplier.get()), headers);
 			case File file -> SpringHttpSupport.createHttpEntity(file, headers);
 			case Path path -> SpringHttpSupport.createHttpEntity(path.toFile(), headers);
-			case Object obj when isContentJson(apiRequest) -> SpringHttpSupport.createHttpEntity(convertRequestBody(apiRequest, obj), headers);
+			case Object obj when isContentJson(apiRequest) -> SpringHttpSupport.createHttpEntity(toJson(apiRequest, obj), headers);
 			case Serializable s -> SpringHttpSupport.createHttpEntity(IOStreams.toByteArray(s), headers);
 			default -> SpringHttpSupport.createHttpEntity(fallbackToString(body), headers);
 		});
