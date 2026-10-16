@@ -68,7 +68,7 @@ public class ExchangeClientBuilder {
 	 * {@link ClientProperties}. The client arguments must be in the same order as the constructor parameters and the
 	 * exchange client class must have only one constructor with the same number of parameters as the client arguments.
 	 */
-	private List<Object> clientArguments = new LinkedList<>();
+	private final List<Object> clientArguments = new LinkedList<>();
 
 	/**
 	 * Decorator client classes. These are always managed by the builder.

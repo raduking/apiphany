@@ -21,11 +21,15 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import org.apiphany.ApiRequest;
 import org.apiphany.client.ClientProperties;
+import org.apiphany.http.HttpHeader;
 import org.apiphany.http.SpringHttpSupport;
+import org.apiphany.io.ContentType;
+import org.apiphany.json.JsonBuilder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -44,11 +48,15 @@ import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.ResourceHttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClient.RequestBodySpec;
 import org.springframework.web.client.RestClient.RequestBodyUriSpec;
 import org.springframework.web.client.RestClient.RequestHeadersSpec.ConvertibleClientHttpResponse;
 import org.springframework.web.client.RestClient.RequestHeadersSpec.ExchangeFunction;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 
 /**
  * Tests for {@link SpringRestExchangeClient}.
@@ -306,6 +314,69 @@ class SpringRestExchangeClientTest {
 				ExchangeFunction<ResponseEntity<byte[]>> exchangeFunction = invocation.getArgument(0);
 				return exchangeFunction.exchange(request, response);
 			}).when(requestBodySpec).exchange(any(ExchangeFunction.class));
+		}
+	}
+
+	@Nested
+	class JsonBodyTests {
+
+		@Test
+		@SuppressWarnings({ "unchecked", "resource" })
+		void shouldWriteJsonWithTheObjectMapperFromTheRestClientBuilder() throws Exception {
+			ObjectMapper objectMapper = new ObjectMapper();
+			objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+			RestClient.Builder builder = RestClient.builder()
+					.messageConverters(List.of(new MappingJackson2HttpMessageConverter(objectMapper)));
+			NamedPerson person = person();
+
+			try (SpringRestExchangeClient client = new SpringRestExchangeClient(ClientProperties.defaults(), builder)) {
+				HttpEntity<?> entity = client.buildRequest(jsonRequest(person));
+
+				assertThat(entity.getBody(), equalTo((Object) objectMapper.writeValueAsString(person)));
+			}
+		}
+
+		@Test
+		@SuppressWarnings({ "unchecked", "resource" })
+		void shouldWriteJsonWithJsonBuilderWhenTheRestClientBuilderHasNoJacksonConverter() throws Exception {
+			NamedPerson person = person();
+
+			try (SpringRestExchangeClient client = new SpringRestExchangeClient(ClientProperties.defaults(), RestClient.builder())) {
+				HttpEntity<?> entity = client.buildRequest(jsonRequest(person));
+
+				assertThat(entity.getBody(), equalTo((Object) JsonBuilder.toJson(person)));
+			}
+		}
+
+		private static NamedPerson person() {
+			NamedPerson person = new NamedPerson();
+			person.setFirstName("Ada");
+			return person;
+		}
+
+		@SuppressWarnings("unchecked")
+		private static <T> ApiRequest<T> jsonRequest(final T body) {
+			ApiRequest<T> request = mock(ApiRequest.class);
+			doReturn(Map.of(HttpHeader.CONTENT_TYPE.value(), List.of("application/json"))).when(request).getHeaders();
+			doReturn(true).when(request).containsHeader(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_JSON);
+			doReturn(body).when(request).getBody();
+			return request;
+		}
+	}
+
+	/**
+	 * Bean whose property name changes under snake case.
+	 */
+	static class NamedPerson {
+
+		private String firstName;
+
+		public String getFirstName() {
+			return firstName;
+		}
+
+		public void setFirstName(final String firstName) {
+			this.firstName = firstName;
 		}
 	}
 }

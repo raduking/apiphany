@@ -12,12 +12,17 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import org.apiphany.ApiMessage;
+import org.apiphany.ApiMimeType;
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
+import org.apiphany.client.ContentConverter;
+import org.apiphany.header.HeaderValues;
 import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpStatus;
+import org.apiphany.json.JsonBuilder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -26,6 +31,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.morphix.lang.function.Consumers;
 import org.morphix.lang.resource.ScopedResource;
+import org.morphix.reflection.GenericClass;
 
 /**
  * Test class for {@link AbstractHttpExchangeClient}.
@@ -229,6 +235,70 @@ class AbstractHttpExchangeClientTest {
 
 		Predicate<Throwable> callRedirectLoopFailurePredicate() {
 			return getRedirectLoopFailurePredicate();
+		}
+
+		String callConvertRequestBody(final ApiRequest<?> apiRequest, final Object body) {
+			return convertRequestBody(apiRequest, body);
+		}
+	}
+
+	@Nested
+	class ConvertRequestBodyTests {
+
+		@Test
+		void shouldWriteJsonWithTheFirstWritableConverter() throws Exception {
+			try (TestHttpExchangeClient client = new TestHttpExchangeClient(ClientProperties.defaults())) {
+				client.getContentConverters().add(0, new FixedJsonRequestConverter("custom-json"));
+
+				assertThat(client.callConvertRequestBody(new ApiRequest<>(), new Object()), equalTo("custom-json"));
+			}
+		}
+
+		@Test
+		void shouldWriteJsonWithJsonBuilderWhenNoCustomConverterIsRegistered() throws Exception {
+			Map<String, String> value = Map.of("name", "Ada");
+
+			try (TestHttpExchangeClient client = new TestHttpExchangeClient(ClientProperties.defaults())) {
+				assertThat(client.callConvertRequestBody(new ApiRequest<>(), value), equalTo(JsonBuilder.toJson(value)));
+			}
+		}
+	}
+
+	/**
+	 * Content converter that writes a fixed JSON string.
+	 */
+	private static final class FixedJsonRequestConverter implements ContentConverter<String> {
+
+		private final String json;
+
+		private FixedJsonRequestConverter(final String json) {
+			this.json = json;
+		}
+
+		@Override
+		public String from(final Object obj, final ApiMimeType contentType, final Class<String> targetClass) {
+			return null;
+		}
+
+		@Override
+		public String from(final Object obj, final ApiMimeType contentType, final GenericClass<String> targetGenericClass) {
+			return null;
+		}
+
+		@Override
+		public <U, H> boolean isConvertible(final ApiMessage<U> message, final ApiMimeType contentType, final H headers,
+				final HeaderValues chain) {
+			return false;
+		}
+
+		@Override
+		public <U> boolean isWritable(final ApiMessage<U> message, final ApiMimeType contentType) {
+			return true;
+		}
+
+		@Override
+		public String to(final Object body, final ApiMimeType mimeType) {
+			return json;
 		}
 	}
 }

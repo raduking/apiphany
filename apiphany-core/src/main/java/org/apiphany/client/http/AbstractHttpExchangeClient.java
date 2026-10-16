@@ -25,6 +25,7 @@ import org.apiphany.http.HttpHeaderValues;
 import org.apiphany.http.HttpMessages;
 import org.apiphany.http.HttpStatus;
 import org.apiphany.io.ContentType;
+import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.logging.LoggerAdapters;
 import org.apiphany.security.ssl.SSLContexts;
@@ -37,6 +38,10 @@ import org.morphix.lang.function.LoggerAdapter;
 
 /**
  * Abstract HTTP exchange client which holds all the common information needed to build an HTTP exchange client.
+ * <p>
+ * A JSON request body is written with {@link #convertRequestBody(ApiRequest, Object)}. That method uses the first
+ * content converter that can write {@code application/json}. {@link JsonBuilder} is used when no converter can write
+ * it.
  *
  * @author Radu Sebastian LAZIN
  */
@@ -116,6 +121,7 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 			LOGGER.warn("No JSON content converter found."
 					+ " Provide a JSON library to the classpath or register a custom content converter for JSON content.");
 		}
+		contentConverters.add(new JsonHttpContentConverter());
 	}
 
 	/**
@@ -189,8 +195,8 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	 * @return the converted body of type {@code U}
 	 * @throws UnsupportedOperationException if no compatible content converter is found
 	 */
-	protected <T, U, H> U convertBody(final ApiRequest<T> apiRequest, final ApiMimeType mimeType, final H headers, final HttpStatus status,
-			final Object body) {
+	protected <T, U, H> U convertBody(final ApiRequest<T> apiRequest, final ApiMimeType mimeType,
+			final H headers, final HttpStatus status, final Object body) {
 		if (isNoContent(status)) {
 			return null;
 		}
@@ -291,6 +297,26 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	 */
 	protected static <T> boolean isContentJson(final ApiRequest<T> apiRequest) {
 		return apiRequest.containsHeader(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_JSON);
+	}
+
+	/**
+	 * Writes a JSON request body. Uses the first content converter that can write {@code application/json}.
+	 * {@link JsonBuilder} is used when no converter can write it.
+	 *
+	 * @param <T> the type of the original request body
+	 *
+	 * @param apiRequest the API request
+	 * @param body the request body
+	 * @return the JSON string
+	 */
+	protected <T> String convertRequestBody(final ApiRequest<T> apiRequest, final Object body) {
+		ApiMimeType mimeType = ContentType.APPLICATION_JSON;
+		for (ContentConverter<?> contentConverter : getContentConverters()) {
+			if (contentConverter.isWritable(apiRequest, mimeType)) {
+				return contentConverter.to(body, mimeType);
+			}
+		}
+		return JsonBuilder.toJson(body);
 	}
 
 	/**

@@ -54,6 +54,32 @@ public interface ContentConverter<T> {
 	<U, H> boolean isConvertible(ApiMessage<U> message, ApiMimeType contentType, H headers, HeaderValues chain);
 
 	/**
+	 * Checks if the converter can write the given object as a request body. The default is {@code false}, so response
+	 * converters are skipped when a request body is written. Headers are read from the message.
+	 *
+	 * @param <U> the type of the message body
+	 *
+	 * @param message the {@link ApiMessage} containing the content to write
+	 * @param contentType the content type
+	 * @return true if the converter can write the request body, false otherwise
+	 */
+	default <U> boolean isWritable(final ApiMessage<U> message, final ApiMimeType contentType) {
+		return false;
+	}
+
+	/**
+	 * Writes the given object as a request body. The default throws {@link UnsupportedOperationException}.
+	 *
+	 * @param body the request body to write
+	 * @param mimeType the content type
+	 * @return the encoded request body
+	 * @throws UnsupportedOperationException if this converter does not write request bodies
+	 */
+	default String to(final Object body, final ApiMimeType mimeType) {
+		throw new UnsupportedOperationException("Content converter does not write request bodies: " + getClass().getName());
+	}
+
+	/**
 	 * Retrieves the values of a specific header from the provided headers object.
 	 *
 	 * @param <H> the type of the headers object
@@ -76,7 +102,7 @@ public interface ContentConverter<T> {
 	 * @param <U> the target type to convert the body to
 	 * @param <T> the type of the original request body
 	 *
-	 * @param typeConverter the content converter to use for the conversion
+	 * @param converter the content converter to use for the conversion
 	 * @param apiRequest the API request containing response type information
 	 * @param mimeType the content type
 	 * @param body the response body to be converted
@@ -84,10 +110,9 @@ public interface ContentConverter<T> {
 	 * @throws IllegalArgumentException if the conversion fails
 	 * @throws UnsupportedOperationException if the request specifies an unsupported conversion
 	 */
-	static <U, T> U convertBody(final ContentConverter<U> typeConverter, final ApiRequest<T> apiRequest, final ApiMimeType mimeType,
-			final Object body) {
+	static <U, T> U convertBody(final ContentConverter<U> converter, final ApiRequest<T> apiRequest, final ApiMimeType mimeType, final Object body) {
 		return apiRequest.hasGenericType()
-				? typeConverter.from(body, mimeType, apiRequest.getGenericResponseType())
-				: typeConverter.from(body, mimeType, apiRequest.getClassResponseType());
+				? converter.from(body, mimeType, apiRequest.getGenericResponseType())
+				: converter.from(body, mimeType, apiRequest.getClassResponseType());
 	}
 }

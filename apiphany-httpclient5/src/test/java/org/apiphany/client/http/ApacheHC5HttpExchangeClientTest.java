@@ -53,9 +53,13 @@ import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.apache.hc.core5.http.io.entity.BasicHttpEntity;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.message.BasicHeader;
+import org.apiphany.ApiMessage;
+import org.apiphany.ApiMimeType;
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
+import org.apiphany.client.ContentConverter;
+import org.apiphany.header.HeaderValues;
 import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
@@ -65,6 +69,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.morphix.reflection.Fields;
+import org.morphix.reflection.GenericClass;
 
 /**
  * Test class for {@link ApacheHC5HttpExchangeClient}.
@@ -612,6 +617,24 @@ class ApacheHC5HttpExchangeClientTest {
 
 		@Test
 		@SuppressWarnings({ "resource", "unchecked" })
+		void shouldWriteJsonWithTheSuppliedWriter() throws Exception {
+			try (ApacheHC5HttpExchangeClient client = new ApacheHC5HttpExchangeClient(ClientProperties.defaults())) {
+				client.getContentConverters().add(0, new FixedJsonRequestConverter("custom-json"));
+				ApiRequest<TestDto> apiRequest = mock(ApiRequest.class);
+				doReturn(TestDto.of("id1", 42)).when(apiRequest).getBody();
+				doReturn(Map.of(HttpHeader.CONTENT_TYPE.value(), List.of("application/json"))).when(apiRequest).getHeaders();
+				doReturn(null).when(apiRequest).getCharset();
+				doReturn(true).when(apiRequest).containsHeader(org.mockito.ArgumentMatchers.eq(HttpHeader.CONTENT_TYPE),
+						org.mockito.ArgumentMatchers.any());
+
+				HttpEntity entity = client.createHttpEntity(apiRequest);
+
+				assertThat(EntityUtils.toString(entity), equalTo("custom-json"));
+			}
+		}
+
+		@Test
+		@SuppressWarnings({ "resource", "unchecked" })
 		void shouldCreateEntityFromSupplier() throws Exception {
 			ClientProperties properties = ClientProperties.defaults();
 
@@ -866,6 +889,44 @@ class ApacheHC5HttpExchangeClientTest {
 
 		public int getCount() {
 			return count;
+		}
+	}
+
+	/**
+	 * Content converter that writes a fixed JSON string.
+	 */
+	private static final class FixedJsonRequestConverter implements ContentConverter<String> {
+
+		private final String json;
+
+		private FixedJsonRequestConverter(final String json) {
+			this.json = json;
+		}
+
+		@Override
+		public String from(final Object obj, final ApiMimeType contentType, final Class<String> targetClass) {
+			return null;
+		}
+
+		@Override
+		public String from(final Object obj, final ApiMimeType contentType, final GenericClass<String> targetGenericClass) {
+			return null;
+		}
+
+		@Override
+		public <U, H> boolean isConvertible(final ApiMessage<U> message, final ApiMimeType contentType, final H headers,
+				final HeaderValues chain) {
+			return false;
+		}
+
+		@Override
+		public <U> boolean isWritable(final ApiMessage<U> message, final ApiMimeType contentType) {
+			return true;
+		}
+
+		@Override
+		public String to(final Object body, final ApiMimeType mimeType) {
+			return json;
 		}
 	}
 }

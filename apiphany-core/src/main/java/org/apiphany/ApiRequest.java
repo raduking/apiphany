@@ -173,7 +173,7 @@ public class ApiRequest<T> extends ApiMessage<T> {
 	 * @return true if a class response type is defined, false otherwise
 	 */
 	public boolean hasClassType() {
-		return null != classResponseType;
+		return null != getClassResponseType();
 	}
 
 	/**
@@ -182,7 +182,7 @@ public class ApiRequest<T> extends ApiMessage<T> {
 	 * @return true if a generic response type is defined, false otherwise
 	 */
 	public boolean hasGenericType() {
-		return null != genericResponseType;
+		return null != getGenericResponseType();
 	}
 
 	/**
