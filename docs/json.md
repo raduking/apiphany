@@ -46,7 +46,7 @@ Both Jackson builders apply the same rules:
 
 `configure(Consumer)` changes the underlying mapper at runtime. Jackson 2 updates the mutable `ObjectMapper` in place. Jackson 3 builds a new `JsonMapper` and replaces the reference.
 
-A JSON request body on an HTTP exchange client is written with `AbstractHttpExchangeClient.convertRequestBody`. That method uses the first content converter that can write `application/json`. `JsonHttpContentConverter` writes with `JsonBuilder` and is registered by default. `SpringRestExchangeClient` and `RestTemplateExchangeClient` register a converter that uses the `ObjectMapper` on the `RestClient.Builder` or `RestTemplateBuilder`, when that builder has a `MappingJackson2HttpMessageConverter`. That converter is placed first, so it is chosen over `JsonHttpContentConverter`. Spring Boot puts the application's Jackson configuration on that message converter. Spring Boot 4's `JsonMapper` is not read yet.
+A JSON request body on an HTTP exchange client is written with `AbstractHttpExchangeClient.toJson`. That method uses the first content converter that can write `application/json`. `JsonHttpContentConverter` writes with `JsonBuilder` and is registered by default. `SpringRestExchangeClient` and `RestTemplateExchangeClient` register a converter that uses the `ObjectMapper` on the `RestClient.Builder` or `RestTemplateBuilder`, when that builder has a `MappingJackson2HttpMessageConverter`. That converter is placed first, so it is chosen over `JsonHttpContentConverter`. Spring Boot puts the application's Jackson configuration on that message converter. Spring Boot 4's `JsonMapper` is not read yet.
 
 ## Jackson
 

@@ -70,6 +70,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.morphix.reflection.Fields;
 import org.morphix.reflection.GenericClass;
+import org.morphix.reflection.TypeHolder;
 
 /**
  * Test class for {@link ApacheHC5HttpExchangeClient}.
@@ -710,7 +711,7 @@ class ApacheHC5HttpExchangeClientTest {
 
 				ApiRequest<Void> apiRequest = mock(ApiRequest.class);
 				doReturn(false).when(apiRequest).isStream();
-				doReturn(String.class).when(apiRequest).getClassResponseType();
+				doReturn(TypeHolder.of(String.class)).when(apiRequest).getResponseTypeHolder();
 
 				ApiResponse<?> result = client.buildResponse(apiRequest, response);
 
@@ -806,7 +807,7 @@ class ApacheHC5HttpExchangeClientTest {
 
 				ApiRequest<Void> apiRequest = mock(ApiRequest.class);
 				doReturn(false).when(apiRequest).isStream();
-				doReturn(String.class).when(apiRequest).getClassResponseType();
+				doReturn(TypeHolder.of(String.class)).when(apiRequest).getResponseTypeHolder();
 
 				ApiResponse<?> result = client.buildResponse(apiRequest, response);
 
@@ -872,7 +873,7 @@ class ApacheHC5HttpExchangeClientTest {
 				doReturn(null).when(apiRequest).getHeaders();
 				doReturn(false).when(apiRequest).hasBody();
 				doReturn(false).when(apiRequest).isStream();
-				doReturn(String.class).when(apiRequest).getClassResponseType();
+				doReturn(TypeHolder.of(String.class)).when(apiRequest).getResponseTypeHolder();
 
 				ApiResponse<?> result = client.doExchange(apiRequest);
 
