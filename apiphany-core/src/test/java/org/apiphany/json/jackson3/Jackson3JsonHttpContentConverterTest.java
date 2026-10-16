@@ -78,7 +78,7 @@ class Jackson3JsonHttpContentConverterTest extends Jackson3Test {
 		var converter = new Jackson3JsonHttpContentConverter<String>();
 		ApiMimeType mimeType = ContentType.APPLICATION_JSON;
 
-		boolean result = converter.isConvertible(null, mimeType, null, null);
+		boolean result = converter.isConvertible(mimeType, null, null);
 
 		assertTrue(result);
 	}
@@ -88,7 +88,7 @@ class Jackson3JsonHttpContentConverterTest extends Jackson3Test {
 		var converter = new Jackson3JsonHttpContentConverter<String>();
 		ApiMimeType mimeType = ContentType.TEXT_PLAIN;
 
-		boolean result = converter.isConvertible(null, mimeType, null, null);
+		boolean result = converter.isConvertible(mimeType, null, null);
 
 		assertFalse(result);
 	}
@@ -97,7 +97,7 @@ class Jackson3JsonHttpContentConverterTest extends Jackson3Test {
 	void shouldReturnFalseIfMimeTypeIsNull() {
 		var converter = new Jackson3JsonHttpContentConverter<String>();
 
-		boolean result = converter.isConvertible(null, null, null, null);
+		boolean result = converter.isConvertible(null, null, null);
 
 		assertFalse(result);
 	}
