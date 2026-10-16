@@ -1,5 +1,6 @@
 package org.apiphany.json.jackson2;
 
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -9,8 +10,10 @@ import java.util.Map;
 import org.apiphany.RequestMethod;
 import org.apiphany.json.jackson2.serializers.RequestMethodDeserializer;
 import org.apiphany.json.jackson2.serializers.RequestMethodSerializer;
+import org.apiphany.json.jackson2.serializers.TypeHolderDeserializer;
 import org.junit.jupiter.api.Test;
 import org.morphix.reflection.Fields;
+import org.morphix.reflection.TypeHolder;
 
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
@@ -58,6 +61,18 @@ class ApiphanyJackson2ModuleTest {
 		RequestMethodDeserializer rmds = (RequestMethodDeserializer) deserializerMap.get(new ClassKey(RequestMethod.class));
 
 		assertNotNull(rmds);
+	}
+
+	@Test
+	void shouldRegisterTypeHolderDeserializer() {
+		SimpleModule module = ApiphanyJackson2Module.instance();
+
+		SimpleDeserializers deserializers = Fields.IgnoreAccess.get(module, "_deserializers");
+		Map<ClassKey, JsonDeserializer<?>> deserializerMap = Fields.IgnoreAccess.get(deserializers, "_classMappings");
+
+		JsonDeserializer<?> deserializer = deserializerMap.get(new ClassKey(TypeHolder.class));
+
+		assertInstanceOf(TypeHolderDeserializer.class, deserializer);
 	}
 
 	/**

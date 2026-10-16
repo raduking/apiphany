@@ -67,7 +67,9 @@ class ApiRequestTest {
 						  "headers" : { },
 						  "url" : "http://localhost:666/api",
 						  "urlEncoded" : false,
-						  "classResponseType" : "java.lang.String",
+						  "responseTypeHolder" : {
+						    "classType" : "java.lang.String"
+						  },
 						  "charset" : "UTF-8",
 						  "stream" : false,
 						  "authenticationType" : "NONE"

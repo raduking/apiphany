@@ -20,9 +20,11 @@ import java.util.function.Supplier;
 
 import org.apiphany.ApiClient;
 import org.apiphany.RequestParameters;
+import org.apiphany.http.HttpHeader;
 import org.apiphany.io.ContentType;
 import org.apiphany.io.IOStreams;
 import org.apiphany.io.InputStreamSupplier;
+import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Bytes;
 import org.apiphany.multipart.MultipartMessage;
 import org.apiphany.test.Tests;
@@ -226,6 +228,92 @@ public interface BodyContract extends ApiphanyContract {
 		}
 
 		wiremock().verify(postRequestedFor(urlPathEqualTo("/body-serializable"))
+				.withRequestBody(binaryEqualTo(expected)));
+	}
+
+	@DisplayName("Body: sends Serializable body as JSON when Content-Type is application/json")
+	@Test
+	default void shouldSendSerializableBodyAsJsonWhenContentTypeIsJson() throws Exception {
+		wiremock().stubFor(post("/body-serializable-json")
+				.willReturn(aResponse()
+						.withStatus(200)));
+
+		record Point(int x, int y) implements Serializable {
+			// empty - serialization test payload
+		}
+		Point point = new Point(41, 42);
+		String expected = JsonBuilder.toJson(point);
+
+		ApiClient api = apiClient();
+		try (api) {
+			api.client()
+					.http()
+					.post()
+					.path("body-serializable-json")
+					.header(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_JSON)
+					.body(point)
+					.retrieve();
+		}
+
+		wiremock().verify(postRequestedFor(urlPathEqualTo("/body-serializable-json"))
+				.withHeader("Content-Type", equalTo("application/json"))
+				.withRequestBody(equalTo(expected)));
+	}
+
+	@DisplayName("Body: sends Serializable body as JSON when Content-Type is application/json with a charset parameter")
+	@Test
+	default void shouldSendSerializableBodyAsJsonWhenContentTypeIsJsonWithCharset() throws Exception {
+		wiremock().stubFor(post("/body-serializable-json-charset")
+				.willReturn(aResponse()
+						.withStatus(200)));
+
+		record Point(int x, int y) implements Serializable {
+			// empty - serialization test payload
+		}
+		Point point = new Point(41, 42);
+		String expected = JsonBuilder.toJson(point);
+
+		ApiClient api = apiClient();
+		try (api) {
+			api.client()
+					.http()
+					.post()
+					.path("body-serializable-json-charset")
+					.header(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_JSON + "; charset=UTF-8")
+					.body(point)
+					.retrieve();
+		}
+
+		wiremock().verify(postRequestedFor(urlPathEqualTo("/body-serializable-json-charset"))
+				.withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
+				.withRequestBody(equalTo(expected)));
+	}
+
+	@DisplayName("Body: sends Serializable body unchanged when Content-Type is not JSON")
+	@Test
+	default void shouldSendSerializableBodyUnchangedWhenContentTypeIsNotJson() throws Exception {
+		wiremock().stubFor(post("/body-serializable-not-json")
+				.willReturn(aResponse()
+						.withStatus(200)));
+
+		record Point(int x, int y) implements Serializable {
+			// empty - serialization test payload
+		}
+		Point point = new Point(41, 42);
+		byte[] expected = IOStreams.toByteArray(point);
+
+		ApiClient api = apiClient();
+		try (api) {
+			api.client()
+					.http()
+					.post()
+					.path("body-serializable-not-json")
+					.header(HttpHeader.CONTENT_TYPE, ContentType.TEXT_PLAIN)
+					.body(point)
+					.retrieve();
+		}
+
+		wiremock().verify(postRequestedFor(urlPathEqualTo("/body-serializable-not-json"))
 				.withRequestBody(binaryEqualTo(expected)));
 	}
 
