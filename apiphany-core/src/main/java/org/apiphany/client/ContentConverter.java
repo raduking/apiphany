@@ -2,9 +2,7 @@ package org.apiphany.client;
 
 import java.util.List;
 
-import org.apiphany.ApiMessage;
 import org.apiphany.ApiMimeType;
-import org.apiphany.ApiRequest;
 import org.apiphany.header.HeaderValues;
 import org.morphix.reflection.GenericClass;
 import org.morphix.reflection.TypeHolder;
@@ -20,19 +18,16 @@ import org.morphix.reflection.TypeHolder;
 public interface ContentConverter<T> {
 
 	/**
-	 * Checks if the converter can convert the content of the given {@link ApiMessage} to the specified type, considering
-	 * the provided headers.
+	 * Checks if the converter can convert to the specified type, considering the mime type and the provided headers.
 	 *
-	 * @param <U> the type of the message body.
 	 * @param <H> the type of the headers.
 	 *
-	 * @param message the {@link ApiMessage} containing the content to convert
 	 * @param contentType the content type
 	 * @param headers the headers that may influence the conversion
 	 * @param chain chain of header values extractor that will be used to get a specific header list
 	 * @return true if the converter can perform the conversion, false otherwise
 	 */
-	<U, H> boolean isConvertible(ApiMessage<U> message, ApiMimeType contentType, H headers, HeaderValues chain);
+	<H> boolean isConvertible(ApiMimeType contentType, H headers, HeaderValues chain);
 
 	/**
 	 * Converts the given object to an instance of the specified class.
@@ -62,7 +57,7 @@ public interface ContentConverter<T> {
 	 * @return the encoded request body
 	 * @throws UnsupportedOperationException if this converter does not write request bodies
 	 */
-	String toString(final Object body, final ApiMimeType mimeType);
+	String toString(Object body, ApiMimeType mimeType);
 
 	/**
 	 * Retrieves the values of a specific header from the provided headers object.
@@ -82,7 +77,7 @@ public interface ContentConverter<T> {
 
 	/**
 	 * Converts the response body to the desired type using the provided {@link ContentConverter}. This method handles both
-	 * generic and non-generic response types based on the {@link ApiRequest} configuration.
+	 * generic and non-generic response types based on the {@link TypeHolder} configuration.
 	 *
 	 * @param <U> the target type to convert the body to
 	 *

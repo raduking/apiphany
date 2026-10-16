@@ -28,15 +28,15 @@ class JsonHttpContentConverterTest {
 	void shouldConvertApplicationJson() {
 		JsonHttpContentConverter<?> converter = new JsonHttpContentConverter<>();
 
-		assertThat(converter.isConvertible(null, ContentType.APPLICATION_JSON, null, null), equalTo(true));
+		assertThat(converter.isConvertible(ContentType.APPLICATION_JSON, null, null), equalTo(true));
 	}
 
 	@Test
 	void shouldNotConvertOtherContentTypes() {
 		JsonHttpContentConverter<?> converter = new JsonHttpContentConverter<>();
 
-		assertThat(converter.isConvertible(null, ContentType.TEXT_PLAIN, null, null), equalTo(false));
-		assertThat(converter.isConvertible(null, null, null, null), equalTo(false));
+		assertThat(converter.isConvertible(ContentType.TEXT_PLAIN, null, null), equalTo(false));
+		assertThat(converter.isConvertible(null, null, null), equalTo(false));
 	}
 
 	@Test

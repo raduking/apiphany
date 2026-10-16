@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import org.apiphany.ApiMessage;
 import org.apiphany.ApiMimeType;
 import org.apiphany.header.HeaderValues;
 import org.apiphany.header.MapHeaderValues;
@@ -91,7 +90,7 @@ class ContentConverterTest {
 	static class TestContentConverter implements ContentConverter<Object> {
 
 		@Override
-		public <U, H> boolean isConvertible(final ApiMessage<U> message, final ApiMimeType contentType, final H headers, final HeaderValues chain) {
+		public <H> boolean isConvertible(final ApiMimeType contentType, final H headers, final HeaderValues chain) {
 			return false;
 		}
 

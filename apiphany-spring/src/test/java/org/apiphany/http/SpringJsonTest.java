@@ -7,6 +7,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.List;
 
+import org.apiphany.client.ContentConverter;
 import org.apiphany.io.ContentType;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -69,6 +70,15 @@ class SpringJsonTest {
 
 		assertThat(SpringJson.converter(List.of(text, json)).toString(person, ContentType.APPLICATION_JSON),
 				equalTo(jsonMapper.writeValueAsString(person)));
+	}
+
+	@Test
+	void shouldConvertOnlyApplicationJson() {
+		ContentConverter<String> converter = SpringJson.converter(List.of(new MappingJackson2HttpMessageConverter()));
+
+		assertThat(converter.isConvertible(ContentType.APPLICATION_JSON, null, null), equalTo(true));
+		assertThat(converter.isConvertible(ContentType.TEXT_PLAIN, null, null), equalTo(false));
+		assertThat(converter.isConvertible(null, null, null), equalTo(false));
 	}
 
 	@Test

@@ -3,7 +3,8 @@
 `1.2.21`
 
 - Added `JsonBuilder.hasLibrary()` to report whether a JSON library is on the classpath. It is false when the singleton stayed a `JsonBuilder`.
-- Changed HTTP exchange clients to write JSON request bodies through content converters. `JsonHttpContentConverter` writes with `JsonBuilder`. 
+- Changed HTTP exchange clients to write JSON request bodies through content converters. `JsonHttpContentConverter` writes with `JsonBuilder`.
+- Removed the message parameter from `ContentConverter.isConvertible`. The method now takes the content type and headers. 
 - Changed Spring clients to write with the `ObjectMapper` configured on the `RestClient` or `RestTemplate` builder.
 - Changed HTTP exchange clients to treat `application/json` media types with parameters (e.g. `charset=UTF-8`) as JSON request bodies.
 - Added `ContentType.matches(String)` to match one content type, ignoring media type parameters and case.

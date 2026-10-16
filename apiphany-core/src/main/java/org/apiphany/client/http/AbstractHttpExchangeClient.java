@@ -201,7 +201,7 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 			return JavaObjects.cast(StringHttpContentConverter.instance().from(body, mimeType, String.class));
 		}
 		for (ContentConverter<?> contentConverter : getContentConverters()) {
-			if (contentConverter.isConvertible(apiRequest, mimeType, headers, getHeaderValuesChain())) {
+			if (contentConverter.isConvertible(mimeType, headers, getHeaderValuesChain())) {
 				ContentConverter<U> typeConverter = JavaObjects.cast(contentConverter);
 				return ContentConverter.convertBody(typeConverter, apiRequest.getResponseTypeHolder(), mimeType, body);
 			}
@@ -303,7 +303,7 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	protected <T> String convertRequestBody(final ApiRequest<T> apiRequest, final Object body) {
 		ApiMimeType mimeType = ContentType.APPLICATION_JSON;
 		for (ContentConverter<?> contentConverter : getContentConverters()) {
-			if (contentConverter.isConvertible(apiRequest, mimeType, apiRequest.getHeaders(), getHeaderValuesChain())) {
+			if (contentConverter.isConvertible(mimeType, apiRequest.getHeaders(), getHeaderValuesChain())) {
 				return contentConverter.toString(body, mimeType);
 			}
 		}
