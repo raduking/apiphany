@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import org.apiphany.ApiMessage;
 import org.apiphany.ApiMimeType;
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
@@ -276,6 +275,11 @@ class AbstractHttpExchangeClientTest {
 		}
 
 		@Override
+		public <H> boolean isConvertible(final ApiMimeType contentType, final H headers, final HeaderValues chain) {
+			return true;
+		}
+
+		@Override
 		public String from(final Object obj, final ApiMimeType contentType, final Class<String> targetClass) {
 			return null;
 		}
@@ -283,12 +287,6 @@ class AbstractHttpExchangeClientTest {
 		@Override
 		public String from(final Object obj, final ApiMimeType contentType, final GenericClass<String> targetGenericClass) {
 			return null;
-		}
-
-		@Override
-		public <U, H> boolean isConvertible(final ApiMessage<U> message, final ApiMimeType contentType, final H headers,
-				final HeaderValues chain) {
-			return true;
 		}
 
 		@Override

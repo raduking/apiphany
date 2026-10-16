@@ -1,10 +1,8 @@
 package org.apiphany.http;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Locale;
 
-import org.apiphany.ApiMessage;
 import org.apiphany.ApiMimeType;
 import org.apiphany.client.ContentConverter;
 import org.apiphany.header.HeaderValues;
@@ -13,6 +11,8 @@ import org.apiphany.json.JsonBuilder;
 import org.morphix.reflection.Constructors;
 import org.morphix.reflection.Fields;
 import org.morphix.reflection.GenericClass;
+import org.morphix.reflection.Methods;
+import org.morphix.reflection.ReflectionException;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -155,27 +155,6 @@ public final class SpringJson {
 	}
 
 	/**
-	 * Writes the value with the mapper's {@code writeValueAsString}.
-	 *
-	 * @param mapper the mapper
-	 * @param value the value to write
-	 * @return the JSON string
-	 */
-	private static String write(final Object mapper, final Object value) {
-		try {
-			Method method = mapper.getClass().getMethod("writeValueAsString", Object.class);
-			return (String) method.invoke(mapper, value);
-		} catch (InvocationTargetException e) {
-			if (e.getCause() instanceof RuntimeException runtimeException) {
-				throw runtimeException;
-			}
-			throw new IllegalStateException(e.getCause());
-		} catch (ReflectiveOperationException e) {
-			throw new IllegalStateException(e);
-		}
-	}
-
-	/**
 	 * Hide constructor.
 	 */
 	private SpringJson() {
@@ -203,11 +182,10 @@ public final class SpringJson {
 		}
 
 		/**
-		 * @see ContentConverter#isConvertible(ApiMessage, ApiMimeType, Object, HeaderValues)
+		 * @see ContentConverter#isConvertible(ApiMimeType, Object, HeaderValues)
 		 */
 		@Override
-		public <U, H> boolean isConvertible(final ApiMessage<U> message, final ApiMimeType mimeType, final H headers,
-				final HeaderValues chain) {
+		public <H> boolean isConvertible(final ApiMimeType mimeType, final H headers, final HeaderValues chain) {
 			if (null != mimeType) {
 				return ContentType.APPLICATION_JSON == mimeType.contentType();
 			}
@@ -236,6 +214,25 @@ public final class SpringJson {
 		@Override
 		public String toString(final Object body, final ApiMimeType mimeType) {
 			return write(mapper, body);
+		}
+
+		/**
+		 * Writes the value with the mapper's {@code writeValueAsString}.
+		 *
+		 * @param mapper the mapper
+		 * @param value the value to write
+		 * @return the JSON string
+		 */
+		private static String write(final Object mapper, final Object value) {
+			Method method = Methods.getOneDeclared("writeValueAsString", mapper.getClass(), Object.class);
+			if (null == method) {
+				throw new IllegalStateException("Method " + mapper.getClass() + ".writeValueAsString not found!");
+			}
+			try {
+				return Methods.invoke(method, mapper, value);
+			} catch (ReflectionException e) {
+				throw new IllegalStateException("Error invoking " + method, e);
+			}
 		}
 
 		/**

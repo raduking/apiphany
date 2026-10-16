@@ -41,7 +41,6 @@ import java.util.function.Supplier;
 
 import org.apiphany.ApiClient;
 import org.apiphany.ApiClientFluentAdapter;
-import org.apiphany.ApiMessage;
 import org.apiphany.ApiMethod;
 import org.apiphany.ApiMimeType;
 import org.apiphany.ApiRequest;
@@ -1711,7 +1710,7 @@ class JavaNetHttpExchangeClientTest {
 		}
 
 		@Override
-		public <U, H> boolean isConvertible(final ApiMessage<U> message, final ApiMimeType contentType, final H headers, final HeaderValues chain) {
+		public <H> boolean isConvertible(final ApiMimeType contentType, final H headers, final HeaderValues chain) {
 			return true;
 		}
 
