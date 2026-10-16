@@ -236,20 +236,20 @@ class AbstractHttpExchangeClientTest {
 			return getRedirectLoopFailurePredicate();
 		}
 
-		String callConvertRequestBody(final ApiRequest<?> apiRequest, final Object body) {
-			return convertRequestBody(apiRequest, body);
+		String callToJson(final ApiRequest<?> apiRequest, final Object body) {
+			return toJson(apiRequest, body);
 		}
 	}
 
 	@Nested
-	class ConvertRequestBodyTests {
+	class ToJsonTests {
 
 		@Test
 		void shouldWriteJsonWithTheFirstWritableConverter() throws Exception {
 			try (TestHttpExchangeClient client = new TestHttpExchangeClient(ClientProperties.defaults())) {
 				client.getContentConverters().add(0, new FixedJsonRequestConverter("custom-json"));
 
-				assertThat(client.callConvertRequestBody(new ApiRequest<>(), new Object()), equalTo("custom-json"));
+				assertThat(client.callToJson(new ApiRequest<>(), new Object()), equalTo("custom-json"));
 			}
 		}
 
@@ -258,7 +258,7 @@ class AbstractHttpExchangeClientTest {
 			Map<String, String> value = Map.of("name", "Ada");
 
 			try (TestHttpExchangeClient client = new TestHttpExchangeClient(ClientProperties.defaults())) {
-				assertThat(client.callConvertRequestBody(new ApiRequest<>(), value), equalTo(JsonBuilder.toJson(value)));
+				assertThat(client.callToJson(new ApiRequest<>(), value), equalTo(JsonBuilder.toJson(value)));
 			}
 		}
 	}
