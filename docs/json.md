@@ -19,7 +19,7 @@ The runtime builder is chosen once, in this order:
 
 1. Jackson 3 (`tools.jackson.databind.ObjectMapper`), through `Jackson3JsonBuilder`
 2. Jackson 2 (`com.fasterxml.jackson.databind.ObjectMapper`), through `Jackson2JsonBuilder`
-3. The base `JsonBuilder`, which writes `toString()` inside an identity JSON object and cannot read JSON back
+3. The base `JsonBuilder`, which writes `toString()` inside an identity JSON object and cannot read JSON back. `JsonBuilder.hasLibrary()` is false in that case.
 
 Jackson is optional. A module that serializes with `JsonBuilder` declares the Jackson artifacts it needs as `provided` and `optional`.
 
