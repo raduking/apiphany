@@ -342,6 +342,11 @@ class JsonBuilderTest {
 
 			assertThat(instance.getClass(), equalTo(JsonBuilder.class));
 		}
+
+		@Test
+		void shouldReportThatAJsonLibraryWasFound() {
+			assertThat(JsonBuilder.hasLibrary(), equalTo(true));
+		}
 	}
 
 	@Nested

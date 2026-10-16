@@ -2,7 +2,6 @@ package org.apiphany.client.http;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Map;
 
@@ -19,32 +18,41 @@ class JsonHttpContentConverterTest {
 
 	@Test
 	void shouldWriteJsonWithJsonBuilder() {
-		JsonHttpContentConverter converter = new JsonHttpContentConverter();
+		JsonHttpContentConverter<?> converter = new JsonHttpContentConverter<>();
 		Map<String, String> value = Map.of("name", "Ada");
 
-		assertThat(converter.to(value, ContentType.APPLICATION_JSON), equalTo(JsonBuilder.toJson(value)));
+		assertThat(converter.toString(value, ContentType.APPLICATION_JSON), equalTo(JsonBuilder.toJson(value)));
 	}
 
 	@Test
-	void shouldWriteApplicationJson() {
-		JsonHttpContentConverter converter = new JsonHttpContentConverter();
+	void shouldConvertApplicationJson() {
+		JsonHttpContentConverter<?> converter = new JsonHttpContentConverter<>();
 
-		assertThat(converter.isWritable(null, ContentType.APPLICATION_JSON), equalTo(true));
+		assertThat(converter.isConvertible(null, ContentType.APPLICATION_JSON, null, null), equalTo(true));
 	}
 
 	@Test
-	void shouldNotWriteOtherContentTypes() {
-		JsonHttpContentConverter converter = new JsonHttpContentConverter();
+	void shouldNotConvertOtherContentTypes() {
+		JsonHttpContentConverter<?> converter = new JsonHttpContentConverter<>();
 
-		assertThat(converter.isWritable(null, ContentType.TEXT_PLAIN), equalTo(false));
-		assertThat(converter.isWritable(null, null), equalTo(false));
+		assertThat(converter.isConvertible(null, ContentType.TEXT_PLAIN, null, null), equalTo(false));
+		assertThat(converter.isConvertible(null, null, null, null), equalTo(false));
 	}
 
 	@Test
-	void shouldNotConvertResponses() {
-		JsonHttpContentConverter converter = new JsonHttpContentConverter();
+	void shouldReadJson() {
+		JsonHttpContentConverter<NamedValue> converter = new JsonHttpContentConverter<>();
 
-		assertThat(converter.isConvertible(null, ContentType.APPLICATION_JSON, null, null), equalTo(false));
-		assertThrows(UnsupportedOperationException.class, () -> converter.from(null, ContentType.APPLICATION_JSON, String.class));
+		NamedValue value = converter.from("{\"name\":\"Ada\"}", ContentType.APPLICATION_JSON, NamedValue.class);
+
+		assertThat(value.name, equalTo("Ada"));
+	}
+
+	/**
+	 * Bean read from JSON.
+	 */
+	static class NamedValue {
+
+		public String name;
 	}
 }

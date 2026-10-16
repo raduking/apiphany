@@ -67,7 +67,7 @@ class SpringJsonTest {
 		NamedPerson person = new NamedPerson();
 		person.setFirstName("Ada");
 
-		assertThat(SpringJson.converter(List.of(text, json)).to(person, ContentType.APPLICATION_JSON),
+		assertThat(SpringJson.converter(List.of(text, json)).toString(person, ContentType.APPLICATION_JSON),
 				equalTo(jsonMapper.writeValueAsString(person)));
 	}
 
@@ -81,7 +81,7 @@ class SpringJsonTest {
 		NamedPerson person = new NamedPerson();
 		person.setFirstName("Ada");
 
-		assertThat(SpringJson.converter(builder).to(person, ContentType.APPLICATION_JSON),
+		assertThat(SpringJson.converter(builder).toString(person, ContentType.APPLICATION_JSON),
 				equalTo(jsonMapper.writeValueAsString(person)));
 	}
 
@@ -94,7 +94,7 @@ class SpringJsonTest {
 		NamedPerson person = new NamedPerson();
 		person.setFirstName("Ada");
 
-		assertThat(SpringJson.converter(builder).to(person, ContentType.APPLICATION_JSON),
+		assertThat(SpringJson.converter(builder).toString(person, ContentType.APPLICATION_JSON),
 				equalTo(jsonMapper.writeValueAsString(person)));
 	}
 

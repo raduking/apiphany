@@ -3,17 +3,10 @@ package org.apiphany.client.http;
 import java.net.http.HttpHeaders;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BooleanSupplier;
-import java.util.function.Supplier;
 
 import org.apiphany.client.ContentConverter;
 import org.apiphany.header.HeaderValues;
 import org.apiphany.http.HttpHeader;
-import org.apiphany.json.jackson2.Jackson2JsonHttpContentConverter;
-import org.apiphany.json.jackson2.Jackson2Library;
-import org.apiphany.json.jackson3.Jackson3JsonHttpContentConverter;
-import org.apiphany.json.jackson3.Jackson3Library;
-import org.morphix.lang.Pair;
 
 /**
  * Content converter for HTTP clients.
@@ -23,14 +16,6 @@ import org.morphix.lang.Pair;
  * @author Radu Sebastian LAZIN
  */
 public interface HttpContentConverter<T> extends ContentConverter<T> {
-
-	/**
-	 * Default content converters with their presence checks. The converters are registered in order of preference, with the
-	 * most preferred converter first.
-	 */
-	static final List<Pair<BooleanSupplier, Supplier<HttpContentConverter<?>>>> JSON_CONVERTERS = List.of(
-			Pair.of(Jackson3Library::isPresent, Jackson3JsonHttpContentConverter::new),
-			Pair.of(Jackson2Library::isPresent, Jackson2JsonHttpContentConverter::new));
 
 	/**
 	 * Retrieves the values of the {@code Content-Type} header from the provided headers object. This method delegates to

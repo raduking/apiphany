@@ -7,6 +7,7 @@ import org.apiphany.ApiMimeType;
 import org.apiphany.ApiRequest;
 import org.apiphany.header.HeaderValues;
 import org.morphix.reflection.GenericClass;
+import org.morphix.reflection.TypeHolder;
 
 /**
  * An interface for converting content from one format to another. This interface provides methods to convert objects to
@@ -17,6 +18,21 @@ import org.morphix.reflection.GenericClass;
  * @author Radu Sebastian LAZIN
  */
 public interface ContentConverter<T> {
+
+	/**
+	 * Checks if the converter can convert the content of the given {@link ApiMessage} to the specified type, considering
+	 * the provided headers.
+	 *
+	 * @param <U> the type of the message body.
+	 * @param <H> the type of the headers.
+	 *
+	 * @param message the {@link ApiMessage} containing the content to convert
+	 * @param contentType the content type
+	 * @param headers the headers that may influence the conversion
+	 * @param chain chain of header values extractor that will be used to get a specific header list
+	 * @return true if the converter can perform the conversion, false otherwise
+	 */
+	<U, H> boolean isConvertible(ApiMessage<U> message, ApiMimeType contentType, H headers, HeaderValues chain);
 
 	/**
 	 * Converts the given object to an instance of the specified class.
@@ -39,45 +55,14 @@ public interface ContentConverter<T> {
 	T from(Object obj, ApiMimeType contentType, GenericClass<T> targetGenericClass);
 
 	/**
-	 * Checks if the converter can convert the content of the given {@link ApiMessage} to the specified type, considering
-	 * the provided headers.
-	 *
-	 * @param <U> the type of the message body.
-	 * @param <H> the type of the headers.
-	 *
-	 * @param message the {@link ApiMessage} containing the content to convert
-	 * @param contentType the content type
-	 * @param headers the headers that may influence the conversion
-	 * @param chain chain of header values extractor that will be used to get a specific header list
-	 * @return true if the converter can perform the conversion, false otherwise
-	 */
-	<U, H> boolean isConvertible(ApiMessage<U> message, ApiMimeType contentType, H headers, HeaderValues chain);
-
-	/**
-	 * Checks if the converter can write the given object as a request body. The default is {@code false}, so response
-	 * converters are skipped when a request body is written. Headers are read from the message.
-	 *
-	 * @param <U> the type of the message body
-	 *
-	 * @param message the {@link ApiMessage} containing the content to write
-	 * @param contentType the content type
-	 * @return true if the converter can write the request body, false otherwise
-	 */
-	default <U> boolean isWritable(final ApiMessage<U> message, final ApiMimeType contentType) {
-		return false;
-	}
-
-	/**
-	 * Writes the given object as a request body. The default throws {@link UnsupportedOperationException}.
+	 * Converts the given object (body) to a {@link String} to be used in a request.
 	 *
 	 * @param body the request body to write
 	 * @param mimeType the content type
 	 * @return the encoded request body
 	 * @throws UnsupportedOperationException if this converter does not write request bodies
 	 */
-	default String to(final Object body, final ApiMimeType mimeType) {
-		throw new UnsupportedOperationException("Content converter does not write request bodies: " + getClass().getName());
-	}
+	String toString(final Object body, final ApiMimeType mimeType);
 
 	/**
 	 * Retrieves the values of a specific header from the provided headers object.
@@ -100,19 +85,18 @@ public interface ContentConverter<T> {
 	 * generic and non-generic response types based on the {@link ApiRequest} configuration.
 	 *
 	 * @param <U> the target type to convert the body to
-	 * @param <T> the type of the original request body
 	 *
 	 * @param converter the content converter to use for the conversion
-	 * @param apiRequest the API request containing response type information
+	 * @param typeHolder the response type information
 	 * @param mimeType the content type
 	 * @param body the response body to be converted
 	 * @return the converted body of type {@code U}
 	 * @throws IllegalArgumentException if the conversion fails
 	 * @throws UnsupportedOperationException if the request specifies an unsupported conversion
 	 */
-	static <U, T> U convertBody(final ContentConverter<U> converter, final ApiRequest<T> apiRequest, final ApiMimeType mimeType, final Object body) {
-		return apiRequest.hasGenericType()
-				? converter.from(body, mimeType, apiRequest.getGenericResponseType())
-				: converter.from(body, mimeType, apiRequest.getClassResponseType());
+	static <U> U convertBody(final ContentConverter<U> converter, final TypeHolder typeHolder, final ApiMimeType mimeType, final Object body) {
+		return typeHolder.hasGenericType()
+				? converter.from(body, mimeType, typeHolder.getGenericType())
+				: converter.from(body, mimeType, typeHolder.getClassType());
 	}
 }
