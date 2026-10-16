@@ -33,6 +33,11 @@ class JsonBuilderTest {
 	}
 
 	@Test
+	void shouldReportThatNoJsonLibraryWasFound() {
+		assertThat(JsonBuilder.hasLibrary(), equalTo(false));
+	}
+
+	@Test
 	void shouldCallToString() {
 		TestDto dto = new TestDto("example", 42);
 		String expectedJson = "{ \"identity\":\"" + dto.getClass().getName() + "@" + Integer.toHexString(dto.hashCode()) + "\" }";

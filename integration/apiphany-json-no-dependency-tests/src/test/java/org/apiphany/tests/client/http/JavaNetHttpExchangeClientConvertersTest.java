@@ -11,7 +11,6 @@ import org.apiphany.ApiClient;
 import org.apiphany.client.ContentConverter;
 import org.apiphany.client.ExchangeClientBuilder;
 import org.apiphany.client.http.JavaNetHttpExchangeClient;
-import org.apiphany.client.http.JsonHttpContentConverter;
 import org.apiphany.client.http.StringHttpContentConverter;
 import org.junit.jupiter.api.Test;
 
@@ -24,28 +23,26 @@ class JavaNetHttpExchangeClientConvertersTest {
 
 	@Test
 	@SuppressWarnings("resource")
-	void shouldRegisterTheJsonRequestConverterWhenNoJsonLibraryIsPresent() throws Exception {
+	void shouldNotRegisterAJsonConverterWhenNoJsonLibraryIsPresent() throws Exception {
 		List<ContentConverter<?>> converters;
 		try (ApiClient client = ApiClient.of(ApiClient.EMPTY_BASE_URL, ExchangeClientBuilder.create().withDefaultClient())) {
 			converters = client.client().getExchangeClient(JavaNetHttpExchangeClient.class).getContentConverters();
 		}
 
-		assertThat(converters, hasSize(2));
+		assertThat(converters, hasSize(1));
 		assertThat(converters.getFirst(), is(instanceOf(StringHttpContentConverter.class)));
-		assertThat(converters.get(1), is(instanceOf(JsonHttpContentConverter.class)));
 	}
 
 	@Test
 	@SuppressWarnings("resource")
-	void shouldRegisterTheJsonRequestConverterWhenNoJsonLibraryIsPresentWithTestClient() throws Exception {
+	void shouldNotRegisterAJsonConverterWhenNoJsonLibraryIsPresentWithTestClient() throws Exception {
 		List<ContentConverter<?>> converters;
 		try (TestClient client = new TestClient()) {
 			converters = client.client().getExchangeClient(JavaNetHttpExchangeClient.class).getContentConverters();
 		}
 
-		assertThat(converters, hasSize(2));
+		assertThat(converters, hasSize(1));
 		assertThat(converters.getFirst(), is(instanceOf(StringHttpContentConverter.class)));
-		assertThat(converters.get(1), is(instanceOf(JsonHttpContentConverter.class)));
 	}
 
 	static class TestClient extends ApiClient {

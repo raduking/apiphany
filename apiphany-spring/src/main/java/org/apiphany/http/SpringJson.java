@@ -203,6 +203,18 @@ public final class SpringJson {
 		}
 
 		/**
+		 * @see ContentConverter#isConvertible(ApiMessage, ApiMimeType, Object, HeaderValues)
+		 */
+		@Override
+		public <U, H> boolean isConvertible(final ApiMessage<U> message, final ApiMimeType mimeType, final H headers,
+				final HeaderValues chain) {
+			if (null != mimeType) {
+				return ContentType.APPLICATION_JSON == mimeType.contentType();
+			}
+			return false;
+		}
+
+		/**
 		 * @see ContentConverter#from(Object, ApiMimeType, Class)
 		 */
 		@Override
@@ -219,30 +231,10 @@ public final class SpringJson {
 		}
 
 		/**
-		 * @see ContentConverter#isConvertible(ApiMessage, ApiMimeType, Object, HeaderValues)
+		 * @see ContentConverter#toString(Object, ApiMimeType)
 		 */
 		@Override
-		public <U, H> boolean isConvertible(final ApiMessage<U> message, final ApiMimeType mimeType, final H headers,
-				final HeaderValues chain) {
-			return false;
-		}
-
-		/**
-		 * @see ContentConverter#isWritable(ApiMessage, ApiMimeType)
-		 */
-		@Override
-		public <U> boolean isWritable(final ApiMessage<U> message, final ApiMimeType mimeType) {
-			if (null != mimeType) {
-				return ContentType.APPLICATION_JSON == mimeType.contentType();
-			}
-			return false;
-		}
-
-		/**
-		 * @see ContentConverter#to(Object, ApiMimeType)
-		 */
-		@Override
-		public String to(final Object body, final ApiMimeType mimeType) {
+		public String toString(final Object body, final ApiMimeType mimeType) {
 			return write(mapper, body);
 		}
 

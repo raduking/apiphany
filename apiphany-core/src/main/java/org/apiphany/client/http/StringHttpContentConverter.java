@@ -54,6 +54,14 @@ public class StringHttpContentConverter implements HttpContentConverter<String> 
 	}
 
 	/**
+	 * @see ContentConverter#toString(Object, ApiMimeType)
+	 */
+	@Override
+	public String toString(Object body, ApiMimeType mimeType) {
+		return Strings.safeToString(body);
+	}
+
+	/**
 	 * @see ContentConverter#isConvertible(ApiMessage, ApiMimeType, Object, HeaderValues)
 	 */
 	@Override

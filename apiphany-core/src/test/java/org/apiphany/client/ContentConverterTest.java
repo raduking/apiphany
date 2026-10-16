@@ -3,7 +3,6 @@ package org.apiphany.client;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Collections;
 import java.util.List;
@@ -89,15 +88,12 @@ class ContentConverterTest {
 		assertThat(values, hasSize(0));
 	}
 
-	@Test
-	void shouldNotWriteRequestBodiesByDefault() {
-		TestContentConverter converter = new TestContentConverter();
-
-		assertThat(converter.isWritable(null, null), equalTo(false));
-		assertThrows(UnsupportedOperationException.class, () -> converter.to(new Object(), null));
-	}
-
 	static class TestContentConverter implements ContentConverter<Object> {
+
+		@Override
+		public <U, H> boolean isConvertible(final ApiMessage<U> message, final ApiMimeType contentType, final H headers, final HeaderValues chain) {
+			return false;
+		}
 
 		@Override
 		public Object from(final Object obj, final ApiMimeType contentType, final Class<Object> dstClass) {
@@ -110,8 +106,8 @@ class ContentConverterTest {
 		}
 
 		@Override
-		public <U, H> boolean isConvertible(final ApiMessage<U> message, final ApiMimeType contentType, final H headers, final HeaderValues chain) {
-			return false;
+		public String toString(final Object body, final ApiMimeType mimeType) {
+			return null;
 		}
 	}
 }

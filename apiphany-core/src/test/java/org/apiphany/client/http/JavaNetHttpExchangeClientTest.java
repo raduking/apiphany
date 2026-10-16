@@ -1711,6 +1711,11 @@ class JavaNetHttpExchangeClientTest {
 		}
 
 		@Override
+		public <U, H> boolean isConvertible(final ApiMessage<U> message, final ApiMimeType contentType, final H headers, final HeaderValues chain) {
+			return true;
+		}
+
+		@Override
 		public String from(final Object obj, final ApiMimeType contentType, final Class<String> targetClass) {
 			return null;
 		}
@@ -1721,18 +1726,7 @@ class JavaNetHttpExchangeClientTest {
 		}
 
 		@Override
-		public <U, H> boolean isConvertible(final ApiMessage<U> message, final ApiMimeType contentType, final H headers,
-				final HeaderValues chain) {
-			return false;
-		}
-
-		@Override
-		public <U> boolean isWritable(final ApiMessage<U> message, final ApiMimeType contentType) {
-			return true;
-		}
-
-		@Override
-		public String to(final Object body, final ApiMimeType mimeType) {
+		public String toString(final Object body, final ApiMimeType mimeType) {
 			return json;
 		}
 	}

@@ -711,6 +711,7 @@ class ApacheHC5HttpExchangeClientTest {
 
 				ApiRequest<Void> apiRequest = mock(ApiRequest.class);
 				doReturn(false).when(apiRequest).isStream();
+				doReturn(String.class).when(apiRequest).getClassResponseType();
 
 				ApiResponse<?> result = client.buildResponse(apiRequest, response);
 
@@ -933,16 +934,11 @@ class ApacheHC5HttpExchangeClientTest {
 		@Override
 		public <U, H> boolean isConvertible(final ApiMessage<U> message, final ApiMimeType contentType, final H headers,
 				final HeaderValues chain) {
-			return false;
-		}
-
-		@Override
-		public <U> boolean isWritable(final ApiMessage<U> message, final ApiMimeType contentType) {
 			return true;
 		}
 
 		@Override
-		public String to(final Object body, final ApiMimeType mimeType) {
+		public String toString(final Object body, final ApiMimeType mimeType) {
 			return json;
 		}
 	}

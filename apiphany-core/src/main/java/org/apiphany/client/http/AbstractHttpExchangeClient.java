@@ -4,9 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.BooleanSupplier;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 import javax.net.ssl.SSLContext;
 
@@ -32,7 +30,6 @@ import org.apiphany.security.ssl.SSLContexts;
 import org.apiphany.security.ssl.SSLProperties;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Nullables;
-import org.morphix.lang.Pair;
 import org.morphix.lang.collections.Lists;
 import org.morphix.lang.function.LoggerAdapter;
 
@@ -108,20 +105,13 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	public static void addDefaultContentConverters(final List<ContentConverter<?>> contentConverters) {
 		contentConverters.add(new StringHttpContentConverter());
 
-		// TODO: abstract away the converter registration and discovery
-		boolean noJsonConverterFound = true;
-		for (Pair<BooleanSupplier, Supplier<HttpContentConverter<?>>> converter : HttpContentConverter.JSON_CONVERTERS) {
-			if (converter.left().getAsBoolean()) {
-				contentConverters.add(converter.right().get());
-				noJsonConverterFound = false;
-				break;
-			}
-		}
-		if (noJsonConverterFound) {
+		// TODO: add converter discovery
+		if (JsonBuilder.hasLibrary()) {
+			contentConverters.add(new JsonHttpContentConverter<>());
+		} else {
 			LOGGER.warn("No JSON content converter found."
 					+ " Provide a JSON library to the classpath or register a custom content converter for JSON content.");
 		}
-		contentConverters.add(new JsonHttpContentConverter());
 	}
 
 	/**
@@ -213,7 +203,7 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 		for (ContentConverter<?> contentConverter : getContentConverters()) {
 			if (contentConverter.isConvertible(apiRequest, mimeType, headers, getHeaderValuesChain())) {
 				ContentConverter<U> typeConverter = JavaObjects.cast(contentConverter);
-				return ContentConverter.convertBody(typeConverter, apiRequest, mimeType, body);
+				return ContentConverter.convertBody(typeConverter, apiRequest.getResponseTypeHolder(), mimeType, body);
 			}
 		}
 		if (body instanceof byte[] bytes && bytes.length == 0) {
@@ -225,7 +215,7 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 
 	/**
 	 * Checks if the given HTTP status indicates that there is no content in the response. This includes both 204 No Content
-	 * and 304 Not Modified statuses, as they both imply that there is no body to be processed.
+	 * and 304 Not Modified statuses, as they both imply that there is no response body to be processed.
 	 *
 	 * @param status the HTTP status to check
 	 * @return true if the status indicates no content, false otherwise
@@ -313,8 +303,8 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	protected <T> String convertRequestBody(final ApiRequest<T> apiRequest, final Object body) {
 		ApiMimeType mimeType = ContentType.APPLICATION_JSON;
 		for (ContentConverter<?> contentConverter : getContentConverters()) {
-			if (contentConverter.isWritable(apiRequest, mimeType)) {
-				return contentConverter.to(body, mimeType);
+			if (contentConverter.isConvertible(apiRequest, mimeType, apiRequest.getHeaders(), getHeaderValuesChain())) {
+				return contentConverter.toString(body, mimeType);
 			}
 		}
 		return JsonBuilder.toJson(body);
