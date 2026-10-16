@@ -34,7 +34,6 @@ import org.apiphany.http.HttpStatus;
 import org.apiphany.http.JavaNetHttpClients;
 import org.apiphany.io.IOStreams;
 import org.apiphany.io.InputStreamSupplier;
-import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Nullables;
@@ -282,8 +281,8 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 			case Supplier<?> supplier -> toBodyPublisher(apiRequest, JavaObjects.cast(supplier.get()));
 			case Path path -> BodyPublishers.ofFile(path);
 			case File file -> BodyPublishers.ofFile(file.toPath());
+			case Object obj when isContentJson(apiRequest) -> BodyPublishers.ofString(convertRequestBody(apiRequest, obj), charset);
 			case Serializable serializable -> BodyPublishers.ofByteArray(IOStreams.toByteArray(serializable));
-			case Object obj when isContentJson(apiRequest) -> BodyPublishers.ofString(JsonBuilder.toJson(obj), charset);
 			default -> BodyPublishers.ofString(fallbackToString(body), charset);
 		});
 	}
