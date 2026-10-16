@@ -79,6 +79,7 @@ import org.morphix.lang.Nullables;
 import org.morphix.reflection.Fields;
 import org.morphix.reflection.GenericClass;
 import org.morphix.reflection.GenericType;
+import org.morphix.reflection.TypeHolder;
 
 /**
  * Test class for {@link JavaNetHttpExchangeClient}.
@@ -540,7 +541,7 @@ class JavaNetHttpExchangeClientTest {
 					() -> exchangeClient.buildResponse(request, httpResponse));
 
 			assertThat(exception.getMessage(), equalTo(
-					"No content converter found to convert response to: " + ApiRequest.UNKNOWN_RESPONSE_TYPE
+					"No content converter found to convert response to: " + TypeHolder.UNKNOWN_TYPE
 							+ ", for the response content type: null"));
 		}
 
@@ -1458,6 +1459,26 @@ class JavaNetHttpExchangeClientTest {
 			byte[] bytes = subscriber.getReceivedBytes();
 			assertNotNull(bytes);
 			assertTrue(bytes.length > 0);
+		}
+
+		@Test
+		void shouldConvertSerializableToJsonBodyPublisherWhenContentTypeIsJson() {
+			TestSerializable serializable = new TestSerializable("serializable-content");
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.header(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_JSON)
+					.body(serializable);
+
+			BodyPublisher bodyPublisher = exchangeClient.toBodyPublisher(request);
+
+			ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
+			bodyPublisher.subscribe(subscriber);
+			subscriber.awaitCompletion();
+
+			assertTrue(subscriber.isCompleted());
+			assertNull(subscriber.getError());
+			assertThat(subscriber.getReceivedBytes(),
+					equalTo(JsonBuilder.toJson(serializable).getBytes(StandardCharsets.UTF_8)));
 		}
 	}
 

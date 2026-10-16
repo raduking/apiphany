@@ -33,6 +33,7 @@ import org.morphix.lang.collections.Maps;
 import org.morphix.lang.retry.Retry;
 import org.morphix.reflection.GenericClass;
 import org.morphix.reflection.GenericType;
+import org.morphix.reflection.TypeHolder;
 
 /**
  * Adapter for fluent style syntax. This class functions similar to a builder.
@@ -549,8 +550,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @return this
 	 */
 	public <T> ApiClientFluentAdapter responseType(final Class<T> responseType) {
-		Nullables.requireNull(genericResponseType, "Class response type already set");
-		this.classResponseType = responseType;
+		this.responseTypeHolder = TypeHolder.of(responseType);
 		return this;
 	}
 
@@ -562,8 +562,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * @return this
 	 */
 	public <T> ApiClientFluentAdapter responseType(final GenericClass<T> responseType) {
-		Nullables.requireNull(classResponseType, "Generic class response type already set");
-		this.genericResponseType = responseType;
+		this.responseTypeHolder = TypeHolder.of(responseType);
 		return this;
 	}
 
@@ -907,8 +906,7 @@ public class ApiClientFluentAdapter extends ApiRequest<Object> {
 	 * <p>
 	 * Fields not set from the given API request:
 	 * <ul>
-	 * <li>{@code classResponseType}</li>
-	 * <li>{@code genericResponseType}</li>
+	 * <li>{@code responseTypeHolder}</li>
 	 * <li>{@code authenticationType}</li>
 	 * </ul>
 	 *

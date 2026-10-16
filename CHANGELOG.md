@@ -2,7 +2,12 @@
 
 `1.2.21`
 
-- Changed HTTP exchange clients to write JSON request bodies through content converters. `JsonHttpContentConverter` writes with `JsonBuilder`. Spring clients write with the `ObjectMapper` configured on the `RestClient` or `RestTemplate` builder.
+- Changed HTTP exchange clients to write JSON request bodies through content converters. `JsonHttpContentConverter` writes with `JsonBuilder`. 
+- Changed Spring clients to write with the `ObjectMapper` configured on the `RestClient` or `RestTemplate` builder.
+- Changed HTTP exchange clients to treat `application/json` media types with parameters (e.g. `charset=UTF-8`) as JSON request bodies.
+- Added `ContentType.matches(String)` and `ContentType.matchesAny(List<String>)` to match content types ignoring media type parameters and case.
+- Added `TypeHolder` JSON de-serialization for Jackson 2 and 3, so `ApiRequest.responseTypeHolder` is read from a `classType` object or a class name string.
+- Upgraded `morphix-all` to `1.0.47`.
 
 ---
 

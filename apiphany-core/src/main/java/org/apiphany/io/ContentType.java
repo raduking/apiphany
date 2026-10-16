@@ -2,12 +2,14 @@ package org.apiphany.io;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
 import org.apiphany.ApiMimeType;
 import org.apiphany.lang.Strings;
 import org.morphix.lang.Enums;
+import org.morphix.lang.collections.Lists;
 import org.morphix.reflection.Constructors;
 
 /**
@@ -439,5 +441,51 @@ public enum ContentType implements ApiMimeType {
 	 */
 	public boolean in(final String contentType) {
 		return Strings.safe(contentType).contains(value);
+	}
+
+	/**
+	 * Returns true if the given content type value matches this content type ignoring the case, false otherwise.
+	 * <p>
+	 * Media type parameters (e.g. {@code charset=UTF-8}) and surrounding whitespace are ignored, so a header value of
+	 * {@code application/json; charset=UTF-8} matches {@link #APPLICATION_JSON}.
+	 *
+	 * @param contentTypeValue content type as string to match
+	 * @return true if the given content type value matches this content type ignoring the case, false otherwise
+	 */
+	public boolean matches(final String contentTypeValue) {
+		return value().equalsIgnoreCase(mediaType(contentTypeValue));
+	}
+
+	/**
+	 * Returns true if any of the given content type values matches this content type ignoring the case, false otherwise.
+	 * <p>
+	 * Each value is matched as described by {@link #matches(String)}, so media type parameters (e.g.
+	 * {@code charset=UTF-8}), surrounding whitespace and case are ignored. Null elements never match, and a null or empty
+	 * list always returns false.
+	 *
+	 * @param contentTypeValues content type values as strings to match, may be null
+	 * @return true if any of the given content type values matches this content type ignoring the case, false otherwise
+	 * @see #matches(String)
+	 */
+	public boolean matchesAny(final List<String> contentTypeValues) {
+		for (String contentTypeValue : Lists.safe(contentTypeValues)) {
+			if (matches(contentTypeValue)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Returns the media type of the given content type value, that is the value without any media type parameters (e.g.
+	 * {@code charset}) and surrounding whitespace.
+	 *
+	 * @param contentTypeValue content type as string, may be null
+	 * @return the media type part of the given content type value
+	 */
+	private static String mediaType(final String contentTypeValue) {
+		String value = Strings.safe(contentTypeValue).trim();
+		int parametersIndex = value.indexOf(';');
+		return parametersIndex < 0 ? value : value.substring(0, parametersIndex).trim();
 	}
 }

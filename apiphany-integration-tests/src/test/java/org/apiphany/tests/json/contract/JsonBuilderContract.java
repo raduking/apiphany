@@ -21,6 +21,7 @@ import org.apiphany.lang.Strings;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.morphix.reflection.GenericClass;
+import org.morphix.reflection.TypeHolder;
 
 /**
  * Contract tests for the {@link JsonBuilder} behavior that must be identical for every JSON library implementation.
@@ -580,6 +581,29 @@ public interface JsonBuilderContract {
 		RequestMethod method = JsonBuilder.fromJson("\"\"", RequestMethod.class);
 
 		assertThat(method, equalTo(ApiMethod.of("")));
+	}
+
+	@DisplayName("JSON: a TypeHolder is deserialized from a class name, either as a string or a classType property")
+	@Test
+	default void shouldDeserializeTypeHolderFromClassName() {
+		TypeHolder fromProperty = JsonBuilder.fromJson("{\"classType\":\"java.lang.String\"}", TypeHolder.class);
+
+		assertThat(fromProperty, notNullValue());
+		assertThat(fromProperty.hasClassType(), equalTo(true));
+		assertThat(fromProperty.getClassType(), equalTo(String.class));
+		assertThat(fromProperty.getTypeName(), equalTo("java.lang.String"));
+
+		TypeHolder fromString = JsonBuilder.fromJson("\"java.lang.String\"", TypeHolder.class);
+
+		assertThat(fromString, notNullValue());
+		assertThat(fromString.getClassType(), equalTo(String.class));
+
+		TypeHolder none = JsonBuilder.fromJson("{}", TypeHolder.class);
+
+		assertThat(none, notNullValue());
+		assertThat(none.hasType(), equalTo(false));
+
+		assertThat(JsonBuilder.fromJson("null", TypeHolder.class), nullValue());
 	}
 
 	@DisplayName("JSON: indentation can be toggled at runtime")

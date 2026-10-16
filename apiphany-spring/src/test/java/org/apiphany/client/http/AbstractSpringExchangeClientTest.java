@@ -33,6 +33,7 @@ import org.apiphany.client.ClientProperties;
 import org.apiphany.http.CloseableHttpRequestFactory;
 import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
+import org.apiphany.json.JsonBuilder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -159,6 +160,19 @@ class AbstractSpringExchangeClientTest {
 			HttpEntity<?> entity = client.buildRequest(request);
 
 			assertThat(entity.getBody(), instanceOf(byte[].class));
+		}
+
+		@Test
+		void shouldCreateJsonHttpEntityForSerializableWhenContentTypeIsJson() {
+			Map<String, List<String>> headers = Map.of(HttpHeader.CONTENT_TYPE.value(), List.of("application/json"));
+			ApiRequest<?> request = mock(ApiRequest.class);
+			doReturn(headers).when(request).getHeaders();
+			doReturn(42).when(request).getBody();
+
+			HttpEntity<?> entity = client.buildRequest(request);
+
+			assertThat(entity.getBody(), instanceOf(String.class));
+			assertThat(entity.getBody(), equalTo(JsonBuilder.toJson(42)));
 		}
 
 		@Test
