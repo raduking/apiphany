@@ -4,13 +4,19 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
 import java.util.List;
+import java.util.Map;
 
+import org.apiphany.ApiRequest;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.http.HttpEntityRequestCallback;
+import org.apiphany.http.HttpHeader;
 import org.apiphany.http.ResponseEntityExtractor;
+import org.apiphany.io.ContentType;
+import org.apiphany.json.JsonBuilder;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,6 +25,10 @@ import org.morphix.reflection.Fields;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 
 /**
  * Tests for {@link RestTemplateExchangeClient}.
@@ -113,6 +123,68 @@ class RestTemplateExchangeClientTest {
 
 				assertThat(converters.size(), equalTo(3));
 			}
+		}
+	}
+
+	@Nested
+	class JsonBodyTests {
+
+		@Test
+		@SuppressWarnings({ "unchecked", "resource" })
+		void shouldWriteJsonWithTheObjectMapperFromTheRestTemplateBuilder() throws Exception {
+			ObjectMapper objectMapper = new ObjectMapper();
+			objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+			RestTemplateBuilder builder = new RestTemplateBuilder().messageConverters(new MappingJackson2HttpMessageConverter(objectMapper));
+			NamedPerson person = person();
+
+			try (RestTemplateExchangeClient client = new RestTemplateExchangeClient(ClientProperties.defaults(), builder)) {
+				HttpEntity<?> entity = client.buildRequest(jsonRequest(person));
+
+				assertThat(entity.getBody(), equalTo((Object) objectMapper.writeValueAsString(person)));
+			}
+		}
+
+		@Test
+		@SuppressWarnings({ "unchecked", "resource" })
+		void shouldWriteJsonWithJsonBuilderWhenTheRestTemplateBuilderHasNoJacksonConverter() throws Exception {
+			NamedPerson person = person();
+
+			try (RestTemplateExchangeClient client = new RestTemplateExchangeClient(ClientProperties.defaults(), new RestTemplateBuilder())) {
+				HttpEntity<?> entity = client.buildRequest(jsonRequest(person));
+
+				assertThat(entity.getBody(), equalTo((Object) JsonBuilder.toJson(person)));
+			}
+		}
+
+		private static NamedPerson person() {
+			NamedPerson person = new NamedPerson();
+			person.setFirstName("Ada");
+			return person;
+		}
+
+		@SuppressWarnings("unchecked")
+		private static <T> ApiRequest<T> jsonRequest(final T body) {
+			ApiRequest<T> request = mock(ApiRequest.class);
+			doReturn(Map.of(HttpHeader.CONTENT_TYPE.value(), List.of("application/json"))).when(request).getHeaders();
+			doReturn(true).when(request).containsHeader(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_JSON);
+			doReturn(body).when(request).getBody();
+			return request;
+		}
+	}
+
+	/**
+	 * Bean whose property name changes under snake case.
+	 */
+	static class NamedPerson {
+
+		private String firstName;
+
+		public String getFirstName() {
+			return firstName;
+		}
+
+		public void setFirstName(final String firstName) {
+			this.firstName = firstName;
 		}
 	}
 }

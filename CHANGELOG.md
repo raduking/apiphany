@@ -2,6 +2,8 @@
 
 `1.2.21`
 
+- Changed HTTP exchange clients to write JSON request bodies through content converters. `JsonHttpContentConverter` writes with `JsonBuilder`. Spring clients write with the `ObjectMapper` configured on the `RestClient` or `RestTemplate` builder.
+
 ---
 
 `1.2.20`
