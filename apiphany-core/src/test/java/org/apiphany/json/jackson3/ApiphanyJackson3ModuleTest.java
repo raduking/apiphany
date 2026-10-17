@@ -1,10 +1,14 @@
 package org.apiphany.json.jackson3;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import java.sql.Date;
+import java.time.LocalDate;
 import java.util.Map;
 
 import org.apiphany.RequestMethod;
@@ -18,6 +22,7 @@ import org.morphix.reflection.TypeHolder;
 import tools.jackson.databind.JacksonModule.SetupContext;
 import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.deser.std.StdDeserializer;
+import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.module.SimpleDeserializers;
 import tools.jackson.databind.module.SimpleModule;
 import tools.jackson.databind.module.SimpleSerializers;
@@ -73,6 +78,21 @@ class ApiphanyJackson3ModuleTest {
 		StdDeserializer<?> deserializer = deserializerMap.get(new ClassKey(TypeHolder.class));
 
 		assertInstanceOf(TypeHolderDeserializer.class, deserializer);
+	}
+
+	@Test
+	void shouldSerializeDatesWithTheModule() {
+		JsonMapper mapper = JsonMapper.builder()
+				.addModule(ApiphanyJackson3Module.instance())
+				.build();
+
+		Date date = Date.valueOf(LocalDate.of(2024, 1, 2));
+
+		String keyJson = mapper.writeValueAsString(Map.of(date, "value"));
+		String valueJson = mapper.writeValueAsString(Map.of("value", date));
+
+		assertThat(keyJson, equalTo("{\"2024-01-02\":\"value\"}"));
+		assertThat(valueJson, equalTo("{\"value\":\"2024-01-02\"}"));
 	}
 
 	/**

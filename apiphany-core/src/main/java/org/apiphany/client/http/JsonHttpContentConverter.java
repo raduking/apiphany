@@ -57,15 +57,18 @@ public class JsonHttpContentConverter<T> implements HttpContentConverter<T> {
 	 * @param obj the object to convert
 	 * @param mimeType the mime type
 	 * @param targetClass the target class to which the JSON content will be de-serialized
-	 * @return the de-serialized object of type {@code T}
+	 * @return the de-serialized object of type {@code T}, or {@code null} if the input object is {@code null}
 	 * @throws ObjectConverterException if a non-null input cannot be converted
 	 * @see ContentConverter#from(Object, ApiMimeType, Class)
 	 * @see JsonBuilder#fromJson(Object, Class)
 	 */
 	@Override
 	public T from(final Object obj, final ApiMimeType mimeType, final Class<T> targetClass) {
+		if (null == obj) {
+			return null;
+		}
 		T result = JsonBuilder.fromJson(obj, targetClass);
-		if (null == result && null != obj) {
+		if (null == result) {
 			throw new ObjectConverterException("Error converting JSON response to " + targetClass.getName());
 		}
 		return result;
@@ -77,15 +80,18 @@ public class JsonHttpContentConverter<T> implements HttpContentConverter<T> {
 	 * @param obj the object to convert, which must be JSON
 	 * @param mimeType the mime type
 	 * @param targetGenericClass the target generic class to which the JSON content will be de-serialized
-	 * @return the de-serialized object of type {@code T}
+	 * @return the de-serialized object of type {@code T}, or {@code null} if the input object is {@code null}
 	 * @throws ObjectConverterException if a non-null input cannot be converted
 	 * @see ContentConverter#from(Object, ApiMimeType, GenericClass)
 	 * @see JsonBuilder#fromJson(Object, GenericClass)
 	 */
 	@Override
 	public T from(final Object obj, final ApiMimeType mimeType, final GenericClass<T> targetGenericClass) {
+		if (null == obj) {
+			return null;
+		}
 		T result = JsonBuilder.fromJson(obj, targetGenericClass);
-		if (null == result && null != obj) {
+		if (null == result) {
 			throw new ObjectConverterException("Error converting JSON response to " + targetGenericClass.getType().getTypeName());
 		}
 		return result;

@@ -1,13 +1,16 @@
 package org.apiphany.client.http;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import java.util.List;
 import java.util.Map;
 
 import org.apiphany.io.ContentType;
 import org.apiphany.json.JsonBuilder;
 import org.junit.jupiter.api.Test;
+import org.morphix.reflection.GenericClass;
 
 /**
  * Test class for {@link JsonHttpContentConverter}.
@@ -46,6 +49,26 @@ class JsonHttpContentConverterTest {
 		NamedValue value = converter.from("{\"name\":\"Ada\"}", ContentType.APPLICATION_JSON, NamedValue.class);
 
 		assertThat(value.name, equalTo("Ada"));
+	}
+
+	@Test
+	void shouldReturnNullWhenInputIsNull() {
+		JsonHttpContentConverter<NamedValue> converter = new JsonHttpContentConverter<>();
+
+		NamedValue value = converter.from(null, ContentType.APPLICATION_JSON, NamedValue.class);
+
+		assertThat(value, nullValue());
+	}
+
+	@Test
+	void shouldReturnNullWhenGenericInputIsNull() {
+		JsonHttpContentConverter<List<NamedValue>> converter = new JsonHttpContentConverter<>();
+
+		List<NamedValue> value = converter.from(null, ContentType.APPLICATION_JSON, new GenericClass<List<NamedValue>>() {
+			// empty
+		});
+
+		assertThat(value, nullValue());
 	}
 
 	/**

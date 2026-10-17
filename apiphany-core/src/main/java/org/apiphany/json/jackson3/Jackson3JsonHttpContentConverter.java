@@ -5,7 +5,6 @@ import org.apiphany.client.ContentConverter;
 import org.apiphany.client.http.HttpContentConverter;
 import org.apiphany.header.HeaderValues;
 import org.apiphany.io.ContentType;
-import org.apiphany.json.jackson2.Jackson2JsonBuilder;
 import org.morphix.convert.ObjectConverterException;
 import org.morphix.reflection.GenericClass;
 
@@ -54,15 +53,18 @@ public class Jackson3JsonHttpContentConverter<T> implements HttpContentConverter
 	 * @param obj the object to convert
 	 * @param mimeType the mime type
 	 * @param targetClass the target class to which the JSON content will be de-serialized
-	 * @return the de-serialized object of type {@code T}
+	 * @return the de-serialized object of type {@code T}, or {@code null} if the input object is {@code null}
 	 * @throws UnsupportedOperationException if the input object is not a JSON string
 	 * @see ContentConverter#from(Object, ApiMimeType, Class)
 	 * @see Jackson3JsonBuilder#fromJson(Object, Class)
 	 */
 	@Override
 	public T from(final Object obj, final ApiMimeType mimeType, final Class<T> targetClass) {
+		if (null == obj) {
+			return null;
+		}
 		T result = Jackson3JsonBuilder.fromJson(obj, targetClass);
-		if (null == result && null != obj) {
+		if (null == result) {
 			throw new ObjectConverterException("Error converting JSON response to " + targetClass.getName());
 		}
 		return result;
@@ -74,15 +76,18 @@ public class Jackson3JsonHttpContentConverter<T> implements HttpContentConverter
 	 *
 	 * @param obj the object to convert, which must be a JSON string
 	 * @param targetGenericClass the target generic class to which the JSON content will be de-serialized
-	 * @return the de-serialized object of type {@code T}
+	 * @return the de-serialized object of type {@code T}, or {@code null} if the input object is {@code null}
 	 * @throws UnsupportedOperationException if the input object is not a JSON
 	 * @see ContentConverter#from(Object, ApiMimeType, GenericClass)
 	 * @see Jackson3JsonBuilder#fromJson(Object, GenericClass)
 	 */
 	@Override
 	public T from(final Object obj, final ApiMimeType mimeType, final GenericClass<T> targetGenericClass) {
+		if (null == obj) {
+			return null;
+		}
 		T result = Jackson3JsonBuilder.fromJson(obj, targetGenericClass);
-		if (null == result && null != obj) {
+		if (null == result) {
 			throw new ObjectConverterException("Error converting JSON response to " + targetGenericClass.getType().getTypeName());
 		}
 		return result;
@@ -93,6 +98,6 @@ public class Jackson3JsonHttpContentConverter<T> implements HttpContentConverter
 	 */
 	@Override
 	public String toString(final Object body, final ApiMimeType mimeType) {
-		return Jackson2JsonBuilder.toJson(body);
+		return Jackson3JsonBuilder.toJson(body);
 	}
 }
