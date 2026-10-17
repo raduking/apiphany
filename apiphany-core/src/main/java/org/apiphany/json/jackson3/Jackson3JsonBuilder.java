@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -98,10 +99,10 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * The underlying {@link JsonMapper}.
 	 * <p>
 	 * Because Jackson 3 mappers are immutable, reconfiguring the builder at runtime (see {@link #configure(Consumer)})
-	 * builds a new mapper and replaces this reference. It is volatile because it can be replaced while other threads
-	 * serialize or de-serialize.
+	 * builds a new mapper and replaces this reference. An {@link AtomicReference} is used because it can be replaced while
+	 * other threads serialize or de-serialize.
 	 */
-	private volatile JsonMapper jsonMapper;
+	private final AtomicReference<JsonMapper> jsonMapper = new AtomicReference<>();
 
 	/**
 	 * The default annotation introspector.
@@ -159,7 +160,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 		builderCustomizer.accept(builder);
 		indentOutput(builder.isEnabled(SerializationFeature.INDENT_OUTPUT));
 
-		this.jsonMapper = builder.build();
+		this.jsonMapper.set(builder.build());
 	}
 
 	/**
@@ -306,7 +307,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	@Override
 	public <T> String toJsonString(final T obj) {
 		return serialize(obj, o -> {
-			ObjectWriter objectWriter = jsonMapper.writerFor(o.getClass());
+			ObjectWriter objectWriter = jsonMapper.get().writerFor(o.getClass());
 			return eol() + objectWriter.writeValueAsString(o);
 		});
 	}
@@ -322,7 +323,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 */
 	@Override
 	public <T> T fromJsonString(final String json, final Class<T> cls) {
-		return deserialize(json, cls, () -> jsonMapper.readValue(json, cls));
+		return deserialize(json, cls, () -> jsonMapper.get().readValue(json, cls));
 	}
 
 	/**
@@ -355,7 +356,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @return an object from the JSON string
 	 */
 	public <T> T fromJsonString(final String json, final TypeReference<T> typeReference) {
-		return deserialize(json, typeReference.getType(), () -> jsonMapper.readValue(json, typeReference));
+		return deserialize(json, typeReference.getType(), () -> jsonMapper.get().readValue(json, typeReference));
 	}
 
 	/**
@@ -369,7 +370,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 */
 	@Override
 	public <T> T fromJsonBytes(final byte[] json, final Class<T> cls) {
-		return deserialize(json, cls, () -> jsonMapper.readValue(json, cls));
+		return deserialize(json, cls, () -> jsonMapper.get().readValue(json, cls));
 	}
 
 	/**
@@ -402,7 +403,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @return an object from the JSON string
 	 */
 	public <T> T fromJsonBytes(final byte[] json, final TypeReference<T> typeReference) {
-		return deserialize(json, typeReference.getType(), () -> jsonMapper.readValue(json, typeReference));
+		return deserialize(json, typeReference.getType(), () -> jsonMapper.get().readValue(json, typeReference));
 	}
 
 	/**
@@ -416,7 +417,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 */
 	@Override
 	public <T> T fromJsonInputStream(final InputStream json, final Class<T> cls) {
-		return deserialize(json, cls, () -> jsonMapper.readValue(json, cls));
+		return deserialize(json, cls, () -> jsonMapper.get().readValue(json, cls));
 	}
 
 	/**
@@ -449,7 +450,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @return an object from the JSON string
 	 */
 	public <T> T fromJsonInputStream(final InputStream json, final TypeReference<T> typeReference) {
-		return deserialize(json, typeReference.getType(), () -> jsonMapper.readValue(json, typeReference));
+		return deserialize(json, typeReference.getType(), () -> jsonMapper.get().readValue(json, typeReference));
 	}
 
 	/**
@@ -464,7 +465,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 */
 	@Override
 	public <T> T fromPropertiesMap(final Map<String, Object> propertiesMap, final Class<T> cls, final Consumer<Exception> onError) {
-		JsonMapper.Builder propertiesJsonMapperBuilder = jsonMapper.rebuild()
+		JsonMapper.Builder propertiesJsonMapperBuilder = jsonMapper.get().rebuild()
 				.propertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
 		final JsonMapper propertiesJsonMapper = propertiesJsonMapperBuilder.build();
 		try {
@@ -488,7 +489,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> Map<String, Object> toPropertiesMap(final T properties, final Consumer<Exception> onError) {
-		JsonMapper.Builder propertiesJsonMapperBuilder = jsonMapper.rebuild()
+		JsonMapper.Builder propertiesJsonMapperBuilder = jsonMapper.get().rebuild()
 				.propertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
 		configureSensitivity(propertiesJsonMapperBuilder,
 				SensitiveJackson3AnnotationIntrospector.allowSensitive(), defaultAnnotationIntrospector);
@@ -619,7 +620,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @return the underlying {@link JsonMapper}
 	 */
 	public JsonMapper getJsonMapper() {
-		return jsonMapper;
+		return jsonMapper.get();
 	}
 
 	/**
@@ -632,14 +633,15 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @param customizer the customizer to apply to the underlying {@link JsonMapper.Builder}
 	 */
 	public void configure(final Consumer<JsonMapper.Builder> customizer) {
-		JsonMapper mapper = this.jsonMapper;
+		JsonMapper mapper = this.jsonMapper.get();
 		if (null == mapper) {
 			return;
 		}
 		JsonMapper.Builder builder = mapper.rebuild();
 		customizer.accept(builder);
-		this.jsonMapper = builder.build();
-		super.indentOutput(this.jsonMapper.isEnabled(SerializationFeature.INDENT_OUTPUT));
+		JsonMapper newMapper = builder.build();
+		this.jsonMapper.set(newMapper);
+		super.indentOutput(newMapper.isEnabled(SerializationFeature.INDENT_OUTPUT));
 	}
 
 	/**
