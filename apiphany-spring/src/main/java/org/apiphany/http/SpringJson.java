@@ -8,6 +8,7 @@ import org.apiphany.client.ContentConverter;
 import org.apiphany.header.HeaderValues;
 import org.apiphany.io.ContentType;
 import org.apiphany.json.JsonBuilder;
+import org.morphix.lang.Messages;
 import org.morphix.reflection.Constructors;
 import org.morphix.reflection.Fields;
 import org.morphix.reflection.GenericClass;
@@ -39,7 +40,17 @@ public final class SpringJson {
 	/**
 	 * Field that holds the converters configured on a Spring client builder.
 	 */
-	private static final String MESSAGE_CONVERTERS = "messageConverters";
+	private static final String MESSAGE_CONVERTERS_FIELD_NAME = "messageConverters";
+
+	/**
+	 * Method that converts the JSON to string.
+	 */
+	private static final String WRITE_VALUE_AS_STRING_METHOD_NAME = "writeValueAsString";
+
+	/**
+	 * Method name that returns the mapper.
+	 */
+	private static final String GET_OBJECT_MAPPER_METHOD_NAME = "getObjectMapper";
 
 	/**
 	 * Returns the JSON request converter configured on the given {@link RestClient.Builder}, or {@code null} when the
@@ -117,7 +128,7 @@ public final class SpringJson {
 		if (null == builder) {
 			return null;
 		}
-		return Fields.IgnoreAccess.get(builder, MESSAGE_CONVERTERS);
+		return Fields.IgnoreAccess.get(builder, MESSAGE_CONVERTERS_FIELD_NAME);
 	}
 
 	/**
@@ -131,8 +142,8 @@ public final class SpringJson {
 			return false;
 		}
 		for (MediaType mediaType : httpMessageConverter.getSupportedMediaTypes()) {
-			String subtype = mediaType.getSubtype();
-			if (null != subtype && ("json".equalsIgnoreCase(subtype) || subtype.toLowerCase(Locale.ROOT).endsWith("+json"))) {
+			String subtype = mediaType.getSubtype(); // cannot be null
+			if ("json".equalsIgnoreCase(subtype) || subtype.toLowerCase(Locale.ROOT).endsWith("+json")) {
 				return true;
 			}
 		}
@@ -147,7 +158,7 @@ public final class SpringJson {
 	 */
 	private static Object mapper(final Object converter) {
 		try {
-			Method method = converter.getClass().getMethod("getObjectMapper");
+			Method method = converter.getClass().getMethod(GET_OBJECT_MAPPER_METHOD_NAME);
 			return method.invoke(converter);
 		} catch (ReflectiveOperationException e) {
 			throw new IllegalStateException(e);
@@ -224,9 +235,10 @@ public final class SpringJson {
 		 * @return the JSON string
 		 */
 		private static String write(final Object mapper, final Object value) {
-			Method method = Methods.getOneDeclared("writeValueAsString", mapper.getClass(), Object.class);
+			Class<?> mapperClass = mapper.getClass();
+			Method method = Methods.getOneDeclared(WRITE_VALUE_AS_STRING_METHOD_NAME, mapperClass, Object.class);
 			if (null == method) {
-				throw new IllegalStateException("Method " + mapper.getClass() + ".writeValueAsString not found!");
+				throw new IllegalStateException(Messages.message("Method {}.{} not found!", mapperClass, WRITE_VALUE_AS_STRING_METHOD_NAME));
 			}
 			try {
 				return Methods.invoke(method, mapper, value);
