@@ -6,7 +6,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import java.util.List;
 import java.util.Map;
 
-import org.apiphany.ApiMessage;
 import org.apiphany.ApiMimeType;
 import org.apiphany.header.HeaderValues;
 import org.apiphany.header.MapHeaderValues;
@@ -36,6 +35,11 @@ class HttpContentConverterTest {
 	static class StringHttpContentConverter implements HttpContentConverter<String> {
 
 		@Override
+		public <H> boolean isConvertible(final ApiMimeType contentType, final H headers, final HeaderValues chain) {
+			return false;
+		}
+
+		@Override
 		public String from(final Object obj, final ApiMimeType contentType, final Class<String> targetClass) {
 			return null;
 		}
@@ -46,8 +50,8 @@ class HttpContentConverterTest {
 		}
 
 		@Override
-		public <U, H> boolean isConvertible(final ApiMessage<U> message, final ApiMimeType contentType, final H headers, final HeaderValues chain) {
-			return false;
+		public String toString(final Object body, final ApiMimeType mimeType) {
+			return null;
 		}
 	}
 }

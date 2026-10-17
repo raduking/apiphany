@@ -11,6 +11,8 @@ import org.apiphany.json.jackson2.serializers.FieldValueSerializer;
 import org.apiphany.json.jackson2.serializers.MonthDeserializer;
 import org.apiphany.json.jackson2.serializers.RequestMethodDeserializer;
 import org.apiphany.json.jackson2.serializers.RequestMethodSerializer;
+import org.apiphany.json.jackson2.serializers.TypeHolderDeserializer;
+import org.morphix.reflection.TypeHolder;
 
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
@@ -80,6 +82,7 @@ public class ApiphanyJackson2Module extends SimpleModule {
 				.addSerializer(Locale.class, new FieldValueSerializer<>(Locale::toLanguageTag))
 				.addKeySerializer(Locale.class, new FieldNameSerializer<>(Locale::toLanguageTag))
 				.addKeySerializer(Date.class, new FieldNameSerializer<>(date -> date.toLocalDate().toString()))
-				.addDeserializer(Month.class, new MonthDeserializer());
+				.addDeserializer(Month.class, new MonthDeserializer())
+				.addDeserializer(TypeHolder.class, new TypeHolderDeserializer());
 	}
 }

@@ -19,4 +19,9 @@ class Jackson3LibraryTest {
 		UnsupportedOperationException unsupportedOperationException = assertDefaultConstructorThrows(Jackson3Library.class);
 		assertThat(unsupportedOperationException.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
 	}
+
+	@Test
+	void shouldHaveDescriptor() {
+		assertThat(Jackson3Library.isPresent(), equalTo(true));
+	}
 }

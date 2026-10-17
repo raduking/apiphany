@@ -1,20 +1,29 @@
 package org.apiphany.json.jackson2;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import java.sql.Date;
+import java.time.LocalDate;
 import java.util.Map;
 
 import org.apiphany.RequestMethod;
 import org.apiphany.json.jackson2.serializers.RequestMethodDeserializer;
 import org.apiphany.json.jackson2.serializers.RequestMethodSerializer;
+import org.apiphany.json.jackson2.serializers.TypeHolderDeserializer;
 import org.junit.jupiter.api.Test;
 import org.morphix.reflection.Fields;
+import org.morphix.reflection.TypeHolder;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.Module.SetupContext;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleDeserializers;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.module.SimpleSerializers;
@@ -58,6 +67,30 @@ class ApiphanyJackson2ModuleTest {
 		RequestMethodDeserializer rmds = (RequestMethodDeserializer) deserializerMap.get(new ClassKey(RequestMethod.class));
 
 		assertNotNull(rmds);
+	}
+
+	@Test
+	void shouldRegisterTypeHolderDeserializer() {
+		SimpleModule module = ApiphanyJackson2Module.instance();
+
+		SimpleDeserializers deserializers = Fields.IgnoreAccess.get(module, "_deserializers");
+		Map<ClassKey, JsonDeserializer<?>> deserializerMap = Fields.IgnoreAccess.get(deserializers, "_classMappings");
+
+		JsonDeserializer<?> deserializer = deserializerMap.get(new ClassKey(TypeHolder.class));
+
+		assertInstanceOf(TypeHolderDeserializer.class, deserializer);
+	}
+
+	@Test
+	void shouldSerializeDateMapKeysWithTheModule() throws JsonProcessingException {
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.registerModule(ApiphanyJackson2Module.instance());
+
+		Date date = Date.valueOf(LocalDate.of(2024, 1, 2));
+
+		String json = mapper.writeValueAsString(Map.of(date, "value"));
+
+		assertThat(json, equalTo("{\"2024-01-02\":\"value\"}"));
 	}
 
 	/**

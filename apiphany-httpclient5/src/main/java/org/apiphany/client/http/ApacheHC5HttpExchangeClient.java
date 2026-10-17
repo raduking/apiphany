@@ -49,7 +49,6 @@ import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
 import org.apiphany.io.InputStreamSupplier;
-import org.apiphany.json.JsonBuilder;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Nullables;
 import org.morphix.lang.collections.Lists;
@@ -276,8 +275,8 @@ public class ApacheHC5HttpExchangeClient extends AbstractHttpExchangeClient {
 			case Supplier<?> supplier -> createHttpEntity(apiRequest, JavaObjects.cast(supplier.get()), contentType);
 			case File file -> HttpEntities.create(file, contentType);
 			case Path path -> HttpEntities.create(path.toFile(), contentType);
+			case Object obj when isContentJson(apiRequest) -> HttpEntities.create(toJson(apiRequest, obj), contentType);
 			case Serializable serializable -> HttpEntities.create(serializable, contentType);
-			case Object obj when isContentJson(apiRequest) -> HttpEntities.create(JsonBuilder.toJson(obj), contentType);
 			default -> HttpEntities.create(fallbackToString(body), contentType);
 		});
 	}

@@ -2,9 +2,11 @@ package org.apiphany.client.http;
 
 import org.apiphany.ApiRequest;
 import org.apiphany.client.ClientProperties;
+import org.apiphany.client.ContentConverter;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.ResponseEntityExtractor;
 import org.apiphany.http.SpringHttpSupport;
+import org.apiphany.http.SpringJson;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClient;
@@ -24,12 +26,19 @@ public class SpringRestExchangeClient extends AbstractSpringExchangeClient {
 
 	/**
 	 * Constructor with client properties and REST client builder used to build the underlying {@link RestClient}.
+	 * <p>
+	 * A Jackson JSON converter already set on this builder supplies the {@code ObjectMapper} for JSON request bodies. That
+	 * mapper is read before the builder's converters are replaced and registered as the first content converter.
 	 *
 	 * @param clientProperties client properties
 	 * @param restClientBuilder REST client builder
 	 */
 	public SpringRestExchangeClient(final ClientProperties clientProperties, final RestClient.Builder restClientBuilder) {
 		super(clientProperties, SpringHttpSupport.getRequestFactory(restClientBuilder));
+		ContentConverter<String> jsonConverter = SpringJson.converter(restClientBuilder);
+		if (null != jsonConverter) {
+			getContentConverters().addFirst(jsonConverter);
+		}
 		this.restClient = customize(restClientBuilder).build();
 	}
 

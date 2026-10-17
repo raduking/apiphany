@@ -4,9 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.BooleanSupplier;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 import javax.net.ssl.SSLContext;
 
@@ -25,18 +23,23 @@ import org.apiphany.http.HttpHeaderValues;
 import org.apiphany.http.HttpMessages;
 import org.apiphany.http.HttpStatus;
 import org.apiphany.io.ContentType;
+import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.apiphany.logging.LoggerAdapters;
 import org.apiphany.security.ssl.SSLContexts;
 import org.apiphany.security.ssl.SSLProperties;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Nullables;
-import org.morphix.lang.Pair;
 import org.morphix.lang.collections.Lists;
 import org.morphix.lang.function.LoggerAdapter;
+import org.morphix.lang.function.ToStringFunction;
+import org.morphix.reflection.TypeHolder;
 
 /**
  * Abstract HTTP exchange client which holds all the common information needed to build an HTTP exchange client.
+ * <p>
+ * A JSON request body is written with {@link #toJson(ApiRequest, Object)}. That method uses the first content converter
+ * that can write {@code application/json}. {@link JsonBuilder} is used when no converter can write it.
  *
  * @author Radu Sebastian LAZIN
  */
@@ -103,16 +106,10 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	public static void addDefaultContentConverters(final List<ContentConverter<?>> contentConverters) {
 		contentConverters.add(new StringHttpContentConverter());
 
-		// TODO: abstract away the converter registration and discovery
-		boolean noJsonConverterFound = true;
-		for (Pair<BooleanSupplier, Supplier<HttpContentConverter<?>>> converter : HttpContentConverter.JSON_CONVERTERS) {
-			if (converter.left().getAsBoolean()) {
-				contentConverters.add(converter.right().get());
-				noJsonConverterFound = false;
-				break;
-			}
-		}
-		if (noJsonConverterFound) {
+		// TODO: add converter discovery
+		if (JsonBuilder.hasLibrary()) {
+			contentConverters.add(new JsonHttpContentConverter<>());
+		} else {
 			LOGGER.warn("No JSON content converter found."
 					+ " Provide a JSON library to the classpath or register a custom content converter for JSON content.");
 		}
@@ -167,8 +164,8 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	protected abstract <T, U> ApiResponse<U> doExchange(ApiRequest<T> apiRequest);
 
 	/**
-	 * Converts the response body to the desired type based on the request configuration and available content converters.
-	 * This method:
+	 * Converts the response body to the desired type based on the type information and available content converters. This
+	 * method:
 	 * <ul>
 	 * <li>Checks if the body is null or empty and returns null if so</li>
 	 * <li>Checks if the body is already of the desired type and returns it if so</li>
@@ -177,11 +174,10 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	 * <li>Throws an exception if no suitable converter is found</li>
 	 * </ul>
 	 *
-	 * @param <T> the type of the original request body
-	 * @param <U> the target type for the response body
 	 * @param <H> the type of response headers
+	 * @param <U> the target type for the response body
 	 *
-	 * @param apiRequest the API request containing response type information
+	 * @param typeHolder the response type information
 	 * @param mimeType the response content type
 	 * @param headers the response headers
 	 * @param status the HTTP status of the response
@@ -189,15 +185,15 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	 * @return the converted body of type {@code U}
 	 * @throws UnsupportedOperationException if no compatible content converter is found
 	 */
-	protected <T, U, H> U convertBody(final ApiRequest<T> apiRequest, final ApiMimeType mimeType, final H headers, final HttpStatus status,
-			final Object body) {
+	protected <H, U> U convertBody(final TypeHolder typeHolder, final ApiMimeType mimeType,
+			final H headers, final HttpStatus status, final Object body) {
 		if (isNoContent(status)) {
 			return null;
 		}
 		if (null == body) {
 			return null;
 		}
-		Class<?> classResponseType = apiRequest.getClassResponseType();
+		Class<?> classResponseType = typeHolder.getClassType();
 		if (null != classResponseType && classResponseType.isInstance(body)) {
 			return JavaObjects.cast(body);
 		}
@@ -205,21 +201,21 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 			return JavaObjects.cast(StringHttpContentConverter.instance().from(body, mimeType, String.class));
 		}
 		for (ContentConverter<?> contentConverter : getContentConverters()) {
-			if (contentConverter.isConvertible(apiRequest, mimeType, headers, getHeaderValuesChain())) {
+			if (contentConverter.isConvertible(mimeType, headers, getHeaderValuesChain())) {
 				ContentConverter<U> typeConverter = JavaObjects.cast(contentConverter);
-				return ContentConverter.convertBody(typeConverter, apiRequest, mimeType, body);
+				return ContentConverter.convertBody(typeConverter, typeHolder, mimeType, body);
 			}
 		}
 		if (body instanceof byte[] bytes && bytes.length == 0) {
 			return null;
 		}
-		throw new UnsupportedOperationException("No content converter found to convert response to: " + apiRequest.getResponseTypeName()
+		throw new UnsupportedOperationException("No content converter found to convert response to: " + typeHolder.getTypeName()
 				+ ", for the response content type: " + mimeType);
 	}
 
 	/**
 	 * Checks if the given HTTP status indicates that there is no content in the response. This includes both 204 No Content
-	 * and 304 Not Modified statuses, as they both imply that there is no body to be processed.
+	 * and 304 Not Modified statuses, as they both imply that there is no response body to be processed.
 	 *
 	 * @param status the HTTP status to check
 	 * @return true if the status indicates no content, false otherwise
@@ -281,16 +277,63 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	}
 
 	/**
-	 * Returns true if the API request contains the "Content-Type" header with the value "application/json", false
-	 * otherwise.
+	 * Returns true if the API request contains the "Content-Type" header with the media type "application/json", false
+	 * otherwise. Any media type parameters (e.g. {@code application/json; charset=UTF-8}) are ignored.
 	 *
 	 * @param <T> the type of the original request body
 	 *
 	 * @param apiRequest the API request to check for JSON content type
-	 * @return true if the API request contains the "Content-Type" header with the value "application/json"
+	 * @return true if the API request contains the "Content-Type" header with the media type "application/json"
 	 */
-	protected static <T> boolean isContentJson(final ApiRequest<T> apiRequest) {
-		return apiRequest.containsHeader(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_JSON);
+	protected <T> boolean isContentJson(final ApiRequest<T> apiRequest) {
+		List<String> headerValues = getHeaderValues(HttpHeader.CONTENT_TYPE, apiRequest.getHeaders());
+		return ContentType.APPLICATION_JSON.matchesAny(headerValues);
+	}
+
+	/**
+	 * Writes a JSON request body. This method:
+	 * <ul>
+	 * <li>Selects the first content converter whose {@link ContentConverter#isConvertible} returns true for
+	 * {@code application/json}, the request headers, and this client's header chain</li>
+	 * <li>Writes the body with {@link ContentConverter#toString(Object, ApiMimeType)}</li>
+	 * <li>Falls back to {@link JsonBuilder#toJson(Object)} when no converter is selected</li>
+	 * </ul>
+	 *
+	 * @param <T> the type of the original request body
+	 *
+	 * @param apiRequest the API request whose headers are passed to {@code isConvertible}
+	 * @param body the request body
+	 * @return the JSON string
+	 */
+	protected <T> String toJson(final ApiRequest<T> apiRequest, final Object body) {
+		return toString(body, ContentType.APPLICATION_JSON, apiRequest.getHeaders(), JsonBuilder::toJson);
+	}
+
+	/**
+	 * Writes a request body as a string. {@link #toJson(ApiRequest, Object)} calls this method for JSON. This method:
+	 * <ul>
+	 * <li>Selects the first content converter whose {@link ContentConverter#isConvertible} returns true for the given
+	 * content type, headers, and this client's header chain</li>
+	 * <li>Writes the body with {@link ContentConverter#toString(Object, ApiMimeType)}</li>
+	 * <li>Uses {@code fallback} when no converter is selected</li>
+	 * </ul>
+	 *
+	 * @param <T> the request body type
+	 * @param <H> the headers type
+	 *
+	 * @param body the request body
+	 * @param mimeType the content type passed to {@code isConvertible} and {@code toString}
+	 * @param headers the headers passed to {@code isConvertible}
+	 * @param fallback the writer used when no content converter is selected
+	 * @return the encoded request body
+	 */
+	protected <T, H> String toString(T body, ApiMimeType mimeType, H headers, ToStringFunction<T> fallback) {
+		for (ContentConverter<?> contentConverter : getContentConverters()) {
+			if (contentConverter.isConvertible(mimeType, headers, getHeaderValuesChain())) {
+				return contentConverter.toString(body, mimeType);
+			}
+		}
+		return fallback.toString(body);
 	}
 
 	/**
@@ -432,7 +475,8 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 			responseBuilder.exception(exception);
 			body = JavaObjects.cast(errorResponseBody);
 		} else {
-			body = convertBody(apiRequest, contentType, headers, httpStatus, rawBody);
+			TypeHolder responseTypeHolder = apiRequest.getResponseTypeHolder();
+			body = convertBody(responseTypeHolder, contentType, headers, httpStatus, rawBody);
 		}
 		return responseBuilder
 				.body(body)

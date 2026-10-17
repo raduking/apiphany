@@ -23,7 +23,7 @@ class JavaNetHttpExchangeClientConvertersTest {
 
 	@Test
 	@SuppressWarnings("resource")
-	void shouldNotHaveAnyJsonConverterRegisteredWhenNoJsonLibraryIsPresent() throws Exception {
+	void shouldNotRegisterAJsonConverterWhenNoJsonLibraryIsPresent() throws Exception {
 		List<ContentConverter<?>> converters;
 		try (ApiClient client = ApiClient.of(ApiClient.EMPTY_BASE_URL, ExchangeClientBuilder.create().withDefaultClient())) {
 			converters = client.client().getExchangeClient(JavaNetHttpExchangeClient.class).getContentConverters();
@@ -35,7 +35,7 @@ class JavaNetHttpExchangeClientConvertersTest {
 
 	@Test
 	@SuppressWarnings("resource")
-	void shouldRegisterJackson2ConverterWhenJackson2IsPresentWithTestClient() throws Exception {
+	void shouldNotRegisterAJsonConverterWhenNoJsonLibraryIsPresentWithTestClient() throws Exception {
 		List<ContentConverter<?>> converters;
 		try (TestClient client = new TestClient()) {
 			converters = client.client().getExchangeClient(JavaNetHttpExchangeClient.class).getContentConverters();

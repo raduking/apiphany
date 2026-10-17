@@ -138,7 +138,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	/**
 	 * Observability object for logging/tracing.
 	 */
-	private JsonObservability observability;
+	private final JsonObservability observability;
 
 	/**
 	 * Constructor that initializes all fields.
@@ -188,6 +188,16 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 */
 	public static JsonBuilder runtime() {
 		return runtime(OVERRIDE, InstanceHolder.INSTANCE);
+	}
+
+	/**
+	 * Returns {@code true} when a JSON library was found on the classpath. {@link #initializeInstance} keeps the singleton
+	 * as a {@link JsonBuilder} when none was found.
+	 *
+	 * @return {@code true} when the singleton instance class is not {@link JsonBuilder}
+	 */
+	public static boolean hasLibrary() {
+		return JsonBuilder.class != InstanceHolder.INSTANCE.getClass();
 	}
 
 	/**

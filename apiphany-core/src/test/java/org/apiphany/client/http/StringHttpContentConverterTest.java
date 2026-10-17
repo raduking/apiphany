@@ -93,22 +93,30 @@ class StringHttpContentConverterTest {
 	}
 
 	@Test
+	void shouldWriteObjectAsString() {
+		Object body = 12345;
+		String result = StringHttpContentConverter.instance().toString(body, null);
+
+		assertThat(result, equalTo("12345"));
+	}
+
+	@Test
 	void shouldReturnTrueOnIsConvertibleWhenMimeTypeIsTextPlain() {
-		boolean result = StringHttpContentConverter.instance().isConvertible(null, ContentType.TEXT_PLAIN, null, null);
+		boolean result = StringHttpContentConverter.instance().isConvertible(ContentType.TEXT_PLAIN, null, null);
 
 		assertThat(result, equalTo(true));
 	}
 
 	@Test
 	void shouldReturnFalseOnIsConvertibleWhenMimeTypeIsNotTextPlain() {
-		boolean result = StringHttpContentConverter.instance().isConvertible(null, ContentType.APPLICATION_JSON, null, null);
+		boolean result = StringHttpContentConverter.instance().isConvertible(ContentType.APPLICATION_JSON, null, null);
 
 		assertThat(result, equalTo(false));
 	}
 
 	@Test
 	void shouldReturnFalseOnIsConvertibleWhenMimeTypeIsNull() {
-		boolean result = StringHttpContentConverter.instance().isConvertible(null, null, null, null);
+		boolean result = StringHttpContentConverter.instance().isConvertible(null, null, null);
 
 		assertThat(result, equalTo(false));
 	}

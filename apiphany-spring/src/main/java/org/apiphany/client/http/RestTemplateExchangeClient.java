@@ -2,10 +2,12 @@ package org.apiphany.client.http;
 
 import org.apiphany.ApiRequest;
 import org.apiphany.client.ClientProperties;
+import org.apiphany.client.ContentConverter;
 import org.apiphany.http.HttpEntityRequestCallback;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.ResponseEntityExtractor;
 import org.apiphany.http.SpringHttpSupport;
+import org.apiphany.http.SpringJson;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
@@ -27,12 +29,19 @@ public class RestTemplateExchangeClient extends AbstractSpringExchangeClient {
 
 	/**
 	 * Constructor with client properties and REST template builder used to build the underlying {@link RestTemplate}.
+	 * <p>
+	 * A Jackson JSON converter already set on this builder supplies the {@code ObjectMapper} for JSON request bodies. That
+	 * mapper is read before the builder's converters are replaced and registered as the first content converter.
 	 *
 	 * @param clientProperties client properties
 	 * @param restTemplateBuilder REST template builder
 	 */
 	public RestTemplateExchangeClient(final ClientProperties clientProperties, final RestTemplateBuilder restTemplateBuilder) {
 		super(clientProperties, SpringHttpSupport.getRequestFactory(restTemplateBuilder));
+		ContentConverter<String> jsonConverter = SpringJson.converter(restTemplateBuilder);
+		if (null != jsonConverter) {
+			getContentConverters().add(0, jsonConverter);
+		}
 		this.restTemplate = customize(restTemplateBuilder).build();
 	}
 

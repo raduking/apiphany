@@ -1,6 +1,7 @@
 package org.apiphany.json.jackson2;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -10,6 +11,7 @@ import java.util.List;
 
 import org.apiphany.ApiMimeType;
 import org.apiphany.io.ContentType;
+import org.apiphany.json.JsonBuilder;
 import org.junit.jupiter.api.Test;
 import org.morphix.convert.ObjectConverterException;
 import org.morphix.reflection.GenericClass;
@@ -53,6 +55,26 @@ class Jackson2JsonHttpContentConverterTest {
 	}
 
 	@Test
+	void shouldReturnNullWhenJsonIsNull() {
+		var converter = new Jackson2JsonHttpContentConverter<Person>();
+
+		Person result = converter.from(null, null, Person.class);
+
+		assertThat(result, nullValue());
+	}
+
+	@Test
+	void shouldReturnNullWhenGenericJsonIsNull() {
+		var converter = new Jackson2JsonHttpContentConverter<List<Person>>();
+
+		List<Person> result = converter.from(null, null, new GenericClass<List<Person>>() {
+			// empty
+		});
+
+		assertThat(result, nullValue());
+	}
+
+	@Test
 	void shouldThrowExceptionOnConvertWrongJsonStringToObject() {
 		var converter = new Jackson2JsonHttpContentConverter<Person>();
 
@@ -78,7 +100,7 @@ class Jackson2JsonHttpContentConverterTest {
 		var converter = new Jackson2JsonHttpContentConverter<String>();
 		ApiMimeType mimeType = ContentType.APPLICATION_JSON;
 
-		boolean result = converter.isConvertible(null, mimeType, null, null);
+		boolean result = converter.isConvertible(mimeType, null, null);
 
 		assertTrue(result);
 	}
@@ -88,7 +110,7 @@ class Jackson2JsonHttpContentConverterTest {
 		var converter = new Jackson2JsonHttpContentConverter<String>();
 		ApiMimeType mimeType = ContentType.TEXT_PLAIN;
 
-		boolean result = converter.isConvertible(null, mimeType, null, null);
+		boolean result = converter.isConvertible(mimeType, null, null);
 
 		assertFalse(result);
 	}
@@ -97,8 +119,17 @@ class Jackson2JsonHttpContentConverterTest {
 	void shouldReturnFalseIfMimeTypeIsNull() {
 		var converter = new Jackson2JsonHttpContentConverter<String>();
 
-		boolean result = converter.isConvertible(null, null, null, null);
+		boolean result = converter.isConvertible(null, null, null);
 
 		assertFalse(result);
+	}
+
+	@Test
+	void shouldConvertObjectToJsonString() {
+		var converter = new Jackson2JsonHttpContentConverter<Person>();
+
+		String result = converter.toString(JSON_STRING, null);
+
+		assertThat(result, equalTo(JsonBuilder.toJson(JSON_STRING)));
 	}
 }

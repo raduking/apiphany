@@ -19,7 +19,7 @@ The runtime builder is chosen once, in this order:
 
 1. Jackson 3 (`tools.jackson.databind.ObjectMapper`), through `Jackson3JsonBuilder`
 2. Jackson 2 (`com.fasterxml.jackson.databind.ObjectMapper`), through `Jackson2JsonBuilder`
-3. The base `JsonBuilder`, which writes `toString()` inside an identity JSON object and cannot read JSON back
+3. The base `JsonBuilder`, which writes `toString()` inside an identity JSON object and cannot read JSON back. `JsonBuilder.hasLibrary()` is false in that case.
 
 Jackson is optional. A module that serializes with `JsonBuilder` declares the Jackson artifacts it needs as `provided` and `optional`.
 
@@ -45,6 +45,8 @@ Both Jackson builders apply the same rules:
 - Date, time, and duration values are ISO-8601 strings, not numeric timestamps. `java.util.Date` and `java.util.Calendar` use a numeric zero offset (`+00:00`). Jackson 3 also pins nanosecond timestamp precision, date map keys as strings, the context time zone on write, and omission of the zone id, so that output stays stable if library defaults change.
 
 `configure(Consumer)` changes the underlying mapper at runtime. Jackson 2 updates the mutable `ObjectMapper` in place. Jackson 3 builds a new `JsonMapper` and replaces the reference.
+
+A JSON request body on an HTTP exchange client is written with `AbstractHttpExchangeClient.toJson`. That method uses the first content converter that can write `application/json`. `JsonHttpContentConverter` writes with `JsonBuilder` and is registered by default. `SpringRestExchangeClient` and `RestTemplateExchangeClient` register a converter that uses the `ObjectMapper` on the `RestClient.Builder` or `RestTemplateBuilder`, when that builder has a `MappingJackson2HttpMessageConverter`. That converter is placed first, so it is chosen over `JsonHttpContentConverter`. Spring Boot puts the application's Jackson configuration on that message converter. Spring Boot 4's `JsonMapper` is not read yet.
 
 ## Jackson
 

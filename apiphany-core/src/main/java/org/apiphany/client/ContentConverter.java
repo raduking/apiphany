@@ -2,11 +2,10 @@ package org.apiphany.client;
 
 import java.util.List;
 
-import org.apiphany.ApiMessage;
 import org.apiphany.ApiMimeType;
-import org.apiphany.ApiRequest;
 import org.apiphany.header.HeaderValues;
 import org.morphix.reflection.GenericClass;
+import org.morphix.reflection.TypeHolder;
 
 /**
  * An interface for converting content from one format to another. This interface provides methods to convert objects to
@@ -17,6 +16,18 @@ import org.morphix.reflection.GenericClass;
  * @author Radu Sebastian LAZIN
  */
 public interface ContentConverter<T> {
+
+	/**
+	 * Checks if the converter can convert to the specified type, considering the mime type and the provided headers.
+	 *
+	 * @param <H> the type of the headers.
+	 *
+	 * @param contentType the content type
+	 * @param headers the headers that may influence the conversion
+	 * @param chain chain of header values extractor that will be used to get a specific header list
+	 * @return true if the converter can perform the conversion, false otherwise
+	 */
+	<H> boolean isConvertible(ApiMimeType contentType, H headers, HeaderValues chain);
 
 	/**
 	 * Converts the given object to an instance of the specified class.
@@ -39,19 +50,14 @@ public interface ContentConverter<T> {
 	T from(Object obj, ApiMimeType contentType, GenericClass<T> targetGenericClass);
 
 	/**
-	 * Checks if the converter can convert the content of the given {@link ApiMessage} to the specified type, considering
-	 * the provided headers.
+	 * Converts the given object (body) to a {@link String} to be used in a request.
 	 *
-	 * @param <U> the type of the message body.
-	 * @param <H> the type of the headers.
-	 *
-	 * @param message the {@link ApiMessage} containing the content to convert
-	 * @param contentType the content type
-	 * @param headers the headers that may influence the conversion
-	 * @param chain chain of header values extractor that will be used to get a specific header list
-	 * @return true if the converter can perform the conversion, false otherwise
+	 * @param body the request body to write
+	 * @param mimeType the content type
+	 * @return the encoded request body
+	 * @throws UnsupportedOperationException if this converter does not write request bodies
 	 */
-	<U, H> boolean isConvertible(ApiMessage<U> message, ApiMimeType contentType, H headers, HeaderValues chain);
+	String toString(Object body, ApiMimeType mimeType);
 
 	/**
 	 * Retrieves the values of a specific header from the provided headers object.
@@ -71,23 +77,21 @@ public interface ContentConverter<T> {
 
 	/**
 	 * Converts the response body to the desired type using the provided {@link ContentConverter}. This method handles both
-	 * generic and non-generic response types based on the {@link ApiRequest} configuration.
+	 * generic and non-generic response types based on the {@link TypeHolder} configuration.
 	 *
 	 * @param <U> the target type to convert the body to
-	 * @param <T> the type of the original request body
 	 *
-	 * @param typeConverter the content converter to use for the conversion
-	 * @param apiRequest the API request containing response type information
+	 * @param converter the content converter to use for the conversion
+	 * @param typeHolder the response type information
 	 * @param mimeType the content type
 	 * @param body the response body to be converted
 	 * @return the converted body of type {@code U}
 	 * @throws IllegalArgumentException if the conversion fails
 	 * @throws UnsupportedOperationException if the request specifies an unsupported conversion
 	 */
-	static <U, T> U convertBody(final ContentConverter<U> typeConverter, final ApiRequest<T> apiRequest, final ApiMimeType mimeType,
-			final Object body) {
-		return apiRequest.hasGenericType()
-				? typeConverter.from(body, mimeType, apiRequest.getGenericResponseType())
-				: typeConverter.from(body, mimeType, apiRequest.getClassResponseType());
+	static <U> U convertBody(final ContentConverter<U> converter, final TypeHolder typeHolder, final ApiMimeType mimeType, final Object body) {
+		return typeHolder.hasGenericType()
+				? converter.from(body, mimeType, typeHolder.getGenericType())
+				: converter.from(body, mimeType, typeHolder.getClassType());
 	}
 }

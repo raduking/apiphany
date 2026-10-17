@@ -42,12 +42,15 @@ import java.util.function.Supplier;
 import org.apiphany.ApiClient;
 import org.apiphany.ApiClientFluentAdapter;
 import org.apiphany.ApiMethod;
+import org.apiphany.ApiMimeType;
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
 import org.apiphany.Status;
 import org.apiphany.client.ClientCustomization;
 import org.apiphany.client.ClientProperties;
+import org.apiphany.client.ContentConverter;
 import org.apiphany.header.Header;
+import org.apiphany.header.HeaderValues;
 import org.apiphany.header.Headers;
 import org.apiphany.http.ContentEncoding;
 import org.apiphany.http.HttpException;
@@ -75,6 +78,7 @@ import org.morphix.lang.Nullables;
 import org.morphix.reflection.Fields;
 import org.morphix.reflection.GenericClass;
 import org.morphix.reflection.GenericType;
+import org.morphix.reflection.TypeHolder;
 
 /**
  * Test class for {@link JavaNetHttpExchangeClient}.
@@ -536,7 +540,7 @@ class JavaNetHttpExchangeClientTest {
 					() -> exchangeClient.buildResponse(request, httpResponse));
 
 			assertThat(exception.getMessage(), equalTo(
-					"No content converter found to convert response to: " + ApiRequest.UNKNOWN_RESPONSE_TYPE
+					"No content converter found to convert response to: " + TypeHolder.UNKNOWN_TYPE
 							+ ", for the response content type: null"));
 		}
 
@@ -1333,6 +1337,27 @@ class JavaNetHttpExchangeClientTest {
 		}
 
 		@Test
+		void shouldWriteJsonWithTheSuppliedWriter() throws Exception {
+			try (JavaNetHttpExchangeClient client = new JavaNetHttpExchangeClient(ClientProperties.defaults())) {
+				client.getContentConverters().add(0, new FixedJsonRequestConverter("custom-json"));
+				ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+						.header(HttpHeader.CONTENT_TYPE, "application/json")
+						.body(new Object());
+
+				BodyPublisher bodyPublisher = client.toBodyPublisher(request);
+
+				ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
+				bodyPublisher.subscribe(subscriber);
+				subscriber.awaitCompletion();
+
+				assertThat(bodyPublisher.contentLength(), equalTo((long) "custom-json".length()));
+				assertTrue(subscriber.isCompleted());
+				assertNull(subscriber.getError());
+				assertThat("custom-json".getBytes(StandardCharsets.UTF_8), equalTo(subscriber.getReceivedBytes()));
+			}
+		}
+
+		@Test
 		void shouldConvertObjectToStringBodyPublisherWhenContentTypeIsNotApplicationJson() {
 			TestDto expectedDto = TestDto.of("someId2", 10);
 
@@ -1433,6 +1458,26 @@ class JavaNetHttpExchangeClientTest {
 			byte[] bytes = subscriber.getReceivedBytes();
 			assertNotNull(bytes);
 			assertTrue(bytes.length > 0);
+		}
+
+		@Test
+		void shouldConvertSerializableToJsonBodyPublisherWhenContentTypeIsJson() {
+			TestSerializable serializable = new TestSerializable("serializable-content");
+
+			ApiClientFluentAdapter request = ApiClientFluentAdapter.of(apiClient)
+					.header(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_JSON)
+					.body(serializable);
+
+			BodyPublisher bodyPublisher = exchangeClient.toBodyPublisher(request);
+
+			ByteBufferSubscriber subscriber = new ByteBufferSubscriber();
+			bodyPublisher.subscribe(subscriber);
+			subscriber.awaitCompletion();
+
+			assertTrue(subscriber.isCompleted());
+			assertNull(subscriber.getError());
+			assertThat(subscriber.getReceivedBytes(),
+					equalTo(JsonBuilder.toJson(serializable).getBytes(StandardCharsets.UTF_8)));
 		}
 	}
 
@@ -1650,6 +1695,38 @@ class JavaNetHttpExchangeClientTest {
 			assertThat(exception.getStatus(), equalTo(HttpStatus.BAD_GATEWAY));
 			assertThat(exception.getMessage(), equalTo(HttpException.message(HttpStatus.BAD_GATEWAY, STRING)));
 			assertThat(exception.getBody(), equalTo(STRING));
+		}
+	}
+
+	/**
+	 * Content converter that writes a fixed JSON string.
+	 */
+	private static final class FixedJsonRequestConverter implements ContentConverter<String> {
+
+		private final String json;
+
+		private FixedJsonRequestConverter(final String json) {
+			this.json = json;
+		}
+
+		@Override
+		public <H> boolean isConvertible(final ApiMimeType contentType, final H headers, final HeaderValues chain) {
+			return true;
+		}
+
+		@Override
+		public String from(final Object obj, final ApiMimeType contentType, final Class<String> targetClass) {
+			return null;
+		}
+
+		@Override
+		public String from(final Object obj, final ApiMimeType contentType, final GenericClass<String> targetGenericClass) {
+			return null;
+		}
+
+		@Override
+		public String toString(final Object body, final ApiMimeType mimeType) {
+			return json;
 		}
 	}
 }

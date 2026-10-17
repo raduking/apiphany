@@ -33,12 +33,14 @@ import org.apiphany.client.ClientProperties;
 import org.apiphany.http.CloseableHttpRequestFactory;
 import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
+import org.apiphany.json.JsonBuilder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.morphix.reflection.TypeHolder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -162,6 +164,19 @@ class AbstractSpringExchangeClientTest {
 		}
 
 		@Test
+		void shouldCreateJsonHttpEntityForSerializableWhenContentTypeIsJson() {
+			Map<String, List<String>> headers = Map.of(HttpHeader.CONTENT_TYPE.value(), List.of("application/json"));
+			ApiRequest<?> request = mock(ApiRequest.class);
+			doReturn(headers).when(request).getHeaders();
+			doReturn(42).when(request).getBody();
+
+			HttpEntity<?> entity = client.buildRequest(request);
+
+			assertThat(entity.getBody(), instanceOf(String.class));
+			assertThat(entity.getBody(), equalTo(JsonBuilder.toJson(42)));
+		}
+
+		@Test
 		@SuppressWarnings({ "unchecked" })
 		void shouldCreateHttpEntityForUnsupportedType() {
 			Object unsupportedBody = new Object() {
@@ -203,7 +218,7 @@ class AbstractSpringExchangeClientTest {
 		@SuppressWarnings({ "unchecked" })
 		void shouldBuildSuccessResponse() {
 			ApiRequest<byte[]> request = mock(ApiRequest.class);
-			doReturn(byte[].class).when(request).getClassResponseType();
+			doReturn(TypeHolder.of(byte[].class)).when(request).getResponseTypeHolder();
 
 			ResponseEntity<byte[]> responseEntity = ResponseEntity.ok("hello".getBytes());
 

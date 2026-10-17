@@ -15,6 +15,7 @@ import org.morphix.async.retry.AsyncRetry;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.retry.Retry;
 import org.morphix.reflection.GenericClass;
+import org.morphix.reflection.TypeHolder;
 
 /**
  * Represents properties for an API Client request. It includes details such as method, URL, headers, request body,
@@ -26,11 +27,6 @@ import org.morphix.reflection.GenericClass;
  * @author Radu Sebastian LAZIN
  */
 public class ApiRequest<T> extends ApiMessage<T> {
-
-	/**
-	 * Constant for unknown response type.
-	 */
-	public static final String UNKNOWN_RESPONSE_TYPE = "<unknown-reponse-type>";
 
 	/**
 	 * The method to be used for the request (e.g., GET, POST, PUT, etc.).
@@ -48,14 +44,9 @@ public class ApiRequest<T> extends ApiMessage<T> {
 	protected boolean urlEncoded;
 
 	/**
-	 * The expected response type as a class.
+	 * The response type.
 	 */
-	protected Class<?> classResponseType;
-
-	/**
-	 * The expected response type as a generic class.
-	 */
-	protected GenericClass<?> genericResponseType;
+	protected TypeHolder responseTypeHolder;
 
 	/**
 	 * A map of query parameters to be included in the request.
@@ -143,7 +134,7 @@ public class ApiRequest<T> extends ApiMessage<T> {
 	}
 
 	/**
-	 * Returns parameters for display purposes. By default this returns the same map as {@link #getParams()}.
+	 * Returns parameters for display purposes. By default, this returns the same map as {@link #getParams()}.
 	 * Implementations can override this method to redact sensitive parameter values.
 	 *
 	 * @return parameters for display purposes
@@ -164,34 +155,7 @@ public class ApiRequest<T> extends ApiMessage<T> {
 	 */
 	@Ignored
 	public <U> GenericClass<U> getGenericResponseType() {
-		return JavaObjects.cast(genericResponseType);
-	}
-
-	/**
-	 * Checks if the request has a class response type defined.
-	 *
-	 * @return true if a class response type is defined, false otherwise
-	 */
-	public boolean hasClassType() {
-		return null != classResponseType;
-	}
-
-	/**
-	 * Checks if the request has a generic response type defined.
-	 *
-	 * @return true if a generic response type is defined, false otherwise
-	 */
-	public boolean hasGenericType() {
-		return null != genericResponseType;
-	}
-
-	/**
-	 * Checks if the request has any response type defined (either class or generic).
-	 *
-	 * @return true if a response type is defined, false otherwise
-	 */
-	public boolean hasResponseType() {
-		return hasClassType() || hasGenericType();
+		return JavaObjects.cast(getResponseTypeHolder().getGenericType());
 	}
 
 	/**
@@ -205,7 +169,34 @@ public class ApiRequest<T> extends ApiMessage<T> {
 	 */
 	@Ignored
 	public <U> Class<U> getClassResponseType() {
-		return JavaObjects.cast(classResponseType);
+		return JavaObjects.cast(getResponseTypeHolder().getClassType());
+	}
+
+	/**
+	 * Checks if the request has a class response type defined.
+	 *
+	 * @return true if a class response type is defined, false otherwise
+	 */
+	public boolean hasClassType() {
+		return null != getClassResponseType();
+	}
+
+	/**
+	 * Checks if the request has a generic response type defined.
+	 *
+	 * @return true if a generic response type is defined, false otherwise
+	 */
+	public boolean hasGenericType() {
+		return null != getGenericResponseType();
+	}
+
+	/**
+	 * Checks if the request has any response type defined (either class or generic).
+	 *
+	 * @return true if a response type is defined, false otherwise
+	 */
+	public boolean hasResponseType() {
+		return hasClassType() || hasGenericType();
 	}
 
 	/**
@@ -214,10 +205,7 @@ public class ApiRequest<T> extends ApiMessage<T> {
 	 * @return the response type
 	 */
 	public Type getResponseType() {
-		if (hasGenericType()) {
-			return genericResponseType.getType();
-		}
-		return classResponseType;
+		return getResponseTypeHolder().getType();
 	}
 
 	/**
@@ -226,8 +214,17 @@ public class ApiRequest<T> extends ApiMessage<T> {
 	 * @return the response type name
 	 */
 	public String getResponseTypeName() {
-		Type responseType = getResponseType();
-		return null != responseType ? responseType.getTypeName() : UNKNOWN_RESPONSE_TYPE;
+		return getResponseTypeHolder().getTypeName();
+	}
+
+	/**
+	 * Returns the response type holder.
+	 *
+	 * @return the response type holder
+	 */
+	@Ignored
+	public TypeHolder getResponseTypeHolder() {
+		return TypeHolder.safe(responseTypeHolder);
 	}
 
 	/**
