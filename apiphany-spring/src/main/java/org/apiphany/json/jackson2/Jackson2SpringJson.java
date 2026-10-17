@@ -1,15 +1,19 @@
 package org.apiphany.json.jackson2;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Type;
+
 import org.apiphany.ApiMimeType;
 import org.apiphany.client.ContentConverter;
-import org.apiphany.header.HeaderValues;
-import org.apiphany.io.ContentType;
+import org.apiphany.client.http.JsonHttpContentConverter;
 import org.morphix.convert.ObjectConverterException;
 import org.morphix.reflection.Constructors;
 import org.morphix.reflection.GenericClass;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -33,7 +37,7 @@ public final class Jackson2SpringJson {
 	 */
 	public static ContentConverter<String> converter(final Object converter) {
 		if (converter instanceof MappingJackson2HttpMessageConverter jackson2Converter) {
-			return new RequestConverter(jackson2Converter.getObjectMapper());
+			return new RequestConverter<>(jackson2Converter.getObjectMapper());
 		}
 		return null;
 	}
@@ -51,7 +55,7 @@ public final class Jackson2SpringJson {
 	 *
 	 * @author Radu Sebastian LAZIN
 	 */
-	private static final class RequestConverter implements ContentConverter<String> {
+	private static final class RequestConverter<T> extends JsonHttpContentConverter<T> {
 
 		/**
 		 * The mapper that writes the request body.
@@ -66,30 +70,43 @@ public final class Jackson2SpringJson {
 		}
 
 		/**
-		 * @see ContentConverter#isConvertible(ApiMimeType, Object, HeaderValues)
-		 */
-		@Override
-		public <H> boolean isConvertible(final ApiMimeType mimeType, final H headers, final HeaderValues chain) {
-			if (null != mimeType) {
-				return ContentType.APPLICATION_JSON == mimeType.contentType();
-			}
-			return false;
-		}
-
-		/**
 		 * @see ContentConverter#from(Object, ApiMimeType, Class)
 		 */
 		@Override
-		public String from(final Object obj, final ApiMimeType mimeType, final Class<String> targetClass) {
-			throw unsupported();
+		public T from(final Object obj, final ApiMimeType mimeType, final Class<T> targetClass) {
+			try {
+				return switch (obj) {
+					case String str -> mapper.readValue(str, targetClass);
+					case byte[] bytes -> mapper.readValue(bytes, targetClass);
+					case InputStream is -> mapper.readValue(is, targetClass);
+					default -> throw converterException(targetClass.getName());
+				};
+			} catch (IOException e) {
+				throw converterException(targetClass.getName(), e);
+			}
 		}
 
 		/**
 		 * @see ContentConverter#from(Object, ApiMimeType, GenericClass)
 		 */
 		@Override
-		public String from(final Object obj, final ApiMimeType mimeType, final GenericClass<String> targetGenericClass) {
-			throw unsupported();
+		public T from(final Object obj, final ApiMimeType mimeType, final GenericClass<T> targetGenericClass) {
+			TypeReference<T> typeReference = new TypeReference<>() {
+				@Override
+				public Type getType() {
+					return targetGenericClass.getType();
+				}
+			};
+			try {
+				return switch (obj) {
+					case String str -> mapper.readValue(str, typeReference);
+					case byte[] bytes -> mapper.readValue(bytes, typeReference);
+					case InputStream is -> mapper.readValue(is, typeReference);
+					default -> throw converterException(targetGenericClass.getType().getTypeName());
+				};
+			} catch (IOException e) {
+				throw converterException(targetGenericClass.getType().getTypeName(), e);
+			}
 		}
 
 		/**
@@ -102,15 +119,6 @@ public final class Jackson2SpringJson {
 			} catch (JsonProcessingException e) {
 				throw new ObjectConverterException("Error converting object to JSON", e);
 			}
-		}
-
-		/**
-		 * Returns the exception thrown when this converter is asked to read a response.
-		 *
-		 * @return the unsupported operation
-		 */
-		private static UnsupportedOperationException unsupported() {
-			return new UnsupportedOperationException("Jackson 2 Spring JSON converter writes JSON request bodies");
 		}
 	}
 }
