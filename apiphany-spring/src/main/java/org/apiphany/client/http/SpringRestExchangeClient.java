@@ -37,7 +37,7 @@ public class SpringRestExchangeClient extends AbstractSpringExchangeClient {
 		super(clientProperties, SpringHttpSupport.getRequestFactory(restClientBuilder));
 		ContentConverter<String> jsonConverter = SpringJson.converter(restClientBuilder);
 		if (null != jsonConverter) {
-			getContentConverters().add(0, jsonConverter);
+			getContentConverters().addFirst(jsonConverter);
 		}
 		this.restClient = customize(restClientBuilder).build();
 	}
