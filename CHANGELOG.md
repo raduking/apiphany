@@ -6,6 +6,7 @@
 - Changed HTTP exchange clients to write JSON request bodies through content converters. `JsonHttpContentConverter` writes with `JsonBuilder`.
 - Removed the message parameter from `ContentConverter.isConvertible`. The method now takes the content type and headers. 
 - Changed Spring clients to write with the `ObjectMapper` configured on the `RestClient` or `RestTemplate` builder.
+- Added `Jackson2SpringJson` to resolve a Spring Jackson 2 converter's `ObjectMapper`. `SpringJson` verifies `Jackson2Library.isPresent()` first.
 - Changed HTTP exchange clients to treat `application/json` media types with parameters (e.g. `charset=UTF-8`) as JSON request bodies.
 - Added `ContentType.matches(String)` to match one content type, ignoring media type parameters and case.
 - Added `ContentType.matchesAny(List<String>)` to match any content type in a list, ignoring media type parameters and case.
