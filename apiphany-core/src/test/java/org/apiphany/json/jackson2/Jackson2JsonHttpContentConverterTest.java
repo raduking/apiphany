@@ -11,7 +11,6 @@ import java.util.List;
 
 import org.apiphany.ApiMimeType;
 import org.apiphany.io.ContentType;
-import org.apiphany.json.JsonBuilder;
 import org.junit.jupiter.api.Test;
 import org.morphix.convert.ObjectConverterException;
 import org.morphix.reflection.GenericClass;
@@ -130,6 +129,6 @@ class Jackson2JsonHttpContentConverterTest {
 
 		String result = converter.toString(JSON_STRING, null);
 
-		assertThat(result, equalTo(JsonBuilder.toJson(JSON_STRING)));
+		assertThat(result, equalTo(Jackson2JsonBuilder.toJson(JSON_STRING)));
 	}
 }
