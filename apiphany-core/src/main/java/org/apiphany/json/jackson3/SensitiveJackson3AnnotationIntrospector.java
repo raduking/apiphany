@@ -14,8 +14,7 @@ import tools.jackson.databind.introspect.Annotated;
 import tools.jackson.databind.introspect.NopAnnotationIntrospector;
 
 /**
- * Custom Jackson 3 {@link com.fasterxml.jackson.databind.AnnotationIntrospector} to handle fields annotated with
- * {@link Sensitive}.
+ * Custom Jackson 3 {@link AnnotationIntrospector} to handle fields annotated with {@link Sensitive}.
  * <p>
  * When enabled, any field marked with {@link Sensitive} will be serialized as write-only, meaning it will be ignored
  * during JSON serialization but can still be populated during deserialization. This allows sensitive information such
