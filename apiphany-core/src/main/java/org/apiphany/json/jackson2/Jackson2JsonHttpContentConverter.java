@@ -53,15 +53,18 @@ public class Jackson2JsonHttpContentConverter<T> implements HttpContentConverter
 	 * @param obj the object to convert
 	 * @param mimeType the mime type
 	 * @param targetClass the target class to which the JSON content will be de-serialized
-	 * @return the de-serialized object of type {@code T}
+	 * @return the de-serialized object of type {@code T}, or {@code null} if the input object is {@code null}
 	 * @throws UnsupportedOperationException if the input object is not a JSON string
 	 * @see ContentConverter#from(Object, ApiMimeType, Class)
 	 * @see Jackson2JsonBuilder#fromJson(Object, Class)
 	 */
 	@Override
 	public T from(final Object obj, final ApiMimeType mimeType, final Class<T> targetClass) {
+		if (null == obj) {
+			return null;
+		}
 		T result = Jackson2JsonBuilder.fromJson(obj, targetClass);
-		if (null == result && null != obj) {
+		if (null == result) {
 			throw new ObjectConverterException("Error converting JSON response to " + targetClass.getName());
 		}
 		return result;
@@ -73,15 +76,18 @@ public class Jackson2JsonHttpContentConverter<T> implements HttpContentConverter
 	 *
 	 * @param obj the object to convert, which must be a JSON string
 	 * @param targetGenericClass the target generic class to which the JSON content will be de-serialized
-	 * @return the de-serialized object of type {@code T}
+	 * @return the de-serialized object of type {@code T}, or {@code null} if the input object is {@code null}
 	 * @throws UnsupportedOperationException if the input object is not a JSON
 	 * @see ContentConverter#from(Object, ApiMimeType, GenericClass)
 	 * @see Jackson2JsonBuilder#fromJson(Object, GenericClass)
 	 */
 	@Override
 	public T from(final Object obj, final ApiMimeType mimeType, final GenericClass<T> targetGenericClass) {
+		if (null == obj) {
+			return null;
+		}
 		T result = Jackson2JsonBuilder.fromJson(obj, targetGenericClass);
-		if (null == result && null != obj) {
+		if (null == result) {
 			throw new ObjectConverterException("Error converting JSON response to " + targetGenericClass.getType().getTypeName());
 		}
 		return result;

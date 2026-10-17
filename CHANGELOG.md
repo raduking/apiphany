@@ -10,6 +10,7 @@
 - Added `ContentType.matches(String)` to match one content type, ignoring media type parameters and case.
 - Added `ContentType.matchesAny(List<String>)` to match any content type in a list, ignoring media type parameters and case.
 - Added `TypeHolder` JSON de-serialization for Jackson 2 and 3, so `ApiRequest.responseTypeHolder` is read from a `classType` object or a class name string.
+- Changed JSON content converters to return `null` for a `null` input, instead of failing with a `NullPointerException`.
 - Upgraded `morphix-all` to `1.0.47`.
 
 ---
