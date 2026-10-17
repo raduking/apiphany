@@ -7,7 +7,6 @@ import java.lang.reflect.Type;
 import org.apiphany.ApiMimeType;
 import org.apiphany.client.ContentConverter;
 import org.apiphany.client.http.JsonHttpContentConverter;
-import org.morphix.convert.ObjectConverterException;
 import org.morphix.reflection.Constructors;
 import org.morphix.reflection.GenericClass;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -117,7 +116,7 @@ public final class Jackson2SpringJson {
 			try {
 				return mapper.writeValueAsString(body);
 			} catch (JsonProcessingException e) {
-				throw new ObjectConverterException("Error converting object to JSON", e);
+				throw converterException(String.class.getName(), e);
 			}
 		}
 	}

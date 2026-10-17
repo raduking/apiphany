@@ -2,14 +2,17 @@ package org.apiphany.json.jackson2;
 
 import static org.apiphany.test.Assertions.assertDefaultConstructorThrows;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+
 import org.apiphany.client.ContentConverter;
 import org.apiphany.io.ContentType;
 import org.junit.jupiter.api.Test;
+import org.morphix.convert.ObjectConverterException;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 
@@ -57,11 +60,50 @@ class Jackson2SpringJsonTest {
 	}
 
 	@Test
-	void shouldThrowOnReadingAResponse() {
+	void shouldReadAStringBodyWithTheMapper() throws Exception {
+		ObjectMapper jsonMapper = new ObjectMapper();
+		MappingJackson2HttpMessageConverter jackson2Converter = new MappingJackson2HttpMessageConverter(jsonMapper);
+		ContentConverter<String> converter = Jackson2SpringJson.converter(jackson2Converter);
+
+		String json = jsonMapper.writeValueAsString("Ada");
+
+		assertThat(converter.from(json, ContentType.APPLICATION_JSON, String.class), equalTo("Ada"));
+	}
+
+	@Test
+	void shouldReadAByteArrayBodyWithTheMapper() throws Exception {
+		ObjectMapper jsonMapper = new ObjectMapper();
+		MappingJackson2HttpMessageConverter jackson2Converter = new MappingJackson2HttpMessageConverter(jsonMapper);
+		ContentConverter<String> converter = Jackson2SpringJson.converter(jackson2Converter);
+
+		byte[] json = jsonMapper.writeValueAsBytes("Ada");
+
+		assertThat(converter.from(json, ContentType.APPLICATION_JSON, String.class), equalTo("Ada"));
+	}
+
+	@Test
+	void shouldReadAnInputStreamBodyWithTheMapper() throws Exception {
+		ObjectMapper jsonMapper = new ObjectMapper();
+		MappingJackson2HttpMessageConverter jackson2Converter = new MappingJackson2HttpMessageConverter(jsonMapper);
+		ContentConverter<String> converter = Jackson2SpringJson.converter(jackson2Converter);
+
+		InputStream json = new ByteArrayInputStream(jsonMapper.writeValueAsBytes("Ada"));
+
+		assertThat(converter.from(json, ContentType.APPLICATION_JSON, String.class), equalTo("Ada"));
+	}
+
+	@Test
+	void shouldThrowWhenReadingAnUnsupportedBodyType() {
 		ContentConverter<String> converter = Jackson2SpringJson.converter(new MappingJackson2HttpMessageConverter());
 
-		assertThat(converter, notNullValue());
-		assertThrows(UnsupportedOperationException.class, () -> converter.from("{}", ContentType.APPLICATION_JSON, String.class));
+		assertThrows(ObjectConverterException.class, () -> converter.from(42, ContentType.APPLICATION_JSON, String.class));
+	}
+
+	@Test
+	void shouldWrapAJsonProcessingExceptionWhenReading() {
+		ContentConverter<String> converter = Jackson2SpringJson.converter(new MappingJackson2HttpMessageConverter());
+
+		assertThrows(ObjectConverterException.class, () -> converter.from("{", ContentType.APPLICATION_JSON, String.class));
 	}
 
 	@Test
