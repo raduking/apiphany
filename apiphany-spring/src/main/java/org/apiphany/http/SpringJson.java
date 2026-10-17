@@ -1,12 +1,16 @@
 package org.apiphany.http;
 
 import java.util.Locale;
+import java.util.Map;
+import java.util.function.Function;
 
 import org.apiphany.client.ContentConverter;
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.json.jackson2.Jackson2Library;
 import org.apiphany.json.jackson2.Jackson2SpringJson;
 import org.morphix.reflection.Constructors;
 import org.morphix.reflection.Fields;
+import org.morphix.runtime.OptionalLibrary;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -19,8 +23,9 @@ import org.springframework.web.client.RestClient;
  * configuration. That mapper writes JSON request bodies as-is. A builder with no such converter has no converter, and
  * the exchange client falls back to {@link JsonBuilder}.
  * <p>
- * This class is library-agnostic. {@link Jackson2SpringJson} resolves a Jackson 2 message converter. It is consulted
- * for each JSON-capable message converter found on the builder.
+ * This class is library-agnostic. It verifies {@link Jackson2Library#isPresent()} before consulting
+ * {@link Jackson2SpringJson} for each JSON-capable message converter found on the builder. That presence check is what
+ * allows {@link Jackson2SpringJson} to use Jackson 2 types directly instead of reflection.
  *
  * @author Radu Sebastian LAZIN
  */
@@ -30,6 +35,13 @@ public final class SpringJson {
 	 * Field that holds the converters configured on a Spring client builder.
 	 */
 	private static final String MESSAGE_CONVERTERS_FIELD_NAME = "messageConverters";
+
+	/**
+	 * Maps each optional JSON library to the function that resolves a Spring message converter to a
+	 * {@link ContentConverter}. A resolver is used only when its library is present.
+	 */
+	private static final Map<OptionalLibrary<?>, Function<Object, ContentConverter<String>>> RESOLVERS_MAP = Map.of(
+			Jackson2Library.DESCRIPTOR, Jackson2SpringJson::converter);
 
 	/**
 	 * Returns the JSON request converter configured on the given {@link RestClient.Builder}, or {@code null} when the
@@ -68,9 +80,15 @@ public final class SpringJson {
 			if (!supportsJson(converter)) {
 				continue;
 			}
-			ContentConverter<String> resolved = Jackson2SpringJson.converter(converter);
-			if (null != resolved) {
-				return resolved;
+			for (Map.Entry<OptionalLibrary<?>, Function<Object, ContentConverter<String>>> entry : RESOLVERS_MAP.entrySet()) {
+				OptionalLibrary<?> optionalLibrary = entry.getKey();
+				if (optionalLibrary.isPresent()) {
+					Function<Object, ContentConverter<String>> resolverFunction = entry.getValue();
+					ContentConverter<String> resolved = resolverFunction.apply(converter);
+					if (null != resolved) {
+						return resolved;
+					}
+				}
 			}
 		}
 		return null;
