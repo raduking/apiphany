@@ -1,5 +1,8 @@
 package org.apiphany.client.http;
 
+import java.util.function.Function;
+import java.util.function.Supplier;
+
 import org.apiphany.ApiMimeType;
 import org.apiphany.client.ContentConverter;
 import org.apiphany.header.HeaderValues;
@@ -52,6 +55,25 @@ public class JsonHttpContentConverter<T> implements HttpContentConverter<T> {
 	}
 
 	/**
+	 * Generic method that converts an object to JSON.
+	 *
+	 * @param obj object to convert
+	 * @param toJson function used to convert
+	 * @param typeName the type name of the object
+	 * @return
+	 */
+	protected T from(final Object obj, final Function<Object, T> toJson, final Supplier<String> typeName) {
+		if (null == obj) {
+			return null;
+		}
+		T result = toJson.apply(obj);
+		if (null == result) {
+			throw new ObjectConverterException("Error converting JSON response to " + typeName.get());
+		}
+		return result;
+	}
+
+	/**
 	 * Converts the given object to an instance of the specified class. This method supports conversion from JSON.
 	 *
 	 * @param obj the object to convert
@@ -64,14 +86,7 @@ public class JsonHttpContentConverter<T> implements HttpContentConverter<T> {
 	 */
 	@Override
 	public T from(final Object obj, final ApiMimeType mimeType, final Class<T> targetClass) {
-		if (null == obj) {
-			return null;
-		}
-		T result = JsonBuilder.fromJson(obj, targetClass);
-		if (null == result) {
-			throw new ObjectConverterException("Error converting JSON response to " + targetClass.getName());
-		}
-		return result;
+		return from(obj, o -> JsonBuilder.fromJson(o, targetClass), targetClass::getName);
 	}
 
 	/**
@@ -87,14 +102,7 @@ public class JsonHttpContentConverter<T> implements HttpContentConverter<T> {
 	 */
 	@Override
 	public T from(final Object obj, final ApiMimeType mimeType, final GenericClass<T> targetGenericClass) {
-		if (null == obj) {
-			return null;
-		}
-		T result = JsonBuilder.fromJson(obj, targetGenericClass);
-		if (null == result) {
-			throw new ObjectConverterException("Error converting JSON response to " + targetGenericClass.getType().getTypeName());
-		}
-		return result;
+		return from(obj, o -> JsonBuilder.fromJson(o, targetGenericClass), () -> targetGenericClass.getType().getTypeName());
 	}
 
 	/**
