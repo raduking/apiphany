@@ -36,7 +36,7 @@ public class JsonHttpContentConverter<T> implements HttpContentConverter<T> {
 
 	/**
 	 * Returns true when the content type is {@code application/json}. This is the check used for both reading a response
-	 * and writing a request body. A null mime type is not convertible.
+	 * and writing a request body. A {@code null} mime type is not convertible.
 	 *
 	 * @param <H> the type of the headers
 	 *
@@ -59,18 +59,39 @@ public class JsonHttpContentConverter<T> implements HttpContentConverter<T> {
 	 *
 	 * @param obj object to convert
 	 * @param toJson function used to convert
-	 * @param typeName the type name of the object
-	 * @return
+	 * @param targetTypeNameSupplier the target type name supplier
+	 * @return de-serialized object
 	 */
-	protected T from(final Object obj, final Function<Object, T> toJson, final Supplier<String> typeName) {
+	protected T from(final Object obj, final Function<Object, T> toJson, final Supplier<String> targetTypeNameSupplier) {
 		if (null == obj) {
 			return null;
 		}
 		T result = toJson.apply(obj);
 		if (null == result) {
-			throw new ObjectConverterException("Error converting JSON response to " + typeName.get());
+			throw converterException(targetTypeNameSupplier.get());
 		}
 		return result;
+	}
+
+	/**
+	 * Creates an {@link ObjectConverterException} when converting to a target type name.
+	 *
+	 * @param targetTypeName the target type name contained in the message
+	 * @return an object converter exception
+	 */
+	protected ObjectConverterException converterException(final String targetTypeName) {
+		return converterException(targetTypeName, null);
+	}
+
+	/**
+	 * Creates an {@link ObjectConverterException} when converting to a target type name.
+	 *
+	 * @param targetTypeName the target type name contained in the message
+	 * @param cause the cause
+	 * @return an object converter exception
+	 */
+	protected ObjectConverterException converterException(final String targetTypeName, final Throwable cause) {
+		return new ObjectConverterException("Error converting JSON response to " + targetTypeName, cause);
 	}
 
 	/**
@@ -80,7 +101,7 @@ public class JsonHttpContentConverter<T> implements HttpContentConverter<T> {
 	 * @param mimeType the mime type
 	 * @param targetClass the target class to which the JSON content will be de-serialized
 	 * @return the de-serialized object of type {@code T}, or {@code null} if the input object is {@code null}
-	 * @throws ObjectConverterException if a non-null input cannot be converted
+	 * @throws ObjectConverterException if a non-{@code null} input cannot be converted
 	 * @see ContentConverter#from(Object, ApiMimeType, Class)
 	 * @see JsonBuilder#fromJson(Object, Class)
 	 */
@@ -96,7 +117,7 @@ public class JsonHttpContentConverter<T> implements HttpContentConverter<T> {
 	 * @param mimeType the mime type
 	 * @param targetGenericClass the target generic class to which the JSON content will be de-serialized
 	 * @return the de-serialized object of type {@code T}, or {@code null} if the input object is {@code null}
-	 * @throws ObjectConverterException if a non-null input cannot be converted
+	 * @throws ObjectConverterException if a non-{@code null} input cannot be converted
 	 * @see ContentConverter#from(Object, ApiMimeType, GenericClass)
 	 * @see JsonBuilder#fromJson(Object, GenericClass)
 	 */
