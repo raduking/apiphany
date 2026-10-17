@@ -2,10 +2,7 @@ package org.apiphany.json.jackson2;
 
 import org.apiphany.ApiMimeType;
 import org.apiphany.client.ContentConverter;
-import org.apiphany.client.http.HttpContentConverter;
-import org.apiphany.header.HeaderValues;
-import org.apiphany.io.ContentType;
-import org.morphix.convert.ObjectConverterException;
+import org.apiphany.client.http.JsonHttpContentConverter;
 import org.morphix.reflection.GenericClass;
 
 /**
@@ -17,7 +14,7 @@ import org.morphix.reflection.GenericClass;
  *
  * @author Radu Sebastian LAZIN
  */
-public class Jackson2JsonHttpContentConverter<T> implements HttpContentConverter<T> {
+public class Jackson2JsonHttpContentConverter<T> extends JsonHttpContentConverter<T> {
 
 	/**
 	 * Constructs a new {@link Jackson2JsonHttpContentConverter}. This constructor is intentionally empty, as no special
@@ -28,73 +25,26 @@ public class Jackson2JsonHttpContentConverter<T> implements HttpContentConverter
 	}
 
 	/**
-	 * Determines whether this converter can handle the content based on the provided headers. This converter supports
-	 * content with the {@code application/json} content type.
-	 *
-	 * @param <V> the type of the headers
-	 *
-	 * @param mimeType the content type
-	 * @param headers the headers that may influence the conversion
-	 * @param chain chain of header values extractor that will be used to get a specific header list
-	 * @return true if the content type is {@code application/json}, false otherwise
-	 * @see ContentConverter#isConvertible(ApiMimeType, Object, HeaderValues)
-	 */
-	@Override
-	public <V> boolean isConvertible(final ApiMimeType mimeType, final V headers, final HeaderValues chain) {
-		if (null != mimeType) {
-			return ContentType.APPLICATION_JSON == mimeType.contentType();
-		}
-		return false;
-	}
-
-	/**
-	 * Converts the given object to an instance of the specified class. This method supports conversion from JSON strings.
-	 *
-	 * @param obj the object to convert
-	 * @param mimeType the mime type
-	 * @param targetClass the target class to which the JSON content will be de-serialized
-	 * @return the de-serialized object of type {@code T}, or {@code null} if the input object is {@code null}
-	 * @throws UnsupportedOperationException if the input object is not a JSON string
 	 * @see ContentConverter#from(Object, ApiMimeType, Class)
 	 * @see Jackson2JsonBuilder#fromJson(Object, Class)
 	 */
 	@Override
 	public T from(final Object obj, final ApiMimeType mimeType, final Class<T> targetClass) {
-		if (null == obj) {
-			return null;
-		}
-		T result = Jackson2JsonBuilder.fromJson(obj, targetClass);
-		if (null == result) {
-			throw new ObjectConverterException("Error converting JSON response to " + targetClass.getName());
-		}
-		return result;
+		return from(obj, o -> Jackson2JsonBuilder.fromJson(o, targetClass), targetClass::getName);
 	}
 
 	/**
-	 * Converts the given object to an instance of the specified generic class. This method supports conversion from JSON
-	 * strings.
-	 *
-	 * @param obj the object to convert, which must be a JSON string
-	 * @param targetGenericClass the target generic class to which the JSON content will be de-serialized
-	 * @return the de-serialized object of type {@code T}, or {@code null} if the input object is {@code null}
-	 * @throws UnsupportedOperationException if the input object is not a JSON
 	 * @see ContentConverter#from(Object, ApiMimeType, GenericClass)
 	 * @see Jackson2JsonBuilder#fromJson(Object, GenericClass)
 	 */
 	@Override
 	public T from(final Object obj, final ApiMimeType mimeType, final GenericClass<T> targetGenericClass) {
-		if (null == obj) {
-			return null;
-		}
-		T result = Jackson2JsonBuilder.fromJson(obj, targetGenericClass);
-		if (null == result) {
-			throw new ObjectConverterException("Error converting JSON response to " + targetGenericClass.getType().getTypeName());
-		}
-		return result;
+		return from(obj, o -> Jackson2JsonBuilder.fromJson(o, targetGenericClass), () -> targetGenericClass.getType().getTypeName());
 	}
 
 	/**
 	 * @see ContentConverter#toString(Object, ApiMimeType)
+	 * @see Jackson2JsonBuilder#toJson(Object)
 	 */
 	@Override
 	public String toString(final Object body, final ApiMimeType mimeType) {
