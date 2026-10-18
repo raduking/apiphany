@@ -2,8 +2,6 @@ package org.apiphany.json.jackson2;
 
 import java.io.InputStream;
 import java.lang.reflect.Type;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.Map;
@@ -27,11 +25,6 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 
 /**
  * This will serialize/de-serialize any JSON serializable/deserializable object to {@link String}/{@link Object}. This
@@ -73,6 +66,9 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 			if (!Jackson2Library.isJdk8ModulePresent()) {
 				instance.observability().jdk8ModuleNotFound();
 			}
+			if (!Jackson2Library.isJavaTimeModulePresent()) {
+				instance.observability().javaTimeModuleNotFound();
+			}
 			return instance;
 		}
 	}
@@ -91,7 +87,10 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 */
 	protected static final Map<String, Supplier<? extends Module>> MODULES = new ConcurrentHashMap<>();
 	static {
-		registerModule(JavaTimeModule.class.getName(), () -> newJavaTimeModule(DateTimeFormatter.ISO_DATE_TIME, DateTimeFormatter.ISO_DATE));
+		if (Jackson2Library.isJavaTimeModulePresent()) {
+			registerModule(Jackson2Library.javaTimeModuleClassName(),
+					() -> newJavaTimeModule(DateTimeFormatter.ISO_DATE_TIME, DateTimeFormatter.ISO_DATE));
+		}
 		if (Jackson2Library.isJdk8ModulePresent()) {
 			registerModule(Jackson2Library.jdk8ModuleClassName(), Jackson2Library::newJdk8Module);
 		}
@@ -137,28 +136,52 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @param objectMapper the object mapper to use
 	 */
 	Jackson2JsonBuilder(final ObjectMapper objectMapper) {
-		this.objectMapper = objectMapper;
-		for (Supplier<? extends Module> moduleSupplier : MODULES.values()) {
-			this.objectMapper.registerModule(moduleSupplier.get());
-		}
-		this.objectMapper.setDefaultPropertyInclusion(JsonInclude.Value.construct(
-				JsonInclude.Include.NON_NULL, JsonInclude.Include.NON_NULL));
-		this.objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
-		this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		this.objectMapper.configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, true);
-		this.objectMapper.configure(DeserializationFeature.FAIL_ON_TRAILING_TOKENS, true);
-		this.objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-		this.objectMapper.configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false);
-		this.objectMapper.configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
-		this.objectMapper.configure(DeserializationFeature.READ_ENUMS_USING_TO_STRING, true);
-		configure(this.objectMapper, MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS, true);
-		configure(this.objectMapper, MapperFeature.USE_GETTERS_AS_SETTERS, false);
-		configure(this.objectMapper, MapperFeature.ALLOW_FINAL_FIELDS_AS_MUTATORS, false);
-		configure(this.objectMapper, MapperFeature.USE_STD_BEAN_NAMING, true);
+		this(objectMapper, true);
+	}
 
+	/**
+	 * Uses the given {@link ObjectMapper}.
+	 * <p>
+	 * When {@code configure} is {@code true}, this applies the configuration described by
+	 * {@link #Jackson2JsonBuilder(ObjectMapper)}. When {@code configure} is {@code false}, the mapper is stored as given.
+	 * Modules, features, and the sensitivity introspector are left unchanged. Spring uses that form so a client keeps the
+	 * mapper it already configured.
+	 * <p>
+	 * Indentation always mirrors the mapper: when {@code configure} is {@code false}, {@link #eol()} is derived from the
+	 * mapper's own {@link SerializationFeature#INDENT_OUTPUT}, not from the {@code json-builder.to-json.indent-output}
+	 * property, so {@link #toJsonString(Object)} never adds a line separator the mapper itself would not have written.
+	 *
+	 * @param objectMapper the object mapper to use
+	 * @param configure {@code true} to apply this builder's configuration, {@code false} to leave the mapper unchanged
+	 */
+	Jackson2JsonBuilder(final ObjectMapper objectMapper, final boolean configure) {
+		this.objectMapper = objectMapper;
+		if (configure) {
+			for (Supplier<? extends Module> moduleSupplier : MODULES.values()) {
+				this.objectMapper.registerModule(moduleSupplier.get());
+			}
+			this.objectMapper.setDefaultPropertyInclusion(JsonInclude.Value.construct(
+					JsonInclude.Include.NON_NULL, JsonInclude.Include.NON_NULL));
+			this.objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+			this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+			this.objectMapper.configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, true);
+			this.objectMapper.configure(DeserializationFeature.FAIL_ON_TRAILING_TOKENS, true);
+			this.objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+			this.objectMapper.configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false);
+			this.objectMapper.configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
+			this.objectMapper.configure(DeserializationFeature.READ_ENUMS_USING_TO_STRING, true);
+			configure(this.objectMapper, MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS, true);
+			configure(this.objectMapper, MapperFeature.USE_GETTERS_AS_SETTERS, false);
+			configure(this.objectMapper, MapperFeature.ALLOW_FINAL_FIELDS_AS_MUTATORS, false);
+			configure(this.objectMapper, MapperFeature.USE_STD_BEAN_NAMING, true);
+		}
 		this.defaultAnnotationIntrospector = objectMapper.getSerializationConfig().getAnnotationIntrospector();
-		configureSensitivity(SensitiveJackson2AnnotationIntrospector.hideSensitive());
-		indentOutput(isIndentOutput());
+		if (configure) {
+			configureSensitivity(SensitiveJackson2AnnotationIntrospector.hideSensitive());
+			indentOutput(isIndentOutput());
+		} else {
+			super.indentOutput(objectMapper.isEnabled(SerializationFeature.INDENT_OUTPUT));
+		}
 	}
 
 	/**
@@ -245,12 +268,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @return an object from the JSON input object
 	 */
 	public static <O, T> T fromJson(final O json, final Class<T> cls) { // NOSONAR we want it hidden
-		return switch (json) {
-			case String string -> runtime().fromJsonString(string, cls);
-			case byte[] bytes -> runtime().fromJsonBytes(bytes, cls);
-			case InputStream inputStream -> runtime().fromJsonInputStream(inputStream, cls);
-			default -> throw unsupportedJsonInputType(json);
-		};
+		return runtime().fromJsonObject(json, cls);
 	}
 
 	/**
@@ -264,12 +282,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @return an object from the JSON input object
 	 */
 	public static <O, T> T fromJson(final O json, final GenericClass<T> genericClass) { // NOSONAR we want it hidden
-		return switch (json) {
-			case String string -> runtime().fromJsonString(string, genericClass);
-			case byte[] bytes -> runtime().fromJsonBytes(bytes, genericClass);
-			case InputStream inputStream -> runtime().fromJsonInputStream(inputStream, genericClass);
-			default -> throw unsupportedJsonInputType(json);
-		};
+		return runtime().fromJsonObject(json, genericClass);
 	}
 
 	/**
@@ -283,10 +296,27 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @return an object from the JSON input object
 	 */
 	public static <O, T> T fromJson(final O json, final TypeReference<T> typeReference) {
+		return runtime().fromJsonObject(json, typeReference);
+	}
+
+	/**
+	 * Returns an object from the JSON input object using this builder.
+	 * <p>
+	 * {@link #fromJson(Object, TypeReference)} is static and selects the runtime builder. This method reads with this
+	 * builder, so a caller can use a mapper other than the singleton.
+	 *
+	 * @param <O> input object type
+	 * @param <T> type of the object
+	 *
+	 * @param json JSON input object
+	 * @param typeReference type of the output object
+	 * @return an object from the JSON input object
+	 */
+	public <O, T> T fromJsonObject(final O json, final TypeReference<T> typeReference) {
 		return switch (json) {
-			case String string -> runtime().fromJsonString(string, typeReference);
-			case byte[] bytes -> runtime().fromJsonBytes(bytes, typeReference);
-			case InputStream inputStream -> runtime().fromJsonInputStream(inputStream, typeReference);
+			case String string -> fromJsonString(string, typeReference);
+			case byte[] bytes -> fromJsonBytes(bytes, typeReference);
+			case InputStream inputStream -> fromJsonInputStream(inputStream, typeReference);
 			default -> throw unsupportedJsonInputType(json);
 		};
 	}
@@ -538,18 +568,15 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	}
 
 	/**
-	 * Creates a new JavaTimeModule with ISO formatters
+	 * Creates a new Java time module with the given formatters. Call this only when
+	 * {@link Jackson2Library#isJavaTimeModulePresent()} is {@code true}.
 	 *
 	 * @param dateTimeFormatter the date time formatter object
 	 * @param dateFormatter the date formatter object
 	 * @return java time module
 	 */
 	public static SimpleModule newJavaTimeModule(final DateTimeFormatter dateTimeFormatter, final DateTimeFormatter dateFormatter) {
-		return new JavaTimeModule()
-				.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(dateTimeFormatter))
-				.addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer(dateTimeFormatter))
-				.addSerializer(LocalDate.class, new LocalDateSerializer(dateFormatter))
-				.addDeserializer(LocalDate.class, new LocalDateDeserializer(dateFormatter));
+		return JavaTimeJackson2Module.create(dateTimeFormatter, dateFormatter);
 	}
 
 	/**

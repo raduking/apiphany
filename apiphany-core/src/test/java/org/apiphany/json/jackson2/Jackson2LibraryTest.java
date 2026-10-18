@@ -54,6 +54,21 @@ class Jackson2LibraryTest {
 	}
 
 	@Test
+	void shouldDetectJavaTimeModuleWhenPresent() {
+		assertThat(Jackson2Library.isJavaTimeModulePresent(), equalTo(true));
+	}
+
+	@Test
+	void shouldNotReferenceJavaTimeModuleAsAClassDependency() throws IOException {
+		String classResource = Jackson2Library.class.getName().replace('.', '/') + ".class";
+		try (InputStream inputStream = Jackson2Library.class.getClassLoader().getResourceAsStream(classResource)) {
+			String classBytes = new String(inputStream.readAllBytes(), StandardCharsets.ISO_8859_1);
+
+			assertThat(classBytes.contains("com/fasterxml/jackson/datatype/jsr310/JavaTimeModule"), equalTo(false));
+		}
+	}
+
+	@Test
 	void shouldReturnSingletonInstanceOfJsonBuilder() {
 		JsonBuilder jsonBuilder1 = Jackson2Library.DESCRIPTOR.getSpecificInstance();
 		JsonBuilder jsonBuilder2 = Jackson2JsonBuilder.instance();

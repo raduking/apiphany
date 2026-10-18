@@ -31,6 +31,11 @@ public class Jackson2Library {
 	private static final String JDK8_MODULE_CLASS_NAME = "com.fasterxml.jackson.datatype.jdk8.Jdk8Module";
 
 	/**
+	 * Jackson Java time module class name. Kept as a string so callers can load when that library is absent.
+	 */
+	private static final String JAVA_TIME_MODULE_CLASS_NAME = "com.fasterxml.jackson.datatype.jsr310.JavaTimeModule";
+
+	/**
 	 * Library descriptor that shows if Jackson 2 JSON library is present in the classpath and the {@link JsonBuilder}
 	 * specific class.
 	 * <p>
@@ -67,6 +72,24 @@ public class Jackson2Library {
 	 */
 	public static String jdk8ModuleClassName() {
 		return JDK8_MODULE_CLASS_NAME;
+	}
+
+	/**
+	 * Checks if Jackson's Java time module is present in the classpath.
+	 *
+	 * @return {@code true} if {@code jackson-datatype-jsr310} is present, {@code false} otherwise
+	 */
+	public static boolean isJavaTimeModulePresent() {
+		return Reflection.isClassPresent(JAVA_TIME_MODULE_CLASS_NAME);
+	}
+
+	/**
+	 * Returns the class name of Jackson's Java time module.
+	 *
+	 * @return the Java time module class name
+	 */
+	public static String javaTimeModuleClassName() {
+		return JAVA_TIME_MODULE_CLASS_NAME;
 	}
 
 	/**

@@ -47,7 +47,8 @@ class Jackson2SpringJsonTest {
 
 		ContentConverter<String> converter = Jackson2SpringJson.converter(jackson2Converter);
 
-		assertThat(converter.toString(person, ContentType.APPLICATION_JSON), equalTo(jsonMapper.writeValueAsString(person)));
+		assertThat(converter.toString(person, ContentType.APPLICATION_JSON),
+				equalTo(jsonMapper.writeValueAsString(person)));
 	}
 
 	@Test
@@ -96,7 +97,7 @@ class Jackson2SpringJsonTest {
 	void shouldThrowWhenReadingAnUnsupportedBodyType() {
 		ContentConverter<String> converter = Jackson2SpringJson.converter(new MappingJackson2HttpMessageConverter());
 
-		assertThrows(ObjectConverterException.class, () -> converter.from(42, ContentType.APPLICATION_JSON, String.class));
+		assertThrows(UnsupportedOperationException.class, () -> converter.from(42, ContentType.APPLICATION_JSON, String.class));
 	}
 
 	@Test

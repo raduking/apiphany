@@ -40,12 +40,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.DeserializationConfig;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.SerializationConfig;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.xml.XmlFactory;
@@ -756,6 +758,47 @@ class Jackson2JsonBuilderTest {
 
 	@Nested
 	class ConfigureTests {
+
+		@Test
+		void shouldLeaveTheMapperUnchangedWhenConfigureIsFalse() {
+			ObjectMapper objectMapper = new ObjectMapper();
+			objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
+
+			new Jackson2JsonBuilder(objectMapper, false);
+
+			assertThat(objectMapper.isEnabled(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES), equalTo(true));
+		}
+
+		@Test
+		void shouldDisableFailOnUnknownPropertiesWhenTheMapperIsConfigured() {
+			ObjectMapper objectMapper = new ObjectMapper();
+			objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
+
+			new Jackson2JsonBuilder(objectMapper);
+
+			assertThat(objectMapper.isEnabled(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES), equalTo(false));
+		}
+
+		@Test
+		void shouldNotIndentWhenTheMapperIsUnconfiguredAndIndentOutputPropertyIsTrue() throws Exception {
+			ObjectMapper objectMapper = new ObjectMapper();
+
+			Jackson2JsonBuilder unconfiguredJsonBuilder = new Jackson2JsonBuilder(objectMapper, false);
+
+			B b = new B(CUSTOMER_ID1, TENANT_ID1);
+			assertThat(unconfiguredJsonBuilder.toJsonString(b), equalTo(objectMapper.writeValueAsString(b)));
+		}
+
+		@Test
+		void shouldIndentWhenTheUnconfiguredMapperAlreadyPrettyPrints() throws Exception {
+			ObjectMapper objectMapper = new ObjectMapper();
+			objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+
+			Jackson2JsonBuilder unconfiguredJsonBuilder = new Jackson2JsonBuilder(objectMapper, false);
+
+			B b = new B(CUSTOMER_ID1, TENANT_ID1);
+			assertThat(unconfiguredJsonBuilder.toJsonString(b), equalTo(Strings.EOL + objectMapper.writeValueAsString(b)));
+		}
 
 		@Test
 		void shouldApplyCustomizerToTheUnderlyingMapper() {
