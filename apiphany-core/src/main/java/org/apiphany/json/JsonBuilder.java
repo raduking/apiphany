@@ -43,6 +43,30 @@ import org.morphix.runtime.OptionalLibrary;
 public class JsonBuilder { // NOSONAR singleton implementation
 
 	/**
+	 * Represents the customization options for a {@link JsonBuilder} that wraps an existing mapper.
+	 * <p>
+	 * The available customization options are:
+	 * <ul>
+	 * <li>{@link #DEFAULT}: Apply this builder's default mapper configuration.</li>
+	 * <li>{@link #NONE}: Leave the given mapper unchanged.</li>
+	 * </ul>
+	 *
+	 * @author Radu Sebastian LAZIN
+	 */
+	public enum Customization {
+
+		/**
+		 * Apply this builder's default mapper configuration.
+		 */
+		DEFAULT,
+
+		/**
+		 * Leave the given mapper unchanged.
+		 */
+		NONE
+	}
+
+	/**
 	 * Namespace for configurable properties.
 	 *
 	 * @author Radu Sebastian LAZIN

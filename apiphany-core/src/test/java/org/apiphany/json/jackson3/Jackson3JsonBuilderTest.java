@@ -2,6 +2,7 @@ package org.apiphany.json.jackson3;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.nullValue;
@@ -41,6 +42,7 @@ import tools.jackson.core.exc.JacksonIOException;
 import tools.jackson.core.json.JsonFactory;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.AnnotationIntrospector;
+import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.ObjectWriter;
 import tools.jackson.databind.PropertyNamingStrategies;
 import tools.jackson.databind.SerializationFeature;
@@ -198,12 +200,12 @@ class Jackson3JsonBuilderTest extends Jackson3Test {
 			A a2 = Jackson3JsonBuilder.fromJson(json1, A.class);
 
 			byte[] jsonBytes2 = Strings.removeAllWhitespace(Jackson3JsonBuilder.toJson(a2)).getBytes();
-			Object json2 = new ByteArrayInputStream(jsonBytes2);
+			InputStream json2 = new ByteArrayInputStream(jsonBytes2);
 
 			// we need a new stream because the previous one has been read and is at the end of the stream, so we cannot read it
 			// again to compare the bytes.
 			byte[] bytes1 = IOStreams.toByteArray(new ByteArrayInputStream(jsonBytes1));
-			byte[] bytes2 = IOStreams.toByteArray((InputStream) json2);
+			byte[] bytes2 = IOStreams.toByteArray(json2);
 
 			assertThat(bytes1, equalTo(bytes2));
 		}
@@ -268,12 +270,12 @@ class Jackson3JsonBuilderTest extends Jackson3Test {
 			});
 
 			byte[] jsonBytes2 = Strings.removeAllWhitespace(Jackson3JsonBuilder.toJson(elements2)).getBytes();
-			Object json2 = new ByteArrayInputStream(jsonBytes2);
+			InputStream json2 = new ByteArrayInputStream(jsonBytes2);
 
 			// we need a new stream because the previous one has been read and is at the end of the stream, so we cannot read it
 			// again to compare the bytes.
 			byte[] bytes1 = IOStreams.toByteArray(new ByteArrayInputStream(jsonBytes1));
-			byte[] bytes2 = IOStreams.toByteArray((InputStream) json2);
+			byte[] bytes2 = IOStreams.toByteArray(json2);
 
 			assertThat(bytes1, equalTo(bytes2));
 		}
@@ -332,12 +334,12 @@ class Jackson3JsonBuilderTest extends Jackson3Test {
 			});
 
 			byte[] jsonBytes2 = Strings.removeAllWhitespace(Jackson3JsonBuilder.toJson(elements2)).getBytes();
-			Object json2 = new ByteArrayInputStream(jsonBytes2);
+			InputStream json2 = new ByteArrayInputStream(jsonBytes2);
 
 			// we need a new stream because the previous one has been read and is at the end of the stream, so we cannot read it
 			// again to compare the bytes.
 			byte[] bytes1 = IOStreams.toByteArray(new ByteArrayInputStream(jsonBytes1));
-			byte[] bytes2 = IOStreams.toByteArray((InputStream) json2);
+			byte[] bytes2 = IOStreams.toByteArray(json2);
 
 			assertThat(bytes1, equalTo(bytes2));
 		}
@@ -527,7 +529,7 @@ class Jackson3JsonBuilderTest extends Jackson3Test {
 
 			assertThat(result, equalTo(null));
 			assertThat(errors.size(), equalTo(1));
-			assertThat(errors.get(0).getMessage(), startsWith("Cannot construct instance of `" + B.class.getName() + "`"));
+			assertThat(errors.getFirst().getMessage(), startsWith("Cannot construct instance of `" + B.class.getName() + "`"));
 		}
 
 		@Test
@@ -744,6 +746,52 @@ class Jackson3JsonBuilderTest extends Jackson3Test {
 			assertThat(jacksonJsonBuilder.isIndentOutput(), equalTo(true));
 			assertThat(jacksonJsonBuilder.toJsonString(a), containsString(System.lineSeparator()));
 		}
+
+		@Test
+		void shouldLeaveTheMapperUnchangedWhenCustomizationIsNone() {
+			JsonMapper jsonMapper = JsonMapper.builder()
+					.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true)
+					.build();
+
+			Jackson3JsonBuilder builder = new Jackson3JsonBuilder(jsonMapper, JsonBuilder.Customization.NONE);
+
+			assertThat(builder.getJsonMapper(), notNullValue());
+			assertThat(jsonMapper.isEnabled(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES), equalTo(true));
+		}
+
+		@Test
+		void shouldDisableFailOnUnknownPropertiesWhenTheMapperIsConfigured() {
+			JsonMapper jsonMapper = JsonMapper.builder()
+					.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true)
+					.build();
+
+			Jackson3JsonBuilder jacksonJsonBuilder = new Jackson3JsonBuilder(jsonMapper);
+
+			assertThat(jsonMapper.isEnabled(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES), equalTo(true));
+			assertThat(jacksonJsonBuilder.getJsonMapper().isEnabled(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES), equalTo(false));
+		}
+
+		@Test
+		void shouldNotIndentWhenTheMapperIsUnconfiguredAndIndentOutputPropertyIsTrue() {
+			JsonMapper jsonMapper = JsonMapper.builder().build();
+
+			Jackson3JsonBuilder unconfiguredJsonBuilder = new Jackson3JsonBuilder(jsonMapper, JsonBuilder.Customization.NONE);
+
+			B b = new B(CUSTOMER_ID1, TENANT_ID1);
+			assertThat(unconfiguredJsonBuilder.toJsonString(b), equalTo(jsonMapper.writeValueAsString(b)));
+		}
+
+		@Test
+		void shouldIndentWhenTheUnconfiguredMapperAlreadyPrettyPrints() {
+			JsonMapper jsonMapper = JsonMapper.builder()
+					.enable(SerializationFeature.INDENT_OUTPUT)
+					.build();
+
+			Jackson3JsonBuilder unconfiguredJsonBuilder = new Jackson3JsonBuilder(jsonMapper, JsonBuilder.Customization.NONE);
+
+			B b = new B(CUSTOMER_ID1, TENANT_ID1);
+			assertThat(unconfiguredJsonBuilder.toJsonString(b), equalTo(Strings.EOL + jsonMapper.writeValueAsString(b)));
+		}
 	}
 
 	@Test
@@ -846,7 +894,7 @@ class Jackson3JsonBuilderTest extends Jackson3Test {
 		}
 	}
 
-	class CustomJsonFactory extends JsonFactory {
+	static class CustomJsonFactory extends JsonFactory {
 
 		@Serial
 		private static final long serialVersionUID = 5054225012734582242L;
