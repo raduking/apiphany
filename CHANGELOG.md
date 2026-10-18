@@ -7,6 +7,15 @@
 - Removed the message parameter from `ContentConverter.isConvertible`. The method now takes the content type and headers. 
 - Changed Spring clients to write with the `ObjectMapper` configured on the `RestClient` or `RestTemplate` builder.
 - Added `Jackson2SpringJson` to resolve a Spring Jackson 2 converter's `ObjectMapper`. `SpringJson` verifies `Jackson2Library.isPresent()` first.
+- Added `Jackson2JsonBuilder(ObjectMapper, boolean)` to wrap a mapper without changing it. `Jackson2SpringJson` reads and writes with that builder.
+- Added `JsonBuilder.fromJsonObject(Object, Class)` to read JSON with that builder instead of the runtime singleton.
+- Added `JsonBuilder.fromJsonObject(Object, GenericClass)` to read JSON with that builder instead of the runtime singleton.
+- Added `Jackson2JsonBuilder.fromJsonObject(Object, TypeReference)` to read JSON with that builder instead of the runtime singleton.
+- Added `Jackson3JsonBuilder.fromJsonObject(Object, TypeReference)` to read JSON with that builder instead of the runtime singleton.
+- Fixed `Jackson2JsonBuilder` to mirror the given mapper's indent setting instead of the global property when it is not configured.
+- Fixed `Jackson2JsonBuilder` to load when `jackson-datatype-jsr310` is absent. `JavaTimeJackson2Module` now holds the references to that library.
+- Added `Jackson2Library.isJavaTimeModulePresent()` and `javaTimeModuleClassName()`. The Java time module is registered only when it is present.
+- Added `JavaTimeJackson2Module.create(DateTimeFormatter, DateTimeFormatter)` to build Jackson's Java time module with the Apiphany formatters.
 - Changed HTTP exchange clients to treat `application/json` media types with parameters (e.g. `charset=UTF-8`) as JSON request bodies.
 - Added `ContentType.matches(String)` to match one content type, ignoring media type parameters and case.
 - Added `ContentType.matchesAny(List<String>)` to match any content type in a list, ignoring media type parameters and case.

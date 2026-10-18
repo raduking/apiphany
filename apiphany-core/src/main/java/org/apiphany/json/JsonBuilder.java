@@ -263,12 +263,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 * @return an object from the JSON object
 	 */
 	public static <O, T> T fromJson(final O json, final Class<T> cls) {
-		return switch (json) {
-			case String string -> runtime().fromJsonString(string, cls);
-			case byte[] bytes -> runtime().fromJsonBytes(bytes, cls);
-			case InputStream inputStream -> runtime().fromJsonInputStream(inputStream, cls);
-			default -> throw unsupportedJsonInputType(json);
-		};
+		return runtime().fromJsonObject(json, cls);
 	}
 
 	/**
@@ -282,10 +277,49 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 * @return an object from the JSON object
 	 */
 	public static <O, T> T fromJson(final O json, final GenericClass<T> genericClass) {
+		return runtime().fromJsonObject(json, genericClass);
+	}
+
+	/**
+	 * Returns an object from the JSON input object using this builder.
+	 * <p>
+	 * {@link #fromJson(Object, Class)} is static and selects the runtime builder. This method reads with this builder, so a
+	 * caller can use a mapper other than the singleton.
+	 *
+	 * @param <O> input object type
+	 * @param <T> type of the object
+	 *
+	 * @param json JSON input object
+	 * @param cls class of the object
+	 * @return an object from the JSON input object
+	 */
+	public <O, T> T fromJsonObject(final O json, final Class<T> cls) {
 		return switch (json) {
-			case String string -> runtime().fromJsonString(string, genericClass);
-			case byte[] bytes -> runtime().fromJsonBytes(bytes, genericClass);
-			case InputStream inputStream -> runtime().fromJsonInputStream(inputStream, genericClass);
+			case String string -> fromJsonString(string, cls);
+			case byte[] bytes -> fromJsonBytes(bytes, cls);
+			case InputStream inputStream -> fromJsonInputStream(inputStream, cls);
+			default -> throw unsupportedJsonInputType(json);
+		};
+	}
+
+	/**
+	 * Returns an object from the JSON input object using this builder.
+	 * <p>
+	 * {@link #fromJson(Object, GenericClass)} is static and selects the runtime builder. This method reads with this
+	 * builder, so a caller can use a mapper other than the singleton.
+	 *
+	 * @param <O> input object type
+	 * @param <T> type of the object
+	 *
+	 * @param json JSON input object
+	 * @param genericClass generic class wrapper for the type of the generic object
+	 * @return an object from the JSON input object
+	 */
+	public <O, T> T fromJsonObject(final O json, final GenericClass<T> genericClass) {
+		return switch (json) {
+			case String string -> fromJsonString(string, genericClass);
+			case byte[] bytes -> fromJsonBytes(bytes, genericClass);
+			case InputStream inputStream -> fromJsonInputStream(inputStream, genericClass);
 			default -> throw unsupportedJsonInputType(json);
 		};
 	}
