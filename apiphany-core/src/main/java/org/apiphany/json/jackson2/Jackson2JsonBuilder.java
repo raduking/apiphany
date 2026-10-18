@@ -156,14 +156,12 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 */
 	Jackson2JsonBuilder(final ObjectMapper objectMapper, final Customization customization) {
 		this.defaultAnnotationIntrospector = objectMapper.getSerializationConfig().getAnnotationIntrospector();
-		switch (customization) {
+		switch (customization) { // NOSONAR future setup
 			case DEFAULT -> {
 				Indentation indentation = Indentation.fromBoolean(isIndentOutput());
 				configure(objectMapper, indentation, Consumers.noConsumer());
 			}
-			default -> {
-				configureApiphany(objectMapper);
-			}
+			default -> configureApiphany(objectMapper);
 		}
 		this.objectMapper = objectMapper;
 		setIndentOutput(objectMapper.isEnabled(SerializationFeature.INDENT_OUTPUT));
