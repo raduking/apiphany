@@ -79,7 +79,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * The {@link ThreadLocal#remove()} is handled correctly in #with(Jackson2JsonBuilder, Supplier) which calls
 	 * {@link JsonBuilder#with(JsonBuilder, ThreadLocal, Supplier)} so no memory leak problems occur.
 	 */
-	private static final ThreadLocal<Jackson2JsonBuilder> OVERRIDE = new ThreadLocal<>(); // NOSONAR see JavaDoc
+	private static final ThreadLocal<Jackson2JsonBuilder> OVERRIDE = new ThreadLocal<>(); // NOSONAR see Javadoc
 
 	/**
 	 * Map of modules to register to the underlying {@link ObjectMapper}. The key is the module class name. This allows

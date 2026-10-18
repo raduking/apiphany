@@ -476,17 +476,15 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	}
 
 	/**
-	 * Serializes the object to a JSON string using the identity conversion, which means that if the object is a String it
-	 * will be returned as is, if the object is a primitive wrapper it will be converted to its string representation, if
-	 * the object is a collection it will be converted to a JSON array string, if the object is a map it will be converted
-	 * to a JSON object string, otherwise the object's toString method will be used. This method is used as a fallback when
-	 * the object cannot be converted to JSON using the registered converters.
+	 * Serializes the object with the given serializer. If the object is {@code null}, returns {@code null}. If the
+	 * serializer fails, the failure is logged and the identity JSON string of the object is returned instead.
 	 *
 	 * @param <T> type of the object
 	 *
-	 * @param obj object to convert
+	 * @param obj object to serialize
 	 * @param serializer serializer to use for serialization
-	 * @return JSON string representation of the object
+	 * @return the JSON string, {@code null} if the object is {@code null}, or the identity JSON string on failure
+	 * @see #toIdentityJsonString(Object)
 	 */
 	protected <T> String serialize(final T obj, final IOFunction<T, String> serializer) {
 		if (null == obj) {

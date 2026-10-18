@@ -103,7 +103,7 @@ public class ExchangeClientBuilder {
 	/**
 	 * Builds the exchange client based on the builder members.
 	 *
-	 * @param buildErrorHandler non null error handler to be called if an exception occurs during the build process
+	 * @param buildErrorHandler non-{@code null} error handler to be called if an exception occurs during the build process
 	 * @return a new exchange client resource with life cycle management information, or {@code null} if build fails and the
 	 * provided error handler does not rethrow
 	 */

@@ -77,7 +77,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * The {@link ThreadLocal#remove()} is handled correctly in {@link #with(Jackson3JsonBuilder, Supplier)} which calls
 	 * {@link JsonBuilder#with(JsonBuilder, ThreadLocal, Supplier)} so no memory leak problems occur.
 	 */
-	private static final ThreadLocal<Jackson3JsonBuilder> OVERRIDE = new ThreadLocal<>(); // NOSONAR see JavaDoc
+	private static final ThreadLocal<Jackson3JsonBuilder> OVERRIDE = new ThreadLocal<>(); // NOSONAR see Javadoc
 
 	/**
 	 * Map of modules to register to the underlying {@link JsonMapper}. The key is the module class name. This allows
@@ -592,7 +592,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * Applies the Apiphany module and feature configuration to the given {@link JsonMapper.Builder}.
 	 *
 	 * @param builder the JSON mapper builder to configure
-	 * @param intentation output indentation
+	 * @param indentation output indentation
 	 * @param builderCustomizer the customizer to apply after the standard configuration
 	 */
 	private static void configure(final JsonMapper.Builder builder, final Indentation indentation,
