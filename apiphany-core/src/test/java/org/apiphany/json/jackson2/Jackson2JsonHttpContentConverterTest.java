@@ -7,6 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.List;
 
 import org.apiphany.ApiMimeType;
@@ -14,6 +16,9 @@ import org.apiphany.io.ContentType;
 import org.junit.jupiter.api.Test;
 import org.morphix.convert.ObjectConverterException;
 import org.morphix.reflection.GenericClass;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 
 /**
  * Test class for {@link Jackson2JsonHttpContentConverter}.
@@ -130,5 +135,84 @@ class Jackson2JsonHttpContentConverterTest {
 		String result = converter.toString(JSON_STRING, null);
 
 		assertThat(result, equalTo(Jackson2JsonBuilder.toJson(JSON_STRING)));
+	}
+
+	@Test
+	void shouldThrowWhenTheGivenObjectMapperIsNull() {
+		assertThrows(NullPointerException.class, () -> new Jackson2JsonHttpContentConverter<String>(null));
+	}
+
+	@Test
+	void shouldWriteWithTheGivenMapperWithoutConfiguringIt() throws Exception {
+		ObjectMapper objectMapper = new ObjectMapper();
+		objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+		var converter = new Jackson2JsonHttpContentConverter<String>(objectMapper);
+
+		NamedPerson person = new NamedPerson();
+		person.setFirstName("Ada");
+
+		String result = converter.toString(person, ContentType.APPLICATION_JSON);
+
+		assertThat(result, equalTo(objectMapper.writeValueAsString(person)));
+	}
+
+	@Test
+	void shouldReadAStringBodyWithTheGivenMapper() throws Exception {
+		ObjectMapper objectMapper = new ObjectMapper();
+		var converter = new Jackson2JsonHttpContentConverter<String>(objectMapper);
+
+		String json = objectMapper.writeValueAsString("Ada");
+
+		assertThat(converter.from(json, ContentType.APPLICATION_JSON, String.class), equalTo("Ada"));
+	}
+
+	@Test
+	void shouldReadAByteArrayBodyWithTheGivenMapper() throws Exception {
+		ObjectMapper objectMapper = new ObjectMapper();
+		var converter = new Jackson2JsonHttpContentConverter<String>(objectMapper);
+
+		byte[] json = objectMapper.writeValueAsBytes("Ada");
+
+		assertThat(converter.from(json, ContentType.APPLICATION_JSON, String.class), equalTo("Ada"));
+	}
+
+	@Test
+	void shouldReadAnInputStreamBodyWithTheGivenMapper() throws Exception {
+		ObjectMapper objectMapper = new ObjectMapper();
+		var converter = new Jackson2JsonHttpContentConverter<String>(objectMapper);
+
+		InputStream json = new ByteArrayInputStream(objectMapper.writeValueAsBytes("Ada"));
+
+		assertThat(converter.from(json, ContentType.APPLICATION_JSON, String.class), equalTo("Ada"));
+	}
+
+	@Test
+	void shouldThrowWhenReadingAnUnsupportedBodyTypeWithTheGivenMapper() {
+		var converter = new Jackson2JsonHttpContentConverter<String>(new ObjectMapper());
+
+		assertThrows(UnsupportedOperationException.class, () -> converter.from(42, ContentType.APPLICATION_JSON, String.class));
+	}
+
+	@Test
+	void shouldWrapAJsonProcessingExceptionWhenReadingWithTheGivenMapper() {
+		var converter = new Jackson2JsonHttpContentConverter<String>(new ObjectMapper());
+
+		assertThrows(ObjectConverterException.class, () -> converter.from("{", ContentType.APPLICATION_JSON, String.class));
+	}
+
+	/**
+	 * Bean whose property name changes under snake case, used to prove the given mapper is used as-is.
+	 */
+	static class NamedPerson {
+
+		private String firstName;
+
+		public String getFirstName() {
+			return firstName;
+		}
+
+		public void setFirstName(final String firstName) {
+			this.firstName = firstName;
+		}
 	}
 }
