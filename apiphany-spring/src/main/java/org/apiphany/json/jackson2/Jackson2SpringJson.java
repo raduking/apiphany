@@ -1,11 +1,7 @@
 package org.apiphany.json.jackson2;
 
-import org.apiphany.ApiMimeType;
 import org.apiphany.client.ContentConverter;
-import org.apiphany.client.http.JsonHttpContentConverter;
-import org.apiphany.json.JsonBuilder;
 import org.morphix.reflection.Constructors;
-import org.morphix.reflection.GenericClass;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,7 +27,7 @@ public final class Jackson2SpringJson {
 	 */
 	public static ContentConverter<String> converter(final Object converter) {
 		if (converter instanceof MappingJackson2HttpMessageConverter jackson2Converter) {
-			return new RequestConverter<>(jackson2Converter.getObjectMapper());
+			return new Jackson2JsonHttpContentConverter<>(jackson2Converter.getObjectMapper());
 		}
 		return null;
 	}
@@ -41,55 +37,5 @@ public final class Jackson2SpringJson {
 	 */
 	private Jackson2SpringJson() {
 		throw Constructors.unsupportedOperationException();
-	}
-
-	/**
-	 * Reads and writes JSON with the {@link ObjectMapper} taken from a Jackson 2 Spring converter. The mapper is wrapped
-	 * without changing it, so Spring keeps the configuration it already built.
-	 *
-	 * @param <T> the type of the object to which the JSON content will be converted
-	 *
-	 * @author Radu Sebastian LAZIN
-	 */
-	private static final class RequestConverter<T> extends JsonHttpContentConverter<T> {
-
-		/**
-		 * The builder that reads and writes with the Spring mapper.
-		 */
-		private final Jackson2JsonBuilder jsonBuilder;
-
-		/**
-		 * @param mapper the mapper that reads and writes JSON
-		 */
-		private RequestConverter(final ObjectMapper mapper) {
-			this.jsonBuilder = new Jackson2JsonBuilder(mapper, false);
-		}
-
-		/**
-		 * @see ContentConverter#from(Object, ApiMimeType, Class)
-		 * @see JsonBuilder#fromJsonObject(Object, Class)
-		 */
-		@Override
-		public T from(final Object obj, final ApiMimeType mimeType, final Class<T> targetClass) {
-			return from(obj, o -> jsonBuilder.fromJsonObject(o, targetClass), targetClass::getName);
-		}
-
-		/**
-		 * @see ContentConverter#from(Object, ApiMimeType, GenericClass)
-		 * @see JsonBuilder#fromJsonObject(Object, GenericClass)
-		 */
-		@Override
-		public T from(final Object obj, final ApiMimeType mimeType, final GenericClass<T> targetGenericClass) {
-			return from(obj, o -> jsonBuilder.fromJsonObject(o, targetGenericClass), () -> targetGenericClass.getType().getTypeName());
-		}
-
-		/**
-		 * @see ContentConverter#toString(Object, ApiMimeType)
-		 * @see Jackson2JsonBuilder#toJsonString(Object)
-		 */
-		@Override
-		public String toString(final Object body, final ApiMimeType mimeType) {
-			return jsonBuilder.toJsonString(body);
-		}
 	}
 }
