@@ -29,7 +29,7 @@ class ApiphanyJackson2AnnotationIntrospectorTest {
 
 	private static final String FIELD_NAME = "fieldName";
 
-	private ApiphanyJackson2AnnotationIntrospector annotationIntrospector = ApiphanyJackson2AnnotationIntrospector.getInstance();
+	private final ApiphanyJackson2AnnotationIntrospector annotationIntrospector = ApiphanyJackson2AnnotationIntrospector.getInstance();
 
 	@Test
 	void shouldReturnPropertyNameForFieldNameAnnotationOnSerialization() {

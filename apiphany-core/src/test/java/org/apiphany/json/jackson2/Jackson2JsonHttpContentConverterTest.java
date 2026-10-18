@@ -50,7 +50,7 @@ class Jackson2JsonHttpContentConverterTest {
 		Object json = "[" + JSON_STRING + "]";
 		var converter = new Jackson2JsonHttpContentConverter<List<Person>>();
 
-		List<Person> result = converter.from(json, null, new GenericClass<List<Person>>() {
+		List<Person> result = converter.from(json, null, new GenericClass<>() {
 			// empty
 		});
 
@@ -71,7 +71,7 @@ class Jackson2JsonHttpContentConverterTest {
 	void shouldReturnNullWhenGenericJsonIsNull() {
 		var converter = new Jackson2JsonHttpContentConverter<List<Person>>();
 
-		List<Person> result = converter.from(null, null, new GenericClass<List<Person>>() {
+		List<Person> result = converter.from(null, null, new GenericClass<>() {
 			// empty
 		});
 

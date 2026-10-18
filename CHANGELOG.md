@@ -7,8 +7,11 @@
 - Removed the message parameter from `ContentConverter.isConvertible`. The method now takes the content type and headers. 
 - Changed Spring clients to write with the `ObjectMapper` configured on the `RestClient` or `RestTemplate` builder.
 - Added `Jackson2SpringJson` to resolve a Spring Jackson 2 converter's `ObjectMapper`.
-- Added `Jackson2JsonBuilder(ObjectMapper, boolean)` to wrap a mapper without changing it. `Jackson2SpringJson` reads and writes with that builder.
+- Added `JsonBuilder.Customization` with `DEFAULT` and `NONE` so a wrapped mapper can be configured or left unchanged.
+- Added `Jackson2JsonBuilder(ObjectMapper, Customization)` to wrap a mapper. `NONE` leaves the mapper unchanged.
 - Added `Jackson2JsonHttpContentConverter(ObjectMapper)` to read and write JSON with a given mapper without configuring it.
+- Added `Jackson3JsonHttpContentConverter(JsonMapper)` to read and write JSON with a given mapper without configuring it.
+- Added `Jackson3JsonBuilder(JsonMapper, Customization)` to wrap a mapper. `NONE` leaves the mapper unchanged.
 - Added `JsonBuilder.fromJsonObject(Object, Class)` to read JSON with that builder instead of the runtime singleton.
 - Added `JsonBuilder.fromJsonObject(Object, GenericClass)` to read JSON with that builder instead of the runtime singleton.
 - Added `Jackson2JsonBuilder.fromJsonObject(Object, TypeReference)` to read JSON with that builder instead of the runtime singleton.

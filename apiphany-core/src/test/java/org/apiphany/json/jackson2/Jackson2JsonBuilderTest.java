@@ -760,12 +760,13 @@ class Jackson2JsonBuilderTest {
 	class ConfigureTests {
 
 		@Test
-		void shouldLeaveTheMapperUnchangedWhenConfigureIsFalse() {
+		void shouldLeaveTheMapperUnchangedWhenCustomizationIsNone() {
 			ObjectMapper objectMapper = new ObjectMapper();
 			objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
 
-			new Jackson2JsonBuilder(objectMapper, false);
+			Jackson2JsonBuilder builder = new Jackson2JsonBuilder(objectMapper, JsonBuilder.Customization.NONE);
 
+			assertThat(builder.getObjectMapper(), equalTo(objectMapper));
 			assertThat(objectMapper.isEnabled(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES), equalTo(true));
 		}
 
@@ -774,8 +775,9 @@ class Jackson2JsonBuilderTest {
 			ObjectMapper objectMapper = new ObjectMapper();
 			objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
 
-			new Jackson2JsonBuilder(objectMapper);
+			Jackson2JsonBuilder builder = new Jackson2JsonBuilder(objectMapper);
 
+			assertThat(builder.getObjectMapper(), equalTo(objectMapper));
 			assertThat(objectMapper.isEnabled(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES), equalTo(false));
 		}
 
@@ -783,7 +785,7 @@ class Jackson2JsonBuilderTest {
 		void shouldNotIndentWhenTheMapperIsUnconfiguredAndIndentOutputPropertyIsTrue() throws Exception {
 			ObjectMapper objectMapper = new ObjectMapper();
 
-			Jackson2JsonBuilder unconfiguredJsonBuilder = new Jackson2JsonBuilder(objectMapper, false);
+			Jackson2JsonBuilder unconfiguredJsonBuilder = new Jackson2JsonBuilder(objectMapper, JsonBuilder.Customization.NONE);
 
 			B b = new B(CUSTOMER_ID1, TENANT_ID1);
 			assertThat(unconfiguredJsonBuilder.toJsonString(b), equalTo(objectMapper.writeValueAsString(b)));
@@ -794,7 +796,7 @@ class Jackson2JsonBuilderTest {
 			ObjectMapper objectMapper = new ObjectMapper();
 			objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 
-			Jackson2JsonBuilder unconfiguredJsonBuilder = new Jackson2JsonBuilder(objectMapper, false);
+			Jackson2JsonBuilder unconfiguredJsonBuilder = new Jackson2JsonBuilder(objectMapper, JsonBuilder.Customization.NONE);
 
 			B b = new B(CUSTOMER_ID1, TENANT_ID1);
 			assertThat(unconfiguredJsonBuilder.toJsonString(b), equalTo(Strings.EOL + objectMapper.writeValueAsString(b)));

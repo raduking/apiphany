@@ -136,51 +136,32 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @param objectMapper the object mapper to use
 	 */
 	Jackson2JsonBuilder(final ObjectMapper objectMapper) {
-		this(objectMapper, true);
+		this(objectMapper, Customization.DEFAULT);
 	}
 
 	/**
 	 * Uses the given {@link ObjectMapper}.
 	 * <p>
-	 * When {@code configure} is {@code true}, this applies the configuration described by
-	 * {@link #Jackson2JsonBuilder(ObjectMapper)}. When {@code configure} is {@code false}, the mapper is stored as given.
-	 * Modules, features, and the sensitivity introspector are left unchanged. Spring uses that form so a client keeps the
-	 * mapper it already configured.
+	 * {@link Customization#DEFAULT} applies the configuration described by {@link #Jackson2JsonBuilder(ObjectMapper)}.
+	 * {@link Customization#NONE} stores the mapper as given. Modules, features, and the sensitivity introspector are left
+	 * unchanged. Spring uses that form so a client keeps the mapper it already configured.
 	 * <p>
-	 * Indentation always mirrors the mapper: when {@code configure} is {@code false}, {@link #eol()} is derived from the
-	 * mapper's own {@link SerializationFeature#INDENT_OUTPUT}, not from the {@code json-builder.to-json.indent-output}
-	 * property, so {@link #toJsonString(Object)} never adds a line separator the mapper itself would not have written.
+	 * Indentation always mirrors the mapper: with {@link Customization#NONE}, {@link #eol()} is derived from the mapper's
+	 * own {@link SerializationFeature#INDENT_OUTPUT}, not from the {@code json-builder.to-json.indent-output} property, so
+	 * {@link #toJsonString(Object)} never adds a line separator the mapper itself would not have written.
 	 *
 	 * @param objectMapper the object mapper to use
-	 * @param configure {@code true} to apply this builder's configuration, {@code false} to leave the mapper unchanged
+	 * @param customization the customization applied to the mapper
 	 */
-	Jackson2JsonBuilder(final ObjectMapper objectMapper, final boolean configure) {
+	Jackson2JsonBuilder(final ObjectMapper objectMapper, final Customization customization) {
 		this.objectMapper = objectMapper;
-		if (configure) {
-			for (Supplier<? extends Module> moduleSupplier : MODULES.values()) {
-				this.objectMapper.registerModule(moduleSupplier.get());
-			}
-			this.objectMapper.setDefaultPropertyInclusion(JsonInclude.Value.construct(
-					JsonInclude.Include.NON_NULL, JsonInclude.Include.NON_NULL));
-			this.objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
-			this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-			this.objectMapper.configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, true);
-			this.objectMapper.configure(DeserializationFeature.FAIL_ON_TRAILING_TOKENS, true);
-			this.objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-			this.objectMapper.configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false);
-			this.objectMapper.configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
-			this.objectMapper.configure(DeserializationFeature.READ_ENUMS_USING_TO_STRING, true);
-			configure(this.objectMapper, MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS, true);
-			configure(this.objectMapper, MapperFeature.USE_GETTERS_AS_SETTERS, false);
-			configure(this.objectMapper, MapperFeature.ALLOW_FINAL_FIELDS_AS_MUTATORS, false);
-			configure(this.objectMapper, MapperFeature.USE_STD_BEAN_NAMING, true);
-		}
 		this.defaultAnnotationIntrospector = objectMapper.getSerializationConfig().getAnnotationIntrospector();
-		if (configure) {
-			configureSensitivity(SensitiveJackson2AnnotationIntrospector.hideSensitive());
-			indentOutput(isIndentOutput());
-		} else {
-			super.indentOutput(objectMapper.isEnabled(SerializationFeature.INDENT_OUTPUT));
+		switch (customization) {
+			case DEFAULT -> {
+				configure(objectMapper);
+				indentOutput(isIndentOutput());
+			}
+			default -> super.indentOutput(objectMapper.isEnabled(SerializationFeature.INDENT_OUTPUT));
 		}
 	}
 
@@ -586,6 +567,35 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 */
 	public static SimpleModule apiphanySerializationModule() {
 		return ApiphanyJackson2Module.instance();
+	}
+
+	/**
+	 * Applies the Apiphany module and feature configuration to the given {@link ObjectMapper}.
+	 *
+	 * @param objectMapper object mapper to configure
+	 */
+	private static void configure(final ObjectMapper objectMapper) {
+		for (Supplier<? extends Module> moduleSupplier : MODULES.values()) {
+			objectMapper.registerModule(moduleSupplier.get());
+		}
+		objectMapper.setDefaultPropertyInclusion(JsonInclude.Value.construct(
+				JsonInclude.Include.NON_NULL, JsonInclude.Include.NON_NULL));
+
+		objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		objectMapper.configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, true);
+		objectMapper.configure(DeserializationFeature.FAIL_ON_TRAILING_TOKENS, true);
+		objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+		objectMapper.configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false);
+		objectMapper.configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
+		objectMapper.configure(DeserializationFeature.READ_ENUMS_USING_TO_STRING, true);
+
+		configure(objectMapper, MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS, true);
+		configure(objectMapper, MapperFeature.USE_GETTERS_AS_SETTERS, false);
+		configure(objectMapper, MapperFeature.ALLOW_FINAL_FIELDS_AS_MUTATORS, false);
+		configure(objectMapper, MapperFeature.USE_STD_BEAN_NAMING, true);
+
+		configureSensitivity(objectMapper, SensitiveJackson2AnnotationIntrospector.hideSensitive());
 	}
 
 	/**
