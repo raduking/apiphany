@@ -135,21 +135,20 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @param builderCustomizer the JSON mapper builder customizer
 	 */
 	Jackson3JsonBuilder(final JsonMapper.Builder builder, final Customization customization, final Consumer<JsonMapper.Builder> builderCustomizer) {
+		this.defaultAnnotationIntrospector = builder.annotationIntrospector();
 		switch (customization) {
 			case DEFAULT -> {
-				this.defaultAnnotationIntrospector = builder.annotationIntrospector();
-				configure(builder, Indentation.fromBoolean(isIndentOutput()), builderCustomizer);
-				indentOutput(builder.isEnabled(SerializationFeature.INDENT_OUTPUT));
-				this.jsonMapper.set(builder.build());
+				Indentation indentation = Indentation.fromBoolean(isIndentOutput());
+				configure(builder, indentation, builderCustomizer);
 			}
 			default -> {
 				builderCustomizer.accept(builder);
-				JsonMapper mapper = builder.build();
-				this.defaultAnnotationIntrospector = mapper.serializationConfig().getAnnotationIntrospector();
-				this.jsonMapper.set(mapper);
-				super.indentOutput(mapper.isEnabled(SerializationFeature.INDENT_OUTPUT));
+				configureApiphany(builder);
 			}
 		}
+		JsonMapper mapper = builder.build();
+		this.jsonMapper.set(mapper);
+		setIndentOutput(jsonMapper.get().isEnabled(SerializationFeature.INDENT_OUTPUT));
 	}
 
 	/**
@@ -166,7 +165,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * <p>
 	 * {@link Customization#DEFAULT} applies the configuration described by
 	 * {@link #Jackson3JsonBuilder(JsonMapper.Builder, Consumer)} on a rebuild of the mapper. {@link Customization#NONE}
-	 * stores the mapper as given. Modules, features, and the sensitivity introspector are left unchanged.
+	 * keeps the mapper's own modules and features, but always registers Apiphany annotations and serializers.
 	 * <p>
 	 * Indentation always mirrors the mapper: with {@link Customization#NONE}, {@link #eol()} is derived from the mapper's
 	 * own {@link SerializationFeature#INDENT_OUTPUT}, not from the {@code json-builder.to-json.indent-output} property, so
@@ -586,6 +585,17 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	}
 
 	/**
+	 * Registers Apiphany serializers and annotation handling on the given {@link JsonMapper.Builder} without changing other
+	 * mapper settings.
+	 *
+	 * @param builder the JSON mapper builder to augment
+	 */
+	private static void configureApiphany(final JsonMapper.Builder builder) {
+		builder.addModule(apiphanySerializationModule());
+		configureSensitivity(builder, SensitiveJackson3AnnotationIntrospector.hideSensitive());
+	}
+
+	/**
 	 * Applies the Apiphany module and feature configuration to the given {@link JsonMapper.Builder}.
 	 *
 	 * @param builder the JSON mapper builder to configure
@@ -708,7 +718,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 		customizer.accept(builder);
 		JsonMapper newMapper = builder.build();
 		this.jsonMapper.set(newMapper);
-		super.indentOutput(newMapper.isEnabled(SerializationFeature.INDENT_OUTPUT));
+		setIndentOutput(newMapper.isEnabled(SerializationFeature.INDENT_OUTPUT));
 	}
 
 	/**
@@ -720,7 +730,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 */
 	@Override
 	public void indentOutput(final boolean enable) {
-		super.indentOutput(enable);
+		setIndentOutput(enable);
 		configure(builder -> configureIndent(builder, Indentation.fromBoolean(enable)));
 	}
 }

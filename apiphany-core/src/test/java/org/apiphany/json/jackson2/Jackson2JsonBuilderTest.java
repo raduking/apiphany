@@ -29,6 +29,7 @@ import org.apiphany.io.IOStreams;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.json.jackson2.serializers.SimpleExceptionSerializer;
 import org.apiphany.lang.Strings;
+import org.apiphany.lang.annotation.FieldName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -771,6 +772,18 @@ class Jackson2JsonBuilderTest {
 		}
 
 		@Test
+		void shouldApplyApiphanyAnnotationsWhenCustomizationIsNone() {
+			ObjectMapper objectMapper = new ObjectMapper();
+			objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+			Jackson2JsonBuilder jacksonJsonBuilder = new Jackson2JsonBuilder(objectMapper, JsonBuilder.Customization.NONE);
+
+			FieldNamedBean bean = new FieldNamedBean();
+			bean.setDisplayName("Ada");
+
+			assertThat(jacksonJsonBuilder.toJsonString(bean), equalTo("{\"custom_name\":\"Ada\"}"));
+		}
+
+		@Test
 		void shouldDisableFailOnUnknownPropertiesWhenTheMapperIsConfigured() {
 			ObjectMapper objectMapper = new ObjectMapper();
 			objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
@@ -863,6 +876,20 @@ class Jackson2JsonBuilderTest {
 
 		public void setTenantId(final String tenantId) {
 			this.tenantId = tenantId;
+		}
+	}
+
+	static class FieldNamedBean {
+
+		@FieldName("custom_name")
+		private String displayName;
+
+		public String getDisplayName() {
+			return displayName;
+		}
+
+		public void setDisplayName(final String displayName) {
+			this.displayName = displayName;
 		}
 	}
 
