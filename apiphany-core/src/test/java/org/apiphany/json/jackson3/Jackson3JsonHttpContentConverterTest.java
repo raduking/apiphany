@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -18,6 +19,9 @@ import org.apiphany.json.JsonBuilder;
 import org.junit.jupiter.api.Test;
 import org.morphix.convert.ObjectConverterException;
 import org.morphix.reflection.GenericClass;
+
+import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Test class for {@link Jackson3JsonHttpContentConverter}.
@@ -137,12 +141,92 @@ class Jackson3JsonHttpContentConverterTest extends Jackson3Test {
 	}
 
 	@Test
+	void shouldThrowWhenTheGivenJsonMapperIsNull() {
+		assertThrows(NullPointerException.class, () -> new Jackson3JsonHttpContentConverter<String>(null));
+	}
+
+	@Test
+	void shouldWriteWithTheGivenMapperWithoutConfiguringIt() throws Exception {
+		JsonMapper jsonMapper = JsonMapper.builder()
+				.propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+				.build();
+		var converter = new Jackson3JsonHttpContentConverter<String>(jsonMapper);
+
+		NamedPerson person = new NamedPerson();
+		person.setFirstName("Ada");
+
+		String result = converter.toString(person, ContentType.APPLICATION_JSON);
+
+		assertThat(result, equalTo(jsonMapper.writeValueAsString(person)));
+	}
+
+	@Test
+	void shouldReadAStringBodyWithTheGivenMapper() throws Exception {
+		JsonMapper jsonMapper = JsonMapper.builder().build();
+		var converter = new Jackson3JsonHttpContentConverter<String>(jsonMapper);
+
+		String json = jsonMapper.writeValueAsString("Ada");
+
+		assertThat(converter.from(json, ContentType.APPLICATION_JSON, String.class), equalTo("Ada"));
+	}
+
+	@Test
+	void shouldReadAByteArrayBodyWithTheGivenMapper() throws Exception {
+		JsonMapper jsonMapper = JsonMapper.builder().build();
+		var converter = new Jackson3JsonHttpContentConverter<String>(jsonMapper);
+
+		byte[] json = jsonMapper.writeValueAsBytes("Ada");
+
+		assertThat(converter.from(json, ContentType.APPLICATION_JSON, String.class), equalTo("Ada"));
+	}
+
+	@Test
+	void shouldReadAnInputStreamBodyWithTheGivenMapper() throws Exception {
+		JsonMapper jsonMapper = JsonMapper.builder().build();
+		var converter = new Jackson3JsonHttpContentConverter<String>(jsonMapper);
+
+		InputStream json = new ByteArrayInputStream(jsonMapper.writeValueAsBytes("Ada"));
+
+		assertThat(converter.from(json, ContentType.APPLICATION_JSON, String.class), equalTo("Ada"));
+	}
+
+	@Test
+	void shouldThrowWhenReadingAnUnsupportedBodyTypeWithTheGivenMapper() {
+		var converter = new Jackson3JsonHttpContentConverter<String>(JsonMapper.builder().build());
+
+		assertThrows(UnsupportedOperationException.class, () -> converter.from(42, ContentType.APPLICATION_JSON, String.class));
+	}
+
+	@Test
+	void shouldWrapAJsonProcessingExceptionWhenReadingWithTheGivenMapper() {
+		var converter = new Jackson3JsonHttpContentConverter<String>(JsonMapper.builder().build());
+
+		assertThrows(ObjectConverterException.class, () -> converter.from("{", ContentType.APPLICATION_JSON, String.class));
+	}
+
+	@Test
 	void shouldNotReferenceJackson2BuilderAsAClassDependency() throws IOException {
 		String classResource = Jackson3JsonHttpContentConverter.class.getName().replace('.', '/') + ".class";
 		try (InputStream inputStream = Jackson3JsonHttpContentConverter.class.getClassLoader().getResourceAsStream(classResource)) {
 			String classBytes = new String(inputStream.readAllBytes(), StandardCharsets.ISO_8859_1);
 
 			assertThat(classBytes.contains("org/apiphany/json/jackson2/"), equalTo(false));
+		}
+	}
+
+	/**
+	 * Bean whose property name changes under snake case, used to prove the given mapper is used as-is.
+	 */
+	static class NamedPerson {
+
+		private String firstName;
+
+		public String getFirstName() {
+			return firstName;
+		}
+
+		public void setFirstName(final String firstName) {
+			this.firstName = firstName;
 		}
 	}
 }

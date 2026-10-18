@@ -6,6 +6,7 @@ import java.util.function.Supplier;
 import org.apiphany.ApiMimeType;
 import org.apiphany.client.ContentConverter;
 import org.apiphany.client.http.JsonHttpContentConverter;
+import org.apiphany.json.JsonBuilder;
 import org.morphix.reflection.GenericClass;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -54,7 +55,7 @@ public class Jackson2JsonHttpContentConverter<T> extends JsonHttpContentConverte
 	 */
 	public Jackson2JsonHttpContentConverter(final ObjectMapper objectMapper) {
 		Objects.requireNonNull(objectMapper, "objectMapper cannot be null");
-		Jackson2JsonBuilder jsonBuilder = new Jackson2JsonBuilder(objectMapper, false);
+		Jackson2JsonBuilder jsonBuilder = new Jackson2JsonBuilder(objectMapper, JsonBuilder.Customization.NONE);
 		this.jsonBuilderSupplier = () -> jsonBuilder;
 	}
 
