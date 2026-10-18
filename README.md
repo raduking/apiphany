@@ -6,7 +6,7 @@ Simple fluent style Java API to make API calls.
 [![GitHub Release](https://img.shields.io/github/v/release/raduking/apiphany)](https://github.com/raduking/apiphany/releases)
 [![Release Date](https://img.shields.io/github/release-date/raduking/apiphany)](https://github.com/raduking/apiphany/releases)  
 [![Java](https://img.shields.io/badge/Java-21+-blue)](https://www.oracle.com/java/technologies/downloads/#java21)
-[![License](https://img.shields.io/github/license/raduking/apiphany)](https://opensource.org/license/apache-2-0)
+[![License](https://img.shields.io/github/license/raduking/apiphany?v=2)](https://opensource.org/license/apache-2-0)
 [![Javadoc](https://javadoc.io/badge2/io.github.raduking/apiphany/javadoc.svg)](https://javadoc.io/doc/io.github.raduking/apiphany)
 [![PRs](https://img.shields.io/github/issues-pr/raduking/apiphany)](https://github.com/raduking/apiphany/pulls)
 
