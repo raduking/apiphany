@@ -7,7 +7,7 @@ import org.apiphany.http.HttpEntityRequestCallback;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.ResponseEntityExtractor;
 import org.apiphany.http.SpringHttpSupport;
-import org.apiphany.http.SpringJson;
+import org.apiphany.json.SpringJson;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
@@ -40,7 +40,7 @@ public class RestTemplateExchangeClient extends AbstractSpringExchangeClient {
 		super(clientProperties, SpringHttpSupport.getRequestFactory(restTemplateBuilder));
 		ContentConverter<String> jsonConverter = SpringJson.converter(restTemplateBuilder);
 		if (null != jsonConverter) {
-			getContentConverters().add(0, jsonConverter);
+			getContentConverters().addFirst(jsonConverter);
 		}
 		this.restTemplate = customize(restTemplateBuilder).build();
 	}

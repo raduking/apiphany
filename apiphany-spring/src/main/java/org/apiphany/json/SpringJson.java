@@ -1,13 +1,14 @@
-package org.apiphany.http;
+package org.apiphany.json;
 
+import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 
 import org.apiphany.client.ContentConverter;
-import org.apiphany.json.JsonBuilder;
 import org.apiphany.json.jackson2.Jackson2Library;
 import org.apiphany.json.jackson2.Jackson2SpringJson;
+import org.morphix.lang.JavaObjects;
 import org.morphix.reflection.Constructors;
 import org.morphix.reflection.Fields;
 import org.morphix.runtime.OptionalLibrary;
@@ -40,17 +41,19 @@ public final class SpringJson {
 	 * Maps each optional JSON library to the function that resolves a Spring message converter to a
 	 * {@link ContentConverter}. A resolver is used only when its library is present.
 	 */
-	private static final Map<OptionalLibrary<?>, Function<Object, ContentConverter<String>>> RESOLVERS_MAP = Map.of(
+	private static final Map<OptionalLibrary<?>, Function<HttpMessageConverter<?>, ContentConverter<?>>> CONVERTER_RESOLVERS_MAP = Map.of(
 			Jackson2Library.DESCRIPTOR, Jackson2SpringJson::converter);
 
 	/**
 	 * Returns the JSON request converter configured on the given {@link RestClient.Builder}, or {@code null} when the
 	 * builder has no usable JSON converter.
 	 *
+	 * @param <T> the content type the converter knows to convert
+	 *
 	 * @param restClientBuilder the REST client builder
 	 * @return the JSON request converter, or {@code null}
 	 */
-	public static ContentConverter<String> converter(final RestClient.Builder restClientBuilder) {
+	public static <T> ContentConverter<T> converter(final RestClient.Builder restClientBuilder) {
 		return converter(messageConverters(restClientBuilder));
 	}
 
@@ -58,10 +61,12 @@ public final class SpringJson {
 	 * Returns the JSON request converter configured on the given {@link RestTemplateBuilder}, or {@code null} when the
 	 * builder has no usable JSON converter.
 	 *
+	 * @param <T> the content type the converter knows to convert
+	 *
 	 * @param restTemplateBuilder the REST template builder
 	 * @return the JSON request converter, or {@code null}
 	 */
-	public static ContentConverter<String> converter(final RestTemplateBuilder restTemplateBuilder) {
+	public static <T> ContentConverter<T> converter(final RestTemplateBuilder restTemplateBuilder) {
 		return converter(messageConverters(restTemplateBuilder));
 	}
 
@@ -69,25 +74,39 @@ public final class SpringJson {
 	 * Returns the JSON request converter from the given message converters, or {@code null} when none of them resolves to a
 	 * usable JSON converter.
 	 *
+	 * @param <T> the content type the converter knows to convert
+	 *
 	 * @param messageConverters the message converters
 	 * @return the JSON request converter, or {@code null}
 	 */
-	static ContentConverter<String> converter(final Object messageConverters) {
-		if (!(messageConverters instanceof Iterable<?> converters)) {
-			return null;
-		}
-		for (Object converter : converters) {
-			if (!supportsJson(converter)) {
-				continue;
+	static <T> ContentConverter<T> converter(final Iterable<HttpMessageConverter<?>> messageConverters) {
+		for (HttpMessageConverter<?> messageConverter : messageConverters) {
+			if (supportsJson(messageConverter)) {
+				ContentConverter<T> resolved = resolvedConverter(messageConverter);
+				if (resolved != null) {
+					return resolved;
+				}
 			}
-			for (Map.Entry<OptionalLibrary<?>, Function<Object, ContentConverter<String>>> entry : RESOLVERS_MAP.entrySet()) {
-				OptionalLibrary<?> optionalLibrary = entry.getKey();
-				if (optionalLibrary.isPresent()) {
-					Function<Object, ContentConverter<String>> resolverFunction = entry.getValue();
-					ContentConverter<String> resolved = resolverFunction.apply(converter);
-					if (null != resolved) {
-						return resolved;
-					}
+		}
+		return null;
+	}
+
+	/**
+	 * Returns the resolved content converter.
+	 *
+	 * @param <T> the content type the converter knows to convert
+	 *
+	 * @param messageConverter any Spring message converter
+	 * @return the resolved content converter
+	 */
+	private static <T> ContentConverter<T> resolvedConverter(final HttpMessageConverter<?> messageConverter) {
+		for (Map.Entry<OptionalLibrary<?>, Function<HttpMessageConverter<?>, ContentConverter<?>>> entry : CONVERTER_RESOLVERS_MAP.entrySet()) {
+			OptionalLibrary<?> optionalLibrary = entry.getKey();
+			if (optionalLibrary.isPresent()) {
+				Function<HttpMessageConverter<?>, ContentConverter<?>> resolverFunction = entry.getValue();
+				ContentConverter<T> resolved = JavaObjects.cast(resolverFunction.apply(messageConverter));
+				if (null != resolved) {
+					return resolved;
 				}
 			}
 		}
@@ -101,9 +120,9 @@ public final class SpringJson {
 	 * @param builder the Spring client builder
 	 * @return the configured converters, or {@code null}
 	 */
-	private static Object messageConverters(final Object builder) {
+	private static Iterable<HttpMessageConverter<?>> messageConverters(final Object builder) {
 		if (null == builder) {
-			return null;
+			return Collections.emptyList();
 		}
 		return Fields.IgnoreAccess.get(builder, MESSAGE_CONVERTERS_FIELD_NAME);
 	}

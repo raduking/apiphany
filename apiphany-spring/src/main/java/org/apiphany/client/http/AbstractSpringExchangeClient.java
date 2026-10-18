@@ -24,6 +24,7 @@ import org.apiphany.http.SpringHttpSupport;
 import org.apiphany.http.SpringRedirectFailureDetector;
 import org.apiphany.io.IOStreams;
 import org.apiphany.io.InputStreamSupplier;
+import org.apiphany.json.SpringJson;
 import org.apiphany.lang.Strings;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.collections.Maps;
@@ -45,8 +46,8 @@ import org.springframework.web.client.RequestCallback;
  * Abstract exchange client implemented with Spring.
  * <p>
  * JSON request bodies are written by {@link #toJson(org.apiphany.ApiRequest, Object)}. {@link SpringRestExchangeClient}
- * and {@link RestTemplateExchangeClient} register the {@code ObjectMapper} {@link org.apiphany.http.SpringJson} finds
- * on the Spring client builder as the first content converter. When that builder has no Jackson converter,
+ * and {@link RestTemplateExchangeClient} register the {@code ObjectMapper} {@link SpringJson} finds on the Spring
+ * client builder as the first content converter. When that builder has no Jackson converter,
  * {@link org.apiphany.json.JsonBuilder} writes the body.
  *
  * @author Radu Sebastian LAZIN
@@ -75,7 +76,7 @@ public abstract class AbstractSpringExchangeClient extends AbstractHttpExchangeC
 
 	/**
 	 * Constructor with client properties and an optional request factory. When {@code requestFactory} is {@code null} a
-	 * factory is detected from the classpath and client properties. Otherwise the given factory is used as-is when it is
+	 * factory is detected from the classpath and client properties. Otherwise, the given factory is used as-is when it is
 	 * already closeable, or wrapped so it can be closed with the exchange client.
 	 *
 	 * @param clientProperties client properties
