@@ -1,5 +1,9 @@
 ## Release Notes
 
+`1.2.22`
+
+---
+
 `1.2.21`
 
 - Added `JsonBuilder.hasLibrary()` to report whether a JSON library is on the classpath. It is false when the singleton stayed a `JsonBuilder`.

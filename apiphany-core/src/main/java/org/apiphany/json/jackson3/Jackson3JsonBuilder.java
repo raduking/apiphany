@@ -136,7 +136,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 */
 	Jackson3JsonBuilder(final JsonMapper.Builder builder, final Customization customization, final Consumer<JsonMapper.Builder> builderCustomizer) {
 		this.defaultAnnotationIntrospector = builder.annotationIntrospector();
-		switch (customization) {
+		switch (customization) { // NOSONAR future setup
 			case DEFAULT -> {
 				Indentation indentation = Indentation.fromBoolean(isIndentOutput());
 				configure(builder, indentation, builderCustomizer);
