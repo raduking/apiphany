@@ -13,8 +13,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * JSON with that converter's {@link ObjectMapper}.
  * <p>
  * This class uses Jackson 2 and Spring's Jackson 2 types directly. {@link SpringJson} only calls
- * {@link #converter(Object)} after verifying {@code Jackson2Library.isPresent()}, so this class is never loaded unless
- * Jackson 2 is on the classpath.
+ * {@link #converter(HttpMessageConverter)} after verifying {@code Jackson2Library.isPresent()}, so this class is never
+ * loaded unless Jackson 2 is on the classpath.
  *
  * @author Radu Sebastian LAZIN
  */
