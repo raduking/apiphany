@@ -9,6 +9,7 @@ import org.apiphany.client.ContentConverter;
 import org.apiphany.json.jackson2.Jackson2Library;
 import org.apiphany.json.jackson2.Jackson2SpringJson;
 import org.morphix.lang.JavaObjects;
+import org.morphix.lang.collections.Iterables;
 import org.morphix.reflection.Constructors;
 import org.morphix.reflection.Fields;
 import org.morphix.runtime.OptionalLibrary;
@@ -80,7 +81,7 @@ public final class SpringJson {
 	 * @return the JSON request converter, or {@code null}
 	 */
 	static <T> ContentConverter<T> converter(final Iterable<HttpMessageConverter<?>> messageConverters) {
-		for (HttpMessageConverter<?> messageConverter : messageConverters) {
+		for (HttpMessageConverter<?> messageConverter : Iterables.safe(messageConverters)) {
 			if (supportsJson(messageConverter)) {
 				ContentConverter<T> resolved = resolvedConverter(messageConverter);
 				if (resolved != null) {
