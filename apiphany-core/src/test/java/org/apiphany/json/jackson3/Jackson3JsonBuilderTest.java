@@ -30,6 +30,7 @@ import org.apiphany.json.JsonBuilder;
 import org.apiphany.json.JsonBuilder.Indentation;
 import org.apiphany.json.jackson3.serializers.SimpleExceptionSerializer;
 import org.apiphany.lang.Strings;
+import org.apiphany.lang.annotation.FieldName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -760,6 +761,19 @@ class Jackson3JsonBuilderTest extends Jackson3Test {
 		}
 
 		@Test
+		void shouldApplyApiphanyAnnotationsWhenCustomizationIsNone() {
+			JsonMapper jsonMapper = JsonMapper.builder()
+					.propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+					.build();
+			Jackson3JsonBuilder jacksonJsonBuilder = new Jackson3JsonBuilder(jsonMapper, JsonBuilder.Customization.NONE);
+
+			FieldNamedBean bean = new FieldNamedBean();
+			bean.setDisplayName("Ada");
+
+			assertThat(jacksonJsonBuilder.toJsonString(bean), equalTo("{\"custom_name\":\"Ada\"}"));
+		}
+
+		@Test
 		void shouldDisableFailOnUnknownPropertiesWhenTheMapperIsConfigured() {
 			JsonMapper jsonMapper = JsonMapper.builder()
 					.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true)
@@ -800,6 +814,20 @@ class Jackson3JsonBuilderTest extends Jackson3Test {
 
 		assertThat(jacksonJsonBuilder.getJsonMapper(), not(nullValue()));
 		assertThat(Jackson3JsonBuilder.instance().getJsonMapper(), not(nullValue()));
+	}
+
+	static class FieldNamedBean {
+
+		@FieldName("custom_name")
+		private String displayName;
+
+		public String getDisplayName() {
+			return displayName;
+		}
+
+		public void setDisplayName(final String displayName) {
+			this.displayName = displayName;
+		}
 	}
 
 	static class A {

@@ -48,7 +48,7 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 * The available customization options are:
 	 * <ul>
 	 * <li>{@link #DEFAULT}: Apply this builder's default mapper configuration.</li>
-	 * <li>{@link #NONE}: Leave the given mapper unchanged.</li>
+	 * <li>{@link #NONE}: Leave the given mapper unchanged except for Apiphany annotations and serializers.</li>
 	 * </ul>
 	 *
 	 * @author Radu Sebastian LAZIN
@@ -61,7 +61,8 @@ public class JsonBuilder { // NOSONAR singleton implementation
 		DEFAULT,
 
 		/**
-		 * Leave the given mapper unchanged.
+		 * Leave the given mapper unchanged except for Apiphany annotations, serializers, and sensitivity handling, which are
+		 * always applied.
 		 */
 		NONE
 	}
@@ -168,10 +169,9 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	 * Constructor that initializes all fields.
 	 */
 	protected JsonBuilder() {
-		this.indentOutput = isPropertyTrue(Property.INDENT_OUTPUT);
-		computeLineSeparator(indentOutput);
 		this.debugString = isPropertyTrue(Property.DEBUG_STRING);
 		this.observability = new JsonObservability(this);
+		setIndentOutput(isPropertyTrue(Property.INDENT_OUTPUT));
 	}
 
 	/**
@@ -577,13 +577,22 @@ public class JsonBuilder { // NOSONAR singleton implementation
 	}
 
 	/**
-	 * Enable/disable JSON indentation.
+	 * Enable/disable JSON indentation. Override this to implement specific indentation behavior in derived classes.
 	 *
 	 * @param enable true to enable, false to disable
 	 */
 	public void indentOutput(final boolean enable) {
-		this.indentOutput = enable;
-		computeLineSeparator(enable);
+		setIndentOutput(enable);
+	}
+
+	/**
+	 * Sets the JSON indentation.
+	 *
+	 * @param indentOutput true to enable false otherwise
+	 */
+	protected void setIndentOutput(final boolean indentOutput) {
+		this.indentOutput = indentOutput;
+		computeLineSeparator(indentOutput);
 	}
 
 	/**

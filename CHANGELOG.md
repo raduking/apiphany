@@ -7,7 +7,7 @@
 - Removed the message parameter from `ContentConverter.isConvertible`. The method now takes the content type and headers. 
 - Changed Spring clients to write with the `ObjectMapper` configured on the `RestClient` or `RestTemplate` builder.
 - Added `Jackson2SpringJson` to resolve a Spring Jackson 2 converter's `ObjectMapper`.
-- Added `JsonBuilder.Customization` with `DEFAULT` and `NONE` so a wrapped mapper can be configured or left unchanged.
+- Added `JsonBuilder.Customization` with `DEFAULT` and `NONE` so a wrapped mapper can be configured or left unchanged (Apiphany module is always applied for annotations).
 - Added `Jackson2JsonBuilder(ObjectMapper, Customization)` to wrap a mapper. `NONE` leaves the mapper unchanged.
 - Added `Jackson2JsonHttpContentConverter(ObjectMapper)` to read and write JSON with a given mapper without configuring it.
 - Added `Jackson3JsonHttpContentConverter(JsonMapper)` to read and write JSON with a given mapper without configuring it.

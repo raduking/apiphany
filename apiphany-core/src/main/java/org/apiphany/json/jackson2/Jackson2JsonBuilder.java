@@ -11,6 +11,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.apiphany.json.JsonBuilder;
+import org.morphix.lang.function.Consumers;
 import org.morphix.reflection.GenericClass;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -143,8 +144,8 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * Uses the given {@link ObjectMapper}.
 	 * <p>
 	 * {@link Customization#DEFAULT} applies the configuration described by {@link #Jackson2JsonBuilder(ObjectMapper)}.
-	 * {@link Customization#NONE} stores the mapper as given. Modules, features, and the sensitivity introspector are left
-	 * unchanged. Spring uses that form so a client keeps the mapper it already configured.
+	 * {@link Customization#NONE} keeps the mapper's own modules and features, but always registers Apiphany annotations and
+	 * serializers. Spring uses that form so a client keeps the mapper it already configured.
 	 * <p>
 	 * Indentation always mirrors the mapper: with {@link Customization#NONE}, {@link #eol()} is derived from the mapper's
 	 * own {@link SerializationFeature#INDENT_OUTPUT}, not from the {@code json-builder.to-json.indent-output} property, so
@@ -154,15 +155,18 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @param customization the customization applied to the mapper
 	 */
 	Jackson2JsonBuilder(final ObjectMapper objectMapper, final Customization customization) {
-		this.objectMapper = objectMapper;
 		this.defaultAnnotationIntrospector = objectMapper.getSerializationConfig().getAnnotationIntrospector();
 		switch (customization) {
 			case DEFAULT -> {
-				configure(objectMapper);
-				indentOutput(isIndentOutput());
+				Indentation indentation = Indentation.fromBoolean(isIndentOutput());
+				configure(objectMapper, indentation, Consumers.noConsumer());
 			}
-			default -> super.indentOutput(objectMapper.isEnabled(SerializationFeature.INDENT_OUTPUT));
+			default -> {
+				configureApiphany(objectMapper);
+			}
 		}
+		this.objectMapper = objectMapper;
+		setIndentOutput(objectMapper.isEnabled(SerializationFeature.INDENT_OUTPUT));
 	}
 
 	/**
@@ -570,11 +574,22 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	}
 
 	/**
+	 * Registers Apiphany serializers and annotation handling on the given {@link ObjectMapper} without changing other
+	 * mapper settings.
+	 *
+	 * @param objectMapper the object mapper to augment
+	 */
+	private static void configureApiphany(final ObjectMapper objectMapper) {
+		objectMapper.registerModule(apiphanySerializationModule());
+		configureSensitivity(objectMapper, SensitiveJackson2AnnotationIntrospector.hideSensitive());
+	}
+
+	/**
 	 * Applies the Apiphany module and feature configuration to the given {@link ObjectMapper}.
 	 *
 	 * @param objectMapper object mapper to configure
 	 */
-	private static void configure(final ObjectMapper objectMapper) {
+	private static void configure(final ObjectMapper objectMapper, final Indentation indentation, final Consumer<ObjectMapper> mapperCustomizer) {
 		for (Supplier<? extends Module> moduleSupplier : MODULES.values()) {
 			objectMapper.registerModule(moduleSupplier.get());
 		}
@@ -596,6 +611,40 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 		configure(objectMapper, MapperFeature.USE_STD_BEAN_NAMING, true);
 
 		configureSensitivity(objectMapper, SensitiveJackson2AnnotationIntrospector.hideSensitive());
+		configureIndent(objectMapper, indentation);
+
+		mapperCustomizer.accept(objectMapper);
+	}
+
+	/**
+	 * Applies the given customizer to the underlying {@link ObjectMapper}. Because the mapper is mutable, the customizer
+	 * changes it in place, without replacing the reference.
+	 * <p>
+	 * The mapper caches are cleared afterwards so that structural changes (for example a property naming strategy) also
+	 * take effect on types that were already serialized or de-serialized.
+	 *
+	 * @param customizer the customizer to apply to the underlying {@link ObjectMapper}
+	 */
+	public void configure(final Consumer<ObjectMapper> customizer) {
+		customizer.accept(objectMapper);
+		objectMapper.clearCaches();
+		setIndentOutput(objectMapper.isEnabled(SerializationFeature.INDENT_OUTPUT));
+	}
+
+	/**
+	 * Configures the given {@link MapperFeature} to the given state on both the serialization and de-serialization
+	 * configurations of the given {@link ObjectMapper}.
+	 * <p>
+	 * {@code ObjectMapper.configure(MapperFeature, boolean)} is deprecated since Jackson 2.13, so the feature is applied
+	 * directly on the configurations instead of using the deprecated method.
+	 *
+	 * @param objectMapper the object mapper to configure
+	 * @param feature the mapper feature to configure
+	 * @param state the state to configure the feature to
+	 */
+	private static void configure(final ObjectMapper objectMapper, final MapperFeature feature, final boolean state) {
+		objectMapper.setConfig(objectMapper.getSerializationConfig().with(feature, state));
+		objectMapper.setConfig(objectMapper.getDeserializationConfig().with(feature, state));
 	}
 
 	/**
@@ -635,46 +684,29 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	}
 
 	/**
+	 * Configures the given {@link ObjectMapper} with the given {@link Indentation}.
+	 *
+	 * @param objectMapper the object mapper to configure
+	 * @param indentation the indentation
+	 * @return the configured object mapper
+	 */
+	private static ObjectMapper configureIndent(final ObjectMapper objectMapper, final Indentation indentation) {
+		switch (indentation) {
+			case ENABLED -> objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+			case DISABLED -> objectMapper.disable(SerializationFeature.INDENT_OUTPUT);
+		}
+		return objectMapper;
+	}
+
+	/**
 	 * Enable/disable JSON indentation.
 	 *
 	 * @param enable true to enable, false to disable
 	 */
 	@Override
 	public void indentOutput(final boolean enable) {
-		super.indentOutput(enable);
-		Consumer<SerializationFeature> indentation = enable ? objectMapper::enable : objectMapper::disable;
-		indentation.accept(SerializationFeature.INDENT_OUTPUT);
-	}
-
-	/**
-	 * Applies the given customizer to the underlying {@link ObjectMapper}. Because the mapper is mutable, the customizer
-	 * changes it in place, without replacing the reference.
-	 * <p>
-	 * The mapper caches are cleared afterwards so that structural changes (for example a property naming strategy) also
-	 * take effect on types that were already serialized or de-serialized.
-	 *
-	 * @param customizer the customizer to apply to the underlying {@link ObjectMapper}
-	 */
-	public void configure(final Consumer<ObjectMapper> customizer) {
-		customizer.accept(objectMapper);
-		objectMapper.clearCaches();
-		super.indentOutput(objectMapper.isEnabled(SerializationFeature.INDENT_OUTPUT));
-	}
-
-	/**
-	 * Configures the given {@link MapperFeature} to the given state on both the serialization and de-serialization
-	 * configurations of the given {@link ObjectMapper}.
-	 * <p>
-	 * {@code ObjectMapper.configure(MapperFeature, boolean)} is deprecated since Jackson 2.13, so the feature is applied
-	 * directly on the configurations instead of using the deprecated method.
-	 *
-	 * @param objectMapper the object mapper to configure
-	 * @param feature the mapper feature to configure
-	 * @param state the state to configure the feature to
-	 */
-	private static void configure(final ObjectMapper objectMapper, final MapperFeature feature, final boolean state) {
-		objectMapper.setConfig(objectMapper.getSerializationConfig().with(feature, state));
-		objectMapper.setConfig(objectMapper.getDeserializationConfig().with(feature, state));
+		setIndentOutput(enable);
+		configureIndent(objectMapper, Indentation.fromBoolean(enable));
 	}
 
 	/**

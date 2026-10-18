@@ -14,6 +14,7 @@ import java.util.List;
 
 import org.apiphany.ApiMimeType;
 import org.apiphany.io.ContentType;
+import org.apiphany.lang.annotation.FieldName;
 import org.junit.jupiter.api.Test;
 import org.morphix.convert.ObjectConverterException;
 import org.morphix.reflection.GenericClass;
@@ -144,6 +145,18 @@ class Jackson2JsonHttpContentConverterTest {
 	}
 
 	@Test
+	void shouldApplyApiphanyAnnotationsWhenWritingWithTheGivenMapper() {
+		ObjectMapper objectMapper = new ObjectMapper();
+		objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+		var converter = new Jackson2JsonHttpContentConverter<String>(objectMapper);
+
+		FieldNamedBean bean = new FieldNamedBean();
+		bean.setDisplayName("Ada");
+
+		assertThat(converter.toString(bean, ContentType.APPLICATION_JSON), equalTo("{\"custom_name\":\"Ada\"}"));
+	}
+
+	@Test
 	void shouldWriteWithTheGivenMapperWithoutConfiguringIt() throws Exception {
 		ObjectMapper objectMapper = new ObjectMapper();
 		objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
@@ -206,6 +219,20 @@ class Jackson2JsonHttpContentConverterTest {
 	/**
 	 * Bean whose property name changes under snake case, used to prove the given mapper is used as-is.
 	 */
+	static class FieldNamedBean {
+
+		@FieldName("custom_name")
+		private String displayName;
+
+		public String getDisplayName() {
+			return displayName;
+		}
+
+		public void setDisplayName(final String displayName) {
+			this.displayName = displayName;
+		}
+	}
+
 	static class NamedPerson {
 
 		private String firstName;
