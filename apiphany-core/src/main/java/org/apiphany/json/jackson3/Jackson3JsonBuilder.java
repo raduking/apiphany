@@ -248,12 +248,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @return an object from the JSON input object
 	 */
 	public static <O, T> T fromJson(final O json, final Class<T> cls) { // NOSONAR we want it hidden
-		return switch (json) {
-			case String string -> runtime().fromJsonString(string, cls);
-			case byte[] bytes -> runtime().fromJsonBytes(bytes, cls);
-			case InputStream inputStream -> runtime().fromJsonInputStream(inputStream, cls);
-			default -> throw unsupportedJsonInputType(json);
-		};
+		return runtime().fromJsonObject(json, cls);
 	}
 
 	/**
@@ -267,12 +262,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @return an object from the JSON input object
 	 */
 	public static <O, T> T fromJson(final O json, final GenericClass<T> genericClass) { // NOSONAR we want it hidden
-		return switch (json) {
-			case String string -> runtime().fromJsonString(string, genericClass);
-			case byte[] bytes -> runtime().fromJsonBytes(bytes, genericClass);
-			case InputStream inputStream -> runtime().fromJsonInputStream(inputStream, genericClass);
-			default -> throw unsupportedJsonInputType(json);
-		};
+		return runtime().fromJsonObject(json, genericClass);
 	}
 
 	/**
@@ -286,10 +276,27 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @return an object from the JSON input object
 	 */
 	public static <O, T> T fromJson(final O json, final TypeReference<T> typeReference) {
+		return runtime().fromJsonObject(json, typeReference);
+	}
+
+	/**
+	 * Returns an object from the JSON input object using this builder.
+	 * <p>
+	 * {@link #fromJson(Object, TypeReference)} is static and selects the runtime builder. This method reads with this
+	 * builder, so a caller can use a mapper other than the singleton.
+	 *
+	 * @param <O> input object type
+	 * @param <T> type of the object
+	 *
+	 * @param json JSON input object
+	 * @param typeReference type of the output object
+	 * @return an object from the JSON input object
+	 */
+	public <O, T> T fromJsonObject(final O json, final TypeReference<T> typeReference) {
 		return switch (json) {
-			case String string -> runtime().fromJsonString(string, typeReference);
-			case byte[] bytes -> runtime().fromJsonBytes(bytes, typeReference);
-			case InputStream inputStream -> runtime().fromJsonInputStream(inputStream, typeReference);
+			case String string -> fromJsonString(string, typeReference);
+			case byte[] bytes -> fromJsonBytes(bytes, typeReference);
+			case InputStream inputStream -> fromJsonInputStream(inputStream, typeReference);
 			default -> throw unsupportedJsonInputType(json);
 		};
 	}

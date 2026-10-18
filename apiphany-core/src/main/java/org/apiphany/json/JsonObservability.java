@@ -61,6 +61,12 @@ public class JsonObservability implements LoggerAdapter {
 				+ "Optional values use Jackson's default handling";
 
 		/**
+		 * Error message logged when Jackson's Java time module is not on the classpath.
+		 */
+		public static final String JAVA_TIME_MODULE_NOT_FOUND = "jackson-datatype-jsr310 was not found in the classpath. "
+				+ "Date and time values use Jackson's default handling";
+
+		/**
 		 * Hide constructor.
 		 */
 		private ErrorMessage() {
@@ -127,6 +133,13 @@ public class JsonObservability implements LoggerAdapter {
 	 */
 	public void jdk8ModuleNotFound() {
 		warn(ErrorMessage.JDK8_MODULE_NOT_FOUND);
+	}
+
+	/**
+	 * Logs a warning when Jackson's Java time module is not on the classpath.
+	 */
+	public void javaTimeModuleNotFound() {
+		warn(ErrorMessage.JAVA_TIME_MODULE_NOT_FOUND);
 	}
 
 	/**
