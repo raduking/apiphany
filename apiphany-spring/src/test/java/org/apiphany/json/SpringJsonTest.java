@@ -1,4 +1,4 @@
-package org.apiphany.http;
+package org.apiphany.json;
 
 import static org.apiphany.test.Assertions.assertDefaultConstructorThrows;
 import static org.hamcrest.CoreMatchers.equalTo;

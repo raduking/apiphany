@@ -475,7 +475,7 @@ class Jackson3JsonBuilderTest extends Jackson3Test {
 			JsonMapper objectMapper = mock(JsonMapper.class);
 			doReturn(objectMapper).when(builder).build();
 
-			Jackson3JsonBuilder jacksonJsonBuilder = new Jackson3JsonBuilder(builder, Consumers.noConsumer());
+			Jackson3JsonBuilder jacksonJsonBuilder = new Jackson3JsonBuilder(builder, JsonBuilder.Customization.DEFAULT, Consumers.noConsumer());
 
 			ObjectWriter writer = mock(ObjectWriter.class);
 			doReturn(writer).when(objectMapper).writerFor(any(Class.class));

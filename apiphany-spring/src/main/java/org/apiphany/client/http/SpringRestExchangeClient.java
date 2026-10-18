@@ -6,7 +6,7 @@ import org.apiphany.client.ContentConverter;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.ResponseEntityExtractor;
 import org.apiphany.http.SpringHttpSupport;
-import org.apiphany.http.SpringJson;
+import org.apiphany.json.SpringJson;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClient;
@@ -35,7 +35,7 @@ public class SpringRestExchangeClient extends AbstractSpringExchangeClient {
 	 */
 	public SpringRestExchangeClient(final ClientProperties clientProperties, final RestClient.Builder restClientBuilder) {
 		super(clientProperties, SpringHttpSupport.getRequestFactory(restClientBuilder));
-		ContentConverter<String> jsonConverter = SpringJson.converter(restClientBuilder);
+		ContentConverter<?> jsonConverter = SpringJson.converter(restClientBuilder);
 		if (null != jsonConverter) {
 			getContentConverters().addFirst(jsonConverter);
 		}

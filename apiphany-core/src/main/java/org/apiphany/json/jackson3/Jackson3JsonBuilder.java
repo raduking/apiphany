@@ -134,11 +134,22 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @param builder the JSON mapper builder
 	 * @param builderCustomizer the JSON mapper builder customizer
 	 */
-	Jackson3JsonBuilder(final JsonMapper.Builder builder, final Consumer<JsonMapper.Builder> builderCustomizer) {
-		this.defaultAnnotationIntrospector = builder.annotationIntrospector();
-		configure(builder, Indentation.fromBoolean(isIndentOutput()), builderCustomizer);
-		indentOutput(builder.isEnabled(SerializationFeature.INDENT_OUTPUT));
-		this.jsonMapper.set(builder.build());
+	Jackson3JsonBuilder(final JsonMapper.Builder builder, final Customization customization, final Consumer<JsonMapper.Builder> builderCustomizer) {
+		switch (customization) {
+			case DEFAULT -> {
+				this.defaultAnnotationIntrospector = builder.annotationIntrospector();
+				configure(builder, Indentation.fromBoolean(isIndentOutput()), builderCustomizer);
+				indentOutput(builder.isEnabled(SerializationFeature.INDENT_OUTPUT));
+				this.jsonMapper.set(builder.build());
+			}
+			default -> {
+				builderCustomizer.accept(builder);
+				JsonMapper mapper = builder.build();
+				this.defaultAnnotationIntrospector = mapper.serializationConfig().getAnnotationIntrospector();
+				this.jsonMapper.set(mapper);
+				super.indentOutput(mapper.isEnabled(SerializationFeature.INDENT_OUTPUT));
+			}
+		}
 	}
 
 	/**
@@ -165,28 +176,14 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @param customization the customization applied to the mapper
 	 */
 	Jackson3JsonBuilder(final JsonMapper jsonMapper, final Customization customization) {
-		Objects.requireNonNull(jsonMapper, "jsonMapper cannot be null");
-		switch (customization) {
-			case DEFAULT -> {
-				JsonMapper.Builder builder = jsonMapper.rebuild();
-				this.defaultAnnotationIntrospector = builder.annotationIntrospector();
-				configure(builder, Indentation.fromBoolean(isIndentOutput()), Consumers.noConsumer());
-				indentOutput(builder.isEnabled(SerializationFeature.INDENT_OUTPUT));
-				this.jsonMapper.set(builder.build());
-			}
-			default -> {
-				this.defaultAnnotationIntrospector = jsonMapper.serializationConfig().getAnnotationIntrospector();
-				this.jsonMapper.set(jsonMapper);
-				super.indentOutput(jsonMapper.isEnabled(SerializationFeature.INDENT_OUTPUT));
-			}
-		}
+		this(Objects.requireNonNull(jsonMapper, "jsonMapper cannot be null").rebuild(), customization, Consumers.noConsumer());
 	}
 
 	/**
 	 * Hide constructor.
 	 */
 	Jackson3JsonBuilder() {
-		this(JsonMapper.builder(), Consumers.noConsumer());
+		this(JsonMapper.builder(), Customization.DEFAULT, Consumers.noConsumer());
 	}
 
 	/**
@@ -207,7 +204,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @return a new JSON builder with the given {@link JsonFactory}
 	 */
 	public static Jackson3JsonBuilder custom(final JsonFactory jsonFactory, final Consumer<JsonMapper.Builder> builderCustomizer) {
-		return new Jackson3JsonBuilder(JsonMapper.builder(jsonFactory), builderCustomizer);
+		return new Jackson3JsonBuilder(JsonMapper.builder(jsonFactory), Customization.DEFAULT, builderCustomizer);
 	}
 
 	/**
@@ -227,7 +224,7 @@ public class Jackson3JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @return a new JSON builder with the given customizer applied to the underlying {@link JsonMapper.Builder}
 	 */
 	public static Jackson3JsonBuilder custom(final Consumer<JsonMapper.Builder> builderCustomizer) {
-		return new Jackson3JsonBuilder(JsonMapper.builder(), builderCustomizer);
+		return new Jackson3JsonBuilder(JsonMapper.builder(), Customization.DEFAULT, builderCustomizer);
 	}
 
 	/**
