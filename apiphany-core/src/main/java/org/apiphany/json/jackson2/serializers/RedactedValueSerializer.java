@@ -44,7 +44,7 @@ public class RedactedValueSerializer extends JsonSerializer<Object> implements C
 	 * @see JsonSerializer#serialize(Object, JsonGenerator, SerializerProvider)
 	 */
 	@Override
-	public void serialize(final Object value, final JsonGenerator gen, final SerializerProvider serializers) throws IOException {
+	public void serialize(final Object value, final JsonGenerator gen, final SerializerProvider provider) throws IOException {
 		if (null == value) {
 			gen.writeNull();
 			return;

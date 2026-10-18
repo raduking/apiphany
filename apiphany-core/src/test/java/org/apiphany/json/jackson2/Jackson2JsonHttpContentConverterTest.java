@@ -1,6 +1,7 @@
 package org.apiphany.json.jackson2;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -190,7 +191,9 @@ class Jackson2JsonHttpContentConverterTest {
 	void shouldThrowWhenReadingAnUnsupportedBodyTypeWithTheGivenMapper() {
 		var converter = new Jackson2JsonHttpContentConverter<String>(new ObjectMapper());
 
-		assertThrows(UnsupportedOperationException.class, () -> converter.from(42, ContentType.APPLICATION_JSON, String.class));
+		ObjectConverterException e = assertThrows(ObjectConverterException.class,
+				() -> converter.from(42, ContentType.APPLICATION_JSON, String.class));
+		assertThat(e.getCause(), instanceOf(UnsupportedOperationException.class));
 	}
 
 	@Test

@@ -204,7 +204,7 @@ class ExchangeClientBuilderTest {
 
 	interface Builders {
 
-		static class DelegateExchangeClientBuilder extends ExchangeClientBuilder {
+		class DelegateExchangeClientBuilder extends ExchangeClientBuilder {
 
 			private ExchangeClient exchangeClient;
 
@@ -219,7 +219,7 @@ class ExchangeClientBuilderTest {
 			}
 		}
 
-		static class ThrowingExchangeClientBuilder extends ExchangeClientBuilder {
+		class ThrowingExchangeClientBuilder extends ExchangeClientBuilder {
 
 			public ThrowingExchangeClientBuilder() {
 				super();
@@ -231,7 +231,7 @@ class ExchangeClientBuilderTest {
 			}
 		}
 
-		static class DecoratingExchangeClientBuilder extends ExchangeClientBuilder {
+		class DecoratingExchangeClientBuilder extends ExchangeClientBuilder {
 
 			public DecoratingExchangeClientBuilder() {
 				super();
@@ -242,7 +242,7 @@ class ExchangeClientBuilderTest {
 			}
 		}
 
-		static class InvalidDecoratingExchangeClientBuilder extends ExchangeClientBuilder {
+		class InvalidDecoratingExchangeClientBuilder extends ExchangeClientBuilder {
 
 			public InvalidDecoratingExchangeClientBuilder() {
 				super();

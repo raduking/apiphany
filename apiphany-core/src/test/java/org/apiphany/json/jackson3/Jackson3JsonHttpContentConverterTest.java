@@ -1,6 +1,7 @@
 package org.apiphany.json.jackson3;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -53,7 +54,7 @@ class Jackson3JsonHttpContentConverterTest extends Jackson3Test {
 		Object json = "[" + JSON_STRING + "]";
 		var converter = new Jackson3JsonHttpContentConverter<List<Person>>();
 
-		List<Person> result = converter.from(json, null, new GenericClass<List<Person>>() {
+		List<Person> result = converter.from(json, null, new GenericClass<>() {
 			// empty
 		});
 
@@ -74,7 +75,7 @@ class Jackson3JsonHttpContentConverterTest extends Jackson3Test {
 	void shouldReturnNullWhenGenericJsonIsNull() {
 		var converter = new Jackson3JsonHttpContentConverter<List<Person>>();
 
-		List<Person> result = converter.from(null, null, new GenericClass<List<Person>>() {
+		List<Person> result = converter.from(null, null, new GenericClass<>() {
 			// empty
 		});
 
@@ -146,7 +147,7 @@ class Jackson3JsonHttpContentConverterTest extends Jackson3Test {
 	}
 
 	@Test
-	void shouldWriteWithTheGivenMapperWithoutConfiguringIt() throws Exception {
+	void shouldWriteWithTheGivenMapperWithoutConfiguringIt() {
 		JsonMapper jsonMapper = JsonMapper.builder()
 				.propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
 				.build();
@@ -161,7 +162,7 @@ class Jackson3JsonHttpContentConverterTest extends Jackson3Test {
 	}
 
 	@Test
-	void shouldReadAStringBodyWithTheGivenMapper() throws Exception {
+	void shouldReadAStringBodyWithTheGivenMapper() {
 		JsonMapper jsonMapper = JsonMapper.builder().build();
 		var converter = new Jackson3JsonHttpContentConverter<String>(jsonMapper);
 
@@ -171,7 +172,7 @@ class Jackson3JsonHttpContentConverterTest extends Jackson3Test {
 	}
 
 	@Test
-	void shouldReadAByteArrayBodyWithTheGivenMapper() throws Exception {
+	void shouldReadAByteArrayBodyWithTheGivenMapper() {
 		JsonMapper jsonMapper = JsonMapper.builder().build();
 		var converter = new Jackson3JsonHttpContentConverter<String>(jsonMapper);
 
@@ -181,7 +182,7 @@ class Jackson3JsonHttpContentConverterTest extends Jackson3Test {
 	}
 
 	@Test
-	void shouldReadAnInputStreamBodyWithTheGivenMapper() throws Exception {
+	void shouldReadAnInputStreamBodyWithTheGivenMapper() {
 		JsonMapper jsonMapper = JsonMapper.builder().build();
 		var converter = new Jackson3JsonHttpContentConverter<String>(jsonMapper);
 
@@ -194,7 +195,9 @@ class Jackson3JsonHttpContentConverterTest extends Jackson3Test {
 	void shouldThrowWhenReadingAnUnsupportedBodyTypeWithTheGivenMapper() {
 		var converter = new Jackson3JsonHttpContentConverter<String>(JsonMapper.builder().build());
 
-		assertThrows(UnsupportedOperationException.class, () -> converter.from(42, ContentType.APPLICATION_JSON, String.class));
+		ObjectConverterException e = assertThrows(ObjectConverterException.class,
+				() -> converter.from(42, ContentType.APPLICATION_JSON, String.class));
+		assertThat(e.getCause(), instanceOf(UnsupportedOperationException.class));
 	}
 
 	@Test
