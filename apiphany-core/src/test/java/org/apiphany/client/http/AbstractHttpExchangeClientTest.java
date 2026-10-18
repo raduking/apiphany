@@ -245,7 +245,7 @@ class AbstractHttpExchangeClientTest {
 	class ToJsonTests {
 
 		@Test
-		void shouldWriteJsonWithTheFirstWritableConverter() throws Exception {
+		void shouldWriteJsonWithTheFirstWritableConverter() {
 			try (TestHttpExchangeClient client = new TestHttpExchangeClient(ClientProperties.defaults())) {
 				client.getContentConverters().add(0, new FixedJsonRequestConverter("custom-json"));
 
@@ -254,7 +254,7 @@ class AbstractHttpExchangeClientTest {
 		}
 
 		@Test
-		void shouldWriteJsonWithJsonBuilderWhenNoCustomConverterIsRegistered() throws Exception {
+		void shouldWriteJsonWithJsonBuilderWhenNoCustomConverterIsRegistered() {
 			Map<String, String> value = Map.of("name", "Ada");
 
 			try (TestHttpExchangeClient client = new TestHttpExchangeClient(ClientProperties.defaults())) {

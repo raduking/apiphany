@@ -22,5 +22,5 @@ public enum ClientLifecycle {
 	 * This is suitable for scenarios where clients maintain state or connections that should persist over time, and where
 	 * creating new instances frequently would be inefficient.
 	 */
-	LONG_LIVED;
+	LONG_LIVED
 }

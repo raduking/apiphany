@@ -213,7 +213,7 @@ public class JsonObservability implements LoggerAdapter {
 	/**
 	 * Builds a safe diagnostic description for a JSON input value.
 	 * <p>
-	 * By default it only logs metadata (type/length). When debug-string is enabled via
+	 * By default, it only logs metadata (type/length). When debug-string is enabled via
 	 * {@code -Djson-builder.to-json.debug-string=true}, it also includes a bounded preview to aid debugging.
 	 *
 	 * @param json JSON input object

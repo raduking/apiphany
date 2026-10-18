@@ -66,7 +66,12 @@ public class JsonHttpContentConverter<T> implements HttpContentConverter<T> {
 		if (null == obj) {
 			return null;
 		}
-		T result = toJson.apply(obj);
+		T result;
+		try {
+			result = toJson.apply(obj);
+		} catch (Exception e) {
+			throw converterException(targetTypeNameSupplier.get(), e);
+		}
 		if (null == result) {
 			throw converterException(targetTypeNameSupplier.get());
 		}

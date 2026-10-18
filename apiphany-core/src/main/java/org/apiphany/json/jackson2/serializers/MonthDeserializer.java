@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 
 /**
- * Custom {@link Month} deserializer that accepts the month name (case insensitive) and the 1-based month number (either
+ * Custom {@link Month} deserializer that accepts the month name (case-insensitive) and the 1-based month number (either
  * as a JSON number or as a string).
  *
  * @author Radu Sebastian LAZIN
@@ -28,7 +28,7 @@ public class MonthDeserializer extends JsonDeserializer<Month> {
 	 * @see JsonDeserializer#deserialize(JsonParser, DeserializationContext)
 	 */
 	@Override
-	public Month deserialize(final JsonParser p, final DeserializationContext ctxt) throws IOException {
+	public Month deserialize(final JsonParser p, final DeserializationContext c) throws IOException {
 		if (p.hasToken(JsonToken.VALUE_NUMBER_INT)) {
 			return Month.of(p.getIntValue());
 		}

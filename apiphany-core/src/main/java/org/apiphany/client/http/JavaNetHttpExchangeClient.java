@@ -257,10 +257,9 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	 * Creates a {@link BodyPublisher} from the given API request and body. It checks for the body common types to create
 	 * the appropriate publisher.
 	 * <p>
-	 * This method only uses the body parameter to create the publisher and not the API request body because in some cases
-	 * the body can be a supplier that needs to be resolved first to get the actual body object and then create the
-	 * publisher from it. The API request is only used in this method to get the {@link Charset} for string bodies and to
-	 * check if the body should be converted to JSON or not.
+	 * The body is passed as a parameter instead of being read from the API request because it can be a supplier that needs
+	 * to be resolved first, before the publisher is created. The API request is only used in this method to get the
+	 * {@link Charset} for string bodies and to check if the body should be converted to JSON.
 	 *
 	 * @param <T> body type
 	 *
@@ -308,10 +307,10 @@ public class JavaNetHttpExchangeClient extends AbstractHttpExchangeClient {
 	 * @param <T> request body type
 	 * @param <U> body handler type
 	 *
-	 * @param apiRequest the API request object
+	 * @param ignoredApiRequest the API request object (ignored for now)
 	 * @return the body handler based on the request
 	 */
-	protected static <T, U> BodyHandler<U> getResponseBodyHandler(final ApiRequest<T> apiRequest) { // NOSONAR
+	protected static <T, U> BodyHandler<U> getResponseBodyHandler(final ApiRequest<T> ignoredApiRequest) { // NOSONAR
 		BodyHandler<?> bodyHandler = BodyHandlers.ofInputStream();
 		return JavaObjects.cast(bodyHandler);
 	}
