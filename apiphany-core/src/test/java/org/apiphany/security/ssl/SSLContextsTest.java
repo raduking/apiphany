@@ -16,9 +16,11 @@ import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.Security;
 import java.security.UnrecoverableKeyException;
 import java.util.Arrays;
 
+import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
@@ -44,6 +46,9 @@ class SSLContextsTest {
 	private static final String KEYSTORE_TYPE = "JKS";
 	private static final String TRUSTSTORE_PATH = "security/ssl/truststore.jks";
 	private static final String TRUSTSTORE_PASSWORD = "truststorepassword123";
+
+	private static final String PROPERTY_SSL_TRUST_MANAGER_FACTORY_ALGORITHM = "ssl.TrustManagerFactory.algorithm";
+	private static final String NO_SUCH_ALGORITHM = "NO_SUCH_ALGORITHM";
 
 	private static final String SSL_PROPERTIES_JSON = Strings.fromFile("security/ssl/ssl-properties.json");
 
@@ -78,6 +83,15 @@ class SSLContextsTest {
 				.build();
 
 		assertNotNull(sslContext);
+	}
+
+	@Test
+	void shouldInitializeSslContextWithEmptyManagerArrays() throws Exception {
+		SSLContext sslContext = SSLContext.getInstance("TLS");
+
+		SSLContexts.initialize(sslContext, new KeyManager[0], new TrustManager[0]);
+
+		assertNotNull(sslContext.getSocketFactory());
 	}
 
 	@Test
@@ -181,6 +195,22 @@ class SSLContextsTest {
 	}
 
 	@Test
+	void shouldReturnEmptyKeyManagersWhenKeyStoreIsNull() throws Exception {
+		KeyManager[] keyManagers = SSLContexts.getKeyManagers(null, null, null);
+
+		assertNotNull(keyManagers);
+		assertThat(keyManagers.length, equalTo(0));
+	}
+
+	@Test
+	void shouldReturnEmptyTrustManagersWhenTrustStoreIsNull() throws Exception {
+		TrustManager[] trustManagers = SSLContexts.getTrustManagers(null, null);
+
+		assertNotNull(trustManagers);
+		assertThat(trustManagers.length, equalTo(0));
+	}
+
+	@Test
 	void shouldReturnNullIfKeyStoreTypeIsEmpty() {
 		KeyStore keyStore = SSLContexts.keyStore(KEYSTORE_PATH, "", null, ResourceLocation.CLASS_PATH);
 
@@ -214,7 +244,7 @@ class SSLContextsTest {
 	@Test
 	void shouldThrowSecurityExceptionWhenTrustManagersCannotBeCreated() {
 		StoreInfo trustStoreInfo = JsonBuilder.fromJson(SSL_PROPERTIES_JSON, SSLProperties.class).getTruststore();
-		trustStoreInfo.setAlgorithm("NO_SUCH_ALGORITHM");
+		trustStoreInfo.setAlgorithm(NO_SUCH_ALGORITHM);
 
 		SecurityException exception = assertThrows(SecurityException.class, () -> SSLContexts.trustManagers(trustStoreInfo));
 
@@ -235,6 +265,23 @@ class SSLContextsTest {
 				() -> SSLContexts.defaultTrustManager(UnsupportedTrustManager.class));
 
 		assertThat(exception.getMessage(), equalTo("No " + UnsupportedTrustManager.class.getName() + " found in default trust managers"));
+	}
+
+	@Test
+	void shouldThrowSecurityExceptionWhenLookingForDefaultTrustManagerFails() {
+		String algorithmProperty = PROPERTY_SSL_TRUST_MANAGER_FACTORY_ALGORITHM;
+		String originalAlgorithm = Security.getProperty(algorithmProperty);
+
+		Security.setProperty(algorithmProperty, NO_SUCH_ALGORITHM);
+		try {
+			SecurityException exception = assertThrows(SecurityException.class,
+					() -> SSLContexts.defaultTrustManager(X509TrustManager.class));
+
+			assertThat(exception.getMessage(), equalTo("Error while looking for default trust manager"));
+			assertThat(exception.getCause().getClass(), equalTo(NoSuchAlgorithmException.class));
+		} finally {
+			Security.setProperty(algorithmProperty, originalAlgorithm);
+		}
 	}
 
 	@Test
