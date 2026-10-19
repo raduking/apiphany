@@ -9,6 +9,7 @@ import java.util.List;
 import javax.net.ssl.HostnameVerifier;
 
 import org.morphix.lang.function.ThrowingSupplier;
+import org.morphix.reflection.Constructors;
 
 /**
  * Factory methods for hostname verifiers backed by X.509 certificates.
@@ -27,8 +28,11 @@ public final class HostnameVerifiers {
 	 */
 	private static final int IP_ADDRESS_TYPE = 7;
 
+	/**
+	 * Hide constructor.
+	 */
 	private HostnameVerifiers() {
-		// utility class
+		throw Constructors.unsupportedOperationException();
 	}
 
 	/**

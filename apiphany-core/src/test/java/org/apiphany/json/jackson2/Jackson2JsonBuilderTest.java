@@ -579,12 +579,12 @@ class Jackson2JsonBuilderTest {
 		void shouldNotRegisterTheSameModuleTwice() {
 			int initialModulesSize = Jackson2JsonBuilder.MODULES.size();
 
-			Supplier<? extends Module> moduleSupplier = SimpleModule::new;
-			Supplier<? extends Module> ms1 = Jackson2JsonBuilder.registerModule(ApiphanyJackson2Module.NAME + "-1", moduleSupplier);
+			Supplier<Module> moduleSupplier = SimpleModule::new;
+			Supplier<Module> ms1 = Jackson2JsonBuilder.registerModule(ApiphanyJackson2Module.NAME + "-1", moduleSupplier);
 
 			assertThat(ms1, nullValue());
 
-			Supplier<? extends Module> ms2 = Jackson2JsonBuilder.registerModule(ApiphanyJackson2Module.NAME + "-1", SimpleModule::new);
+			Supplier<Module> ms2 = Jackson2JsonBuilder.registerModule(ApiphanyJackson2Module.NAME + "-1", SimpleModule::new);
 
 			assertThat(ms2, sameInstance(moduleSupplier));
 			assertThat(Jackson2JsonBuilder.MODULES.size(), equalTo(initialModulesSize + 1));
@@ -606,7 +606,7 @@ class Jackson2JsonBuilderTest {
 			SimpleModule module = new SimpleModule();
 			module.addSerializer(Exception.class, new SimpleExceptionSerializer());
 
-			Supplier<? extends Module> ms = Jackson2JsonBuilder.registerModule(moduleName, () -> module);
+			Supplier<Module> ms = Jackson2JsonBuilder.registerModule(moduleName, () -> module);
 
 			json = Strings.removeAllWhitespace(Jackson2JsonBuilder.toJson(d));
 
@@ -616,7 +616,7 @@ class Jackson2JsonBuilderTest {
 
 		@Test
 		void shouldRegisterJdk8ModuleWhenTheClassIsPresent() {
-			Supplier<? extends Module> supplier = Jackson2JsonBuilder.MODULES.get(Jackson2Library.jdk8ModuleClassName());
+			Supplier<Module> supplier = Jackson2JsonBuilder.MODULES.get(Jackson2Library.jdk8ModuleClassName());
 
 			assertThat(supplier, notNullValue());
 			assertThat(supplier.get().getClass().getName(), equalTo(Jackson2Library.jdk8ModuleClassName()));

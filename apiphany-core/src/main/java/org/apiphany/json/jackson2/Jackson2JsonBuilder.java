@@ -86,7 +86,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * Map of modules to register to the underlying {@link ObjectMapper}. The key is the module class name. This allows
 	 * registering modules to the underlying {@link ObjectMapper} without creating a dependency on the module's library.
 	 */
-	protected static final Map<String, Supplier<? extends Module>> MODULES = new ConcurrentHashMap<>();
+	protected static final Map<String, Supplier<Module>> MODULES = new ConcurrentHashMap<>();
 	static {
 		if (Jackson2Library.isJavaTimeModulePresent()) {
 			registerModule(Jackson2Library.javaTimeModuleClassName(),
@@ -528,11 +528,11 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @param moduleSupplier the supplier of the module to register
 	 * @return the existing module supplier if a module with the same name is already registered, null otherwise
 	 */
-	public static Supplier<? extends Module> registerModule(final String moduleName, final Supplier<? extends Module> moduleSupplier) {
+	public static Supplier<Module> registerModule(final String moduleName, final Supplier<Module> moduleSupplier) {
 		if (Jackson2JsonBuilder.singletonMaterialized) {
 			instance().observability().lateModuleRegistration(moduleName);
 		}
-		Supplier<? extends Module> existing = MODULES.putIfAbsent(moduleName, moduleSupplier);
+		Supplier<Module> existing = MODULES.putIfAbsent(moduleName, moduleSupplier);
 		if (null != existing) {
 			instance().observability().moduleAlreadyRegistered(moduleName);
 		}
@@ -588,7 +588,7 @@ public class Jackson2JsonBuilder extends JsonBuilder { // NOSONAR singleton impl
 	 * @param objectMapper object mapper to configure
 	 */
 	private static void configure(final ObjectMapper objectMapper, final Indentation indentation, final Consumer<ObjectMapper> mapperCustomizer) {
-		for (Supplier<? extends Module> moduleSupplier : MODULES.values()) {
+		for (Supplier<Module> moduleSupplier : MODULES.values()) {
 			objectMapper.registerModule(moduleSupplier.get());
 		}
 		objectMapper.setDefaultPropertyInclusion(JsonInclude.Value.construct(

@@ -6,8 +6,10 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import org.apiphany.test.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.morphix.reflection.Constructors;
 import org.morphix.runtime.LibraryVersion;
 
 /**
@@ -99,4 +101,14 @@ class OkHttpLibraryTest {
 		}
 	}
 
+	@Nested
+	class ConstructorTests {
+
+		@Test
+		void shouldThrowExceptionOnInstantiating() {
+			UnsupportedOperationException exception = Assertions.assertDefaultConstructorThrows(OkHttpLibrary.class);
+
+			assertThat(exception.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
+		}
+	}
 }
