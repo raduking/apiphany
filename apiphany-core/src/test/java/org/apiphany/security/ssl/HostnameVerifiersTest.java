@@ -1,5 +1,7 @@
 package org.apiphany.security.ssl;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -17,7 +19,9 @@ import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
 import javax.security.auth.x500.X500Principal;
 
+import org.apiphany.test.Assertions;
 import org.junit.jupiter.api.Test;
+import org.morphix.reflection.Constructors;
 
 /**
  * Test class for {@link HostnameVerifiers}.
@@ -29,6 +33,13 @@ class HostnameVerifiersTest {
 	private static final String OTHER_EXAMPLE_HOSTNAME = "other.example.com";
 	private static final String EXAMPLE_HOSTNAME = "example.com";
 	private static final String HOST_127_0_0_1 = "127.0.0.1";
+
+	@Test
+	void shouldThrowExceptionOnInstantiating() {
+		UnsupportedOperationException exception = Assertions.assertDefaultConstructorThrows(HostnameVerifiers.class);
+
+		assertThat(exception.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
+	}
 
 	@Test
 	void shouldRejectEmptyAndNonX509CertificateChains() {

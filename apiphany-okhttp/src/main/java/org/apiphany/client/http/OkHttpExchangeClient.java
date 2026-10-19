@@ -29,6 +29,7 @@ import org.apiphany.http.OkHttpEntities;
 import org.apiphany.http.OkHttpLibrary;
 import org.apiphany.io.IOStreams;
 import org.apiphany.io.InputStreamSupplier;
+import org.apiphany.lang.Bytes;
 import org.apiphany.security.ssl.SSLProperties;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Nullables;
@@ -56,7 +57,7 @@ public class OkHttpExchangeClient extends AbstractHttpExchangeClient {
 	 * Empty request body used for methods that require one (POST/PUT/PATCH) when the API request has no body. An empty byte
 	 * body sends {@code Content-Length: 0} and no {@code Content-Type} header.
 	 */
-	private static final RequestBody EMPTY_REQUEST_BODY = RequestBody.create(new byte[0], null);
+	private static final RequestBody EMPTY_REQUEST_BODY = RequestBody.create(Bytes.EMPTY, null);
 
 	/**
 	 * The OkHttp client instance.

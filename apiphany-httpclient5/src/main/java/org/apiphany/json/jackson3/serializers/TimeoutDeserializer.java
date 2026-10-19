@@ -1,6 +1,5 @@
 package org.apiphany.json.jackson3.serializers;
 
-import java.text.ParseException;
 import java.time.Duration;
 
 import org.apache.hc.core5.util.Timeout;
@@ -51,7 +50,7 @@ public class TimeoutDeserializer extends StdDeserializer<Timeout> {
 		}
 		try {
 			return Timeout.parse(value);
-		} catch (ParseException e) {
+		} catch (Exception e) {
 			throw DatabindException.from(p, "Invalid timeout format: " + value + ", " + e.getMessage());
 		}
 	}

@@ -6,8 +6,10 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import org.apiphany.test.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.morphix.reflection.Constructors;
 import org.morphix.runtime.LibraryVersion;
 
 /**
@@ -100,4 +102,14 @@ class ApacheHC5LibraryTest {
 		}
 	}
 
+	@Nested
+	class ConstructorTests {
+
+		@Test
+		void shouldThrowExceptionOnInstantiating() {
+			UnsupportedOperationException exception = Assertions.assertDefaultConstructorThrows(ApacheHC5Library.class);
+
+			assertThat(exception.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
+		}
+	}
 }
