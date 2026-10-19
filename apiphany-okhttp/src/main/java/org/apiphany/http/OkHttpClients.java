@@ -61,10 +61,10 @@ public interface OkHttpClients {
 	static OkHttpClient.Builder disableTransparentGzip(final OkHttpClient.Builder builder) {
 		builder.addInterceptor(chain -> {
 			Request request = chain.request();
-			if (null == request.header(HttpHeader.ACCEPT_ENCODING.value())) {
+			if (null == request.header(HttpHeader.Name.ACCEPT_ENCODING)) {
 				// any non-null value disables OkHttp's transparent gzip, keeping the raw response body intact
 				Request marked = request.newBuilder()
-						.header(HttpHeader.ACCEPT_ENCODING.value(), "identity")
+						.header(HttpHeader.Name.ACCEPT_ENCODING, "identity")
 						.tag(AddedAcceptEncodingMarker.class, AddedAcceptEncodingMarker.INSTANCE)
 						.build();
 				return chain.proceed(marked);
@@ -76,7 +76,7 @@ public interface OkHttpClients {
 			if (null != request.tag(AddedAcceptEncodingMarker.class)) {
 				// the header was added by this library, remove it so it never appears on the wire
 				Request unmarked = request.newBuilder()
-						.removeHeader(HttpHeader.ACCEPT_ENCODING.value())
+						.removeHeader(HttpHeader.Name.ACCEPT_ENCODING)
 						.build();
 				return chain.proceed(unmarked);
 			}
@@ -204,7 +204,13 @@ public interface OkHttpClients {
 			if (0 == certificateChain.length || !(certificateChain[0] instanceof X509Certificate certificate)) {
 				return false;
 			}
-			return matchesSubjectAltName(hostname, certificate) || matchesCommonName(hostname, certificate);
+			if (matchesSubjectAltName(hostname, certificate)) {
+				return true;
+			}
+			if (hasDnsSubjectAltNames(certificate)) {
+				return false;
+			}
+			return matchesCommonName(hostname, certificate);
 		}).get();
 	}
 
@@ -230,6 +236,32 @@ public interface OkHttpClients {
 			if (value instanceof String sanValue && type instanceof Integer typeValue
 					&& (DNS_NAME_TYPE == typeValue || IP_ADDRESS_TYPE == typeValue)
 					&& matchesHostName(sanValue, hostname)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Returns true if the certificate contains at least one subjectAltName of type {@code dNSName}, false otherwise. Used
+	 * to decide whether falling back to the certificate common name is allowed: per RFC 2818 / RFC 6125 the common name
+	 * must be ignored whenever DNS subject alternative names are present.
+	 *
+	 * @param certificate the certificate to check
+	 * @return true if the certificate has at least one DNS subjectAltName, false otherwise
+	 * @throws CertificateParsingException when parsing the certificate fails
+	 */
+	static boolean hasDnsSubjectAltNames(final X509Certificate certificate) throws CertificateParsingException {
+		Collection<List<?>> subjectAltNames = certificate.getSubjectAlternativeNames();
+		if (null == subjectAltNames) {
+			return false;
+		}
+		for (List<?> subjectAltName : subjectAltNames) {
+			if (2 > subjectAltName.size()) {
+				continue;
+			}
+			Object type = subjectAltName.getFirst();
+			if (type instanceof Integer typeValue && DNS_NAME_TYPE == typeValue) {
 				return true;
 			}
 		}
@@ -266,8 +298,15 @@ public interface OkHttpClients {
 	static boolean matchesHostName(final String certificateName, final String hostname) {
 		if (certificateName.startsWith("*.")) {
 			String wildcardDomain = certificateName.substring(1);
-			return hostname.regionMatches(true, 0, wildcardDomain, 0, wildcardDomain.length()) // NOSONAR
-					|| hostname.endsWith(wildcardDomain) && hostname.length() > wildcardDomain.length();
+			if (!hostname.endsWith(wildcardDomain) || hostname.length() <= wildcardDomain.length()) {
+				return false;
+			}
+			String prefix = hostname.substring(0, hostname.length() - wildcardDomain.length());
+			if (prefix.contains(".")) {
+				return false;
+			}
+			return certificateName.regionMatches(true, 1, hostname, hostname.length() - wildcardDomain.length() + 1,
+					wildcardDomain.length() - 1);
 		}
 		return certificateName.equalsIgnoreCase(hostname);
 	}

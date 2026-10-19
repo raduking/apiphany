@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.concurrent.ExecutorService;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -18,7 +18,6 @@ import javax.net.ssl.SSLContext;
 import org.apiphany.ApiRequest;
 import org.apiphany.ApiResponse;
 import org.apiphany.client.ClientProperties;
-import org.apiphany.header.Headers;
 import org.apiphany.http.ContentEncoding;
 import org.apiphany.http.HttpContentType;
 import org.apiphany.http.HttpException;
@@ -38,6 +37,7 @@ import org.morphix.lang.collections.Maps;
 import org.morphix.lang.function.Predicates;
 import org.morphix.lang.function.ThrowingSupplier;
 
+import okhttp3.Cache;
 import okhttp3.Call;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -98,10 +98,12 @@ public class OkHttpExchangeClient extends AbstractHttpExchangeClient {
 	 */
 	@Override
 	public void close() throws Exception {
-		httpClient.dispatcher().executorService().shutdown();
+		@SuppressWarnings("resource")
+		ExecutorService executor = httpClient.dispatcher().executorService();
+		executor.shutdown();
 		httpClient.connectionPool().evictAll();
-		if (null != httpClient.cache()) {
-			httpClient.cache().close();
+		try (Cache cache = httpClient.cache()) {
+			// empty
 		}
 	}
 
@@ -278,8 +280,12 @@ public class OkHttpExchangeClient extends AbstractHttpExchangeClient {
 	 * @return the charset to encode string request bodies with
 	 */
 	private static Charset charset(final ApiRequest<?> apiRequest, final MediaType mediaType) {
-		Charset mediaTypeCharset = null == mediaType ? null : mediaType.charset(StandardCharsets.UTF_8);
-		return Nullables.nonNullOrDefault(mediaTypeCharset, apiRequest.getCharset());
+		Charset mediaTypeCharset = null;
+		if (null != mediaType) {
+			mediaTypeCharset = mediaType.charset(null);
+		}
+		return Nullables.nonNullOrDefault(mediaTypeCharset,
+				() -> Nullables.nonNullOrDefault(apiRequest.getCharset(), StandardCharsets.UTF_8));
 	}
 
 	/**
@@ -294,7 +300,7 @@ public class OkHttpExchangeClient extends AbstractHttpExchangeClient {
 	 */
 	protected <T, U> ApiResponse<U> buildResponse(final ApiRequest<T> apiRequest, final Response response) {
 		HttpStatus httpStatus = HttpStatus.fromCode(response.code());
-		Map<String, List<String>> headers = toHttpHeadersMap(response.headers().toMultimap());
+		Map<String, List<String>> headers = response.headers().toMultimap();
 		ensureContentLengthWithinLimit(headers, getMaxResponseBodySize());
 
 		Object responseBody = getResponseBody(apiRequest, response);
@@ -351,22 +357,6 @@ public class OkHttpExchangeClient extends AbstractHttpExchangeClient {
 	 */
 	public static Request.Builder toRequestBuilder(final URI uri) {
 		return new Request.Builder().url(uri.toString());
-	}
-
-	/**
-	 * Transforms a multimap of headers as returned by {@link okhttp3.Headers#toMultimap()} to the project's header map
-	 * representation. The result keeps the case-insensitive lookup behavior of the source map, mirroring the {@code Map}
-	 * returned by the JDK client's {@code HttpHeaders#map()}.
-	 *
-	 * @param headers source headers
-	 * @return HTTP headers
-	 */
-	public static Map<String, List<String>> toHttpHeadersMap(final Map<String, List<String>> headers) {
-		var httpHeaders = new TreeMap<String, List<String>>(String.CASE_INSENSITIVE_ORDER);
-		Maps.safe(headers)
-				.forEach((name, values) -> Lists.safe(values)
-						.forEach(value -> Headers.addTo(httpHeaders, name, value)));
-		return httpHeaders;
 	}
 
 	/**
