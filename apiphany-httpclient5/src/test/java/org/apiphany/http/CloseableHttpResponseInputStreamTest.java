@@ -5,10 +5,10 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -42,8 +42,8 @@ class CloseableHttpResponseInputStreamTest {
 		byte[] testData = "test data".getBytes(StandardCharsets.UTF_8);
 		InputStream testInputStream = new ByteArrayInputStream(testData);
 
-		when(mockResponse.getEntity()).thenReturn(mockEntity);
-		when(mockEntity.getContent()).thenReturn(testInputStream);
+		doReturn(mockEntity).when(mockResponse).getEntity();
+		doReturn(testInputStream).when(mockEntity).getContent();
 
 		CloseableHttpResponseInputStream stream = CloseableHttpResponseInputStream.of(mockResponse);
 
@@ -62,7 +62,7 @@ class CloseableHttpResponseInputStreamTest {
 	@Test
 	@SuppressWarnings("resource")
 	void shouldThrowExceptionWhenEntityIsNull() {
-		when(mockResponse.getEntity()).thenReturn(null);
+		doReturn(null).when(mockResponse).getEntity();
 
 		Exception exception = assertThrows(NullPointerException.class,
 				() -> CloseableHttpResponseInputStream.of(mockResponse));
@@ -72,8 +72,8 @@ class CloseableHttpResponseInputStreamTest {
 	@Test
 	@SuppressWarnings("resource")
 	void shouldThrowExceptionWhenEntityContentIsNull() throws Exception {
-		when(mockResponse.getEntity()).thenReturn(mockEntity);
-		when(mockEntity.getContent()).thenReturn(null);
+		doReturn(mockEntity).when(mockResponse).getEntity();
+		doReturn(null).when(mockEntity).getContent();
 
 		Exception exception = assertThrows(NullPointerException.class,
 				() -> CloseableHttpResponseInputStream.of(mockResponse));
@@ -86,8 +86,8 @@ class CloseableHttpResponseInputStreamTest {
 		byte[] testData = "test".getBytes(StandardCharsets.UTF_8);
 		InputStream testInputStream = new ByteArrayInputStream(testData);
 
-		when(mockResponse.getEntity()).thenReturn(mockEntity);
-		when(mockEntity.getContent()).thenReturn(testInputStream);
+		doReturn(mockEntity).when(mockResponse).getEntity();
+		doReturn(testInputStream).when(mockEntity).getContent();
 
 		CloseableHttpResponseInputStream stream = CloseableHttpResponseInputStream.of(mockResponse);
 
@@ -104,12 +104,30 @@ class CloseableHttpResponseInputStreamTest {
 
 	@Test
 	@SuppressWarnings("resource")
+	void shouldDelegateReadWithOffsetAndLength() throws Exception {
+		byte[] testData = "test data".getBytes(StandardCharsets.UTF_8);
+		InputStream testInputStream = new ByteArrayInputStream(testData);
+
+		doReturn(mockEntity).when(mockResponse).getEntity();
+		doReturn(testInputStream).when(mockEntity).getContent();
+
+		CloseableHttpResponseInputStream stream = CloseableHttpResponseInputStream.of(mockResponse);
+
+		byte[] buffer = new byte[10];
+		int bytesRead = stream.read(buffer, 2, 4);
+
+		assertThat(bytesRead, is(4));
+		assertThat(new String(buffer, 2, 4), is("test"));
+	}
+
+	@Test
+	@SuppressWarnings("resource")
 	void shouldDelegateReadAllBytes() throws Exception {
 		byte[] testData = "test data".getBytes(StandardCharsets.UTF_8);
 		InputStream testInputStream = new ByteArrayInputStream(testData);
 
-		when(mockResponse.getEntity()).thenReturn(mockEntity);
-		when(mockEntity.getContent()).thenReturn(testInputStream);
+		doReturn(mockEntity).when(mockResponse).getEntity();
+		doReturn(testInputStream).when(mockEntity).getContent();
 
 		CloseableHttpResponseInputStream stream = CloseableHttpResponseInputStream.of(mockResponse);
 
@@ -123,8 +141,8 @@ class CloseableHttpResponseInputStreamTest {
 		byte[] testData = "test data".getBytes(StandardCharsets.UTF_8);
 		InputStream testInputStream = new ByteArrayInputStream(testData);
 
-		when(mockResponse.getEntity()).thenReturn(mockEntity);
-		when(mockEntity.getContent()).thenReturn(testInputStream);
+		doReturn(mockEntity).when(mockResponse).getEntity();
+		doReturn(testInputStream).when(mockEntity).getContent();
 
 		CloseableHttpResponseInputStream stream = CloseableHttpResponseInputStream.of(mockResponse);
 
@@ -140,8 +158,8 @@ class CloseableHttpResponseInputStreamTest {
 	@Test
 	@SuppressWarnings("resource")
 	void shouldCloseResponseWhenStreamIsClosed() throws Exception {
-		when(mockResponse.getEntity()).thenReturn(mockEntity);
-		when(mockEntity.getContent()).thenReturn(new ByteArrayInputStream(new byte[0]));
+		doReturn(mockEntity).when(mockResponse).getEntity();
+		doReturn(new ByteArrayInputStream(new byte[0])).when(mockEntity).getContent();
 
 		CloseableHttpResponseInputStream stream = CloseableHttpResponseInputStream.of(mockResponse);
 
@@ -153,8 +171,8 @@ class CloseableHttpResponseInputStreamTest {
 	@Test
 	@SuppressWarnings("resource")
 	void shouldPropagateIOExceptionOnClose() throws Exception {
-		when(mockResponse.getEntity()).thenReturn(mockEntity);
-		when(mockEntity.getContent()).thenReturn(new ByteArrayInputStream(new byte[0]));
+		doReturn(mockEntity).when(mockResponse).getEntity();
+		doReturn(new ByteArrayInputStream(new byte[0])).when(mockEntity).getContent();
 		doThrow(new IOException("Failed to close")).when(mockResponse).close();
 
 		CloseableHttpResponseInputStream stream = CloseableHttpResponseInputStream.of(mockResponse);
@@ -165,8 +183,8 @@ class CloseableHttpResponseInputStreamTest {
 	@Test
 	@SuppressWarnings("resource")
 	void shouldImplementHashCodeAndEquals() throws Exception {
-		when(mockResponse.getEntity()).thenReturn(mockEntity);
-		when(mockEntity.getContent()).thenReturn(new ByteArrayInputStream(new byte[0]));
+		doReturn(mockEntity).when(mockResponse).getEntity();
+		doReturn(new ByteArrayInputStream(new byte[0])).when(mockEntity).getContent();
 
 		CloseableHttpResponseInputStream stream1 = CloseableHttpResponseInputStream.of(mockResponse);
 		CloseableHttpResponseInputStream stream2 = CloseableHttpResponseInputStream.of(mockResponse);
@@ -183,16 +201,31 @@ class CloseableHttpResponseInputStreamTest {
 	@Test
 	@SuppressWarnings("resource")
 	void shouldNotBeEqualWhenResponsesAreDifferent() throws Exception {
-		when(mockResponse.getEntity()).thenReturn(mockEntity);
-		when(mockEntity.getContent()).thenReturn(new ByteArrayInputStream(new byte[0]));
+		doReturn(mockEntity).when(mockResponse).getEntity();
+		doReturn(new ByteArrayInputStream(new byte[0])).when(mockEntity).getContent();
 
 		ClassicHttpResponse anotherMockResponse = mock(ClassicHttpResponse.class);
 		HttpEntity anotherMockEntity = mock(HttpEntity.class);
-		when(anotherMockResponse.getEntity()).thenReturn(anotherMockEntity);
-		when(anotherMockEntity.getContent()).thenReturn(new ByteArrayInputStream(new byte[0]));
+		doReturn(anotherMockEntity).when(anotherMockResponse).getEntity();
+		doReturn(new ByteArrayInputStream(new byte[0])).when(anotherMockEntity).getContent();
 
 		CloseableHttpResponseInputStream stream1 = CloseableHttpResponseInputStream.of(mockResponse);
 		CloseableHttpResponseInputStream stream2 = CloseableHttpResponseInputStream.of(anotherMockResponse);
+
+		assertThat(stream1.equals(stream2), is(false));
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldNotBeEqualWhenDelegateStreamsAreDifferent() throws Exception {
+		doReturn(mockEntity).when(mockResponse).getEntity();
+		doReturn(new ByteArrayInputStream(new byte[0]))
+				.doReturn(new ByteArrayInputStream(new byte[0]))
+				.when(mockEntity)
+				.getContent();
+
+		CloseableHttpResponseInputStream stream1 = CloseableHttpResponseInputStream.of(mockResponse);
+		CloseableHttpResponseInputStream stream2 = CloseableHttpResponseInputStream.of(mockResponse);
 
 		assertThat(stream1.equals(stream2), is(false));
 	}

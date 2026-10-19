@@ -5,8 +5,9 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -90,8 +91,8 @@ class ResponseEntityExtractorTest {
 			ClientHttpResponse response = mockResponse(data);
 
 			HttpMessageConverter<String> converter = mock(HttpMessageConverter.class);
-			when(converter.canRead(String.class, MediaType.TEXT_PLAIN)).thenReturn(true);
-			when(converter.read(String.class, response)).thenReturn("converted body");
+			doReturn(true).when(converter).canRead(String.class, MediaType.TEXT_PLAIN);
+			doReturn("converted body").when(converter).read(String.class, response);
 
 			ResponseEntityExtractor<String> extractor = new ResponseEntityExtractor<>(String.class, List.of(converter));
 			ResponseEntity<String> result = extractor.extractData(response);
@@ -106,7 +107,7 @@ class ResponseEntityExtractorTest {
 			ClientHttpResponse response = mockResponse(data);
 
 			HttpMessageConverter<Boolean> converter = mock(HttpMessageConverter.class);
-			when(converter.canRead(String.class, MediaType.TEXT_PLAIN)).thenReturn(false);
+			doReturn(false).when(converter).canRead(String.class, MediaType.TEXT_PLAIN);
 
 			ResponseEntityExtractor<String> extractor = new ResponseEntityExtractor<>(String.class, List.of(converter));
 
@@ -122,11 +123,11 @@ class ResponseEntityExtractorTest {
 		void shouldWrapIOExceptionInRestClientException() {
 			Executable executable = () -> {
 				ClientHttpResponse response = mock(ClientHttpResponse.class);
-				when(response.getBody()).thenThrow(new IOException("read error"));
+				doThrow(new IOException("read error")).when(response).getBody();
 				HttpHeaders headers = new HttpHeaders();
 				headers.setContentType(MediaType.TEXT_PLAIN);
-				when(response.getHeaders()).thenReturn(headers);
-				when(response.getStatusCode()).thenReturn(HttpStatus.OK);
+				doReturn(headers).when(response).getHeaders();
+				doReturn(HttpStatus.OK).when(response).getStatusCode();
 
 				ResponseEntityExtractor<byte[]> extractor = new ResponseEntityExtractor<>(byte[].class, List.of());
 				extractor.extractData(response);
@@ -173,12 +174,12 @@ class ResponseEntityExtractorTest {
 	@SuppressWarnings("resource")
 	private static ClientHttpResponse mockResponse(final byte[] body, final HttpStatus status) throws Exception {
 		ClientHttpResponse response = mock(ClientHttpResponse.class);
-		when(response.getBody()).thenReturn(new ByteArrayInputStream(body));
-		when(response.getStatusCode()).thenReturn(status);
-		when(response.getStatusText()).thenReturn(status.getReasonPhrase());
+		doReturn(new ByteArrayInputStream(body)).when(response).getBody();
+		doReturn(status).when(response).getStatusCode();
+		doReturn(status.getReasonPhrase()).when(response).getStatusText();
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.TEXT_PLAIN);
-		when(response.getHeaders()).thenReturn(headers);
+		doReturn(headers).when(response).getHeaders();
 		return response;
 	}
 

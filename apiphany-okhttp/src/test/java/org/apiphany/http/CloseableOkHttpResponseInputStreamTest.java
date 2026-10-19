@@ -5,10 +5,10 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -42,8 +42,8 @@ class CloseableOkHttpResponseInputStreamTest {
 		byte[] testData = "test data".getBytes(StandardCharsets.UTF_8);
 		InputStream testInputStream = new ByteArrayInputStream(testData);
 
-		when(mockResponse.body()).thenReturn(mockResponseBody);
-		when(mockResponseBody.byteStream()).thenReturn(testInputStream);
+		doReturn(mockResponseBody).when(mockResponse).body();
+		doReturn(testInputStream).when(mockResponseBody).byteStream();
 
 		CloseableOkHttpResponseInputStream stream = CloseableOkHttpResponseInputStream.of(mockResponse);
 
@@ -62,7 +62,7 @@ class CloseableOkHttpResponseInputStreamTest {
 	@Test
 	@SuppressWarnings("resource")
 	void shouldThrowExceptionWhenBodyIsNull() {
-		when(mockResponse.body()).thenReturn(null);
+		doReturn(null).when(mockResponse).body();
 
 		Exception exception = assertThrows(NullPointerException.class,
 				() -> CloseableOkHttpResponseInputStream.of(mockResponse));
@@ -72,8 +72,8 @@ class CloseableOkHttpResponseInputStreamTest {
 	@Test
 	@SuppressWarnings("resource")
 	void shouldThrowExceptionWhenBodyContentIsNull() throws Exception {
-		when(mockResponse.body()).thenReturn(mockResponseBody);
-		when(mockResponseBody.byteStream()).thenReturn(null);
+		doReturn(mockResponseBody).when(mockResponse).body();
+		doReturn(null).when(mockResponseBody).byteStream();
 
 		Exception exception = assertThrows(NullPointerException.class,
 				() -> CloseableOkHttpResponseInputStream.of(mockResponse));
@@ -86,8 +86,8 @@ class CloseableOkHttpResponseInputStreamTest {
 		byte[] testData = "test".getBytes(StandardCharsets.UTF_8);
 		InputStream testInputStream = new ByteArrayInputStream(testData);
 
-		when(mockResponse.body()).thenReturn(mockResponseBody);
-		when(mockResponseBody.byteStream()).thenReturn(testInputStream);
+		doReturn(mockResponseBody).when(mockResponse).body();
+		doReturn(testInputStream).when(mockResponseBody).byteStream();
 
 		CloseableOkHttpResponseInputStream stream = CloseableOkHttpResponseInputStream.of(mockResponse);
 
@@ -108,8 +108,8 @@ class CloseableOkHttpResponseInputStreamTest {
 		byte[] testData = "test data".getBytes(StandardCharsets.UTF_8);
 		InputStream testInputStream = new ByteArrayInputStream(testData);
 
-		when(mockResponse.body()).thenReturn(mockResponseBody);
-		when(mockResponseBody.byteStream()).thenReturn(testInputStream);
+		doReturn(mockResponseBody).when(mockResponse).body();
+		doReturn(testInputStream).when(mockResponseBody).byteStream();
 
 		CloseableOkHttpResponseInputStream stream = CloseableOkHttpResponseInputStream.of(mockResponse);
 
@@ -123,8 +123,8 @@ class CloseableOkHttpResponseInputStreamTest {
 		byte[] testData = "test data".getBytes(StandardCharsets.UTF_8);
 		InputStream testInputStream = new ByteArrayInputStream(testData);
 
-		when(mockResponse.body()).thenReturn(mockResponseBody);
-		when(mockResponseBody.byteStream()).thenReturn(testInputStream);
+		doReturn(mockResponseBody).when(mockResponse).body();
+		doReturn(testInputStream).when(mockResponseBody).byteStream();
 
 		CloseableOkHttpResponseInputStream stream = CloseableOkHttpResponseInputStream.of(mockResponse);
 
@@ -140,8 +140,8 @@ class CloseableOkHttpResponseInputStreamTest {
 	@Test
 	@SuppressWarnings("resource")
 	void shouldCloseResponseWhenStreamIsClosed() throws Exception {
-		when(mockResponse.body()).thenReturn(mockResponseBody);
-		when(mockResponseBody.byteStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
+		doReturn(mockResponseBody).when(mockResponse).body();
+		doReturn(new ByteArrayInputStream(new byte[0])).when(mockResponseBody).byteStream();
 
 		CloseableOkHttpResponseInputStream stream = CloseableOkHttpResponseInputStream.of(mockResponse);
 
@@ -153,8 +153,8 @@ class CloseableOkHttpResponseInputStreamTest {
 	@Test
 	@SuppressWarnings("resource")
 	void shouldPropagateIOExceptionOnClose() throws Exception {
-		when(mockResponse.body()).thenReturn(mockResponseBody);
-		when(mockResponseBody.byteStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
+		doReturn(mockResponseBody).when(mockResponse).body();
+		doReturn(new ByteArrayInputStream(new byte[0])).when(mockResponseBody).byteStream();
 		doThrow(new RuntimeException("Failed to close")).when(mockResponse).close();
 
 		CloseableOkHttpResponseInputStream stream = CloseableOkHttpResponseInputStream.of(mockResponse);
@@ -165,8 +165,8 @@ class CloseableOkHttpResponseInputStreamTest {
 	@Test
 	@SuppressWarnings("resource")
 	void shouldImplementHashCodeAndEquals() throws Exception {
-		when(mockResponse.body()).thenReturn(mockResponseBody);
-		when(mockResponseBody.byteStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
+		doReturn(mockResponseBody).when(mockResponse).body();
+		doReturn(new ByteArrayInputStream(new byte[0])).when(mockResponseBody).byteStream();
 
 		CloseableOkHttpResponseInputStream stream1 = CloseableOkHttpResponseInputStream.of(mockResponse);
 		CloseableOkHttpResponseInputStream stream2 = CloseableOkHttpResponseInputStream.of(mockResponse);
@@ -183,13 +183,13 @@ class CloseableOkHttpResponseInputStreamTest {
 	@Test
 	@SuppressWarnings("resource")
 	void shouldNotBeEqualWhenResponsesAreDifferent() throws Exception {
-		when(mockResponse.body()).thenReturn(mockResponseBody);
-		when(mockResponseBody.byteStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
+		doReturn(mockResponseBody).when(mockResponse).body();
+		doReturn(new ByteArrayInputStream(new byte[0])).when(mockResponseBody).byteStream();
 
 		Response anotherMockResponse = mock(Response.class);
 		ResponseBody anotherMockResponseBody = mock(ResponseBody.class);
-		when(anotherMockResponse.body()).thenReturn(anotherMockResponseBody);
-		when(anotherMockResponseBody.byteStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
+		doReturn(anotherMockResponseBody).when(anotherMockResponse).body();
+		doReturn(new ByteArrayInputStream(new byte[0])).when(anotherMockResponseBody).byteStream();
 
 		CloseableOkHttpResponseInputStream stream1 = CloseableOkHttpResponseInputStream.of(mockResponse);
 		CloseableOkHttpResponseInputStream stream2 = CloseableOkHttpResponseInputStream.of(anotherMockResponse);

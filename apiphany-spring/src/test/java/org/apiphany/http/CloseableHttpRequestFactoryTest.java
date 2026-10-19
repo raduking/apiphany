@@ -4,9 +4,9 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.net.URI;
 import java.util.Map;
@@ -32,7 +32,7 @@ class CloseableHttpRequestFactoryTest {
 		void shouldCreateFactoryWithDelegate() throws Exception {
 			ClientHttpRequestFactory delegate = mock(ClientHttpRequestFactory.class);
 			ClientHttpRequest mockRequest = mock(ClientHttpRequest.class);
-			when(delegate.createRequest(URI.create("https://example.com"), HttpMethod.GET)).thenReturn(mockRequest);
+			doReturn(mockRequest).when(delegate).createRequest(URI.create("https://example.com"), HttpMethod.GET);
 
 			try (CloseableHttpRequestFactory factory = CloseableHttpRequestFactory.of(delegate)) {
 				ClientHttpRequest request = factory.createRequest(URI.create("https://example.com"), HttpMethod.GET);
@@ -79,7 +79,7 @@ class CloseableHttpRequestFactoryTest {
 			ClientHttpRequest mockRequest = mock(ClientHttpRequest.class);
 			URI uri = URI.create("https://api.example.com/resource");
 
-			when(delegate.createRequest(uri, HttpMethod.POST)).thenReturn(mockRequest);
+			doReturn(mockRequest).when(delegate).createRequest(uri, HttpMethod.POST);
 
 			try (CloseableHttpRequestFactory factory = CloseableHttpRequestFactory.of(delegate)) {
 				ClientHttpRequest request = factory.createRequest(uri, HttpMethod.POST);

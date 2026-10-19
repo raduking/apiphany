@@ -12,15 +12,18 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
 
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.net.URI;
 import java.nio.file.Path;
@@ -52,6 +55,7 @@ import org.apache.hc.core5.http.ProtocolVersion;
 import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.apache.hc.core5.http.io.entity.BasicHttpEntity;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.io.entity.SerializableEntity;
 import org.apache.hc.core5.http.message.BasicHeader;
 import org.apiphany.ApiMimeType;
 import org.apiphany.ApiRequest;
@@ -63,7 +67,10 @@ import org.apiphany.http.HttpException;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
 import org.apiphany.http.HttpStatus;
+import org.apiphany.io.InputStreamSupplier;
 import org.apiphany.json.JsonBuilder;
+import org.apiphany.security.ssl.SSLProperties;
+import org.apiphany.security.ssl.SSLProtocol;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -119,15 +126,27 @@ class ApacheHC5HttpExchangeClientTest {
 		}
 
 		@Test
-		@SuppressWarnings("resource")
 		void shouldSetHttpVersionFromProperties() throws Exception {
-			ApacheHC5Properties properties = new ApacheHC5Properties();
-			properties.getRequest().setProtocolVersion("2.0");
-
 			ClientProperties clientProperties = ClientProperties.defaults();
-			clientProperties.setCustomProperties(properties);
+			clientProperties.getCustom().put(ApacheHC5Properties.ROOT,
+					Map.of("request", Map.of("protocol-version", "HTTP/2.0")));
 
 			try (ApacheHC5HttpExchangeClient client = new ApacheHC5HttpExchangeClient(clientProperties)) {
+				ProtocolVersion httpVersion = Fields.IgnoreAccess.get(client, "httpVersion");
+
+				assertThat(httpVersion.toString(), equalTo("HTTP/2.0"));
+			}
+		}
+
+		@Test
+		@SuppressWarnings("resource")
+		void shouldConfigureTlsWhenSslPropertiesAreProvided() throws Exception {
+			ClientProperties clientProperties = ClientProperties.defaults();
+			clientProperties.getCustom().put(SSLProperties.ROOT,
+					Map.of("protocol", SSLProtocol.TLS_1_2.value()));
+
+			try (ApacheHC5HttpExchangeClient client = new ApacheHC5HttpExchangeClient(clientProperties)) {
+				assertThat(client.getSslContext(), notNullValue());
 				assertNotNull(client.getHttpClient());
 			}
 		}
@@ -581,13 +600,18 @@ class ApacheHC5HttpExchangeClientTest {
 			ClientProperties properties = ClientProperties.defaults();
 
 			try (ApacheHC5HttpExchangeClient client = new ApacheHC5HttpExchangeClient(properties)) {
+				Serializable body = Integer.valueOf(42);
 				ApiRequest<Serializable> apiRequest = mock(ApiRequest.class);
-				doReturn("serializable string").when(apiRequest).getBody();
+				doReturn(body).when(apiRequest).getBody();
 				doReturn(null).when(apiRequest).getHeaders();
 
 				HttpEntity entity = client.createHttpEntity(apiRequest);
 
 				assertNotNull(entity);
+				assertThat(entity, instanceOf(SerializableEntity.class));
+				try (ObjectInputStream objectInputStream = new ObjectInputStream(entity.getContent())) {
+					assertThat(objectInputStream.readObject(), equalTo(body));
+				}
 			}
 		}
 
@@ -670,6 +694,38 @@ class ApacheHC5HttpExchangeClientTest {
 
 		@Test
 		@SuppressWarnings({ "resource", "unchecked" })
+		void shouldCreateEntityFromInputStreamSupplier() throws Exception {
+			try (ApacheHC5HttpExchangeClient client = new ApacheHC5HttpExchangeClient(ClientProperties.defaults())) {
+				InputStreamSupplier body = InputStreamSupplier.from(() -> new ByteArrayInputStream(BYTES_BODY));
+				ApiRequest<InputStreamSupplier> apiRequest = mock(ApiRequest.class);
+				doReturn(body).when(apiRequest).getBody();
+				doReturn(null).when(apiRequest).getHeaders();
+
+				HttpEntity entity = client.createHttpEntity(apiRequest);
+
+				assertNotNull(entity);
+				assertArrayEquals(BYTES_BODY, EntityUtils.toByteArray(entity));
+			}
+		}
+
+		@Test
+		@SuppressWarnings({ "resource", "unchecked" })
+		void shouldCreateEntityFromUnsupportedBodyUsingToString() throws Exception {
+			try (ApacheHC5HttpExchangeClient client = new ApacheHC5HttpExchangeClient(ClientProperties.defaults())) {
+				Object body = new Object();
+				ApiRequest<Object> apiRequest = mock(ApiRequest.class);
+				doReturn(body).when(apiRequest).getBody();
+				doReturn(null).when(apiRequest).getHeaders();
+
+				HttpEntity entity = client.createHttpEntity(apiRequest);
+
+				assertNotNull(entity);
+				assertThat(EntityUtils.toString(entity), equalTo(body.toString()));
+			}
+		}
+
+		@Test
+		@SuppressWarnings({ "resource", "unchecked" })
 		void shouldCreateEntityWithContentType() throws Exception {
 			ClientProperties properties = ClientProperties.defaults();
 
@@ -700,14 +756,14 @@ class ApacheHC5HttpExchangeClientTest {
 
 			try (ApacheHC5HttpExchangeClient client = new ApacheHC5HttpExchangeClient(properties)) {
 				ClassicHttpResponse response = mock(ClassicHttpResponse.class);
-				when(response.getCode()).thenReturn(200);
-				when(response.getHeaders()).thenReturn(new Header[] {
+				doReturn(200).when(response).getCode();
+				doReturn(new Header[] {
 						new BasicHeader("Content-Type", "text/plain")
-				});
+				}).when(response).getHeaders();
 
 				BasicHttpEntity entity = new BasicHttpEntity(
 						new ByteArrayInputStream("OK".getBytes()), ContentType.TEXT_PLAIN);
-				when(response.getEntity()).thenReturn(entity);
+				doReturn(entity).when(response).getEntity();
 
 				ApiRequest<Void> apiRequest = mock(ApiRequest.class);
 				doReturn(false).when(apiRequest).isStream();
@@ -727,9 +783,9 @@ class ApacheHC5HttpExchangeClientTest {
 
 			try (ApacheHC5HttpExchangeClient client = new ApacheHC5HttpExchangeClient(properties)) {
 				ClassicHttpResponse response = mock(ClassicHttpResponse.class);
-				when(response.getCode()).thenReturn(204);
-				when(response.getHeaders()).thenReturn(new Header[0]);
-				when(response.getEntity()).thenReturn(null);
+				doReturn(204).when(response).getCode();
+				doReturn(new Header[0]).when(response).getHeaders();
+				doReturn(null).when(response).getEntity();
 
 				ApiRequest<Void> apiRequest = mock(ApiRequest.class);
 				doReturn(false).when(apiRequest).isStream();
@@ -748,9 +804,9 @@ class ApacheHC5HttpExchangeClientTest {
 
 			try (ApacheHC5HttpExchangeClient client = new ApacheHC5HttpExchangeClient(properties)) {
 				ClassicHttpResponse response = mock(ClassicHttpResponse.class);
-				when(response.getCode()).thenReturn(304);
-				when(response.getHeaders()).thenReturn(new Header[0]);
-				when(response.getEntity()).thenReturn(null);
+				doReturn(304).when(response).getCode();
+				doReturn(new Header[0]).when(response).getHeaders();
+				doReturn(null).when(response).getEntity();
 
 				ApiRequest<Void> apiRequest = mock(ApiRequest.class);
 				doReturn(false).when(apiRequest).isStream();
@@ -769,12 +825,12 @@ class ApacheHC5HttpExchangeClientTest {
 
 			try (ApacheHC5HttpExchangeClient client = new ApacheHC5HttpExchangeClient(properties)) {
 				ClassicHttpResponse response = mock(ClassicHttpResponse.class);
-				when(response.getCode()).thenReturn(500);
-				when(response.getHeaders()).thenReturn(new Header[0]);
+				doReturn(500).when(response).getCode();
+				doReturn(new Header[0]).when(response).getHeaders();
 
 				BasicHttpEntity entity = new BasicHttpEntity(
 						new ByteArrayInputStream("Internal Server Error".getBytes()), ContentType.TEXT_PLAIN);
-				when(response.getEntity()).thenReturn(entity);
+				doReturn(entity).when(response).getEntity();
 
 				ApiRequest<Void> apiRequest = mock(ApiRequest.class);
 				doReturn(false).when(apiRequest).isStream();
@@ -794,16 +850,16 @@ class ApacheHC5HttpExchangeClientTest {
 
 			try (ApacheHC5HttpExchangeClient client = new ApacheHC5HttpExchangeClient(properties)) {
 				ClassicHttpResponse response = mock(ClassicHttpResponse.class);
-				when(response.getCode()).thenReturn(200);
-				when(response.getHeaders()).thenReturn(new Header[] {
+				doReturn(200).when(response).getCode();
+				doReturn(new Header[] {
 						new BasicHeader("X-Custom", "value1"),
 						new BasicHeader("X-Custom", "value2"),
 						new BasicHeader("Accept", "application/json")
-				});
+				}).when(response).getHeaders();
 
 				BasicHttpEntity entity = new BasicHttpEntity(
 						new ByteArrayInputStream("OK".getBytes()), ContentType.TEXT_PLAIN);
-				when(response.getEntity()).thenReturn(entity);
+				doReturn(entity).when(response).getEntity();
 
 				ApiRequest<Void> apiRequest = mock(ApiRequest.class);
 				doReturn(false).when(apiRequest).isStream();
@@ -849,18 +905,17 @@ class ApacheHC5HttpExchangeClientTest {
 
 			CloseableHttpClient mockClient = mock(CloseableHttpClient.class);
 			CloseableHttpResponse mockResponse = mock(CloseableHttpResponse.class);
-			when(mockResponse.getCode()).thenReturn(200);
-			when(mockResponse.getHeaders()).thenReturn(new Header[0]);
+			doReturn(200).when(mockResponse).getCode();
+			doReturn(new Header[0]).when(mockResponse).getHeaders();
 
 			BasicHttpEntity entity = new BasicHttpEntity(
 					new ByteArrayInputStream("OK".getBytes()), ContentType.TEXT_PLAIN);
-			when(mockResponse.getEntity()).thenReturn(entity);
+			doReturn(entity).when(mockResponse).getEntity();
 
-			when(mockClient.execute(any(), any(HttpClientResponseHandler.class)))
-					.thenAnswer(invocation -> {
-						HttpClientResponseHandler<?> handler = invocation.getArgument(1);
-						return handler.handleResponse(mockResponse);
-					});
+			doAnswer(invocation -> {
+				HttpClientResponseHandler<?> handler = invocation.getArgument(1);
+				return handler.handleResponse(mockResponse);
+			}).when(mockClient).execute(any(), any(HttpClientResponseHandler.class));
 
 			HttpClient httpClient = null;
 			try (ApacheHC5HttpExchangeClient client = new ApacheHC5HttpExchangeClient(properties)) {
@@ -878,6 +933,84 @@ class ApacheHC5HttpExchangeClientTest {
 				ApiResponse<?> result = client.doExchange(apiRequest);
 
 				assertThat(result.getStatus(), equalTo(HttpStatus.OK));
+			} finally {
+				if (httpClient instanceof Closeable) {
+					((Closeable) httpClient).close();
+				}
+			}
+		}
+
+		@Test
+		@SuppressWarnings({ "resource", "unchecked" })
+		void shouldDelegateToSendStreamRequestForStream() throws Exception {
+			ClientProperties properties = ClientProperties.defaults();
+
+			CloseableHttpClient mockClient = mock(CloseableHttpClient.class);
+			ClassicHttpResponse mockResponse = mock(ClassicHttpResponse.class);
+			doReturn(200).when(mockResponse).getCode();
+			doReturn(new Header[0]).when(mockResponse).getHeaders();
+
+			BasicHttpEntity entity = new BasicHttpEntity(
+					new ByteArrayInputStream("stream body".getBytes()), ContentType.TEXT_PLAIN);
+			doReturn(entity).when(mockResponse).getEntity();
+
+			doReturn(mockResponse).when(mockClient).executeOpen(any(), any(), any());
+
+			HttpClient httpClient = null;
+			try (ApacheHC5HttpExchangeClient client = new ApacheHC5HttpExchangeClient(properties)) {
+				httpClient = client.getHttpClient();
+				Fields.IgnoreAccess.set(client, "httpClient", mockClient);
+
+				ApiRequest<Void> apiRequest = mock(ApiRequest.class);
+				doReturn(TEST_URI).when(apiRequest).getUri();
+				doReturn(HttpMethod.GET).when(apiRequest).getMethod();
+				doReturn(null).when(apiRequest).getHeaders();
+				doReturn(false).when(apiRequest).hasBody();
+				doReturn(true).when(apiRequest).isStream();
+				doReturn(TypeHolder.of(InputStream.class)).when(apiRequest).getResponseTypeHolder();
+
+				ApiResponse<?> result = client.doExchange(apiRequest);
+
+				assertThat(result.getStatus(), equalTo(HttpStatus.OK));
+				Object body = result.orNull();
+				assertThat(body, instanceOf(InputStream.class));
+				assertThat(new String(((InputStream) body).readAllBytes()), equalTo("stream body"));
+			} finally {
+				if (httpClient instanceof Closeable) {
+					((Closeable) httpClient).close();
+				}
+			}
+		}
+
+		@Test
+		@SuppressWarnings({ "resource", "unchecked" })
+		void shouldCloseResponseWhenBuildingStreamResponseFails() throws Exception {
+			ClientProperties properties = ClientProperties.defaults();
+
+			CloseableHttpClient mockClient = mock(CloseableHttpClient.class);
+			ClassicHttpResponse mockResponse = mock(ClassicHttpResponse.class);
+			doReturn(200).when(mockResponse).getCode();
+			doThrow(new IllegalStateException("headers failure")).when(mockResponse).getHeaders();
+
+			doReturn(mockResponse).when(mockClient).executeOpen(any(), any(), any());
+
+			HttpClient httpClient = null;
+			try (ApacheHC5HttpExchangeClient client = new ApacheHC5HttpExchangeClient(properties)) {
+				httpClient = client.getHttpClient();
+				Fields.IgnoreAccess.set(client, "httpClient", mockClient);
+
+				ApiRequest<Void> apiRequest = mock(ApiRequest.class);
+				doReturn(TEST_URI).when(apiRequest).getUri();
+				doReturn(HttpMethod.GET).when(apiRequest).getMethod();
+				doReturn(null).when(apiRequest).getHeaders();
+				doReturn(false).when(apiRequest).hasBody();
+				doReturn(true).when(apiRequest).isStream();
+
+				IllegalStateException exception = assertThrows(IllegalStateException.class,
+						() -> client.doExchange(apiRequest));
+
+				assertThat(exception.getMessage(), equalTo("headers failure"));
+				verify(mockResponse).close();
 			} finally {
 				if (httpClient instanceof Closeable) {
 					((Closeable) httpClient).close();

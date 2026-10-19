@@ -7,11 +7,11 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
 import java.util.List;
@@ -213,7 +213,7 @@ class EnvironmentPropertiesTest {
 		void shouldEvaluateSupplierWhenPropertyIsMissing() {
 			ConfigurableEnvironment env = new EmptyEnvironment();
 			Supplier<String> supplier = mock(Supplier.class);
-			when(supplier.get()).thenReturn("supplied-default");
+			doReturn("supplied-default").when(supplier).get();
 
 			String result = EnvironmentProperties.get(env, "missing.key", String.class, supplier);
 

@@ -4,9 +4,9 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -49,7 +49,7 @@ class BeansTest {
 		@Test
 		void shouldReturnBeanByName() {
 			ApplicationContext ctx = mock(ApplicationContext.class);
-			when(ctx.getBean("myBean")).thenReturn("value");
+			doReturn("value").when(ctx).getBean("myBean");
 
 			String result = Beans.getBean("myBean", ctx);
 
@@ -94,7 +94,7 @@ class BeansTest {
 		@Test
 		void shouldReturnBeanByClass() {
 			ApplicationContext ctx = mock(ApplicationContext.class);
-			when(ctx.getBean(String.class)).thenReturn("value");
+			doReturn("value").when(ctx).getBean(String.class);
 
 			String result = Beans.getBean(String.class, ctx);
 

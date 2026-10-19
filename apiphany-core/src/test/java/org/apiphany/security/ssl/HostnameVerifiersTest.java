@@ -6,8 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.security.cert.Certificate;
 import java.security.cert.CertificateParsingException;
@@ -105,7 +105,7 @@ class HostnameVerifiersTest {
 	@Test
 	void shouldPropagateCertificateParsingFailure() throws CertificateParsingException {
 		X509Certificate certificate = mock(X509Certificate.class);
-		when(certificate.getSubjectAlternativeNames()).thenThrow(new CertificateParsingException("invalid certificate"));
+		doThrow(new CertificateParsingException("invalid certificate")).when(certificate).getSubjectAlternativeNames();
 
 		assertThrows(CertificateParsingException.class, () -> verify(EXAMPLE_HOSTNAME, certificate));
 	}
@@ -114,7 +114,7 @@ class HostnameVerifiersTest {
 			throws CertificateParsingException {
 		X509Certificate certificate = mock(X509Certificate.class);
 		doReturn(subjectAltNames).when(certificate).getSubjectAlternativeNames();
-		when(certificate.getSubjectX500Principal()).thenReturn(new X500Principal(null == subject ? "CN=unused" : subject));
+		doReturn(new X500Principal(null == subject ? "CN=unused" : subject)).when(certificate).getSubjectX500Principal();
 		return certificate;
 	}
 
