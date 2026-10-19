@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 import org.apiphany.io.IOStreams;
@@ -665,6 +666,15 @@ class Jackson3JsonBuilderTest extends Jackson3Test {
 
 			assertThat(jacksonJsonBuilder.getJsonMapper().rebuild().streamFactory(), equalTo(customFactory));
 		}
+
+		@Test
+		void shouldBuildTheBuilderWithCustomJsonMapper() {
+			JsonMapper jsonMapper = JsonMapper.builder().build();
+
+			Jackson3JsonBuilder jacksonJsonBuilder = Jackson3JsonBuilder.custom(jsonMapper);
+
+			assertThat(jacksonJsonBuilder.getJsonMapper(), notNullValue());
+		}
 	}
 
 	@Nested
@@ -715,6 +725,18 @@ class Jackson3JsonBuilderTest extends Jackson3Test {
 
 	@Nested
 	class ConfigureTests {
+
+		@Test
+		void shouldIgnoreConfigurationWhenTheMapperIsNotBuilt() {
+			Jackson3JsonBuilder jacksonJsonBuilder = new Jackson3JsonBuilder();
+			Fields.IgnoreAccess.set(jacksonJsonBuilder, "jsonMapper", new AtomicReference<JsonMapper>());
+
+			jacksonJsonBuilder.configure(builder -> {
+				throw new AssertionError("The customizer should not be called");
+			});
+
+			assertThat(jacksonJsonBuilder.getJsonMapper(), nullValue());
+		}
 
 		@Test
 		void shouldReconfigureTheUnderlyingMapperAtRuntime() {

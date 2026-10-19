@@ -1,31 +1,20 @@
 package org.apiphany.http;
 
 import java.net.ProtocolException;
-import java.security.GeneralSecurityException;
-import java.security.KeyStore;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509Certificate;
 import java.time.Duration;
-import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.http.OkHttpProperties;
+import org.apiphany.security.ssl.HostnameVerifiers;
 import org.apiphany.security.ssl.SSLContexts;
 import org.apiphany.security.ssl.SSLProperties;
-import org.apiphany.security.ssl.StoreInfo;
 import org.morphix.lang.Throwables;
 import org.morphix.lang.function.Consumers;
-import org.morphix.lang.function.ThrowingSupplier;
 
 import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
@@ -39,32 +28,23 @@ import okhttp3.Request;
 public interface OkHttpClients {
 
 	/**
-	 * subjectAltName type value for dNSName entries.
-	 */
-	int DNS_NAME_TYPE = 2;
-
-	/**
-	 * subjectAltName type value for iPAddress entries.
-	 */
-	int IP_ADDRESS_TYPE = 7;
-
-	/**
 	 * Disables OkHttp's transparent gzip: OkHttp silently adds an {@code Accept-Encoding: gzip} request header and
-	 * transparently decompresses responses, hiding the {@code Content-Encoding} header from the caller. Apiphany never adds
-	 * headers the caller did not set explicitly, and it decodes {@code Content-Encoding} itself, so this is done with a
-	 * request/response interceptor pair. The internal header is added after the caller's headers and removed before the
-	 * request is written to the network, so it never appears on the wire.
+	 * transparently de-compresses responses, hiding the {@code Content-Encoding} header from the caller.
+	 * <p>
+	 * Apiphany never adds headers the caller did not set explicitly, and it decodes {@code Content-Encoding} itself, so
+	 * this is done with a request/response interceptor pair. The internal header is added after the caller's headers and
+	 * removed before the request is written to the network, so it never appears on the wire.
 	 *
 	 * @param builder the OkHttp client builder to configure
 	 * @return the same builder instance
 	 */
-	static OkHttpClient.Builder disableTransparentGzip(final OkHttpClient.Builder builder) {
+	static OkHttpClient.Builder disableTransparentAcceptEncoding(final OkHttpClient.Builder builder) {
 		builder.addInterceptor(chain -> {
 			Request request = chain.request();
 			if (null == request.header(HttpHeader.Name.ACCEPT_ENCODING)) {
 				// any non-null value disables OkHttp's transparent gzip, keeping the raw response body intact
 				Request marked = request.newBuilder()
-						.header(HttpHeader.Name.ACCEPT_ENCODING, "identity")
+						.header(HttpHeader.Name.ACCEPT_ENCODING, ContentEncoding.Value.IDENTITY)
 						.tag(AddedAcceptEncodingMarker.class, AddedAcceptEncodingMarker.INSTANCE)
 						.build();
 				return chain.proceed(marked);
@@ -126,7 +106,7 @@ public interface OkHttpClients {
 	static OkHttpClient.Builder createBuilder(final ClientProperties clientProperties) {
 		ClientProperties.Timeout timeout = clientProperties.getTimeout();
 		ClientProperties.Connection connection = clientProperties.getConnection();
-		return disableTransparentGzip(new OkHttpClient.Builder()
+		return disableTransparentAcceptEncoding(new OkHttpClient.Builder()
 				.connectTimeout(timeout.getConnect())
 				.readTimeout(timeout.getSocket())
 				.writeTimeout(timeout.getSocket())
@@ -144,7 +124,7 @@ public interface OkHttpClients {
 	 */
 	static OkHttpClient.Builder createBuilder(final OkHttpProperties okHttpProperties) {
 		Duration keepAliveDuration = okHttpProperties.getConnection().getKeepAliveDuration();
-		return disableTransparentGzip(new OkHttpClient.Builder()
+		return disableTransparentAcceptEncoding(new OkHttpClient.Builder()
 				.connectTimeout(okHttpProperties.getConnect().getTimeout())
 				.readTimeout(okHttpProperties.getRead().getTimeout())
 				.writeTimeout(okHttpProperties.getWrite().getTimeout())
@@ -159,7 +139,7 @@ public interface OkHttpClients {
 
 	/**
 	 * Tag marker used to identify requests whose {@code Accept-Encoding} header was added internally by
-	 * {@link #disableTransparentGzip(OkHttpClient.Builder)}.
+	 * {@link #disableTransparentAcceptEncoding(OkHttpClient.Builder)}.
 	 *
 	 * @author Radu Sebastian LAZIN
 	 */
@@ -184,182 +164,11 @@ public interface OkHttpClients {
 	 */
 	static void configureTls(final OkHttpClient.Builder builder, final SSLContext sslContext, final SSLProperties sslProperties) {
 		X509TrustManager trustManager = null == sslProperties || null == sslProperties.getTruststore()
-				? defaultTrustManager()
-				: x509TrustManager(trustManagers(sslProperties.getTruststore()));
+				? SSLContexts.defaultTrustManager(X509TrustManager.class)
+				: SSLContexts.trustManager(X509TrustManager.class, SSLContexts.trustManagers(sslProperties.getTruststore()));
 		builder.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
 		// OkHttp's own verifier requires subjectAltNames, this one falls back to the certificate CN like Apache HC5's default
-		builder.hostnameVerifier(defaultHostnameVerifier());
-	}
-
-	/**
-	 * Returns a hostname verifier that matches subjectAltNames first and falls back to the certificate common name,
-	 * mirroring the behavior of Apache HttpClient 5's default hostname verifier. OkHttp's own verifier rejects certificates
-	 * without subjectAltNames, which is not what the other supported clients do.
-	 *
-	 * @return a hostname verifier with CN fallback
-	 */
-	static HostnameVerifier defaultHostnameVerifier() {
-		return (hostname, session) -> ThrowingSupplier.unchecked(() -> {
-			Certificate[] certificateChain = session.getPeerCertificates();
-			if (0 == certificateChain.length || !(certificateChain[0] instanceof X509Certificate certificate)) {
-				return false;
-			}
-			if (matchesSubjectAltName(hostname, certificate)) {
-				return true;
-			}
-			if (hasDnsSubjectAltNames(certificate)) {
-				return false;
-			}
-			return matchesCommonName(hostname, certificate);
-		}).get();
-	}
-
-	/**
-	 * Returns true if the given hostname matches one of the certificate's subjectAltNames, false otherwise.
-	 *
-	 * @param hostname the hostname to verify
-	 * @param certificate the certificate to check
-	 * @return true if the hostname matches a subjectAltName, false otherwise
-	 * @throws CertificateParsingException when parsing the certificate fails
-	 */
-	static boolean matchesSubjectAltName(final String hostname, final X509Certificate certificate) throws CertificateParsingException {
-		Collection<List<?>> subjectAltNames = certificate.getSubjectAlternativeNames();
-		if (null == subjectAltNames) {
-			return false;
-		}
-		for (List<?> subjectAltName : subjectAltNames) {
-			if (2 > subjectAltName.size()) {
-				continue;
-			}
-			Object type = subjectAltName.get(0);
-			Object value = subjectAltName.get(1);
-			if (value instanceof String sanValue && type instanceof Integer typeValue
-					&& (DNS_NAME_TYPE == typeValue || IP_ADDRESS_TYPE == typeValue)
-					&& matchesHostName(sanValue, hostname)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * Returns true if the certificate contains at least one subjectAltName of type {@code dNSName}, false otherwise. Used
-	 * to decide whether falling back to the certificate common name is allowed: per RFC 2818 / RFC 6125 the common name
-	 * must be ignored whenever DNS subject alternative names are present.
-	 *
-	 * @param certificate the certificate to check
-	 * @return true if the certificate has at least one DNS subjectAltName, false otherwise
-	 * @throws CertificateParsingException when parsing the certificate fails
-	 */
-	static boolean hasDnsSubjectAltNames(final X509Certificate certificate) throws CertificateParsingException {
-		Collection<List<?>> subjectAltNames = certificate.getSubjectAlternativeNames();
-		if (null == subjectAltNames) {
-			return false;
-		}
-		for (List<?> subjectAltName : subjectAltNames) {
-			if (2 > subjectAltName.size()) {
-				continue;
-			}
-			Object type = subjectAltName.getFirst();
-			if (type instanceof Integer typeValue && DNS_NAME_TYPE == typeValue) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * Returns true if the given hostname matches the certificate's common name, false otherwise.
-	 *
-	 * @param hostname the hostname to verify
-	 * @param certificate the certificate to check
-	 * @return true if the hostname matches the common name, false otherwise
-	 */
-	static boolean matchesCommonName(final String hostname, final X509Certificate certificate) {
-		String subjectDn = certificate.getSubjectX500Principal().getName();
-		for (String dnPart : subjectDn.split(",")) {
-			String trimmed = dnPart.trim();
-			if (trimmed.regionMatches(true, 0, "CN=", 0, 3)) {
-				String commonName = trimmed.substring(3);
-				return matchesHostName(commonName, hostname);
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * Returns true if the given certificate name matches the requested hostname, false otherwise. Supports the common
-	 * wildcard form <code>*.&lt;domain&gt;</code>.
-	 *
-	 * @param certificateName name from the certificate, may contain a wildcard
-	 * @param hostname the requested hostname
-	 * @return true if the names match, false otherwise
-	 */
-	static boolean matchesHostName(final String certificateName, final String hostname) {
-		if (certificateName.startsWith("*.")) {
-			String wildcardDomain = certificateName.substring(1);
-			if (!hostname.endsWith(wildcardDomain) || hostname.length() <= wildcardDomain.length()) {
-				return false;
-			}
-			String prefix = hostname.substring(0, hostname.length() - wildcardDomain.length());
-			if (prefix.contains(".")) {
-				return false;
-			}
-			return certificateName.regionMatches(true, 1, hostname, hostname.length() - wildcardDomain.length() + 1,
-					wildcardDomain.length() - 1);
-		}
-		return certificateName.equalsIgnoreCase(hostname);
-	}
-
-	/**
-	 * Returns the trust managers for the given truststore configuration, rethrowing any security failure as an
-	 * {@link IllegalStateException}.
-	 *
-	 * @param trustStoreInfo truststore configuration
-	 * @return the trust managers for the given configuration, may be null
-	 */
-	static TrustManager[] trustManagers(final StoreInfo trustStoreInfo) {
-		try {
-			return SSLContexts.getTrustManagers(trustStoreInfo);
-		} catch (GeneralSecurityException e) {
-			throw new IllegalStateException("Failed to create trust managers from the truststore configuration: " + e.getMessage(), e);
-		}
-	}
-
-	/**
-	 * Returns the first {@link X509TrustManager} from the given trust managers, or the platform default trust manager if
-	 * none could be created from the given array.
-	 *
-	 * @param trustManagers trust managers to inspect, may be null
-	 * @return an X509 trust manager
-	 */
-	static X509TrustManager x509TrustManager(final TrustManager[] trustManagers) {
-		if (null != trustManagers) {
-			for (TrustManager trustManager : trustManagers) {
-				if (trustManager instanceof X509TrustManager x509TrustManager) {
-					return x509TrustManager;
-				}
-			}
-		}
-		return defaultTrustManager();
-	}
-
-	/**
-	 * Returns the platform default {@link X509TrustManager}.
-	 *
-	 * @return the platform default X509 trust manager
-	 */
-	static X509TrustManager defaultTrustManager() {
-		return ThrowingSupplier.unchecked(() -> {
-			TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-			trustManagerFactory.init((KeyStore) null);
-			for (TrustManager trustManager : trustManagerFactory.getTrustManagers()) {
-				if (trustManager instanceof X509TrustManager x509TrustManager) {
-					return x509TrustManager;
-				}
-			}
-			throw new GeneralSecurityException("No X509TrustManager found in default trust managers");
-		}).get();
+		builder.hostnameVerifier(HostnameVerifiers.defaultVerifier());
 	}
 
 	/**
