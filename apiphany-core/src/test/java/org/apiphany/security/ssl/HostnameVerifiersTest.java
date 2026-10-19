@@ -26,19 +26,23 @@ import org.junit.jupiter.api.Test;
  */
 class HostnameVerifiersTest {
 
+	private static final String OTHER_EXAMPLE_HOSTNAME = "other.example.com";
+	private static final String EXAMPLE_HOSTNAME = "example.com";
+	private static final String HOST_127_0_0_1 = "127.0.0.1";
+
 	@Test
 	void shouldRejectEmptyAndNonX509CertificateChains() {
-		assertFalse(verify("example.com"));
-		assertFalse(verify("example.com", mock(Certificate.class)));
+		assertFalse(verify(EXAMPLE_HOSTNAME));
+		assertFalse(verify(EXAMPLE_HOSTNAME, mock(Certificate.class)));
 	}
 
 	@Test
 	void shouldMatchDnsAndIpSubjectAlternativeNames() throws CertificateParsingException {
-		X509Certificate dnsCertificate = certificate(null, List.of(List.of(2, "example.com")));
-		X509Certificate ipCertificate = certificate(null, List.of(List.of(7, "127.0.0.1")));
+		X509Certificate dnsCertificate = certificate(null, List.of(List.of(2, EXAMPLE_HOSTNAME)));
+		X509Certificate ipCertificate = certificate(null, List.of(List.of(7, HOST_127_0_0_1)));
 
-		assertTrue(verify("example.com", dnsCertificate));
-		assertTrue(verify("127.0.0.1", ipCertificate));
+		assertTrue(verify(EXAMPLE_HOSTNAME, dnsCertificate));
+		assertTrue(verify(HOST_127_0_0_1, ipCertificate));
 	}
 
 	@Test
@@ -46,30 +50,37 @@ class HostnameVerifiersTest {
 		Collection<List<?>> subjectAltNames = List.<List<?>>of(
 				List.of(2),
 				List.of(2, 123),
-				List.of("invalid-type", "example.com"),
-				List.of(999, "example.com"));
-		X509Certificate certificate = certificate("CN=other.example.com", subjectAltNames);
+				List.of("invalid-type", EXAMPLE_HOSTNAME),
+				List.of(999, EXAMPLE_HOSTNAME));
+		X509Certificate certificate = certificate("CN=" + OTHER_EXAMPLE_HOSTNAME, subjectAltNames);
 
-		assertFalse(verify("example.com", certificate));
+		assertFalse(verify(EXAMPLE_HOSTNAME, certificate));
 	}
 
 	@Test
 	void shouldNotFallBackToCommonNameWhenDnsSubjectAlternativeNameExists() throws CertificateParsingException {
-		X509Certificate certificate = certificate("CN=example.com", List.of(List.of(2, "other.example.com")));
+		X509Certificate certificate = certificate("CN=" + EXAMPLE_HOSTNAME, List.of(List.of(2, OTHER_EXAMPLE_HOSTNAME)));
 
-		assertFalse(verify("example.com", certificate));
+		assertFalse(verify(EXAMPLE_HOSTNAME, certificate));
+	}
+
+	@Test
+	void shouldReturnFalseWhenSubjectAlternativeNamesHaveNoDnsEntries() throws CertificateParsingException {
+		X509Certificate certificate = certificate("CN=other.example.com", List.of(List.of(7, HOST_127_0_0_1)));
+
+		assertFalse(verify(EXAMPLE_HOSTNAME, certificate));
 	}
 
 	@Test
 	void shouldMatchCommonNameAndWildcards() throws CertificateParsingException {
-		X509Certificate exactCertificate = certificate("CN=example.com", null);
+		X509Certificate exactCertificate = certificate("CN=" + EXAMPLE_HOSTNAME, null);
 		X509Certificate wildcardCertificate = certificate("CN=unused", List.of(List.of(2, "*.example.com")));
 
-		assertTrue(verify("example.com", exactCertificate));
-		assertFalse(verify("other.example.com", exactCertificate));
+		assertTrue(verify(EXAMPLE_HOSTNAME, exactCertificate));
+		assertFalse(verify(OTHER_EXAMPLE_HOSTNAME, exactCertificate));
 		assertTrue(verify("api.example.com", wildcardCertificate));
 		assertFalse(verify("api.internal.example.com", wildcardCertificate));
-		assertFalse(verify("example.com", wildcardCertificate));
+		assertFalse(verify(EXAMPLE_HOSTNAME, wildcardCertificate));
 		assertFalse(verify("api.other.com", wildcardCertificate));
 	}
 
@@ -77,7 +88,7 @@ class HostnameVerifiersTest {
 	void shouldReturnFalseWhenCertificateHasNoCommonName() throws CertificateParsingException {
 		X509Certificate certificate = certificate("O=Example", null);
 
-		assertFalse(verify("example.com", certificate));
+		assertFalse(verify(EXAMPLE_HOSTNAME, certificate));
 	}
 
 	@Test
@@ -85,7 +96,7 @@ class HostnameVerifiersTest {
 		X509Certificate certificate = mock(X509Certificate.class);
 		when(certificate.getSubjectAlternativeNames()).thenThrow(new CertificateParsingException("invalid certificate"));
 
-		assertThrows(CertificateParsingException.class, () -> verify("example.com", certificate));
+		assertThrows(CertificateParsingException.class, () -> verify(EXAMPLE_HOSTNAME, certificate));
 	}
 
 	private static X509Certificate certificate(final String subject, final Collection<List<?>> subjectAltNames)

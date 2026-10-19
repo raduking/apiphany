@@ -658,7 +658,7 @@ class Jackson2JsonBuilderTest {
 
 			List<AnnotationIntrospector> introspectors = new ArrayList<>();
 			jsonBuilder.getObjectMapper().getSerializationConfig().getAnnotationIntrospector().allIntrospectors(introspectors);
-			assertThat(introspectors.contains(sensitiveAnnotationIntrospector), equalTo(true));
+			verify(sensitiveAnnotationIntrospector).allIntrospectors(introspectors);
 		}
 
 		@Test
