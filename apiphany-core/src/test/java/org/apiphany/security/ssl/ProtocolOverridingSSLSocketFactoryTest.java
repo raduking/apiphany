@@ -10,12 +10,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -95,7 +95,7 @@ class ProtocolOverridingSSLSocketFactoryTest {
 		String[] expectedSuites = {
 				CYPHER_2
 		};
-		when(mockDelegateFactory.getDefaultCipherSuites()).thenReturn(expectedSuites);
+		doReturn(expectedSuites).when(mockDelegateFactory).getDefaultCipherSuites();
 
 		String[] result = factory.getDefaultCipherSuites();
 
@@ -109,7 +109,7 @@ class ProtocolOverridingSSLSocketFactoryTest {
 				CYPHER_2,
 				CYPHER_1
 		};
-		when(mockDelegateFactory.getSupportedCipherSuites()).thenReturn(expectedSuites);
+		doReturn(expectedSuites).when(mockDelegateFactory).getSupportedCipherSuites();
 
 		String[] result = factory.getSupportedCipherSuites();
 
@@ -119,7 +119,7 @@ class ProtocolOverridingSSLSocketFactoryTest {
 
 	@Test
 	void shouldSetEnabledProtocolsWhenCreatingSocket() throws IOException {
-		when(mockDelegateFactory.createSocket()).thenReturn(mockSSLSocket);
+		doReturn(mockSSLSocket).when(mockDelegateFactory).createSocket();
 
 		Socket result = factory.createSocket();
 
@@ -129,7 +129,7 @@ class ProtocolOverridingSSLSocketFactoryTest {
 
 	@Test
 	void shouldNotSetEnabledProtocolsWhenCreatingPlainSocket() throws IOException {
-		when(mockDelegateFactory.createSocket()).thenReturn(mockPlainSocket);
+		doReturn(mockPlainSocket).when(mockDelegateFactory).createSocket();
 
 		Socket result = factory.createSocket();
 
@@ -138,7 +138,7 @@ class ProtocolOverridingSSLSocketFactoryTest {
 
 	@Test
 	void shouldSetEnabledProtocolsWhenCreatingSocketWithHostAndPort() throws IOException {
-		when(mockDelegateFactory.createSocket(HOST, SSL_PORT)).thenReturn(mockSSLSocket);
+		doReturn(mockSSLSocket).when(mockDelegateFactory).createSocket(HOST, SSL_PORT);
 
 		Socket result = factory.createSocket(HOST, SSL_PORT);
 
@@ -149,7 +149,7 @@ class ProtocolOverridingSSLSocketFactoryTest {
 	@Test
 	void shouldSetEnabledProtocolsWhenCreatingSocketWithInetAddress() throws IOException {
 		InetAddress address = InetAddress.getLoopbackAddress();
-		when(mockDelegateFactory.createSocket(address, SSL_PORT)).thenReturn(mockSSLSocket);
+		doReturn(mockSSLSocket).when(mockDelegateFactory).createSocket(address, SSL_PORT);
 
 		Socket result = factory.createSocket(address, SSL_PORT);
 
@@ -159,8 +159,7 @@ class ProtocolOverridingSSLSocketFactoryTest {
 
 	@Test
 	void shouldSetEnabledProtocolsWhenCreatingSocketWithSocketHostPortAndAutoClose() throws IOException {
-		when(mockDelegateFactory.createSocket(mockPlainSocket, HOST, SSL_PORT, true))
-				.thenReturn(mockSSLSocket);
+		doReturn(mockSSLSocket).when(mockDelegateFactory).createSocket(mockPlainSocket, HOST, SSL_PORT, true);
 
 		Socket result = factory.createSocket(mockPlainSocket, HOST, SSL_PORT, true);
 
@@ -171,8 +170,7 @@ class ProtocolOverridingSSLSocketFactoryTest {
 	@Test
 	void shouldSetEnabledProtocolsWhenCreatingSocketWithHostPortLocalAddressAndLocalPort() throws IOException {
 		InetAddress address = InetAddress.getLoopbackAddress();
-		when(mockDelegateFactory.createSocket(HOST, SSL_PORT, address, HTTP_PORT))
-				.thenReturn(mockSSLSocket);
+		doReturn(mockSSLSocket).when(mockDelegateFactory).createSocket(HOST, SSL_PORT, address, HTTP_PORT);
 
 		Socket result = factory.createSocket(HOST, SSL_PORT, address, HTTP_PORT);
 
@@ -183,8 +181,7 @@ class ProtocolOverridingSSLSocketFactoryTest {
 	@Test
 	void shouldSetEnabledProtocolsWhenCreatingSocketWithInetAddressPortLocalAddressAndLocalPort() throws IOException {
 		InetAddress address = InetAddress.getLoopbackAddress();
-		when(mockDelegateFactory.createSocket(address, SSL_PORT, address, HTTP_PORT))
-				.thenReturn(mockSSLSocket);
+		doReturn(mockSSLSocket).when(mockDelegateFactory).createSocket(address, SSL_PORT, address, HTTP_PORT);
 
 		Socket result = factory.createSocket(address, SSL_PORT, address, HTTP_PORT);
 
@@ -194,8 +191,7 @@ class ProtocolOverridingSSLSocketFactoryTest {
 
 	@Test
 	void shouldSetEnabledProtocolsWhenCreatingSocketWithSocketInputStreamAndAutoClose() throws IOException {
-		when(mockDelegateFactory.createSocket(mockPlainSocket, mockInputStream, true))
-				.thenReturn(mockSSLSocket);
+		doReturn(mockSSLSocket).when(mockDelegateFactory).createSocket(mockPlainSocket, mockInputStream, true);
 
 		Socket result = factory.createSocket(mockPlainSocket, mockInputStream, true);
 
@@ -216,7 +212,7 @@ class ProtocolOverridingSSLSocketFactoryTest {
 	@Test
 	void shouldHandleEmptyProtocolArrayWithoutError() throws IOException {
 		factory = new ProtocolOverridingSSLSocketFactory(mockDelegateFactory);
-		when(mockDelegateFactory.createSocket()).thenReturn(mockSSLSocket);
+		doReturn(mockSSLSocket).when(mockDelegateFactory).createSocket();
 
 		Socket result = factory.createSocket();
 
@@ -231,14 +227,14 @@ class ProtocolOverridingSSLSocketFactoryTest {
 
 	@Test
 	void shouldPropagateIOExceptionWhenSocketCreationFails() throws IOException {
-		when(mockDelegateFactory.createSocket()).thenThrow(new IOException("Connection failed"));
+		doThrow(new IOException("Connection failed")).when(mockDelegateFactory).createSocket();
 
 		assertThrows(IOException.class, () -> factory.createSocket());
 	}
 
 	@Test
 	void shouldNotFailWhenSettingInvalidProtocols() throws IOException {
-		when(mockDelegateFactory.createSocket()).thenReturn(mockSSLSocket);
+		doReturn(mockSSLSocket).when(mockDelegateFactory).createSocket();
 		doThrow(new IllegalArgumentException("Unsupported protocol"))
 				.when(mockSSLSocket).setEnabledProtocols(ENABLED_PROTOCOLS);
 
@@ -249,7 +245,7 @@ class ProtocolOverridingSSLSocketFactoryTest {
 
 	@Test
 	void shouldHandleConcurrentSocketCreationSafely() throws Exception {
-		when(mockDelegateFactory.createSocket()).thenReturn(mockSSLSocket);
+		doReturn(mockSSLSocket).when(mockDelegateFactory).createSocket();
 
 		int threadCount = 10;
 		ExecutorService executor = Executors.newFixedThreadPool(threadCount);
@@ -270,9 +266,7 @@ class ProtocolOverridingSSLSocketFactoryTest {
 	@Test
 	void shouldNotReuseOrCacheSockets() throws IOException {
 		SSLSocket anotherSSLSocket = mock(SSLSocket.class);
-		when(mockDelegateFactory.createSocket())
-				.thenReturn(mockSSLSocket)
-				.thenReturn(anotherSSLSocket);
+		doReturn(mockSSLSocket).doReturn(anotherSSLSocket).when(mockDelegateFactory).createSocket();
 
 		Socket firstSocket = factory.createSocket();
 		Socket secondSocket = factory.createSocket();
@@ -286,7 +280,7 @@ class ProtocolOverridingSSLSocketFactoryTest {
 	void shouldWorkWithCustomSSLSocketImplementations() throws IOException {
 		CustomSSLSocket customSocket = mock(CustomSSLSocket.class);
 
-		when(mockDelegateFactory.createSocket()).thenReturn(customSocket);
+		doReturn(customSocket).when(mockDelegateFactory).createSocket();
 
 		Socket result = factory.createSocket();
 
@@ -296,7 +290,7 @@ class ProtocolOverridingSSLSocketFactoryTest {
 
 	@Test
 	void shouldHandleNullHostWhenCreatingSocket() throws IOException {
-		when(mockDelegateFactory.createSocket(ArgumentMatchers.<String>isNull(), anyInt())).thenReturn(mockSSLSocket);
+		doReturn(mockSSLSocket).when(mockDelegateFactory).createSocket(ArgumentMatchers.<String>isNull(), anyInt());
 
 		Socket result = factory.createSocket((String) null, SSL_PORT);
 
@@ -306,14 +300,14 @@ class ProtocolOverridingSSLSocketFactoryTest {
 
 	@Test
 	void shouldHandleInvalidPortNumbers() throws IOException {
-		when(mockDelegateFactory.createSocket(anyString(), eq(-1))).thenThrow(new IOException());
+		doThrow(new IOException()).when(mockDelegateFactory).createSocket(anyString(), eq(-1));
 
 		assertThrows(IOException.class, () -> factory.createSocket(HOST, -1));
 	}
 
 	@Test
 	void shouldNotCloseSocketOnProtocolSetting() throws IOException {
-		when(mockDelegateFactory.createSocket()).thenReturn(mockSSLSocket);
+		doReturn(mockSSLSocket).when(mockDelegateFactory).createSocket();
 
 		Socket result = factory.createSocket();
 

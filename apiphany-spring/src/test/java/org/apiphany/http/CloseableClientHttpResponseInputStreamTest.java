@@ -5,9 +5,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -48,7 +48,7 @@ class CloseableClientHttpResponseInputStreamTest {
 		@SuppressWarnings("resource")
 		void shouldThrowOnNullBody() throws Exception {
 			ClientHttpResponse response = mock(ClientHttpResponse.class);
-			when(response.getBody()).thenReturn(null);
+			doReturn(null).when(response).getBody();
 
 			assertThrows(NullPointerException.class, () -> CloseableClientHttpResponseInputStream.of(response));
 		}
@@ -184,7 +184,7 @@ class CloseableClientHttpResponseInputStreamTest {
 	@SuppressWarnings("resource")
 	private static ClientHttpResponse mockResponse(final byte[] data) throws Exception {
 		ClientHttpResponse response = mock(ClientHttpResponse.class);
-		when(response.getBody()).thenReturn(new ByteArrayInputStream(data));
+		doReturn(new ByteArrayInputStream(data)).when(response).getBody();
 		return response;
 	}
 }

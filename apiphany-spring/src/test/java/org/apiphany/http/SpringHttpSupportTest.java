@@ -4,8 +4,8 @@ import static org.apiphany.test.Assertions.assertDefaultConstructorThrows;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -155,7 +155,7 @@ class SpringHttpSupportTest {
 			ClientHttpResponse response = mock(ClientHttpResponse.class);
 			HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(MediaType.APPLICATION_JSON);
-			when(response.getHeaders()).thenReturn(headers);
+			doReturn(headers).when(response).getHeaders();
 
 			MediaType contentType = SpringHttpSupport.getContentType(response);
 
@@ -166,7 +166,7 @@ class SpringHttpSupportTest {
 		@SuppressWarnings("resource")
 		void shouldReturnOctetStreamWhenNoContentType() {
 			ClientHttpResponse response = mock(ClientHttpResponse.class);
-			when(response.getHeaders()).thenReturn(new HttpHeaders());
+			doReturn(new HttpHeaders()).when(response).getHeaders();
 
 			MediaType contentType = SpringHttpSupport.getContentType(response);
 
