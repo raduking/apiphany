@@ -651,6 +651,17 @@ class Jackson2JsonBuilderTest {
 	class ConfigureSensitivityTests {
 
 		@Test
+		void shouldConfigureSensitivityOnTheBuilder() {
+			SensitiveJackson2AnnotationIntrospector sensitiveAnnotationIntrospector = mock(SensitiveJackson2AnnotationIntrospector.class);
+
+			jsonBuilder.configureSensitivity(sensitiveAnnotationIntrospector);
+
+			List<AnnotationIntrospector> introspectors = new ArrayList<>();
+			jsonBuilder.getObjectMapper().getSerializationConfig().getAnnotationIntrospector().allIntrospectors(introspectors);
+			assertThat(introspectors.contains(sensitiveAnnotationIntrospector), equalTo(true));
+		}
+
+		@Test
 		void shouldConfigureSensitivityWithExistingAnnotationIntrospector() {
 			ObjectMapper objectMapper = mock(ObjectMapper.class);
 
