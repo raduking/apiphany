@@ -345,32 +345,32 @@ public interface RedirectsContract extends ApiphanyContract {
 	default void shouldNotSendAcceptEncodingAfterRedirect() throws Exception {
 		assumeTrue(enableRedirects(), "This client does not support redirects");
 
-	    wiremock().stubFor(get("/encoding-redirect")
-	            .willReturn(aResponse()
-	                    .withStatus(302)
-	                    .withHeader("Location", "/encoding-target")));
+		wiremock().stubFor(get("/encoding-redirect")
+				.willReturn(aResponse()
+						.withStatus(302)
+						.withHeader("Location", "/encoding-target")));
 
-	    wiremock().stubFor(get("/encoding-target")
-	            .willReturn(aResponse()
-	                    .withStatus(200)
-	                    .withBody("redirected")));
+		wiremock().stubFor(get("/encoding-target")
+				.willReturn(aResponse()
+						.withStatus(200)
+						.withBody("redirected")));
 
-	    ApiClient api = apiClient();
-	    try (api) {
-	        String result = api.client()
-	                .http()
-	                .get()
-	                .path("encoding-redirect")
-	                .retrieve(String.class)
-	                .orNull();
+		ApiClient api = apiClient();
+		try (api) {
+			String result = api.client()
+					.http()
+					.get()
+					.path("encoding-redirect")
+					.retrieve(String.class)
+					.orNull();
 
-	        assertEquals("redirected", result);
-	    }
+			assertEquals("redirected", result);
+		}
 
-	    wiremock().verify(getRequestedFor(urlEqualTo("/encoding-redirect"))
-	            .withoutHeader("Accept-Encoding"));
+		wiremock().verify(getRequestedFor(urlEqualTo("/encoding-redirect"))
+				.withoutHeader("Accept-Encoding"));
 
-	    wiremock().verify(getRequestedFor(urlEqualTo("/encoding-target"))
-	            .withoutHeader("Accept-Encoding"));
+		wiremock().verify(getRequestedFor(urlEqualTo("/encoding-target"))
+				.withoutHeader("Accept-Encoding"));
 	}
 }

@@ -47,6 +47,7 @@ class SSLContextsTest {
 	private static final String TRUSTSTORE_PATH = "security/ssl/truststore.jks";
 	private static final String TRUSTSTORE_PASSWORD = "truststorepassword123";
 
+	private static final String PROPERTY_SSL_KEY_MANAGER_FACTORY_ALGORITHM = "ssl.KeyManagerFactory.algorithm";
 	private static final String PROPERTY_SSL_TRUST_MANAGER_FACTORY_ALGORITHM = "ssl.TrustManagerFactory.algorithm";
 	private static final String NO_SUCH_ALGORITHM = "NO_SUCH_ALGORITHM";
 
@@ -211,6 +212,21 @@ class SSLContextsTest {
 	}
 
 	@Test
+	void shouldUseTrustManagerFactoryDefaultAlgorithmWhenAlgorithmIsNull() throws Exception {
+		KeyStore trustStore = SSLContexts.keyStore(TRUSTSTORE_PATH, KEYSTORE_TYPE, TRUSTSTORE_PASSWORD.toCharArray(), ResourceLocation.CLASS_PATH);
+		String originalKeyManagerAlgorithm = Security.getProperty(PROPERTY_SSL_KEY_MANAGER_FACTORY_ALGORITHM);
+
+		Security.setProperty(PROPERTY_SSL_KEY_MANAGER_FACTORY_ALGORITHM, NO_SUCH_ALGORITHM);
+		try {
+			TrustManager[] trustManagers = SSLContexts.getTrustManagers(trustStore, null);
+
+			assertTrue(Arrays.stream(trustManagers).anyMatch(X509TrustManager.class::isInstance));
+		} finally {
+			Security.setProperty(PROPERTY_SSL_KEY_MANAGER_FACTORY_ALGORITHM, originalKeyManagerAlgorithm);
+		}
+	}
+
+	@Test
 	void shouldReturnNullIfKeyStoreTypeIsEmpty() {
 		KeyStore keyStore = SSLContexts.keyStore(KEYSTORE_PATH, "", null, ResourceLocation.CLASS_PATH);
 
@@ -269,10 +285,9 @@ class SSLContextsTest {
 
 	@Test
 	void shouldThrowSecurityExceptionWhenLookingForDefaultTrustManagerFails() {
-		String algorithmProperty = PROPERTY_SSL_TRUST_MANAGER_FACTORY_ALGORITHM;
-		String originalAlgorithm = Security.getProperty(algorithmProperty);
+		String originalAlgorithm = Security.getProperty(PROPERTY_SSL_TRUST_MANAGER_FACTORY_ALGORITHM);
 
-		Security.setProperty(algorithmProperty, NO_SUCH_ALGORITHM);
+		Security.setProperty(PROPERTY_SSL_TRUST_MANAGER_FACTORY_ALGORITHM, NO_SUCH_ALGORITHM);
 		try {
 			SecurityException exception = assertThrows(SecurityException.class,
 					() -> SSLContexts.defaultTrustManager(X509TrustManager.class));
@@ -280,7 +295,7 @@ class SSLContextsTest {
 			assertThat(exception.getMessage(), equalTo("Error while looking for default trust manager"));
 			assertThat(exception.getCause().getClass(), equalTo(NoSuchAlgorithmException.class));
 		} finally {
-			Security.setProperty(algorithmProperty, originalAlgorithm);
+			Security.setProperty(PROPERTY_SSL_TRUST_MANAGER_FACTORY_ALGORITHM, originalAlgorithm);
 		}
 	}
 
