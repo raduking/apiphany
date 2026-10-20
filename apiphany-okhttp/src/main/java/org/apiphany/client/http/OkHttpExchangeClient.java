@@ -9,7 +9,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -38,7 +37,6 @@ import org.morphix.lang.collections.Maps;
 import org.morphix.lang.function.Predicates;
 import org.morphix.lang.function.ThrowingSupplier;
 
-import okhttp3.Cache;
 import okhttp3.Call;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -99,13 +97,7 @@ public class OkHttpExchangeClient extends AbstractHttpExchangeClient {
 	 */
 	@Override
 	public void close() throws Exception {
-		@SuppressWarnings("resource")
-		ExecutorService executor = httpClient.dispatcher().executorService();
-		executor.shutdown();
-		httpClient.connectionPool().evictAll();
-		try (Cache cache = httpClient.cache()) {
-			// empty
-		}
+		OkHttpClients.shutdown(httpClient);
 	}
 
 	/**
@@ -196,27 +188,13 @@ public class OkHttpExchangeClient extends AbstractHttpExchangeClient {
 
 		HttpMethod httpMethod = apiRequest.getMethod();
 		RequestBody requestBody = apiRequest.hasBody() ? createRequestBody(apiRequest) : null;
-		if (null == requestBody && requiresRequestBody(httpMethod)) {
+		if (null == requestBody && OkHttpClients.requiresRequestBody(httpMethod)) {
 			// OkHttp rejects POST/PUT/PATCH without a body, an empty body sends "Content-Length: 0" and no "Content-Type"
 			requestBody = EMPTY_REQUEST_BODY;
 		}
 		requestBuilder.method(httpMethod.toString(), requestBody);
 
 		return requestBuilder.build();
-	}
-
-	/**
-	 * Returns true if the given HTTP method requires a request body, i.e. OkHttp rejects the request without one: POST, PUT
-	 * and PATCH. For those requests an empty body is sent so the request still carries {@code Content-Length: 0}.
-	 *
-	 * @param httpMethod HTTP method
-	 * @return true if the method requires a request body, false otherwise
-	 */
-	protected static boolean requiresRequestBody(final HttpMethod httpMethod) {
-		return switch (httpMethod) {
-			case POST, PUT, PATCH -> true;
-			default -> false;
-		};
 	}
 
 	/**
