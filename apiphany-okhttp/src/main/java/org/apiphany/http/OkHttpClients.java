@@ -28,6 +28,46 @@ import okhttp3.Request;
 public interface OkHttpClients {
 
 	/**
+	 * Disables OkHttp's transparent handling of the given header by temporarily adding it to requests that do not already
+	 * contain it, then removing it before the request is written to the network.
+	 * <p>
+	 * The temporary header value and request marker are added by an application interceptor. A network interceptor removes
+	 * the header only when it was added by this method, preserving headers explicitly set by the caller.
+	 *
+	 * @param builder the OkHttp client builder to configure
+	 * @param header the HTTP header whose transparent handling should be disabled
+	 * @param temporaryValue the temporary value used to disable the transparent handling
+	 * @return the same builder instance
+	 */
+	static OkHttpClient.Builder disableTransparentHeader(final OkHttpClient.Builder builder, final HttpHeader header, final String temporaryValue) {
+		builder.addInterceptor(chain -> {
+			Request request = chain.request();
+			if (null == request.header(header.value())) {
+				// prevent OkHttp from automatically handling the header
+				Request marked = request.newBuilder()
+						.header(header.value(), temporaryValue)
+						.tag(HttpHeader.class, header)
+						.build();
+				return chain.proceed(marked);
+			}
+			return chain.proceed(request);
+		});
+		builder.addNetworkInterceptor(chain -> {
+			Request request = chain.request();
+			HttpHeader marker = request.tag(HttpHeader.class);
+			if (header == marker) {
+				// the header was added by this library, remove it so it never appears on the wire
+				Request unmarked = request.newBuilder()
+						.removeHeader(header.value())
+						.build();
+				return chain.proceed(unmarked);
+			}
+			return chain.proceed(request);
+		});
+		return builder;
+	}
+
+	/**
 	 * Disables OkHttp's transparent gzip: OkHttp silently adds an {@code Accept-Encoding: gzip} request header and
 	 * transparently de-compresses responses, hiding the {@code Content-Encoding} header from the caller.
 	 * <p>
@@ -39,30 +79,8 @@ public interface OkHttpClients {
 	 * @return the same builder instance
 	 */
 	static OkHttpClient.Builder disableTransparentAcceptEncoding(final OkHttpClient.Builder builder) {
-		builder.addInterceptor(chain -> {
-			Request request = chain.request();
-			if (null == request.header(HttpHeader.Name.ACCEPT_ENCODING)) {
-				// any non-null value disables OkHttp's transparent gzip, keeping the raw response body intact
-				Request marked = request.newBuilder()
-						.header(HttpHeader.Name.ACCEPT_ENCODING, ContentEncoding.Value.IDENTITY)
-						.tag(AddedAcceptEncodingMarker.class, AddedAcceptEncodingMarker.INSTANCE)
-						.build();
-				return chain.proceed(marked);
-			}
-			return chain.proceed(request);
-		});
-		builder.addNetworkInterceptor(chain -> {
-			Request request = chain.request();
-			if (null != request.tag(AddedAcceptEncodingMarker.class)) {
-				// the header was added by this library, remove it so it never appears on the wire
-				Request unmarked = request.newBuilder()
-						.removeHeader(HttpHeader.Name.ACCEPT_ENCODING)
-						.build();
-				return chain.proceed(unmarked);
-			}
-			return chain.proceed(request);
-		});
-		return builder;
+		// any non-null value disables OkHttp's transparent gzip, keeping the raw response body intact
+		return disableTransparentHeader(builder, HttpHeader.ACCEPT_ENCODING, ContentEncoding.Value.IDENTITY);
 	}
 
 	/**
@@ -106,14 +124,14 @@ public interface OkHttpClients {
 	static OkHttpClient.Builder createBuilder(final ClientProperties clientProperties) {
 		ClientProperties.Timeout timeout = clientProperties.getTimeout();
 		ClientProperties.Connection connection = clientProperties.getConnection();
-		return disableTransparentAcceptEncoding(new OkHttpClient.Builder()
+		return disableTransparentAcceptEncoding(new OkHttpClient.Builder())
 				.connectTimeout(timeout.getConnect())
 				.readTimeout(timeout.getSocket())
 				.writeTimeout(timeout.getSocket())
 				.callTimeout(timeout.getRequest())
 				.connectionPool(new ConnectionPool(connection.getMaxTotal(), connection.getTimeToLive().toMillis(), TimeUnit.MILLISECONDS))
 				.followRedirects(connection.isFollowRedirects())
-				.followSslRedirects(connection.isFollowRedirects()));
+				.followSslRedirects(connection.isFollowRedirects());
 	}
 
 	/**
@@ -138,19 +156,6 @@ public interface OkHttpClients {
 	}
 
 	/**
-	 * Tag marker used to identify requests whose {@code Accept-Encoding} header was added internally by
-	 * {@link #disableTransparentAcceptEncoding(OkHttpClient.Builder)}.
-	 *
-	 * @author Radu Sebastian LAZIN
-	 */
-	enum AddedAcceptEncodingMarker {
-		/**
-		 * Single marker instance.
-		 */
-		INSTANCE
-	}
-
-	/**
 	 * Configures the given OkHttp client builder with the given SSL context.
 	 * <p>
 	 * OkHttp requires both an {@link javax.net.ssl.SSLSocketFactory} and the {@link X509TrustManager} it was built with.
@@ -166,6 +171,20 @@ public interface OkHttpClients {
 		X509TrustManager trustManager = null == sslProperties || null == sslProperties.getTruststore()
 				? SSLContexts.defaultTrustManager(X509TrustManager.class)
 				: SSLContexts.trustManager(X509TrustManager.class, SSLContexts.trustManagers(sslProperties.getTruststore()));
+		configureTls(builder, sslContext, trustManager);
+	}
+
+	/**
+	 * Configures the given OkHttp client builder with the given SSL context and X.509 trust manager.
+	 * <p>
+	 * OkHttp requires the trust manager used to create the SSL socket factory to be supplied alongside that factory. The
+	 * hostname verifier is also configured to support subjectAltNames with certificate common-name fallback.
+	 *
+	 * @param builder the OkHttp client builder to configure
+	 * @param sslContext the SSL context to use for TLS connections
+	 * @param trustManager the X.509 trust manager used with the SSL context
+	 */
+	static void configureTls(final OkHttpClient.Builder builder, final SSLContext sslContext, final X509TrustManager trustManager) {
 		builder.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
 		// OkHttp's own verifier requires subjectAltNames, this one falls back to the certificate CN like Apache HC5's default
 		builder.hostnameVerifier(HostnameVerifiers.defaultVerifier());
