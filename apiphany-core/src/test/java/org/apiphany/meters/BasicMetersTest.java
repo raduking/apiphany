@@ -29,6 +29,7 @@ import java.util.function.Supplier;
 import org.apiphany.lang.builder.PropertyNameBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.function.Predicates;
 import org.morphix.lang.thread.Threads;
@@ -770,10 +771,11 @@ class BasicMetersTest {
 
 		AssertionError error = new AssertionError("boom");
 
-		CompletionException result = assertThrows(CompletionException.class, () -> meters.asyncWrap(
+		Executable executable = () -> meters.asyncWrap(
 				() -> CompletableFuture.failedFuture(error),
 				s -> true,
-				e -> SOME_STRING).join());
+				e -> SOME_STRING).join();
+		CompletionException result = assertThrows(CompletionException.class, executable);
 
 		assertThat(result.getCause(), sameInstance(error));
 

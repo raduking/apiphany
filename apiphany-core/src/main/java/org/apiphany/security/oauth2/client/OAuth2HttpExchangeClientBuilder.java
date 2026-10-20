@@ -43,7 +43,7 @@ public class OAuth2HttpExchangeClientBuilder extends ExchangeClientBuilder {
 	 *
 	 * @return a new OAuth2 exchange client builder
 	 */
-	public static OAuth2HttpExchangeClientBuilder create() {
+	public static OAuth2HttpExchangeClientBuilder create() { // NOSONAR safe to hide name
 		return new OAuth2HttpExchangeClientBuilder();
 	}
 

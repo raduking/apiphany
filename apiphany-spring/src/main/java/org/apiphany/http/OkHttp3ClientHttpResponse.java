@@ -6,7 +6,6 @@ import java.io.InputStream;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.client.ClientHttpResponse;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import okhttp3.Response;
@@ -32,7 +31,6 @@ public class OkHttp3ClientHttpResponse implements ClientHttpResponse {
 	/**
 	 * Lazily populated Spring view of {@link #response} headers.
 	 */
-	@Nullable
 	private volatile HttpHeaders headers;
 
 	/**
@@ -67,7 +65,7 @@ public class OkHttp3ClientHttpResponse implements ClientHttpResponse {
 	@Override
 	public InputStream getBody() throws IOException {
 		ResponseBody body = this.response.body();
-		return (body != null ? body.byteStream() : InputStream.nullInputStream());
+		return body != null ? body.byteStream() : InputStream.nullInputStream();
 	}
 
 	/**
@@ -75,15 +73,14 @@ public class OkHttp3ClientHttpResponse implements ClientHttpResponse {
 	 */
 	@Override
 	public HttpHeaders getHeaders() {
-		HttpHeaders headers = this.headers;
-		if (headers == null) {
-			headers = new HttpHeaders();
-			for (String headerName : this.response.headers().names()) {
-				for (String headerValue : this.response.headers(headerName)) {
-					headers.add(headerName, headerValue);
+		if (null == headers) {
+			HttpHeaders currentHeaders = new HttpHeaders();
+			for (String headerName : response.headers().names()) {
+				for (String headerValue : response.headers(headerName)) {
+					currentHeaders.add(headerName, headerValue);
 				}
 			}
-			this.headers = headers;
+			this.headers = currentHeaders;
 		}
 		return headers;
 	}

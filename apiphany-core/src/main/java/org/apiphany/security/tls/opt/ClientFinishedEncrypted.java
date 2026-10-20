@@ -37,7 +37,7 @@ public class ClientFinishedEncrypted extends EncryptedHandshake {
 	 * @return the parsed ServerFinished object
 	 * @throws IOException if an I/O error occurs
 	 */
-	public static ClientFinishedEncrypted from(final InputStream is, final int length) throws IOException {
+	public static ClientFinishedEncrypted from(final InputStream is, final int length) throws IOException { // NOSONAR hiding is ok
 		Encrypted payload = Encrypted.from(is, length);
 		return new ClientFinishedEncrypted(payload);
 	}

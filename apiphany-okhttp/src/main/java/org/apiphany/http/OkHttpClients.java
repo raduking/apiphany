@@ -1,5 +1,6 @@
 package org.apiphany.http;
 
+import java.io.IOException;
 import java.net.ProtocolException;
 import java.time.Duration;
 import java.util.concurrent.ExecutorService;
@@ -234,9 +235,9 @@ public interface OkHttpClients {
 	 * should invoke this when the client is no longer needed.
 	 *
 	 * @param httpClient OkHttp client to shut down
-	 * @throws Exception when any error occurs
+	 * @throws IOException when any error occurs during shutdown
 	 */
-	static void shutdown(final OkHttpClient httpClient) throws Exception {
+	static void shutdown(final OkHttpClient httpClient) throws IOException {
 		@SuppressWarnings("resource")
 		ExecutorService executor = httpClient.dispatcher().executorService();
 		executor.shutdown();

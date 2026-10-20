@@ -237,7 +237,7 @@ class ExchangeClientBuilderTest {
 				super();
 			}
 
-			public static DecoratingExchangeClientBuilder create() {
+			public static DecoratingExchangeClientBuilder create() { // NOSONAR safe to hide name
 				return new DecoratingExchangeClientBuilder();
 			}
 		}

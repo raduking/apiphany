@@ -51,7 +51,7 @@ public class SSLHttpExchangeClientBuilder extends ExchangeClientBuilder {
 	 *
 	 * @return a new SSL exchange client builder
 	 */
-	public static SSLHttpExchangeClientBuilder create() {
+	public static SSLHttpExchangeClientBuilder create() { // NOSONAR safe to hide name
 		return new SSLHttpExchangeClientBuilder();
 	}
 
