@@ -41,11 +41,9 @@ public class SpringRestClientProperties {
 	 * @return the same properties instance
 	 */
 	public static ClientProperties withClientLibrary(final ClientProperties properties, final String clientLibrary) {
-		properties.setCustomProperties(SpringRestClientProperties.ROOT, new SpringRestClientProperties() {
-			{
-				setClientLibrary(clientLibrary);
-			}
-		});
+		SpringRestClientProperties springRestClientProperties = new SpringRestClientProperties();
+		springRestClientProperties.setClientLibrary(clientLibrary);
+		properties.setCustomProperties(SpringRestClientProperties.ROOT, springRestClientProperties);
 		return properties;
 	}
 

@@ -36,7 +36,7 @@ public class PropertyNameBuilder extends DelimitedStringBuilder<PropertyNameBuil
 	 * @return a new {@link PropertyNameBuilder} instance with the specified paths.
 	 */
 	@SuppressWarnings("unchecked")
-	public static PropertyNameBuilder of(final String... paths) {
+	public static PropertyNameBuilder of(final String... paths) { // NOSONAR safe to hide name
 		return builder().path(paths);
 	}
 }

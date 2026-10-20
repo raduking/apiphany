@@ -4,7 +4,12 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.nullValue;
 
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Test class for {@link BasicHttpResponseParser}.
@@ -182,39 +187,42 @@ class BasicHttpResponseParserTest {
 		assertThat(parser.isComplete(), is(true));
 	}
 
-	@Test
-	void shouldHandleMalformedContentLength() {
-		String response = """
-				HTTP/1.1 200 OK\r
-				Content-Type: text/plain\r
-				Content-Length: abc\r
-				\r
-				Hello, World!""";
-
+	@ParameterizedTest
+	@MethodSource("malformedResponses")
+	void shouldHandleMalformedResponse(final String response, final String expectedBody) {
 		BasicHttpResponseParser parser = new BasicHttpResponseParser(response);
 
 		assertThat(parser.getStatusCode(), is(200));
-		assertThat(parser.getBody(), is("Hello, World!"));
+		assertThat(parser.getBody(), is(expectedBody));
 		assertThat(parser.isComplete(), is(false));
 	}
 
-	@Test
-	void shouldHandleMalformedChunkSize() {
-		String response = """
-				HTTP/1.1 200 OK\r
-				Transfer-Encoding: chunked\r
-				\r
-				ZZ\r
-				Hello\r
-				0\r
-				\r
-				""";
-
-		BasicHttpResponseParser parser = new BasicHttpResponseParser(response);
-
-		assertThat(parser.getStatusCode(), is(200));
-		assertThat(parser.getBody(), is(""));
-		assertThat(parser.isComplete(), is(false));
+	private static Stream<Arguments> malformedResponses() {
+		return Stream.of(
+				Arguments.of("""
+						HTTP/1.1 200 OK\r
+						Content-Type: text/plain\r
+						Content-Length: abc\r
+						\r
+						Hello, World!""", "Hello, World!"),
+				Arguments.of("""
+						HTTP/1.1 200 OK\r
+						Transfer-Encoding: chunked\r
+						\r
+						ZZ\r
+						Hello\r
+						0\r
+						\r
+						""", ""),
+				Arguments.of("""
+						HTTP/1.1 200 OK\r
+						Transfer-Encoding: chunked\r
+						\r
+						-1\r
+						Hello\r
+						0\r
+						\r
+						""", ""));
 	}
 
 	@Test
@@ -261,22 +269,4 @@ class BasicHttpResponseParserTest {
 		assertThat(parser.getBody(), is(""));
 	}
 
-	@Test
-	void shouldHandleNegativeChunkSize() {
-		String response = """
-				HTTP/1.1 200 OK\r
-				Transfer-Encoding: chunked\r
-				\r
-				-1\r
-				Hello\r
-				0\r
-				\r
-				""";
-
-		BasicHttpResponseParser parser = new BasicHttpResponseParser(response);
-
-		assertThat(parser.getStatusCode(), is(200));
-		assertThat(parser.getBody(), is(""));
-		assertThat(parser.isComplete(), is(false));
-	}
 }

@@ -170,7 +170,7 @@ class SecuredExchangeClientBuilderTest {
 	}
 
 	@Test
-	void shouldNotBuildExchangeClientWithMtlsCustomizerWhenTheUnderlyingClientDoesNotSupportIt() throws Exception {
+	void shouldNotBuildExchangeClientWithMtlsCustomizerWhenTheUnderlyingClientDoesNotSupportIt() {
 		ExchangeClientBuilder builder = ExchangeClientBuilder.create()
 				.client(DummyExchangeClient.class)
 				.securedWith()

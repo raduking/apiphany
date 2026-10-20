@@ -71,7 +71,7 @@ class CloseableOkHttpResponseInputStreamTest {
 
 	@Test
 	@SuppressWarnings("resource")
-	void shouldThrowExceptionWhenBodyContentIsNull() throws Exception {
+	void shouldThrowExceptionWhenBodyContentIsNull() {
 		doReturn(mockResponseBody).when(mockResponse).body();
 		doReturn(null).when(mockResponseBody).byteStream();
 
@@ -169,7 +169,7 @@ class CloseableOkHttpResponseInputStreamTest {
 
 	@Test
 	@SuppressWarnings("resource")
-	void shouldPropagateIOExceptionOnClose() throws Exception {
+	void shouldPropagateIOExceptionOnClose() {
 		doReturn(mockResponseBody).when(mockResponse).body();
 		doReturn(new ByteArrayInputStream(new byte[0])).when(mockResponseBody).byteStream();
 		doThrow(new RuntimeException("Failed to close")).when(mockResponse).close();
@@ -181,7 +181,7 @@ class CloseableOkHttpResponseInputStreamTest {
 
 	@Test
 	@SuppressWarnings("resource")
-	void shouldImplementHashCodeAndEquals() throws Exception {
+	void shouldImplementHashCodeAndEquals() {
 		doReturn(mockResponseBody).when(mockResponse).body();
 		doReturn(new ByteArrayInputStream(new byte[0])).when(mockResponseBody).byteStream();
 
@@ -199,7 +199,7 @@ class CloseableOkHttpResponseInputStreamTest {
 
 	@Test
 	@SuppressWarnings("resource")
-	void shouldNotBeEqualWhenResponsesAreDifferent() throws Exception {
+	void shouldNotBeEqualWhenResponsesAreDifferent() {
 		doReturn(mockResponseBody).when(mockResponse).body();
 		doReturn(new ByteArrayInputStream(new byte[0])).when(mockResponseBody).byteStream();
 
@@ -216,7 +216,7 @@ class CloseableOkHttpResponseInputStreamTest {
 
 	@Test
 	@SuppressWarnings("resource")
-	void shouldNotBeEqualWhenInputStreamsAreDifferent() throws Exception {
+	void shouldNotBeEqualWhenInputStreamsAreDifferent() {
 		doReturn(mockResponseBody).when(mockResponse).body();
 		doReturn(new ByteArrayInputStream(new byte[0]), new ByteArrayInputStream(new byte[0]))
 				.when(mockResponseBody).byteStream();

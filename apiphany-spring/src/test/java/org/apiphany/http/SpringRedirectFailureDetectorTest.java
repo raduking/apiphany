@@ -1,6 +1,7 @@
 package org.apiphany.http;
 
 import static org.apiphany.test.Assertions.assertDefaultConstructorThrows;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.ProtocolException;
@@ -47,7 +48,7 @@ class SpringRedirectFailureDetectorTest {
 
 	@Test
 	void shouldNotThrowOnNull() {
-		SpringRedirectFailureDetector.isRedirectFailure(null);
+		assertDoesNotThrow(() -> SpringRedirectFailureDetector.isRedirectFailure(null));
 	}
 
 	@Test
