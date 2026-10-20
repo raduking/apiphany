@@ -2,6 +2,7 @@ package org.apiphany.http;
 
 import java.net.ProtocolException;
 import java.time.Duration;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -16,6 +17,7 @@ import org.apiphany.security.ssl.SSLProperties;
 import org.morphix.lang.Throwables;
 import org.morphix.lang.function.Consumers;
 
+import okhttp3.Cache;
 import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -26,6 +28,31 @@ import okhttp3.Request;
  * @author Radu Sebastian LAZIN
  */
 public interface OkHttpClients {
+
+	/**
+	 * Returns true if the given HTTP method requires a request body, i.e. OkHttp rejects the request without one: POST, PUT
+	 * and PATCH. For those requests an empty body is sent so the request still carries {@code Content-Length: 0}.
+	 *
+	 * @param httpMethod HTTP method
+	 * @return true if the method requires a request body, false otherwise
+	 */
+	static boolean requiresRequestBody(final HttpMethod httpMethod) {
+		return requiresRequestBody(httpMethod.value());
+	}
+
+	/**
+	 * Returns true if the given HTTP method requires a request body, i.e. OkHttp rejects the request without one: POST, PUT
+	 * and PATCH. For those requests an empty body is sent so the request still carries {@code Content-Length: 0}.
+	 *
+	 * @param httpMethod HTTP method
+	 * @return true if the method requires a request body, false otherwise
+	 */
+	static boolean requiresRequestBody(final String httpMethod) {
+		return switch (httpMethod) {
+			case HttpMethod.Value.POST, HttpMethod.Value.PUT, HttpMethod.Value.PATCH -> true;
+			default -> false;
+		};
+	}
 
 	/**
 	 * Disables OkHttp's transparent handling of the given header by temporarily adding it to requests that do not already
@@ -200,6 +227,22 @@ public interface OkHttpClients {
 		return Throwables.anyMatch(throwable, t -> t instanceof ProtocolException
 				&& null != t.getMessage()
 				&& t.getMessage().startsWith("Too many follow-up requests"));
+	}
+
+	/**
+	 * Shuts down the dispatcher, evicts the connection pool, and closes the cache of the given OkHttp client. The caller
+	 * should invoke this when the client is no longer needed.
+	 *
+	 * @param httpClient OkHttp client to shut down
+	 */
+	static void shutdown(final OkHttpClient httpClient) throws Exception {
+		@SuppressWarnings("resource")
+		ExecutorService executor = httpClient.dispatcher().executorService();
+		executor.shutdown();
+		httpClient.connectionPool().evictAll();
+		try (Cache cache = httpClient.cache()) {
+			// empty
+		}
 	}
 
 	/**

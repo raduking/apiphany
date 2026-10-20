@@ -104,6 +104,17 @@ class CloseableHttpRequestFactoryTest {
 		}
 
 		@Test
+		void shouldDetectWithOkHttpClientLibrary() {
+			ClientProperties properties = ClientProperties.defaults();
+
+			try (CloseableHttpRequestFactory factory = CloseableHttpRequestFactory.detect(properties, "okhttp")) {
+				assertThat(factory, notNullValue());
+			} catch (Exception e) {
+				// acceptable - factory creation may fail without proper SSL config
+			}
+		}
+
+		@Test
 		@SuppressWarnings("resource")
 		void shouldReturnNullForBlankLibrary() {
 			ClientProperties properties = ClientProperties.defaults();

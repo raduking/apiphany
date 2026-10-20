@@ -17,6 +17,7 @@ import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ClientProperties.Timeout;
 import org.apiphany.client.http.SpringRestClientProperties;
 import org.apiphany.lang.Strings;
+import org.apiphany.security.ssl.SSLProperties;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Nullables;
 import org.morphix.lang.collections.Lists;
@@ -27,6 +28,8 @@ import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
+
+import okhttp3.OkHttpClient;
 
 /**
  * A {@link ClientHttpRequestFactory} implementation that delegates to another instance and also allows to close some
@@ -154,7 +157,7 @@ public class CloseableHttpRequestFactory implements ClientHttpRequestFactory, Au
 	 * client properties.
 	 *
 	 * @param clientProperties client properties
-	 * @param clientLibrary the client library name to use for detection (e.g., "http-client5" or "simple")
+	 * @param clientLibrary the client library name to use for detection (e.g., "http-client5", "okhttp", or "simple")
 	 * @param args optional arguments that can be used for detection (e.g., client library name)
 	 * @return a {@link CloseableHttpRequestFactory} that delegates to an appropriate implementation based on the given
 	 * client library name, or {@code null} if the client library name is blank or does not match any known libraries
@@ -167,6 +170,7 @@ public class CloseableHttpRequestFactory implements ClientHttpRequestFactory, Au
 		}
 		return switch (clientLibrary.toLowerCase()) {
 			case ApacheHC5Library.CLIENT_NAME -> HttpComponents.create(clientProperties, args);
+			case OkHttpLibrary.CLIENT_NAME -> OkHttp.create(clientProperties, args);
 			case JavaNetHttpLibrary.CLIENT_NAME -> JavaNetHttp.create(clientProperties, args);
 			default -> throw new IllegalArgumentException("Unsupported client library: " + clientLibrary);
 		};
@@ -190,7 +194,7 @@ public class CloseableHttpRequestFactory implements ClientHttpRequestFactory, Au
 		 * based on the given client properties
 		 */
 		@SuppressWarnings("resource")
-		public static CloseableHttpRequestFactory create(final ClientProperties clientProperties, final Map<Class<?>, Object> args) { // NOSONAR
+		public static CloseableHttpRequestFactory create(final ClientProperties clientProperties, final Map<Class<?>, Object> args) {
 			ApacheHC5Library.verifyVersion();
 			CloseableHttpClient httpClient = ApacheHC5Clients.createClient(clientProperties,
 					connectionManagerBuilder -> {
@@ -206,6 +210,43 @@ public class CloseableHttpRequestFactory implements ClientHttpRequestFactory, Au
 		 * Private constructor.
 		 */
 		private HttpComponents() {
+			// empty
+		}
+	}
+
+	/**
+	 * Static inner class containing utility methods for creating {@link CloseableHttpRequestFactory} instances that
+	 * delegate to an {@link OkHttp3ClientHttpRequestFactory}.
+	 *
+	 * @author Radu Sebastian LAZIN
+	 */
+	public static class OkHttp {
+
+		/**
+		 * Creates a new {@link CloseableHttpRequestFactory} that delegates to an {@link OkHttp3ClientHttpRequestFactory} based
+		 * on the given client properties. The caller is responsible for closing the returned factory.
+		 *
+		 * @param clientProperties client properties
+		 * @param args optional arguments that can be used for creating the HTTP client (e.g., SSL context)
+		 * @return a new {@link CloseableHttpRequestFactory} that delegates to an {@link OkHttp3ClientHttpRequestFactory} based
+		 * on the given client properties
+		 */
+		public static CloseableHttpRequestFactory create(final ClientProperties clientProperties, final Map<Class<?>, Object> args) {
+			OkHttpLibrary.verifyVersion();
+			OkHttpClient httpClient = OkHttpClients.createClient(clientProperties, builder -> {
+				SSLContext sslContext = JavaObjects.cast(args.get(SSLContext.class));
+				SSLProperties sslProperties = clientProperties.getCustomProperties(SSLProperties.class);
+				Nullables.whenNotNull(sslContext)
+						.then(ssl -> OkHttpClients.configureTls(builder, ssl, sslProperties));
+			});
+			OkHttp3ClientHttpRequestFactory requestFactory = new OkHttp3ClientHttpRequestFactory(httpClient);
+			return CloseableHttpRequestFactory.of(requestFactory, () -> OkHttpClients.shutdown(httpClient));
+		}
+
+		/**
+		 * Private constructor.
+		 */
+		private OkHttp() {
 			// empty
 		}
 	}
