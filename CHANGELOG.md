@@ -8,8 +8,10 @@
 - Added `OkHttpProperties` with `connection`, `request`, `connect`, `read` and `write` sections mirroring OkHttp's own timeout and pooling model.
 - Added `OkHttpClients` to build and configure `OkHttpClient` instances from `ClientProperties`, with TLS setup from `SSLProperties`.
 - Added `OkHttpEntities`, `OneShotRequestBody` and `CloseableOkHttpResponseInputStream` for request body writing and response body streaming.
-- Changed OkHttp clients to verify hostnames with a verifier that falls back to the certificate common name like Apache HC5's default.
-- OkHttp's transparent gzip is disabled so `Accept-Encoding` is never added by Apiphany and `Content-Encoding` responses are decoded by the library itself.
+- Added `SSLContexts.trustManagers(StoreInfo)` to create trust managers from a truststore configuration, re-throwing any `GeneralSecurityException` as a `SecurityException`.
+- Added `SSLContexts.trustManager(Class, TrustManager[])` returning the first trust manager of the given type, or the platform default of that type when the array is `null` or empty.
+- Added `SSLContexts.trustManager(Class, TrustManager[], Function)` returning the first trust manager of the given type, or the given fallback when the array is `null` or empty.
+- Added `SSLContexts.defaultTrustManager(Class)` returning the type's platform default trust manager from `TrustManagerFactory`, failing with a `SecurityException` if none exists.
 
 ---
 
