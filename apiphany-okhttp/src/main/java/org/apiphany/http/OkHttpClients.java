@@ -234,6 +234,7 @@ public interface OkHttpClients {
 	 * should invoke this when the client is no longer needed.
 	 *
 	 * @param httpClient OkHttp client to shut down
+	 * @throws Exception when any error occurs
 	 */
 	static void shutdown(final OkHttpClient httpClient) throws Exception {
 		@SuppressWarnings("resource")

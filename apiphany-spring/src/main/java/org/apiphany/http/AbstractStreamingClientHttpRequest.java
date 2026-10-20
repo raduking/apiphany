@@ -15,8 +15,9 @@ import org.springframework.util.FastByteArrayOutputStream;
  * addition to buffering via {@link #getBody()}.
  * <p>
  * Adapted from Spring Framework's {@code org.springframework.http.client.AbstractStreamingClientHttpRequest}. Spring
- * Framework 7 removes the OkHttp-based {@link ClientHttpRequestFactory} types from {@code spring-web}; Apiphany keeps
- * this base class so {@link OkHttp3ClientHttpRequest} can stream or buffer request bodies the same way as before.
+ * Framework 7 removes the OkHttp-based {@link org.springframework.http.client.ClientHttpRequestFactory} types from
+ * {@code spring-web}; Apiphany keeps this base class so {@link OkHttp3ClientHttpRequest} can stream or buffer request
+ * bodies the same way as before.
  *
  * @author Radu Sebastian LAZIN
  */
@@ -36,6 +37,13 @@ public abstract class AbstractStreamingClientHttpRequest extends AbstractClientH
 	 * Buffer used when the caller writes to {@link #getBody()} instead of {@link #setBody(Body)}.
 	 */
 	private FastByteArrayOutputStream bodyStream;
+
+	/**
+	 * Default constructor.
+	 */
+	protected AbstractStreamingClientHttpRequest() {
+		// empty
+	}
 
 	/**
 	 * @see AbstractClientHttpRequest#getBodyInternal(HttpHeaders)
