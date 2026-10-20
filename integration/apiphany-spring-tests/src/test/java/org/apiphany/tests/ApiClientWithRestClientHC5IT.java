@@ -2,12 +2,11 @@ package org.apiphany.tests;
 
 import org.apiphany.ApiClient;
 import org.apiphany.client.ExchangeClient;
-import org.apiphany.client.http.RestTemplateExchangeClient;
 import org.apiphany.client.http.SpringRestExchangeClient;
 import org.apiphany.security.AuthenticationType;
 
 /**
- * Test class for {@link ApiClient} using {@link RestTemplateExchangeClient}.
+ * Test class for {@link ApiClient} using {@link SpringRestExchangeClient}.
  *
  * @author Radu Sebastian LAZIN
  */

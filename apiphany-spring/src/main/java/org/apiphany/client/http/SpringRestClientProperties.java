@@ -33,8 +33,8 @@ public class SpringRestClientProperties {
 	}
 
 	/**
-	 * Adds an explicit client library {@link SpringRestClientProperties#getClientLibrary()} override to the given
-	 * properties.
+	 * Adds an explicit client properties with an explicit client library
+	 * {@link SpringRestClientProperties#getClientLibrary()} override to the given properties.
 	 *
 	 * @param properties client properties to augment
 	 * @param clientLibrary the name of the client library (present in {@code ROOT} static member for supported ones)
@@ -47,6 +47,17 @@ public class SpringRestClientProperties {
 			}
 		});
 		return properties;
+	}
+
+	/**
+	 * Adds a default client properties with an explicit client library
+	 * {@link SpringRestClientProperties#getClientLibrary()} override to the given properties.
+	 *
+	 * @param clientLibrary the name of the client library (present in {@code ROOT} static member for supported ones)
+	 * @return the same properties instance
+	 */
+	public static ClientProperties withClientLibrary(final String clientLibrary) {
+		return withClientLibrary(ClientProperties.defaults(), clientLibrary);
 	}
 
 	/**
