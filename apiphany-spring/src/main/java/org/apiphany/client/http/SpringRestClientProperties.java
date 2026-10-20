@@ -37,6 +37,7 @@ public class SpringRestClientProperties {
 	 * properties.
 	 *
 	 * @param properties client properties to augment
+	 * @param clientLibrary the name of the client library (present in {@code ROOT} static member for supported ones)
 	 * @return the same properties instance
 	 */
 	public static ClientProperties withClientLibrary(final ClientProperties properties, final String clientLibrary) {
