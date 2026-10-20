@@ -147,7 +147,7 @@ public final class SSLContexts {
 	public static TrustManager[] getTrustManagers(final KeyStore trustStore, final String algorithm) throws GeneralSecurityException {
 		TrustManager[] result = null;
 		if (null != trustStore) {
-			String alg = Nullables.nonNullOrDefault(algorithm, KeyManagerFactory::getDefaultAlgorithm);
+			String alg = Nullables.nonNullOrDefault(algorithm, TrustManagerFactory::getDefaultAlgorithm);
 			TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(alg);
 			trustManagerFactory.init(trustStore);
 			result = trustManagerFactory.getTrustManagers();
