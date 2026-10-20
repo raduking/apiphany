@@ -8,6 +8,7 @@ import java.util.List;
 
 import javax.net.ssl.HostnameVerifier;
 
+import org.morphix.lang.collections.Iterables;
 import org.morphix.lang.function.ThrowingSupplier;
 import org.morphix.reflection.Constructors;
 
@@ -69,10 +70,7 @@ public final class HostnameVerifiers {
 	 */
 	private static boolean matchesSubjectAltName(final String hostname, final X509Certificate certificate) throws CertificateParsingException {
 		Collection<List<?>> subjectAltNames = certificate.getSubjectAlternativeNames();
-		if (null == subjectAltNames) {
-			return false;
-		}
-		for (List<?> subjectAltName : subjectAltNames) {
+		for (List<?> subjectAltName : Iterables.safe(subjectAltNames)) {
 			if (2 > subjectAltName.size()) {
 				continue;
 			}
@@ -98,10 +96,7 @@ public final class HostnameVerifiers {
 	 */
 	private static boolean hasDnsSubjectAltNames(final X509Certificate certificate) throws CertificateParsingException {
 		Collection<List<?>> subjectAltNames = certificate.getSubjectAlternativeNames();
-		if (null == subjectAltNames) {
-			return false;
-		}
-		for (List<?> subjectAltName : subjectAltNames) {
+		for (List<?> subjectAltName : Iterables.safe(subjectAltNames)) {
 			if (2 > subjectAltName.size()) {
 				continue;
 			}
@@ -144,8 +139,7 @@ public final class HostnameVerifiers {
 		if (certificateName.startsWith("*.")) {
 			String wildcardDomain = certificateName.substring(1);
 			if (hostname.length() <= wildcardDomain.length()
-					|| !hostname.regionMatches(true, hostname.length() - wildcardDomain.length(), wildcardDomain, 0,
-							wildcardDomain.length())) {
+					|| !hostname.regionMatches(true, hostname.length() - wildcardDomain.length(), wildcardDomain, 0, wildcardDomain.length())) {
 				return false;
 			}
 			String prefix = hostname.substring(0, hostname.length() - wildcardDomain.length());

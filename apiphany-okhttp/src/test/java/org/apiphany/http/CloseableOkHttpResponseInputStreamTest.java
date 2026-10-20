@@ -104,6 +104,23 @@ class CloseableOkHttpResponseInputStreamTest {
 
 	@Test
 	@SuppressWarnings("resource")
+	void shouldDelegateReadWithOffsetAndLength() throws Exception {
+		InputStream testInputStream = new ByteArrayInputStream("test".getBytes(StandardCharsets.UTF_8));
+
+		doReturn(mockResponseBody).when(mockResponse).body();
+		doReturn(testInputStream).when(mockResponseBody).byteStream();
+
+		CloseableOkHttpResponseInputStream stream = CloseableOkHttpResponseInputStream.of(mockResponse);
+		byte[] buffer = new byte[6];
+
+		int bytesRead = stream.read(buffer, 1, 4);
+
+		assertThat(bytesRead, is(4));
+		assertThat(new String(buffer, 1, bytesRead), is("test"));
+	}
+
+	@Test
+	@SuppressWarnings("resource")
 	void shouldDelegateReadAllBytes() throws Exception {
 		byte[] testData = "test data".getBytes(StandardCharsets.UTF_8);
 		InputStream testInputStream = new ByteArrayInputStream(testData);
@@ -193,6 +210,19 @@ class CloseableOkHttpResponseInputStreamTest {
 
 		CloseableOkHttpResponseInputStream stream1 = CloseableOkHttpResponseInputStream.of(mockResponse);
 		CloseableOkHttpResponseInputStream stream2 = CloseableOkHttpResponseInputStream.of(anotherMockResponse);
+
+		assertThat(stream1.equals(stream2), is(false));
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void shouldNotBeEqualWhenInputStreamsAreDifferent() throws Exception {
+		doReturn(mockResponseBody).when(mockResponse).body();
+		doReturn(new ByteArrayInputStream(new byte[0]), new ByteArrayInputStream(new byte[0]))
+				.when(mockResponseBody).byteStream();
+
+		CloseableOkHttpResponseInputStream stream1 = CloseableOkHttpResponseInputStream.of(mockResponse);
+		CloseableOkHttpResponseInputStream stream2 = CloseableOkHttpResponseInputStream.of(mockResponse);
 
 		assertThat(stream1.equals(stream2), is(false));
 	}
