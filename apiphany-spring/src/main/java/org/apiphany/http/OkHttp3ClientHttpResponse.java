@@ -29,9 +29,9 @@ public class OkHttp3ClientHttpResponse implements ClientHttpResponse {
 	private final Response response;
 
 	/**
-	 * Lazily populated Spring view of {@link #response} headers.
+	 * Spring view of {@link #response} headers.
 	 */
-	private volatile HttpHeaders headers;
+	private final HttpHeaders headers;
 
 	/**
 	 * Constructor.
@@ -41,6 +41,7 @@ public class OkHttp3ClientHttpResponse implements ClientHttpResponse {
 	public OkHttp3ClientHttpResponse(final Response response) {
 		Assert.notNull(response, "Response must not be null");
 		this.response = response;
+		this.headers = createHeaders(response);
 	}
 
 	/**
@@ -48,7 +49,7 @@ public class OkHttp3ClientHttpResponse implements ClientHttpResponse {
 	 */
 	@Override
 	public HttpStatusCode getStatusCode() throws IOException {
-		return HttpStatusCode.valueOf(this.response.code());
+		return HttpStatusCode.valueOf(response.code());
 	}
 
 	/**
@@ -56,16 +57,20 @@ public class OkHttp3ClientHttpResponse implements ClientHttpResponse {
 	 */
 	@Override
 	public String getStatusText() {
-		return this.response.message();
+		return response.message();
 	}
 
 	/**
 	 * @see ClientHttpResponse#getBody()
 	 */
 	@Override
+	@SuppressWarnings("resource")
 	public InputStream getBody() throws IOException {
-		ResponseBody body = this.response.body();
-		return body != null ? body.byteStream() : InputStream.nullInputStream();
+		ResponseBody body = response.body();
+		if (null == body) {
+			return InputStream.nullInputStream();
+		}
+		return body.byteStream();
 	}
 
 	/**
@@ -73,16 +78,23 @@ public class OkHttp3ClientHttpResponse implements ClientHttpResponse {
 	 */
 	@Override
 	public HttpHeaders getHeaders() {
-		if (null == headers) {
-			HttpHeaders currentHeaders = new HttpHeaders();
-			for (String headerName : response.headers().names()) {
-				for (String headerValue : response.headers(headerName)) {
-					currentHeaders.add(headerName, headerValue);
-				}
-			}
-			this.headers = currentHeaders;
-		}
 		return headers;
+	}
+
+	/**
+	 * Creates a Spring view of the given OkHttp response headers.
+	 *
+	 * @param response OkHttp response
+	 * @return Spring HTTP headers
+	 */
+	private static HttpHeaders createHeaders(final Response response) {
+		HttpHeaders result = new HttpHeaders();
+		for (String headerName : response.headers().names()) {
+			for (String headerValue : response.headers(headerName)) {
+				result.add(headerName, headerValue);
+			}
+		}
+		return result;
 	}
 
 	/**
@@ -90,9 +102,6 @@ public class OkHttp3ClientHttpResponse implements ClientHttpResponse {
 	 */
 	@Override
 	public void close() {
-		ResponseBody body = this.response.body();
-		if (body != null) {
-			body.close();
-		}
+		response.close();
 	}
 }
