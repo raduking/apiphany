@@ -17,6 +17,7 @@ import org.morphix.lang.Nullables;
 import org.morphix.lang.Unchecked;
 import org.morphix.lang.collections.Lists;
 import org.morphix.lang.collections.Maps;
+import org.morphix.lang.function.Suppliers;
 import org.morphix.reflection.Constructors;
 
 /**
@@ -205,7 +206,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @return Returns the first element from a list from the response body
 	 */
 	public <U, E> E firstFromOrDefault(final Function<U, List<E>> bodyListFunction, final E defaultValue) {
-		return Lists.first(asListFromOrDefault(bodyListFunction, Collections.emptyList()), defaultValue);
+		return Lists.first(asListFromOrEmpty(bodyListFunction), defaultValue);
 	}
 
 	/**
@@ -257,7 +258,20 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @return mapped response or default value
 	 */
 	public <U> U mapResultOrDefault(final Function<ApiResponse<T>, U> responseMapper, final U defaultValue) {
-		return isSuccessful() ? responseMapper.apply(this) : defaultValue;
+		return mapResultOrDefault(responseMapper, (Supplier<U>) () -> defaultValue);
+	}
+
+	/**
+	 * Maps the response to another type if the request was 2xx successful, or returns the given default value.
+	 *
+	 * @param <U> return type
+	 *
+	 * @param responseMapper function to map the response
+	 * @param defaultValueSupplier supplier for the default value to be returned
+	 * @return mapped response or default value
+	 */
+	public <U> U mapResultOrDefault(final Function<ApiResponse<T>, U> responseMapper, final Supplier<U> defaultValueSupplier) {
+		return isSuccessful() ? responseMapper.apply(this) : defaultValueSupplier.get();
 	}
 
 	/**
@@ -269,7 +283,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @return mapped response or null
 	 */
 	public <U> U mapResultOrNull(final Function<ApiResponse<T>, U> responseMapper) {
-		return mapResultOrDefault(responseMapper, null);
+		return mapResultOrDefault(responseMapper, Suppliers.supplyNull());
 	}
 
 	/**
