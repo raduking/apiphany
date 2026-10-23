@@ -457,7 +457,7 @@ class ApiResponseTest {
 					.status(HttpStatus.NOT_FOUND)
 					.build();
 
-			String result = response.mapResultOrDefault(r -> r.getBody().getS(), () -> MUMU);
+			String result = response.<String>mapResultOrDefault(r -> r.getBody().getS(), () -> MUMU);
 
 			assertThat(result, equalTo(MUMU));
 		}
@@ -468,7 +468,7 @@ class ApiResponseTest {
 					.status(HttpStatus.OK)
 					.build();
 
-			String result = response.mapResultOrDefault(r -> r.getBody().getS(), () -> MUMU);
+			String result = response.<String>mapResultOrDefault(r -> r.getBody().getS(), () -> MUMU);
 
 			assertThat(result, equalTo(BUBU));
 		}
