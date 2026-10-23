@@ -140,6 +140,58 @@ String result = http()
         .orRethrow();
 ```
 
+### Choosing the HTTP client
+
+By default Apiphany uses the JDK `java.net.http` client. You can switch to another implementation by adding the corresponding module dependency and passing an exchange client instance to `http(...)`. No other code changes are needed.
+
+#### Apache HttpClient5
+
+Add the `apiphany-httpclient5` dependency, then:
+
+```java
+import org.apiphany.client.http.ApacheHC5HttpExchangeClient;
+
+ExchangeClient client = new ApacheHC5HttpExchangeClient();
+
+String name = http(client)
+        .get()
+        .url("https://api.example.com/v1/users/1")
+        .retrieve(String.class)
+        .orRethrow();
+```
+
+#### OkHttp
+
+Add the `apiphany-okhttp` dependency, then:
+
+```java
+import org.apiphany.client.http.OkHttpExchangeClient;
+
+ExchangeClient client = new OkHttpExchangeClient();
+
+String name = http(client)
+        .get()
+        .url("https://api.example.com/v1/users/1")
+        .retrieve(String.class)
+        .orRethrow();
+```
+
+#### Spring `RestClient`
+
+Add the `apiphany-spring` dependency, then:
+
+```java
+import org.apiphany.client.http.SpringRestExchangeClient;
+
+ExchangeClient client = new SpringRestExchangeClient();
+
+String name = http(client)
+        .get()
+        .url("https://api.example.com/v1/users/1")
+        .retrieve(String.class)
+        .orRethrow();
+```
+
 ## Documentation
 
 See the [docs](docs) directory for project specifications, architecture notes, and user guides.
