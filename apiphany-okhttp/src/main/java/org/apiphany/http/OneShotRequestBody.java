@@ -22,7 +22,7 @@ import okio.Source;
  *
  * @author Radu Sebastian LAZIN
  */
-public final class OneShotRequestBody extends RequestBody {
+public final class OneShotRequestBody extends RequestBody implements AutoCloseable {
 
 	/**
 	 * The original {@link InputStream} wrapped in a {@link ScopedResource} for proper lifecycle management. This stream is
@@ -97,8 +97,10 @@ public final class OneShotRequestBody extends RequestBody {
 	 * @see RequestBody#writeTo(BufferedSink)
 	 */
 	@Override
+	@SuppressWarnings("resource")
 	public void writeTo(final BufferedSink sink) throws IOException {
-		try (Source source = Okio.source(getContent())) {
+		InputStream content = getContent();
+		try (Source source = Okio.source(content)) {
 			sink.writeAll(source);
 		} finally {
 			close();
@@ -107,9 +109,9 @@ public final class OneShotRequestBody extends RequestBody {
 
 	/**
 	 * Closes the original stream if it is still managed.
-	 *
 	 */
-	private void close() {
+	@Override
+	public void close() {
 		original.closeIfManaged(ThrowingConsumer.unchecked(e -> {
 			throw new IOException("Failed to close original stream", e);
 		}));

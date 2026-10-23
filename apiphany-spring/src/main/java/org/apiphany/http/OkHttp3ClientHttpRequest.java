@@ -1,12 +1,15 @@
 package org.apiphany.http;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URI;
 
 import org.apiphany.lang.Bytes;
 import org.morphix.lang.Nullables;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.StreamingHttpOutputMessage;
+import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.util.StringUtils;
 
@@ -18,7 +21,7 @@ import okhttp3.Response;
 import okio.BufferedSink;
 
 /**
- * {@link org.springframework.http.client.ClientHttpRequest} implementation that executes exchanges through OkHttp.
+ * {@link ClientHttpRequest} implementation that executes exchanges through OkHttp.
  * <p>
  * Adapted from Spring Framework's {@code org.springframework.http.client.OkHttp3ClientHttpRequest}. Spring Framework 7
  * removes the OkHttp client types from {@code spring-web}; Apiphany keeps this request type for use with
@@ -57,25 +60,35 @@ public class OkHttp3ClientHttpRequest extends AbstractStreamingClientHttpRequest
 	}
 
 	/**
-	 * @see org.springframework.http.client.ClientHttpRequest#getMethod()
+	 * @see ClientHttpRequest#getMethod()
 	 */
 	@Override
 	public HttpMethod getMethod() {
-		return this.method;
+		return method;
 	}
 
 	/**
-	 * @see org.springframework.http.client.ClientHttpRequest#getURI()
+	 * @see ClientHttpRequest#getURI()
 	 */
 	@Override
 	public URI getURI() {
-		return this.uri;
+		return uri;
+	}
+
+	/**
+	 * Returns the client set for this request.
+	 *
+	 * @return the client set for this request
+	 */
+	protected OkHttpClient getClient() {
+		return client;
 	}
 
 	/**
 	 * @see AbstractStreamingClientHttpRequest#executeInternal(HttpHeaders, Body)
 	 */
 	@Override
+	@SuppressWarnings("resource")
 	protected ClientHttpResponse executeInternal(final HttpHeaders headers, final Body body) throws IOException {
 		RequestBody requestBody = null;
 		String httpMethod = getMethod().name();
@@ -152,8 +165,10 @@ public class OkHttp3ClientHttpRequest extends AbstractStreamingClientHttpRequest
 		 * @see RequestBody#writeTo(BufferedSink)
 		 */
 		@Override
+		@SuppressWarnings("resource")
 		public void writeTo(final BufferedSink sink) throws IOException {
-			body.writeTo(sink.outputStream());
+			OutputStream os = sink.outputStream();
+			body.writeTo(os);
 		}
 
 		/**
