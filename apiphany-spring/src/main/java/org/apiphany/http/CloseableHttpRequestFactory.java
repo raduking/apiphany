@@ -149,6 +149,9 @@ public class CloseableHttpRequestFactory implements ClientHttpRequestFactory, Au
 		if (ApacheHC5Library.isPresent()) {
 			return HttpComponents.create(clientProperties, args);
 		}
+		if (OkHttpLibrary.isPresent()) {
+			return OkHttp.create(clientProperties, args);
+		}
 		return JavaNetHttp.create(clientProperties, args);
 	}
 
