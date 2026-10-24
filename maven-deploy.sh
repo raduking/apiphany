@@ -17,7 +17,7 @@ echo "All tests passed. Deploying apiphany module..."
 # -DskipTests to skip tests during deployment
 
 "$MAVEN_BIN_FOLDER/mvn" deploy -Drelease=true \
-	-pl apiphany-core,apiphany-httpclient5,apiphany-spring \
+	-pl apiphany-core,apiphany-httpclient5,apiphany-okhttp,apiphany-spring \
 	-am \
 	-DskipTests
 

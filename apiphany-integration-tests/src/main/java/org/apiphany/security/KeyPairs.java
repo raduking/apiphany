@@ -17,6 +17,7 @@ import java.util.Base64;
 import org.apiphany.io.BytesOrder;
 import org.apiphany.lang.Bytes;
 import org.apiphany.lang.Hex;
+import org.apiphany.lang.Logging;
 import org.apiphany.lang.Strings;
 import org.apiphany.security.keys.RSAKeys;
 import org.apiphany.security.keys.X25519Keys;
@@ -143,8 +144,9 @@ public class KeyPairs {
 		} catch (Exception e) {
 			throw new IllegalStateException("Cannot load " + FileName.XDH_PRIVATE_KEY, e);
 		}
-		LOGGER.debug("Loaded private key bytes:\n{}", Hex.dump(privateKeyBytes));
-		LOGGER.debug("Loaded private key XDH:\n{}", Hex.dump(X25519Keys.INSTANCE.toByteArray(privateKey, BytesOrder.LITTLE_ENDIAN)));
+		LOGGER.debug("Loaded private key bytes:\n{}", Logging.lazyToString(() -> Hex.dump(privateKeyBytes)));
+		LOGGER.debug("Loaded private key XDH:\n{}",
+				Logging.lazyToString(() -> Hex.dump(X25519Keys.INSTANCE.toByteArray(privateKey, BytesOrder.LITTLE_ENDIAN))));
 
 		PublicKey publicKey;
 		byte[] publicKeyBytes = Bytes.fromFile("security/ssl/" + FileName.XDH_PUBLIC_KEY);
@@ -154,8 +156,9 @@ public class KeyPairs {
 		} catch (Exception e) {
 			throw new IllegalStateException("Cannot load " + FileName.XDH_PUBLIC_KEY, e);
 		}
-		LOGGER.debug("Loaded public key bytes:\n{}", Hex.dump(publicKeyBytes));
-		LOGGER.debug("Loaded public key XDH:\n{}", Hex.dump(X25519Keys.INSTANCE.toByteArray(publicKey, BytesOrder.LITTLE_ENDIAN)));
+		LOGGER.debug("Loaded public key bytes:\n{}", Logging.lazyToString(() -> Hex.dump(publicKeyBytes)));
+		LOGGER.debug("Loaded public key XDH:\n{}",
+				Logging.lazyToString(() -> Hex.dump(X25519Keys.INSTANCE.toByteArray(publicKey, BytesOrder.LITTLE_ENDIAN))));
 
 		return new KeyPair(publicKey, privateKey);
 	}

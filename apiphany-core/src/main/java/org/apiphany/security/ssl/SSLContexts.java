@@ -6,6 +6,7 @@ import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.SecureRandom;
 import java.util.Objects;
+import java.util.function.Function;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
@@ -18,6 +19,7 @@ import org.apiphany.lang.Strings;
 import org.apiphany.logging.LoggerAdapters;
 import org.morphix.lang.JavaArrays;
 import org.morphix.lang.Nullables;
+import org.morphix.lang.function.Functions;
 import org.morphix.lang.function.LoggerAdapter;
 import org.morphix.reflection.Constructors;
 
@@ -145,12 +147,92 @@ public final class SSLContexts {
 	public static TrustManager[] getTrustManagers(final KeyStore trustStore, final String algorithm) throws GeneralSecurityException {
 		TrustManager[] result = null;
 		if (null != trustStore) {
-			String alg = Nullables.nonNullOrDefault(algorithm, KeyManagerFactory::getDefaultAlgorithm);
+			String alg = Nullables.nonNullOrDefault(algorithm, TrustManagerFactory::getDefaultAlgorithm);
 			TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(alg);
 			trustManagerFactory.init(trustStore);
 			result = trustManagerFactory.getTrustManagers();
 		}
 		return JavaArrays.safe(result, TrustManager.class);
+	}
+
+	/**
+	 * Returns the trust managers for the given truststore configuration, re-throwing any security failure as a
+	 * {@link SecurityException}.
+	 *
+	 * @param trustStoreInfo truststore configuration
+	 * @return the trust managers for the given configuration, may be null
+	 * @throws SecurityException when the trust managers cannot be created from the given configuration
+	 */
+	public static TrustManager[] trustManagers(final StoreInfo trustStoreInfo) {
+		try {
+			return SSLContexts.getTrustManagers(trustStoreInfo);
+		} catch (GeneralSecurityException e) {
+			throw new SecurityException("Failed to create trust managers from the truststore configuration", e);
+		}
+	}
+
+	/**
+	 * Returns the first trust manager of the given type from the given trust managers, or the platform default trust
+	 * manager of the given type when the array is null or contains none of the given type.
+	 *
+	 * @param <T> the trust manager type
+	 *
+	 * @param trustManagerClass the trust manager class to look for
+	 * @param trustManagers trust managers to inspect, may be null
+	 * @return a trust manager of the given type
+	 * @throws SecurityException when no trust manager of the given type can be found
+	 */
+	public static <T extends TrustManager> T trustManager(final Class<T> trustManagerClass, final TrustManager[] trustManagers) {
+		return trustManager(trustManagerClass, trustManagers, SSLContexts::defaultTrustManager);
+	}
+
+	/**
+	 * Returns the first trust manager of the given type from the given trust managers, or the platform default trust
+	 * manager of the given type when the array is null or contains none of the given type.
+	 *
+	 * @param <T> the trust manager type
+	 *
+	 * @param trustManagerClass the trust manager class to look for
+	 * @param trustManagers trust managers to inspect, may be null
+	 * @param fallback function to determine the trust manager if one is not present in the given trust managers
+	 * @return a trust manager of the given type
+	 * @throws SecurityException when no trust manager of the given type can be found
+	 */
+	public static <T extends TrustManager> T trustManager(final Class<T> trustManagerClass, final TrustManager[] trustManagers,
+			final Function<Class<T>, T> fallback) {
+		if (null != trustManagers) {
+			for (TrustManager trustManager : trustManagers) {
+				if (trustManagerClass.isInstance(trustManager)) {
+					return trustManagerClass.cast(trustManager);
+				}
+			}
+		}
+		return fallback.apply(trustManagerClass);
+	}
+
+	/**
+	 * Returns the platform default trust manager of the given type, searching the trust managers provided by the default
+	 * {@link TrustManagerFactory}.
+	 *
+	 * @param <T> the trust manager type
+	 *
+	 * @param trustManagerClass the trust manager class to look for
+	 * @return the platform default trust manager of the given type
+	 * @throws SecurityException when the default trust managers cannot be created or no trust manager of the given found
+	 */
+	public static <T extends TrustManager> T defaultTrustManager(final Class<T> trustManagerClass) {
+		T trustManager;
+		try {
+			TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+			trustManagerFactory.init((KeyStore) null);
+			trustManager = trustManager(trustManagerClass, trustManagerFactory.getTrustManagers(), Functions.returnNull());
+		} catch (GeneralSecurityException e) {
+			throw new SecurityException("Error while looking for default trust manager", e);
+		}
+		if (null == trustManager) {
+			throw new SecurityException("No " + trustManagerClass.getName() + " found in default trust managers");
+		}
+		return trustManager;
 	}
 
 	/**

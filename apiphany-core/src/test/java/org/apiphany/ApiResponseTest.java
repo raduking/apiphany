@@ -450,6 +450,28 @@ class ApiResponseTest {
 
 			assertThat(result, equalTo(BUBU));
 		}
+
+		@Test
+		void shouldReturnDefaultOnMapResultOrDefaultWithSupplierWhenNotSuccessful() {
+			ApiResponse<A> response = ApiResponse.create((A) null)
+					.status(HttpStatus.NOT_FOUND)
+					.build();
+
+			String result = response.<String>mapResultOrDefault(r -> r.getBody().getS(), () -> MUMU);
+
+			assertThat(result, equalTo(MUMU));
+		}
+
+		@Test
+		void shouldReturnMappedValueOnMapResultOrDefaultWithSupplierWhenSuccessful() {
+			ApiResponse<A> response = ApiResponse.create(new A(BUBU))
+					.status(HttpStatus.OK)
+					.build();
+
+			String result = response.<String>mapResultOrDefault(r -> r.getBody().getS(), () -> MUMU);
+
+			assertThat(result, equalTo(BUBU));
+		}
 	}
 
 	/**

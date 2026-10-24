@@ -2,7 +2,7 @@ package org.apiphany.json.jackson2;
 
 import java.util.function.Supplier;
 
-import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.Module;
 
 /**
  * {@link Jackson2ModuleProvider} implementation for {@link ApiphanyHC5Jackson2Module}.
@@ -30,7 +30,7 @@ public class ApiphanyHC5Jackson2ModuleProvider implements Jackson2ModuleProvider
 	 * @see Jackson2ModuleProvider#getModuleSupplier()
 	 */
 	@Override
-	public Supplier<SimpleModule> getModuleSupplier() {
+	public Supplier<Module> getModuleSupplier() {
 		return ApiphanyHC5Jackson2Module::instance;
 	}
 }

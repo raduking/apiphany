@@ -1,7 +1,10 @@
 package org.apiphany.http;
 
 import static org.apiphany.test.Assertions.assertDefaultConstructorThrows;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.net.ProtocolException;
 
 import org.apache.hc.client5.http.CircularRedirectException;
 import org.junit.jupiter.api.Test;
@@ -27,6 +30,14 @@ class SpringRedirectFailureDetectorTest {
 	}
 
 	@Test
+	void shouldReturnTrueForOkHttpCircularRedirectException() {
+		ProtocolException circular = new ProtocolException("Too many follow-up requests: 21");
+		RuntimeException wrapped = new RuntimeException("wrapped", circular);
+
+		assertTrue(SpringRedirectFailureDetector.isRedirectFailure(wrapped));
+	}
+
+	@Test
 	void shouldReturnTrueForCircularRedirectInDeepCauseChain() {
 		CircularRedirectException circular = new CircularRedirectException("circular redirect");
 		RuntimeException inner = new RuntimeException("inner", circular);
@@ -37,7 +48,7 @@ class SpringRedirectFailureDetectorTest {
 
 	@Test
 	void shouldNotThrowOnNull() {
-		SpringRedirectFailureDetector.isRedirectFailure(null);
+		assertDoesNotThrow(() -> SpringRedirectFailureDetector.isRedirectFailure(null));
 	}
 
 	@Test

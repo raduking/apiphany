@@ -2,7 +2,7 @@ package org.apiphany.json.jackson2;
 
 import java.util.function.Supplier;
 
-import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.Module;
 
 /**
  * Interface for providing Jackson 2 modules to be registered in the {@link Jackson2JsonBuilder}.
@@ -24,5 +24,5 @@ public interface Jackson2ModuleProvider {
 	 *
 	 * @return a supplier of the module
 	 */
-	Supplier<SimpleModule> getModuleSupplier();
+	Supplier<Module> getModuleSupplier();
 }

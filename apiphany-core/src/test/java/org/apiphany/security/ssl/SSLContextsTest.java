@@ -1,10 +1,12 @@
 package org.apiphany.security.ssl;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -13,9 +15,15 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.Security;
 import java.security.UnrecoverableKeyException;
+import java.util.Arrays;
 
+import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import org.apiphany.io.ResourceLocation;
 import org.apiphany.json.JsonBuilder;
@@ -38,6 +46,10 @@ class SSLContextsTest {
 	private static final String KEYSTORE_TYPE = "JKS";
 	private static final String TRUSTSTORE_PATH = "security/ssl/truststore.jks";
 	private static final String TRUSTSTORE_PASSWORD = "truststorepassword123";
+
+	private static final String PROPERTY_SSL_KEY_MANAGER_FACTORY_ALGORITHM = "ssl.KeyManagerFactory.algorithm";
+	private static final String PROPERTY_SSL_TRUST_MANAGER_FACTORY_ALGORITHM = "ssl.TrustManagerFactory.algorithm";
+	private static final String NO_SUCH_ALGORITHM = "NO_SUCH_ALGORITHM";
 
 	private static final String SSL_PROPERTIES_JSON = Strings.fromFile("security/ssl/ssl-properties.json");
 
@@ -72,6 +84,15 @@ class SSLContextsTest {
 				.build();
 
 		assertNotNull(sslContext);
+	}
+
+	@Test
+	void shouldInitializeSslContextWithEmptyManagerArrays() throws Exception {
+		SSLContext sslContext = SSLContext.getInstance("TLS");
+
+		SSLContexts.initialize(sslContext, new KeyManager[0], new TrustManager[0]);
+
+		assertNotNull(sslContext.getSocketFactory());
 	}
 
 	@Test
@@ -175,6 +196,37 @@ class SSLContextsTest {
 	}
 
 	@Test
+	void shouldReturnEmptyKeyManagersWhenKeyStoreIsNull() throws Exception {
+		KeyManager[] keyManagers = SSLContexts.getKeyManagers(null, null, null);
+
+		assertNotNull(keyManagers);
+		assertThat(keyManagers.length, equalTo(0));
+	}
+
+	@Test
+	void shouldReturnEmptyTrustManagersWhenTrustStoreIsNull() throws Exception {
+		TrustManager[] trustManagers = SSLContexts.getTrustManagers(null, null);
+
+		assertNotNull(trustManagers);
+		assertThat(trustManagers.length, equalTo(0));
+	}
+
+	@Test
+	void shouldUseTrustManagerFactoryDefaultAlgorithmWhenAlgorithmIsNull() throws Exception {
+		KeyStore trustStore = SSLContexts.keyStore(TRUSTSTORE_PATH, KEYSTORE_TYPE, TRUSTSTORE_PASSWORD.toCharArray(), ResourceLocation.CLASS_PATH);
+		String originalKeyManagerAlgorithm = Security.getProperty(PROPERTY_SSL_KEY_MANAGER_FACTORY_ALGORITHM);
+
+		Security.setProperty(PROPERTY_SSL_KEY_MANAGER_FACTORY_ALGORITHM, NO_SUCH_ALGORITHM);
+		try {
+			TrustManager[] trustManagers = SSLContexts.getTrustManagers(trustStore, null);
+
+			assertTrue(Arrays.stream(trustManagers).anyMatch(X509TrustManager.class::isInstance));
+		} finally {
+			Security.setProperty(PROPERTY_SSL_KEY_MANAGER_FACTORY_ALGORITHM, originalKeyManagerAlgorithm);
+		}
+	}
+
+	@Test
 	void shouldReturnNullIfKeyStoreTypeIsEmpty() {
 		KeyStore keyStore = SSLContexts.keyStore(KEYSTORE_PATH, "", null, ResourceLocation.CLASS_PATH);
 
@@ -196,9 +248,97 @@ class SSLContextsTest {
 	}
 
 	@Test
+	void shouldGetTrustManagersFromTrustStoreInfo() {
+		SSLProperties sslProperties = JsonBuilder.fromJson(SSL_PROPERTIES_JSON, SSLProperties.class);
+
+		TrustManager[] trustManagers = SSLContexts.trustManagers(sslProperties.getTruststore());
+
+		assertNotNull(trustManagers);
+		assertTrue(Arrays.stream(trustManagers).anyMatch(X509TrustManager.class::isInstance));
+	}
+
+	@Test
+	void shouldThrowSecurityExceptionWhenTrustManagersCannotBeCreated() {
+		StoreInfo trustStoreInfo = JsonBuilder.fromJson(SSL_PROPERTIES_JSON, SSLProperties.class).getTruststore();
+		trustStoreInfo.setAlgorithm(NO_SUCH_ALGORITHM);
+
+		SecurityException exception = assertThrows(SecurityException.class, () -> SSLContexts.trustManagers(trustStoreInfo));
+
+		assertThat(exception.getMessage(), equalTo("Failed to create trust managers from the truststore configuration"));
+		assertThat(exception.getCause().getClass(), equalTo(NoSuchAlgorithmException.class));
+	}
+
+	@Test
+	void shouldFindPlatformDefaultTrustManager() {
+		X509TrustManager trustManager = SSLContexts.defaultTrustManager(X509TrustManager.class);
+
+		assertNotNull(trustManager);
+	}
+
+	@Test
+	void shouldThrowSecurityExceptionWhenNoDefaultTrustManagerOfGivenTypeExists() {
+		SecurityException exception = assertThrows(SecurityException.class,
+				() -> SSLContexts.defaultTrustManager(UnsupportedTrustManager.class));
+
+		assertThat(exception.getMessage(), equalTo("No " + UnsupportedTrustManager.class.getName() + " found in default trust managers"));
+	}
+
+	@Test
+	void shouldThrowSecurityExceptionWhenLookingForDefaultTrustManagerFails() {
+		String originalAlgorithm = Security.getProperty(PROPERTY_SSL_TRUST_MANAGER_FACTORY_ALGORITHM);
+
+		Security.setProperty(PROPERTY_SSL_TRUST_MANAGER_FACTORY_ALGORITHM, NO_SUCH_ALGORITHM);
+		try {
+			SecurityException exception = assertThrows(SecurityException.class,
+					() -> SSLContexts.defaultTrustManager(X509TrustManager.class));
+
+			assertThat(exception.getMessage(), equalTo("Error while looking for default trust manager"));
+			assertThat(exception.getCause().getClass(), equalTo(NoSuchAlgorithmException.class));
+		} finally {
+			Security.setProperty(PROPERTY_SSL_TRUST_MANAGER_FACTORY_ALGORITHM, originalAlgorithm);
+		}
+	}
+
+	@Test
+	void shouldReturnFirstTrustManagerOfGivenTypeFromArray() {
+		X509TrustManager expected = SSLContexts.defaultTrustManager(X509TrustManager.class);
+
+		TrustManager trustManager = SSLContexts.trustManager(X509TrustManager.class, new TrustManager[] { expected });
+
+		assertThat(trustManager, sameInstance(expected));
+	}
+
+	@Test
+	void shouldFallBackToPlatformDefaultTrustManagerWhenArrayHasNoMatch() {
+		TrustManager[] trustManagers = {
+				new UnsupportedTrustManager() {
+					// empty
+				}
+		};
+
+		X509TrustManager trustManager = SSLContexts.trustManager(X509TrustManager.class, trustManagers);
+
+		assertNotNull(trustManager);
+	}
+
+	@Test
+	void shouldFallBackToPlatformDefaultTrustManagerWhenArrayIsNull() {
+		X509TrustManager trustManager = SSLContexts.trustManager(X509TrustManager.class, null);
+
+		assertNotNull(trustManager);
+	}
+
+	@Test
 	void shouldThrowExceptionWhenTryingToInstantiateClass() {
 		UnsupportedOperationException exception = Assertions.assertDefaultConstructorThrows(SSLContexts.class);
 
 		assertThat(exception.getMessage(), equalTo(Constructors.MESSAGE_THIS_CLASS_SHOULD_NOT_BE_INSTANTIATED));
+	}
+
+	/**
+	 * Trust manager type never present in the platform default trust managers, used to test the type based lookups.
+	 */
+	private interface UnsupportedTrustManager extends TrustManager {
+		// empty
 	}
 }

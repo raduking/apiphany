@@ -155,6 +155,34 @@ public interface HeadersContract extends ApiphanyContract {
 				.withoutHeader("Accept-Encoding"));
 	}
 
+	@DisplayName("Headers: The client should not send an Accept-Encoding header by default when sending a body")
+	@Test
+	default void shouldNotSendAcceptEncodingWhenSendingBody() throws Exception {
+		// Some clients add an "Accept-Encoding" header when a request body is present (e.g. to enable transparent gzip
+		// of the request or response), but apiphany should not set any default headers: if the user doesn't set an
+		// Accept-Encoding header explicitly, then none should be sent, body or not.
+		wiremock().stubFor(post("/encoding-body")
+				.willReturn(aResponse()
+						.withStatus(200)
+						.withBody("no accept-encoding header")));
+
+		ApiClient api = apiClient();
+		try (api) {
+			String result = api.client()
+					.http()
+					.post()
+					.path("encoding-body")
+					.body("hello")
+					.retrieve(String.class)
+					.orNull();
+
+			assertEquals("no accept-encoding header", result);
+		}
+
+		wiremock().verify(postRequestedFor(urlEqualTo("/encoding-body"))
+				.withoutHeader("Accept-Encoding"));
+	}
+
 	@DisplayName("Headers: The client should not add a Transfer-Encoding header automatically when sending a body without an explicit Content-Type")
 	@Test
 	default void shouldPreferContentLengthOverChunkedEncodingWhenBodySizeKnown() throws Exception {

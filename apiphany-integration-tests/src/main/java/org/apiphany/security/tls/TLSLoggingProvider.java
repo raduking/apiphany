@@ -19,6 +19,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 
 import org.apiphany.lang.Hex;
+import org.apiphany.lang.Logging;
 import org.morphix.reflection.Classes;
 import org.morphix.reflection.Constructors;
 import org.morphix.reflection.Fields;
@@ -172,9 +173,9 @@ public final class TLSLoggingProvider extends Provider {
 				Object spec = Fields.IgnoreAccess.get(spi, "spec");
 
 				byte[] clientRandom = Fields.IgnoreAccess.get(spec, "clientRandom");
-				LOGGER.debug("Client Random: {}", Hex.string(clientRandom));
+				LOGGER.debug("Client Random: {}", Logging.lazyToString(() -> Hex.string(clientRandom)));
 				byte[] serverRandom = Fields.IgnoreAccess.get(spec, "serverRandom");
-				LOGGER.debug("Server Random: {}", Hex.string(serverRandom));
+				LOGGER.debug("Server Random: {}", Logging.lazyToString(() -> Hex.string(serverRandom)));
 
 				logKeyField(spec, "premasterSecret");
 				logKeyField(spec, "masterSecret");
@@ -231,7 +232,7 @@ public final class TLSLoggingProvider extends Provider {
 		 * @param fieldName field name
 		 */
 		private static void logKey(final SecretKey key, final String fieldName) {
-			LOGGER.debug("Generated {} (field:{}): {}", key.getAlgorithm(), fieldName, Hex.string(key.getEncoded()));
+			LOGGER.debug("Generated {} (field:{}): {}", key.getAlgorithm(), fieldName, Logging.lazyToString(() -> Hex.string(key.getEncoded())));
 		}
 	}
 

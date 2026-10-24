@@ -7,6 +7,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import org.apiphany.json.JsonBuilder;
 import org.apiphany.lang.Strings;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 /**
  * Test class for {@link OAuth2ProviderDetails}.
@@ -37,35 +39,17 @@ class OAuth2ProviderDetailsTest {
 		assertThat(result1.toString(), equalTo(result2.toString()));
 	}
 
-	@Test
-	void shouldReturnTrueForSecureTokenUri() {
+	@ParameterizedTest
+	@CsvSource({
+			"HTTPS://example.org/oauth2/token, true",
+			"http://example.org/oauth2/token, false",
+			"'', false",
+			"http://exa mple.org, false"
+	})
+	void shouldReturnExpectedSecurityForTokenUri(final String tokenUri, final boolean expected) {
 		OAuth2ProviderDetails details = new OAuth2ProviderDetails();
-		details.setTokenUri("HTTPS://example.org/oauth2/token");
+		details.setTokenUri(tokenUri);
 
-		assertThat(details.isTokenUriSecure(), equalTo(true));
-	}
-
-	@Test
-	void shouldReturnFalseForInsecureTokenUri() {
-		OAuth2ProviderDetails details = new OAuth2ProviderDetails();
-		details.setTokenUri("http://example.org/oauth2/token");
-
-		assertThat(details.isTokenUriSecure(), equalTo(false));
-	}
-
-	@Test
-	void shouldReturnFalseWhenTokenUriIsEmpty() {
-		OAuth2ProviderDetails details = new OAuth2ProviderDetails();
-		details.setTokenUri("");
-
-		assertThat(details.isTokenUriSecure(), equalTo(false));
-	}
-
-	@Test
-	void shouldReturnFalseWhenTokenUriIsInvalid() {
-		OAuth2ProviderDetails details = new OAuth2ProviderDetails();
-		details.setTokenUri("http://exa mple.org");
-
-		assertThat(details.isTokenUriSecure(), equalTo(false));
+		assertThat(details.isTokenUriSecure(), equalTo(expected));
 	}
 }

@@ -1,5 +1,6 @@
 package org.apiphany.client.http;
 
+import org.apiphany.client.ClientProperties;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestTemplate;
 
@@ -19,8 +20,8 @@ public class SpringRestClientProperties {
 	 * The client library to use for the RestClient exchange client.
 	 * <p>
 	 * This property can be used to specify the client library to use for the {@link SpringRestExchangeClient} or
-	 * {@link RestTemplateExchangeClient}, such as "http-client5" or "simple". If not specified, the default client library
-	 * will be used based on the presence of Apache HttpClient 5 in the classpath.
+	 * {@link RestTemplateExchangeClient}, such as "http-client5", "okhttp", or "simple". If not specified, the default
+	 * client library will be used based on the presence of Apache HttpClient 5 in the classpath.
 	 */
 	private String clientLibrary;
 
@@ -29,6 +30,32 @@ public class SpringRestClientProperties {
 	 */
 	public SpringRestClientProperties() {
 		// empty
+	}
+
+	/**
+	 * Adds an explicit client properties with an explicit client library
+	 * {@link SpringRestClientProperties#getClientLibrary()} override to the given properties.
+	 *
+	 * @param properties client properties to augment
+	 * @param clientLibrary the name of the client library (present in {@code ROOT} static member for supported ones)
+	 * @return the same properties instance
+	 */
+	public static ClientProperties withClientLibrary(final ClientProperties properties, final String clientLibrary) {
+		SpringRestClientProperties springRestClientProperties = new SpringRestClientProperties();
+		springRestClientProperties.setClientLibrary(clientLibrary);
+		properties.setCustomProperties(SpringRestClientProperties.ROOT, springRestClientProperties);
+		return properties;
+	}
+
+	/**
+	 * Adds a default client properties with an explicit client library
+	 * {@link SpringRestClientProperties#getClientLibrary()} override to the given properties.
+	 *
+	 * @param clientLibrary the name of the client library (present in {@code ROOT} static member for supported ones)
+	 * @return the same properties instance
+	 */
+	public static ClientProperties withClientLibrary(final String clientLibrary) {
+		return withClientLibrary(ClientProperties.defaults(), clientLibrary);
 	}
 
 	/**

@@ -41,9 +41,10 @@ by implementing the `HttpExchangeClient` interface or by extending the `Abstract
 #### Client Support
 
 - Support for Apache HttpClient5 is already available in the `apiphany-httpclient5` module and can be used by adding the dependency and changing one line in your client constructor.
+- Support for OkHttp is already available in the `apiphany-okhttp` module and can be used by adding the dependency and changing one line in your client constructor.
 - Support for RestTemplate and RestClient is already available in the `apiphany-spring` module and can be used by adding the dependency and changing one line in your client constructor.
 
-Support is being developed for other HTTP clients like Netty, OkHttp, Jersey, etc. If you want to contribute with an implementation for a new HTTP client, please check the [contribution guidelines](CONTRIBUTING.md) and feel free to open a PR.
+Support is being developed for other HTTP clients like Netty, Jersey, etc. If you want to contribute with an implementation for a new HTTP client, please check the [contribution guidelines](CONTRIBUTING.md) and feel free to open a PR.
 
 ### License
 
@@ -51,7 +52,7 @@ Support is being developed for other HTTP clients like Netty, OkHttp, Jersey, et
 
 ### Releases
 
-Current release `1.2.21`
+Current release `1.2.22`
 
 ### Getting Started
 
@@ -61,7 +62,7 @@ Maven: add this dependency to your `pom.xml`
 <dependency>
     <groupId>io.github.raduking</groupId>
     <artifactId>apiphany</artifactId>
-    <version>1.2.21</version>
+    <version>1.2.22</version>
 </dependency>
 ```
 
@@ -135,6 +136,58 @@ String result = http()
         .header("Authorization", "Bearer <token>")
         .header("Content-Type", "application/json")
         .body("{\"name\":\"John\"}")
+        .retrieve(String.class)
+        .orRethrow();
+```
+
+### Choosing the HTTP client
+
+By default Apiphany uses the JDK `java.net.http` client. You can switch to another implementation by adding the corresponding module dependency and passing an exchange client instance to `http(...)`. No other code changes are needed.
+
+#### Apache HttpClient5
+
+Add the `apiphany-httpclient5` dependency, then:
+
+```java
+import org.apiphany.client.http.ApacheHC5HttpExchangeClient;
+
+ExchangeClient client = new ApacheHC5HttpExchangeClient();
+
+String name = http(client)
+        .get()
+        .url("https://api.example.com/v1/users/1")
+        .retrieve(String.class)
+        .orRethrow();
+```
+
+#### OkHttp
+
+Add the `apiphany-okhttp` dependency, then:
+
+```java
+import org.apiphany.client.http.OkHttpExchangeClient;
+
+ExchangeClient client = new OkHttpExchangeClient();
+
+String name = http(client)
+        .get()
+        .url("https://api.example.com/v1/users/1")
+        .retrieve(String.class)
+        .orRethrow();
+```
+
+#### Spring `RestClient`
+
+Add the `apiphany-spring` dependency, then:
+
+```java
+import org.apiphany.client.http.SpringRestExchangeClient;
+
+ExchangeClient client = new SpringRestExchangeClient();
+
+String name = http(client)
+        .get()
+        .url("https://api.example.com/v1/users/1")
         .retrieve(String.class)
         .orRethrow();
 ```

@@ -1,5 +1,8 @@
 package org.apiphany.json.jackson2;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.function.Supplier;
@@ -14,6 +17,23 @@ import com.fasterxml.jackson.databind.Module;
  * @author Radu Sebastian LAZIN
  */
 class ApiphanyHC5Jackson2ModuleProviderTest {
+
+	@Test
+	void shouldReturnTheApiphanyHC5ModuleName() {
+		ApiphanyHC5Jackson2ModuleProvider provider = new ApiphanyHC5Jackson2ModuleProvider();
+
+		assertThat(provider.getModuleName(), equalTo(ApiphanyHC5Jackson2Module.NAME));
+	}
+
+	@Test
+	void shouldReturnASupplierOfTheApiphanyHC5Module() {
+		ApiphanyHC5Jackson2ModuleProvider provider = new ApiphanyHC5Jackson2ModuleProvider();
+
+		Supplier<Module> moduleSupplier = provider.getModuleSupplier();
+
+		assertNotNull(moduleSupplier);
+		assertThat(moduleSupplier.get(), instanceOf(ApiphanyHC5Jackson2Module.class));
+	}
 
 	@Test
 	void shouldLoadThisProviderWithServiceLoader() {

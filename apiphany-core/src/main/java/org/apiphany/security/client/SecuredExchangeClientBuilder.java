@@ -33,7 +33,7 @@ public class SecuredExchangeClientBuilder extends ExchangeClientBuilder {
 	 *
 	 * @return the secured exchange client builder
 	 */
-	public static SecuredExchangeClientBuilder create() {
+	public static SecuredExchangeClientBuilder create() { // NOSONAR safe to hide name
 		return new SecuredExchangeClientBuilder();
 	}
 

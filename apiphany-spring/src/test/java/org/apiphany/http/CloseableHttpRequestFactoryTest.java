@@ -1,12 +1,14 @@
 package org.apiphany.http;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.net.URI;
 import java.util.Map;
@@ -14,6 +16,7 @@ import java.util.Map;
 import org.apiphany.client.ClientProperties;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.http.client.ClientHttpRequestFactory;
@@ -32,7 +35,7 @@ class CloseableHttpRequestFactoryTest {
 		void shouldCreateFactoryWithDelegate() throws Exception {
 			ClientHttpRequestFactory delegate = mock(ClientHttpRequestFactory.class);
 			ClientHttpRequest mockRequest = mock(ClientHttpRequest.class);
-			when(delegate.createRequest(URI.create("https://example.com"), HttpMethod.GET)).thenReturn(mockRequest);
+			doReturn(mockRequest).when(delegate).createRequest(URI.create("https://example.com"), HttpMethod.GET);
 
 			try (CloseableHttpRequestFactory factory = CloseableHttpRequestFactory.of(delegate)) {
 				ClientHttpRequest request = factory.createRequest(URI.create("https://example.com"), HttpMethod.GET);
@@ -79,7 +82,7 @@ class CloseableHttpRequestFactoryTest {
 			ClientHttpRequest mockRequest = mock(ClientHttpRequest.class);
 			URI uri = URI.create("https://api.example.com/resource");
 
-			when(delegate.createRequest(uri, HttpMethod.POST)).thenReturn(mockRequest);
+			doReturn(mockRequest).when(delegate).createRequest(uri, HttpMethod.POST);
 
 			try (CloseableHttpRequestFactory factory = CloseableHttpRequestFactory.of(delegate)) {
 				ClientHttpRequest request = factory.createRequest(uri, HttpMethod.POST);
@@ -100,6 +103,51 @@ class CloseableHttpRequestFactoryTest {
 				assertThat(factory, notNullValue());
 			} catch (Exception e) {
 				// acceptable - factory creation may fail without proper SSL config
+			}
+		}
+
+		@Test
+		void shouldDetectWithOkHttpClientLibrary() {
+			ClientProperties properties = ClientProperties.defaults();
+
+			try (CloseableHttpRequestFactory factory = CloseableHttpRequestFactory.detect(properties, "okhttp")) {
+				assertThat(factory, notNullValue());
+			} catch (Exception e) {
+				// acceptable - factory creation may fail without proper SSL config
+			}
+		}
+
+		@Test
+		void shouldDetectOkHttpWithMapArgsWhenApacheHC5IsNotPresent() throws Exception {
+			ClientProperties properties = ClientProperties.defaults();
+
+			try (MockedStatic<ApacheHC5Library> apache = mockStatic(ApacheHC5Library.class);
+					MockedStatic<OkHttpLibrary> okhttp = mockStatic(OkHttpLibrary.class)) {
+				apache.when(ApacheHC5Library::isPresent).thenReturn(false);
+				okhttp.when(OkHttpLibrary::isPresent).thenReturn(true);
+
+				try (CloseableHttpRequestFactory factory = CloseableHttpRequestFactory.detect(properties, Map.of())) {
+					ClientHttpRequest request = factory.createRequest(URI.create("https://example.com"), HttpMethod.GET);
+
+					assertThat(request, instanceOf(OkHttp3ClientHttpRequest.class));
+				}
+			}
+		}
+
+		@Test
+		void shouldDetectOkHttpWithVarargsWhenApacheHC5IsNotPresent() throws Exception {
+			ClientProperties properties = ClientProperties.defaults();
+
+			try (MockedStatic<ApacheHC5Library> apache = mockStatic(ApacheHC5Library.class);
+					MockedStatic<OkHttpLibrary> okhttp = mockStatic(OkHttpLibrary.class)) {
+				apache.when(ApacheHC5Library::isPresent).thenReturn(false);
+				okhttp.when(OkHttpLibrary::isPresent).thenReturn(true);
+
+				try (CloseableHttpRequestFactory factory = CloseableHttpRequestFactory.detect(properties, new Object())) {
+					ClientHttpRequest request = factory.createRequest(URI.create("https://example.com"), HttpMethod.GET);
+
+					assertThat(request, instanceOf(OkHttp3ClientHttpRequest.class));
+				}
 			}
 		}
 

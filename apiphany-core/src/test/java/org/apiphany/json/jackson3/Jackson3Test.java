@@ -134,7 +134,7 @@ class Jackson3Test {
 	}
 
 	@Test
-	void testAnnotationCreation() {
+	void shouldCreateAnnotations() {
 		assertNotNull(jsonSerializeAs);
 		assertNotNull(jsonDeserializeAs);
 	}

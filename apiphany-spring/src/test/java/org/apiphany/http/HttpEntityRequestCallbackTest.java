@@ -5,9 +5,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.util.List;
 
@@ -42,7 +42,7 @@ class HttpEntityRequestCallbackTest {
 
 			ClientHttpRequest request = mock(ClientHttpRequest.class);
 			HttpHeaders requestHeaders = new HttpHeaders();
-			when(request.getHeaders()).thenReturn(requestHeaders);
+			doReturn(requestHeaders).when(request).getHeaders();
 
 			callback.doWithRequest(request);
 
@@ -62,13 +62,13 @@ class HttpEntityRequestCallbackTest {
 			HttpEntity<String> entity = new HttpEntity<>("test body", entityHeaders);
 
 			HttpMessageConverter<String> converter = mock(HttpMessageConverter.class);
-			when(converter.canWrite(String.class, MediaType.APPLICATION_JSON)).thenReturn(true);
+			doReturn(true).when(converter).canWrite(String.class, MediaType.APPLICATION_JSON);
 
 			HttpEntityRequestCallback<String> callback = new HttpEntityRequestCallback<>(entity, List.of(converter));
 
 			ClientHttpRequest request = mock(ClientHttpRequest.class);
 			HttpHeaders requestHeaders = new HttpHeaders();
-			when(request.getHeaders()).thenReturn(requestHeaders);
+			doReturn(requestHeaders).when(request).getHeaders();
 
 			callback.doWithRequest(request);
 
@@ -82,13 +82,13 @@ class HttpEntityRequestCallbackTest {
 			HttpEntity<String> entity = new HttpEntity<>("body");
 
 			HttpMessageConverter<String> converter = mock(HttpMessageConverter.class);
-			when(converter.canWrite(String.class, null)).thenReturn(true);
+			doReturn(true).when(converter).canWrite(String.class, null);
 
 			HttpEntityRequestCallback<String> callback = new HttpEntityRequestCallback<>(entity, List.of(converter));
 
 			ClientHttpRequest request = mock(ClientHttpRequest.class);
 			HttpHeaders requestHeaders = new HttpHeaders();
-			when(request.getHeaders()).thenReturn(requestHeaders);
+			doReturn(requestHeaders).when(request).getHeaders();
 
 			callback.doWithRequest(request);
 
@@ -107,12 +107,12 @@ class HttpEntityRequestCallbackTest {
 			HttpEntity<String> entity = new HttpEntity<>("body", entityHeaders);
 
 			HttpMessageConverter<String> converter = mock(HttpMessageConverter.class);
-			when(converter.canWrite(String.class, MediaType.APPLICATION_XML)).thenReturn(false);
+			doReturn(false).when(converter).canWrite(String.class, MediaType.APPLICATION_XML);
 
 			HttpEntityRequestCallback<String> callback = new HttpEntityRequestCallback<>(entity, List.of(converter));
 
 			ClientHttpRequest request = mock(ClientHttpRequest.class);
-			when(request.getHeaders()).thenReturn(new HttpHeaders());
+			doReturn(new HttpHeaders()).when(request).getHeaders();
 
 			RestClientException ex = assertThrows(RestClientException.class, () -> callback.doWithRequest(request));
 
@@ -125,12 +125,12 @@ class HttpEntityRequestCallbackTest {
 			HttpEntity<String> entity = new HttpEntity<>("body");
 
 			HttpMessageConverter<String> converter = mock(HttpMessageConverter.class);
-			when(converter.canWrite(String.class, null)).thenReturn(false);
+			doReturn(false).when(converter).canWrite(String.class, null);
 
 			HttpEntityRequestCallback<String> callback = new HttpEntityRequestCallback<>(entity, List.of(converter));
 
 			ClientHttpRequest request = mock(ClientHttpRequest.class);
-			when(request.getHeaders()).thenReturn(new HttpHeaders());
+			doReturn(new HttpHeaders()).when(request).getHeaders();
 
 			RestClientException ex = assertThrows(RestClientException.class, () -> callback.doWithRequest(request));
 
@@ -147,14 +147,14 @@ class HttpEntityRequestCallbackTest {
 			HttpEntity<String> entity = new HttpEntity<>("body");
 
 			HttpMessageConverter<String> converter = mock(HttpMessageConverter.class);
-			when(converter.canWrite(String.class, null)).thenReturn(true);
+			doReturn(true).when(converter).canWrite(String.class, null);
 
 			HttpEntityRequestCallback<String> callback = new HttpEntityRequestCallback<>(entity, List.of(converter));
 
 			ClientHttpRequest request = mock(ClientHttpRequest.class);
 			HttpHeaders requestHeaders = new HttpHeaders();
 			requestHeaders.set("X-PreExisting", "old");
-			when(request.getHeaders()).thenReturn(requestHeaders);
+			doReturn(requestHeaders).when(request).getHeaders();
 
 			callback.doWithRequest(request);
 
@@ -172,7 +172,7 @@ class HttpEntityRequestCallbackTest {
 			HttpEntityRequestCallback<String> callback = new HttpEntityRequestCallback<>(entity, null);
 
 			ClientHttpRequest request = mock(ClientHttpRequest.class);
-			when(request.getHeaders()).thenReturn(new HttpHeaders());
+			doReturn(new HttpHeaders()).when(request).getHeaders();
 
 			assertThrows(RestClientException.class, () -> callback.doWithRequest(request));
 		}

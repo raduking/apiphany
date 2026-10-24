@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -35,7 +34,7 @@ class EnvironmentPropertyFinderTest {
 		void shouldReturnEnvironmentFromApplicationContext() {
 			ApplicationContext ctx = mock(ApplicationContext.class);
 			Environment env = mock(Environment.class);
-			when(ctx.getEnvironment()).thenReturn(env);
+			doReturn(env).when(ctx).getEnvironment();
 			TestEnvironmentPropertyFinder finder = createFinder(ctx);
 
 			Environment result = finder.getEnvironment();
@@ -60,7 +59,7 @@ class EnvironmentPropertyFinderTest {
 		void shouldReturnEnvironmentProperty() {
 			ApplicationContext ctx = mock(ApplicationContext.class);
 			Environment env = mock(Environment.class);
-			when(ctx.getEnvironment()).thenReturn(env);
+			doReturn(env).when(ctx).getEnvironment();
 			doReturn(VALUE).when(env).getProperty(KEY, String.class, DEFAULT_STRING);
 			TestEnvironmentPropertyFinder finder = createFinder(ctx);
 
@@ -73,7 +72,7 @@ class EnvironmentPropertyFinderTest {
 		void shouldReturnDefaultValueWhenPropertyIsMissing() {
 			ApplicationContext ctx = mock(ApplicationContext.class);
 			Environment env = mock(Environment.class);
-			when(ctx.getEnvironment()).thenReturn(env);
+			doReturn(env).when(ctx).getEnvironment();
 			doReturn(DEFAULT_STRING).when(env).getProperty(KEY, String.class, DEFAULT_STRING);
 			TestEnvironmentPropertyFinder finder = createFinder(ctx);
 
@@ -93,7 +92,7 @@ class EnvironmentPropertyFinderTest {
 		void shouldGetPropertyFromEnvironmentOfApplicationContext() {
 			ApplicationContext ctx = mock(ApplicationContext.class);
 			Environment env = mock(Environment.class);
-			when(ctx.getEnvironment()).thenReturn(env);
+			doReturn(env).when(ctx).getEnvironment();
 			TestEnvironmentPropertyFinder finder = createFinder(ctx);
 
 			finder.getEnvironmentProperty(KEY, String.class, DEFAULT_STRING);

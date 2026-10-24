@@ -1,5 +1,20 @@
 ## Release Notes
 
+`1.2.22`
+
+- Added `apiphany-okhttp`, a plugin library adding OkHttp support.
+- Added `OkHttpExchangeClient` to exchange requests through OkHttp.
+- Added `OkHttpLibrary` with the OkHttp classpath presence check and the supported version range (`4.9.0` - `4.12.0`), verified when a client is built.
+- Added `OkHttpProperties` with `connection`, `request`, `connect`, `read` and `write` sections mirroring OkHttp's own timeout and pooling model.
+- Added `OkHttpClients` to build and configure `OkHttpClient` instances from `ClientProperties`, with TLS setup from `SSLProperties`.
+- Added `OkHttpEntities`, `OneShotRequestBody` and `CloseableOkHttpResponseInputStream` for request body writing and response body streaming.
+- Added `SSLContexts.trustManagers(StoreInfo)` to create trust managers from a truststore configuration, re-throwing any `GeneralSecurityException` as a `SecurityException`.
+- Added `SSLContexts.trustManager(Class, TrustManager[])` returning the first trust manager of the given type, or the platform default of that type when the array is `null` or empty.
+- Added `SSLContexts.trustManager(Class, TrustManager[], Function)` returning the first trust manager of the given type, or the given fallback when the array is `null` or empty.
+- Added `SSLContexts.defaultTrustManager(Class)` returning the type's platform default trust manager from `TrustManagerFactory`, failing with a `SecurityException` if none exists.
+
+---
+
 `1.2.21`
 
 - Added `JsonBuilder.hasLibrary()` to report whether a JSON library is on the classpath. It is false when the singleton stayed a `JsonBuilder`.
@@ -47,7 +62,8 @@
 - Added `Jackson3JsonBuilder` date/time serialization features to explicit values so the ISO output no longer depends on library defaults.
 - Aligned `java.util.Date` and `java.util.Calendar` serialization between Jackson 2 and 3 (zero offset as `+00:00`).
 - Aligned `java.time.Year`, `java.time.Month`, `java.sql.Date` and `java.util.Locale` JSON serialization between Jackson 2 and 3.
-- Aligned Java `Optional*` JSON serialization between Jackson 2 and 3 by registering Jackson's `Jdk8Module` on `Jackson2JsonBuilder` when `jackson-datatype-jdk8` is on the classpath.
+- Aligned Java `Optional*` JSON serialization between Jackson 2 and 3 by registering Jackson's `Jdk8Module` on `Jackson2JsonBuilder`
+  when `jackson-datatype-jdk8` is on the classpath.
 - Changed `Jackson2JsonBuilder.registerModule` to accept a Jackson `Module`, so `Jdk8Module` is registered through the same method as the other modules.
 - Aligned the JSON map key representation of `java.util.Locale` and `java.sql.Date` between Jackson 2 and 3.
 - Upgraded `httpclient5` to `5.6.3` because of `CVE-2026-64607`.
@@ -565,7 +581,8 @@
 - Added a limit of `Integer.MAX_VALUE` to the maximum number of bytes the `Strings.fromPath` methods are allowed to read much like `InputStream.readAllBytes`.
 - Added `Bytes.fromFile` to read a byte array from a given file.
 - Renamed `ForkedLegacyHttpsServerRunner` to `ForkedHttpsServerRunner`.
-- Changed `ForkedHttpsServerRunner` to run any HTTPS server that has a constructor like `MyHttpsServer(int, SSLProperties)` in a separate process so that it can have a separate SSL context.
+- Changed `ForkedHttpsServerRunner` to run any HTTPS server that has a constructor like `MyHttpsServer(int, SSLProperties)` in a separate process
+  so that it can have a separate SSL context.
 - Updated `logback-classic` to `1.5.27`.
 - Renamed package `json.jackson` to `json.jackson2` to better reflect the Jackson version used.
 - Renamed all classes that use Jackson 2 library to have `Jackson2` in the name instead of `Jackson` only.

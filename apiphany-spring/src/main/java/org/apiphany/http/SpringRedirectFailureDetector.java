@@ -16,7 +16,8 @@ public class SpringRedirectFailureDetector {
 	 * @return true if redirect failure was detected, false otherwise
 	 */
 	public static boolean isRedirectFailure(final Throwable throwable) {
-		return ApacheHC5Library.isPresent() && ApacheHC5Clients.isCircularRedirectException(throwable);
+		return (ApacheHC5Library.isPresent() && ApacheHC5Clients.isCircularRedirectException(throwable))
+				|| (OkHttpLibrary.isPresent() && OkHttpClients.isCircularRedirectException(throwable));
 	}
 
 	/**
