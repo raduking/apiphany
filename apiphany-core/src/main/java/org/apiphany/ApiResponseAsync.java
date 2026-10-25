@@ -33,16 +33,6 @@ public class ApiResponseAsync<T> extends CompletableFuture<ApiResponse<T>> {
 	}
 
 	/**
-	 * Returns a future for the response body, completing with {@code null} if the request wasn't 2xx successful.
-	 *
-	 * @return a future for the response body or null
-	 * @see ApiResponse#orNull()
-	 */
-	public CompletableFuture<T> orNull() {
-		return thenApply(ApiResponse::orNull);
-	}
-
-	/**
 	 * Returns a future for the response body, completing with the given default if the request wasn't 2xx successful.
 	 *
 	 * @param defaultBody default value to be returned
@@ -70,9 +60,19 @@ public class ApiResponseAsync<T> extends CompletableFuture<ApiResponse<T>> {
 	 *
 	 * @param defaultSupplier default return value supplier
 	 * @return a future for the response body
-	 * @see ApiResponse#orDefault(Supplier)
+	 * @see ApiResponse#orGet(Supplier)
 	 */
-	public CompletableFuture<T> orDefault(final Supplier<T> defaultSupplier) {
-		return thenApply(apiResponse -> apiResponse.orDefault(defaultSupplier));
+	public CompletableFuture<T> orGet(final Supplier<T> defaultSupplier) {
+		return thenApply(apiResponse -> apiResponse.orGet(defaultSupplier));
+	}
+
+	/**
+	 * Returns a future for the response body, completing with {@code null} if the request wasn't 2xx successful.
+	 *
+	 * @return a future for the response body or null
+	 * @see ApiResponse#orNull()
+	 */
+	public CompletableFuture<T> orNull() {
+		return thenApply(ApiResponse::orNull);
 	}
 }

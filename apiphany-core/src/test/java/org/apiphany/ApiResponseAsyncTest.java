@@ -60,7 +60,7 @@ class ApiResponseAsyncTest {
 	void shouldCompleteWithSuppliedDefaultOnOrDefaultWhenResponseIsNotSuccessful() {
 		ApiResponseAsync<String> asyncResponse = failed();
 
-		String result = asyncResponse.orDefault(() -> DEFAULT_BODY).join();
+		String result = asyncResponse.orGet(() -> DEFAULT_BODY).join();
 
 		assertThat(result, equalTo(DEFAULT_BODY));
 	}
