@@ -52,7 +52,7 @@ Support is being developed for other HTTP clients like Netty, Jersey, etc. If yo
 
 ### Releases
 
-Current release `1.2.22`
+Current release `1.2.23`
 
 ### Getting Started
 
@@ -62,7 +62,7 @@ Maven: add this dependency to your `pom.xml`
 <dependency>
     <groupId>io.github.raduking</groupId>
     <artifactId>apiphany</artifactId>
-    <version>1.2.22</version>
+    <version>1.2.23</version>
 </dependency>
 ```
 

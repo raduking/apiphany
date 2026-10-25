@@ -1,5 +1,9 @@
 ## Release Notes
 
+`1.2.23`
+
+---
+
 `1.2.22`
 
 - Added `apiphany-okhttp`, a plugin library adding OkHttp support.
