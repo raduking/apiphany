@@ -48,7 +48,6 @@ class ApiResponseTest {
 	 * <ul>
 	 * <li>{@link ApiResponse#orDefault(Object)}.</li>
 	 * <li>{@link ApiResponse#orDefault(Class)}</li>
-	 * <li>{@link ApiResponse#orDefault(Supplier)}</li>
 	 * </ul>
 	 */
 	@Nested
@@ -89,6 +88,29 @@ class ApiResponseTest {
 
 			assertNotNull(result);
 			assertNull(result.getS());
+		}
+	}
+
+	/**
+	 * Tests for
+	 *
+	 * <ul>
+	 * <li>{@link ApiResponse#orGet(Supplier)}</li>
+	 * </ul>
+	 */
+	@Nested
+	class OrGetTests {
+
+		@Test
+		void shouldReturnDefaultOnOrGetWhenNotSuccessful() {
+			ApiResponse<A> response = ApiResponse.create((A) null)
+					.status(HttpStatus.NOT_FOUND)
+					.build();
+
+			A result = response.orGet(() -> new A(BUBU));
+
+			assertNotNull(result);
+			assertThat(result.getS(), equalTo(BUBU));
 		}
 	}
 
@@ -457,7 +479,7 @@ class ApiResponseTest {
 					.status(HttpStatus.NOT_FOUND)
 					.build();
 
-			String result = response.<String>mapResultOrDefault(r -> r.getBody().getS(), () -> MUMU);
+			String result = response.mapResultOrGet(r -> r.getBody().getS(), () -> MUMU);
 
 			assertThat(result, equalTo(MUMU));
 		}
@@ -468,7 +490,7 @@ class ApiResponseTest {
 					.status(HttpStatus.OK)
 					.build();
 
-			String result = response.<String>mapResultOrDefault(r -> r.getBody().getS(), () -> MUMU);
+			String result = response.mapResultOrGet(r -> r.getBody().getS(), () -> MUMU);
 
 			assertThat(result, equalTo(BUBU));
 		}

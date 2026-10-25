@@ -76,21 +76,22 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @return response body
 	 */
 	public T orDefault(final T defaultBody) {
-		return orDefault(() -> defaultBody);
+		return orGet(() -> defaultBody);
 	}
 
 	/**
 	 * Returns the response body or an instance of the given class by calling its default constructor. This is useful when
-	 * you want to return a non <code>null</code> value from a client and usually all DTOs (return types from clients) have
-	 * a default constructor.
+	 * you want to return a non {@code null} value from a client, since DTOs (return types from clients) usually have a
+	 * default constructor.
 	 * <p>
-	 * We don't worry about performance here because this should
+	 * The default instance is created only when the response is unsuccessful, so the reflective instantiation overhead is
+	 * not expected to be significant.
 	 *
 	 * @param cls class to create an instance of
-	 * @return an instance of the given class
+	 * @return the response body or a new instance of the given class
 	 */
 	public T orDefault(final Class<T> cls) {
-		return orDefault(() -> Constructors.IgnoreAccess.newInstance(cls));
+		return orGet(() -> Constructors.IgnoreAccess.newInstance(cls));
 	}
 
 	/**
@@ -99,7 +100,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @param defaultSupplier default return value supplier
 	 * @return an instance of the given class
 	 */
-	public T orDefault(final Supplier<T> defaultSupplier) {
+	public T orGet(final Supplier<T> defaultSupplier) {
 		return isSuccessful() ? getBody() : defaultSupplier.get();
 	}
 
@@ -109,7 +110,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @return response body or null
 	 */
 	public T orNull() {
-		return orDefault(Nullables.supplyNull());
+		return orGet(Nullables.supplyNull());
 	}
 
 	/**
@@ -258,11 +259,12 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @return mapped response or default value
 	 */
 	public <U> U mapResultOrDefault(final Function<ApiResponse<T>, U> responseMapper, final U defaultValue) {
-		return mapResultOrDefault(responseMapper, (Supplier<U>) () -> defaultValue);
+		return mapResultOrGet(responseMapper, (Supplier<U>) () -> defaultValue);
 	}
 
 	/**
-	 * Maps the response to another type if the request was 2xx successful, or returns the given default value.
+	 * Maps the response to another type if the request was 2xx successful, or returns the given default value supplied by
+	 * the given default value supplier.
 	 *
 	 * @param <U> return type
 	 *
@@ -270,7 +272,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @param defaultValueSupplier supplier for the default value to be returned
 	 * @return mapped response or default value
 	 */
-	public <U> U mapResultOrDefault(final Function<ApiResponse<T>, U> responseMapper, final Supplier<U> defaultValueSupplier) {
+	public <U> U mapResultOrGet(final Function<ApiResponse<T>, U> responseMapper, final Supplier<U> defaultValueSupplier) {
 		return isSuccessful() ? responseMapper.apply(this) : defaultValueSupplier.get();
 	}
 
@@ -283,7 +285,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @return mapped response or null
 	 */
 	public <U> U mapResultOrNull(final Function<ApiResponse<T>, U> responseMapper) {
-		return mapResultOrDefault(responseMapper, Suppliers.supplyNull());
+		return mapResultOrGet(responseMapper, Suppliers.supplyNull());
 	}
 
 	/**

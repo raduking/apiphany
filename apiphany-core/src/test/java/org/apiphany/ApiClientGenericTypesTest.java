@@ -69,7 +69,7 @@ class ApiClientGenericTypesTest {
 					.get()
 					.path(paths)
 					.retrieve(LIST_TYPE_1)
-					.orDefault(Collections::emptyList);
+					.orGet(Collections::emptyList);
 		}
 	}
 
