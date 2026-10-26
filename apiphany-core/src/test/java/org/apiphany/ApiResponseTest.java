@@ -9,9 +9,11 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import java.io.ByteArrayInputStream;
@@ -20,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -526,6 +529,184 @@ class ApiResponseTest {
 			String result = response.mapResultOrNull(r -> r.getBody().getS());
 
 			assertThat(result, equalTo(BUBU));
+		}
+	}
+
+	/**
+	 * Tests for
+	 *
+	 * <ul>
+	 * <li>{@link ApiResponse#onSuccess(Consumer)}.</li>
+	 * </ul>
+	 */
+	@Nested
+	class OnSuccessTests {
+
+		@Test
+		@SuppressWarnings("unchecked")
+		void shouldRunActionOnOnSuccessWhenSuccessful() {
+			A a = new A(BUBU);
+			ApiResponse<A> response = ApiResponse.create(a)
+					.status(HttpStatus.OK)
+					.build();
+			Consumer<ApiResponse<A>> action = mock(Consumer.class);
+
+			ApiResponse<A> result = response.onSuccess(action);
+
+			assertThat(result, equalTo(response));
+			verify(action).accept(same(response));
+		}
+
+		@Test
+		@SuppressWarnings("unchecked")
+		void shouldNotRunActionOnOnSuccessWhenNotSuccessful() {
+			ApiResponse<A> response = ApiResponse.create((A) null)
+					.status(HttpStatus.NOT_FOUND)
+					.build();
+			Consumer<ApiResponse<A>> action = mock(Consumer.class);
+
+			response.onSuccess(action);
+
+			verify(action, never()).accept(any());
+		}
+	}
+
+	/**
+	 * Tests for
+	 *
+	 * <ul>
+	 * <li>{@link ApiResponse#onFailure(Consumer)}.</li>
+	 * </ul>
+	 */
+	@Nested
+	class OnFailureTests {
+
+		@Test
+		@SuppressWarnings("unchecked")
+		void shouldRunActionOnOnFailureWhenFailed() {
+			ApiResponse<A> response = ApiResponse.create((A) null)
+					.status(HttpStatus.NOT_FOUND)
+					.build();
+			Consumer<ApiResponse<A>> action = mock(Consumer.class);
+
+			ApiResponse<A> result = response.onFailure(action);
+
+			assertThat(result, equalTo(response));
+			verify(action).accept(same(response));
+		}
+
+		@Test
+		@SuppressWarnings("unchecked")
+		void shouldNotRunActionOnOnFailureWhenSuccessful() {
+			ApiResponse<A> response = ApiResponse.create(new A(BUBU))
+					.status(HttpStatus.OK)
+					.build();
+			Consumer<ApiResponse<A>> action = mock(Consumer.class);
+
+			response.onFailure(action);
+
+			verify(action, never()).accept(any());
+		}
+
+		@Test
+		@SuppressWarnings("unchecked")
+		void shouldNotRunActionOnOnFailureWhenStatusIsNotError() {
+			ApiResponse<A> response = ApiResponse.create(new A(BUBU))
+					.status(HttpStatus.MOVED_PERMANENTLY)
+					.build();
+			Consumer<ApiResponse<A>> action = mock(Consumer.class);
+
+			response.onFailure(action);
+
+			verify(action, never()).accept(any());
+		}
+	}
+
+	/**
+	 * Tests for
+	 *
+	 * <ul>
+	 * <li>{@link ApiResponse#isFailed()}.</li>
+	 * </ul>
+	 */
+	@Nested
+	class IsFailedTests {
+
+		@Test
+		void shouldReturnTrueOnIsFailedWhenStatusIsError() {
+			ApiResponse<Object> response = ApiResponse.create(null)
+					.status(HttpStatus.NOT_FOUND)
+					.build();
+
+			assertThat(response.isFailed(), equalTo(true));
+		}
+
+		@Test
+		void shouldReturnFalseOnIsFailedWhenStatusIsSuccess() {
+			ApiResponse<Object> response = ApiResponse.create(null)
+					.status(HttpStatus.OK)
+					.build();
+
+			assertThat(response.isFailed(), equalTo(false));
+		}
+
+		@Test
+		void shouldReturnFalseOnIsFailedWhenStatusIsMissing() {
+			ApiResponse<Object> response = ApiResponse.create(null)
+					.build();
+
+			assertThat(response.isFailed(), equalTo(false));
+		}
+
+		@Test
+		void shouldReturnFalseOnIsFailedWhenStatusIsNotError() {
+			ApiResponse<Object> response = ApiResponse.create(null)
+					.status(HttpStatus.MOVED_PERMANENTLY)
+					.build();
+
+			assertThat(response.isFailed(), equalTo(false));
+		}
+	}
+
+	/**
+	 * Tests for
+	 *
+	 * <ul>
+	 * <li>{@link ApiResponse#onException(Consumer)}.</li>
+	 * </ul>
+	 */
+	@Nested
+	class OnExceptionTests {
+
+		private static final String EXCEPTION_MESSAGE = "Not successful";
+
+		@Test
+		@SuppressWarnings("unchecked")
+		void shouldRunActionOnOnExceptionWhenHasException() {
+			IllegalStateException exception = new IllegalStateException(EXCEPTION_MESSAGE);
+			ApiResponse<A> response = ApiResponse.create((A) null)
+					.status(HttpStatus.NOT_FOUND)
+					.exception(exception)
+					.build();
+			Consumer<Exception> action = mock(Consumer.class);
+
+			ApiResponse<A> result = response.onException(action);
+
+			assertThat(result, equalTo(response));
+			verify(action).accept(same(exception));
+		}
+
+		@Test
+		@SuppressWarnings("unchecked")
+		void shouldNotRunActionOnOnExceptionWhenHasNoException() {
+			ApiResponse<A> response = ApiResponse.create(new A(BUBU))
+					.status(HttpStatus.OK)
+					.build();
+			Consumer<Exception> action = mock(Consumer.class);
+
+			response.onException(action);
+
+			verify(action, never()).accept(any());
 		}
 	}
 

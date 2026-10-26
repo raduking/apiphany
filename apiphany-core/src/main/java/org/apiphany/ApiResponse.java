@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
@@ -70,7 +71,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	}
 
 	/**
-	 * Returns the response body or the given default if the request wasn't 2xx successful.
+	 * Returns the response body or the given default if the request wasn't successful.
 	 *
 	 * @param defaultBody default value to be returned
 	 * @return response body
@@ -105,7 +106,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	}
 
 	/**
-	 * Returns the response body or null if the request wasn't 2xx successful.
+	 * Returns the response body or null if the request wasn't successful.
 	 *
 	 * @return response body or null
 	 */
@@ -114,7 +115,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	}
 
 	/**
-	 * Returns a part / field from the response body by giving a function or the given default if the request wasn't 2xx
+	 * Returns a part / field from the response body by giving a function or the given default if the request wasn't
 	 * successful.
 	 *
 	 * @param <R> return type
@@ -128,7 +129,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	}
 
 	/**
-	 * Returns a part / field from the response body by giving a function or the given default if the request wasn't 2xx
+	 * Returns a part / field from the response body by giving a function or the given default if the request wasn't
 	 * successful.
 	 *
 	 * @param <A> the argument type of the body function
@@ -144,7 +145,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	}
 
 	/**
-	 * Returns a list from the response body when the body is an array or the given default list if the request wasn't 2xx
+	 * Returns a list from the response body when the body is an array or the given default list if the request wasn't
 	 * successful.
 	 *
 	 * @param <E> return list component type
@@ -157,8 +158,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	}
 
 	/**
-	 * Returns a list from the response body when the body is an array, or an empty list if the request wasn't 2xx
-	 * successful.
+	 * Returns a list from the response body when the body is an array, or an empty list if the request wasn't successful.
 	 *
 	 * @param <E> return list component type
 	 *
@@ -169,7 +169,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	}
 
 	/**
-	 * Returns a list from the response body or the given default list if the request wasn't 2xx successful.
+	 * Returns a list from the response body or the given default list if the request wasn't successful.
 	 *
 	 * @param <U> the actual body type
 	 * @param <E> return list component type
@@ -183,7 +183,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	}
 
 	/**
-	 * Returns a list from the response body or empty list if the request wasn't 2xx successful.
+	 * Returns a list from the response body or empty list if the request wasn't successful.
 	 *
 	 * @param <U> the actual body type
 	 * @param <E> return list component type
@@ -197,7 +197,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 
 	/**
 	 * Returns the first element from a list in the response body defined by the list function or default value if the
-	 * request wasn't 2xx successful or the list is empty.
+	 * request wasn't successful or the list is empty.
 	 *
 	 * @param <U> the actual body type
 	 * @param <E> return list component type
@@ -211,7 +211,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	}
 
 	/**
-	 * Returns the response body or throws the given {@link Throwable} if the request wasn't 2xx successful.
+	 * Returns the response body or throws the given {@link Throwable} if the request wasn't successful.
 	 *
 	 * @param t throwable to throw
 	 * @return response body or throws the given throwable
@@ -250,7 +250,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	}
 
 	/**
-	 * Maps the response to another type if the request was 2xx successful, or returns the given default value.
+	 * Maps the response to another type if the request was successful, or returns the given default value.
 	 *
 	 * @param <U> return type
 	 *
@@ -259,12 +259,12 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 * @return mapped response or default value
 	 */
 	public <U> U mapResultOrDefault(final Function<ApiResponse<T>, U> responseMapper, final U defaultValue) {
-		return mapResultOrGet(responseMapper, (Supplier<U>) () -> defaultValue);
+		return mapResultOrGet(responseMapper, () -> defaultValue);
 	}
 
 	/**
-	 * Maps the response to another type if the request was 2xx successful, or returns the given default value supplied by
-	 * the given default value supplier.
+	 * Maps the response to another type if the request was successful, or returns the given default value supplied by the
+	 * given default value supplier.
 	 *
 	 * @param <U> return type
 	 *
@@ -277,7 +277,7 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	}
 
 	/**
-	 * Maps the response to another type if the request was 2xx successful, or returns {@code null}.
+	 * Maps the response to another type if the request was successful, or returns {@code null}.
 	 *
 	 * @param <U> return type
 	 *
@@ -286,6 +286,54 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 */
 	public <U> U mapResultOrNull(final Function<ApiResponse<T>, U> responseMapper) {
 		return mapResultOrGet(responseMapper, Suppliers.supplyNull());
+	}
+
+	/**
+	 * Runs the given action when the response has a success status.
+	 * <p>
+	 * The callback runs immediately and synchronously during this method call, it is not registered as a listener for
+	 * future events.
+	 *
+	 * @param action action to run with this response
+	 * @return this response for chaining
+	 */
+	public ApiResponse<T> onSuccess(final Consumer<ApiResponse<T>> action) {
+		if (isSuccessful()) {
+			action.accept(this);
+		}
+		return this;
+	}
+
+	/**
+	 * Runs the given action when the response has an error status.
+	 * <p>
+	 * The callback runs immediately and synchronously during this method call, it is not registered as a listener for
+	 * future events.
+	 *
+	 * @param action action to run with this response
+	 * @return this response for chaining
+	 */
+	public ApiResponse<T> onFailure(final Consumer<ApiResponse<T>> action) {
+		if (isFailed()) {
+			action.accept(this);
+		}
+		return this;
+	}
+
+	/**
+	 * Runs the given action when the response has an exception.
+	 * <p>
+	 * The callback runs immediately and synchronously during this method call, it is not registered as a listener for
+	 * future events.
+	 *
+	 * @param action action to run with the response exception
+	 * @return this response for chaining
+	 */
+	public ApiResponse<T> onException(final Consumer<Exception> action) {
+		if (hasException()) {
+			action.accept(getException());
+		}
+		return this;
 	}
 
 	/**
@@ -392,6 +440,16 @@ public class ApiResponse<T> extends ApiMessage<T> {
 	 */
 	public boolean isSuccessful() {
 		return null != status && status.isSuccess();
+	}
+
+	/**
+	 * Returns true if the {@link #getStatus()} is an error, false otherwise. It is a shortcut method which also validates
+	 * against null value for status code.
+	 *
+	 * @return true if the {@link #getStatus()} is an error, false otherwise
+	 */
+	public boolean isFailed() {
+		return null != status && status.isError();
 	}
 
 	/**
