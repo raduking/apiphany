@@ -2,6 +2,11 @@
 
 `1.2.23`
 
+- Added `ApiResponse.isFailed()` to report whether the response status is an error, mirroring `isSuccessful()`.
+- Added `ApiResponse.onSuccess(Consumer)` to run a synchronous side-effect callback when the response is successful.
+- Added `ApiResponse.onFailure(Consumer)` to run a synchronous side-effect callback when the response has an error status.
+- Added `ApiResponse.onException(Consumer)` to run a synchronous side-effect callback when the response carries an exception.
+
 ---
 
 `1.2.22`
