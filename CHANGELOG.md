@@ -6,6 +6,7 @@
 - Added `ApiResponse.onSuccess(Consumer)` to run a synchronous side-effect callback when the response is successful.
 - Added `ApiResponse.onFailure(Consumer)` to run a synchronous side-effect callback when the response has an error status.
 - Added `ApiResponse.onException(Consumer)` to run a synchronous side-effect callback when the response carries an exception.
+- Extended `ApiResponseAsync` to delegate the same fluent terminals and synchronous callbacks as `ApiResponse`.
 
 ---
 
