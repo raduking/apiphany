@@ -537,7 +537,7 @@ class AbstractSpringExchangeClientTest {
 			doReturn(URI.create(TEST_URL)).when(apiRequest).getUri();
 			doReturn(false).when(apiRequest).isStream();
 
-			HttpEntity<String> httpEntity = new HttpEntity<>(null);
+			HttpEntity<String> httpEntity = new HttpEntity<>((String) null);
 
 			ResponseEntity<byte[]> result = client.sendStreamRequest(apiRequest, httpEntity);
 
@@ -558,7 +558,7 @@ class AbstractSpringExchangeClientTest {
 			doReturn(URI.create(TEST_URL)).when(apiRequest).getUri();
 			doReturn(true).when(apiRequest).isStream();
 
-			HttpEntity<String> httpEntity = new HttpEntity<>(null);
+			HttpEntity<String> httpEntity = new HttpEntity<>((String) null);
 
 			ResponseEntity<InputStream> result = client.sendStreamRequest(apiRequest, httpEntity);
 
@@ -579,7 +579,7 @@ class AbstractSpringExchangeClientTest {
 			doReturn(URI.create(TEST_URL)).when(apiRequest).getUri();
 			doReturn(false).when(apiRequest).isStream();
 
-			HttpEntity<String> httpEntity = new HttpEntity<>(null);
+			HttpEntity<String> httpEntity = new HttpEntity<>((String) null);
 
 			HttpException exception = assertThrows(HttpException.class, () -> client.sendStreamRequest(apiRequest, httpEntity));
 
@@ -595,7 +595,7 @@ class AbstractSpringExchangeClientTest {
 			doReturn(GET).when(apiRequest).getMethod();
 			doReturn(URI.create(TEST_URL)).when(apiRequest).getUri();
 
-			HttpEntity<String> httpEntity = new HttpEntity<>(null);
+			HttpEntity<String> httpEntity = new HttpEntity<>((String) null);
 
 			HttpException exception = assertThrows(HttpException.class, () -> client.sendStreamRequest(apiRequest, httpEntity));
 

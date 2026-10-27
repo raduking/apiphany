@@ -64,13 +64,13 @@
 		<!-- Dependencies versions -->
 		<morphix.version>1.0.47</morphix.version>
 		<micrometer.version>1.15.11</micrometer.version>
-		<jackson2.version>2.21.4</jackson2.version>
-		<jackson3.version>3.1.3</jackson3.version>
+		<jackson2.version>2.21.7</jackson2.version>
+		<jackson3.version>3.1.7</jackson3.version>
 		<slf4j.version>2.0.18</slf4j.version>
-		<httpclient5.version>5.6.3</httpclient5.version>
+		<httpclient5.version>5.6.5</httpclient5.version>
 		<okhttp.version>4.12.0</okhttp.version>
-		<spring.version>6.2.19</spring.version>
-		<spring.boot.version>3.5.16</spring.boot.version>
+		<spring.version>7.0.10</spring.version>
+		<spring.boot.version>4.1.2</spring.boot.version>
 
 		<!-- Java / Maven properties -->
 		<java.version>21</java.version>
@@ -109,7 +109,7 @@
 		<maven.project.info.reports.plugin.version>3.9.0</maven.project.info.reports.plugin.version>
 
 		<!-- Other plugin versions -->
-		<maven.compiler.plugin.version>3.15.0</maven.compiler.plugin.version>
+		<maven.compiler.plugin.version>3.16.0</maven.compiler.plugin.version>
 		<maven.surefire.plugin.version>3.5.6</maven.surefire.plugin.version>
 		<maven.failsafe.plugin.version>3.5.6</maven.failsafe.plugin.version>
 		<maven.resources.plugin.version>3.5.0</maven.resources.plugin.version>

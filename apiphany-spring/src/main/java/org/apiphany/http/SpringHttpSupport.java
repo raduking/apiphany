@@ -3,13 +3,15 @@ package org.apiphany.http;
 import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import org.apiphany.io.OneShotInputStreamSupplier;
 import org.morphix.reflection.Constructors;
 import org.morphix.reflection.Fields;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpEntity;
@@ -18,6 +20,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.util.LinkedCaseInsensitiveMap;
 import org.springframework.web.client.RestClient;
 
 /**
@@ -149,6 +152,21 @@ public class SpringHttpSupport {
 			return false;
 		}
 		return null != Fields.IgnoreAccess.get(restTemplateBuilder, "requestFactoryBuilder");
+	}
+
+	/**
+	 * Transforms an {@link HttpHeaders} object to a map of headers.
+	 *
+	 * @param headers source headers
+	 * @return HTTP headers
+	 */
+	public static Map<String, List<String>> toHttpHeadersMap(final HttpHeaders headers) {
+		Map<String, List<String>> httpHeaders = new LinkedCaseInsensitiveMap<>();
+		if (null == headers) {
+			return httpHeaders;
+		}
+		headers.forEach((key, values) -> httpHeaders.put(key, new ArrayList<>(values)));
+		return httpHeaders;
 	}
 
 	/**

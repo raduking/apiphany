@@ -279,6 +279,7 @@ public class CloseableHttpRequestFactory implements ClientHttpRequestFactory, Au
 			// build the HTTP client and create the request factory with the appropriate settings from the client properties
 			HttpClient httpClient = httpClientBuilder.build();
 			JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory(httpClient);
+			requestFactory.enableCompression(false);
 			requestFactory.setReadTimeout(JavaNetHttpClients.getTimeout(clientProperties.getTimeout(), Timeout::getRequest));
 			return CloseableHttpRequestFactory.of(requestFactory, httpClient);
 		}

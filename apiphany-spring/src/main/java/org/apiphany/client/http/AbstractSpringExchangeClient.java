@@ -270,7 +270,7 @@ public abstract class AbstractSpringExchangeClient extends AbstractHttpExchangeC
 	 * @return the API response object
 	 */
 	protected <T, U> ApiResponse<U> buildResponse(final ApiRequest<T> apiRequest, final ResponseEntity<U> responseEntity) {
-		Map<String, List<String>> headers = responseEntity.getHeaders();
+		Map<String, List<String>> headers = SpringHttpSupport.toHttpHeadersMap(responseEntity.getHeaders());
 		HttpStatus httpStatus = HttpStatus.fromCode(responseEntity.getStatusCode().value());
 		if (isTerminalRedirectWithLocation(httpStatus, headers)) {
 			throw HttpException.builder().redirectLoop(httpStatus).build();
@@ -367,7 +367,7 @@ public abstract class AbstractSpringExchangeClient extends AbstractHttpExchangeC
 	@Override
 	protected Map<String, List<String>> extractResponseHeaders(final Throwable throwable) {
 		return switch (throwable) {
-			case HttpStatusCodeException httpStatusCodeException -> Maps.safe(httpStatusCodeException.getResponseHeaders());
+			case HttpStatusCodeException httpStatusCodeException -> SpringHttpSupport.toHttpHeadersMap(httpStatusCodeException.getResponseHeaders());
 			default -> super.extractResponseHeaders(throwable);
 		};
 	}

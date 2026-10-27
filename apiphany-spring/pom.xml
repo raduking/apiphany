@@ -40,7 +40,6 @@
 
 	<properties>
 		<!-- Module specific versions -->
-		<spring.boot.version>3.5.16</spring.boot.version>
 		<dependency.check.maven.version>13.0.0</dependency.check.maven.version>
 
 		<!--
@@ -89,9 +88,8 @@
 		</dependency>
 
 		<dependency>
-			<!-- needed for RestTemplateBuilder -->
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot</artifactId>
+			<artifactId>spring-boot-restclient</artifactId>
 			<scope>provided</scope>
 		</dependency>
 
@@ -149,7 +147,6 @@
 		<dependency>
 			<groupId>tools.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>${jackson3.version}</version>
 			<scope>provided</scope>
 			<optional>true</optional>
 		</dependency>
@@ -157,7 +154,6 @@
 		<dependency>
 			<groupId>tools.jackson.dataformat</groupId>
 			<artifactId>jackson-dataformat-xml</artifactId>
-			<version>${jackson3.version}</version>
 			<scope>provided</scope>
 			<optional>true</optional>
 		</dependency>
