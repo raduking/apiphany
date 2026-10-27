@@ -1,5 +1,9 @@
 ## Release Notes
 
+`1.3.0`
+
+---
+
 `1.2.23`
 
 - Added `ApiResponse.isFailed()` to report whether the response status is an error, mirroring `isSuccessful()`.
