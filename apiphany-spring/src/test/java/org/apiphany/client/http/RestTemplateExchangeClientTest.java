@@ -129,6 +129,7 @@ class RestTemplateExchangeClientTest {
 	class JsonBodyTests {
 
 		@Test
+		@SuppressWarnings("removal")
 		void shouldWriteJsonWithTheObjectMapperFromTheRestTemplateBuilder() throws Exception {
 			ObjectMapper objectMapper = new ObjectMapper();
 			objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);

@@ -48,6 +48,7 @@ class SpringJsonTest {
 	}
 
 	@Test
+	@SuppressWarnings("removal")
 	void shouldReturnNullWhenNoConverterWritesJson() {
 		MappingJackson2HttpMessageConverter text = new MappingJackson2HttpMessageConverter(new ObjectMapper());
 		text.setSupportedMediaTypes(List.of(MediaType.TEXT_PLAIN));
@@ -56,6 +57,7 @@ class SpringJsonTest {
 	}
 
 	@Test
+	@SuppressWarnings("removal")
 	void shouldUseTheObjectMapperOfTheFirstJsonConverter() throws Exception {
 		ObjectMapper textMapper = new ObjectMapper();
 		MappingJackson2HttpMessageConverter text = new MappingJackson2HttpMessageConverter(textMapper);
@@ -73,6 +75,7 @@ class SpringJsonTest {
 	}
 
 	@Test
+	@SuppressWarnings("removal")
 	void shouldConvertOnlyApplicationJson() {
 		ContentConverter<String> converter = SpringJson.converter(List.of(new MappingJackson2HttpMessageConverter()));
 
@@ -82,6 +85,7 @@ class SpringJsonTest {
 	}
 
 	@Test
+	@SuppressWarnings("removal")
 	void shouldReadTheObjectMapperFromARestClientBuilder() throws Exception {
 		ObjectMapper jsonMapper = new ObjectMapper();
 		jsonMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
@@ -96,6 +100,7 @@ class SpringJsonTest {
 	}
 
 	@Test
+	@SuppressWarnings("removal")
 	void shouldReadTheObjectMapperFromARestTemplateBuilder() throws Exception {
 		ObjectMapper jsonMapper = new ObjectMapper();
 		jsonMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
