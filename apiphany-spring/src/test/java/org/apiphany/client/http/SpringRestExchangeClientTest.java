@@ -204,7 +204,7 @@ class SpringRestExchangeClientTest {
 			doReturn(new HttpHeaders()).when(response).getHeaders();
 			doReturn(new ByteArrayInputStream(new byte[0])).when(response).getBody();
 			stubRequestChain(HttpMethod.GET, TEST_URL);
-			HttpEntity<String> httpEntity = new HttpEntity<>(null);
+			HttpEntity<String> httpEntity = new HttpEntity<>((String) null);
 			ApiRequest<String> apiRequest = mock(ApiRequest.class);
 			doReturn(GET).when(apiRequest).getMethod();
 			doReturn(URI.create(TEST_URL)).when(apiRequest).getUri();
@@ -248,7 +248,7 @@ class SpringRestExchangeClientTest {
 			doReturn(new HttpHeaders()).when(response).getHeaders();
 			doReturn(new ByteArrayInputStream(RESPONSE_BODY.getBytes())).when(response).getBody();
 			stubRequestChain(HttpMethod.GET, TEST_URL);
-			HttpEntity<String> httpEntity = new HttpEntity<>(null);
+			HttpEntity<String> httpEntity = new HttpEntity<>((String) null);
 			ApiRequest<String> apiRequest = mock(ApiRequest.class);
 			doReturn(GET).when(apiRequest).getMethod();
 			doReturn(URI.create(TEST_URL)).when(apiRequest).getUri();
@@ -267,7 +267,7 @@ class SpringRestExchangeClientTest {
 			Error error = new OutOfMemoryError("exchange failed");
 			stubRequestChain(HttpMethod.GET, TEST_URL);
 			doThrow(error).when(requestBodySpec).exchange(any(ExchangeFunction.class));
-			HttpEntity<String> httpEntity = new HttpEntity<>(null);
+			HttpEntity<String> httpEntity = new HttpEntity<>((String) null);
 			ApiRequest<String> apiRequest = mock(ApiRequest.class);
 			doReturn(GET).when(apiRequest).getMethod();
 			doReturn(URI.create(TEST_URL)).when(apiRequest).getUri();
@@ -284,7 +284,7 @@ class SpringRestExchangeClientTest {
 			doReturn(new HttpHeaders()).when(response).getHeaders();
 			doReturn(new ByteArrayInputStream(new byte[0])).when(response).getBody();
 			stubRequestChain(HttpMethod.GET, TEST_URL);
-			HttpEntity<String> httpEntity = new HttpEntity<>(null);
+			HttpEntity<String> httpEntity = new HttpEntity<>((String) null);
 			ApiRequest<String> apiRequest = mock(ApiRequest.class);
 			doReturn(GET).when(apiRequest).getMethod();
 			doReturn(URI.create(TEST_URL)).when(apiRequest).getUri();

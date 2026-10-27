@@ -19,6 +19,9 @@ import org.morphix.runtime.LibraryVersion;
  */
 class ApacheHC5LibraryTest {
 
+	public static final String MIN_SUPPORTED_VERSION = "5.5.0";
+	public static final String MAX_SUPPORTED_VERSION = "5.6.5";
+
 	@Nested
 	class IsPresentTests {
 
@@ -84,7 +87,7 @@ class ApacheHC5LibraryTest {
 
 		@Test
 		void shouldReturnMinimumRequiredVersion() {
-			assertThat(ApacheHC5Library.minimumVersion().value(), equalTo("5.5.0"));
+			assertThat(ApacheHC5Library.minimumVersion().value(), equalTo(MIN_SUPPORTED_VERSION));
 		}
 
 		@Test
@@ -98,7 +101,7 @@ class ApacheHC5LibraryTest {
 
 		@Test
 		void shouldReturnMaximumSupportedVersion() {
-			assertThat(ApacheHC5Library.maximumVersion().value(), equalTo("5.6.4"));
+			assertThat(ApacheHC5Library.maximumVersion().value(), equalTo(MAX_SUPPORTED_VERSION));
 		}
 	}
 

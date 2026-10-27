@@ -20,7 +20,7 @@ import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 
@@ -48,6 +48,8 @@ class RestTemplateExchangeClientObjectMapperIT {
 			.web(WebApplicationType.NONE)
 			.run();
 
+	private static final ObjectMapper OBJECT_MAPPER = CONTEXT.getBean(ObjectMapper.class);
+
 	@AfterAll
 	static void closeContext() {
 		CONTEXT.close();
@@ -64,8 +66,7 @@ class RestTemplateExchangeClientObjectMapperIT {
 
 		NamedPerson person = new NamedPerson();
 		person.setFirstName("Ada");
-		ObjectMapper objectMapper = CONTEXT.getBean(ObjectMapper.class);
-		String json = objectMapper.writeValueAsString(person);
+		String json = OBJECT_MAPPER.writeValueAsString(person);
 		assertThat(json, equalTo("{\"first_name\":\"Ada\"}"));
 
 		TestApiClient apiClient = CONTEXT.getBean(TestApiClient.class);

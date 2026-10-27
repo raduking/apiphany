@@ -48,6 +48,8 @@ class SpringRestExchangeClientObjectMapperIT {
 			.web(WebApplicationType.NONE)
 			.run();
 
+	private static final ObjectMapper OBJECT_MAPPER = CONTEXT.getBean(ObjectMapper.class);
+
 	@AfterAll
 	static void closeContext() {
 		CONTEXT.close();
@@ -64,8 +66,7 @@ class SpringRestExchangeClientObjectMapperIT {
 
 		NamedPerson person = new NamedPerson();
 		person.setFirstName("Ada");
-		ObjectMapper objectMapper = CONTEXT.getBean(ObjectMapper.class);
-		String json = objectMapper.writeValueAsString(person);
+		String json = OBJECT_MAPPER.writeValueAsString(person);
 		assertThat(json, equalTo("{\"first_name\":\"Ada\"}"));
 
 		TestApiClient apiClient = CONTEXT.getBean(TestApiClient.class);

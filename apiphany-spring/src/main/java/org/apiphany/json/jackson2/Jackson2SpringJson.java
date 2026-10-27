@@ -29,6 +29,7 @@ public final class Jackson2SpringJson {
 	 * @param messageConverter the Spring message converter
 	 * @return the JSON converter, or {@code null}
 	 */
+	@SuppressWarnings("removal")
 	public static <T> ContentConverter<T> converter(final HttpMessageConverter<?> messageConverter) {
 		if (messageConverter instanceof MappingJackson2HttpMessageConverter jackson2Converter) {
 			return new Jackson2JsonHttpContentConverter<>(jackson2Converter.getObjectMapper());

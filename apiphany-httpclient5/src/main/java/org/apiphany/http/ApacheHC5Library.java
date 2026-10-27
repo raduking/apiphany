@@ -31,7 +31,7 @@ public class ApacheHC5Library {
 	 * <p>
 	 * A newer runtime version is outside the tested range and is rejected by {@link #verifyVersion()}.
 	 */
-	private static final LibraryVersion MAXIMUM_VERSION = LibraryVersion.of(CLIENT_NAME, 5, 6, 4);
+	private static final LibraryVersion MAXIMUM_VERSION = LibraryVersion.of(CLIENT_NAME, 5, 6, 5);
 
 	/**
 	 * The Apache HttpClient 5 CloseableHttpClient class name.

@@ -10,6 +10,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -158,7 +159,8 @@ class HttpEntityRequestCallbackTest {
 
 			callback.doWithRequest(request);
 
-			assertThat(requestHeaders.containsKey("X-PreExisting"), equalTo(false));
+			Map<String, List<String>> httpHeaders = SpringHttpSupport.toHttpHeadersMap(requestHeaders);
+			assertThat(httpHeaders.containsKey("X-PreExisting"), equalTo(false));
 		}
 	}
 
