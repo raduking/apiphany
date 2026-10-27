@@ -320,6 +320,7 @@ class SpringRestExchangeClientTest {
 	class JsonBodyTests {
 
 		@Test
+		@SuppressWarnings("removal")
 		void shouldWriteJsonWithTheObjectMapperFromTheRestClientBuilder() throws Exception {
 			ObjectMapper objectMapper = new ObjectMapper();
 			objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);

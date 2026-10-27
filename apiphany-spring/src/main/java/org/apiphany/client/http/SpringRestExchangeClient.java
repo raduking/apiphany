@@ -82,7 +82,10 @@ public class SpringRestExchangeClient extends AbstractSpringExchangeClient {
 		if (null == SpringHttpSupport.getRequestFactory(restClientBuilder)) {
 			restClientBuilder.requestFactory(getRequestFactory());
 		}
-		return restClientBuilder.messageConverters(getMessageConverters());
+		return restClientBuilder.configureMessageConverters(clientBuilder -> {
+			clientBuilder.disableDefaults();
+			clientBuilder.configureMessageConvertersList(converters -> converters.addAll(getMessageConverters()));
+		});
 	}
 
 	/**

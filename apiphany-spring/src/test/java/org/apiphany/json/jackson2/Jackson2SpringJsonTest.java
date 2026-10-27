@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
  *
  * @author Radu Sebastian LAZIN
  */
+@SuppressWarnings("removal")
 class Jackson2SpringJsonTest {
 
 	@Test
