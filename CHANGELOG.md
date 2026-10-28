@@ -8,6 +8,7 @@
 - Upgraded Spring Boot to `4.1.2` for `apiphany-spring`.
 - Upgraded Spring to `7.0.10` for `apiphany-spring`.
 - Upgraded Micrometer to `1.17.2`.
+- Upgraded SLF4J to `2.0.20`.
 - Upgraded `maven-compiler-plugin` to `3.16.0`.
 - Added Jackson 3 support to `SpringJson` via `Jackson3SpringJson` for `JacksonJsonHttpMessageConverter`.
 
