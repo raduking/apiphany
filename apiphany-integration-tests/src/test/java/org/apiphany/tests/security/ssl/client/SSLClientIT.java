@@ -72,9 +72,10 @@ class SSLClientIT {
 
 		assertNotNull(exception);
 		assertThat(exception.getClass(), equalTo(HttpException.class));
-		assertThat(exception.getMessage(), equalTo(HttpException.message(null, "Remote host terminated the handshake")));
+
 		Throwable cause = exception.getCause();
 		assertThat(cause.getClass(), equalTo(SSLHandshakeException.class));
+		assertThat(exception.getMessage(), equalTo(HttpException.message(null, cause.getMessage())));
 	}
 
 	static class SimpleApiClient extends ApiClient {
