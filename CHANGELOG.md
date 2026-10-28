@@ -2,6 +2,7 @@
 
 `1.3.0`
 
+- Added Jackson 3 support to `SpringJson` via `Jackson3SpringJson` for `JacksonJsonHttpMessageConverter`.
 - Upgraded `httpclient5` to `5.6.5`.
 - Upgraded Jackson 2 to `2.21.7`.
 - Upgraded Jackson 3 to `3.1.7`.
@@ -9,8 +10,19 @@
 - Upgraded Spring to `7.0.10` for `apiphany-spring`.
 - Upgraded Micrometer to `1.17.2`.
 - Upgraded SLF4J to `2.0.20`.
+- Upgraded `spring-security-oauth2-client` to `7.1.2`.
+- Upgraded `nimbus-jose-jwt` to `10.10`.
+- Upgraded `mockito-core` to `5.24.0`.
+- Upgraded `logback-core` to `1.5.38`.
+- Upgraded `testcontainers-keycloak` to `4.4.0`.
+- Upgraded `pitest-maven` to `1.30.1`.
 - Upgraded `maven-compiler-plugin` to `3.16.0`.
-- Added Jackson 3 support to `SpringJson` via `Jackson3SpringJson` for `JacksonJsonHttpMessageConverter`.
+- Upgraded `maven-surefire-plugin` to `3.6.1`.
+- Upgraded `maven-failsafe-plugin` to `3.6.1`.
+- Upgraded `jacoco-maven-plugin` to `0.8.16`.
+- Upgraded `spotless-maven-plugin` to `3.10.4`.
+- Upgraded `maven-deploy-plugin` to `3.2.0`.
+- Upgraded `exec-maven-plugin ` to `3.6.4`.
 
 ---
 
