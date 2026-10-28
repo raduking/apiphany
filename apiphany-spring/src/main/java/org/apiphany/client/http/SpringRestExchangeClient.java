@@ -84,7 +84,10 @@ public class SpringRestExchangeClient extends AbstractSpringExchangeClient {
 		}
 		return restClientBuilder.configureMessageConverters(clientBuilder -> {
 			clientBuilder.disableDefaults();
-			clientBuilder.configureMessageConvertersList(converters -> converters.addAll(getMessageConverters()));
+			clientBuilder.configureMessageConvertersList(converters -> {
+				converters.clear();
+				converters.addAll(getMessageConverters());
+			});
 		});
 	}
 
