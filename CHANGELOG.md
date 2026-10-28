@@ -2,6 +2,14 @@
 
 `1.3.0`
 
+- Upgraded `httpclient5` to `5.6.5`.
+- Upgraded Jackson 2 to `2.21.7`.
+- Upgraded Jackson 3 to `3.1.7`.
+- Upgraded Spring Boot to `4.1.2` for `apiphany-spring`.
+- Upgraded Spring to `7.0.10` for `apiphany-spring`.
+- Upgraded `maven-compiler-plugin` to `3.16.0`.
+- Added Jackson 3 support to `SpringJson` via `Jackson3SpringJson` for `JacksonJsonHttpMessageConverter`.
+
 ---
 
 `1.2.23`
