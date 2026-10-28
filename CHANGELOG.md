@@ -1,5 +1,9 @@
 ## Release Notes
 
+`1.3.1`
+
+---
+
 `1.3.0`
 
 - Added Jackson 3 support to `SpringJson` via `Jackson3SpringJson` for `JacksonJsonHttpMessageConverter`.
