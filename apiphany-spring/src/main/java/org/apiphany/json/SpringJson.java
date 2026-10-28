@@ -174,7 +174,7 @@ public final class SpringJson {
 	 */
 	private static Iterable<HttpMessageConverter<?>> messageConverters(final Object builder) {
 		return Nullables.<Object, Iterable<HttpMessageConverter<?>>>whenNotNull(builder,
-				b -> Fields.IgnoreAccess.get(builder, MESSAGE_CONVERTERS_FIELD_NAME));
+				b -> Fields.IgnoreAccess.get(b, MESSAGE_CONVERTERS_FIELD_NAME));
 	}
 
 	/**
@@ -185,7 +185,7 @@ public final class SpringJson {
 	 */
 	private static Consumer<HttpMessageConverters.ClientBuilder> convertersConfigurer(final RestClient.Builder restClientBuilder) {
 		return Nullables.<RestClient.Builder, Consumer<HttpMessageConverters.ClientBuilder>>whenNotNull(restClientBuilder,
-				b -> Fields.IgnoreAccess.get(restClientBuilder, CONVERTERS_CONFIGURER_FIELD_NAME));
+				b -> Fields.IgnoreAccess.get(b, CONVERTERS_CONFIGURER_FIELD_NAME));
 	}
 
 	/**
@@ -197,7 +197,7 @@ public final class SpringJson {
 	 */
 	private static <T> HttpMessageConverter<T> jsonConverter(final HttpMessageConverters.ClientBuilder clientBuilder) {
 		return Nullables.<HttpMessageConverters.ClientBuilder, HttpMessageConverter<T>>whenNotNull(clientBuilder,
-				b -> Fields.IgnoreAccess.get(clientBuilder, JSON_CONVERTER_FIELD_NAME));
+				b -> Fields.IgnoreAccess.get(b, JSON_CONVERTER_FIELD_NAME));
 	}
 
 	/**
