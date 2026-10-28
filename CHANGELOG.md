@@ -4,6 +4,7 @@
 
 - Added Jackson 3 support to `SpringJson` via `Jackson3SpringJson` for `JacksonJsonHttpMessageConverter`.
 - Upgraded `httpclient5` to `5.6.5`.
+- Upgraded OkHttp to `4.12.1`.
 - Upgraded Jackson 2 to `2.21.7`.
 - Upgraded Jackson 3 to `3.1.7`.
 - Upgraded Spring Boot to `4.1.2` for `apiphany-spring`.

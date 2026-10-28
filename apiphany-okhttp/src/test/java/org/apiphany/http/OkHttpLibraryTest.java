@@ -19,6 +19,9 @@ import org.morphix.runtime.LibraryVersion;
  */
 class OkHttpLibraryTest {
 
+	private static final String MIN_SUPPORTED_VERSION = "4.9.0";
+	private static final String MAX_SUPPORTED_VERSION = "4.12.1";
+
 	@Nested
 	class IsPresentTests {
 
@@ -83,7 +86,7 @@ class OkHttpLibraryTest {
 
 		@Test
 		void shouldReturnMinimumRequiredVersion() {
-			assertThat(OkHttpLibrary.minimumVersion().value(), equalTo("4.9.0"));
+			assertThat(OkHttpLibrary.minimumVersion().value(), equalTo(MIN_SUPPORTED_VERSION));
 		}
 
 		@Test
@@ -97,7 +100,7 @@ class OkHttpLibraryTest {
 
 		@Test
 		void shouldReturnMaximumSupportedVersion() {
-			assertThat(OkHttpLibrary.maximumVersion().value(), equalTo("4.12.0"));
+			assertThat(OkHttpLibrary.maximumVersion().value(), equalTo(MAX_SUPPORTED_VERSION));
 		}
 	}
 
