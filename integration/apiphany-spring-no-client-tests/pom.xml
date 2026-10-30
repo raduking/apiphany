@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>io.github.raduking</groupId>
 		<artifactId>apiphany-parent</artifactId>
-		<version>1.3.0</version>
+		<version>1.3.1</version>
 		<relativePath>../../pom.xml</relativePath>
 	</parent>
 
@@ -112,7 +112,7 @@
 		<dependency>
 			<groupId>com.jayway.jsonpath</groupId>
 			<artifactId>json-path</artifactId>
-			<version>3.0.0</version>
+			<version>${json.path.version}</version>
 			<scope>test</scope>
 		</dependency>
 
