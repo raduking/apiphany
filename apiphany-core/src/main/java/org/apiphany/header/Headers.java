@@ -3,11 +3,12 @@ package org.apiphany.header;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 import org.apiphany.lang.Strings;
 import org.morphix.lang.collections.Lists;
@@ -37,7 +38,7 @@ public interface Headers {
 		if (null == headerFunctions || 0 == headerFunctions.length) {
 			return Collections.emptyMap();
 		}
-		var map = new HashMap<String, List<String>>();
+		var map = new LinkedHashMap<String, List<String>>();
 		for (HeaderFunction headerFunction : headerFunctions) {
 			headerFunction.addTo(map);
 		}
@@ -54,10 +55,24 @@ public interface Headers {
 	 * @param headers headers map
 	 */
 	static <N, H> void addTo(final Map<String, List<String>> existingHeaders, final Map<N, H> headers) {
+		addTo(existingHeaders, headers, UnaryOperator.identity());
+	}
+
+	/**
+	 * Adds headers to existing headers using the given value normalizer.
+	 *
+	 * @param <N> header name type
+	 * @param <H> header value type
+	 *
+	 * @param existingHeaders existing headers
+	 * @param headers headers map
+	 * @param valueNormalizer function applied to each non-empty header value
+	 */
+	static <N, H> void addTo(final Map<String, List<String>> existingHeaders, final Map<N, H> headers, final UnaryOperator<String> valueNormalizer) {
 		for (Map.Entry<N, H> header : Maps.safe(headers).entrySet()) {
 			N headerName = header.getKey();
 			H headerValue = header.getValue();
-			addTo(existingHeaders, headerName, headerValue);
+			addTo(existingHeaders, headerName, headerValue, valueNormalizer);
 		}
 	}
 
@@ -73,6 +88,22 @@ public interface Headers {
 	 * @param headerValue header value
 	 */
 	static <N, H> void addTo(final Map<String, List<String>> existingHeaders, final N headerName, final H headerValue) {
+		addTo(existingHeaders, headerName, headerValue, UnaryOperator.identity());
+	}
+
+	/**
+	 * Adds a header to existing headers using the given value normalizer.
+	 *
+	 * @param <N> header name type
+	 * @param <H> header value type
+	 *
+	 * @param existingHeaders existing headers
+	 * @param headerName header name
+	 * @param headerValue header value
+	 * @param valueNormalizer function applied to each non-empty header value
+	 */
+	static <N, H> void addTo(final Map<String, List<String>> existingHeaders, final N headerName, final H headerValue,
+			final UnaryOperator<String> valueNormalizer) {
 		if (null == headerName) {
 			return;
 		}
@@ -87,7 +118,10 @@ public interface Headers {
 		headerValues.forEach(hv -> {
 			String stringValue = Strings.safeToString(hv);
 			if (Strings.isNotEmpty(stringValue)) {
-				existing.add(stringValue);
+				String normalizedValue = valueNormalizer.apply(stringValue);
+				if (Strings.isNotEmpty(normalizedValue)) {
+					existing.add(normalizedValue);
+				}
 			}
 		});
 	}
@@ -197,15 +231,15 @@ public interface Headers {
 	 *
 	 * @param <N> header name type
 	 *
-	 * @param header the name of the header whose values are to be retrieved.
+	 * @param headerName the name of the header whose values are to be retrieved.
 	 * @param headers the map of headers, where each key is a header name and the value is a list of header values.
 	 * @return a list of values for the specified header. If the header is not found, an empty list is returned.
 	 */
-	static <N> List<String> get(final N header, final Map<String, List<String>> headers) {
+	static <N> List<String> get(final N headerName, final Map<String, List<String>> headers) {
 		if (Maps.isEmpty(headers)) {
 			return Collections.emptyList();
 		}
-		String headerKey = Strings.safeToString(header);
+		String headerKey = Strings.safeToString(headerName);
 		List<String> values = headers.get(headerKey);
 		if (null != values) {
 			return values;

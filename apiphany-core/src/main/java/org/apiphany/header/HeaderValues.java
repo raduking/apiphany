@@ -24,6 +24,11 @@ public class HeaderValues {
 	public static final String REDACTED = Sensitive.Value.REDACTED;
 
 	/**
+	 * An immutable list of dangerous characters that will be replaced whenever we add a header.
+	 */
+	public static final List<Character> DANGEROUS_CHARACTERS = List.of('\0', '\r', '\n');
+
+	/**
 	 * The next {@link HeaderValues} in the chain of responsibility. If {@code null}, this represents the end of the chain.
 	 */
 	private HeaderValues next;
@@ -123,5 +128,21 @@ public class HeaderValues {
 	 */
 	public static <L, R> String value(final L lvalue, final R rvalue, final String separator) {
 		return String.join(separator, Strings.safeToString(lvalue), Strings.safeToString(rvalue));
+	}
+
+	/**
+	 * Normalizes dangerous characters in a header field value before it is added to a headers map.
+	 * <p>
+	 * Replace {@code CR}, {@code LF}, and {@code NUL} characters before processing or forwarding a header value.
+	 *
+	 * @param value the header field value
+	 * @return the normalized header field value
+	 */
+	public static String normalize(final String value) {
+		String normalizedValue = value;
+		for (char dangerousCharacter : DANGEROUS_CHARACTERS) {
+			normalizedValue = normalizedValue.replace(dangerousCharacter, ' ');
+		}
+		return normalizedValue;
 	}
 }
