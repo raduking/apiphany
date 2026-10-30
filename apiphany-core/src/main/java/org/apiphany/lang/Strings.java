@@ -18,18 +18,18 @@ import org.morphix.lang.function.Consumers;
  * {@link String} utility methods.
  * <p>
  * This class prefers to return {@code null} instead of throwing exceptions when an error occurs, so it is the caller's
- * responsibility to handle the errors by checking for null values and using the provided onError handlers.
+ * responsibility to handle the errors by checking for {@code null} values and using the provided onError handlers.
  * <p>
  * This design choice is made to provide a more functional programming style and to allow the caller to decide how to
  * handle errors, whether by logging, throwing custom exceptions, or using default values and to avoid the need for
  * try-catch blocks in the calling code, thus promoting cleaner and more readable code. The other major reason is
  * performance, as throwing exceptions can be costly in terms of performance, especially in cases where errors are
- * expected to occur frequently. By returning null, we can avoid the overhead associated with exception handling and
- * allow the caller to handle errors in a more efficient way.
+ * expected to occur frequently. By returning {@code null}, we can avoid the overhead associated with exception handling
+ * and allow the caller to handle errors in a more efficient way.
  * <p>
- * However, it is important to note that this approach may lead to null pointer exceptions if the caller does not
- * properly handle the null values, so it is crucial to always check for null returns when using these methods and to
- * use the onError handlers to manage exceptions appropriately.
+ * However, it is important to note that this approach may lead to {@link NullPointerException}s if the caller does not
+ * properly handle the {@code null} values, so it is crucial to always check for {@code null} returns when using these
+ * methods and to use the onError handlers to manage exceptions appropriately.
  *
  * @author Radu Sebastian LAZIN
  */
@@ -46,7 +46,8 @@ public interface Strings {
 	Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
 	/**
-	 * Returns the call of {@link Object#toString()} on the given parameter if the parameter is not null, null otherwise.
+	 * Returns the call of {@link Object#toString()} on the given parameter if the parameter is not {@code null},
+	 * {@code null} otherwise.
 	 *
 	 * @param o object
 	 * @return the string representation of the object
@@ -56,40 +57,40 @@ public interface Strings {
 	}
 
 	/**
-	 * Returns the parameter if it is not null, empty string otherwise.
+	 * Returns the parameter if it is not {@code null}, empty string otherwise.
 	 *
 	 * @param s a string
-	 * @return the parameter if it is not null, empty string otherwise
+	 * @return the parameter if it is not {@code null}, empty string otherwise
 	 */
 	static String safe(final String s) {
 		return null != s ? s : "";
 	}
 
 	/**
-	 * Checks if a CharSequence is empty ("") or null.
+	 * Checks if a {@link CharSequence} is empty ("") or {@code null}.
 	 *
-	 * @param cs the CharSequence to check, may be null
-	 * @return {@code true} if the CharSequence is empty or null
+	 * @param cs the {@link CharSequence} to check, may be {@code null}
+	 * @return {@code true} if the {@link CharSequence} is empty or {@code null}
 	 */
 	static boolean isEmpty(final CharSequence cs) {
 		return null == cs || cs.isEmpty();
 	}
 
 	/**
-	 * Checks if a CharSequence is not empty ("") or null.
+	 * Checks if a {@link CharSequence} is not empty ("") or {@code null}.
 	 *
-	 * @param cs the CharSequence to check, may be null
-	 * @return {@code true} if the CharSequence is not empty or null
+	 * @param cs the {@link CharSequence} to check, may be {@code null}
+	 * @return {@code true} if the {@link CharSequence} is not empty or {@code null}
 	 */
 	static boolean isNotEmpty(final CharSequence cs) {
 		return !isEmpty(cs);
 	}
 
 	/**
-	 * Checks if a CharSequence is whitespace, empty ("") or null.
+	 * Checks if a {@link CharSequence} is whitespace, empty ("") or {@code null}.
 	 *
-	 * @param cs the CharSequence to check, may be null
-	 * @return {@code true} if the CharSequence is whitespace, empty or null
+	 * @param cs the {@link CharSequence} to check, may be {@code null}
+	 * @return {@code true} if the {@link CharSequence} is whitespace, empty or {@code null}
 	 */
 	static boolean isBlank(final CharSequence cs) {
 		if (isEmpty(cs)) {
@@ -105,10 +106,10 @@ public interface Strings {
 	}
 
 	/**
-	 * Checks if a CharSequence is not whitespace, empty ("") or null.
+	 * Checks if a {@link CharSequence} is not whitespace, empty ("") or {@code null}.
 	 *
-	 * @param cs the CharSequence to check, may be null
-	 * @return {@code true} if the CharSequence is not whitespace, empty or null
+	 * @param cs the {@link CharSequence} to check, may be {@code null}
+	 * @return {@code true} if the {@link CharSequence} is not whitespace, empty or {@code null}
 	 */
 	static boolean isNotBlank(final CharSequence cs) {
 		return !isBlank(cs);
@@ -116,7 +117,7 @@ public interface Strings {
 
 	/**
 	 * Transforms a string from Lower Camel case to Snake case. The Lower Camel case is the Java convention for naming
-	 * methods. Example: <code>"someCoolName"</code> will be <code>"some_cool_name"</code>.
+	 * methods. Example: {@code "someCoolName"} will be {@code "some_cool_name"}.
 	 *
 	 * @param str string to transform
 	 * @return snake case string
@@ -137,7 +138,7 @@ public interface Strings {
 
 	/**
 	 * Transforms a string from Lower Camel case to Kebab case. The Lower Camel case is the Java convention for naming
-	 * methods. Example: <code>"someCoolName"</code> will be <code>"some-cool-name"</code>.
+	 * methods. Example: {@code "someCoolName"} will be {@code "some-cool-name"}.
 	 *
 	 * @param str string to transform
 	 * @return kebab case string
@@ -157,8 +158,8 @@ public interface Strings {
 	}
 
 	/**
-	 * Transforms a string from Kebab case to Lower Camel case. Example: <code>"some-cool-name"</code> will become
-	 * <code>"someCoolName"</code>.
+	 * Transforms a string from Kebab case to Lower Camel case. Example: {@code "some-cool-name"} will become
+	 * {@code "someCoolName"}.
 	 *
 	 * @param str string to transform
 	 * @return lower camel case string
@@ -185,7 +186,7 @@ public interface Strings {
 	 * @param encoding character encoding to use when reading the input stream
 	 * @param maxSize maximum size in characters to read from the input stream
 	 * @param bufferSize buffer size in characters to use when reading the input stream
-	 * @param onError on error handler, must not be null
+	 * @param onError on error handler, must not be {@code null}
 	 * @return the input stream as string
 	 */
 	static String toString(final InputStream inputStream, final Charset encoding, final int maxSize, final int bufferSize,
@@ -217,7 +218,7 @@ public interface Strings {
 
 	/**
 	 * Transforms an input stream to a string. If the input stream cannot be converted to string with the given parameters,
-	 * the result will be null. This method is not intended for large streams and is also limited to read up to
+	 * the result will be {@code null}. This method is not intended for large streams and is also limited to read up to
 	 * {@link IOStreams#MAX_BUFFER_SIZE} characters from the input stream.
 	 *
 	 * @param inputStream input stream
@@ -231,7 +232,7 @@ public interface Strings {
 
 	/**
 	 * Transforms an input stream to a string. If the input stream cannot be converted to string with the given parameters,
-	 * the result will be null. This method is not intended for large streams and is also limited to read up to
+	 * the result will be {@code null}. This method is not intended for large streams and is also limited to read up to
 	 * {@link IOStreams#MAX_BUFFER_SIZE} characters from the input stream.
 	 *
 	 * @param inputStream input stream
@@ -244,8 +245,8 @@ public interface Strings {
 
 	/**
 	 * Transforms a byte array to a string. If the byte array cannot be converted to string with the given parameters, the
-	 * result will be null. This method is not intended for large byte arrays and is also limited to read up to the given
-	 * maximum size bytes from the byte array.
+	 * result will be {@code null}. This method is not intended for large byte arrays and is also limited to read up to the
+	 * given maximum size bytes from the byte array.
 	 *
 	 * @param bytes byte array to convert
 	 * @param encoding character encoding
@@ -263,7 +264,7 @@ public interface Strings {
 
 	/**
 	 * Transforms a byte array to a string. If the byte array cannot be converted to string with the given parameters, the
-	 * result will be null. This method is not intended for large byte arrays and is also limited to read up to
+	 * result will be {@code null}. This method is not intended for large byte arrays and is also limited to read up to
 	 * {@link IOStreams#MAX_BUFFER_SIZE} bytes from the byte array.
 	 *
 	 * @param bytes byte array to convert
@@ -277,7 +278,7 @@ public interface Strings {
 
 	/**
 	 * Transforms a byte array to a string. If the byte array cannot be converted to string with the given parameters, the
-	 * result will be null. This method is not intended for large byte arrays and is also limited to read up to
+	 * result will be {@code null}. This method is not intended for large byte arrays and is also limited to read up to
 	 * {@link IOStreams#MAX_BUFFER_SIZE} bytes from the byte array.
 	 *
 	 * @param bytes byte array to convert
@@ -290,7 +291,7 @@ public interface Strings {
 
 	/**
 	 * Transforms a byte array to a string. If the byte array cannot be converted to string with the given parameters, the
-	 * result will be null. This method is not intended for large byte arrays and is also limited to read up to
+	 * result will be {@code null}. This method is not intended for large byte arrays and is also limited to read up to
 	 * {@link IOStreams#MAX_BUFFER_SIZE} characters from the byte array. It assumes that the encoding is
 	 * {@link #DEFAULT_CHARSET}. Use this method only if the byte array to be read respects this condition.
 	 *
@@ -303,7 +304,7 @@ public interface Strings {
 
 	/**
 	 * Transforms a byte array to a string. If the byte array cannot be converted to string with the given parameters, the
-	 * result will be null. This method is not intended for large byte arrays and is also limited to read up to
+	 * result will be {@code null}. This method is not intended for large byte arrays and is also limited to read up to
 	 * {@link IOStreams#MAX_BUFFER_SIZE} characters from the byte array. It assumes that the encoding is
 	 * {@link #DEFAULT_CHARSET}. Use this method only if the byte array to be read respects this condition.
 	 *
@@ -321,7 +322,7 @@ public interface Strings {
 	 * If the given path is an absolute path, it is considered a file system path otherwise, it is considered a classpath
 	 * resource.
 	 *
-	 * @param path path to the file, must not be null
+	 * @param path path to the file, must not be {@code null}
 	 * @param encoding the file encoding
 	 * @param bufferSize the size in characters of the buffer while reading the file
 	 * @param onError on error handler
@@ -418,8 +419,8 @@ public interface Strings {
 	}
 
 	/**
-	 * Strips the given character from the start and end of the input string. If the string is null, returns null. If empty,
-	 * returns empty.
+	 * Strips the given character from the start and end of the input string. If the string is {@code null}, returns
+	 * {@code null}. If empty, returns empty.
 	 *
 	 * @param input the input string to strip
 	 * @param ch the character to strip
@@ -507,18 +508,18 @@ public interface Strings {
 	}
 
 	/**
-	 * Checks if the given string ends with any of the given characters. Returns {@code false} if the string is null or
-	 * empty.
+	 * Checks if the given string ends with any of the given characters. Returns {@code false} if the string is {@code null}
+	 * or empty.
 	 *
-	 * @param str the string to check, may be null
+	 * @param input the string to check, may be {@code null}
 	 * @param chars the characters to check against
 	 * @return {@code true} if the string ends with any of the given characters
 	 */
-	static boolean endsWithAny(final String str, final char... chars) {
-		if (isEmpty(str)) {
+	static boolean endsWithAny(final String input, final char... chars) {
+		if (isEmpty(input)) {
 			return false;
 		}
-		char last = str.charAt(str.length() - 1);
+		char last = input.charAt(input.length() - 1);
 		for (char c : chars) {
 			if (last == c) {
 				return true;

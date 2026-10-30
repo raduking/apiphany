@@ -2,6 +2,12 @@
 
 `1.3.1`
 
+- Preserved header insertion order in `Headers.of()`.
+- Added `Headers.addTo()` overloads for opt-in header value normalization.
+- Added `HeaderValues.normalize(String)` and `DANGEROUS_CHARACTERS` for dangerous-character normalization.
+- Added `Strings.isEnvelopedBy(String, char)` and `isNotEnvelopedBy(String, char)`.
+- Added `install.sh` to install all Maven modules with test output redirected to reports.
+
 ---
 
 `1.3.0`

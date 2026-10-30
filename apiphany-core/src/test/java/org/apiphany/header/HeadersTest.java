@@ -184,6 +184,38 @@ class HeadersTest {
 			assertThat(headers, equalTo(expected));
 		}
 
+		@Test
+		void shouldPreserveQuotedHeaderValue() {
+			Headers.addTo(headers, N2, "\"a,b with spaces\"");
+
+			assertThat(headers.get(N2), equalTo(List.of("\"a,b with spaces\"")));
+		}
+
+		@Test
+		void shouldPreserveDangerousHeaderValueByDefault() {
+			Headers.addTo(headers, N2, "safe\r\ninvalid");
+			Headers.addTo(headers, N2, List.of("invalid\n"));
+			Headers.addTo(headers, N2, new String[] { "invalid\0" });
+
+			assertThat(headers.get(N2), equalTo(List.of("safe\r\ninvalid", "invalid\n", "invalid\0")));
+		}
+
+		@Test
+		void shouldNormalizeDangerousHeaderValueWhenExplicitlyRequested() {
+			Headers.addTo(headers, N2, "safe\r\ninvalid", HeaderValues::normalize);
+			Headers.addTo(headers, N2, List.of("invalid\n"), HeaderValues::normalize);
+			Headers.addTo(headers, N2, new String[] { "invalid\0" }, HeaderValues::normalize);
+
+			assertThat(headers.get(N2), equalTo(List.of("safe  invalid", "invalid ", "invalid ")));
+		}
+
+		@Test
+		void shouldNormalizeMapHeaderValuesWhenExplicitlyRequested() {
+			Headers.addTo(headers, Map.of(N2, "safe\r\ninvalid"), HeaderValues::normalize);
+
+			assertThat(headers.get(N2), equalTo(List.of("safe  invalid")));
+		}
+
 		@ParameterizedTest
 		@MethodSource("provideNullAndEmptyValues")
 		void shouldNotAddNullHeaderValueToExistingHeaderButAddHeader(final String v1, final String v2) {
@@ -376,6 +408,16 @@ class HeadersTest {
 			expected.put(N2, List.of(V2));
 
 			assertThat(resultHeaders, equalTo(expected));
+		}
+
+		@Test
+		void shouldPreserveHeaderInsertionOrder() {
+			Map<String, List<String>> resultHeaders = Headers.of(
+					HeaderFunction.header("first", "1"),
+					HeaderFunction.header("second", "2"),
+					HeaderFunction.header("third", "3"));
+
+			assertThat(List.copyOf(resultHeaders.keySet()), equalTo(List.of("first", "second", "third")));
 		}
 
 		@Test
