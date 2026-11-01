@@ -1,5 +1,6 @@
 package org.apiphany.header;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -42,6 +43,7 @@ public class MapHeaderValues extends HeaderValues {
 	@Override
 	public <N> List<String> get(final N header, final Object headers) {
 		return switch (headers) {
+			case null -> Collections.emptyList();
 			case Map<?, ?> map -> Headers.get(header, JavaObjects.cast(map));
 			default -> getNext().get(header, headers);
 		};
@@ -68,6 +70,7 @@ public class MapHeaderValues extends HeaderValues {
 	@Override
 	public <N, V> boolean contains(final N headerName, final V headerValue, final Object headers) {
 		return switch (headers) {
+			case null -> false;
 			case Map<?, ?> map -> Headers.contains(headerName, headerValue, JavaObjects.<Map<String, List<String>>>cast(map));
 			default -> getNext().contains(headerName, headerValue, headers);
 		};

@@ -8,8 +8,8 @@ import org.apiphany.lang.Strings;
 import org.apiphany.security.Sensitive;
 
 /**
- * Represents a node in a chain of responsibility for resolving HTTP header values. Each instance can either handle a
- * header request directly or delegate it to the next {@link HeaderValues} in the chain.
+ * Represents a node in a chain of responsibility for resolving header values. Each instance can either handle a header
+ * request directly or delegate it to the next {@link HeaderValues} in the chain.
  * <p>
  * By default, this implementation returns an empty list for all header requests, serving as a base class that can be
  * extended for custom behavior.

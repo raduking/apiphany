@@ -48,6 +48,17 @@ class HttpHeaderValuesTest {
 	}
 
 	@Test
+	void shouldReturnEmptyListOnGetFromNullHeaders() {
+		HttpHeaderValues hhv = new HttpHeaderValues();
+		Object headers = null;
+
+		List<String> headerValues = hhv.get("Some-Header", headers);
+
+		assertThat(headerValues, notNullValue());
+		assertThat(headerValues, hasSize(0));
+	}
+
+	@Test
 	void shouldThrowExceptionOnNextForSimpleInstance() {
 		HttpHeaderValues hhv = new HttpHeaderValues();
 		IllegalStateException e = assertThrows(IllegalStateException.class, hhv::getNext);
@@ -138,6 +149,15 @@ class HttpHeaderValuesTest {
 		Object mapHeaders = HttpHeaders.of(Map.of(), (name, value) -> true);
 
 		boolean result = hhv.contains(HEADER_NAME, HEADER_VALUE, mapHeaders);
+
+		assertThat(result, equalTo(false));
+	}
+
+	@Test
+	void shouldReturnFalseOnContainsFromNullHeaders() {
+		HttpHeaderValues hhv = new HttpHeaderValues();
+
+		boolean result = hhv.contains(HEADER_NAME, HEADER_VALUE, null);
 
 		assertThat(result, equalTo(false));
 	}
