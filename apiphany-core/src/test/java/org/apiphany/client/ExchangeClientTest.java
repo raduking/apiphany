@@ -19,7 +19,6 @@ import org.apiphany.ApiResponse;
 import org.apiphany.Parameter;
 import org.apiphany.RequestParameters;
 import org.apiphany.header.Header;
-import org.apiphany.header.HeaderValues;
 import org.apiphany.header.Headers;
 import org.apiphany.security.AuthenticationType;
 import org.apiphany.security.Sensitive;
@@ -152,7 +151,7 @@ class ExchangeClientTest {
 
 		assertThat(headersForDisplay, equalTo(Map.of(
 				"Content-Type", List.of("application/json"),
-				"My-Authorization", List.of(HeaderValues.REDACTED))));
+				"My-Authorization", List.of(Sensitive.Value.REDACTED))));
 	}
 
 	@Test

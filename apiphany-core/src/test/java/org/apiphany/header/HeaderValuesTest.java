@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import org.apiphany.http.HttpHeaderValues;
+import org.apiphany.security.Sensitive;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -26,6 +27,18 @@ class HeaderValuesTest {
 	private static final String HEADER_VALUE1 = "headerValue1";
 	private static final String HEADER_VALUE2 = "headerValue2";
 	private static final String HEADER_NAME1 = "headerName1";
+
+	@Test
+	void shouldHaveTheRedactedListDefinedAsTheRedactedValueFromSensitive() {
+		assertThat(HeaderValues.REDACTED, equalTo(Collections.singletonList(Sensitive.Value.REDACTED)));
+	}
+
+	@Test
+	void shouldHaveTheDangerousCharactersListDefinedAsFollows() {
+		List<Character> expectedDangerousCharacters = List.of('\0', '\r', '\n');
+
+		assertThat(HeaderValues.DANGEROUS_CHARACTERS, equalTo(expectedDangerousCharacters));
+	}
 
 	private static Stream<Arguments> provideHeadersObjectsForChainWithoutHandlers() {
 		return Stream.of(
