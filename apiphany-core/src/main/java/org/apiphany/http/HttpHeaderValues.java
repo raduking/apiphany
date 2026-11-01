@@ -48,10 +48,8 @@ public class HttpHeaderValues extends HeaderValues {
 	 */
 	@Override
 	public <N> List<String> get(final N header, final Object headers) {
-		if (null == headers) {
-			return Collections.emptyList();
-		}
 		return switch (headers) {
+			case null -> Collections.emptyList();
 			case HttpHeaders httpHeaders -> get(header, httpHeaders);
 			default -> getNext().get(header, headers);
 		};
@@ -73,6 +71,7 @@ public class HttpHeaderValues extends HeaderValues {
 	@Override
 	public <N, V> boolean contains(final N headerName, final V headerValue, final Object headers) {
 		return switch (headers) {
+			case null -> false;
 			case HttpHeaders httpHeaders -> Headers.contains(headerName, headerValue, httpHeaders.map());
 			default -> getNext().contains(headerName, headerValue, headers);
 		};

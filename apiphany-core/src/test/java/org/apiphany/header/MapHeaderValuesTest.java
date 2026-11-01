@@ -45,6 +45,17 @@ class MapHeaderValuesTest {
 	}
 
 	@Test
+	void shouldReturnEmptyListOnGetFromNullHeaders() {
+		MapHeaderValues mhv = new MapHeaderValues();
+		Object headers = null;
+
+		List<String> headerValues = mhv.get("Some-Header", headers);
+
+		assertThat(headerValues, notNullValue());
+		assertThat(headerValues, hasSize(0));
+	}
+
+	@Test
 	void shouldThrowExceptionOnNextForSimpleInstance() {
 		MapHeaderValues mhv = new MapHeaderValues();
 		IllegalStateException e = assertThrows(IllegalStateException.class, mhv::getNext);
@@ -134,6 +145,15 @@ class MapHeaderValuesTest {
 		Object mapHeaders = Map.of();
 
 		boolean result = mhv.contains(HEADER_NAME, HEADER_VALUE, mapHeaders);
+
+		assertThat(result, equalTo(false));
+	}
+
+	@Test
+	void shouldReturnFalseOnContainsFromNullHeaders() {
+		MapHeaderValues mhv = new MapHeaderValues();
+
+		boolean result = mhv.contains(HEADER_NAME, HEADER_VALUE, null);
 
 		assertThat(result, equalTo(false));
 	}
