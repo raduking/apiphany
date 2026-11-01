@@ -13,7 +13,6 @@ import org.apiphany.ApiResponse;
 import org.apiphany.header.HeaderValues;
 import org.apiphany.logging.DiagnosticContext;
 import org.apiphany.security.AuthenticationType;
-import org.apiphany.security.Sensitive;
 import org.morphix.lang.collections.Maps;
 import org.morphix.lang.function.Predicates;
 import org.morphix.lang.thread.Threads;
@@ -155,7 +154,7 @@ public interface ExchangeClient extends AutoCloseable {
 			return Collections.emptyMap();
 		}
 		Map<String, List<String>> headers = apiMessage.getHeaders();
-		return Maps.replace(headers, isSensitiveHeader(), () -> Collections.singletonList(HeaderValues.REDACTED));
+		return Maps.replace(headers, isSensitiveHeader(), () -> HeaderValues.REDACTED);
 	}
 
 	/**
@@ -173,7 +172,7 @@ public interface ExchangeClient extends AutoCloseable {
 			return Collections.emptyMap();
 		}
 		Map<String, List<String>> params = apiRequest.getParams();
-		return Maps.replace(params, isSensitiveParam(), () -> Collections.singletonList(Sensitive.Value.REDACTED));
+		return Maps.replace(params, isSensitiveParam(), () -> HeaderValues.REDACTED);
 	}
 
 	/**

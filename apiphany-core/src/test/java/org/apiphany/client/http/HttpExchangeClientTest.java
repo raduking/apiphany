@@ -15,7 +15,6 @@ import org.apiphany.ApiResponse;
 import org.apiphany.RequestMethod;
 import org.apiphany.client.ClientProperties;
 import org.apiphany.header.Header;
-import org.apiphany.header.HeaderValues;
 import org.apiphany.header.Headers;
 import org.apiphany.http.HttpHeader;
 import org.apiphany.http.HttpMethod;
@@ -213,11 +212,6 @@ class HttpExchangeClientTest {
 				"Content-Type", List.of("application/json"),
 				"Authorization", List.of(Sensitive.Value.REDACTED),
 				"Cookie", List.of(Sensitive.Value.REDACTED))));
-	}
-
-	@Test
-	void shouldHaveTheSameRedactedValueAsSensitiveValueRedacted() {
-		assertThat(HeaderValues.REDACTED, equalTo(Sensitive.Value.REDACTED));
 	}
 
 	@Test

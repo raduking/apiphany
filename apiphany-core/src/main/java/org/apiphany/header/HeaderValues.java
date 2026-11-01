@@ -12,7 +12,10 @@ import org.apiphany.security.Sensitive;
  * request directly or delegate it to the next {@link HeaderValues} in the chain.
  * <p>
  * By default, this implementation returns an empty list for all header requests, serving as a base class that can be
- * extended for custom behavior.
+ * extended for custom behavior but also allowing for delegation to subsequent handlers in the chain.
+ * <p>
+ * This class is also intended to be used as the last element in the chain, where it can provide default behavior
+ * (returning an empty list) when no other handler can resolve the header.
  *
  * @author Radu Sebastian LAZIN
  */
@@ -21,7 +24,7 @@ public class HeaderValues {
 	/**
 	 * The string used to redact sensitive information.
 	 */
-	public static final String REDACTED = Sensitive.Value.REDACTED;
+	public static final List<String> REDACTED = Collections.singletonList(Sensitive.Value.REDACTED);
 
 	/**
 	 * An immutable list of dangerous characters that will be replaced whenever we add a header.
