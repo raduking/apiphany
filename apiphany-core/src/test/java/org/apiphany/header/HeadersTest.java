@@ -312,6 +312,21 @@ class HeadersTest {
 		}
 
 		@Test
+		void shouldCompareHeaderValuesCaseSensitivelyByDefaultOnContains() {
+			boolean result = Headers.contains(N1, V1.toUpperCase(), headers);
+
+			assertFalse(result);
+		}
+
+		@Test
+		void shouldSupportCaseInsensitiveHeaderValueComparisonWhenExplicitlyRequestedOnContains() {
+			boolean result = Headers.contains(N1, V1.toUpperCase(), headerName -> Headers.get(headerName, headers),
+					String::equalsIgnoreCase);
+
+			assertTrue(result);
+		}
+
+		@Test
 		void shouldReturnFalseWhenCheckingNonExistingStringHeaderValueOnContains() {
 			boolean result = Headers.contains(N1, "non-existing", headers);
 
