@@ -183,7 +183,7 @@ public interface Headers {
 	 * @return true if the given headers contain the given header with the given value, false otherwise
 	 */
 	static <N, V> boolean contains(final N headerName, final V headerValue, final Function<N, List<String>> getValuesFunction) {
-		return contains(headerName, headerValue, getValuesFunction, String::equalsIgnoreCase);
+		return contains(headerName, headerValue, getValuesFunction, String::equals);
 	}
 
 	/**
