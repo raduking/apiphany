@@ -230,6 +230,9 @@ class ApacheHC5HttpExchangeClientTest {
 
 			assertThat(result.get("X-Custom"), equalTo(List.of("value1")));
 			assertThat(result.get("Accept"), equalTo(List.of("application/json")));
+			var keys = result.keySet().iterator();
+			assertThat(keys.next(), equalTo("X-Custom"));
+			assertThat(keys.next(), equalTo("Accept"));
 		}
 
 		@Test

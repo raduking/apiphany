@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URI;
 import java.nio.file.Path;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
@@ -380,7 +380,7 @@ public class ApacheHC5HttpExchangeClient extends AbstractHttpExchangeClient {
 	 * @return HTTP headers
 	 */
 	public static Map<String, List<String>> toHttpHeadersMap(final Header[] headers) {
-		var httpHeaders = new HashMap<String, List<String>>();
+		var httpHeaders = new LinkedHashMap<String, List<String>>();
 		for (Header header : headers) {
 			Headers.addTo(httpHeaders, header.getName(), header.getValue());
 		}

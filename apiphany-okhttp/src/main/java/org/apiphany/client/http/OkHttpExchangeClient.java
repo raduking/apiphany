@@ -2,12 +2,16 @@ package org.apiphany.client.http;
 
 import java.io.File;
 import java.io.InputStream;
+import java.io.Serial;
 import java.io.Serializable;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -38,6 +42,7 @@ import org.morphix.lang.function.Predicates;
 import org.morphix.lang.function.ThrowingSupplier;
 
 import okhttp3.Call;
+import okhttp3.Headers;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -279,7 +284,7 @@ public class OkHttpExchangeClient extends AbstractHttpExchangeClient {
 	 */
 	protected <T, U> ApiResponse<U> buildResponse(final ApiRequest<T> apiRequest, final Response response) {
 		HttpStatus httpStatus = HttpStatus.fromCode(response.code());
-		Map<String, List<String>> headers = response.headers().toMultimap();
+		Map<String, List<String>> headers = toHttpHeadersMap(response.headers());
 		ensureContentLengthWithinLimit(headers, getMaxResponseBodySize());
 
 		Object responseBody = getResponseBody(apiRequest, response);
@@ -292,6 +297,87 @@ public class OkHttpExchangeClient extends AbstractHttpExchangeClient {
 		HttpContentType contentType = HttpContentType.parse(contentTypes);
 
 		return buildResponse(apiRequest, httpStatus, headers, contentType, decodedBody);
+	}
+
+	/**
+	 * Transforms OkHttp headers to an insertion-ordered map of lowercase header names to values. Header names are
+	 * lower-cased with {@link Locale#US} to preserve the behavior of OkHttp's {@code toMultimap()} and avoid
+	 * machine-default locale differences.
+	 *
+	 * @param headers source headers
+	 * @return HTTP headers in their first-seen order
+	 */
+	static Map<String, List<String>> toHttpHeadersMap(final Headers headers) {
+		Map<String, List<String>> result = new CaseInsensitiveStringLinkedHashMap<>();
+		for (int i = 0; i < headers.size(); ++i) {
+			String name = headers.name(i).toLowerCase(Locale.US);
+			result.computeIfAbsent(name, key -> new ArrayList<>(2)).add(headers.value(i));
+		}
+		return result;
+	}
+
+	/**
+	 * Insertion-ordered map used for OkHttp response headers. Header names are stored in lowercase and can be retrieved
+	 * case-insensitively.
+	 *
+	 * @author Radu Sebastian LAZIN
+	 */
+	private static final class CaseInsensitiveStringLinkedHashMap<V> extends LinkedHashMap<String, V> {
+
+		/**
+		 * Serial version UID for serialization.
+		 */
+		@Serial
+		private static final long serialVersionUID = -1595053084733211507L;
+
+		/**
+		 * Constructs a new, empty map with insertion order.
+		 */
+		public CaseInsensitiveStringLinkedHashMap() {
+			// empty
+		}
+
+		/**
+		 * @see LinkedHashMap#get(Object)
+		 */
+		@Override
+		public V get(final Object key) {
+			return super.get(normalize(key));
+		}
+
+		/**
+		 * @see LinkedHashMap#put(String, Object)
+		 */
+		@Override
+		public boolean containsKey(final Object key) {
+			return super.containsKey(normalize(key));
+		}
+
+		/**
+		 * @see LinkedHashMap#put(String, Object)
+		 */
+		@Override
+		public V remove(final Object key) {
+			return super.remove(normalize(key));
+		}
+
+		/**
+		 * @see LinkedHashMap#put(String, Object)
+		 */
+		@Override
+		public V getOrDefault(final Object key, final V defaultValue) {
+			return super.getOrDefault(normalize(key), defaultValue);
+		}
+
+		/**
+		 * Normalizes the given key to a lowercase string using {@link Locale#US}. Returns null if the key is not a string.
+		 *
+		 * @param key the key to normalize
+		 * @return the normalized key, or null if the key is not a string
+		 */
+		private static String normalize(final Object key) {
+			return key instanceof String string ? string.toLowerCase(Locale.US) : null;
+		}
 	}
 
 	/**
