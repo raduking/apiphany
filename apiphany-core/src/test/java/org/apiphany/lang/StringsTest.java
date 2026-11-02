@@ -724,6 +724,77 @@ class StringsTest {
 	}
 
 	@Nested
+	class EqualsIgnoreCaseTests {
+
+		@Test
+		void shouldReturnTrueWhenBothReferencesAreNull() {
+			assertTrue(Strings.equalsIgnoreCase(null, null));
+		}
+
+		@Test
+		void shouldReturnTrueWhenBothReferencesAreTheSameInstance() {
+			String value = "Authorization";
+
+			assertTrue(Strings.equalsIgnoreCase(value, value));
+		}
+
+		@Test
+		void shouldReturnTrueWhenStringsMatchIgnoringCase() {
+			assertTrue(Strings.equalsIgnoreCase("Authorization", "authorization"));
+			assertTrue(Strings.equalsIgnoreCase("ABC", "abc"));
+		}
+
+		@Test
+		void shouldReturnTrueWhenStringsAreExactlyEqual() {
+			assertTrue(Strings.equalsIgnoreCase(TEST_STRING, TEST_STRING));
+		}
+
+		@Test
+		void shouldReturnFalseWhenFirstStringIsNullAndSecondIsNot() {
+			assertFalse(Strings.equalsIgnoreCase(null, TEST_STRING));
+		}
+
+		@Test
+		void shouldReturnFalseWhenSecondStringIsNullAndFirstIsNot() {
+			assertFalse(Strings.equalsIgnoreCase(TEST_STRING, null));
+		}
+
+		@Test
+		void shouldReturnFalseWhenStringsDiffer() {
+			assertFalse(Strings.equalsIgnoreCase("Authorization", "Content-Type"));
+			assertFalse(Strings.equalsIgnoreCase("abc", "abd"));
+		}
+
+		@ParameterizedTest
+		@MethodSource("provideEqualIgnoreCasePairs")
+		void shouldTreatPairsAsEqualIgnoringCase(final String first, final String second) {
+			assertTrue(Strings.equalsIgnoreCase(first, second));
+			assertTrue(Strings.equalsIgnoreCase(second, first));
+		}
+
+		private static Stream<Arguments> provideEqualIgnoreCasePairs() {
+			return Stream.of(
+					Arguments.of("HTTP/1.1", "http/1.1"),
+					Arguments.of("UTF-8", "utf-8"),
+					Arguments.of("", ""));
+		}
+
+		@ParameterizedTest
+		@MethodSource("provideUnequalIgnoreCasePairs")
+		void shouldTreatPairsAsUnequal(final String first, final String second) {
+			assertFalse(Strings.equalsIgnoreCase(first, second));
+			assertFalse(Strings.equalsIgnoreCase(second, first));
+		}
+
+		private static Stream<Arguments> provideUnequalIgnoreCasePairs() {
+			return Stream.of(
+					Arguments.of("a", "b"),
+					Arguments.of("abc", "abcd"),
+					Arguments.of(" ", ""));
+		}
+	}
+
+	@Nested
 	class EndsWithAnyTests {
 
 		@Test

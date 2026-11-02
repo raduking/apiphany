@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -292,6 +293,31 @@ class HeadersTest {
 					Arguments.of("", ""),
 					Arguments.of(" ", " "));
 		}
+
+		@Test
+		void shouldPreserveOriginalHeaderNameWhenAddingWithDifferentCasing() {
+			Map<String, List<String>> headers = new LinkedHashMap<>();
+
+			Headers.addTo(headers, "Content-Type", "application/json");
+			Headers.addTo(headers, "content-type", "text/plain");
+
+			assertThat(headers.size(), equalTo(1));
+			assertThat(Headers.get("CONTENT-TYPE", headers), equalTo(List.of("application/json", "text/plain")));
+			assertThat(headers.keySet().iterator().next(), equalTo("Content-Type"));
+		}
+
+		@Test
+		void shouldPreserveOriginalHeaderNameWhenExistingValueIsNull() {
+			Map<String, List<String>> headers = new LinkedHashMap<>();
+			headers.put("Content-Type", null);
+
+			Headers.addTo(headers, "content-type", "text/plain");
+
+			assertThat(headers.size(), equalTo(1));
+			assertThat(headers.keySet().iterator().next(), equalTo("Content-Type"));
+			assertThat(headers.get("Content-Type"), equalTo(List.of("text/plain")));
+			assertThat(Headers.get("CONTENT-TYPE", headers), equalTo(List.of("text/plain")));
+		}
 	}
 
 	@Nested
@@ -406,6 +432,17 @@ class HeadersTest {
 
 			assertThat(headerValues, notNullValue());
 			assertThat(headerValues, hasSize(0));
+		}
+
+		@Test
+		void shouldReturnEmptyListWhenExactHeaderNameHasNullValue() {
+			Map<String, List<String>> headers = new LinkedHashMap<>();
+			headers.put("Content-Type", null);
+			headers.put("content-type", List.of("text/plain"));
+
+			assertThat(Headers.get("Content-Type", headers), equalTo(Collections.emptyList()));
+			assertThat(Headers.get("content-type", headers), equalTo(List.of("text/plain")));
+			assertThat(Headers.get("CONTENT-TYPE", headers), equalTo(Collections.emptyList()));
 		}
 	}
 

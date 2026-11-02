@@ -11,6 +11,7 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 import org.apiphany.lang.Strings;
+import org.morphix.lang.Nullables;
 import org.morphix.lang.collections.Lists;
 import org.morphix.lang.collections.Maps;
 
@@ -38,6 +39,7 @@ public interface Headers {
 		if (null == headerFunctions || 0 == headerFunctions.length) {
 			return Collections.emptyMap();
 		}
+		// TODO: implement a case insensitive linked hash map
 		var map = new LinkedHashMap<String, List<String>>();
 		for (HeaderFunction headerFunction : headerFunctions) {
 			headerFunction.addTo(map);
@@ -114,7 +116,8 @@ public interface Headers {
 			case Object[] array -> Arrays.asList(array);
 			default -> Collections.singletonList(headerValue);
 		};
-		List<String> existing = existingHeaders.computeIfAbsent(headerName.toString(), k -> new ArrayList<>());
+		String headerKey = resolveName(existingHeaders, headerName);
+		List<String> existing = existingHeaders.computeIfAbsent(headerKey, k -> new ArrayList<>(1));
 		headerValues.forEach(hv -> {
 			String stringValue = Strings.safeToString(hv);
 			if (Strings.isNotEmpty(stringValue)) {
@@ -124,6 +127,28 @@ public interface Headers {
 				}
 			}
 		});
+	}
+
+	/**
+	 * Resolves the header name as {@link String} via case insensitive comparison.
+	 *
+	 * @param <N> header name type
+	 *
+	 * @param headers
+	 * @param headerName
+	 * @return
+	 */
+	static <N> String resolveName(final Map<String, List<String>> headers, final N headerName) {
+		String headerKey = Strings.safeToString(headerName);
+		if (headers.containsKey(headerKey)) {
+			return headerKey;
+		}
+		for (String key : headers.keySet()) {
+			if (Strings.equalsIgnoreCase(key, headerKey)) {
+				return key;
+			}
+		}
+		return headerKey;
 	}
 
 	/**
@@ -214,16 +239,8 @@ public interface Headers {
 		if (Maps.isEmpty(headers)) {
 			return false;
 		}
-		String headerKey = Strings.safeToString(headerName);
-		if (headers.containsKey(headerKey)) {
-			return true;
-		}
-		for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
-			if (entry.getKey().equalsIgnoreCase(headerKey)) {
-				return true;
-			}
-		}
-		return false;
+		String headerKey = resolveName(headers, headerName);
+		return headers.containsKey(headerKey);
 	}
 
 	/**
@@ -239,16 +256,7 @@ public interface Headers {
 		if (Maps.isEmpty(headers)) {
 			return Collections.emptyList();
 		}
-		String headerKey = Strings.safeToString(headerName);
-		List<String> values = headers.get(headerKey);
-		if (null != values) {
-			return values;
-		}
-		for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
-			if (entry.getKey().equalsIgnoreCase(headerKey)) {
-				return entry.getValue();
-			}
-		}
-		return Collections.emptyList();
+		String headerKey = resolveName(headers, headerName);
+		return Nullables.nonNullOrDefault(headers.get(headerKey), Collections::emptyList);
 	}
 }
