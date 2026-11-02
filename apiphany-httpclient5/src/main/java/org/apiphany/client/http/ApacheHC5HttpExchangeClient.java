@@ -93,8 +93,7 @@ public class ApacheHC5HttpExchangeClient extends AbstractHttpExchangeClient {
 	public ApacheHC5HttpExchangeClient(final ClientProperties clientProperties) {
 		super(clientProperties);
 		ApacheHC5Library.verifyVersion();
-		this.httpClient = ApacheHC5Clients.createClient(clientProperties,
-				this::customize, this::customize, this::customize);
+		this.httpClient = ApacheHC5Clients.createClient(clientProperties, this::customize, this::customize, this::customize);
 		this.httpVersion = Nullables.nonNullOrDefault(this.httpVersion, HttpVersion.DEFAULT);
 	}
 
