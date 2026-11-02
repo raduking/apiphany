@@ -527,4 +527,20 @@ public interface Strings {
 		}
 		return false;
 	}
+
+	/**
+	 * Compares this {@code String} to another {@code String}, ignoring case considerations while any of the inputs can be
+	 * {@code null}.
+	 *
+	 * @param a first string, can be {@code null}
+	 * @param b second string, can be {@code null}
+	 * @return true if the given strings are equal ignoring the case, false otherwise
+	 * @see String#equalsIgnoreCase(String)
+	 */
+	static boolean equalsIgnoreCase(final String a, final String b) {
+		if (a == b) {
+			return true;
+		}
+		return null != a && a.equalsIgnoreCase(b);
+	}
 }
