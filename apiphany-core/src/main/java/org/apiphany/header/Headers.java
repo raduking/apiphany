@@ -134,9 +134,9 @@ public interface Headers {
 	 *
 	 * @param <N> header name type
 	 *
-	 * @param headers
-	 * @param headerName
-	 * @return
+	 * @param headers existing headers
+	 * @param headerName header name
+	 * @return the resolved header name as {@link String}
 	 */
 	static <N> String resolveName(final Map<String, List<String>> headers, final N headerName) {
 		String headerKey = Strings.safeToString(headerName);
