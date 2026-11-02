@@ -118,7 +118,7 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	/**
 	 * Adds default value handlers to the header values chain.
 	 *
-	 * @param headerValues the header values chain object
+	 * @param headerValues the current header values chain object
 	 * @return the header values chain with default handlers added
 	 */
 	public static HeaderValues addDefaultHeaderValues(final HeaderValues headerValues) {
@@ -327,7 +327,7 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	 * @param fallback the writer used when no content converter is selected
 	 * @return the encoded request body
 	 */
-	protected <T, H> String toString(T body, ApiMimeType mimeType, H headers, ToStringFunction<T> fallback) {
+	protected <T, H> String toString(final T body, final ApiMimeType mimeType, final H headers, final ToStringFunction<T> fallback) {
 		for (ContentConverter<?> contentConverter : getContentConverters()) {
 			if (contentConverter.isConvertible(mimeType, headers, getHeaderValuesChain())) {
 				return contentConverter.toString(body, mimeType);
@@ -386,12 +386,12 @@ public abstract class AbstractHttpExchangeClient implements HttpExchangeClient {
 	/**
 	 * Checks declared content-length header against configured response-size limit.
 	 *
-	 * @param <T> the type of headers
+	 * @param <H> the type of headers
 	 *
 	 * @param headers response headers
 	 * @param maxBodySize max body size in bytes
 	 */
-	protected <T> void ensureContentLengthWithinLimit(final T headers, final int maxBodySize) {
+	protected <H> void ensureContentLengthWithinLimit(final H headers, final int maxBodySize) {
 		List<String> contentLengthValues = getHeaderValues(HttpHeader.CONTENT_LENGTH, headers);
 		if (Lists.isEmpty(contentLengthValues)) {
 			return;
