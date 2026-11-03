@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URI;
 import java.nio.file.Path;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
@@ -51,6 +50,7 @@ import org.apiphany.http.HttpStatus;
 import org.apiphany.io.InputStreamSupplier;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Nullables;
+import org.morphix.lang.collections.CaseInsensitiveLinkedHashMap;
 import org.morphix.lang.collections.Lists;
 import org.morphix.lang.collections.Maps;
 import org.morphix.lang.function.Predicates;
@@ -380,7 +380,7 @@ public class ApacheHC5HttpExchangeClient extends AbstractHttpExchangeClient {
 	 * @return HTTP headers
 	 */
 	public static Map<String, List<String>> toHttpHeadersMap(final Header[] headers) {
-		var httpHeaders = new LinkedHashMap<String, List<String>>();
+		var httpHeaders = new CaseInsensitiveLinkedHashMap<List<String>>();
 		for (Header header : headers) {
 			Headers.addTo(httpHeaders, header.getName(), header.getValue());
 		}

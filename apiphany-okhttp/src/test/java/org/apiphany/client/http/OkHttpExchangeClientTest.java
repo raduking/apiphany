@@ -28,8 +28,9 @@ class OkHttpExchangeClientTest {
 
 		Map<String, List<String>> result = OkHttpExchangeClient.toHttpHeadersMap(headers);
 
-		assertThat(new ArrayList<>(result.keySet()), equalTo(List.of("z-header", "a-header")));
+		assertThat(new ArrayList<>(result.keySet()), equalTo(List.of("Z-Header", "A-Header")));
 		assertThat(result.get("z-header"), equalTo(List.of("value1", "value3")));
 		assertThat(result.get("a-header"), equalTo(List.of("value2")));
+		assertThat(result.get("Z-Header"), equalTo(List.of("value1", "value3")));
 	}
 }
