@@ -473,6 +473,17 @@ class HeadersTest {
 		}
 
 		@Test
+		void shouldTreatHeaderNamesAsCaseInsensitive() {
+			Map<String, List<String>> resultHeaders = Headers.of(
+					HeaderFunction.header("Content-Type", "application/json"),
+					HeaderFunction.header("content-type", "text/plain"));
+
+			assertThat(resultHeaders.size(), equalTo(1));
+			assertThat(resultHeaders.get("CONTENT-TYPE"), equalTo(List.of("application/json", "text/plain")));
+			assertThat(List.copyOf(resultHeaders.keySet()), equalTo(List.of("Content-Type")));
+		}
+
+		@Test
 		void shouldCreateHeadersMapWithNoHeaders() {
 			Map<String, List<String>> resultHeaders = Headers.of();
 
