@@ -14,6 +14,7 @@
 - Preserved header insertion order when sending requests in Apache HttpClient 5 and OkHttp clients.
 - Pinned Jackson `jackson-core` optional dependencies in `apiphany-core` and `apiphany-spring` to `${jackson2.version}` and `${jackson3.version}`.
 - Added `install.sh` to install all Maven modules with test output redirected to reports.
+- Upgraded `morphix-all` to `1.0.48`.
 - Upgraded Jackson 2 to `2.21.8`.
 - Upgraded Jackson 3 to `3.1.8`.
 - Upgraded `logback-core` to `1.6.6`.
