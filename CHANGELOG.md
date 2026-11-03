@@ -2,6 +2,10 @@
 
 `1.3.2`
 
+- Changed `Headers.of` to use `CaseInsensitiveLinkedHashMap` from MorphiX.
+- Updated `ApacheHC5ExchangeClient` to use `CaseInsensitiveLinkedHashMap` from MorphiX.
+- Updated `OkHttpExchangeClient` to use `CaseInsensitiveLinkedHashMap` from MorphiX.
+
 ---
 
 `1.3.1`

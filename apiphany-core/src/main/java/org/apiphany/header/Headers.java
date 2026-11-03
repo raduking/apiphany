@@ -3,7 +3,6 @@ package org.apiphany.header;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiPredicate;
@@ -12,6 +11,7 @@ import java.util.function.UnaryOperator;
 
 import org.apiphany.lang.Strings;
 import org.morphix.lang.Nullables;
+import org.morphix.lang.collections.CaseInsensitiveLinkedHashMap;
 import org.morphix.lang.collections.Lists;
 import org.morphix.lang.collections.Maps;
 
@@ -39,8 +39,7 @@ public interface Headers {
 		if (null == headerFunctions || 0 == headerFunctions.length) {
 			return Collections.emptyMap();
 		}
-		// TODO: implement a case insensitive linked hash map
-		var map = new LinkedHashMap<String, List<String>>();
+		var map = new CaseInsensitiveLinkedHashMap<List<String>>();
 		for (HeaderFunction headerFunction : headerFunctions) {
 			headerFunction.addTo(map);
 		}

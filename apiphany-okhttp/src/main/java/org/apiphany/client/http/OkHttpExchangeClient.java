@@ -309,8 +309,9 @@ public class OkHttpExchangeClient extends AbstractHttpExchangeClient {
 	static Map<String, List<String>> toHttpHeadersMap(final Headers headers) {
 		Map<String, List<String>> result = new CaseInsensitiveLinkedHashMap<>();
 		for (int i = 0; i < headers.size(); ++i) {
-			String name = headers.name(i).toLowerCase(Locale.US);
-			result.computeIfAbsent(name, key -> new ArrayList<>(2)).add(headers.value(i));
+			String name = headers.name(i);
+			String value = headers.value(i);
+			result.computeIfAbsent(name, key -> new ArrayList<>(2)).add(value);
 		}
 		return result;
 	}
