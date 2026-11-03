@@ -1,5 +1,9 @@
 ## Release Notes
 
+`1.3.2`
+
+---
+
 `1.3.1`
 
 - Preserved header insertion order in `Headers.of()`.
