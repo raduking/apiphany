@@ -103,7 +103,14 @@
 		<!-- OkHttp -->
 		<dependency>
 			<groupId>com.squareup.okhttp3</groupId>
-			<artifactId>okhttp</artifactId>
+			<artifactId>${okhttp.artifact.id}</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jetbrains.kotlin</groupId>
+			<artifactId>kotlin-stdlib</artifactId>
+			<version>${kotlin.stdlib.version}</version><!--$NO-MVN-MAN-VER$-->
 			<scope>provided</scope>
 		</dependency>
 

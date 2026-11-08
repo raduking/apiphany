@@ -19,8 +19,8 @@ import org.morphix.runtime.LibraryVersion;
  */
 class OkHttpLibraryTest {
 
-	private static final String MIN_SUPPORTED_VERSION = "4.9.0";
-	private static final String MAX_SUPPORTED_VERSION = "4.12.1";
+	private static final String MIN_SUPPORTED_VERSION = "4.12.1";
+	private static final String MAX_SUPPORTED_VERSION = "5.5.1";
 
 	@Nested
 	class IsPresentTests {
@@ -51,7 +51,7 @@ class OkHttpLibraryTest {
 
 		@Test
 		void shouldThrowWhenRuntimeVersionIsOlderThanMinimum() {
-			LibraryVersion oldVersion = LibraryVersion.of(OkHttpLibrary.CLIENT_NAME, "4.8.1");
+			LibraryVersion oldVersion = LibraryVersion.of(OkHttpLibrary.CLIENT_NAME, "4.12.0");
 			LibraryVersion minimumVersion = OkHttpLibrary.minimumVersion();
 
 			assertThrows(IllegalStateException.class, () -> oldVersion.verifyAtLeast(minimumVersion));
@@ -59,7 +59,7 @@ class OkHttpLibraryTest {
 
 		@Test
 		void shouldThrowWhenRuntimeVersionIsNewerThanMaximum() {
-			LibraryVersion newVersion = LibraryVersion.of(OkHttpLibrary.CLIENT_NAME, "5.0.0");
+			LibraryVersion newVersion = LibraryVersion.of(OkHttpLibrary.CLIENT_NAME, "5.5.2");
 			LibraryVersion maximumVersion = OkHttpLibrary.maximumVersion();
 
 			assertThrows(IllegalStateException.class, () -> newVersion.verifyAtMost(maximumVersion));

@@ -68,7 +68,9 @@
 		<jackson3.version>3.1.8</jackson3.version>
 		<slf4j.version>2.0.20</slf4j.version>
 		<httpclient5.version>5.6.5</httpclient5.version>
-		<okhttp.version>4.12.1</okhttp.version>
+		<okhttp.version>5.5.1</okhttp.version>
+		<okhttp.artifact.id>okhttp-jvm</okhttp.artifact.id>
+		<kotlin.stdlib.version>2.4.21</kotlin.stdlib.version>
 		<spring.version>7.0.10</spring.version>
 		<spring.boot.version>4.1.2</spring.boot.version>
 
@@ -150,7 +152,7 @@
 			<!-- Because of the dependency matrix we need this for OkHttp -->
 			<dependency>
 				<groupId>com.squareup.okhttp3</groupId>
-				<artifactId>okhttp</artifactId>
+				<artifactId>${okhttp.artifact.id}</artifactId>
 				<version>${okhttp.version}</version>
 			</dependency>
     	</dependencies>
@@ -463,20 +465,22 @@
 
 		<!--
 			Profiles for running the build and integration tests against the range of OkHttp versions the apiphany-okhttp
-			module claims to support, overriding the okhttp.version property in the root POM so the library module itself
-			compiles against the matrix version. Activate one explicitly, e.g.:
+			module claims to support, overriding the okhttp.version and okhttp.artifact.id properties in the root POM so the
+			library module itself compiles against the matrix version and matching artifact. Activate one explicitly, e.g.:
 			mvn -pl integration/apiphany-okhttp-tests -am verify -Pokhttp-min
 		-->
 		<profile>
 			<id>okhttp-min</id>
 			<properties>
 				<okhttp.version>4.12.1</okhttp.version>
+				<okhttp.artifact.id>okhttp</okhttp.artifact.id>
 			</properties>
 		</profile>
 		<profile>
 			<id>okhttp-current</id>
 			<properties>
-				<okhttp.version>4.12.1</okhttp.version>
+				<okhttp.version>5.5.1</okhttp.version>
+				<okhttp.artifact.id>okhttp-jvm</okhttp.artifact.id>
 			</properties>
 		</profile>
 	</profiles>
