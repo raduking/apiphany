@@ -5,6 +5,7 @@
 - Changed `Headers.of` to use `CaseInsensitiveLinkedHashMap` from MorphiX.
 - Updated `ApacheHC5ExchangeClient` to use `CaseInsensitiveLinkedHashMap` from MorphiX.
 - Updated `OkHttpExchangeClient` to use `CaseInsensitiveLinkedHashMap` from MorphiX.
+- Upgraded `oauth2-oidc-sdk` to `11.39`.
 
 ---
 
