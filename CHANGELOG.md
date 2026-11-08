@@ -6,6 +6,7 @@
 - Updated `ApacheHC5ExchangeClient` to use `CaseInsensitiveLinkedHashMap` from MorphiX.
 - Updated `OkHttpExchangeClient` to use `CaseInsensitiveLinkedHashMap` from MorphiX.
 - Upgraded `oauth2-oidc-sdk` to `11.39`.
+- Upgraded OkHttp to `5.5.1`, Maven users now resolve the JVM artifact as `okhttp-jvm`.
 
 ---
 

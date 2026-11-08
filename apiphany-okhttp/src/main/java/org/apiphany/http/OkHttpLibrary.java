@@ -21,16 +21,16 @@ public class OkHttpLibrary {
 	public static final String CLIENT_NAME = "okhttp";
 
 	/**
-	 * The minimum OkHttp version this module was built against and requires at runtime: <code>4.9.0</code>.
+	 * The minimum OkHttp version this module was built against and requires at runtime: <code>4.12.1</code>.
 	 */
-	private static final LibraryVersion MINIMUM_VERSION = LibraryVersion.of(CLIENT_NAME, 4, 9, 0);
+	private static final LibraryVersion MINIMUM_VERSION = LibraryVersion.of(CLIENT_NAME, 4, 12, 1);
 
 	/**
-	 * The maximum OkHttp version this module supports, i.e. the highest version it was tested against: <code>4.12.1</code>.
+	 * The maximum OkHttp version this module supports, i.e. the highest version it was tested against: <code>5.5.1</code>.
 	 * <p>
 	 * A newer runtime version is outside the tested range and is rejected by {@link #verifyVersion()}.
 	 */
-	private static final LibraryVersion MAXIMUM_VERSION = LibraryVersion.of(CLIENT_NAME, 4, 12, 1);
+	private static final LibraryVersion MAXIMUM_VERSION = LibraryVersion.of(CLIENT_NAME, 5, 5, 1);
 
 	/**
 	 * The OkHttp client class name, used as the version anchor because the OkHttp jar does not carry an
