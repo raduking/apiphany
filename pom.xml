@@ -90,7 +90,7 @@
 		<testcontainers.version>2.0.5</testcontainers.version>
 		<testcontainers.keycloak.version>4.4.0</testcontainers.keycloak.version>
 		<nimbus.jose.jwt.version>10.10</nimbus.jose.jwt.version>
-		<oauth2.oidc.sdk.version>11.38.2</oauth2.oidc.sdk.version>
+		<oauth2.oidc.sdk.version>11.39</oauth2.oidc.sdk.version>
 		<wiremock.version>3.13.2</wiremock.version>
 		<json.path.version>3.0.0</json.path.version>
 
