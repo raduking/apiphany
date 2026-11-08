@@ -457,7 +457,7 @@
 		<profile>
 			<id>httpclient5-max</id>
 			<properties>
-				<httpclient5.version>5.6.4</httpclient5.version>
+				<httpclient5.version>5.6.5</httpclient5.version>
 			</properties>
 		</profile>
 
@@ -470,13 +470,13 @@
 		<profile>
 			<id>okhttp-min</id>
 			<properties>
-				<okhttp.version>4.9.0</okhttp.version>
+				<okhttp.version>4.12.1</okhttp.version>
 			</properties>
 		</profile>
 		<profile>
 			<id>okhttp-current</id>
 			<properties>
-				<okhttp.version>4.12.0</okhttp.version>
+				<okhttp.version>4.12.1</okhttp.version>
 			</properties>
 		</profile>
 	</profiles>
