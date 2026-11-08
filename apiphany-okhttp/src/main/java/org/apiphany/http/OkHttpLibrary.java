@@ -33,22 +33,18 @@ public class OkHttpLibrary {
 	private static final LibraryVersion MAXIMUM_VERSION = LibraryVersion.of(CLIENT_NAME, 4, 12, 1);
 
 	/**
-	 * The OkHttp OkHttpClient class name.
+	 * The OkHttp client class name, used as the version anchor because the OkHttp jar does not carry an
+	 * {@code Implementation-Version} manifest entry. This is a public class so the check remains compatible with OkHttp's
+	 * Java module boundaries.
 	 */
 	private static final String OKHTTP_CLIENT_CLASS_NAME = "okhttp3.OkHttpClient";
 
 	/**
-	 * The OkHttp {@code Platform} class name, used as the version anchor because the OkHttp jar does not carry an
-	 * {@code Implementation-Version} manifest entry.
-	 */
-	private static final String OKHTTP_PLATFORM_CLASS_NAME = "okhttp3.internal.platform.Platform";
-
-	/**
 	 * The runtime version of the OkHttp library. OkHttp jars do not declare an {@code Implementation-Version} manifest
 	 * entry, so the version cannot be detected at runtime and this is always {@code null}; use {@link #isPresent()} to
-	 * check for the library instead.
+	 * check for the library instead. The public {@code OkHttpClient} class is used as the package version anchor.
 	 */
-	private static final LibraryVersion VERSION = LibraryVersion.of(CLIENT_NAME, Classes.Safe.getOne(OKHTTP_PLATFORM_CLASS_NAME));
+	private static final LibraryVersion VERSION = LibraryVersion.of(CLIENT_NAME, Classes.Safe.getOne(OKHTTP_CLIENT_CLASS_NAME));
 
 	/**
 	 * Checks if the OkHttp library is present in the classpath.
