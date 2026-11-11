@@ -1,5 +1,16 @@
 ## Release Notes
 
+`1.3.2`
+
+- Changed `Headers.of` to use `CaseInsensitiveLinkedHashMap` from MorphiX.
+- Updated `ApacheHC5ExchangeClient` to use `CaseInsensitiveLinkedHashMap` from MorphiX.
+- Updated `OkHttpExchangeClient` to use `CaseInsensitiveLinkedHashMap` from MorphiX.
+- Upgraded `oauth2-oidc-sdk` to `11.39`.
+- Upgraded OkHttp to `5.5.1`, Maven users now resolve the JVM artifact as `okhttp-jvm`.
+- Upgraded `morphix-all` to `1.1.0`.
+
+---
+
 `1.3.1`
 
 - Preserved header insertion order in `Headers.of()`.

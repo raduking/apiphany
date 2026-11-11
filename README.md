@@ -52,7 +52,7 @@ Support is being developed for other HTTP clients like Netty, Jersey, etc. If yo
 
 ### Releases
 
-Current release `1.3.1`
+Current release `1.3.2`
 
 ### Getting Started
 
@@ -62,7 +62,7 @@ Maven: add this dependency to your `pom.xml`
 <dependency>
     <groupId>io.github.raduking</groupId>
     <artifactId>apiphany</artifactId>
-    <version>1.3.1</version>
+    <version>1.3.2</version>
 </dependency>
 ```
 
@@ -146,7 +146,7 @@ By default Apiphany uses the JDK `java.net.http` client. You can switch to anoth
 
 #### Apache HttpClient5
 
-Add the `apiphany-httpclient5` dependency, then:
+Add the `apiphany-httpclient5` and `org.apache.httpcomponents.client5:httpclient5` dependencies, then:
 
 ```java
 import org.apiphany.client.http.ApacheHC5HttpExchangeClient;
@@ -162,7 +162,7 @@ String name = http(client)
 
 #### OkHttp
 
-Add the `apiphany-okhttp` dependency, then:
+Add the `apiphany-okhttp` and `com.squareup.okhttp3:okhttp-jvm` dependencies, then:
 
 ```java
 import org.apiphany.client.http.OkHttpExchangeClient;
@@ -175,6 +175,8 @@ String name = http(client)
         .retrieve(String.class)
         .orRethrow();
 ```
+
+If you want to use the most used OkHttp version `4.12.x` you need to add `com.squareup.okhttp3:okhttp` dependency.
 
 #### Spring `RestClient`
 

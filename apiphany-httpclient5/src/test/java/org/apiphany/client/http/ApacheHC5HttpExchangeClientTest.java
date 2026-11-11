@@ -246,6 +246,20 @@ class ApacheHC5HttpExchangeClientTest {
 
 			assertThat(result.get("Accept"), equalTo(List.of("text/html", "application/json")));
 		}
+
+		@Test
+		void shouldTreatHeaderNamesAsCaseInsensitive() {
+			Header[] headers = new Header[] {
+					new BasicHeader("Content-Type", "application/json"),
+					new BasicHeader("content-type", "text/plain")
+			};
+
+			Map<String, List<String>> result = ApacheHC5HttpExchangeClient.toHttpHeadersMap(headers);
+
+			assertThat(result.size(), equalTo(1));
+			assertThat(result.get("CONTENT-TYPE"), equalTo(List.of("application/json", "text/plain")));
+			assertThat(result.keySet().iterator().next(), equalTo("Content-Type"));
+		}
 	}
 
 	@Nested

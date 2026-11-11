@@ -12,7 +12,7 @@
 
 	<groupId>io.github.raduking</groupId>
 	<artifactId>apiphany-parent</artifactId>
-	<version>1.3.1</version>
+	<version>1.3.2</version>
 	<packaging>pom</packaging>
 
 	<name>${project.groupId}:${project.artifactId}</name>
@@ -62,13 +62,15 @@
 	<properties>
 
 		<!-- Dependencies versions -->
-		<morphix.version>1.0.48</morphix.version>
+		<morphix.version>1.1.0</morphix.version>
 		<micrometer.version>1.17.2</micrometer.version>
 		<jackson2.version>2.21.8</jackson2.version>
 		<jackson3.version>3.1.8</jackson3.version>
 		<slf4j.version>2.0.20</slf4j.version>
 		<httpclient5.version>5.6.5</httpclient5.version>
-		<okhttp.version>4.12.1</okhttp.version>
+		<okhttp.version>5.5.1</okhttp.version>
+		<okhttp.artifact.id>okhttp-jvm</okhttp.artifact.id>
+		<kotlin.stdlib.version>2.4.21</kotlin.stdlib.version>
 		<spring.version>7.0.10</spring.version>
 		<spring.boot.version>4.1.2</spring.boot.version>
 
@@ -90,7 +92,7 @@
 		<testcontainers.version>2.0.5</testcontainers.version>
 		<testcontainers.keycloak.version>4.4.0</testcontainers.keycloak.version>
 		<nimbus.jose.jwt.version>10.10</nimbus.jose.jwt.version>
-		<oauth2.oidc.sdk.version>11.38.2</oauth2.oidc.sdk.version>
+		<oauth2.oidc.sdk.version>11.39</oauth2.oidc.sdk.version>
 		<wiremock.version>3.13.2</wiremock.version>
 		<json.path.version>3.0.0</json.path.version>
 
@@ -150,7 +152,7 @@
 			<!-- Because of the dependency matrix we need this for OkHttp -->
 			<dependency>
 				<groupId>com.squareup.okhttp3</groupId>
-				<artifactId>okhttp</artifactId>
+				<artifactId>${okhttp.artifact.id}</artifactId>
 				<version>${okhttp.version}</version>
 			</dependency>
     	</dependencies>
@@ -457,26 +459,28 @@
 		<profile>
 			<id>httpclient5-max</id>
 			<properties>
-				<httpclient5.version>5.6.4</httpclient5.version>
+				<httpclient5.version>5.6.5</httpclient5.version>
 			</properties>
 		</profile>
 
 		<!--
 			Profiles for running the build and integration tests against the range of OkHttp versions the apiphany-okhttp
-			module claims to support, overriding the okhttp.version property in the root POM so the library module itself
-			compiles against the matrix version. Activate one explicitly, e.g.:
+			module claims to support, overriding the okhttp.version and okhttp.artifact.id properties in the root POM so the
+			library module itself compiles against the matrix version and matching artifact. Activate one explicitly, e.g.:
 			mvn -pl integration/apiphany-okhttp-tests -am verify -Pokhttp-min
 		-->
 		<profile>
 			<id>okhttp-min</id>
 			<properties>
-				<okhttp.version>4.9.0</okhttp.version>
+				<okhttp.version>4.12.1</okhttp.version>
+				<okhttp.artifact.id>okhttp</okhttp.artifact.id>
 			</properties>
 		</profile>
 		<profile>
 			<id>okhttp-current</id>
 			<properties>
-				<okhttp.version>4.12.0</okhttp.version>
+				<okhttp.version>5.5.1</okhttp.version>
+				<okhttp.artifact.id>okhttp-jvm</okhttp.artifact.id>
 			</properties>
 		</profile>
 	</profiles>

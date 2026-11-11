@@ -2,14 +2,12 @@ package org.apiphany.client.http;
 
 import java.io.File;
 import java.io.InputStream;
-import java.io.Serial;
 import java.io.Serializable;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -36,6 +34,7 @@ import org.apiphany.lang.Bytes;
 import org.apiphany.security.ssl.SSLProperties;
 import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Nullables;
+import org.morphix.lang.collections.CaseInsensitiveLinkedHashMap;
 import org.morphix.lang.collections.Lists;
 import org.morphix.lang.collections.Maps;
 import org.morphix.lang.function.Predicates;
@@ -308,76 +307,13 @@ public class OkHttpExchangeClient extends AbstractHttpExchangeClient {
 	 * @return HTTP headers in their first-seen order
 	 */
 	static Map<String, List<String>> toHttpHeadersMap(final Headers headers) {
-		Map<String, List<String>> result = new CaseInsensitiveStringLinkedHashMap<>();
+		Map<String, List<String>> result = new CaseInsensitiveLinkedHashMap<>();
 		for (int i = 0; i < headers.size(); ++i) {
-			String name = headers.name(i).toLowerCase(Locale.US);
-			result.computeIfAbsent(name, key -> new ArrayList<>(2)).add(headers.value(i));
+			String name = headers.name(i);
+			String value = headers.value(i);
+			result.computeIfAbsent(name, key -> new ArrayList<>(2)).add(value);
 		}
 		return result;
-	}
-
-	/**
-	 * Insertion-ordered map used for OkHttp response headers. Header names are stored in lowercase and can be retrieved
-	 * case-insensitively.
-	 *
-	 * @author Radu Sebastian LAZIN
-	 */
-	private static final class CaseInsensitiveStringLinkedHashMap<V> extends LinkedHashMap<String, V> {
-
-		/**
-		 * Serial version UID for serialization.
-		 */
-		@Serial
-		private static final long serialVersionUID = -1595053084733211507L;
-
-		/**
-		 * Constructs a new, empty map with insertion order.
-		 */
-		public CaseInsensitiveStringLinkedHashMap() {
-			// empty
-		}
-
-		/**
-		 * @see LinkedHashMap#get(Object)
-		 */
-		@Override
-		public V get(final Object key) {
-			return super.get(normalize(key));
-		}
-
-		/**
-		 * @see LinkedHashMap#put(String, Object)
-		 */
-		@Override
-		public boolean containsKey(final Object key) {
-			return super.containsKey(normalize(key));
-		}
-
-		/**
-		 * @see LinkedHashMap#put(String, Object)
-		 */
-		@Override
-		public V remove(final Object key) {
-			return super.remove(normalize(key));
-		}
-
-		/**
-		 * @see LinkedHashMap#put(String, Object)
-		 */
-		@Override
-		public V getOrDefault(final Object key, final V defaultValue) {
-			return super.getOrDefault(normalize(key), defaultValue);
-		}
-
-		/**
-		 * Normalizes the given key to a lowercase string using {@link Locale#US}. Returns null if the key is not a string.
-		 *
-		 * @param key the key to normalize
-		 * @return the normalized key, or null if the key is not a string
-		 */
-		private static String normalize(final Object key) {
-			return key instanceof String string ? string.toLowerCase(Locale.US) : null;
-		}
 	}
 
 	/**
