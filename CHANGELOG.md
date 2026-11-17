@@ -2,6 +2,8 @@
 
 `1.3.2`
 
+- Added `Strings.nonBlankOrDefault(String, String)` to return a default when the value is blank.
+- Added `Strings.nonBlankOrGet(String, Supplier)` to return a supplied default when the value is blank.
 - Changed `Headers.of` to use `CaseInsensitiveLinkedHashMap` from MorphiX.
 - Updated `ApacheHC5ExchangeClient` to use `CaseInsensitiveLinkedHashMap` from MorphiX.
 - Updated `OkHttpExchangeClient` to use `CaseInsensitiveLinkedHashMap` from MorphiX.

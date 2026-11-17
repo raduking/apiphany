@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.apiphany.io.IOStreams;
 import org.apiphany.io.ResourceLocation;
@@ -542,5 +543,27 @@ public interface Strings {
 			return true;
 		}
 		return null != a && a.equalsIgnoreCase(b);
+	}
+
+	/**
+	 * Returns the given string if it is not blank, otherwise the default value.
+	 *
+	 * @param value a string
+	 * @param defaultValue default value if value is blank
+	 * @return the given string if it is not blank, otherwise the default value
+	 */
+	static String nonBlankOrDefault(final String value, final String defaultValue) {
+		return isNotBlank(value) ? value : defaultValue;
+	}
+
+	/**
+	 * Returns the given string if it is not blank, otherwise the supplied default value.
+	 *
+	 * @param value a string
+	 * @param defaultValue default value if value is blank
+	 * @return the given string if it is not blank, otherwise the supplied default value
+	 */
+	static String nonBlankOrGet(final String value, final Supplier<String> defaultValue) {
+		return isNotBlank(value) ? value : defaultValue.get();
 	}
 }
