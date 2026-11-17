@@ -7,7 +7,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -19,6 +21,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Nested;
@@ -791,6 +794,74 @@ class StringsTest {
 					Arguments.of("a", "b"),
 					Arguments.of("abc", "abcd"),
 					Arguments.of(" ", ""));
+		}
+	}
+
+	/**
+	 * Tests for:
+	 * <ul>
+	 * <li>{@link Strings#nonBlankOrDefault(String, String)}</li>
+	 * </ul>
+	 */
+	@Nested
+	class NonBlankOrDefaultTests {
+
+		@Test
+		void shouldReturnValueWhenNotBlank() {
+			assertThat(Strings.nonBlankOrDefault(TEST_STRING, "default"), equalTo(TEST_STRING));
+			assertThat(Strings.nonBlankOrDefault(NOT_BLANK_STRING, "default"), equalTo(NOT_BLANK_STRING));
+		}
+
+		@ParameterizedTest
+		@MethodSource("provideBlankValues")
+		void shouldReturnDefaultWhenValueIsBlank(final String blankValue) {
+			assertThat(Strings.nonBlankOrDefault(blankValue, "default"), equalTo("default"));
+		}
+
+		private static Stream<Arguments> provideBlankValues() {
+			return Stream.of(
+					Arguments.of((String) null),
+					Arguments.of(""),
+					Arguments.of(BLANK_STRING));
+		}
+	}
+
+	/**
+	 * Tests for:
+	 * <ul>
+	 * <li>{@link Strings#nonBlankOrGet(String, Supplier)}</li>
+	 * </ul>
+	 */
+	@Nested
+	class NonBlankOrGetTests {
+
+		@Test
+		void shouldReturnValueWhenNotBlankWithoutCallingSupplier() {
+			@SuppressWarnings("unchecked")
+			Supplier<String> defaultValue = mock(Supplier.class);
+
+			assertThat(Strings.nonBlankOrGet(TEST_STRING, defaultValue), equalTo(TEST_STRING));
+
+			verify(defaultValue, never()).get();
+		}
+
+		@ParameterizedTest
+		@MethodSource("provideBlankValues")
+		void shouldReturnSuppliedDefaultWhenValueIsBlank(final String blankValue) {
+			@SuppressWarnings("unchecked")
+			Supplier<String> defaultValue = mock(Supplier.class);
+			when(defaultValue.get()).thenReturn("default");
+
+			assertThat(Strings.nonBlankOrGet(blankValue, defaultValue), equalTo("default"));
+
+			verify(defaultValue).get();
+		}
+
+		private static Stream<Arguments> provideBlankValues() {
+			return Stream.of(
+					Arguments.of((String) null),
+					Arguments.of(""),
+					Arguments.of(BLANK_STRING));
 		}
 	}
 
