@@ -9,7 +9,9 @@
 - Updated `OkHttpExchangeClient` to use `CaseInsensitiveLinkedHashMap` from MorphiX.
 - Upgraded `oauth2-oidc-sdk` to `11.39`.
 - Upgraded OkHttp to `5.5.1`, Maven users now resolve the JVM artifact as `okhttp-jvm`.
-- Upgraded `morphix-all` to `1.1.0`.
+- Upgraded `morphix-all` to `1.1.2`.
+- Upgraded Spring Boot to `4.1.3` for `apiphany-spring`.
+- Upgraded Spring to `7.0.11` for `apiphany-spring`.
 
 ---
 

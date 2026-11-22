@@ -62,7 +62,7 @@
 	<properties>
 
 		<!-- Dependencies versions -->
-		<morphix.version>1.1.0</morphix.version>
+		<morphix.version>1.1.2</morphix.version>
 		<micrometer.version>1.17.2</micrometer.version>
 		<jackson2.version>2.21.8</jackson2.version>
 		<jackson3.version>3.1.8</jackson3.version>
@@ -71,8 +71,8 @@
 		<okhttp.version>5.5.1</okhttp.version>
 		<okhttp.artifact.id>okhttp-jvm</okhttp.artifact.id>
 		<kotlin.stdlib.version>2.4.21</kotlin.stdlib.version>
-		<spring.version>7.0.10</spring.version>
-		<spring.boot.version>4.1.2</spring.boot.version>
+		<spring.version>7.0.11</spring.version>
+		<spring.boot.version>4.1.3</spring.boot.version>
 
 		<!-- Java / Maven properties -->
 		<java.version>21</java.version>
