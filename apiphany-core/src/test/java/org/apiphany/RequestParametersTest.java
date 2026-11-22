@@ -4,18 +4,25 @@ import static org.apiphany.ParameterFunction.parameter;
 import static org.apiphany.ParameterFunction.withCondition;
 import static org.apiphany.test.Assertions.assertDefaultConstructorThrows;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
+import org.apiphany.openapi.MultiValueStrategy;
 import org.apiphany.openapi.ParameterMode;
+import org.apiphany.openapi.ParameterStyle;
 import org.apiphany.openapi.QueryParam;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -477,5 +484,407 @@ class RequestParametersTest {
 		assertThat(params.entrySet(), hasSize(2));
 		assertThat(params.get("param1"), equalTo(List.of("value1")));
 		assertThat(params.get("param2"), equalTo(List.of("value2")));
+	}
+
+	/**
+	 * Tests how {@link MultiValueStrategy} (selected through {@link QueryParam}) influences the final request parameters
+	 * string, i.e. what is actually sent on the wire.
+	 */
+	@Nested
+	class MultiValueStrategyTests {
+
+		private static final String TAGS = "tags";
+
+		private static final List<String> LETTERS = List.of("a", "b", "c");
+		private static final List<String> SPECIAL_CHARACTERS = List.of("a b", "c&d");
+
+		static class PlainTags {
+
+			@SuppressWarnings("unused")
+			private final List<String> tags;
+
+			PlainTags(final List<String> tags) {
+				this.tags = tags;
+			}
+		}
+
+		static class DefaultMultiTags {
+
+			@QueryParam
+			private final List<String> tags;
+
+			DefaultMultiTags(final List<String> tags) {
+				this.tags = tags;
+			}
+		}
+
+		static class ExplicitMultiTags {
+
+			@QueryParam(strategy = MultiValueStrategy.Value.MULTI)
+			private final List<String> tags;
+
+			ExplicitMultiTags(final List<String> tags) {
+				this.tags = tags;
+			}
+		}
+
+		static class FormExplodeTags {
+
+			@QueryParam(style = ParameterStyle.FORM, mode = ParameterMode.EXPLODE)
+			private final List<String> tags;
+
+			FormExplodeTags(final List<String> tags) {
+				this.tags = tags;
+			}
+		}
+
+		static class CsvTags {
+
+			@QueryParam(strategy = MultiValueStrategy.Value.CSV)
+			private final List<String> tags;
+
+			CsvTags(final List<String> tags) {
+				this.tags = tags;
+			}
+		}
+
+		static class FormJoinedTags {
+
+			@QueryParam(style = ParameterStyle.FORM, mode = ParameterMode.JOINED)
+			private final List<String> tags;
+
+			FormJoinedTags(final List<String> tags) {
+				this.tags = tags;
+			}
+		}
+
+		static class SsvTags {
+
+			@QueryParam(strategy = MultiValueStrategy.Value.SSV)
+			private final List<String> tags;
+
+			SsvTags(final List<String> tags) {
+				this.tags = tags;
+			}
+		}
+
+		static class SpaceDelimitedTags {
+
+			@QueryParam(style = ParameterStyle.SPACE_DELIMITED)
+			private final List<String> tags;
+
+			SpaceDelimitedTags(final List<String> tags) {
+				this.tags = tags;
+			}
+		}
+
+		static class TsvTags {
+
+			@QueryParam(strategy = MultiValueStrategy.Value.TSV)
+			private final List<String> tags;
+
+			TsvTags(final List<String> tags) {
+				this.tags = tags;
+			}
+		}
+
+		static class PipesTags {
+
+			@QueryParam(strategy = MultiValueStrategy.Value.PIPES)
+			private final List<String> tags;
+
+			PipesTags(final List<String> tags) {
+				this.tags = tags;
+			}
+		}
+
+		static class PipeDelimitedTags {
+
+			@QueryParam(style = ParameterStyle.PIPE_DELIMITED)
+			private final List<String> tags;
+
+			PipeDelimitedTags(final List<String> tags) {
+				this.tags = tags;
+			}
+		}
+
+		static class MultiValues {
+
+			@QueryParam
+			private final Object values;
+
+			MultiValues(final Object values) {
+				this.values = values;
+			}
+		}
+
+		static class CsvValues {
+
+			@QueryParam(strategy = MultiValueStrategy.Value.CSV)
+			private final Object values;
+
+			CsvValues(final Object values) {
+				this.values = values;
+			}
+		}
+
+		static class MixedParams {
+
+			@SuppressWarnings("unused")
+			private String query = "x";
+
+			@QueryParam
+			private List<String> tags = List.of("a", "b");
+
+			@QueryParam(strategy = MultiValueStrategy.Value.CSV)
+			private List<Integer> ids = List.of(1, 2, 3);
+
+			@QueryParam
+			private List<String> empty = List.of();
+
+			@QueryParam
+			private List<String> missing = null;
+
+			@SuppressWarnings("unused")
+			private String nothing = null;
+		}
+
+		@FunctionalInterface
+		interface ParamObjectConstructor extends Function<List<String>, Object> {
+			// empty
+		}
+
+		@Test
+		void shouldContainMultipleParametersWithTheSameNameWhenFieldIsAnnotatedWithExplicitMulti() {
+			ExplicitMultiTags paramsObject = new ExplicitMultiTags(LETTERS);
+			Map<String, List<String>> params = RequestParameters.from(paramsObject);
+
+			String result = RequestParameters.asString(params);
+
+			assertThat(params.entrySet(), hasSize(1));
+			assertThat(params.get(TAGS), equalTo(LETTERS));
+			assertThat(result, equalTo("tags=a&tags=b&tags=c"));
+			assertThat(List.of(result.split(RequestParameters.SEPARATOR)), equalTo(List.of("tags=a", "tags=b", "tags=c")));
+		}
+
+		@Test
+		void shouldContainMultipleParametersWithTheSameNameWhenFieldIsAnnotatedWithDefaultMulti() {
+			DefaultMultiTags paramsObject = new DefaultMultiTags(LETTERS);
+			Map<String, List<String>> params = RequestParameters.from(paramsObject);
+
+			String result = RequestParameters.asString(params);
+
+			assertThat(result, equalTo("tags=a&tags=b&tags=c"));
+		}
+
+		@Test
+		void shouldContainMultipleParametersWithTheSameNameWhenFieldIsNotAnnotated() {
+			PlainTags paramsObject = new PlainTags(LETTERS);
+			Map<String, List<String>> params = RequestParameters.from(paramsObject);
+
+			String result = RequestParameters.asString(params);
+
+			assertThat(result, equalTo("tags=a&tags=b&tags=c"));
+		}
+
+		@Test
+		void shouldBuildUrlSuffixWithRepeatedParametersWhenUsingMulti() {
+			ExplicitMultiTags paramsObject = new ExplicitMultiTags(LETTERS);
+			Map<String, List<String>> params = RequestParameters.from(paramsObject);
+
+			String suffix = RequestParameters.asUrlSuffix(params);
+
+			assertThat(suffix, equalTo("?tags=a&tags=b&tags=c"));
+		}
+
+		@Test
+		void shouldAppendRepeatedParametersToUrlWithExistingQueryWhenUsingMulti() {
+			ExplicitMultiTags paramsObject = new ExplicitMultiTags(LETTERS);
+			Map<String, List<String>> params = RequestParameters.from(paramsObject);
+
+			String suffix = RequestParameters.asUrlSuffix(params, "http://localhost/path?x=1");
+
+			assertThat(suffix, equalTo("&tags=a&tags=b&tags=c"));
+		}
+
+		@ParameterizedTest(name = "{0}")
+		@MethodSource("provideStrategySelectors")
+		@SuppressWarnings("unused")
+		void shouldBuildParametersStringAccordingToSelectedStrategy(final String selector, final ParamObjectConstructor factory,
+				final String expected, final String expectedEncoded) {
+			Object paramsObject = factory.apply(LETTERS);
+			Map<String, List<String>> params = RequestParameters.from(paramsObject);
+
+			String result = RequestParameters.asString(params);
+
+			assertThat(result, equalTo(expected));
+		}
+
+		@ParameterizedTest(name = "{0}")
+		@MethodSource("provideStrategySelectors")
+		@SuppressWarnings("unused")
+		void shouldBuildEncodedParametersStringAccordingToSelectedStrategy(final String selector, final ParamObjectConstructor factory,
+				final String expected, final String expectedEncoded) {
+			Object paramsObject = factory.apply(SPECIAL_CHARACTERS);
+			Map<String, List<String>> params = RequestParameters.from(paramsObject);
+			Map<String, List<String>> encoded = RequestParameters.encode(params);
+
+			String result = RequestParameters.asString(encoded);
+
+			assertThat(result, equalTo(expectedEncoded));
+		}
+
+		private static Stream<Arguments> provideStrategySelectors() {
+			return Stream.of(
+					Arguments.of(
+							"no annotation (multi)",
+							constructor(PlainTags::new),
+							"tags=a&tags=b&tags=c",
+							"tags=a+b&tags=c%26d"),
+					Arguments.of(
+							"@QueryParam (multi)",
+							constructor(DefaultMultiTags::new),
+							"tags=a&tags=b&tags=c",
+							"tags=a+b&tags=c%26d"),
+					Arguments.of(
+							"strategy = multi",
+							constructor(ExplicitMultiTags::new),
+							"tags=a&tags=b&tags=c",
+							"tags=a+b&tags=c%26d"),
+					Arguments.of(
+							"style = FORM, mode = EXPLODE (multi)",
+							constructor(FormExplodeTags::new),
+							"tags=a&tags=b&tags=c",
+							"tags=a+b&tags=c%26d"),
+					Arguments.of(
+							"strategy = csv",
+							constructor(CsvTags::new),
+							"tags=a,b,c",
+							"tags=a+b%2Cc%26d"),
+					Arguments.of(
+							"style = FORM, mode = JOINED (csv)",
+							constructor(FormJoinedTags::new),
+							"tags=a,b,c",
+							"tags=a+b%2Cc%26d"),
+					Arguments.of(
+							"strategy = ssv",
+							constructor(SsvTags::new),
+							"tags=a b c",
+							"tags=a+b+c%26d"),
+					Arguments.of(
+							"style = SPACE_DELIMITED (ssv)",
+							constructor(SpaceDelimitedTags::new),
+							"tags=a b c",
+							"tags=a+b+c%26d"),
+					Arguments.of(
+							"strategy = tsv",
+							constructor(TsvTags::new),
+							"tags=a\tb\tc",
+							"tags=a+b%09c%26d"),
+					Arguments.of(
+							"strategy = pipes",
+							constructor(PipesTags::new),
+							"tags=a|b|c",
+							"tags=a+b%7Cc%26d"),
+					Arguments.of(
+							"style = PIPE_DELIMITED (pipes)",
+							constructor(PipeDelimitedTags::new),
+							"tags=a|b|c",
+							"tags=a+b%7Cc%26d"));
+		}
+
+		private static ParamObjectConstructor constructor(final ParamObjectConstructor function) {
+			return function;
+		}
+
+		@ParameterizedTest
+		@MethodSource("provideCollectionKinds")
+		void shouldContainMultipleParametersWithTheSameNameForAnyCollectionKindWhenUsingMulti(final Object values) {
+			MultiValues paramsObject = new MultiValues(values);
+			Map<String, List<String>> params = RequestParameters.from(paramsObject);
+
+			String result = RequestParameters.asString(params);
+
+			assertThat(result, equalTo("values=1&values=2&values=3"));
+		}
+
+		@ParameterizedTest
+		@MethodSource("provideCollectionKinds")
+		void shouldJoinValuesIntoSingleParameterForAnyCollectionKindWhenUsingCsv(final Object values) {
+			CsvValues paramsObject = new CsvValues(values);
+			Map<String, List<String>> params = RequestParameters.from(paramsObject);
+
+			String result = RequestParameters.asString(params);
+
+			assertThat(result, equalTo("values=1,2,3"));
+		}
+
+		private static Stream<Arguments> provideCollectionKinds() {
+			Iterable<Integer> iterable = () -> List.of(1, 2, 3).iterator();
+			return Stream.of(
+					Arguments.of(List.of(1, 2, 3)),
+					Arguments.of(new LinkedHashSet<>(List.of(1, 2, 3))),
+					Arguments.of((Object) new String[] { "1", "2", "3" }),
+					Arguments.of((Object) new Integer[] { 1, 2, 3 }),
+					Arguments.of(new int[] { 1, 2, 3 }),
+					Arguments.of(iterable));
+		}
+
+		@Test
+		void shouldBuildCombinedParametersStringFromObjectWithMixedFields() {
+			MixedParams paramsObject = new MixedParams();
+			Map<String, List<String>> params = RequestParameters.from(paramsObject);
+
+			String result = RequestParameters.asString(params);
+
+			assertThat(List.of(result.split(RequestParameters.SEPARATOR)), containsInAnyOrder("query=x", "tags=a", "tags=b", "ids=1,2,3"));
+			assertThat(result, containsString("tags=a&tags=b"));
+		}
+
+		@Test
+		void shouldNotContainParametersForNullOrEmptyCollectionsOrNullValues() {
+			MixedParams paramsObject = new MixedParams();
+			Map<String, List<String>> params = RequestParameters.from(paramsObject);
+
+			assertThat(params.keySet(), containsInAnyOrder("query", TAGS, "ids"));
+		}
+
+		@Test
+		void shouldReturnEmptyStringWhenCollectionIsEmptyWithAnyStrategy() {
+			ExplicitMultiTags multiParamsObject = new ExplicitMultiTags(List.of());
+			Map<String, List<String>> multiParams = RequestParameters.from(multiParamsObject);
+			String multiResult = RequestParameters.asString(multiParams);
+
+			CsvTags csvParamsObject = new CsvTags(List.of());
+			Map<String, List<String>> csvParams = RequestParameters.from(csvParamsObject);
+			String csvResult = RequestParameters.asString(csvParams);
+
+			assertThat(multiResult, equalTo(""));
+			assertThat(csvResult, equalTo(""));
+		}
+
+		@Test
+		void shouldParseBackRepeatedParametersIntoTheSameValuesWhenUsingMulti() {
+			ExplicitMultiTags paramsObject = new ExplicitMultiTags(LETTERS);
+			Map<String, List<String>> params = RequestParameters.from(paramsObject);
+			String result = RequestParameters.asString(params);
+
+			Map<String, List<String>> parsed = RequestParameters.from(result);
+
+			assertThat(parsed.entrySet(), hasSize(1));
+			assertThat(parsed.get(TAGS), equalTo(LETTERS));
+		}
+
+		@Test
+		void shouldParseBackJoinedParameterIntoSingleValueWhenUsingCsv() {
+			CsvTags paramsObject = new CsvTags(LETTERS);
+			Map<String, List<String>> params = RequestParameters.from(paramsObject);
+			String result = RequestParameters.asString(params);
+
+			Map<String, List<String>> parsed = RequestParameters.from(result);
+
+			assertThat(parsed.entrySet(), hasSize(1));
+			assertThat(parsed.get(TAGS), equalTo(List.of("a,b,c")));
+		}
 	}
 }

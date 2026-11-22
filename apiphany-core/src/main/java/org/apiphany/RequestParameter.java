@@ -13,6 +13,7 @@ import org.apiphany.lang.Strings;
 import org.morphix.convert.ArrayConversions;
 import org.morphix.lang.JavaArrays;
 import org.morphix.lang.Nullables;
+import org.morphix.lang.collections.Iterables;
 
 /**
  * Represents a parameter in the API context. When constructing request parameters prefer using the
@@ -168,7 +169,7 @@ public record RequestParameter(String name, List<String> values, Charset encodin
 		if (null == string) {
 			return NOT_PRESENT;
 		}
-		List<String> list = new ArrayList<>();
+		List<String> list = new ArrayList<>(1);
 		list.add(string);
 		return list;
 	}
@@ -202,7 +203,7 @@ public record RequestParameter(String name, List<String> values, Charset encodin
 	 * @return the list of string representations of the values
 	 */
 	public static List<String> toValues(final Collection<?> collection) {
-		if (null == collection || collection.isEmpty()) {
+		if (Iterables.isEmpty(collection)) {
 			return NOT_PRESENT;
 		}
 		List<String> list = new ArrayList<>(collection.size());

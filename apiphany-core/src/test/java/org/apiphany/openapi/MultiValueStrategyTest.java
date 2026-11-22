@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -183,6 +184,17 @@ class MultiValueStrategyTest {
 
 		assertThat(map.size(), equalTo(1));
 		assertThat(map.get(parameterName), equalTo(values));
+	}
+
+	@Test
+	void shouldAppendToExistingValuesWhenParameterAlreadyExistsWithMulti() {
+		Map<String, List<String>> map = new HashMap<>();
+		map.put(TEST_PARAM, new ArrayList<>(List.of("existing")));
+
+		MultiValueStrategy.MULTI.apply(TEST_PARAM, List.of(VALUE1, VALUE2)).putInto(map);
+
+		assertThat(map.size(), equalTo(1));
+		assertThat(map.get(TEST_PARAM), equalTo(List.of("existing", VALUE1, VALUE2)));
 	}
 
 	@Test
