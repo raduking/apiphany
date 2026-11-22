@@ -118,10 +118,8 @@ public record RequestParameter(String name, List<String> values, Charset encodin
 	 * @return true if the object is multi-valued, false otherwise
 	 */
 	public static boolean isMultiValued(final Object object) {
-		if (null == object) {
-			return false;
-		}
 		return switch (object) {
+			case null -> false;
 			case Collection<?> collection -> true;
 			case Iterable<?> iterable -> true;
 			case Object[] array -> true;
@@ -147,10 +145,8 @@ public record RequestParameter(String name, List<String> values, Charset encodin
 	 * @return the string representation of the value
 	 */
 	public static List<String> toValues(final Object object) {
-		if (null == object) {
-			return NOT_PRESENT;
-		}
 		return switch (object) {
+			case null -> NOT_PRESENT;
 			case Collection<?> collection -> toValues(collection);
 			case Iterable<?> iterable -> toValues(iterable);
 			case Object[] array -> toValues(array);
