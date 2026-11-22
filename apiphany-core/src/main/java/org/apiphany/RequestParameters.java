@@ -273,9 +273,7 @@ public class RequestParameters {
 	 * @return a map representation of the object's fields
 	 */
 	protected static Map<String, List<String>> fromObject(final Object queryParams, final SimpleConverter<String, String> nameConverter) {
-		List<ExtendedField> extendedFields = ExtendedFields.findAllNonStatic(queryParams,
-				extendedField -> null != extendedField.getFieldValue());
-
+		List<ExtendedField> extendedFields = ExtendedFields.findAllNonStatic(queryParams, RequestParameters::fieldValueNotNull);
 		Map<String, List<String>> paramMap = LinkedHashMap.newLinkedHashMap(extendedFields.size());
 		if (Lists.isEmpty(extendedFields)) {
 			return paramMap;
@@ -286,13 +284,22 @@ public class RequestParameters {
 				continue;
 			}
 			String paramName = nameConverter.convert(extendedField.getName());
-
 			QueryParam annotation = extendedField.getAnnotation(QueryParam.class);
 			MultiValueStrategy strategy = MultiValueStrategy.from(annotation);
 			ParameterFunction parameter = strategy.apply(paramName, paramValues);
 			parameter.putInto(paramMap);
 		}
 		return paramMap;
+	}
+
+	/**
+	 * Returns true if the field value is not {@code null}.
+	 *
+	 * @param extendedField the field to check.
+	 * @return true if the field value is not {@code null}, false otherwise
+	 */
+	private static boolean fieldValueNotNull(final ExtendedField extendedField) {
+		return null != extendedField.getFieldValue();
 	}
 
 	/**
