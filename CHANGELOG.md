@@ -7,7 +7,7 @@
 - Changed `Headers.of` to use `CaseInsensitiveLinkedHashMap` from MorphiX.
 - Updated `ApacheHC5ExchangeClient` to use `CaseInsensitiveLinkedHashMap` from MorphiX.
 - Updated `OkHttpExchangeClient` to use `CaseInsensitiveLinkedHashMap` from MorphiX.
-- Upgraded `morphix-all` to `1.1.2`.
+- Upgraded `morphix-all` to `1.1.3`.
 - Upgraded Spring Boot to `4.1.3` for `apiphany-spring`.
 - Upgraded Spring to `7.0.11` for `apiphany-spring`.
 - Upgraded Spring Security to `7.2.0`.

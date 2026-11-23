@@ -12,6 +12,7 @@ import org.apiphany.lang.Require;
 import org.apiphany.lang.Strings;
 import org.morphix.convert.ArrayConversions;
 import org.morphix.lang.JavaArrays;
+import org.morphix.lang.JavaObjects;
 import org.morphix.lang.Nullables;
 import org.morphix.lang.collections.Iterables;
 
@@ -123,7 +124,7 @@ public record RequestParameter(String name, List<String> values, Charset encodin
 			case Collection<?> collection -> true;
 			case Iterable<?> iterable -> true;
 			case Object[] array -> true;
-			case Object o when o.getClass().isArray() -> true;
+			case Object o when JavaObjects.isArray(o) -> true;
 			default -> false;
 		};
 	}
@@ -150,7 +151,7 @@ public record RequestParameter(String name, List<String> values, Charset encodin
 			case Collection<?> collection -> toValues(collection);
 			case Iterable<?> iterable -> toValues(iterable);
 			case Object[] array -> toValues(array);
-			case Object o when o.getClass().isArray() -> toValues(JavaArrays.toArray(o));
+			case Object o when JavaObjects.isArray(o) -> toValues(JavaArrays.toArray(o));
 			default -> toValues(String.valueOf(object));
 		};
 	}

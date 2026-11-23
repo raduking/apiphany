@@ -16,6 +16,7 @@ import org.apiphany.openapi.QueryParam;
 import org.morphix.convert.MapConversions;
 import org.morphix.convert.function.SimpleConverter;
 import org.morphix.lang.JavaArrays;
+import org.morphix.lang.JavaObjects;
 import org.morphix.lang.collections.Lists;
 import org.morphix.lang.collections.Maps;
 import org.morphix.lang.function.PutFunction;
@@ -149,12 +150,10 @@ public class RequestParameters {
 			return params;
 		}
 		String[] bodyParams = body.split(SEPARATOR);
-
 		for (String bodyParam : bodyParams) {
 			int index = bodyParam.indexOf(RequestParameter.NAME_VALUE_SEPARATOR);
 			final String decodedKey;
 			final String decodedValue;
-
 			if (index >= 0) {
 				decodedKey = URLDecoder.decode(bodyParam.substring(0, index), encoding);
 				decodedValue = URLDecoder.decode(bodyParam.substring(index + 1), encoding);
@@ -231,8 +230,7 @@ public class RequestParameters {
 		}
 		Require.thatNot(queryParams instanceof List<?>, "Cannot convert a List into request parameters map. Expected a POJO or a Map.");
 		Require.thatNot(queryParams instanceof Set<?>, "Cannot convert a Set into request parameters map. Expected a POJO or a Map.");
-		Require.thatNot(queryParams.getClass().isArray(), "Cannot convert an Array into request parameters map. Expected a POJO or a Map.");
-
+		Require.thatNot(JavaObjects.isArray(queryParams), "Cannot convert an Array into request parameters map. Expected a POJO or a Map.");
 		if (queryParams instanceof Map<?, ?> map) {
 			return from(map, nameConverter);
 		}
@@ -273,7 +271,7 @@ public class RequestParameters {
 	 * @return a map representation of the object's fields
 	 */
 	protected static Map<String, List<String>> fromObject(final Object queryParams, final SimpleConverter<String, String> nameConverter) {
-		List<ExtendedField> extendedFields = ExtendedFields.findAllNonStatic(queryParams, RequestParameters::fieldValueNotNull);
+		List<ExtendedField> extendedFields = ExtendedFields.findAllNonStatic(queryParams, ExtendedField::valueNotNull);
 		Map<String, List<String>> paramMap = LinkedHashMap.newLinkedHashMap(extendedFields.size());
 		if (Lists.isEmpty(extendedFields)) {
 			return paramMap;
@@ -290,16 +288,6 @@ public class RequestParameters {
 			parameter.putInto(paramMap);
 		}
 		return paramMap;
-	}
-
-	/**
-	 * Returns true if the field value is not {@code null}.
-	 *
-	 * @param extendedField the field to check.
-	 * @return true if the field value is not {@code null}, false otherwise
-	 */
-	private static boolean fieldValueNotNull(final ExtendedField extendedField) {
-		return null != extendedField.getFieldValue();
 	}
 
 	/**
