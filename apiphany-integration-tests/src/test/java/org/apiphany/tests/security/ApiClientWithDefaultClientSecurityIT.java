@@ -11,6 +11,7 @@ import org.apiphany.security.ssl.KeyStoreType;
 import org.apiphany.test.Tests;
 import org.apiphany.tests.contract.ApiphanyContract;
 import org.apiphany.tests.contract.TLSContract;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -53,6 +54,11 @@ public class ApiClientWithDefaultClientSecurityIT implements ApiphanyContract {
 	@Override
 	public WireMockExtension wiremock() {
 		return wiremock;
+	}
+
+	@BeforeEach
+	void resetWireMock() {
+		wiremock.resetAll();
 	}
 
 	@Override
