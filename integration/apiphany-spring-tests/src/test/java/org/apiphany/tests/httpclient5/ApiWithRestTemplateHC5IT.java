@@ -1,18 +1,19 @@
-package org.apiphany.tests;
+package org.apiphany.tests.httpclient5;
 
 import org.apiphany.ApiClient;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.http.RestTemplateExchangeClient;
+import org.apiphany.tests.ApiIT;
 
 /**
  * Test class for {@link ApiClient} using {@link RestTemplateExchangeClient}.
  *
  * @author Radu Sebastian LAZIN
  */
-public class ApiWithRestTemplateHC5IT extends ApiIT {
+class ApiWithRestTemplateHC5IT extends ApiIT {
 
 	@Override
-	ExchangeClient client() {
+	public ExchangeClient client() {
 		return new RestTemplateExchangeClient();
 	}
 }

@@ -21,7 +21,7 @@ import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
  *
  * @author Radu Sebastian LAZIN
  */
-class ApiIT {
+public class ApiIT {
 
 	private static final String PATH = "/hello";
 
@@ -32,7 +32,7 @@ class ApiIT {
 			.options(options().dynamicPort())
 			.build();
 
-	ExchangeClient client() {
+	public ExchangeClient client() {
 		return new JavaNetHttpExchangeClient();
 	}
 

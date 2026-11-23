@@ -1,17 +1,16 @@
-package org.apiphany.tests.security;
+package org.apiphany.tests.httpclient5;
 
-import org.apiphany.ApiClient;
 import org.apiphany.client.ExchangeClient;
-import org.apiphany.client.http.RestTemplateExchangeClient;
 import org.apiphany.client.http.SpringRestExchangeClient;
 import org.apiphany.security.AuthenticationType;
+import org.apiphany.tests.ApiClientWithDefaultClientRedirectsIT;
 
 /**
- * Security test class for {@link ApiClient} using {@link RestTemplateExchangeClient}.
+ * Redirect-focused test class for {@link SpringRestExchangeClient}.
  *
  * @author Radu Sebastian LAZIN
  */
-public class ApiClientWithRestClientHC5SecurityIT extends ApiClientWithDefaultClientSecurityIT {
+class ApiClientWithRestClientHC5RedirectsIT extends ApiClientWithDefaultClientRedirectsIT {
 
 	@Override
 	public Class<? extends ExchangeClient> exchangeClientClass() {
