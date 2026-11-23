@@ -1,16 +1,17 @@
-package org.apiphany.tests;
+package org.apiphany.tests.okhttp.security;
 
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.http.SpringRestClientProperties;
 import org.apiphany.http.OkHttpLibrary;
+import org.apiphany.tests.security.ApiClientWithDefaultClientSecurityIT;
 
 /**
- * Test class for {@link org.apiphany.client.http.SpringRestExchangeClient} with OkHttp as the Spring request factory
- * backend.
+ * Security test class for {@link org.apiphany.client.http.RestTemplateExchangeClient} with OkHttp as the Spring request
+ * factory backend.
  *
  * @author Radu Sebastian LAZIN
  */
-public class ApiClientWithRestClientOkHttpIT extends ApiClientWithRestClientHC5IT {
+class ApiClientWithRestTemplateOkHttpSecurityIT extends ApiClientWithDefaultClientSecurityIT {
 
 	@Override
 	public ClientProperties clientProperties() {

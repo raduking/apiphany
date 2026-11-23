@@ -1,16 +1,17 @@
-package org.apiphany.tests.security;
+package org.apiphany.tests.okhttp;
 
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.http.SpringRestClientProperties;
 import org.apiphany.http.OkHttpLibrary;
+import org.apiphany.tests.ApiClientWithDefaultClientRedirectsIT;
 
 /**
- * Security test class for {@link org.apiphany.client.http.SpringRestExchangeClient} with OkHttp as the Spring request
- * factory backend.
+ * Redirect-focused test class for {@link org.apiphany.client.http.RestTemplateExchangeClient} with OkHttp as the Spring
+ * request factory backend.
  *
  * @author Radu Sebastian LAZIN
  */
-public class ApiClientWithRestClientOkHttpSecurityIT extends ApiClientWithRestClientHC5SecurityIT {
+class ApiClientWithRestTemplateOkHttpRedirectsIT extends ApiClientWithDefaultClientRedirectsIT {
 
 	@Override
 	public ClientProperties clientProperties() {

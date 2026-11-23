@@ -1,15 +1,17 @@
-package org.apiphany.tests;
+package org.apiphany.tests.httpclient5;
 
+import org.apiphany.ApiClient;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.http.RestTemplateExchangeClient;
 import org.apiphany.security.AuthenticationType;
+import org.apiphany.tests.ApiClientWithDefaultClientIT;
 
 /**
- * Redirect-focused test class for {@link RestTemplateExchangeClient} using Apache HC5 backend.
+ * Test class for {@link ApiClient} using {@link RestTemplateExchangeClient}.
  *
  * @author Radu Sebastian LAZIN
  */
-public class ApiClientWithRestTemplateHC5RedirectsIT extends ApiClientWithDefaultClientRedirectsIT {
+class ApiClientWithRestTemplateHC5IT extends ApiClientWithDefaultClientIT {
 
 	@Override
 	public Class<? extends ExchangeClient> exchangeClientClass() {

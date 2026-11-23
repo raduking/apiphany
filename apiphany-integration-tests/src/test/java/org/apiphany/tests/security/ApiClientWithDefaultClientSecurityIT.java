@@ -27,7 +27,7 @@ import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
  *
  * @author Radu Sebastian LAZIN
  */
-class ApiClientWithDefaultClientSecurityIT implements ApiphanyContract {
+public class ApiClientWithDefaultClientSecurityIT implements ApiphanyContract {
 
 	@RegisterExtension
 	private static final WireMockExtension wiremock =
@@ -53,6 +53,11 @@ class ApiClientWithDefaultClientSecurityIT implements ApiphanyContract {
 	@Override
 	public WireMockExtension wiremock() {
 		return wiremock;
+	}
+
+	@Override
+	public ClientProperties clientProperties() {
+		return ApiphanyContract.super.clientProperties();
 	}
 
 	private abstract class NestedContract implements ApiphanyContract {

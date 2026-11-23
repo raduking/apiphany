@@ -1,10 +1,11 @@
-package org.apiphany.tests;
+package org.apiphany.tests.okhttp;
 
 import org.apiphany.client.ClientProperties;
 import org.apiphany.client.ExchangeClient;
 import org.apiphany.client.http.SpringRestClientProperties;
 import org.apiphany.client.http.SpringRestExchangeClient;
 import org.apiphany.http.OkHttpLibrary;
+import org.apiphany.tests.ApiIT;
 
 /**
  * Test class for {@link org.apiphany.Api} using {@link SpringRestExchangeClient} with OkHttp as the Spring request
@@ -12,7 +13,7 @@ import org.apiphany.http.OkHttpLibrary;
  *
  * @author Radu Sebastian LAZIN
  */
-public class ApiWithRestClientOkHttpIT extends ApiWithRestClientHC5IT {
+class ApiWithRestClientOkHttpIT extends ApiIT {
 
 	@Override
 	public ExchangeClient client() {

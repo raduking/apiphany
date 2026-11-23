@@ -11,17 +11,10 @@ import org.apiphany.http.JavaNetHttpLibrary;
  *
  * @author Radu Sebastian LAZIN
  */
-public class ApiClientWithRestTemplateJavaNetRedirectsWithClientLibraryIT
-		extends ApiClientWithRestTemplateJavaNetRedirectsIT {
+class ApiClientWithRestTemplateJavaNetRedirectsWithClientLibraryIT extends ApiClientWithRestTemplateJavaNetRedirectsIT {
 
 	@Override
 	public ClientProperties clientProperties() {
-		ClientProperties properties = super.clientProperties();
-		properties.setCustomProperties(SpringRestClientProperties.ROOT, new SpringRestClientProperties() {
-			{
-				setClientLibrary(JavaNetHttpLibrary.CLIENT_NAME);
-			}
-		});
-		return properties;
+		return SpringRestClientProperties.withClientLibrary(super.clientProperties(), JavaNetHttpLibrary.CLIENT_NAME);
 	}
 }

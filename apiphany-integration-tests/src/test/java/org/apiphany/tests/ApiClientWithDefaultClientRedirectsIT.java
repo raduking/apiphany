@@ -16,7 +16,7 @@ import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
  *
  * @author Radu Sebastian LAZIN
  */
-class ApiClientWithDefaultClientRedirectsIT implements ApiphanyContract {
+public class ApiClientWithDefaultClientRedirectsIT implements ApiphanyContract {
 
 	@RegisterExtension
 	private static final WireMockExtension wiremock =
