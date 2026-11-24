@@ -1,5 +1,9 @@
 ## Release Notes
 
+`1.3.3`
+
+---
+
 `1.3.2`
 
 - Added `Strings.nonBlankOrDefault(String, String)` to return a default when the value is blank.
