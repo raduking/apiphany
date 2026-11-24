@@ -29,10 +29,12 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.apiphany.lang.Strings;
+import org.apiphany.logging.slf4j.Slf4jLoggerAdapter;
 import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationTokenProvider;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.morphix.lang.function.LoggerAdapter;
 import org.morphix.lang.function.ThrowingRunnable;
 import org.morphix.lang.resource.ScopedResource;
 import org.morphix.lang.thread.Threads;
@@ -44,6 +46,8 @@ import org.morphix.reflection.Fields;
  * @author Radu Sebastian LAZIN
  */
 class OAuth2TokenProviderRegistryTest {
+
+	private static final LoggerAdapter LOGGER = Slf4jLoggerAdapter.of(OAuth2ClientRegistrationTest.class);
 
 	private static final String PROVIDER_NAME_MY_PROVIDER = "myProvider";
 	private static final String PROVIDER_NAME_GOOD = "good";
@@ -825,6 +829,7 @@ class OAuth2TokenProviderRegistryTest {
 						registry.addProvider(PROVIDER_NAME_MY_PROVIDER, resource);
 					} catch (Exception ignored) {
 						// expected exception when duplicate or closing
+						LOGGER.info("Expected: {}: {}", ignored.getClass().getName(), ignored.getMessage());
 					} finally {
 						doneTasksGate.countDown();
 					}
