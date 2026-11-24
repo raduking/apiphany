@@ -158,6 +158,9 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 
 	/**
 	 * Adds a new OAuth2 token provider to the registry.
+	 * <p>
+	 * If the registry is closed concurrently with this call, the provider is either closed by {@link #close()} or by this
+	 * method (and the call throws), but it can be closed by both, so closing a token provider must be idempotent.
 	 *
 	 * @param name the name of the OAuth2 token provider
 	 * @param provider the OAuth2 token provider
@@ -177,6 +180,13 @@ public class OAuth2TokenProviderRegistry implements AutoCloseable {
 			provider.closeIfManaged(
 					e -> LOGGER.error("Error closing candidate OAuth2 token provider: '{}' when a provider with the same name exists.", name, e));
 			throw new IllegalStateException("An OAuth2 token provider with name '" + name + "' is already registered.");
+		}
+		// close() could have finished iterating between the check above and the put, in which case nobody would ever close
+		// this provider, if close() also saw the provider it is closed twice, which is fine because close must be idempotent
+		if (closing.get()) {
+			provider.closeIfManaged(
+					e -> LOGGER.error("Error closing OAuth2 token provider: '{}' when adding to a closing registry.", name, e));
+			throw new IllegalStateException("Cannot add new OAuth2 token provider " + name + " to a closing registry.");
 		}
 	}
 

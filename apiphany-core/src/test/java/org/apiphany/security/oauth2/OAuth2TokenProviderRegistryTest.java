@@ -15,13 +15,16 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -30,7 +33,10 @@ import org.apiphany.security.AuthenticationToken;
 import org.apiphany.security.AuthenticationTokenProvider;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.morphix.lang.function.ThrowingRunnable;
 import org.morphix.lang.resource.ScopedResource;
+import org.morphix.lang.thread.Threads;
+import org.morphix.reflection.Fields;
 
 /**
  * Test class for {@link OAuth2TokenProviderRegistry}.
@@ -57,6 +63,7 @@ class OAuth2TokenProviderRegistryTest {
 
 	private static final int THREADS = 200;
 	private static final int CLOSE_COUNT = 10;
+	private static final long WAIT_SECONDS = 5;
 
 	private static final long EXPIRES_IN = 300;
 	private static final Instant DEFAULT_EXPIRATION = Instant.now();
@@ -858,6 +865,46 @@ class OAuth2TokenProviderRegistryTest {
 					verify(resource, atLeastOnce()).closeIfManaged(any(Consumer.class));
 				}
 			}
+		}
+
+		@Test
+		@SuppressWarnings({ "unchecked", "resource" })
+		void shouldCloseProviderWhenCloseIsCalledWhileTheProviderIsBeingAdded() throws Exception {
+			OAuth2Registry mockRegistry = mock(OAuth2Registry.class);
+			OAuth2TokenProviderRegistry registry = OAuth2TokenProviderRegistry.of(mockRegistry);
+
+			CountDownLatch addingGate = new CountDownLatch(1);
+			CountDownLatch continueAddGate = new CountDownLatch(1);
+
+			// pauses the adding thread right after it checked that the registry is not closing
+			Map<String, ScopedResource<OAuth2TokenProvider>> pausingProviders = new ConcurrentHashMap<>() {
+				@Override
+				public ScopedResource<OAuth2TokenProvider> putIfAbsent(final String key, final ScopedResource<OAuth2TokenProvider> value) {
+					addingGate.countDown();
+					Threads.safeWait(continueAddGate, Duration.ofSeconds(WAIT_SECONDS));
+					return super.putIfAbsent(key, value);
+				}
+			};
+			Fields.IgnoreAccess.set(registry, "providers", pausingProviders);
+
+			ScopedResource<OAuth2TokenProvider> tokenProvider = mock(ScopedResource.class);
+			doReturn(mock(OAuth2TokenProvider.class)).when(tokenProvider).unwrap();
+
+			Thread addThread = Thread.ofPlatform()
+					.start(() -> registry.addProvider(PROVIDER_NAME_MY_PROVIDER, tokenProvider));
+			addingGate.await(WAIT_SECONDS, TimeUnit.SECONDS);
+
+			Thread closeThread = Thread.ofPlatform()
+					.start(ThrowingRunnable.unchecked(() -> registry.close()));
+			// wait for close to finish iterating over an empty map before the provider is put in the map
+			closeThread.join(TimeUnit.SECONDS.toMillis(WAIT_SECONDS));
+			continueAddGate.countDown();
+
+			addThread.join(TimeUnit.SECONDS.toMillis(WAIT_SECONDS));
+			closeThread.join(TimeUnit.SECONDS.toMillis(WAIT_SECONDS));
+
+			assertThat(registry.getProviderNames(), contains(PROVIDER_NAME_MY_PROVIDER));
+			verify(tokenProvider).closeIfManaged(any(Consumer.class));
 		}
 
 		@Test
