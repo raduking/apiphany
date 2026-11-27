@@ -89,7 +89,7 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
-			<version>${jackson2.version}</version>
+			<version>${jackson2.version}</version><!--$NO-MVN-MAN-VER$-->
 			<scope>provided</scope>
 			<optional>true</optional>
 		</dependency>
@@ -97,7 +97,7 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>${jackson2.version}</version>
+			<version>${jackson2.version}</version><!--$NO-MVN-MAN-VER$-->
 			<scope>provided</scope>
 			<optional>true</optional>
 		</dependency>
@@ -105,7 +105,7 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.datatype</groupId>
 			<artifactId>jackson-datatype-jsr310</artifactId>
-			<version>${jackson2.version}</version>
+			<version>${jackson2.version}</version><!--$NO-MVN-MAN-VER$-->
 			<scope>provided</scope>
 			<optional>true</optional>
 		</dependency>
@@ -113,7 +113,7 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.datatype</groupId>
 			<artifactId>jackson-datatype-jdk8</artifactId>
-			<version>${jackson2.version}</version>
+			<version>${jackson2.version}</version><!--$NO-MVN-MAN-VER$-->
 			<scope>provided</scope>
 			<optional>true</optional>
 		</dependency>
@@ -121,7 +121,7 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
 			<artifactId>jackson-dataformat-xml</artifactId>
-			<version>${jackson2.version}</version>
+			<version>${jackson2.version}</version><!--$NO-MVN-MAN-VER$-->
 			<scope>provided</scope>
 			<optional>true</optional>
 		</dependency>
@@ -129,7 +129,7 @@
 		<dependency>
 			<groupId>tools.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
-			<version>${jackson3.version}</version>
+			<version>${jackson3.version}</version><!--$NO-MVN-MAN-VER$-->
 			<scope>provided</scope>
 			<optional>true</optional>
 		</dependency>
@@ -137,7 +137,7 @@
 		<dependency>
 			<groupId>tools.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>${jackson3.version}</version>
+			<version>${jackson3.version}</version><!--$NO-MVN-MAN-VER$-->
 			<scope>provided</scope>
 			<optional>true</optional>
 		</dependency>
@@ -145,7 +145,7 @@
 		<dependency>
 			<groupId>tools.jackson.dataformat</groupId>
 			<artifactId>jackson-dataformat-xml</artifactId>
-			<version>${jackson3.version}</version>
+			<version>${jackson3.version}</version><!--$NO-MVN-MAN-VER$-->
 			<scope>provided</scope>
 			<optional>true</optional>
 		</dependency>

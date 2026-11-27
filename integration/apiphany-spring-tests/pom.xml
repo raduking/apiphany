@@ -99,7 +99,7 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>${jackson2.version}</version>
+			<version>${jackson2.version}</version><!--$NO-MVN-MAN-VER$-->
 			<scope>test</scope>
 		</dependency>
 
@@ -107,13 +107,13 @@
 		<dependency>
 			<groupId>tools.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>${jackson3.version}</version>
+			<version>${jackson3.version}</version><!--$NO-MVN-MAN-VER$-->
 		</dependency>
 
 		<dependency>
 			<groupId>tools.jackson.dataformat</groupId>
 			<artifactId>jackson-dataformat-xml</artifactId>
-			<version>${jackson3.version}</version>
+			<version>${jackson3.version}</version><!--$NO-MVN-MAN-VER$-->
 		</dependency>
 
 		<!-- Testing -->
